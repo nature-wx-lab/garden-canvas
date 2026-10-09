@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.8.1';
-import {foliageKind} from './appearance.js?v=0.8.1';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.1';
-import {drawTree} from './tree-model.js?v=0.8.1';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.1';
+import {treeProfile} from './tree-profiles.js?v=0.8.2';
+import {foliageKind} from './appearance.js?v=0.8.2';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.2';
+import {drawTree} from './tree-model.js?v=0.8.2';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.2';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.8.1';
+import { plantInfo, stateAt } from './model.js?v=0.8.2';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -72,6 +72,11 @@ shapes.dendropanaxLobed=outlineLeaf([[0,0],[-.25,.09],[-.4,.35],[-.52,.75],[-.17
 shapes.rhombic=outlineLeaf([[0,0],[-.27,.10],[-.42,.42],[-.25,.70],[0,1],[.25,.70],[.42,.42],[.27,.10]]);
 shapes.tulipLeaf=outlineLeaf([[0,0],[-.32,.14],[-.45,.4],[-.27,.5],[-.43,.85],[-.12,.80],[0,.7],[.12,.80],[.43,.85],[.27,.5],[.45,.4],[.32,.14]]);
 shapes.triangular=outlineLeaf([[0,0],[-.46,.06],[-.29,.44],[0,1],[.29,.44],[.46,.06]]);
+{
+ const edge=[[0,0],[-.28,.02],[-.48,.16]];
+ for(let j=0;j<12;j++){const y=.18+j*.062,wide=.49*(1-y);edge.push([-wide*(j%2?1:1.20),y]);}
+ edge.push([0,1]);for(let j=11;j>=0;j--){const y=.18+j*.062,wide=.49*(1-y);edge.push([wide*(j%2?1:1.20),y]);}edge.push([.48,.16],[.28,.02]);shapes.deltoidSerrate=outlineLeaf(edge);
+}
 shapes.arrow=outlineLeaf([[0,0],[-.4,-.12],[-.24,.4],[0,1],[.24,.4],[.4,-.12]]);
 shapes.spoon=outlineLeaf([[0,0],[-.055,.38],[-.32,.59],[-.34,.84],[-.17,.98],[0,1],[.17,.98],[.34,.84],[.32,.59],[.055,.38]]);
 shapes.obovate=outlineLeaf([[0,0],[-.12,.22],[-.35,.6],[-.35,.82],[-.18,.99],[0,1],[.18,.99],[.35,.82],[.35,.6],[.12,.22]]);
@@ -80,6 +85,14 @@ shapes.obovate=outlineLeaf([[0,0],[-.12,.22],[-.35,.6],[-.35,.82],[-.18,.99],[0,
  const pts=[];
  for(let j=0;j<128;j++){const an=j*Math.PI*2/128,rr=.44*(1+.10*Math.cos(an*8))*(1+.012*Math.cos(an*64));pts.push([Math.sin(an)*rr,Math.cos(an)*rr]);}
  shapes.peltate=outlineLeaf(pts);
+}
+for(const name of ['geraniumPalm','geraniumRound']){
+ const pts=[[0,0]];
+ for(let j=0;j<=180;j++){
+  const an=(-150+j*300/180)*Math.PI/180,deep=name==='geraniumPalm',r=(deep?.30:.54)+(deep?.46:.20)*Math.pow(.5+.5*Math.cos(an*6),.55),tooth=1+.026*Math.cos(an*72);
+  pts.push([Math.sin(an)*r*tooth,.22+Math.cos(an)*r*tooth]);
+ }
+ shapes[name]=outlineLeaf(pts);shapes[name].userData.palmateLobes=5;
 }
 for(const name of ['round','kidney','lobed']){
  const pts=[[0,0]];
@@ -204,12 +217,15 @@ function windShader(shader,kind){
       diffuseColor.rgb+=diffuseColor.rgb*(midrib*0.23+veins*0.055);
     `);
     if(kind.startsWith('leaf-hosta'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*70.0)');
-    const surface=kind.replace(/-guide$/,'').replace('woolly-','').replace('glossy-',''),hex=surface.match(/-([0-9a-f]{6})$/)?.[1];
+    const surface=kind.replace(/-cranesbill-veins$/,'').replace(/-guide$/,'').replace('woolly-','').replace('glossy-','').replace('palm-',''),hex=surface.match(/-([0-9a-f]{6})$/)?.[1];
     const pattern=surface.replace(/^(leaf|petal)-/,'').replace(/^hosta-?/,'').replace(/-(?:gold|[0-9a-f]{6})$/,'');
     const c=hex?new THREE.Color('#'+hex):null;
     const tint=c?`vec3(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`:kind.startsWith('petal')?'vec3(0.34,0.07,0.23)':kind.endsWith('-gold')?'vec3(0.70,0.69,0.32)':'vec3(0.79,0.83,0.72)';
     const masks={base:'1.0-smoothstep(0.18,0.52,vUv.y)',tip:'smoothstep(0.5,0.92,vUv.y)',blush:'(1.0-smoothstep(0.20,0.65,vUv.y))*(1.0-smoothstep(0.25,0.75,fold))',margin:'smoothstep(0.61+0.035*sin(vUv.y*53.0),0.79,fold)',center:'1.0-smoothstep(0.25+0.07*sin(vUv.y*36.0),0.47,fold)',stripes:'smoothstep(0.48,0.64,sin(vUv.x*39.0+sin(vUv.y*7.0)*0.65))',spots:'smoothstep(0.73,0.9,sin(vUv.x*79.0+cos(vUv.y*27.0))*sin(vUv.y*91.0+sin(vUv.x*47.0)))',silverVeins:'(1.0-midrib)*(1.0-smoothstep(0.16,0.33,abs(sin((vUv.y-fold*0.38)*32.0))))'};
-    if(masks[pattern])shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,${tint},(${masks[pattern]})*0.86);\n#include <emissivemap_fragment>`);
+    masks.mottle='smoothstep(0.23,0.69,sin(vUv.x*11.0+sin(vUv.y*9.0))*cos(vUv.y*13.0+sin(vUv.x*10.0)))';
+    if(masks[pattern])shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,${tint},(${masks[pattern]})*${pattern==='mottle'?'0.34':'0.86'});\n#include <emissivemap_fragment>`);
+    if(kind.startsWith('leaf-palm'))shader.fragmentShader=shader.fragmentShader.replace('float midrib=1.0-smoothstep(0.012,0.025,abs(vUv.x-0.5));',`vec2 palm=vec2(vUv.x-0.5,vUv.y-0.22);float radial=abs(sin(atan(palm.x,palm.y)*3.0))*length(palm);float midrib=1.0-smoothstep(0.002,0.008,radial);`);
+    if(kind.endsWith('-cranesbill-veins'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float petalVeins=pow(max(0.0,cos(atan(vUv.x-0.5,vUv.y+0.08)*19.0+sin(vUv.y*8.0)*0.13)),35.0);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.14,0.055,0.17),petalVeins*0.58*smoothstep(0.04,0.18,vUv.y));\n#include <emissivemap_fragment>`);
     if(kind==='petal-snowdrop-inner'||kind==='petal-snowdrop-outer')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float mark=smoothstep(0.53,0.61,vUv.y)*(1.0-smoothstep(0.78,0.89,vUv.y))* (1.0-smoothstep(0.21,0.35,abs(vUv.x-0.5)));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.17,0.34,0.08),mark);\n#include <emissivemap_fragment>`);
     if(kind.endsWith('-guide'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float guide=(1.0-smoothstep(0.20,0.57,vUv.y))*pow(max(0.0,cos(atan(vUv.x-0.5,vUv.y+0.02)*16.0)),20.0);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.10,0.035,0.13),guide*0.85);\n#include <emissivemap_fragment>`);
     if(kind==='leaf-scaly')shader.fragmentShader=shader.fragmentShader.replace('veins*0.055','veins*0.025+pow(max(0.0,sin(vUv.x*211.0)*cos(vUv.y*193.0)),10.0)*0.18');

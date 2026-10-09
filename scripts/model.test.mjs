@@ -4,6 +4,12 @@ import {emptyDocument,sampleDocument,validateDocument,makePlant,clone,outlineFor
 const view=(year,month,reference=false)=>({year,month,reference,footprints:false,camera:null});
 const fixture=()=>{const d=emptyDocument();d.plans.A.plants=[makePlant('maple',1,2,2)];return d;};
 const task=(type,month,repeat='annual',min=10,max=20,count=1)=>({id:1,type,month,repeat,min,max,count});
+test('released catalogue revisions preserve saved garden contents when models are enriched',()=>{
+ const original=fixture();original.plans.A.plants.push(makePlant('p-281a043a4b8a',2,5,4));
+ for(const revision of ['2026-10-10.4','2026-10-10.5','2026-10-10.6']){
+  const saved={...clone(original),catalogVersion:revision};assert.deepEqual(validateDocument(saved),original);
+ }
+});
 test('new document round-trips two plans, task ranges and camera without losing semantics',()=>{const d=sampleDocument();d.plans.B=clone(d.plans.A);d.active='B';d.plans.B.plants[0].tasks=[task('prune',2)];d.view.camera={position:[4,6,8],target:[0,1,0]};assert.deepEqual(validateDocument(JSON.parse(JSON.stringify(d))),d);});
 test('v1 file migrates positions and preserves unidentified plant status',()=>{const old={version:1,width:8,depth:6,outline:outlineFor('rectangle',8,6),plants:[{id:3,kind:'grass',x:2,z:2,height:.8,spread:.7}],month:10};const d=validateDocument(old);assert.equal(d.plans.A.plants[0].kind,'legacy_grass');assert.equal(d.plans.A.plants[0].height,.8);assert.equal(d.view.month,10);assert.equal(d.version,2);});
 test('invalid v1 fields, duplicate ids, unknown species and prototype names fail closed',()=>{for(const change of [d=>d.plans.A.plants.push(clone(d.plans.A.plants[0])),d=>d.plans.A.plants[0].kind='toString',d=>d.plans.A.plants[0].kind=['maple'],d=>{d.plans.B=d.plans.A;d.plans.A=null;d.active='B';},d=>d.plans.A.plants[0].kind='__proto__',d=>d.plans.A.plants[0].height=NaN,d=>d.plans.A.plants[0].email='unexpected',d=>d.plans.A.width=31,d=>d.view.year=11,d=>d.catalogVersion='future',d=>d.plans.A.plants[0].leafHeight=99]){const d=fixture();change(d);assert.throws(()=>validateDocument(d));}const d=fixture();d.plans.A=JSON.parse('{"__proto__":{}}');assert.throws(()=>validateDocument(d));});
