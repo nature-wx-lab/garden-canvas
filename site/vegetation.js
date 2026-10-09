@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.8.6';
-import {foliageKind} from './appearance.js?v=0.8.6';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.6';
-import {drawTree} from './tree-model.js?v=0.8.6';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.6';
+import {treeProfile} from './tree-profiles.js?v=0.8.7';
+import {foliageKind} from './appearance.js?v=0.8.7';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.7';
+import {drawTree} from './tree-model.js?v=0.8.7';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.7';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.8.6';
+import { plantInfo, stateAt } from './model.js?v=0.8.7';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,9 +13,20 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+{
+ // A four-petalled silhouette for the thousands of subpixel flowers in a crambe spray.
+ // Representative full flowers retain their sepals, filaments and anthers nearby.
+ const positions=[],uv=[];
+ for(let j=0;j<4;j++){
+  const an=j*Math.PI/2,c=Math.cos(an),s=Math.sin(an),ring=[[0,.07],[-.40,.58],[-.30,.95],[.30,.95],[.40,.58]];
+  for(let k=1;k<ring.length-1;k++)for(const [x,y] of [ring[0],ring[k],ring[k+1]]){positions.push(x*c+y*s,.12*y*y,-x*s+y*c);uv.push(x+.5,y);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();shapes.tinyCross=keep(g);
+}
 function curvedLeaf(type){
   const elm=type==='elm',corrugated=type==='hostaCorrugated'||elm,ruffled=type==='hostaRuffled',wavy=type==='wavyStrap',slender=type==='wavyLance',undulate=type==='wavyElliptic'||slender;if(corrugated&&!elm||ruffled)type='hosta';if(wavy)type='strap';
-  const positions=[],uvs=[],indices=[],rows=type==='needle'?2:type==='crenate'?40:ruffled?28:type==='serrated'?20:14,cols=type==='needle'?1:corrugated?16:ruffled?8:4;
+  const cabbage=type==='seaKaleLeaf'||type==='crambeHeart';
+  const positions=[],uvs=[],indices=[],rows=type==='needle'?2:type==='crenate'?40:ruffled||cabbage?28:type==='serrated'?20:14,cols=type==='needle'?1:corrugated?16:ruffled||cabbage?8:4;
   for(let i=0;i<=rows;i++){
     const t=i/rows;
     let width=Math.pow(Math.sin(Math.PI*t),.85)*.43;
@@ -30,6 +41,7 @@ function curvedLeaf(type){
     if(type==='lanceSerrate')width*=.24*(i%2?.94:1.03);
     if(type==='ovateSerrate')width*=.55*(i%2?.92:1.02);
     if(type==='broadToothed')width*=1.10*(1-t*.30)*(i%2?.91:1.05);
+    if(cabbage)width=Math.pow(Math.sin(Math.PI*t),type==='crambeHeart'?.50:.67)*.52*(1+.16*Math.sin(t*27))*(i%2?.97:1.02);
     if(elm)width*=.75*(i%2?.91:1.02);
     if(type==='calycanthus')width*=i%5===2?1.025:1;
     if(type==='obovateSerrate')width*=Math.pow(t,.35)*1.2*(i%2?.94:1.02);
@@ -42,13 +54,23 @@ function curvedLeaf(type){
       const cup=(type==='petal'?.18:type==='hosta'?.2:.12)*u*u*Math.sin(Math.PI*t);
       const bend=type==='blade'?.62*t*t:type==='sword'?.19*t*t:type==='strap'?.34*t*t:type==='petal'?.28*t*t:.23*t*t;
       const relief=corrugated?.021*Math.cos(u*25+Math.sin(t*4)*1.6)*Math.sin(Math.PI*t)*Math.sin(Math.PI*j/cols):ruffled?.06*Math.sin(t*32)*Math.pow(Math.abs(u),3)*Math.sin(Math.PI*t):undulate?(slender?.014:.065)*Math.sin(t*23)*Math.pow(Math.abs(u),2)*Math.sin(Math.PI*t):0;
-      positions.push(x,t,bend+cup+relief+(type==='sword'?Math.abs(x)*.55:.014*Math.cos(t*24+Math.abs(u)*8)*Math.abs(u)));uvs.push(j/cols,t);
+      const cabbageFold=cabbage?.075*Math.sin(t*29)*Math.pow(Math.abs(u),3)*Math.sin(Math.PI*t)+.027*Math.cos(t*48-Math.abs(u)*10)*Math.abs(u)*Math.sin(Math.PI*t):0;
+      positions.push(x,t-(type==='crambeHeart'?.18*Math.exp(-Math.pow((t-.12)/.13,2))*u*u:0),bend+cup+relief+cabbageFold+(type==='sword'?Math.abs(x)*.55:.014*Math.cos(t*24+Math.abs(u)*8)*Math.abs(u)));uvs.push(j/cols,t);
       if(i<rows&&j<cols){const a=i*(cols+1)+j,b=a+cols+1;indices.push(a,b,a+1,b,b+1,a+1);}
     }
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();return keep(g);
 }
-for(const type of ['leaf','narrow','lanceSerrate','ovateSerrate','broadToothed','obovateSerrate','oakLance','wavyElliptic','wavyLance','elm','calycanthus','hosta','hostaCorrugated','hostaRuffled','petal','blade','sword','strap','wavyStrap','needle','serrated','crenate','leathery'])shapes[type]=curvedLeaf(type);
+for(const type of ['leaf','narrow','lanceSerrate','ovateSerrate','broadToothed','seaKaleLeaf','crambeHeart','obovateSerrate','oakLance','wavyElliptic','wavyLance','elm','calycanthus','hosta','hostaCorrugated','hostaRuffled','petal','blade','sword','strap','wavyStrap','needle','serrated','crenate','leathery'])shapes[type]=curvedLeaf(type);
+{
+ const positions=[],uvs=[],indices=[],rows=24,cols=4;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,width=.027*Math.pow(1-t,.45),angle=t*2.95;
+  positions.push(u*width,Math.sin(angle)*.42,(1-Math.cos(angle))*.34+Math.abs(u)*.006);uvs.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;indices.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();g.userData.archingReedLeaf=true;shapes.reedLeaf=keep(g);
+}
 {
  const positions=[],uvs=[],indices=[],rows=20,cols=12;
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -99,6 +121,7 @@ shapes.triangular=outlineLeaf([[0,0],[-.46,.06],[-.29,.44],[0,1],[.29,.44],[.46,
 }
 shapes.arrow=outlineLeaf([[0,0],[-.4,-.12],[-.24,.4],[0,1],[.24,.4],[.4,-.12]]);
 shapes.spoon=outlineLeaf([[0,0],[-.055,.38],[-.32,.59],[-.34,.84],[-.17,.98],[0,1],[.17,.98],[.34,.84],[.32,.59],[.055,.38]]);
+shapes.canaryGlume=outlineLeaf([[0,0],[-.13,.20],[-.27,.66],[-.24,.83],[0,1],[.24,.83],[.27,.66],[.13,.20]]);
 shapes.obovate=outlineLeaf([[0,0],[-.12,.22],[-.35,.6],[-.35,.82],[-.18,.99],[0,1],[.18,.99],[.35,.82],[.35,.6],[.12,.22]]);
 // Peltate blades are centred on their stalk attachment, with eight broad lobes.
 {
@@ -244,6 +267,7 @@ function windShader(shader,kind){
     const tint=c?`vec3(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`:kind.startsWith('petal')?'vec3(0.34,0.07,0.23)':kind.endsWith('-gold')?'vec3(0.70,0.69,0.32)':'vec3(0.79,0.83,0.72)';
     const masks={base:'1.0-smoothstep(0.18,0.52,vUv.y)',tip:'smoothstep(0.5,0.92,vUv.y)',blush:'(1.0-smoothstep(0.20,0.65,vUv.y))*(1.0-smoothstep(0.25,0.75,fold))',margin:'smoothstep(0.61+0.035*sin(vUv.y*53.0),0.79,fold)',center:'1.0-smoothstep(0.25+0.07*sin(vUv.y*36.0),0.47,fold)',stripes:'smoothstep(0.48,0.64,sin(vUv.x*39.0+sin(vUv.y*7.0)*0.65))',spots:'smoothstep(0.73,0.9,sin(vUv.x*79.0+cos(vUv.y*27.0))*sin(vUv.y*91.0+sin(vUv.x*47.0)))',silverVeins:'(1.0-midrib)*(1.0-smoothstep(0.16,0.33,abs(sin((vUv.y-fold*0.38)*32.0))))'};
     masks.mottle='smoothstep(0.23,0.69,sin(vUv.x*11.0+sin(vUv.y*9.0))*cos(vUv.y*13.0+sin(vUv.x*10.0)))';
+    masks.canaryVeins='1.0-smoothstep(0.018,0.041,min(abs(vUv.x-0.5),abs(abs(vUv.x-0.5)-0.14)))';
     masks.mosaic='smoothstep(-0.12,0.23,sin(vUv.x*14.0+sin(vUv.y*9.0)*1.7)*cos(vUv.y*12.0+sin(vUv.x*7.0)*1.4)+0.15*sin(vUv.y*49.0+vUv.x*31.0))';
     if(masks[pattern])shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,${tint},(${masks[pattern]})*${pattern==='mottle'?'0.34':'0.86'});\n#include <emissivemap_fragment>`);
     if(kind.startsWith('leaf-palm'))shader.fragmentShader=shader.fragmentShader.replace('float midrib=1.0-smoothstep(0.012,0.025,abs(vUv.x-0.5));',`vec2 palm=vec2(vUv.x-0.5,vUv.y-0.22);float radial=abs(sin(atan(palm.x,palm.y)*3.0))*length(palm);float midrib=1.0-smoothstep(0.002,0.008,radial);`);

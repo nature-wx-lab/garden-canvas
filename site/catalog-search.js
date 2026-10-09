@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.8.6';
+import {treeProfile} from './tree-profiles.js?v=0.8.7';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -24,6 +24,9 @@ export function seasonAt(info,month){
  if(a.foliageMonths){
   density=a.foliageMonths.includes(month)?1:0;scale=1;
   phase=density?'資料の葉の展開期':'葉のない時期';
+ }else if(a.persistence==='summerFadingCrown'){
+  density=[0,0,.35,.8,1,1,.6,.25,0,0,0,0][m];scale=month===3?.5:month===4?.8:1;
+  phase=density===0?'根と地表の短い株元で休眠':month>=7?'花後の夏から葉が枯れる時期（表示目安）':'春の葉と初夏の花（表示目安）';
  }else if(a.persistence==='coolSeasonAnnual'){
   const first=flowerMonths[0]||5,last=flowerMonths.at(-1)||6;
   density=bloom?1:month>last&&month<10?0:.60;
