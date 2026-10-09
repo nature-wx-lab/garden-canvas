@@ -1,8 +1,9 @@
+import { EXPANDED_CATALOG } from './catalog-data.js?v=0.4.0';
 // Public botanical facts; monthly boundaries and procedural geometry are display conventions.
-export const CATALOG_VERSION='2026-10-09.1';
+export const CATALOG_VERSION='2026-10-10.1';
 const nc='https://plants.ces.ncsu.edu/plants/';
 const mo='https://plantfinder.mobot.org/PlantFinderDetails.aspx?taxonid=';
-export const CATALOG={
+const BASE_CATALOG={
  maple:{label:'イロハモミジ',latin:'Acer palmatum',form:'maple',group:'木',leaf:'deciduous',height:[4.57,7.62],spread:[3.05,7.62],bloom:[],flower:'#b77250',sun:['part'],moisture:['moist'],growth:'遅い〜中程度（種の情報。品種差あり）',season:'秋の葉色・冬の枝姿',care:'木漏れ日と適度な湿り、排水を好み、乾燥風や葉焼けに注意。剪定の頻度は未算定。',source:nc+'acer-palmatum/',publisher:'NC State Extension',bloomText:'花は春。鑑賞表示は葉と枝を中心に表現。'},
  olive:{label:'オリーブ',latin:'Olea europaea',form:'olive',group:'木',leaf:'evergreen',height:[6.10,9.14],spread:[4.57,7.62],bloom:[],flower:'#e5e0bc',sun:['sun'],moisture:['drained'],growth:'遅い（種の情報。品種差あり）',season:'通年の銀緑の葉',care:'日なたと排水のよい土を好みます。小さく維持できる寸法・剪定頻度は未検証です。耐寒性は品種・地域で確認してください。',source:nc+'olea-europaea/',publisher:'NC State Extension',bloomText:'資料では夏に小さな花。初期モデルでは花・実を省略。'},
  rose:{label:'バラ ザ・フェアリー',latin:"Rosa 'The Fairy'",form:'rose',group:'低木',leaf:'deciduous',height:[.76,.91],spread:[.61,.91],bloom:[5,6,7,8,9,10],flower:'#d98c9e',sun:['sun','part'],moisture:['moist'],growth:'中程度（年次量は未確認）',season:'小さなピンクの八重花',care:'サイズを整える剪定は冬の終わり〜早春。日なたでよく育ちます。時期は現地の芽吹きに合わせます。',source:nc+'rosa-the-fairy/',publisher:'NC State Extension',bloomText:'資料は5月〜霜まで。表示は5〜10月に整理。'},
@@ -14,6 +15,9 @@ export const CATALOG={
  grass:{label:'パニカム ヘビーメタル',latin:"Panicum virgatum 'Heavy Metal'",form:'grass',group:'グラス',leaf:'grass',height:[1.22,1.52],spread:[.30,.61],bloom:[7,8,9],flower:'#bb9f9d',sun:['sun','part'],moisture:['moist','drained'],growth:'株立ちし、地下茎で緩やかに広がる。年次数値なし',season:'青灰色の葉・秋冬の穂',care:'冬の終わり〜早春に地際で切り戻す方法。日陰が強いと倒れやすくなります。',source:mo+'251778',publisher:'Missouri Botanical Garden',bloomText:'資料の7〜2月は穂の観賞期を含む。開花表示7〜9月、枯れ穂10〜2月。'},
  sedum:{label:'オータムジョイ',latin:"Hylotelephium 'Herbstfreude'",form:'sedum',group:'宿根草',leaf:'herb',height:[.46,.61],spread:[.46,.61],bloom:[9,10],flower:'#b66b7c',sun:['sun'],moisture:['drained'],growth:'年次の株幅データは未確認',season:'多肉質の葉・秋の平たい花房',care:'排水のよい土と日なたを好みます。多肥や日陰では倒れやすくなります。株分けは春が参考時期。',source:mo+'249042',publisher:'Missouri Botanical Garden',bloomText:'資料で9〜10月。冬は枯れた花房を残す参考表現。'}
 };
+const baseGenres={maple:'庭木',olive:'庭木',rose:'バラ',hydrangea:'庭木',salvia:'宿根草',echinacea:'宿根草',lavender:'宿根草',hosta:'カラーリーフ',grass:'カラーリーフ',sedum:'多肉'};
+for(const [key,p] of Object.entries(BASE_CATALOG))Object.assign(p,{genre:baseGenres[key],aliases:[],colors:[key==='rose'?'pink':'unknown'],visual:'reference',bloomKnown:!!p.bloom.length,sourceChecked:'2026-10-09'});
+export const CATALOG={...BASE_CATALOG,...EXPANDED_CATALOG};
 // Preserve unidentified 0.1 shapes when opening an old file; never assign a species silently.
 export const LEGACY={deciduous:{label:'旧版の落葉樹（種類未指定）',form:'maple',leaf:'deciduous'},evergreen:{label:'旧版の常緑樹（種類未指定）',form:'olive',leaf:'evergreen'},flower:{label:'旧版の宿根草（種類未指定）',form:'daisy',leaf:'herb'},legacy_grass:{label:'旧版のグラス（種類未指定）',form:'grass',leaf:'grass'}};
 export const plantInfo=id=>(Object.hasOwn(CATALOG,id)?CATALOG[id]:null)||{...(Object.hasOwn(LEGACY,id)?LEGACY[id]:{}),height:null,spread:null,bloom:[],flower:'#c28cb0',sun:[],moisture:[],growth:'種類未指定',care:'カタログから実在植物を選び直せます。',source:null,season:'旧版の配置',bloomText:'植物の種類が未確認です。'};

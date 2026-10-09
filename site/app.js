@@ -1,6 +1,7 @@
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.3.1';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, stateAt, budget, calendar, observations, TASKS } from './model.js?v=0.3.1';
-import { createScene } from './scene.js?v=0.3.1';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.4.0';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.4.0';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, stateAt, budget, calendar, observations, TASKS } from './model.js?v=0.4.0';
+import { createScene } from './scene.js?v=0.4.0';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
@@ -13,12 +14,31 @@ function button(text,action){const b=el('button',text);b.addEventListener('click
 function options(id,values){$(id).replaceChildren(...values.map(([value,text])=>{const o=el('option',text);o.value=value;return o;}));}
 function editor(id){for(const b of document.querySelectorAll('[data-editor]')){const active=b.dataset.editor===id;b.setAttribute('aria-pressed',String(active));$(b.dataset.editor).hidden=!active;}}
 function insight(id){for(const b of document.querySelectorAll('[data-insight]')){const active=b.dataset.insight===id;b.setAttribute('aria-pressed',String(active));$(b.dataset.insight).hidden=!active;}}
-function sourceCard(target,kind){const info=plantInfo(kind),box=$(target);box.replaceChildren(el('strong',info.label),el('p',info.latin||'種類未指定'));
-  if(info.height)box.append(el('p',`成株：高さ ${info.height.join('〜')}m ／ 幅 ${info.spread.join('〜')}m`));
-  box.append(el('p',`生育：${info.growth}`),el('p',info.bloomText),el('p',info.care));
+function sourceCard(target,kind){const info=plantInfo(kind),box=$(target);box.replaceChildren(el('strong',info.label),el('p',info.latin||'学名未確認'));
+  box.append(el('p',`資料の高さ：${info.height?info.height.join('〜')+'m':'未確認'} ／ 幅：${info.spread?info.spread.join('〜')+'m':'未確認'}`));
+  box.append(el('p',info.bloomText),el('p',info.care));
+  const months=el('div',undefined,'phenology');months.setAttribute('aria-label','12か月の開花参考');
+  for(let month=1;month<=12;month++){const phase=seasonAt(info,month),cell=button(String(month),()=>{doc.view.month=month;if(preview)preview.view.month=month;calendarMonth=month;sync();message(`${info.label}・${month}月：${phase.label}`);});cell.dataset.phase=phase.bloom?'flower':phase.known?'outside':'unknown';cell.title=`${month}月：${phase.label}`;cell.setAttribute('aria-label',cell.title);months.append(cell);}box.append(months);
+  box.append(el('p',info.form==='unmodeled'?'外観は未対応です。配置すると寸法の枠を表示します。':'参考3D。葉や花の形は模式表現で、品種固有の実物との一致は未検証です。','hint'));
   for(const [url,title] of [[info.source,info.publisher],[info.growthSource,'RHS 成株到達の資料']])if(url){const a=el('a',title+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';box.append(a,el('br'));}
-  box.append(el('p',`資料確認 ${CATALOG_VERSION.slice(0,10)}。海外の目安。日本の地域別予測ではありません。`,'hint'));
+  if(info.source)box.append(el('p',`資料確認 ${info.sourceChecked||CATALOG_VERSION.slice(0,10)}。花期は資料の地域と栽培条件による目安です。`,'hint'));
+  else box.append(el('p','名称を収録済み。植物属性は公開資料で確認するまで空欄にしています。','hint'));
 }
+let catalogIndex=0;
+function drawCatalog(){
+  const genre=$('catalog-filter').value,results=searchCatalog(CATALOG,{query:$('catalog-search').value,genre,color:$('catalog-color').value,status:$('catalog-status').value}),page=catalogPage(results,catalogIndex);catalogIndex=page.index;
+  $('catalog-count').textContent=`${page.total.toLocaleString('ja-JP')}件${page.total?' ・ '+(page.index*24+1)+'〜'+Math.min(page.total,(page.index+1)*24):''}`;
+  $('catalog-page').textContent=`${page.index+1} / ${page.pages}`;$('catalog-prev').disabled=page.index===0;$('catalog-next').disabled=page.index===page.pages-1;$('rose-guide').hidden=genre!=='バラ';
+  $('catalog').replaceChildren(...page.entries.map(([k,v])=>{const b=button('',()=>{resetMode();addKind=k;setMode('add');sourceCard('catalog-info',k);$('catalog-info').closest('details').open=true;message(v.form==='unmodeled'?'庭をクリックすると寸法枠を配置します。植物の外観は未対応です。':'庭をクリックして参考モデルを配置できます。');});b.dataset.kind=k;b.dataset.form=v.form;const swatch=el('span',undefined,'swatch');swatch.dataset.color=(v.colors||['unknown'])[0];b.append(swatch,el('strong',v.label),el('small',`${v.genre} · ${v.form==='unmodeled'?'寸法枠':'参考3D'}`));return b;}));
+  if(!page.total)$('catalog').append(el('p','該当する植物がありません。検索語や絞り込みを変えてください。','hint'));setMode(mode);
+}
+function drawReplacement(kind=selectedPlant()?.kind){
+  const matches=searchCatalog(CATALOG,{query:$('replacement-search').value}),items=matches.slice(0,40);
+  if(kind&&Object.hasOwn(CATALOG,kind)&&!items.some(([k])=>k===kind))items.unshift([kind,CATALOG[kind]]);
+  options('replacement',items.map(([k,v])=>[k,v.label]));if(kind)$('replacement').value=kind;
+  $('replacement-count').textContent=`${matches.length}件${matches.length>40?'。先頭40件を表示。名前で絞り込めます。':''}`;
+}
+
 function checkpoint(){history.push(clone(doc));if(history.length>40)history.shift();future=[];}
 function mutate(fn,text,allowPreview=false){if(preview&&!allowPreview){message('交換プレビューを採用するか、元に戻ってから編集してください。');return false;}try{const next=clone(doc);fn(currentPlan(next),next);const checked=validateDocument(next);checkpoint();doc=checked;resetMode();sync();message(text);return true;}catch(e){message(e.message||'入力を確認してください。庭は変更していません。');return false;}}
 function withPlant(fn,text,allowLocked=false){return mutate(p=>{const target=p.plants.find(p=>p.id===selected);if(!target)throw new Error('先に植物を選んでください。');if(target.locked&&!allowLocked)throw new Error('固定を解除してから編集してください。');fn(target,p);},text);}
@@ -32,9 +52,9 @@ function metrics(target,items){$(target).replaceChildren(...items.map(([value,la
 function table(headers,rows){const t=el('table'),head=el('thead'),tr=el('tr');headers.forEach(h=>tr.append(el('th',h)));head.append(tr);const body=el('tbody');rows.forEach(row=>{const r=el('tr');row.forEach(c=>r.append(el('td',c)));body.append(r);});t.append(head,body);return t;}
 function itemRow(text,remove){const row=el('div',undefined,'item-row');row.append(el('span',text),button('削除',remove));return row;}
 function syncSelected(){const p=selectedPlant();$('no-selection').hidden=!!p;$('selected-fields').hidden=!p;if(!p)return;const s=stateAt(p,shown().view),info=plantInfo(p.kind);$('selected-name').textContent=`#${p.id} ${info.label}`;$('lock').textContent=p.locked?'固定を解除':'固定する';$('lock').setAttribute('aria-pressed',String(p.locked));
-  $('plant-state').textContent=!s.present?'この月はまだ植え付け前です。':`表示：高さ ${s.height.toFixed(2)}m・幅 ${s.spread.toFixed(2)}m ／ 植えて ${s.age.toFixed(1)}年。${s.unsupported?'目標が主枝より低いため剪定形状は未対応。':s.last?'最後の剪定・切り戻し：'+Math.floor(s.last.at/12)+'年経過時の '+(s.last.at%12+1)+'月。':''}`;
+  $('plant-state').textContent=!s.present?(s.expired?'一年草の参考表示は植え付け後12か月までです。植え直す場合は別の株を追加してください。':'この月はまだ植え付け前です。'):`表示：高さ ${s.height.toFixed(2)}m・幅 ${s.spread.toFixed(2)}m ／ 植えて ${s.age.toFixed(1)}年。${s.unsupported?'目標が主枝より低いため剪定形状は未対応。':s.last?'最後の剪定・切り戻し：'+Math.floor(s.last.at/12)+'年経過時の '+(s.last.at%12+1)+'月。':''}`;
   for(const [id,value] of Object.entries({height:p.height,spread:p.spread,'leaf-height':p.leafHeight,price:p.price,'plant-x':p.x,'plant-z':p.z,'start-year':Math.floor(p.start/12),'start-month':p.start%12+1,role:p.role,'scenario-year':p.scenario?.year||3,'future-height':p.scenario?.height??p.height,'future-spread':p.scenario?.spread??p.spread,'future-leaf':p.scenario?.leafHeight??p.leafHeight,'target-height':p.management?.height??p.height,'target-spread':p.management?.spread??p.spread,'prune-method':p.management?.method||'thin',recovery:p.management?.recovery||6}))$(id).value=value??'';
-  $('replacement').value=Object.hasOwn(CATALOG,p.kind)?p.kind:'salvia';$('care-advice').textContent=info.care;
+  drawReplacement(Object.hasOwn(CATALOG,p.kind)?p.kind:'salvia');$('care-advice').textContent=info.care;
   $('plant-tasks').replaceChildren(...p.tasks.map(t=>itemRow(`${t.month}月 ${TASKS[t.type]} ×${t.count} ／ ${t.repeat==='first'?'初年度':'毎年'} ／ ${t.min===null?'時間未入力':time(t.min,t.max)}`,()=>withPlant(p=>{p.tasks=p.tasks.filter(x=>x.id!==t.id);},'手入れ予定を削除しました。',true))));sourceCard('selected-source',p.kind);
 }
 function syncGarden(){const p=plan();for(const id of ['width','depth','sun','moisture','prep'])$(id).value=p[id];$('shape').value=['rectangle','lshape'].find(k=>JSON.stringify(outlineFor(k,p.width,p.depth))===JSON.stringify(p.outline))||'custom';p.hours.forEach((h,i)=>$(`hours-${i}`).value=h??'');
@@ -72,9 +92,12 @@ function pick(point){if(preview){if(point.id)select(point.id);return;}if(['outli
 }
 function bind(){
   for(const b of document.querySelectorAll('[data-editor]'))b.addEventListener('click',()=>editor(b.dataset.editor));for(const b of document.querySelectorAll('[data-insight]'))b.addEventListener('click',()=>insight(b.dataset.insight));
-  options('replacement',Object.entries(CATALOG).map(([k,v])=>[k,v.label]));for(const id of ['start-month','task-month'])options(id,Array.from({length:12},(_,i)=>[i+1,`${i+1}月`]));for(const id of ['start-year','scenario-year'])options(id,Array.from({length:id==='start-year'?11:10},(_,i)=>[i+(id==='start-year'?0:1),`${i+(id==='start-year'?0:1)}年`]));options('task-type',Object.entries(TASKS));$('task-month').value=6;
+  drawReplacement();$('replacement-search').addEventListener('input',()=>drawReplacement());for(const id of ['start-month','task-month'])options(id,Array.from({length:12},(_,i)=>[i+1,`${i+1}月`]));for(const id of ['start-year','scenario-year'])options(id,Array.from({length:id==='start-year'?11:10},(_,i)=>[i+(id==='start-year'?0:1),`${i+(id==='start-year'?0:1)}年`]));options('task-type',Object.entries(TASKS));$('task-month').value=6;
   for(let i=0;i<12;i++){const label=el('label',`${i+1}月 (時間)`),input=el('input');input.id=`hours-${i}`;input.type='number';input.min=0;input.max=744;input.step=.25;input.placeholder='未設定';label.append(input);$('hours-inputs').append(label);}
-  function catalog(){const filter=$('catalog-filter').value;$('catalog').replaceChildren(...Object.entries(CATALOG).filter(([,v])=>filter==='all'||v.group===filter||filter==='低木'&&v.group==='小低木').map(([k,v])=>{const b=button('',()=>{resetMode();addKind=k;setMode('add');sourceCard('catalog-info',k);message('庭の空いている場所をクリックして配置してください。');});b.dataset.kind=k;b.dataset.form=v.form;b.append(el('span',undefined,'swatch'),el('strong',v.label),el('small',v.group));return b;}));setMode(mode);}$('catalog-filter').addEventListener('change',catalog);catalog();sourceCard('catalog-info','salvia');
+  $('catalog-total').textContent=`${Object.keys(CATALOG).length.toLocaleString('ja-JP')}件`;
+  options('catalog-filter',[['all','10ジャンルすべて'],...GENRES.map(g=>[g,`${g} (${Object.values(CATALOG).filter(p=>p.genre===g).length})`])]);options('catalog-color',[['all','花色すべて'],...Object.entries(COLORS)]);
+  for(const id of ['catalog-filter','catalog-color','catalog-status'])$(id).addEventListener('change',()=>{catalogIndex=0;drawCatalog();});$('catalog-search').addEventListener('input',()=>{catalogIndex=0;drawCatalog();});
+  $('catalog-prev').addEventListener('click',()=>{catalogIndex--;drawCatalog();});$('catalog-next').addEventListener('click',()=>{catalogIndex++;drawCatalog();});drawCatalog();sourceCard('catalog-info','salvia');
   $('orbit').addEventListener('click',()=>{resetMode();message('ドラッグで回転。植物をクリックすると選べます。');});for(const type of ['home','top','eye'])$(`view-${type}`).addEventListener('click',()=>{if(['outline','zone','circle'].includes(mode)){message('形の編集中は真上の視点を使います。');return;}engine?.view(type);});$('focus').addEventListener('click',()=>{engine?.view('focus');if(matchMedia('(max-width:760px)').matches)$('viewport').scrollIntoView({block:'center'});});$('zoom-in').addEventListener('click',()=>engine?.zoom(.8));$('zoom-out').addEventListener('click',()=>engine?.zoom(1.25));
   for(const key of ['month','year','reference','footprints'])$(key).addEventListener(['month','year'].includes(key)?'input':'change',()=>{const value=['month','year'].includes(key)?number(key):$(key).checked;doc.view[key]=value;if(preview)preview.view[key]=value;if(key==='month')calendarMonth=value;sync();});
   for(const name of ['A','B'])$(`plan-${name.toLowerCase()}`).addEventListener('click',()=>{if(preview||!doc.plans[name])return;doc.active=name;selected=null;resetMode();sync();message(`案 ${name}に切り替えました。視点と時間は同じです。`);});

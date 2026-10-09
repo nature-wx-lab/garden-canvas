@@ -1,5 +1,6 @@
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.4.0';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.3.1';
+import { plantInfo, stateAt } from './model.js?v=0.4.0';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -228,8 +229,11 @@ export function plantModel(p,view,detail=1){
   const s=stateAt(p,view),info=plantInfo(p.kind),g=new THREE.Group();g.userData.plantId=p.id;if(!s.present)return g;
   const rand=random(p.id),h=s.height,w=s.spread,lh=s.leafHeight,form=info.form;
   const woody=['maple','olive'].includes(form),flex=woody?.025:form==='grass'?.105:.065,b=batch(g,h,flex,p.id*1.73);
-  const dormant=s.winter&&info.leaf!=='evergreen'&&info.leaf!=='semi',clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
-  if(form==='maple'){mapleModel(b,p,s,view,detail,clipped);
+  const dormant=s.dormant,clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
+  if(form==='unmodeled'){
+    const frame=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({color:'#aeb5a3',wireframe:true,transparent:true,opacity:.42}));frame.position.y=h/2;g.add(frame);g.userData.unmodeled=true;
+  }else if(EXTENDED_FORMS.has(form)){drawBotanical(b,{info,s,p,detail,rand},{bud,cone,flower:petalFlower,shade:palette});
+  }else if(form==='maple'){mapleModel(b,p,s,view,detail,clipped);
   }else if(woody){
     const base=form==='olive'?'#738569':s.autumn?'#ae542a':view.month<5?'#6f8b3f':'#4f7033';
     const forkY=s.trunkHeight,topY=Math.max(forkY,h*.74),trunkColor=form==='olive'?'#807863':'#71664e';
@@ -275,14 +279,15 @@ export function plantModel(p,view,detail=1){
   }else if(form==='hosta'){
     if(!dormant){const count=Math.max(10,Math.round(Math.min(68,Math.max(12,w*w*65))*detail));for(let i=0;i<count;i++){const rand=random(p.id*100003+i*1021+71);
       const a=i*2.399,r=w*.28*Math.sqrt(rand()),x=Math.cos(a)*r,z=Math.sin(a)*r,y=lh*(.3+rand()*.4),length=Math.min(.45,Math.max(.12,w*.38));
-      b.branch([0,0,0],[x,y,z],.004,'#7c9064');b.add('hosta','leaf',palette(rand,'#6b8675',.1),x,y,z,length*.85,length,length,1.04,a,0);
+      b.branch([0,0,0],[x,y,z],.004,'#7c9064');b.add('hosta','leaf',palette(rand,info.leafColor||'#6b8675',.1),x,y,z,length*.85,length,length,1.04,a,0);
+      if(info.variegated)b.add('hosta','leaf','#c3cc93',x,y+.002,z,length*.47,length*.98,length,1.04,a,0);
     }if(s.bloom)for(let i=0;i<5;i++){const x=(rand()-.5)*w*.45,z=(rand()-.5)*w*.45;b.branch([x*.5,0,z*.5],[x,h*.96,z],.003,'#7c9064');for(let j=0;j<7;j++)b.add('petal','petal','#e1dced',x,yClamp(h-j*.026),z,.025,.045,.04,2.7,j*1.9,0);}}
   }else if(form==='grass'){
-    const base=s.winter||s.autumn?'#b3a176':'#749386',count=Math.max(32,Math.round(Math.min(260,Math.max(48,w*w*250))*detail));
+    const base=(info.leaf==='grass'||info.leaf==='herb'||info.leaf==='deciduous')&&(s.winter||s.autumn)?'#b3a176':info.leafColor||'#749386',count=Math.max(32,Math.round(Math.min(260,Math.max(48,w*w*250))*detail));
     for(let i=0;i<count;i++){const rand=random(p.id*100003+i*1021+71);
       const a=i*2.399,r=w*.18*Math.sqrt(rand()),x=Math.cos(a)*r,z=Math.sin(a)*r,height=lh*(.65+rand()*.35),length=height/.9;
       b.add('blade','grass',palette(rand,base,.12),x,0,z,.11,length,Math.min(w*.65,length*.56),.03+rand()*.12,a,0);
-      if((view.month>=7||view.month<=2)&&i%5===0){const top=h*(.78+rand()*.2),xx=x+Math.sin(a)*w*.18,zz=z+Math.cos(a)*w*.18;b.branch([x,0,z],[xx,top,zz],.0014,base,'grass');for(let j=0;j<10;j++){const an=j*2.399,rr=.035+rand()*.045,end=[xx+Math.sin(an)*rr,top-j*.011,zz+Math.cos(an)*rr];b.branch([xx,top-.16,zz],end,.00065,'#a39478','grass');b.add(bud,'seed',palette(rand,'#bfa5a0',.08),...end,.004,.011,.004);}}
+      if((s.bloom||info.leaf==='grass'&&(view.month>=7||view.month<=2))&&i%5===0){const top=h*(.78+rand()*.2),xx=x+Math.sin(a)*w*.18,zz=z+Math.cos(a)*w*.18;b.branch([x,0,z],[xx,top,zz],.0014,base,'grass');for(let j=0;j<10;j++){const an=j*2.399,rr=.035+rand()*.045,end=[xx+Math.sin(an)*rr,top-j*.011,zz+Math.cos(an)*rr];b.branch([xx,top-.16,zz],end,.00065,'#a39478','grass');b.add(bud,'seed',palette(rand,'#bfa5a0',.08),...end,.004,.011,.004);}}
     }
   }else{
     const count=Math.max(8,Math.round(Math.min(110,Math.max(12,w*w*110))*detail)),winterHeads=dormant&&['daisy','sedum'].includes(form),base=form==='lavender'?'#7b8870':'#50713b';

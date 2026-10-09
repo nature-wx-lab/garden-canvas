@@ -9,10 +9,10 @@ import shutil
 import subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
-SITE={'site/index.html','site/404.html','site/styles.css','site/app.js','site/model.js','site/catalog.js','site/scene.js','site/vegetation.js','site/favicon.svg','site/vendor/three.module.js','site/vendor/three.core.js','site/vendor/OrbitControls.js','site/vendor/LICENSE.txt'}
+SITE={'site/index.html','site/404.html','site/styles.css','site/app.js','site/model.js','site/catalog.js','site/catalog-data.js','site/catalog-search.js','site/botanical-models.js','site/scene.js','site/vegetation.js','site/favicon.svg','site/vendor/three.module.js','site/vendor/three.core.js','site/vendor/OrbitControls.js','site/vendor/LICENSE.txt'}
 ASSETS={'site/textures/leafy_grass_diff_1k.jpg','site/textures/leafy_grass_nor_gl_1k.jpg','site/textures/brown_mud_02_diff_1k.jpg','site/textures/brown_mud_02_nor_gl_1k.jpg'}
 SITE|=ASSETS
-ALLOWED=SITE|{'README.md','.gitignore','package.json','vendor-lock.json','asset-lock.json','scripts/release_check.py','scripts/model.test.mjs','.github/workflows/pages.yml'}
+ALLOWED=SITE|{'README.md','.gitignore','package.json','vendor-lock.json','asset-lock.json','scripts/release_check.py','scripts/model.test.mjs','scripts/catalog.test.mjs','.github/workflows/pages.yml'}
 NAMES={'nature-wx-lab','github-actions[bot]'}
 EMAIL=re.compile(r'[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}')
 SAFE_EMAIL=re.compile(r'(?:[0-9]+\+)?(?:nature-wx-lab|github-actions\[bot\])@users\.noreply\.github\.com')
@@ -56,7 +56,7 @@ def audit():
     version=json.loads((ROOT/'package.json').read_text())['version']
     for name in ['styles.css','app.js']:
         if f'./{name}?v={version}' not in html:fail('cache version missing from HTML')
-    for path in ['site/app.js','site/model.js','site/catalog.js','site/scene.js','site/vegetation.js']:
+    for path in ['site/app.js','site/model.js','site/catalog.js','site/catalog-data.js','site/catalog-search.js','site/botanical-models.js','site/scene.js','site/vegetation.js']:
         source=(ROOT/path).read_text()
         for module in re.findall(r"from ['\"](\./[^'\"]+)['\"]",source):
             if not module.startswith('./vendor/') and not module.endswith('?v='+version):fail('cache version missing from module import')

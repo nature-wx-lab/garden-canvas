@@ -1,4 +1,5 @@
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.3.1';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.4.0';
+import { seasonAt } from './catalog-search.js?v=0.4.0';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -40,14 +41,14 @@ export function makePlant(kind,id,x,z){
 export function replacePlant(p,kind){if(p.locked)throw new Error('固定を解除してから交換してください。');const next=makePlant(kind,p.id,p.x,p.z);next.start=p.start;next.role=p.role;return next;}
 export function editSize(p,height,spread,leafHeight){const next=clone(p);if(height!==p.height||spread!==p.spread||leafHeight!==p.leafHeight){next.price=null;next.scenario=null;next.management=null;}Object.assign(next,{height,spread,leafHeight});return next;}
 export function taskEvents(p,year){
-  const result=[];for(const t of p.tasks){const at=year*12+t.month-1;if(at<p.start||t.repeat==='first'&&at>=p.start+12)continue;result.push({...t,at,plantId:p.id,kind:p.kind});}return result;
+  const result=[];for(const t of p.tasks){const at=year*12+t.month-1;if(at<p.start||plantInfo(p.kind).life==='annual'&&at>=p.start+12||t.repeat==='first'&&at>=p.start+12)continue;result.push({...t,at,plantId:p.id,kind:p.kind});}return result;
 }
 export function stateAt(p,view){
-  const age=dateIndex(view)-p.start,info=plantInfo(p.kind),present=age>=0;
+  const age=dateIndex(view)-p.start,info=plantInfo(p.kind),expired=info.life==='annual'&&age>=12,present=age>=0&&!expired;
   let height=p.height,spread=p.spread,leafHeight=p.leafHeight;
   let basis=p.scenario?'自分の成長シナリオ':'年次成長は未設定';
   if(p.scenario){const t=Math.max(0,Math.min(1,age/(p.scenario.year*12)));height+=(p.scenario.height-height)*t;spread+=(p.scenario.spread-spread)*t;leafHeight+=(p.scenario.leafHeight-leafHeight)*t;}
-  if(view.reference&&info.height){height=info.height[1];spread=info.spread[1];leafHeight=height*(p.leafHeight/p.height);basis='資料の成株上限（年数に非対応）';}
+  if(view.reference&&info.height){height=info.height[1];spread=info.spread?.[1]??p.spread;leafHeight=height*(p.leafHeight/p.height);basis=info.spread?'資料の成株上限（年数に非対応）':'資料の高さ上限・幅は入力値';}
   const natural={height,spread,leafHeight},trunkHeight=info.group==='木'||['maple','olive'].includes(info.form)?height*.3:0;
   let last=null,unsupported=false;
   if(p.management&&!view.reference&&present){
@@ -55,7 +56,7 @@ export function stateAt(p,view){
     unsupported=p.management.height<trunkHeight+.15;
     if(last&&!unsupported){const recovery=Math.min(1,(dateIndex(view)-last.at)/p.management.recovery);height=Math.min(height,p.management.height)+(height-Math.min(height,p.management.height))*recovery;spread=Math.min(spread,p.management.spread)+(spread-Math.min(spread,p.management.spread))*recovery;leafHeight=Math.min(leafHeight,height);}
   }
-  return {present,age:Math.max(0,age)/12,height,spread,leafHeight,natural,trunkHeight,basis,last,unsupported,bloom:info.bloom.includes(view.month),winter:[12,1,2].includes(view.month),autumn:[10,11].includes(view.month)};
+  return {present,expired,...seasonAt(info,view.month),age:Math.max(0,age)/12,height,spread,leafHeight,natural,trunkHeight,basis,last,unsupported,bloom:info.bloom.includes(view.month),winter:[12,1,2].includes(view.month)};
 }
 export function budget(plan){const rows=new Map();let total=0,unknown=0,count=0;for(const p of plan.plants){if(p.role!=='new')continue;count++;const key=[p.kind,p.height,p.spread,p.price].join('|');if(!rows.has(key))rows.set(key,{kind:p.kind,height:p.height,spread:p.spread,price:p.price,count:0,total:0});const row=rows.get(key);row.count++;if(p.price===null)unknown++;else{total+=p.price;row.total+=p.price;}}return {total,unknown,count,rows:[...rows.values()]};}
 export function calendar(plan,year){return Array.from({length:12},(_,i)=>{const events=plan.plants.flatMap(p=>taskEvents(p,year)).filter(t=>t.month===i+1);let min=events.length?plan.prep:0,max=min,unknown=0;for(const e of events){if(e.min===null||e.max===null)unknown++;else{min+=e.min*e.count;max+=e.max*e.count;}}return {month:i+1,events,min,max,unknown,available:plan.hours[i]===null?null:plan.hours[i]*60};});}
@@ -68,7 +69,7 @@ function migrateV1(v){
 }
 export function validateDocument(input){
   const bad=()=>{throw new Error('対応していない庭データ、または範囲外の値です。元の庭は変更していません。');};
-  const v=input?.version===1?migrateV1(input):input;
+  const v=input?.version===1?migrateV1(input):input?.catalogVersion==='2026-10-09.1'?{...input,catalogVersion:CATALOG_VERSION}:input;
   if(!keys(v,['version','modelVersion','catalogVersion','active','plans','view'])||v.version!==2||v.modelVersion!==MODEL_VERSION||v.catalogVersion!==CATALOG_VERSION||!['A','B'].includes(v.active)||!keys(v.plans,['A','B'])||!v.plans.A||!v.plans[v.active])bad();
   const view=v.view;
   if(!keys(view,['month','year','reference','footprints','camera'])||!integer(view.month,1,12)||!integer(view.year,0,10)||typeof view.reference!=='boolean'||typeof view.footprints!=='boolean')bad();
