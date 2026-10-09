@@ -1,8 +1,8 @@
-import {treeProfile} from './tree-profiles.js?v=0.5.0';
-import {drawTree} from './tree-model.js?v=0.5.0';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.5.0';
+import {treeProfile} from './tree-profiles.js?v=0.5.1';
+import {drawTree} from './tree-model.js?v=0.5.1';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.5.1';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.5.0';
+import { plantInfo, stateAt } from './model.js?v=0.5.1';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -41,6 +41,9 @@ function outlineLeaf(points){
  for(let i=0;i<pos.count;i++){const x=pos.getX(i),y=pos.getY(i);pos.setZ(i,.055*x*x+.025*Math.sin(y*4));uv.setXY(i,x+.5,y);}
  g.computeVertexNormals();return keep(g);
 }
+const featherEdge=[[0,0]];
+for(let j=0;j<16;j++){const t=.025+j*.059,width=.28*Math.sin((t+.1)*Math.PI/1.18);featherEdge.push([-.018,t],[-width,t+.029],[-.018,t+.045]);}
+featherEdge.push([0,1]);for(let j=15;j>=0;j--){const t=.025+j*.059,width=.28*Math.sin((t+.1)*Math.PI/1.18);featherEdge.push([.018,t+.045],[width,t+.029],[.018,t]);}shapes.feather=outlineLeaf(featherEdge);
 shapes.heart=outlineLeaf([[0,0],[-.16,-.08],[-.34,.02],[-.44,.23],[-.43,.42],[-.31,.67],[0,1],[.31,.67],[.43,.42],[.44,.23],[.34,.02],[.16,-.08]]);
 shapes.ginkgo=outlineLeaf([[0,0],[-.11,.3],[-.42,.62],[-.55,.86],[-.45,.93],[-.34,.99],[-.18,1],[-.06,.94],[0,.82],[.06,.94],[.18,1],[.34,.99],[.45,.93],[.55,.86],[.42,.62],[.11,.3]]);
 shapes.oak=outlineLeaf([[0,0],[-.18,.12],[-.24,.22],[-.13,.27],[-.34,.38],[-.37,.48],[-.2,.53],[-.36,.67],[-.31,.78],[-.15,.75],[-.15,.92],[0,1],[.15,.92],[.15,.75],[.31,.78],[.36,.67],[.2,.53],[.37,.48],[.34,.38],[.13,.27],[.24,.22],[.18,.12]]);

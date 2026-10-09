@@ -61,7 +61,10 @@ export function drawTree(b,{profile,p,s,detail},kit){
    const t=.04+n/(nodes-1)*.96,center=scale(mix(tip.a,tip.b,t)),angle=tip.angle+(n%2?1:-1)*(1.05+r()*.65);
    const colour=shade(r,base,.12),visible=r()<density;
    if(visible){
-    if(needle){
+    if(leaf==='feather'){
+     // A shoot with opposite flat needles remains legible at garden-view distances.
+     const length=Math.max(.14,w*.10)*(s.leafScale??1);b.add('feather','leaf',colour,...center,length,length,length,1.28,angle,0);
+    }else if(needle){
      const needles=leaf==='pine'?9:leaf==='scale'?6:10;
      for(let j=0;j<needles;j++){
       const a=angle+j*TAU/needles,sz=leaf==='pine'?size*1.4:leaf==='feather'?size*.42:size*.7;

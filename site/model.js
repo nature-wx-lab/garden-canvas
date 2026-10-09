@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.5.0';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.5.0';
-import { seasonAt } from './catalog-search.js?v=0.5.0';
+import {treeProfile} from './tree-profiles.js?v=0.5.1';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.5.1';
+import { seasonAt } from './catalog-search.js?v=0.5.1';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};

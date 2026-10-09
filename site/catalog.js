@@ -1,4 +1,4 @@
-import { EXPANDED_CATALOG, BASE_POPULARITY } from './catalog-data.js?v=0.5.0';
+import { EXPANDED_CATALOG, BASE_POPULARITY } from './catalog-data.js?v=0.5.1';
 // Public botanical facts; monthly boundaries and procedural geometry are display conventions.
 export const CATALOG_VERSION='2026-10-10.2';
 const nc='https://plants.ces.ncsu.edu/plants/';
