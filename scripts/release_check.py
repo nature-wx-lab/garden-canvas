@@ -9,8 +9,10 @@ import shutil
 import subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
-SITE={'site/index.html','site/404.html','site/styles.css','site/app.js','site/model.js','site/catalog.js','site/scene.js','site/favicon.svg','site/vendor/three.module.js','site/vendor/three.core.js','site/vendor/OrbitControls.js','site/vendor/LICENSE.txt'}
-ALLOWED=SITE|{'README.md','.gitignore','package.json','vendor-lock.json','scripts/release_check.py','scripts/model.test.mjs','.github/workflows/pages.yml'}
+SITE={'site/index.html','site/404.html','site/styles.css','site/app.js','site/model.js','site/catalog.js','site/scene.js','site/vegetation.js','site/favicon.svg','site/vendor/three.module.js','site/vendor/three.core.js','site/vendor/OrbitControls.js','site/vendor/LICENSE.txt'}
+ASSETS={'site/textures/leafy_grass_diff_1k.jpg','site/textures/leafy_grass_nor_gl_1k.jpg','site/textures/brown_mud_02_diff_1k.jpg','site/textures/brown_mud_02_nor_gl_1k.jpg'}
+SITE|=ASSETS
+ALLOWED=SITE|{'README.md','.gitignore','package.json','vendor-lock.json','asset-lock.json','scripts/release_check.py','scripts/model.test.mjs','.github/workflows/pages.yml'}
 NAMES={'nature-wx-lab','github-actions[bot]'}
 EMAIL=re.compile(r'[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}')
 SAFE_EMAIL=re.compile(r'(?:[0-9]+\+)?(?:nature-wx-lab|github-actions\[bot\])@users\.noreply\.github\.com')
@@ -27,16 +29,26 @@ def scan(data,label,vendor=False):
     if local_user not in {'','runner','root'} and local_user.casefold() in text.casefold():fail(label+' contains the local account name')
     if not vendor and any(not SAFE_EMAIL.fullmatch(e) for e in EMAIL.findall(text)):fail(label+' contains an unapproved email-like value')
 
+def scan_asset(data,name,assets):
+    item=assets.get(name,{})
+    if hashlib.sha256(data).hexdigest()!=item.get('sha256') or len(data)!=item.get('bytes'):fail('unreviewed image bytes: '+name)
+    if not data.startswith(bytes.fromhex('ffd8ff')) or not data.endswith(bytes.fromhex('ffd9')):fail('invalid JPEG: '+name)
+    # Approved immutable public CC0 assets; still inspect embedded text for private paths/tokens.
+    scan(data.decode('utf-8',errors='ignore').encode('utf-8'),name,True)
+
 def audit():
     tracked=set(git('ls-files','-z').decode().strip('\0').split('\0'))
     if tracked!=ALLOWED:fail('tracked file allowlist mismatch')
     lock=json.loads((ROOT/'vendor-lock.json').read_text())['sha256']
+    assets=json.loads((ROOT/'asset-lock.json').read_text())['assets']
+    if set(assets)!=ASSETS:fail('asset lock allowlist mismatch')
     for name in sorted(ALLOWED):
         path=ROOT/name
         if path.is_symlink() or not path.is_file():fail(name+' is missing or not a regular file')
         data=path.read_bytes()
         if name in lock and hashlib.sha256(data).hexdigest()!=lock[name]:fail(name+' differs from reviewed vendor bytes')
-        scan(data,name,name in lock)
+        if name in ASSETS:scan_asset(data,name,assets)
+        else:scan(data,name,name in lock)
     if (ROOT/'site/index.html').stat().st_size<1000:fail('empty UI')
     html=(ROOT/'site/index.html').read_text()
     for rule in ["connect-src 'none'","script-src 'self'","object-src 'none'","base-uri 'none'","form-action 'none'"]:
@@ -44,7 +56,7 @@ def audit():
     version=json.loads((ROOT/'package.json').read_text())['version']
     for name in ['styles.css','app.js']:
         if f'./{name}?v={version}' not in html:fail('cache version missing from HTML')
-    for path in ['site/app.js','site/model.js','site/catalog.js','site/scene.js']:
+    for path in ['site/app.js','site/model.js','site/catalog.js','site/scene.js','site/vegetation.js']:
         source=(ROOT/path).read_text()
         for module in re.findall(r"from ['\"](\./[^'\"]+)['\"]",source):
             if not module.startswith('./vendor/') and not module.endswith('?v='+version):fail('cache version missing from module import')
@@ -60,7 +72,8 @@ def audit():
             if name not in ALLOWED or mode!='100644' or kind!='blob':fail('history file allowlist mismatch')
             data=git('cat-file','blob',oid)
             if name in lock and hashlib.sha256(data).hexdigest()!=lock[name]:fail('unreviewed vendor version in history')
-            scan(data,'history:'+name,name in lock)
+            if name in ASSETS:scan_asset(data,name,assets)
+            else:scan(data,'history:'+name,name in lock)
     print(f'RELEASE_CHECK_OK files={len(ALLOWED)} site_files={len(SITE)} commits={len(commits)}')
 
 def main():

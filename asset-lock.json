@@ -1,0 +1,46 @@
+{
+  "license": "CC0-1.0",
+  "licenseUrl": "https://polyhaven.com/license",
+  "assets": {
+    "site/textures/leafy_grass_diff_1k.jpg": {
+      "sha256": "cfa40bc9d9417d1852db8753a8d5917f110c40101179f63543c382e39bc05e4a",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/leafy_grass/leafy_grass_diff_1k.jpg",
+      "page": "https://polyhaven.com/a/leafy_grass",
+      "author": "Charlotte Baglioni",
+      "bytes": 1195394,
+      "width": 1024,
+      "height": 1024,
+      "format": "jpeg"
+    },
+    "site/textures/leafy_grass_nor_gl_1k.jpg": {
+      "sha256": "832328216adc0a7e1f70a31d5ee48c9ab7f2152d83816122736cf42ac4b2ebd6",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/leafy_grass/leafy_grass_nor_gl_1k.jpg",
+      "page": "https://polyhaven.com/a/leafy_grass",
+      "author": "Charlotte Baglioni",
+      "bytes": 1466049,
+      "width": 1024,
+      "height": 1024,
+      "format": "jpeg"
+    },
+    "site/textures/brown_mud_02_diff_1k.jpg": {
+      "sha256": "058b6f12493305ec6b47cb5ea77f013c9e7e58216b34af3700a3d3d7d821732d",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brown_mud_02/brown_mud_02_diff_1k.jpg",
+      "page": "https://polyhaven.com/a/brown_mud_02",
+      "author": "Rob Tuytel",
+      "bytes": 527741,
+      "width": 1024,
+      "height": 1024,
+      "format": "jpeg"
+    },
+    "site/textures/brown_mud_02_nor_gl_1k.jpg": {
+      "sha256": "9ca6f68d25599c98ba5e594df221f5653d93faceda1ba26a0babb1143e8c615f",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brown_mud_02/brown_mud_02_nor_gl_1k.jpg",
+      "page": "https://polyhaven.com/a/brown_mud_02",
+      "author": "Rob Tuytel",
+      "bytes": 1397011,
+      "width": 1024,
+      "height": 1024,
+      "format": "jpeg"
+    }
+  }
+}

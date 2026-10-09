@@ -4,7 +4,7 @@
 
 公開URL: https://nature-wx-lab.github.io/garden-canvas/
 
-## 試作 0.2 の範囲
+## 試作 0.3 の範囲
 
 同じ庭を3Dで眺めながら、植物・季節・将来サイズ・購入予算・手入れを試す庭プランニングツールです。サーバーへの庭データ送信はありません。
 
@@ -17,6 +17,12 @@
 - 月別の手入れ、初年度のみの作業、所要時間の幅、水やり回数、月ごとに使える時間。準備・片付けは作業のある月に1回加算する利用者設定。時間超過でも作業は勝手に削除しません。
 - 条件に合う植物候補から配置または交換を試せます。開花の参考、株幅の重なり、外周・外構への張り出しを表示します。美しさや栽培可否の採点ではありません。
 - JSONで案・個体・予定・視点を保存・復元。0.1の保存ファイルも読めます。旧版の4形状は種類未指定のまま保持し、実在品種へ勝手に読み替えません。
+
+## 0.3 の見た目と動き
+
+曲面の葉と花びら、細い枝・花茎、葉脈や樹皮の陰影、個体内の色の揺らぎを追加しました。風は株元を固定し、枝先のしなりと葉の細かな動きを組み合わせます。同じ変形を影にも適用します。芝・土は実素材の色と法線マップに小さな立体形状を重ねています。
+
+風は「なし／そよ風／やや強め」、光は「日中／夕方」で切り替えられます。実際の風速・日照の計算ではありません。動きを減らす端末設定では風なしで開始し、非表示・画面外では描画を休止。通常最大30fps、40株超では最大24fpsとし、多数の植物は細部の密度を落とします。配置個体は省略しません。風と光は鑑賞用設定で、保存JSONの内容には含めません。
 
 ## 成長・手入れ・3Dの限界
 
@@ -47,7 +53,7 @@
 
 描画ライブラリを同梱し、外部CDN・フォント・計測タグは読み込みません。Content Security Policyのmeta指定で外部通信、埋込み、フォーム送信等を制限します。GitHub Pagesではアプリが任意のHTTPセキュリティヘッダーを設定できず、metaはHTTPヘッダーの完全な代替ではありません。フレーム埋込み制限はこの配信方式では保証しません。秘密情報やクラウド保存の追加には別途設計が必要です。
 
-専用の独立リポジトリを配信元とし、`site/` 内の許可した12ファイルだけをPages artifactに含めます。公開ソース19ファイルと全到達可能コミットのファイル・氏名・メール・メッセージを `scripts/release_check.py` で検査。許可外ファイル・個人メール形式・ローカルパス・主要な資格情報形式は配信を停止します。未知の秘密や全個人情報を静的検査で完全検出できるものではなく、差分の目視確認も必要です。
+専用の独立リポジトリを配信元とし、`site/` 内の許可した17ファイルだけをPages artifactに含めます。公開ソース25ファイルと全到達可能コミットのファイル・氏名・メール・メッセージを `scripts/release_check.py` で検査。許可外ファイル・個人メール形式・ローカルパス・主要な資格情報形式は配信を停止します。未知の秘密や全個人情報を静的検査で完全検出できるものではなく、差分の目視確認も必要です。
 
 author・committerは `nature-wx-lab` と確認済みGitHub noreplyを使用し、個人のGit既定値を継承しません。Actionsは検査時に読み取り権限だけ、配信ジョブにPages用の権限だけを付与します。Actionsは固定commitを参照し、独自の長期認証情報は不要です。
 
@@ -59,15 +65,17 @@ node --test scripts/model.test.mjs
 python3 scripts/release_check.py
 ```
 
-変更はこの専用リポジトリで行い、許可ファイルだけを明示的にstageします。公開更新の依頼を確認し、UI検証とリリース検査後にmainへpushするとActionsが検査・配信します。モデル検査は旧版互換、入出力境界、時間軸・剪定イベント、費用未入力、作業時間、区画・外構を対象とします。ローカル／公開の代表操作、PC／スマートフォン、配信12ファイルのbytes、配信commit、Content-Type、404も確認します。
+変更はこの専用リポジトリで行い、許可ファイルだけを明示的にstageします。公開更新の依頼を確認し、UI検証とリリース検査後にmainへpushするとActionsが検査・配信します。モデル検査は旧版互換、入出力境界、時間軸・剪定イベント、費用未入力、作業時間、区画・外構を対象とします。ローカル／公開の代表操作、PC／スマートフォン、配信17ファイルのbytes、配信commit、Content-Type、404も確認します。
 
 ## 出典と依存
 
-植物資料のURLと確認日は `site/catalog.js` にまとめ、画面にも表示します。NC State Extension、Missouri Botanical Garden、RHSの寸法・季節・管理情報を参照し、日本語で簡潔に整理しています。第三者の写真・3Dモデルは使っていません。
+植物資料のURLと確認日は `site/catalog.js` にまとめ、画面にも表示します。NC State Extension、Missouri Botanical Garden、RHSの寸法・季節・管理情報を参照し、日本語で簡潔に整理しています。植物は独自の手続き的3Dで、地面にはPoly HavenのCC0素材を同梱しています。
 
 - [NC State Extension Plant Toolbox](https://plants.ces.ncsu.edu/)
 - [Missouri Botanical Garden Plant Finder](https://plantfinder.mobot.org/)
 - [RHS 植物資料](https://www.rhs.org.uk/plants)
+
+地面の色・OpenGL法線マップは [Leafy Grass](https://polyhaven.com/a/leafy_grass)（Charlotte Baglioni、実寸幅2m）と [Brown Mud 02](https://polyhaven.com/a/brown_mud_02)（Rob Tuytel、幅1.3m）の1K JPEGです。[Poly HavenのCC0ライセンス](https://polyhaven.com/license)で再配布し、元画像は改変していません。4枚合計約4.6MB。元URL・作者・SHA-256を `asset-lock.json` に固定し、画像の差し替えも公開検査の対象にします。実行時にPoly Havenへ接続することはありません。
 
 Three.js 0.186.1は公式npm配布のSHA-512 integrityを確認したものです。WebGLモジュール2本、OrbitControls、MITライセンスを同梱。OrbitControlsのimportだけをローカル参照に変更し、採用bytesのSHA-256は `vendor-lock.json` に固定しています。
 

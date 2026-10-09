@@ -23,3 +23,29 @@ test('unachievable cut below structural trunk remains natural and explicitly uns
 test('work estimate retains unknown durations, sums water visits and preparation only once per active month',()=>{const d=fixture(),p=d.plans.A.plants[0];p.tasks=[task('water',6,'annual',2,4,10),{...task('feed',6,'annual',null,null),id:2}];d.plans.A.prep=15;d.plans.A.hours[5]=.5;const c=calendar(d.plans.A,0);assert.equal(c[5].min,35);assert.equal(c[5].max,55);assert.equal(c[5].unknown,1);assert.equal(c[5].available,30);assert.equal(c[4].min,0);assert.equal(p.tasks.length,2);});
 test('A/B deep copy can be edited without mutating original and preserves shared view',()=>{const d=fixture();d.plans.B=clone(d.plans.A);d.plans.B.plants[0].height=2;d.active='B';assert.equal(d.plans.A.plants[0].height,1.5);assert.equal(validateDocument(d).view.month,6);});
 test('occupancy ignores not-yet-planted plants and distinguishes overlap from viability',()=>{const d=fixture();d.plans.A.plants.push(makePlant('rose',2,2.1,2));assert.equal(observations(d.plans.A,view(0,6)).overlap,1);d.plans.A.plants[1].start=12;assert.equal(observations(d.plans.A,view(0,6)).overlap,0);});
+
+// Render-model invariants: seasons must not relocate woody branches or corrupt geometry.
+import {plantModel,sharedGeometry} from '../site/vegetation.js';
+const disposeModel=g=>g.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.isInstancedMesh)o.dispose();});
+test('all plant forms produce finite independent wind geometry in summer and winter',()=>{
+  for(const kind of ['maple','olive','rose','hydrangea','salvia','echinacea','lavender','hosta','grass','sedum','deciduous','evergreen','flower','legacy_grass'])for(const month of [1,8]){
+    const p=makePlant(kind,17,2,2),g=plantModel(p,view(0,month));
+    assert.equal(g.userData.plantId,p.id);
+    g.traverse(o=>{if(!o.isInstancedMesh)return;assert.ok(o.count>0);assert.ok([...o.instanceMatrix.array].every(Number.isFinite));assert.ok([...o.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...o.geometry.attributes.normal.array].every(Number.isFinite));assert.equal(o.geometry.attributes.gardenWind.count,o.count);assert.ok(o.customDepthMaterial);assert.ok(Number.isFinite(o.boundingSphere.radius));});disposeModel(g);
+  }
+  for(const geometry of sharedGeometry)assert.equal(geometry.attributes.gardenWind,undefined);
+});
+test('leaf loss preserves the same woody branch structure',()=>{
+  for(const kind of ['maple','olive','rose','hydrangea']){
+    const p=makePlant(kind,9,2,2),summer=plantModel(p,view(0,8)),winter=plantModel(p,view(0,1));
+    const branches=g=>g.children.filter(o=>o.material?.customProgramCacheKey()==='garden-0.3-wood').map(o=>[...o.instanceMatrix.array]);
+    assert.deepEqual(branches(summer),branches(winter),kind);disposeModel(summer);disposeModel(winter);
+  }
+});
+test('dense-garden detail reduction retains plant identity and reduces geometry instances',()=>{
+  for(const kind of ['maple','hydrangea','grass']){
+    const p={...makePlant(kind,21,2,2),height:2,spread:2,leafHeight:1.2},normal=plantModel(p,view(0,8),1),reduced=plantModel(p,view(0,8),.42);
+    const count=g=>g.children.reduce((n,o)=>n+(o.count||0),0);
+    assert.equal(normal.userData.plantId,reduced.userData.plantId);assert.ok(count(reduced)>0&&count(reduced)<count(normal));disposeModel(normal);disposeModel(reduced);
+  }
+});

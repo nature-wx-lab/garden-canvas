@@ -1,0 +1,202 @@
+import * as THREE from './vendor/three.module.js';
+import { plantInfo, stateAt } from './model.js?v=0.3.0';
+
+// Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
+export const sharedGeometry=new Set(),sharedMaterials=new Set();
+export const wind={time:{value:0},strength:{value:1}};
+export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^=s>>>17;s^=s<<5;return (s>>>0)/4294967296;};}
+const keep=g=>{sharedGeometry.add(g);return g;};
+const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
+const shapes={};
+function curvedLeaf(type){
+  const positions=[],uvs=[],indices=[],rows=type==='maple'?8:6,cols=4;
+  for(let i=0;i<=rows;i++){
+    const t=i/rows;
+    let width=Math.pow(Math.sin(Math.PI*t),.85)*.43;
+    if(type==='narrow')width*=.2;
+    if(type==='petal')width=Math.pow(Math.sin(Math.PI*t),.58)*.4;
+    if(type==='hosta')width=Math.pow(Math.sin(Math.PI*t),.64)*.53;
+    if(type==='maple')width=(.12+.76*Math.pow(Math.sin(Math.PI*t),.8))*(.6+.4*Math.cos((t-.43)*Math.PI*7))*.56;
+    if(type==='blade')width=(1-t)*.055;
+    for(let j=0;j<=cols;j++){
+      const u=j/cols*2-1,x=u*width;
+      const cup=(type==='petal'?.18:type==='hosta'?.2:.12)*u*u*Math.sin(Math.PI*t);
+      const bend=type==='blade'?.62*t*t:type==='petal'?.28*t*t:.23*t*t;
+      positions.push(x,t,bend+cup+.014*Math.cos(t*24+Math.abs(u)*8)*Math.abs(u));uvs.push(j/cols,t);
+      if(i<rows&&j<cols){const a=i*(cols+1)+j,b=a+cols+1;indices.push(a,b,a+1,b,b+1,a+1);}
+    }
+  }
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();return keep(g);
+}
+for(const type of ['leaf','narrow','maple','hosta','petal','blade'])shapes[type]=curvedLeaf(type);
+const windGLSL=`
+attribute vec4 gardenWind;
+uniform float gardenTime;
+uniform float gardenStrength;
+varying vec3 gardenLocal;
+vec3 bendGarden(vec3 p) {
+ float h=max(gardenWind.x,0.05);
+ float level=clamp(p.y/h,0.0,1.15);
+ float phase=gardenWind.z;
+ vec2 root=modelMatrix[3].xz;
+ float travelling=sin(gardenTime*1.35-root.x*0.38-root.y*0.24);
+ float detail=sin(gardenTime*2.27+phase+p.x*1.8)*0.24;
+ float amplitude=min(h,3.0)*gardenWind.y*gardenStrength;
+ float sway=(travelling+detail)*amplitude*pow(level,1.65);
+ float leafTip=clamp(position.y,0.0,1.0);
+ float flutter=sin(gardenTime*4.1+phase+p.x*9.0+p.z*5.0)*0.005*gardenWind.w*gardenStrength*leafTip*leafTip*level;
+ return p+vec3(sway+flutter,-abs(sway)*0.025,sway*0.42+flutter*0.6);
+}
+`;
+function windShader(shader,kind){
+  shader.uniforms.gardenTime=wind.time;shader.uniforms.gardenStrength=wind.strength;
+  shader.vertexShader=windGLSL+shader.vertexShader;
+  shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>',`
+    vec4 gardenPosition=vec4(transformed,1.0);
+    #ifdef USE_INSTANCING
+      gardenPosition=instanceMatrix*gardenPosition;
+    #endif
+    gardenLocal=gardenPosition.xyz;
+    gardenPosition.xyz=bendGarden(gardenPosition.xyz);
+    vec4 mvPosition=modelViewMatrix*gardenPosition;
+    gl_Position=projectionMatrix*mvPosition;
+  `).replace('#include <worldpos_vertex>',`
+    #if defined(USE_ENVMAP) || defined(DISTANCE) || defined(USE_SHADOWMAP) || defined(USE_TRANSMISSION) || NUM_SPOT_LIGHT_COORDS > 0
+      vec4 worldPosition=modelMatrix*gardenPosition;
+    #endif
+  `);
+  if(kind==='depth')return;
+  shader.fragmentShader='varying vec3 gardenLocal;\n'+shader.fragmentShader;
+  if(['leaf','petal','grass'].includes(kind)){
+    shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+      float fold=abs(vUv.x-0.5)*2.0;
+      float midrib=1.0-smoothstep(0.012,0.025,abs(vUv.x-0.5));
+      float veins=pow(max(0.0,cos((vUv.y-fold*0.33)*75.0)),16.0);
+      float shade=mix(0.77,1.08,fold)*mix(0.85,1.05,vUv.y);
+      diffuseColor.rgb*=shade;
+      diffuseColor.rgb+=diffuseColor.rgb*(midrib*0.23+veins*0.055);
+    `);
+    // A small transmitted-light approximation softens thin leaf undersides.
+    shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+      totalEmissiveRadiance+=diffuseColor.rgb*${kind==='petal'?'0.045':'0.025'};
+    `);
+  }else if(kind==='wood'){
+    shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+      float ridges=sin(vUv.x*71.0+sin(vUv.y*23.0)*0.8)*sin(vUv.x*33.0-vUv.y*4.0);
+      diffuseColor.rgb*=0.84+0.16*ridges;
+    `);
+  }
+}
+const materialCache=new Map();
+function material(kind){
+  if(materialCache.has(kind))return materialCache.get(kind);
+  const m=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:kind==='leaf'?.7:.88,side:THREE.DoubleSide});
+  m.defines={USE_UV:''};m.onBeforeCompile=s=>windShader(s,kind);m.customProgramCacheKey=()=>`garden-0.3-${kind}`;
+  materialCache.set(kind,m);sharedMaterials.add(m);return m;
+}
+const depth=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,side:THREE.DoubleSide});depth.onBeforeCompile=s=>windShader(s,'depth');depth.customProgramCacheKey=()=> 'garden-wind-depth-0.3';sharedMaterials.add(depth);
+const dummy=new THREE.Object3D(),up=new THREE.Vector3(0,1,0),colour=new THREE.Color();
+export function batch(group,height=1,flex=.06,phase=0){
+  const entries=new Map();
+  function push(geometry,kind,matrix,color,flutter=0){
+    const key=geometry.uuid+kind;if(!entries.has(key))entries.set(key,{geometry,kind,items:[],colors:[],wind:[]});const e=entries.get(key);e.items.push(matrix.clone());colour.set(color);e.colors.push(colour.clone());e.wind.push(height,flex,phase,flutter);
+  }
+  function add(shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0){
+    dummy.position.set(x,y,z);dummy.scale.set(sx,sy,sz);dummy.rotation.set(rx,ry,rz,'YXZ');dummy.updateMatrix();push(typeof shape==='string'?shapes[shape]:shape,kind,dummy.matrix,color,['leaf','petal','grass'].includes(kind)?1:0);
+  }
+  function branch(a,b,r,color,kind='wood'){
+    const va=new THREE.Vector3(...a),vb=new THREE.Vector3(...b),dir=vb.clone().sub(va),length=dir.length();if(length<.0001)return;
+    const matrix=new THREE.Matrix4().compose(va.add(vb).multiplyScalar(.5),new THREE.Quaternion().setFromUnitVectors(up,dir.normalize()),new THREE.Vector3(r,length,r));push(stem,kind,matrix,color);
+  }
+  return {add,branch,finish({castShadow=true}={}){for(const e of entries.values()){
+    // Wind parameters belong to this mesh; shared shape buffers remain immutable.
+    const geometry=e.geometry.clone();geometry.setAttribute('gardenWind',new THREE.InstancedBufferAttribute(new Float32Array(e.wind),4));
+    const mesh=new THREE.InstancedMesh(geometry,material(e.kind),e.items.length);e.items.forEach((m,i)=>{mesh.setMatrixAt(i,m);mesh.setColorAt(i,e.colors[i]);});mesh.customDepthMaterial=depth;mesh.castShadow=castShadow;mesh.receiveShadow=true;mesh.computeBoundingSphere();mesh.boundingSphere.radius+=Math.min(height,3)*flex*2+.03;group.add(mesh);
+  }}};
+}
+const palette=(rand,base,variation=.09)=>{const c=new THREE.Color(base);c.offsetHSL((rand()-.5)*.04,(rand()-.5)*.1,(rand()-.5)*variation);return c;};
+function petalFlower(b,x,y,z,r,color,rand,layers=1){
+  for(let layer=0;layer<layers;layer++)for(let k=0;k<(layers>1?7:11);k++){
+    const a=k*Math.PI*2/(layers>1?7:11)+layer*.6,length=r*(1-layer*.19)*(1+(rand()-.5)*.14);
+    b.add('petal','petal',palette(rand,color,.055),x+Math.sin(a)*r*.11,y+layer*r*.07,z+Math.cos(a)*r*.11,length*.37,length,length,Math.PI/2+(layers>1?-.18-layer*.15:.2),a,0);
+  }
+  b.add(layers>1?bud:cone,'seed',layers>1?'#bd9572':'#926025',x,y+(layers>1?.005:r*.14),z,r*.22,r*(layers>1?.09:.35),r*.22);
+}
+export function plantModel(p,view,detail=1){
+  const s=stateAt(p,view),info=plantInfo(p.kind),g=new THREE.Group();g.userData.plantId=p.id;if(!s.present)return g;
+  const rand=random(p.id),h=s.height,w=s.spread,lh=s.leafHeight,form=info.form;
+  const woody=['maple','olive'].includes(form),flex=woody?.025:form==='grass'?.105:.065,b=batch(g,h,flex,p.id*1.73);
+  const dormant=s.winter&&info.leaf!=='evergreen'&&info.leaf!=='semi',clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
+  if(woody){
+    const base=form==='olive'?'#738569':s.autumn?'#ae542a':view.month<5?'#6f8b3f':'#4f7033';
+    const forkY=s.trunkHeight,topY=Math.max(forkY,h*.74),trunkColor=form==='olive'?'#807863':'#71664e';
+    const trunk=[[0,0,0],[-w*.012,forkY*.55,w*.01],[w*.022,forkY,w*.012],[w*.045,topY,-w*.026]];
+    for(let j=1;j<trunk.length;j++)b.branch(trunk[j-1],trunk[j],Math.max(.013,s.natural.height*.016)*(1-(j-1)*.22),trunkColor);
+    const branchCount=form==='olive'?13:12;
+    for(let i=0;i<branchCount;i++){const rand=random(p.id*100003+i*1021+23);
+      const a=i*2.399+rand()*.4,level=(i+.5)/branchCount,crownBase=Math.min(forkY,h*.45),crownH=h-crownBase;
+      const ring=(.85-.45*level)*(clipped?.88:1),x=Math.cos(a)*w*.47*ring,z=Math.sin(a)*w*.47*ring,y=crownBase+crownH*(.25+level*.58);
+      const start=[w*.02*(1-level),forkY+(topY-forkY)*level*.55,0],mid=[x*.45,(start[1]+y)*.48,z*.42];
+      b.branch(start,mid,Math.max(.005,h*.008)*(1-level*.55),trunkColor);b.branch(mid,[x,y,z],Math.max(.003,h*.004),trunkColor);
+      const twigs=Math.max(4,Math.round(Math.min(20,Math.max(6,w*5))*detail));
+      for(let j=0;j<twigs;j++){const rand=random(p.id*100003+i*1021+j*43+5);
+        const ta=j*2.399+rand(),r=Math.sqrt(rand())*w*(.16+level*.04),tx=x+Math.cos(ta)*r,tz=z+Math.sin(ta)*r,ty=Math.min(h-.04,y+(rand()-.2)*crownH*.25);
+        const tip=[tx,ty,tz],joint=[x+(tx-x)*.35,y+(ty-y)*.3,z+(tz-z)*.35];
+        b.branch([x,y,z],joint,Math.max(.0015,h*.0009),trunkColor);b.branch(joint,tip,Math.max(.001,h*.00055),trunkColor);
+        if(dormant)continue;
+        const count=Math.max(8,Math.round(Math.min(30,Math.max(10,w*9))*detail)),leafSize=form==='olive'?.105:.12;
+        for(let k=0;k<count;k++){
+          const t=rand(),aa=k*2.399+ta,rr=Math.sqrt(rand())*Math.min(.22,w*.095),xx=tx+Math.cos(aa)*rr,zz=tz+Math.sin(aa)*rr,yy=Math.min(h-.045,ty+(rand()-.45)*Math.min(.3,crownH*.2));
+          if(clipped&&Math.hypot(xx,zz)>w*.48)continue;
+          const size=leafSize*(.72+rand()*.5);
+          b.add(form==='maple'?'maple':'narrow','leaf',palette(rand,base,.13),xx,yy,zz,size,size, size, -.45+rand()*1.4,aa,rand()*.7-.35);
+        }
+      }
+    }
+  }else if(['rose','hydrangea'].includes(form)){
+    const n=Math.max(6,Math.round(Math.min(60,Math.max(10,w*w*65))*detail)),base=form==='rose'?'#47643a':'#587440';
+    for(let i=0;i<n;i++){const rand=random(p.id*100003+i*1021+41);
+      const a=i*2.399+rand()*.3,r=w*.39*Math.sqrt(rand()),x=Math.cos(a)*r,z=Math.sin(a)*r,y=h*(.52+rand()*.38),origin=[x*.18,0,z*.18];
+      b.branch(origin,[x*.6,y*.48,z*.65],.005,'#687042');b.branch([x*.6,y*.48,z*.65],[x,y,z],.003,'#5e743f');
+      if(dormant)continue;
+      for(let j=0;j<5;j++){
+        const t=.22+j*.14,an=a+j*2.2,sz=(form==='rose'?.07:.16)*(.8+rand()*.3);
+        const lx=x*t+Math.sin(an)*.025,lz=z*t+Math.cos(an)*.025;
+        b.add('leaf','leaf',palette(rand,base),lx,y*t,lz,sz,sz*(form==='rose'?1.4:1.3),sz,-.15+rand()*.5,an,.25);
+        if(form==='rose')for(const sign of [-1,1])b.add('leaf','leaf',palette(rand,base),lx+Math.sin(an+sign*.6)*sz*.45,y*t+.02,lz+Math.cos(an+sign*.6)*sz*.45,sz*.7,sz,sz,.35,an+sign*.6,0);
+      }
+      if(s.bloom){if(form==='rose'){petalFlower(b,x,y,z,.065*(.8+rand()*.3),info.flower,rand,3);if(i%3===0)petalFlower(b,x+.05,y-.025,z-.035,.048,info.flower,rand,3);}else{
+        const florets=Math.max(18,Math.round(42*detail));for(let j=0;j<florets;j++){const t=j/florets,an=j*2.399,rr=.1*(1-t)*Math.sqrt(rand()),xx=x+Math.cos(an)*rr,zz=z+Math.sin(an)*rr,yy=y+t*.2;for(let k=0;k<4;k++)b.add('petal','petal',palette(rand,view.month>=9?'#ba9e9c':'#dce4b4',.09),xx,yy,zz,.022,.025,.025,1.1,k*Math.PI/2,0);}
+      }}
+    }
+  }else if(form==='hosta'){
+    if(!dormant){const count=Math.max(10,Math.round(Math.min(68,Math.max(12,w*w*65))*detail));for(let i=0;i<count;i++){const rand=random(p.id*100003+i*1021+71);
+      const a=i*2.399,r=w*.28*Math.sqrt(rand()),x=Math.cos(a)*r,z=Math.sin(a)*r,y=lh*(.3+rand()*.4),length=Math.min(.45,Math.max(.12,w*.38));
+      b.branch([0,0,0],[x,y,z],.004,'#7c9064');b.add('hosta','leaf',palette(rand,'#6b8675',.1),x,y,z,length*.85,length,length,1.04,a,0);
+    }if(s.bloom)for(let i=0;i<5;i++){const x=(rand()-.5)*w*.45,z=(rand()-.5)*w*.45;b.branch([x*.5,0,z*.5],[x,h*.96,z],.003,'#7c9064');for(let j=0;j<7;j++)b.add('petal','petal','#e1dced',x,yClamp(h-j*.026),z,.025,.045,.04,2.7,j*1.9,0);}}
+  }else if(form==='grass'){
+    const base=s.winter||s.autumn?'#b3a176':'#749386',count=Math.max(32,Math.round(Math.min(260,Math.max(48,w*w*250))*detail));
+    for(let i=0;i<count;i++){const rand=random(p.id*100003+i*1021+71);
+      const a=i*2.399,r=w*.18*Math.sqrt(rand()),x=Math.cos(a)*r,z=Math.sin(a)*r,height=lh*(.65+rand()*.35),length=height/.9;
+      b.add('blade','grass',palette(rand,base,.12),x,0,z,.11,length,Math.min(w*.65,length*.56),.03+rand()*.12,a,0);
+      if((view.month>=7||view.month<=2)&&i%5===0){const top=h*(.78+rand()*.2),xx=x+Math.sin(a)*w*.18,zz=z+Math.cos(a)*w*.18;b.branch([x,0,z],[xx,top,zz],.0014,base,'grass');for(let j=0;j<10;j++){const an=j*2.399,rr=.035+rand()*.045,end=[xx+Math.sin(an)*rr,top-j*.011,zz+Math.cos(an)*rr];b.branch([xx,top-.16,zz],end,.00065,'#a39478','grass');b.add(bud,'seed',palette(rand,'#bfa5a0',.08),...end,.004,.011,.004);}}
+    }
+  }else{
+    const count=Math.max(8,Math.round(Math.min(110,Math.max(12,w*w*110))*detail)),winterHeads=dormant&&['daisy','sedum'].includes(form),base=form==='lavender'?'#7b8870':'#50713b';
+    for(let i=0;i<count;i++){const rand=random(p.id*100003+i*1021+71);
+      const a=i*2.399,r=w*.34*Math.sqrt(rand()),x=Math.cos(a)*r,z=Math.sin(a)*r,y=h*(.65+rand()*.31),mid=[x*.5,lh*.45,z*.6];
+      if(!dormant){b.branch([x*.15,0,z*.15],mid,.0017,base,'grass');for(let j=0;j<5;j++){
+        const t=j/5,an=a+j*2.39,yy=lh*(.12+t*.65),sz=form==='lavender'?.065:form==='sedum'?.07:Math.min(.16,lh*.65);
+        if(form==='sedum')b.add(bud,'leaf',palette(rand,base),x*.8,yy,z*.8,sz*.55,sz*.16,sz*.32,.25,an,.4);
+        else b.add(form==='lavender'?'narrow':'leaf','leaf',palette(rand,base),x*.6,yy,z*.6,sz*.7,sz,sz,.75,an,0);
+      }}
+      if(s.bloom||winterHeads){const top=[x,y,z];b.branch([x*.15,0,z*.15],mid,.0018,winterHeads?'#887453':base,'grass');b.branch(mid,top,.0014,winterHeads?'#887453':base,'grass');
+        if(form==='daisy'){if(s.bloom)petalFlower(b,x,y,z,.07*(.8+rand()*.3),info.flower,rand);else b.add(cone,'seed','#746246',x,y,z,.02,.038,.02);}
+        else if(form==='sedum'){for(let k=0;k<16;k++){const an=k*2.399,rr=.06*Math.sqrt(k/16);b.add(bud,'petal',palette(rand,winterHeads?'#927559':info.flower,.1),x+Math.cos(an)*rr,y+(rand()-.5)*.012,z+Math.sin(an)*rr,.015,.011,.015);}}
+        else{for(let k=0;k<12;k++){const an=k*2.399,t=k/12,rr=.014*(1-t*.55);b.add(bud,'petal',palette(rand,info.flower,.12),x+Math.cos(an)*rr,y+t*.085,z+Math.sin(an)*rr,.009*(1-t*.45),.008,.009*(1-t*.45));}}
+      }
+    }
+  }
+  b.finish();return g;
+}
+const yClamp=y=>Math.max(.03,y);
