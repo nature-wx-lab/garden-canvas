@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.8.9';
-import {foliageKind} from './appearance.js?v=0.8.9';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.9';
-import {drawTree} from './tree-model.js?v=0.8.9';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.9';
+import {treeProfile} from './tree-profiles.js?v=0.9.0';
+import {foliageKind} from './appearance.js?v=0.9.0';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.0';
+import {drawTree} from './tree-model.js?v=0.9.0';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.0';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.8.9';
+import { plantInfo, stateAt } from './model.js?v=0.9.0';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -63,6 +63,15 @@ function curvedLeaf(type){
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();return keep(g);
 }
 for(const type of ['leaf','chloranthusLeaf','narrow','lanceSerrate','ovateSerrate','broadToothed','seaKaleLeaf','crambeHeart','obovateSerrate','oakLance','wavyElliptic','wavyLance','elm','calycanthus','hosta','hostaCorrugated','hostaRuffled','petal','blade','sword','strap','wavyStrap','needle','serrated','crenate','leathery'])shapes[type]=curvedLeaf(type);
+for(const type of ['asteliaBlade','asteliaYoung']){
+ const points=[],uv=[],idx=[],rows=32,cols=8;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,width=.048*Math.pow(1-t,.58),young=type==='asteliaYoung',angle=t*(young?1.15:2.2),bend=(1-Math.cos(angle))*(young?.3:.45),rise=Math.sin(angle)*(young?1.095:1);
+  points.push(u*width,rise,bend+Math.abs(u)*width*.70+.0016*Math.cos(u*26)*Math.sin(Math.PI*t));uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData.asteliaBlade=true;shapes[type]=keep(g);
+}
 {
  const positions=[],uvs=[],indices=[],rows=24,cols=4;
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -115,6 +124,14 @@ shapes.dendropanaxLobed=outlineLeaf([[0,0],[-.25,.09],[-.4,.35],[-.52,.75],[-.17
 shapes.rhombic=outlineLeaf([[0,0],[-.27,.10],[-.42,.42],[-.25,.70],[0,1],[.25,.70],[.42,.42],[.27,.10]]);
 shapes.tulipLeaf=outlineLeaf([[0,0],[-.32,.14],[-.45,.4],[-.27,.5],[-.43,.85],[-.12,.80],[0,.7],[.12,.80],[.43,.85],[.27,.5],[.45,.4],[.32,.14]]);
 shapes.triangular=outlineLeaf([[0,0],[-.46,.06],[-.29,.44],[0,1],[.29,.44],[.46,.06]]);
+{
+ const points=[[0,0]];
+ for(let j=0;j<5;j++){
+  const an=(j-2)*.55,length=[.65,.86,1,.86,.65][j],point=(angle,r)=>[Math.sin(angle)*r,Math.cos(angle)*r];
+  points.push(point(an-.10,.17),point(an-.025,length*.83),point(an,length),point(an+.025,length*.83),point(an+.10,.17));
+ }
+ shapes.bindweedDivided=outlineLeaf(points);
+}
 {
  const edge=[[0,0],[-.28,.02],[-.48,.16]];
  for(let j=0;j<12;j++){const y=.18+j*.062,wide=.49*(1-y);edge.push([-wide*(j%2?1:1.20),y]);}
@@ -182,6 +199,15 @@ for(const name of ['bell','trumpet','tube','urn','bell6','trumpet6']){
   if(j<rings&&k<sides){const i=j*(sides+1)+k;indices.push(i,i+sides+1,i+1,i+1,i+sides+1,i+sides+2);}
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();shapes[name]=keep(g);
+}
+{
+ const p=[],uv=[],idx=[],rows=20,cols=60;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,an=j/cols*Math.PI*2,rr=(.07+.93*Math.pow(t,1.9))*(1+.022*Math.cos(5*an)*t),crease=.035*Math.cos(5*an)*t*t;
+  p.push(Math.sin(an)*rr,.82*t+crease+.009*Math.sin(35*an)*t*t,Math.cos(an)*rr);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();shapes.bindweedFunnel=keep(g);
 }
 
 // Acer palmatum: seven radiating, deeply divided lobes, with fine marginal teeth.
@@ -291,6 +317,10 @@ function windShader(shader,kind){
     if(kind==='petal-snowdrop-inner'||kind==='petal-snowdrop-outer')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float mark=smoothstep(0.53,0.61,vUv.y)*(1.0-smoothstep(0.78,0.89,vUv.y))* (1.0-smoothstep(0.21,0.35,abs(vUv.x-0.5)));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.17,0.34,0.08),mark);\n#include <emissivemap_fragment>`);
     if(kind.endsWith('-guide'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float guide=(1.0-smoothstep(0.20,0.57,vUv.y))*pow(max(0.0,cos(atan(vUv.x-0.5,vUv.y+0.02)*16.0)),20.0);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.10,0.035,0.13),guide*0.85);\n#include <emissivemap_fragment>`);
     if(kind==='leaf-scaly')shader.fragmentShader=shader.fragmentShader.replace('veins*0.055','veins*0.025+pow(max(0.0,sin(vUv.x*211.0)*cos(vUv.y*193.0)),10.0)*0.18');
+    if(kind==='leaf-astelia'){
+      shader.fragmentShader=shader.fragmentShader.replace('veins*0.055','pow(max(0.0,cos(vUv.x*90.0)),12.0)*0.20+pow(max(0.0,sin(vUv.x*211.0)*cos(vUv.y*193.0)),10.0)*0.16');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.57,0.58,0.53),0.52*pow(max(0.0,cos(vUv.x*39.0+sin(vUv.y*6.0)*0.15)),3.0));\n#include <emissivemap_fragment>`);
+    }
     if(kind.includes('woolly'))shader.fragmentShader=shader.fragmentShader.replace('veins*0.055','veins*0.025+pow(max(0.0,sin(vUv.x*411.0+vUv.y*149.0)*cos(vUv.y*337.0)),6.0)*0.16');
     if(kind.includes('-underside-')&&c)shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`if(!gl_FrontFacing)diffuseColor.rgb=mix(diffuseColor.rgb,${tint},0.80);\n#include <emissivemap_fragment>`);
     // A small transmitted-light approximation softens thin leaf undersides.
@@ -410,7 +440,7 @@ export function plantModel(p,view,detail=1){
   const dormant=s.dormant,clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
   if(form==='unmodeled'){
     const frame=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({color:'#aeb5a3',wireframe:true,transparent:true,opacity:.42}));frame.position.y=h/2;g.add(frame);g.userData.unmodeled=true;
-  }else if(['wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory','blueEyeShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
+  }else if(['silverBush','berzelia','wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory','blueEyeShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(profile&&form!=='maple'){g.userData.architecture=drawTree(b,{profile,info,p,s,detail},{bud,flower:petalFlower,detailedFlower,shade:palette});
   }else if((form==='botanical'||['fivepetal','airy','spike','bell','globe'].includes(form))&&info.appearance?.leafShape){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(EXTENDED_FORMS.has(form)){drawBotanical(b,{info,s,p,detail,rand},{bud,cone,flower:petalFlower,detailedFlower,shade:palette,foliageKind});

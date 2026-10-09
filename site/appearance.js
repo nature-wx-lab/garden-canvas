@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.8.9';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.0';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 export const TRAIT_VALUES={heart:'心形',round:'円形',kidney:'腎形',triangular:'三角形',lobed:'切れ込みのある葉',compound:'複葉',serrated:'鋸歯のある葉',narrow:'細葉',blade:'線形・剣形',needle:'針形',leaf:'卵形・楕円形',obovate:'倒卵形',spoon:'へら形',arrow:'矢じり形',margin:'覆輪',center:'中斑',spots:'斑点',silverVeins:'銀葉・緑の葉脈',stripes:'縞斑',evergreen:'常緑',semiEvergreen:'半常緑（寒さで変化）',deciduous:'落葉（幹・枝は残る）',winterDormant:'冬に地上部休眠',summerDormant:'夏に地上部休眠',bell:'鐘形',trumpet:'漏斗・ラッパ形',tube:'筒形',urn:'壺形',cup:'杯形',flat:'平開',star:'星形',cross:'十字形',pea:'蝶形',lipped:'唇形',spurred:'距のある花',spoonRay:'スプーン状の花弁',pompon:'ポンポン咲き',smooth:'平滑',peeling:'剥離する樹皮',furrowed:'縦に割れる樹皮',scaly:'鱗片状',lenticels:'皮目',clump:'株立ち',mound:'こんもり',creeping:'地面に広がる',rosette:'ロゼット',upright:'直立',arching:'弓状',spreading:'横に広がる',weeping:'枝垂れ',columnar:'細い直立形',pyramidal:'円錐形',vase:'箒状',rounded:'丸い樹冠',multistem:'根元から株立ち',oval:'卵形の樹冠',layered:'段状の横枝',irregular:'不規則な枝'};
@@ -70,3 +70,4 @@ Object.assign(TRAIT_VALUES,{reedLeaf:'節から出て先が弓状に垂れる細
 Object.assign(TRAIT_VALUES,{mallowPalm:'丸みのある浅い掌状裂葉',mallowLobed:'浅く3裂し縁に歯のあるアオイの葉',smallMallow:'5枚の杯状花弁と中央で柱状に集まる雄しべ',claspingOvate:'葉柄がなく基部が茎を抱く卵形葉',parahebeFlower:'不等な4裂の花冠と2本の雄しべ',valerianSpur:'細い花筒・基部の距と1本の雄しべ',globulariaSpoon:'へら形で先が丸いか浅くへこむ根元の葉',globulariaHead:'細い5裂花が密集する青紫の球状花房',globulariaEye:'白い小花と青い未開花部が残る球状花房'});
 
 Object.assign(TRAIT_VALUES,{chloranthusLeaf:'光沢と葉脈の凹凸・鋭い鋸歯のある葉',chloranthusSpike:'三叉の白い雄しべが集まる花穂（花弁なし）',acaenaHead:'花弁のない小花と2本の雄しべの球状花序',resedaPinnatifid:'細く多数に羽状深裂する葉',resedaThreeLobed:'主に3裂する細長い葉',resedaFlower:'細かく裂ける不揃いな花弁と突き出す雄しべ'});
+Object.assign(TRAIT_VALUES,{bindweedDivided:'細い裂片に深く分かれる銀葉',bindweedFunnel:'5つの折り目をもつ一続きの漏斗状花冠',asteliaBlade:'縦に折れ、細かな銀色の鱗片をもつ剣状葉',asteliaSmall:'小さな6枚の花被が集まる円錐花序',berzeliaHead:'細い枝先につく5弁の小花の球状花房'});
