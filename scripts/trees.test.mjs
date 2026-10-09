@@ -6,7 +6,7 @@ import {treeSkeleton} from '../site/tree-model.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 const find=latin=>Object.entries(CATALOG).find(([,p])=>p.latin===latin);
-const meshKind=(g,kind)=>g.children.find(m=>m.material?.customProgramCacheKey?.()===`garden-0.3-${kind}`);
+const meshKind=(g,kind)=>g.children.find(m=>m.userData.component===kind||m.userData.component?.startsWith(kind+'-'));
 function dispose(g){for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}}
 test('rank coverage preserves each of 300 unique plants per retailer category and all 15 published weekly positions',()=>{
  const ranked=Object.values(CATALOG).flatMap(p=>(p.popularity||[]).map(r=>({p,r})));

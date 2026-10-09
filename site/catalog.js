@@ -1,6 +1,7 @@
-import { EXPANDED_CATALOG, BASE_POPULARITY } from './catalog-data.js?v=0.5.1';
+import { EXPANDED_CATALOG, BASE_POPULARITY } from './catalog-data.js?v=0.6.0';
+import {attachAppearance} from './appearance.js?v=0.6.0';
 // Public botanical facts; monthly boundaries and procedural geometry are display conventions.
-export const CATALOG_VERSION='2026-10-10.2';
+export const CATALOG_VERSION='2026-10-10.3';
 const nc='https://plants.ces.ncsu.edu/plants/';
 const mo='https://plantfinder.mobot.org/PlantFinderDetails.aspx?taxonid=';
 const BASE_CATALOG={
@@ -17,7 +18,7 @@ const BASE_CATALOG={
 };
 const baseGenres={maple:'庭木',olive:'庭木',rose:'バラ',hydrangea:'庭木',salvia:'宿根草',echinacea:'宿根草',lavender:'宿根草',hosta:'カラーリーフ',grass:'カラーリーフ',sedum:'多肉'};
 for(const [key,p] of Object.entries(BASE_CATALOG))Object.assign(p,{genre:baseGenres[key],aliases:[],colors:[key==='rose'?'pink':'unknown'],visual:'reference',bloomKnown:!!p.bloom.length,sourceChecked:'2026-10-09'});
-export const CATALOG={...BASE_CATALOG,...EXPANDED_CATALOG};
+export const CATALOG=attachAppearance({...BASE_CATALOG,...EXPANDED_CATALOG});
 for(const [id,items] of Object.entries(BASE_POPULARITY))if(CATALOG[id])CATALOG[id].popularity=items;
 // Preserve unidentified 0.1 shapes when opening an old file; never assign a species silently.
 export const LEGACY={deciduous:{label:'旧版の落葉樹（種類未指定）',form:'maple',leaf:'deciduous'},evergreen:{label:'旧版の常緑樹（種類未指定）',form:'olive',leaf:'evergreen'},flower:{label:'旧版の宿根草（種類未指定）',form:'daisy',leaf:'herb'},legacy_grass:{label:'旧版のグラス（種類未指定）',form:'grass',leaf:'grass'}};

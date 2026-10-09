@@ -3,11 +3,10 @@ const TAU=Math.PI*2;
 export const EXTENDED_FORMS=new Set(['airy','torch','hellebore','clematis','climbingrose','conifer','tree','shrub','mophead','heuchera','fern','cyclamen','tulip','narcissus','iris','lily','globe','bell','rosette','cactus','waterlily','floating','aquatic','fivepetal']);
 export function drawBotanical(b,{info,s,p,detail,rand},kit){
  const {bud,cone,flower,shade}=kit,h=s.height,w=s.spread,form=info.form;
- const green=s.leafColor||info.leafColor||'#567447',brown='#80715b',color=info.flower,dormant=s.dormant;
+ const green=s.leafColor||info.leafColor||'#567447',brown='#80715b',color=info.flower,dormant=s.dormant,a=info.appearance||{},leafKind=kit.foliageKind?.(info)||'leaf';
  const count=n=>Math.max(1,Math.round(n*detail));
  const leaf=(x,y,z,size,a,pitch=1.05,shape='leaf',base=green)=>{
-  b.add(shape,'leaf',shade(rand,base,.08),x,y,z,size*.8,size,size,pitch,a,0);
-  if(info.variegated)b.add(shape,'leaf','#c8ccaa',x,y+.0007,z,size*.33,size*.95,size,pitch,a,0);
+  b.add(shape,leafKind,shade(rand,base,.08),x,y,z,size*.8,size,size,pitch,a,0);
  };
  const flatFlower=(x,y,z,r,petals=5,layers=1,tilt=0)=>{
   for(let layer=0;layer<layers;layer++)for(let j=0;j<petals;j++){
@@ -59,24 +58,35 @@ export function drawBotanical(b,{info,s,p,detail,rand},kit){
     const t=j/19,a=phase+t*8,x=Math.sin(a)*w*.3,y=t*h,z=Math.cos(a)*.035;
     b.branch(prev,[x,y,z],.0025,brown);prev=[x,y,z];if(dormant)continue;
     for(const side of [-1,1]){const leafAngle=a+side*1.25;leaf(x,y,z,Math.min(.1,w*.16),leafAngle);leaf(x+Math.sin(leafAngle)*.04,y-.02,z+.02,.055,leafAngle+.6);}
-    if(s.bloom&&j>5&&j%3===0){if(form==='climbingrose')flower(b,x,y,z+.04,.065,color,rand,3);else flatFlower(x,y,z+.04,.08,6);}
+    if(s.bloom&&j>5&&j%3===0){if(form==='climbingrose')flower(b,x,y,z+.04,.065,color,rand,3);else if(kit.detailedFlower&&info.appearance?.flowerShape)kit.detailedFlower(b,{x,y,z:z+.04,r:info.appearance.flowerShape==='bell'?.035:.07,color,shape:info.appearance.flowerShape,petals:info.appearance.petals||6,layers:info.appearance.flowerLayers||1,pattern:info.appearance.flowerPattern,tilt:info.appearance.flowerShape==='bell'?2.7:0},{bud,rand,shade});else flatFlower(x,y,z+.04,.08,6);}
    }
   }
   return;
  }
  if(form==='heuchera'||form==='hellebore'){
   if(dormant)return;
+  const caulescent=form==='hellebore'&&a.architecture==='caulescent';
   for(let i=0;i<count(24);i++){
-   const a=i*2.399,r=w*.26*Math.sqrt(rand()),x=Math.sin(a)*r,z=Math.cos(a)*r,y=h*.25*(.6+rand()*.5),size=Math.min(w*.31,.18);
-   b.branch([0,0,0],[x,y,z],.0025,green);
-   if(form==='hellebore')for(let j=-3;j<=3;j++)leaf(x,y,z,size*.85,a+j*.32,.95,'narrow');
-   else leaf(x,y,z,size,a,1.35,'hosta');
+   const angle=i*2.399,r=w*.26*Math.sqrt(rand()),x=Math.sin(angle)*r,z=Math.cos(angle)*r,y=h*(caulescent?.2+(i%4)*.14:.25*(.6+rand()*.5)),size=Math.min(w*.31,.18);
+   if(caulescent){b.branch([x*.3,0,z*.3],[x*.7,h*.78,z*.7],.006,a.stemColor||green,'petiole');b.branch([x*.7,y,z*.7],[x,y,z],.0025,green,'petiole');}
+   else b.branch([0,0,0],[x,y,z],.0025,green,'petiole');
+   if(form==='hellebore'){const n=a.leaflets||7;for(let j=0;j<n;j++)leaf(x,y,z,size*.85,angle+(j-(n-1)/2)*(n===3?.68:.32),.95,'serrated');}
+   else leaf(x,y,z,size,angle,1.35,'lobed');
   }
   if(s.bloom)for(let i=0;i<count(form==='hellebore'?9:8);i++){
    const a=i*2.399,x=Math.sin(a)*w*.24,z=Math.cos(a)*w*.24,y=h*(.75+rand()*.22);
    b.branch([0,0,0],[x*.7,y*.78,z*.7],.003,green);b.branch([x*.7,y*.78,z*.7],[x,y,z],.002,green);
    if(form==='hellebore'){
-    for(let j=0;j<5;j++)b.add('petal','petal',shade(rand,color,.05),x,y,z,.06,.06,.06,2.1,j*TAU/5,0);
+    if(info.appearance?.flowerShape==='bell'){
+     // Hellebore bells consist of overlapping sepals, not a fused tubular corolla.
+     const r=caulescent?.027:.045,n=caulescent?3:1;
+     for(let k=0;k<n;k++){const aa=k*2.399,xx=x+Math.sin(aa)*.035,yy=y-k*.025,zz=z+Math.cos(aa)*.035;
+      for(let j=0;j<5;j++)b.add('petal',a.flowerPattern?'petal-'+a.flowerPattern:'petal',color,xx,yy,zz,r,r,r,2.62,j*TAU/5,0);
+      b.add(bud,'seed','#c2ba72',xx,yy-r*.38,zz,r*.12,r*.1,r*.12);
+     }continue;
+    }
+    const layers=info.appearance?.flowerLayers||1,pattern=info.appearance?.flowerPattern,kind=pattern?'petal-'+pattern:'petal';
+    for(let layer=0;layer<layers;layer++)for(let j=0;j<5+layer*2;j++)b.add('petal',kind,shade(rand,color,.05),x,y+layer*.003,z,.06*(1-layer*.16),.06*(1-layer*.16),.06,2.1-layer*.22,j*TAU/(5+layer*2)+layer*.5,0);
     for(let j=0;j<12;j++){const a2=j*TAU/12;b.add(bud,'seed','#cbca91',x+Math.sin(a2)*.011,y-.008,z+Math.cos(a2)*.011,.0025,.008,.0025);}
    }else for(let j=0;j<18;j++){const t=j/18,a2=j*2.399;b.add(bud,'petal',color,x+Math.sin(a2)*.028*(1-t),y-.17+t*.17,z+Math.cos(a2)*.028*(1-t),.005,.008,.005);}
   }

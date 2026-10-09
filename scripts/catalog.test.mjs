@@ -15,7 +15,7 @@ test('catalog contains real plant names across all ten requested genres with a b
   assert.doesNotMatch(p.label,/専用土|肥料|マルチングチップ|リットル入り/);
   assert.ok(p.colors.every(c=>Object.hasOwn(COLORS,c)));assert.equal(new Set(p.bloom).size,p.bloom.length);assert.ok(p.bloom.every(m=>Number.isInteger(m)&&m>=1&&m<=12));
   for(const key of ['height','spread'])if(p[key])assert.ok(p[key].length===2&&p[key].every(v=>Number.isFinite(v)&&v>0&&v<=60)&&p[key][0]<=p[key][1],p.label+' '+key);
-  if(p.source){const u=new URL(p.source);assert.equal(u.protocol,'https:');assert.ok(['www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','ask.ifas.ufl.edu'].includes(u.hostname));assert.equal(u.username,'');assert.equal(u.password,'');}
+  if(p.source){const u=new URL(p.source);assert.equal(u.protocol,'https:');assert.ok(['www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','ask.ifas.ufl.edu','www.rhs.org.uk'].includes(u.hostname));assert.equal(u.username,'');assert.equal(u.password,'');}
   else {assert.equal(p.height,null);assert.equal(p.spread,null);assert.deepEqual(p.bloom,[]);assert.deepEqual(p.colors,['unknown']);assert.equal(p.form,'unmodeled');}
  }
 });
@@ -33,6 +33,7 @@ test('name search handles kana, aliases, spaces and combined genre/color/source 
 test('old saved catalogs migrate without changing plant IDs, plans or the input document',()=>{
  const old=sampleDocument();old.catalogVersion='2026-10-09.1';const copy=JSON.stringify(old),next=validateDocument(old);
  assert.equal(JSON.stringify(old),copy);assert.equal(next.catalogVersion,CATALOG_VERSION);assert.deepEqual(next.plans,old.plans);assert.deepEqual(next.view,old.view);
+ assert.equal(validateDocument({...old,catalogVersion:'2026-10-10.2'}).catalogVersion,CATALOG_VERSION);
  assert.throws(()=>validateDocument({...old,catalogVersion:'unknown-future'}));
  for(const genre of GENRES){const [id]=entries.find(([,p])=>p.genre===genre),doc=emptyDocument();doc.plans.A.plants=[makePlant(id,1,2,2)];assert.deepEqual(validateDocument(doc),doc);}
 });
@@ -50,7 +51,7 @@ test('each represented new form renders finite geometry in winter and its flower
  const representatives=new Map();for(const [id,p] of entries)if(EXTENDED_FORMS.has(p.form)&&!representatives.has(p.form))representatives.set(p.form,[id,p]);assert.ok(representatives.size>=15);
  for(const [form,[id,info]] of representatives)for(const month of new Set([1,info.bloom[0]||6])){
   const p=makePlant(id,10,2,2),g=plantModel(p,view(month));assert.equal(g.userData.plantId,10);
-  g.traverse(o=>{if(!o.geometry)return;assert.ok([...o.geometry.attributes.position.array].every(Number.isFinite),form);if(o.isInstancedMesh){assert.ok(o.count>0);assert.ok([...o.instanceMatrix.array].every(Number.isFinite),form);assert.equal(o.geometry.attributes.gardenWind.count,o.count);}o.geometry.dispose();if(o.isInstancedMesh)o.dispose();});
+  g.traverse(o=>{if(!o.geometry)return;assert.ok([...o.geometry.attributes.position.array].every(Number.isFinite),form);if(o.isInstancedMesh){assert.ok(o.count>0);assert.ok([...o.instanceMatrix.array].every(Number.isFinite),form);assert.equal(o.geometry.attributes.gardenWind.count,o.instanceMatrix.count);assert.ok(o.count<=o.instanceMatrix.count);}o.geometry.dispose();if(o.isInstancedMesh)o.dispose();});
  }
  const [id]=entries.find(([,p])=>p.form==='unmodeled'),g=plantModel(makePlant(id,11,2,2),view(6));assert.equal(g.userData.unmodeled,true);assert.equal(g.children.length,1);assert.equal(g.children[0].material.wireframe,true);g.children[0].geometry.dispose();g.children[0].material.dispose();
 });
