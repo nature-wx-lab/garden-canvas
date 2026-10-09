@@ -41,8 +41,13 @@ def audit():
     html=(ROOT/'site/index.html').read_text()
     for rule in ["connect-src 'none'","script-src 'self'","object-src 'none'","base-uri 'none'","form-action 'none'"]:
         if rule not in html:fail('required browser policy missing')
+    version=json.loads((ROOT/'package.json').read_text())['version']
+    for name in ['styles.css','app.js']:
+        if f'./{name}?v={version}' not in html:fail('cache version missing from HTML')
     for path in ['site/app.js','site/model.js','site/catalog.js','site/scene.js']:
         source=(ROOT/path).read_text()
+        for module in re.findall(r"from ['\"](\./[^'\"]+)['\"]",source):
+            if not module.startswith('./vendor/') and not module.endswith('?v='+version):fail('cache version missing from module import')
         if re.search(r'\b(?:fetch|XMLHttpRequest|WebSocket|sendBeacon|eval)\s*\(|\.innerHTML\s*=|navigator\.geolocation',source):fail(path+' introduces an unreviewed network or injection surface')
     commits=git('rev-list','--all').decode().splitlines()
     for commit in commits:

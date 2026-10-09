@@ -1,6 +1,6 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside } from './model.js';
+import { plantInfo, stateAt, inside } from './model.js?v=0.2.0';
 
 // Reproducible procedural models: no photos, random remote assets or network requests.
 const materials=new Map(),shared=new Set();

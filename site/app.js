@@ -1,6 +1,6 @@
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, stateAt, budget, calendar, observations, TASKS } from './model.js';
-import { createScene } from './scene.js';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.2.0';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, stateAt, budget, calendar, observations, TASKS } from './model.js?v=0.2.0';
+import { createScene } from './scene.js?v=0.2.0';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
