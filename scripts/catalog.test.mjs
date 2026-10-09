@@ -15,7 +15,7 @@ test('catalog contains real plant names across all ten requested genres with a b
   assert.doesNotMatch(p.label,/専用土|肥料|マルチングチップ|リットル入り/);
   assert.ok(p.colors.every(c=>Object.hasOwn(COLORS,c)));assert.equal(new Set(p.bloom).size,p.bloom.length);assert.ok(p.bloom.every(m=>Number.isInteger(m)&&m>=1&&m<=12));
   for(const key of ['height','spread'])if(p[key])assert.ok(p[key].length===2&&p[key].every(v=>Number.isFinite(v)&&v>0&&v<=60)&&p[key][0]<=p[key][1],p.label+' '+key);
-  if(p.source){const u=new URL(p.source);assert.equal(u.protocol,'https:');assert.ok(['www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','ask.ifas.ufl.edu','www.rhs.org.uk'].includes(u.hostname));assert.equal(u.username,'');assert.equal(u.password,'');}
+  if(p.source){const u=new URL(p.source);assert.equal(u.protocol,'https:');assert.ok(['www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','ask.ifas.ufl.edu','www.rhs.org.uk','www.darwinperennials.com','info.ballseed.com'].includes(u.hostname));assert.equal(u.username,'');assert.equal(u.password,'');}
   else {assert.equal(p.height,null);assert.equal(p.spread,null);assert.deepEqual(p.bloom,[]);assert.deepEqual(p.colors,['unknown']);assert.equal(p.form,'unmodeled');}
  }
 });

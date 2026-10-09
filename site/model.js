@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.6.0';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.6.0';
-import { seasonAt } from './catalog-search.js?v=0.6.0';
+import {treeProfile} from './tree-profiles.js?v=0.7.0';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.7.0';
+import { seasonAt } from './catalog-search.js?v=0.7.0';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -57,7 +57,9 @@ export function stateAt(p,view){
     unsupported=p.management.height<trunkHeight+.15;
     if(last&&!unsupported){const recovery=Math.min(1,(dateIndex(view)-last.at)/p.management.recovery);height=Math.min(height,p.management.height)+(height-Math.min(height,p.management.height))*recovery;spread=Math.min(spread,p.management.spread)+(spread-Math.min(spread,p.management.spread))*recovery;leafHeight=Math.min(leafHeight,height);}
   }
-  return {present,expired,...seasonAt(info,view.month),age:Math.max(0,age)/12,height,spread,leafHeight,natural,trunkHeight,basis,last,unsupported,winter:[12,1,2].includes(view.month)};
+  const season=seasonAt(info,view.month),flowerOptions=info.appearance?.flowerOptions;
+  if(flowerOptions?.length)season.flowerColor=flowerOptions[(p.id-1)%flowerOptions.length];
+  return {present,expired,...season,age:Math.max(0,age)/12,height,spread,leafHeight,natural,trunkHeight,basis,last,unsupported,winter:[12,1,2].includes(view.month)};
 }
 export function budget(plan){const rows=new Map();let total=0,unknown=0,count=0;for(const p of plan.plants){if(p.role!=='new')continue;count++;const key=[p.kind,p.height,p.spread,p.price].join('|');if(!rows.has(key))rows.set(key,{kind:p.kind,height:p.height,spread:p.spread,price:p.price,count:0,total:0});const row=rows.get(key);row.count++;if(p.price===null)unknown++;else{total+=p.price;row.total+=p.price;}}return {total,unknown,count,rows:[...rows.values()]};}
 export function calendar(plan,year){return Array.from({length:12},(_,i)=>{const events=plan.plants.flatMap(p=>taskEvents(p,year)).filter(t=>t.month===i+1);let min=events.length?plan.prep:0,max=min,unknown=0;for(const e of events){if(e.min===null||e.max===null)unknown++;else{min+=e.min*e.count;max+=e.max*e.count;}}return {month:i+1,events,min,max,unknown,available:plan.hours[i]===null?null:plan.hours[i]*60};});}
@@ -70,7 +72,7 @@ function migrateV1(v){
 }
 export function validateDocument(input){
   const bad=()=>{throw new Error('対応していない庭データ、または範囲外の値です。元の庭は変更していません。');};
-  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
+  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
   if(!keys(v,['version','modelVersion','catalogVersion','active','plans','view'])||v.version!==2||v.modelVersion!==MODEL_VERSION||v.catalogVersion!==CATALOG_VERSION||!['A','B'].includes(v.active)||!keys(v.plans,['A','B'])||!v.plans.A||!v.plans[v.active])bad();
   const view=v.view;
   if(!keys(view,['month','year','reference','footprints','camera'])||!integer(view.month,1,12)||!integer(view.year,0,10)||typeof view.reference!=='boolean'||typeof view.footprints!=='boolean')bad();

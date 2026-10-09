@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.6.0';
+import {treeProfile} from './tree-profiles.js?v=0.7.0';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -21,7 +21,17 @@ export function seasonAt(info,month){
  const leaf={evergreen:'evergreen',semiEvergreen:'semi',semiDormant:'herb',deciduous:'deciduous',winterDormant:'herb'}[a.persistence]||profile?.leaf||info.leaf;
  let density=1,scale=1,autumn=false,phase=leaf==='unknown'?'葉の季節変化は未確認':'葉の展開期';
  const breakMonth=a.emergenceMonths?.[0]||profile?.budbreak||4,fall=profile?.leafFall||12;
- if(leaf==='deciduous'&&!['summerDormant','springEphemeral'].includes(a.persistence)){
+ if(a.foliageMonths){
+  density=a.foliageMonths.includes(month)?1:0;scale=1;
+  phase=density?'資料の葉の展開期':'葉のない時期';
+ }else if(a.persistence==='springBulb'){
+  // Late-winter snowdrops retain their leaves through flowering, then die back.
+  // Month boundaries are a temperate display convention; sources describe the cycle.
+  const winterMonth=n=>n>8?n-12:n,window=(flowerMonths.length?flowerMonths:[2,3]).map(winterMonth);
+  const first=Math.min(...window),last=Math.max(...window),start=first-1,finish=Math.min(6,last+2),position=winterMonth(month);
+  density=position<start||position>finish?0:position===start?.55:position===finish?.3:1;
+  scale=position===start?.65:1;phase=density===0?'球根で休眠（地上部なし）':position===finish?'花後の葉が黄変する時期':'冬〜春の葉と花（表示目安）';
+ }else if(leaf==='deciduous'&&!['summerDormant','springEphemeral'].includes(a.persistence)){
   density=month<breakMonth||month>=fall?0:month===breakMonth?.5:month===fall-1?.42:1;
   scale=month===breakMonth?.65:1;autumn=month>=10&&month<fall;
   phase=density===0?'落葉・枝姿':month===breakMonth?'芽吹き・若葉':autumn?'紅葉・落葉へ':'葉が茂る時期';
@@ -51,10 +61,13 @@ export function seasonAt(info,month){
  if(a.monthlyLeafColors?.[m])color=a.monthlyLeafColors[m];
  const season=month>=3&&month<=5?'spring':month>=6&&month<=8?'summer':month>=9&&month<=11?'autumn':'winter';
  if(a.seasonalColors?.[season])color=a.seasonalColors[season];
- const woody=leaf==='deciduous'||['tree','shrub','conifer','maple','olive','rose','hydrangea','clematis','climbingrose','mophead','lavender'].includes(info.form);
- const groundDormant=dormant&&!woody&&!a.standingWinter&&(leaf==='herb'||['summerDormant','springEphemeral'].includes(a.persistence)||['cyclamen','tulip','narcissus','globe'].includes(info.form));
+ const woody=!!profile||['tree','shrub','conifer','maple','olive','rose','hydrangea','clematis','climbingrose','mophead','lavender'].includes(info.form);
+ const leaflessFlowering=!!a.leaflessBloom&&bloom&&dormant;
+ const groundDormant=dormant&&!woody&&!a.standingWinter&&!leaflessFlowering&&(leaf==='herb'||!!a.foliageMonths||['summerDormant','springEphemeral','springBulb'].includes(a.persistence)||['cyclamen','tulip','narcissus','globe'].includes(info.form));
  if(groundDormant)bloom=false;
+ if(leaflessFlowering)phase='葉のない花茎の開花期';
+ else if(groundDormant)phase='地上部のない休眠期';
  const bloomIndex=flowerMonths.indexOf(month),flowerDensity=bloom?(flowerMonths.length>2&&(bloomIndex===0||bloomIndex===flowerMonths.length-1)?.65:1):0;
  const shootScale=a.persistence==='semiDormant'&&[12,1,2].includes(month)?.15:!woody&&!dormant&&scale<1?scale:1;
- return {bloom,dormant,groundDormant,shootScale,autumn,known,leafDensity:density,leafScale:scale,leafColor:color,flowerDensity,flowerColor:info.flower,phase,timingBasis:a.flowerTiming==='months'?'資料に月の記載あり':'季節からの表示上の目安',label:bloom?'開花・'+phase:known?phase:phase+'（花期未確認）'};
+ return {bloom,dormant,groundDormant,shootScale,autumn,known,seedHeads:!!a.seedHeadMonths?.includes(month),leafDensity:density,leafScale:scale,leafColor:color,flowerDensity,flowerColor:info.flower,phase,timingBasis:a.flowerTiming==='months'?'資料に月の記載あり':'季節からの表示上の目安',label:bloom?'開花・'+phase:known?phase:phase+'（花期未確認）'};
 }

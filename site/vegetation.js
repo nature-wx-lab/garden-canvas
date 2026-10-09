@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.6.0';
-import {foliageKind} from './appearance.js?v=0.6.0';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.6.0';
-import {drawTree} from './tree-model.js?v=0.6.0';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.6.0';
+import {treeProfile} from './tree-profiles.js?v=0.7.0';
+import {foliageKind} from './appearance.js?v=0.7.0';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.7.0';
+import {drawTree} from './tree-model.js?v=0.7.0';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.7.0';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.6.0';
+import { plantInfo, stateAt } from './model.js?v=0.7.0';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -15,7 +15,7 @@ const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.Sphe
 const shapes={};
 function curvedLeaf(type){
   const corrugated=type==='hostaCorrugated',ruffled=type==='hostaRuffled';if(corrugated||ruffled)type='hosta';
-  const positions=[],uvs=[],indices=[],rows=type==='needle'?2:ruffled?28:type==='serrated'?20:14,cols=type==='needle'?1:corrugated?16:ruffled?8:4;
+  const positions=[],uvs=[],indices=[],rows=type==='needle'?2:type==='crenate'?40:ruffled?28:type==='serrated'?20:14,cols=type==='needle'?1:corrugated?16:ruffled?8:4;
   for(let i=0;i<=rows;i++){
     const t=i/rows;
     let width=Math.pow(Math.sin(Math.PI*t),.85)*.43;
@@ -23,20 +23,23 @@ function curvedLeaf(type){
     if(type==='petal')width=Math.pow(Math.sin(Math.PI*t),.58)*.4;
     if(type==='hosta')width=Math.pow(Math.sin(Math.PI*t),.64)*.53;
     if(type==='blade'||type==='needle')width=(1-t)*.055;
+    if(type==='sword')width=.046*Math.pow(1-t,.4);
+    if(type==='strap')width=.082*Math.pow(Math.sin(Math.PI*t*.88+.16),.22);
     if(type==='serrated')width*=i%2?.93:1.02;
+    if(type==='crenate')width*=1+.035*Math.cos(t*Math.PI*20);
     if(type==='leathery')width*=.9;
     for(let j=0;j<=cols;j++){
       const u=j/cols*2-1,x=u*width;
       const cup=(type==='petal'?.18:type==='hosta'?.2:.12)*u*u*Math.sin(Math.PI*t);
-      const bend=type==='blade'?.62*t*t:type==='petal'?.28*t*t:.23*t*t;
+      const bend=type==='blade'?.62*t*t:type==='sword'?.19*t*t:type==='strap'?.34*t*t:type==='petal'?.28*t*t:.23*t*t;
       const relief=corrugated?.021*Math.cos(u*25+Math.sin(t*4)*1.6)*Math.sin(Math.PI*t)*Math.sin(Math.PI*j/cols):ruffled?.06*Math.sin(t*32)*Math.pow(Math.abs(u),3)*Math.sin(Math.PI*t):0;
-      positions.push(x,t,bend+cup+relief+.014*Math.cos(t*24+Math.abs(u)*8)*Math.abs(u));uvs.push(j/cols,t);
+      positions.push(x,t,bend+cup+relief+(type==='sword'?Math.abs(x)*.55:.014*Math.cos(t*24+Math.abs(u)*8)*Math.abs(u)));uvs.push(j/cols,t);
       if(i<rows&&j<cols){const a=i*(cols+1)+j,b=a+cols+1;indices.push(a,b,a+1,b,b+1,a+1);}
     }
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();return keep(g);
 }
-for(const type of ['leaf','narrow','hosta','hostaCorrugated','hostaRuffled','petal','blade','needle','serrated','leathery'])shapes[type]=curvedLeaf(type);
+for(const type of ['leaf','narrow','hosta','hostaCorrugated','hostaRuffled','petal','blade','sword','strap','needle','serrated','crenate','leathery'])shapes[type]=curvedLeaf(type);
 
 // Lobed and fan-shaped blades have their own outlines, rather than a recoloured oval.
 function outlineLeaf(points){
@@ -48,6 +51,9 @@ function outlineLeaf(points){
 const featherEdge=[[0,0]];
 for(let j=0;j<16;j++){const t=.025+j*.059,width=.28*Math.sin((t+.1)*Math.PI/1.18);featherEdge.push([-.018,t],[-width,t+.029],[-.018,t+.045]);}
 featherEdge.push([0,1]);for(let j=15;j>=0;j--){const t=.025+j*.059,width=.28*Math.sin((t+.1)*Math.PI/1.18);featherEdge.push([.018,t+.045],[width,t+.029],[.018,t]);}shapes.feather=outlineLeaf(featherEdge);
+const filigree=[[0,0]];
+for(let j=0;j<22;j++){const t=.02+j*.043,w=.28*Math.sin((t+.13)*Math.PI/1.25);filigree.push([-.006,t],[-w,t+.10],[-.006,t+.015]);}
+filigree.push([0,1]);for(let j=21;j>=0;j--){const t=.02+j*.043,w=.28*Math.sin((t+.13)*Math.PI/1.25);filigree.push([.006,t+.015],[w,t+.10],[.006,t]);}shapes.filigree=outlineLeaf(filigree);
 shapes.heart=outlineLeaf([[0,0],[-.16,-.08],[-.34,.02],[-.44,.23],[-.43,.42],[-.31,.67],[0,1],[.31,.67],[.43,.42],[.44,.23],[.34,.02],[.16,-.08]]);
 shapes.ginkgo=outlineLeaf([[0,0],[-.11,.3],[-.42,.62],[-.55,.86],[-.45,.93],[-.34,.99],[-.18,1],[-.06,.94],[0,.82],[.06,.94],[.18,1],[.34,.99],[.45,.93],[.55,.86],[.42,.62],[.11,.3]]);
 shapes.oak=outlineLeaf([[0,0],[-.18,.12],[-.24,.22],[-.13,.27],[-.34,.38],[-.37,.48],[-.2,.53],[-.36,.67],[-.31,.78],[-.15,.75],[-.15,.92],[0,1],[.15,.92],[.15,.75],[.31,.78],[.36,.67],[.2,.53],[.37,.48],[.34,.38],[.13,.27],[.24,.22],[.18,.12]]);
@@ -63,6 +69,16 @@ for(const name of ['round','kidney','lobed']){
   const a=-Math.PI*.9+j/84*Math.PI*1.8,rr=name==='lobed'?.43*(1+.11*Math.cos(a*7)):.46;
   pts.push([Math.sin(a)*rr,.40+Math.cos(a)*rr*(name==='kidney'?.75:1)]);
  }shapes[name]=outlineLeaf(pts);
+}
+{
+ const p=[],uv=[],idx=[],rows=22,cols=18;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,width=.40*Math.pow(Math.sin(Math.PI*t),.72),angle=u*1.8;
+  p.push(Math.sin(angle)*width,t,(1-Math.cos(angle))*width*.70-.18*t*t);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();shapes.spathe=keep(g);
+ const spadix=new THREE.CylinderGeometry(.13,.15,1,12);spadix.translate(0,.5,0);shapes.spadix=keep(spadix);
 }
 for(const name of ['bell','trumpet','tube','urn','bell6','trumpet6']){
  const base=name.replace('6',''),lobes=name.endsWith('6')?6:5;
@@ -170,13 +186,18 @@ function windShader(shader,kind){
       diffuseColor.rgb+=diffuseColor.rgb*(midrib*0.23+veins*0.055);
     `);
     if(kind.startsWith('leaf-hosta'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*70.0)');
-    const pattern=kind.replace(/^(leaf|petal)-/,'').replace(/^hosta-?/,'').replace('-gold','');
-    const tint=kind.startsWith('petal')?'vec3(0.34,0.07,0.23)':kind.endsWith('-gold')?'vec3(0.70,0.69,0.32)':'vec3(0.79,0.83,0.72)';
-    const masks={margin:'smoothstep(0.61+0.035*sin(vUv.y*53.0),0.79,fold)',center:'1.0-smoothstep(0.25+0.07*sin(vUv.y*36.0),0.47,fold)',stripes:'smoothstep(0.48,0.64,sin(vUv.x*39.0+sin(vUv.y*7.0)*0.65))',spots:'smoothstep(0.73,0.9,sin(vUv.x*79.0+cos(vUv.y*27.0))*sin(vUv.y*91.0+sin(vUv.x*47.0)))',silverVeins:'(1.0-midrib)*(1.0-smoothstep(0.16,0.33,abs(sin((vUv.y-fold*0.38)*32.0))))'};
+    const surface=kind.replace(/-guide$/,''),hex=surface.match(/-([0-9a-f]{6})$/)?.[1];
+    const pattern=surface.replace(/^(leaf|petal)-/,'').replace(/^hosta-?/,'').replace(/-(?:gold|[0-9a-f]{6})$/,'');
+    const c=hex?new THREE.Color('#'+hex):null;
+    const tint=c?`vec3(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`:kind.startsWith('petal')?'vec3(0.34,0.07,0.23)':kind.endsWith('-gold')?'vec3(0.70,0.69,0.32)':'vec3(0.79,0.83,0.72)';
+    const masks={tip:'smoothstep(0.5,0.92,vUv.y)',blush:'(1.0-smoothstep(0.20,0.65,vUv.y))*(1.0-smoothstep(0.25,0.75,fold))',margin:'smoothstep(0.61+0.035*sin(vUv.y*53.0),0.79,fold)',center:'1.0-smoothstep(0.25+0.07*sin(vUv.y*36.0),0.47,fold)',stripes:'smoothstep(0.48,0.64,sin(vUv.x*39.0+sin(vUv.y*7.0)*0.65))',spots:'smoothstep(0.73,0.9,sin(vUv.x*79.0+cos(vUv.y*27.0))*sin(vUv.y*91.0+sin(vUv.x*47.0)))',silverVeins:'(1.0-midrib)*(1.0-smoothstep(0.16,0.33,abs(sin((vUv.y-fold*0.38)*32.0))))'};
     if(masks[pattern])shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,${tint},(${masks[pattern]})*0.86);\n#include <emissivemap_fragment>`);
+    if(kind==='petal-snowdrop-inner'||kind==='petal-snowdrop-outer')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float mark=smoothstep(0.53,0.61,vUv.y)*(1.0-smoothstep(0.78,0.89,vUv.y))* (1.0-smoothstep(0.21,0.35,abs(vUv.x-0.5)));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.17,0.34,0.08),mark);\n#include <emissivemap_fragment>`);
+    if(kind.endsWith('-guide'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float guide=(1.0-smoothstep(0.20,0.57,vUv.y))*pow(max(0.0,cos(atan(vUv.x-0.5,vUv.y+0.02)*16.0)),20.0);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.10,0.035,0.13),guide*0.85);\n#include <emissivemap_fragment>`);
+    if(kind==='leaf-scaly')shader.fragmentShader=shader.fragmentShader.replace('veins*0.055','veins*0.025+pow(max(0.0,sin(vUv.x*211.0)*cos(vUv.y*193.0)),10.0)*0.18');
     // A small transmitted-light approximation softens thin leaf undersides.
     shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
-      totalEmissiveRadiance+=diffuseColor.rgb*${kind==='petal'?'0.045':'0.025'};
+      totalEmissiveRadiance+=diffuseColor.rgb*${kind.startsWith('petal')?'0.075':'0.10'};
     `);
   }else if(kind.startsWith('wood')){
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
@@ -290,7 +311,7 @@ export function plantModel(p,view,detail=1){
   if(form==='unmodeled'){
     const frame=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({color:'#aeb5a3',wireframe:true,transparent:true,opacity:.42}));frame.position.y=h/2;g.add(frame);g.userData.unmodeled=true;
   }else if(profile&&form!=='maple'){g.userData.architecture=drawTree(b,{profile,info,p,s,detail},{bud,flower:petalFlower,detailedFlower,shade:palette});
-  }else if((form==='botanical'||['fivepetal','airy','spike','bell','globe'].includes(form))&&info.appearance?.flowerShape&&info.appearance?.leafShape){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
+  }else if((form==='botanical'||['fivepetal','airy','spike','bell','globe'].includes(form))&&info.appearance?.leafShape){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(EXTENDED_FORMS.has(form)){drawBotanical(b,{info,s,p,detail,rand},{bud,cone,flower:petalFlower,detailedFlower,shade:palette,foliageKind});
   }else if(form==='maple'){mapleModel(b,p,s,view,detail,clipped,info);
   }else if(woody){
