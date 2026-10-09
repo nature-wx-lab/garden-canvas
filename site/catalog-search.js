@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.7.0';
+import {treeProfile} from './tree-profiles.js?v=0.8.0';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -24,6 +24,10 @@ export function seasonAt(info,month){
  if(a.foliageMonths){
   density=a.foliageMonths.includes(month)?1:0;scale=1;
   phase=density?'資料の葉の展開期':'葉のない時期';
+ }else if(a.persistence==='lateSpringBulb'){
+  // Triteleia foliage overwinters, wanes at flowering, and is absent in summer/autumn.
+  density=[1,1,1,1,.8,.4,0,0,0,0,0,.5][m];scale=month===12?.65:1;
+  phase=density===0?'球根で夏秋の休眠':month>=5&&month<=6?'花期に葉が黄変する時期':'冬〜春の葉（表示目安）';
  }else if(a.persistence==='springBulb'){
   // Late-winter snowdrops retain their leaves through flowering, then die back.
   // Month boundaries are a temperate display convention; sources describe the cycle.
@@ -31,6 +35,8 @@ export function seasonAt(info,month){
   const first=Math.min(...window),last=Math.max(...window),start=first-1,finish=Math.min(6,last+2),position=winterMonth(month);
   density=position<start||position>finish?0:position===start?.55:position===finish?.3:1;
   scale=position===start?.65:1;phase=density===0?'球根で休眠（地上部なし）':position===finish?'花後の葉が黄変する時期':'冬〜春の葉と花（表示目安）';
+ }else if(a.persistence==='standingGrass'){
+  phase=[12,1,2,10,11].includes(month)?'枯れ葉・穂（刈り戻し前の参考）':month<=4?'新しい葉の展開':'葉と穂の伸長期';
  }else if(leaf==='deciduous'&&!['summerDormant','springEphemeral'].includes(a.persistence)){
   density=month<breakMonth||month>=fall?0:month===breakMonth?.5:month===fall-1?.42:1;
   scale=month===breakMonth?.65:1;autumn=month>=10&&month<fall;
@@ -63,11 +69,11 @@ export function seasonAt(info,month){
  if(a.seasonalColors?.[season])color=a.seasonalColors[season];
  const woody=!!profile||['tree','shrub','conifer','maple','olive','rose','hydrangea','clematis','climbingrose','mophead','lavender'].includes(info.form);
  const leaflessFlowering=!!a.leaflessBloom&&bloom&&dormant;
- const groundDormant=dormant&&!woody&&!a.standingWinter&&!leaflessFlowering&&(leaf==='herb'||!!a.foliageMonths||['summerDormant','springEphemeral','springBulb'].includes(a.persistence)||['cyclamen','tulip','narcissus','globe'].includes(info.form));
+ const groundDormant=dormant&&!woody&&!a.standingWinter&&!leaflessFlowering&&(leaf==='herb'||!!a.foliageMonths||['summerDormant','springEphemeral','springBulb','lateSpringBulb'].includes(a.persistence)||['cyclamen','tulip','narcissus','globe'].includes(info.form));
  if(groundDormant)bloom=false;
  if(leaflessFlowering)phase='葉のない花茎の開花期';
  else if(groundDormant)phase='地上部のない休眠期';
  const bloomIndex=flowerMonths.indexOf(month),flowerDensity=bloom?(flowerMonths.length>2&&(bloomIndex===0||bloomIndex===flowerMonths.length-1)?.65:1):0;
  const shootScale=a.persistence==='semiDormant'&&[12,1,2].includes(month)?.15:!woody&&!dormant&&scale<1?scale:1;
- return {bloom,dormant,groundDormant,shootScale,autumn,known,seedHeads:!!a.seedHeadMonths?.includes(month),leafDensity:density,leafScale:scale,leafColor:color,flowerDensity,flowerColor:info.flower,phase,timingBasis:a.flowerTiming==='months'?'資料に月の記載あり':'季節からの表示上の目安',label:bloom?'開花・'+phase:known?phase:phase+'（花期未確認）'};
+ return {bloom,dormant,groundDormant,shootScale,autumn,known,springFlush:[4,5].includes(month),seedHeads:!!a.seedHeadMonths?.includes(month),leafDensity:density,leafScale:scale,leafColor:color,flowerDensity,flowerColor:info.flower,phase,timingBasis:a.flowerTiming==='months'?'資料に月の記載あり':'季節からの表示上の目安',label:bloom?'開花・'+phase:known?phase:phase+'（花期未確認）'};
 }

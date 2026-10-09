@@ -42,3 +42,27 @@ test('every tree leaf topology and low detail render finite independently animat
  const reps=new Map();for(const [id,p] of Object.entries(CATALOG)){const profile=treeProfile(p);if(profile&&!reps.has(profile.leafShape))reps.set(profile.leafShape,id);}
  for(const [shape,id] of reps){const p=makePlant(id,32,2,2),g=plantModel(p,{month:6,year:0,reference:false},.45);for(const m of g.children)if(m.isInstancedMesh){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),shape);assert.equal(m.geometry.attributes.gardenWind.count,m.instanceMatrix.count);}dispose(g);}
 });
+
+test('opposite leaf pairs share nodes and terminal leaf clusters leave the inner shoot bare',async()=>{
+ const {twigLeafSites}=await import('../site/tree-model.js');
+ const tip={a:[0,0,0],b:[0,1,0],angle:.2};
+ const opposite=twigLeafSites(tip,8,'opposite');
+ for(let i=0;i<8;i+=2){assert.deepEqual(opposite[i].at,opposite[i+1].at);assert.ok(Math.abs(opposite[i+1].angle-opposite[i].angle-Math.PI)<1e-9);}
+ const alternate=twigLeafSites(tip,8,'alternate');assert.equal(new Set(alternate.map(s=>s.at[1])).size,8);
+ const terminal=twigLeafSites(tip,6,'alternate',true);assert.ok(terminal.every(s=>s.at[1]>=.62));
+});
+test('native tree foliage and flower architectures render all twelve months without changing the winter skeleton',()=>{
+ const ids=['p-ad5f6f3599b3','p-40ae63adf07a','p-ed05ee7abd7d','p-03b2490ecb73','p-2bcf9e0df49e','p-4821ee5374e9','p-70d16c4a0245','p-bb669fddd8e8'];
+ for(const id of ids){
+  const info=CATALOG[id],p={...makePlant(id,815,2,2),height:2,leafHeight:2,spread:1.8};let wood;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,{month,year:0,reference:false},.45),branch=meshKind(g,'wood');assert.ok(branch,info.label);
+   if(wood)assert.deepEqual(branch.instanceMatrix.array,wood,info.label);else wood=branch.instanceMatrix.array.slice();
+   if(month===1)assert.equal(!!meshKind(g,'leaf'),info.leaf==='evergreen',info.label);
+   for(const mesh of g.children)assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite),info.label+' '+month);
+   dispose(g);
+  }
+ }
+ assert.equal(treeProfile(CATALOG['p-40ae63adf07a']).leafShape,'tridentMaple');
+ assert.equal(seasonAt(CATALOG['p-bb669fddd8e8'],10).bloom,true);assert.equal(seasonAt(CATALOG['p-bb669fddd8e8'],4).bloom,false);
+});

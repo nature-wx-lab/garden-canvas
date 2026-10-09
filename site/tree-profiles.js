@@ -21,7 +21,7 @@ export function treeProfile(info){
  const base=baseTreeProfile(info),a=info.appearance||{};
  if(!base&&!['tree','shrub','conifer'].includes(info.form))return null;
  if(!base&&!a.habit)return null;
- const p={...(base||{leaf:info.leaf,leafShape:a.leafShape||'leaf',leafSize:.08,green:info.leafColor||'#587849',spring:'#88a361',autumn:'#c49b4e',trunk:.08,source:a.sources?.[0]?.url,basis:'species'})};
+ const p={...(base||{leaf:info.leaf,leafShape:a.leafShape||'leaf',leafSize:.08,green:info.leafColor||'#587849',spring:'#88a361',autumn:'#c49b4e',trunk:a.habit==='multistem'?.05:a.lifeForm==='tree'?.30:.08,source:a.sources?.[0]?.url,basis:'species'})};
  const entryField=key=>a.sources?.[a.basis?.[key]]?.scope==='catalog-entry';
  const habit={clump:'multistem',mound:'rounded',upright:'oval',arching:'weeping',creeping:'spreading',rosette:'rounded'}[a.habit]||a.habit;
  if(habit&&(!base||base.basis==='group'||entryField('habit')))p.habit=habit;
