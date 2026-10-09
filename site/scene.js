@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant } from './model.js?v=0.3.0';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.3.0';
+import { plantInfo, stateAt, inside, canPlant } from './model.js?v=0.3.1';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.3.1';
 
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
 function mat(color){if(!sceneMaterials.has(color))sceneMaterials.set(color,new THREE.MeshStandardMaterial({color,roughness:.92}));return sceneMaterials.get(color);}
@@ -98,7 +98,7 @@ export function createScene(container,onPick){
   function setLight(value){const evening=value==='evening';sun.position.set(...(evening?[-11,6,5]:[-7,12,8]));sun.color.set(evening?'#ffd7a0':'#fff0d2');sun.intensity=evening?2.3:2.8;hemisphere.intensity=evening?1.3:1.7;sky.material.uniforms.top.value.set(evening?'#bac3ce':'#adc5d0');sky.material.uniforms.bottom.value.set(evening?'#e7cdb0':'#e3e0ce');dirty=true;}
   function setView(type){
     if(!plan)return;
-    if(type==='focus'&&selection){const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view);controls.target.set(p.x-plan.width/2,s.height*.4,p.z-plan.depth/2);const d=Math.max(.7,s.height,s.spread)*Math.max(1,1/camera.aspect);camera.position.copy(controls.target).add(new THREE.Vector3(d,d*.48,d));}
+    if(type==='focus'&&selection){const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view);controls.target.set(p.x-plan.width/2,s.height*.52,p.z-plan.depth/2);const d=Math.max(.7,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);camera.position.copy(controls.target).add(new THREE.Vector3(d,d*.48,d));}
     else{
       const bounds=new THREE.Box3(new THREE.Vector3(-plan.width/2,0,-plan.depth/2),new THREE.Vector3(plan.width/2,.1,plan.depth/2));
       for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;for(const sign of [-1,1])bounds.expandByPoint(new THREE.Vector3(p.x-plan.width/2+sign*s.spread/2,s.height,p.z-plan.depth/2+sign*s.spread/2));}

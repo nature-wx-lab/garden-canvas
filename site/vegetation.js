@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.3.0';
+import { plantInfo, stateAt } from './model.js?v=0.3.1';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -9,14 +9,13 @@ const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
 function curvedLeaf(type){
-  const positions=[],uvs=[],indices=[],rows=type==='maple'?8:6,cols=4;
+  const positions=[],uvs=[],indices=[],rows=6,cols=4;
   for(let i=0;i<=rows;i++){
     const t=i/rows;
     let width=Math.pow(Math.sin(Math.PI*t),.85)*.43;
     if(type==='narrow')width*=.2;
     if(type==='petal')width=Math.pow(Math.sin(Math.PI*t),.58)*.4;
     if(type==='hosta')width=Math.pow(Math.sin(Math.PI*t),.64)*.53;
-    if(type==='maple')width=(.12+.76*Math.pow(Math.sin(Math.PI*t),.8))*(.6+.4*Math.cos((t-.43)*Math.PI*7))*.56;
     if(type==='blade')width=(1-t)*.055;
     for(let j=0;j<=cols;j++){
       const u=j/cols*2-1,x=u*width;
@@ -28,7 +27,36 @@ function curvedLeaf(type){
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();return keep(g);
 }
-for(const type of ['leaf','narrow','maple','hosta','petal','blade'])shapes[type]=curvedLeaf(type);
+for(const type of ['leaf','narrow','hosta','petal','blade'])shapes[type]=curvedLeaf(type);
+// Acer palmatum: seven radiating, deeply divided lobes, with fine marginal teeth.
+// The blade grows from the petiole origin, not along a serrated strap.
+function mapleLeaf(steps=16,rings=[.45,1]){
+  const edge=[],positions=[0,0,0],uvs=[.5,.3/1.3],indices=[];
+  const lobes=[[-102,.54],[-68,.86],[-34,.99],[0,1.02],[34,.97],[68,.84],[102,.52]];
+  edge.push([-.035,-.07]);
+  for(let l=0;l<lobes.length;l++)for(let step=0;step<=steps;step++){
+    const t=step/steps,angle=(lobes[l][0]-17+t*34)*Math.PI/180;
+    let radius=.30+(lobes[l][1]-.30)*Math.pow(Math.sin(Math.PI*t),1.08);
+    if(step%2===1)radius-=.028*Math.sin(Math.PI*t);
+    edge.push([Math.sin(angle)*radius,Math.cos(angle)*radius]);
+  }
+  edge.push([.035,-.07]);
+  const count=edge.length;
+  for(const fraction of rings)for(const [ex,ey] of edge){
+    const x=ex*fraction,y=ey*fraction;
+    const angle=Math.atan2(x,y),rib=Math.cos(angle/(34*Math.PI/180)*Math.PI*2);
+    const z=.028*Math.sin(fraction*Math.PI)*rib-.035*fraction*fraction+.012*Math.sin(angle*2)*fraction;
+    positions.push(x,y,z);uvs.push(x/2.1+.5,(y+.3)/1.3);
+  }
+  for(let j=0;j<count;j++){
+    const next=(j+1)%count;indices.push(0,1+j,1+next);
+    for(let ring=0;ring<rings.length-1;ring++){
+      const a=1+ring*count+j,b=1+ring*count+next,c=a+count,d=b+count;indices.push(a,c,b,b,c,d);
+    }
+  }
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.userData.palmateLobes=7;return keep(geometry);
+}
+shapes.maple=mapleLeaf();shapes.mapleLow=mapleLeaf(8,[1]);
 const windGLSL=`
 attribute vec4 gardenWind;
 uniform float gardenTime;
@@ -67,7 +95,23 @@ function windShader(shader,kind){
   `);
   if(kind==='depth')return;
   shader.fragmentShader='varying vec3 gardenLocal;\n'+shader.fragmentShader;
-  if(['leaf','petal','grass'].includes(kind)){
+  if(kind==='maple'){
+    shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+      vec2 leaf=vec2((vUv.x-0.5)*2.1,vUv.y*1.3-0.3);
+      float veins=1.0;
+      for(int i=-3;i<=3;i++){
+        float a=float(i)*0.593412;vec2 dir=vec2(sin(a),cos(a));
+        float along=dot(leaf,dir);
+        if(along>0.0){float d=abs(leaf.x*dir.y-leaf.y*dir.x);veins=min(veins,d);}
+      }
+      float rib=1.0-smoothstep(0.003,0.009,veins);
+      float fine=pow(max(0.0,cos((length(leaf)*0.65+veins)*180.0)),18.0);
+      diffuseColor.rgb*=0.9+0.12*vUv.y;diffuseColor.rgb+=diffuseColor.rgb*(rib*0.28+fine*0.035);
+    `);
+    shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+      totalEmissiveRadiance+=diffuseColor.rgb*0.10;
+    `);
+  }else if(['leaf','petal','grass'].includes(kind)){
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
       float fold=abs(vUv.x-0.5)*2.0;
       float midrib=1.0-smoothstep(0.012,0.025,abs(vUv.x-0.5));
@@ -90,7 +134,7 @@ function windShader(shader,kind){
 const materialCache=new Map();
 function material(kind){
   if(materialCache.has(kind))return materialCache.get(kind);
-  const m=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:kind==='leaf'?.7:.88,side:THREE.DoubleSide});
+  const m=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:['leaf','maple'].includes(kind)?.76:.88,side:THREE.DoubleSide});
   m.defines={USE_UV:''};m.onBeforeCompile=s=>windShader(s,kind);m.customProgramCacheKey=()=>`garden-0.3-${kind}`;
   materialCache.set(kind,m);sharedMaterials.add(m);return m;
 }
@@ -102,7 +146,7 @@ export function batch(group,height=1,flex=.06,phase=0){
     const key=geometry.uuid+kind;if(!entries.has(key))entries.set(key,{geometry,kind,items:[],colors:[],wind:[]});const e=entries.get(key);e.items.push(matrix.clone());colour.set(color);e.colors.push(colour.clone());e.wind.push(height,flex,phase,flutter);
   }
   function add(shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0){
-    dummy.position.set(x,y,z);dummy.scale.set(sx,sy,sz);dummy.rotation.set(rx,ry,rz,'YXZ');dummy.updateMatrix();push(typeof shape==='string'?shapes[shape]:shape,kind,dummy.matrix,color,['leaf','petal','grass'].includes(kind)?1:0);
+    dummy.position.set(x,y,z);dummy.scale.set(sx,sy,sz);dummy.rotation.set(rx,ry,rz,'YXZ');dummy.updateMatrix();push(typeof shape==='string'?shapes[shape]:shape,kind,dummy.matrix,color,['leaf','maple','petal','grass'].includes(kind)?1:0);
   }
   function branch(a,b,r,color,kind='wood'){
     const va=new THREE.Vector3(...a),vb=new THREE.Vector3(...b),dir=vb.clone().sub(va),length=dir.length();if(length<.0001)return;
@@ -122,12 +166,71 @@ function petalFlower(b,x,y,z,r,color,rand,layers=1){
   }
   b.add(layers>1?bud:cone,'seed',layers>1?'#bd9572':'#926025',x,y+(layers>1?.005:r*.14),z,r*.22,r*(layers>1?.09:.35),r*.22);
 }
+// Connected forks and opposite pairs of petioles replace floating leaf clouds.
+function mapleModel(b,p,s,view,detail,clipped){
+  const h=s.height,w=s.spread,rand=random(p.id*3001+11),trunk='#888476';
+  const point=(a,r,y)=>[Math.sin(a)*r,y,Math.cos(a)*r];
+  const mix=(a,c,t)=>a.map((v,i)=>v+(c[i]-v)*t);
+  const curved=(points,r,color)=>{
+    for(let i=1;i<points.length;i++)b.branch(points[i-1],points[i],r*Math.pow(.66,i-1),color);
+  };
+  const foot=[0,0,0],fork=[w*.014,s.trunkHeight,-w*.009],trunkRadius=Math.max(.009,s.natural.height*.010);
+  curved([foot,[-w*.014,s.trunkHeight*.48,w*.006],fork],trunkRadius,trunk);
+  // A few surface roots anchor the stem without adding a skirt of trunk polygons.
+  for(let i=0;i<4;i++){const a=i*1.57+rand()*.3;curved([[0,.025,0],point(a,trunkRadius*2.3,.012),point(a,trunkRadius*3.5,0)],trunkRadius*.36,trunk);}
+  const orientation=rand()*Math.PI*2,crownH=Math.max(.12,h-s.trunkHeight);
+  const leafLength=Math.min(.072,Math.max(.042,w*.075));
+  const twigCount=Math.max(4,Math.min(30,Math.round((3+w*6.4)*Math.pow(detail,.85))));
+  const nodeCount=Math.max(3,Math.min(14,Math.round((3+w*2.4)*Math.pow(detail,.85))));
+  for(let leader=0;leader<3;leader++){
+    const rand=random(p.id*7907+leader*601+3),a=orientation+leader*Math.PI*2/3+(rand()-.5)*.3;
+    const tipY=h-leafLength*.25-crownH*(leader===0?0:leader===1?.13:.22);
+    const end=point(a,w*(leader===0?.10:.22),tipY);
+    const elbow=point(a,w*.08,s.trunkHeight+crownH*.46);
+    curved([fork,mix(fork,elbow,.5),elbow,mix(elbow,end,.55),end],trunkRadius*.67,trunk);
+    for(let pair=0;pair<3;pair++)for(const side of [-1,1]){
+      const rr=random(p.id*13007+leader*503+pair*73+(side+1)*19);
+      const t=.15+pair*.32+rr()*.10+leader*.018,origin=t<.46?mix(fork,elbow,t/.46):mix(elbow,end,(t-.46)/.54);
+      const angle=a+side*(.78+rr()*.35),extent=w*(.36-pair*.035)*(clipped?.90:1);
+      const target=point(angle,extent,Math.min(h-leafLength*.55,origin[1]+crownH*(.12+rr()*.045)));
+      const middle=mix(origin,target,.56);middle[1]+=.02*crownH;
+      curved([origin,mix(origin,middle,.5),middle,target],Math.max(.0025,trunkRadius*.31)*(1-pair*.16),trunk);
+      for(let j=0;j<twigCount;j++){
+        const tr=random(p.id*17011+leader*887+pair*211+(side+1)*53+j*17);
+        const at=.25+.72*(j+.5)/twigCount,attach=at<.56?mix(origin,middle,at/.56):mix(middle,target,(at-.56)/.44);
+        const yaw=angle+(j%2?1:-1)*(.65+tr()*.55),length=Math.min(w*.21,.12+w*.11)*(.65+tr()*.5);
+        const shoot=[attach[0]+Math.sin(yaw)*length,Math.min(h-leafLength*.5,attach[1]+crownH*(.015+tr()*.14)),attach[2]+Math.cos(yaw)*length];
+        const radius=Math.hypot(shoot[0],shoot[2]),maxRadius=Math.max(.02,w/2-leafLength*.9);
+        if(radius>maxRadius){shoot[0]*=maxRadius/radius;shoot[2]*=maxRadius/radius;}
+        const joint=mix(attach,shoot,.52);joint[1]+=.012;
+        curved([attach,joint,shoot],Math.min(.003,Math.max(.0007,w*.0015)),view.month<5?'#927458':'#7d7955');
+        for(let node=0;node<nodeCount;node++)for(const leafSide of [-1,1]){
+          const leafRand=random(p.id*19001+leader*971+pair*241+(side+1)*67+j*29+node*7+(leafSide+1));
+          const pos=mix(joint,shoot,(node+.25)/nodeCount),leafYaw=yaw+leafSide*(.9+leafRand()*.35),size=leafLength*(.80+leafRand()*.36);
+          const stemLength=size*(.4+leafRand()*.2),pitch=.88+leafRand()*1.15;
+          const petiole=[pos[0]+Math.sin(leafYaw)*stemLength,pos[1]+size*(leafRand()*.58-.20),pos[2]+Math.cos(leafYaw)*stemLength];
+          if(clipped&&Math.hypot(petiole[0],petiole[2])>w*.48)continue;
+          b.branch(pos,petiole,Math.max(.00035,size*.006),'#897b4e','petiole');
+          const roll=(leafRand()-.5)*.22;
+          const base=s.autumn?(leafRand()>.45?'#b95427':'#be7929'):view.month<5?'#81a047':'#638536';
+          b.add(detail<.7?'mapleLow':'maple','maple',palette(leafRand,base,.075),...petiole,size,size,size,pitch,leafYaw,roll);
+        }
+      }
+    }
+    // A light terminal spray keeps the central leader from ending in a bare spike.
+    for(let k=0;k<12;k++){
+      const aa=a+k*2.4,at=mix(elbow,end,.82+k*.014),size=leafLength*(.7+rand()*.2),petiole=[at[0]+Math.sin(aa)*size*.45,at[1],at[2]+Math.cos(aa)*size*.45];
+      b.branch(at,petiole,.00045,'#897b4e','petiole');b.add(detail<.7?'mapleLow':'maple','maple',palette(rand,s.autumn?'#b8642c':'#719243',.07),...petiole,size,size,size,1.45+rand()*.2,aa,0);
+    }
+  }
+}
 export function plantModel(p,view,detail=1){
   const s=stateAt(p,view),info=plantInfo(p.kind),g=new THREE.Group();g.userData.plantId=p.id;if(!s.present)return g;
   const rand=random(p.id),h=s.height,w=s.spread,lh=s.leafHeight,form=info.form;
   const woody=['maple','olive'].includes(form),flex=woody?.025:form==='grass'?.105:.065,b=batch(g,h,flex,p.id*1.73);
   const dormant=s.winter&&info.leaf!=='evergreen'&&info.leaf!=='semi',clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
-  if(woody){
+  if(form==='maple'){mapleModel(b,p,s,view,detail,clipped);
+  }else if(woody){
     const base=form==='olive'?'#738569':s.autumn?'#ae542a':view.month<5?'#6f8b3f':'#4f7033';
     const forkY=s.trunkHeight,topY=Math.max(forkY,h*.74),trunkColor=form==='olive'?'#807863':'#71664e';
     const trunk=[[0,0,0],[-w*.012,forkY*.55,w*.01],[w*.022,forkY,w*.012],[w*.045,topY,-w*.026]];
@@ -197,6 +300,13 @@ export function plantModel(p,view,detail=1){
       }
     }
   }
-  b.finish();return g;
+  b.finish();
+  if(form==='maple'){
+    // Use the same full-leaf envelope in every season; remove deciduous parts afterwards.
+    g.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(g),radius=Math.max(Math.abs(bounds.min.x),Math.abs(bounds.max.x),Math.abs(bounds.min.z),Math.abs(bounds.max.z));
+    if(radius>0&&bounds.max.y>0){const horizontal=w/(2*radius);g.scale.set(horizontal,h/bounds.max.y,horizontal);}
+    if(dormant)for(const mesh of [...g.children])if(['garden-0.3-maple','garden-0.3-petiole'].includes(mesh.material?.customProgramCacheKey())){g.remove(mesh);mesh.geometry.dispose();mesh.dispose();}
+  }
+  return g;
 }
 const yClamp=y=>Math.max(.03,y);

@@ -39,7 +39,7 @@ test('leaf loss preserves the same woody branch structure',()=>{
   for(const kind of ['maple','olive','rose','hydrangea']){
     const p=makePlant(kind,9,2,2),summer=plantModel(p,view(0,8)),winter=plantModel(p,view(0,1));
     const branches=g=>g.children.filter(o=>o.material?.customProgramCacheKey()==='garden-0.3-wood').map(o=>[...o.instanceMatrix.array]);
-    assert.deepEqual(branches(summer),branches(winter),kind);disposeModel(summer);disposeModel(winter);
+    assert.ok(JSON.stringify(branches(summer))===JSON.stringify(branches(winter)),kind+' branch positions changed');assert.deepEqual(summer.scale.toArray(),winter.scale.toArray(),kind+' seasonal scale changed');disposeModel(summer);disposeModel(winter);
   }
 });
 test('dense-garden detail reduction retains plant identity and reduces geometry instances',()=>{
@@ -49,3 +49,16 @@ test('dense-garden detail reduction retains plant identity and reduces geometry 
     assert.equal(normal.userData.plantId,reduced.userData.plantId);assert.ok(count(reduced)>0&&count(reduced)<count(normal));disposeModel(normal);disposeModel(reduced);
   }
 });
+
+test('maple uses broad palmate blades and preserves input dimensions',()=>{
+  for(const [height,spread] of [[1.5,.85],[2.5,2.5]]){
+    const p={...makePlant('maple',4,2,2),height,spread,leafHeight:height},g=plantModel(p,view(0,6));
+    const leaves=g.children.find(o=>o.material?.customProgramCacheKey()==='garden-0.3-maple');assert.ok(leaves);
+    leaves.geometry.computeBoundingBox();const bounds=leaves.geometry.boundingBox;
+    assert.ok(bounds.max.x-bounds.min.x>1.2*(bounds.max.y-bounds.min.y),'blade should fan sideways, not form a vertical strap');
+    let facingUp=0;for(let i=0;i<leaves.count;i++){const a=leaves.instanceMatrix.array,offset=i*16;const normalY=Math.abs(a[offset+9])/Math.hypot(a[offset+8],a[offset+9],a[offset+10]);if(normalY>.7)facingUp++;}
+    assert.ok(facingUp/leaves.count>.75,'most blades should spread across the canopy rather than stand upright');
+    g.updateMatrixWorld(true);const actual=new Box3().setFromObject(g);assert.ok(Math.abs(actual.max.y-height)<.001);assert.ok(actual.max.x<=spread/2+.001&&actual.min.x>=-spread/2-.001&&actual.max.z<=spread/2+.001&&actual.min.z>=-spread/2-.001);disposeModel(g);
+  }
+});
+import {Box3} from '../site/vendor/three.module.js';
