@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.8.7';
-import {foliageKind} from './appearance.js?v=0.8.7';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.7';
-import {drawTree} from './tree-model.js?v=0.8.7';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.7';
+import {treeProfile} from './tree-profiles.js?v=0.8.8';
+import {foliageKind} from './appearance.js?v=0.8.8';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.8';
+import {drawTree} from './tree-model.js?v=0.8.8';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.8';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.8.7';
+import { plantInfo, stateAt } from './model.js?v=0.8.8';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -122,6 +122,16 @@ shapes.triangular=outlineLeaf([[0,0],[-.46,.06],[-.29,.44],[0,1],[.29,.44],[.46,
 shapes.arrow=outlineLeaf([[0,0],[-.4,-.12],[-.24,.4],[0,1],[.24,.4],[.4,-.12]]);
 shapes.spoon=outlineLeaf([[0,0],[-.055,.38],[-.32,.59],[-.34,.84],[-.17,.98],[0,1],[.17,.98],[.34,.84],[.32,.59],[.055,.38]]);
 shapes.canaryGlume=outlineLeaf([[0,0],[-.13,.20],[-.27,.66],[-.24,.83],[0,1],[.24,.83],[.27,.66],[.13,.20]]);
+shapes.claspingOvate=outlineLeaf([[0,0],[-.21,-.08],[-.41,.08],[-.46,.34],[-.32,.68],[0,1],[.32,.68],[.46,.34],[.41,.08],[.21,-.08]]);
+shapes.globulariaSpoon=outlineLeaf([[0,0],[-.05,.32],[-.24,.51],[-.32,.77],[-.28,.94],[-.13,.98],[0,.94],[.13,.98],[.28,.94],[.32,.77],[.24,.51],[.05,.32]]);
+for(const type of ['mallowPalm','mallowLobed']){
+ const pts=[[0,0]],round=type==='mallowPalm';
+ for(let i=0;i<=180;i++){
+  const an=(-145+i*290/180)*Math.PI/180,r=(round?.47:.41)+(round?.085:.16)*Math.cos(an*(round?5:3)),tooth=1+.045*Math.cos(an*45);
+  pts.push([Math.sin(an)*r*tooth,.26+Math.cos(an)*r*tooth]);
+ }
+ shapes[type]=outlineLeaf(pts);shapes[type].userData.mallowLobes=round?5:3;
+}
 shapes.obovate=outlineLeaf([[0,0],[-.12,.22],[-.35,.6],[-.35,.82],[-.18,.99],[0,1],[.18,.99],[.35,.82],[.35,.6],[.12,.22]]);
 // Peltate blades are centred on their stalk attachment, with eight broad lobes.
 {
@@ -394,7 +404,7 @@ export function plantModel(p,view,detail=1){
   const dormant=s.dormant,clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
   if(form==='unmodeled'){
     const frame=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({color:'#aeb5a3',wireframe:true,transparent:true,opacity:.42}));frame.position.y=h/2;g.add(frame);g.userData.unmodeled=true;
-  }else if(['wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
+  }else if(['wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory','blueEyeShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(profile&&form!=='maple'){g.userData.architecture=drawTree(b,{profile,info,p,s,detail},{bud,flower:petalFlower,detailedFlower,shade:palette});
   }else if((form==='botanical'||['fivepetal','airy','spike','bell','globe'].includes(form))&&info.appearance?.leafShape){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(EXTENDED_FORMS.has(form)){drawBotanical(b,{info,s,p,detail,rand},{bud,cone,flower:petalFlower,detailedFlower,shade:palette,foliageKind});
