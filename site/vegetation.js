@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.8.3';
-import {foliageKind} from './appearance.js?v=0.8.3';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.3';
-import {drawTree} from './tree-model.js?v=0.8.3';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.3';
+import {treeProfile} from './tree-profiles.js?v=0.8.4';
+import {foliageKind} from './appearance.js?v=0.8.4';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.4';
+import {drawTree} from './tree-model.js?v=0.8.4';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.4';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.8.3';
+import { plantInfo, stateAt } from './model.js?v=0.8.4';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -47,6 +47,15 @@ function curvedLeaf(type){
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();return keep(g);
 }
 for(const type of ['leaf','narrow','lanceSerrate','ovateSerrate','obovateSerrate','oakLance','wavyElliptic','elm','calycanthus','hosta','hostaCorrugated','hostaRuffled','petal','blade','sword','strap','wavyStrap','needle','serrated','crenate','leathery'])shapes[type]=curvedLeaf(type);
+{
+ const positions=[],uvs=[],indices=[],rows=20,cols=12;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,width=.49*Math.sqrt(Math.max(0,1-Math.pow(2*t-1,2))),edge=Math.sin(Math.PI*t),relief=.035*Math.pow(Math.sin(t*19+Math.abs(u)*2.1),2)*Math.sin(Math.PI*j/cols)*edge;
+  positions.push(u*width,t-(i===rows?.018*(1-Math.abs(u)):0),.13*t*t+.10*u*u*edge+relief);uvs.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;indices.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();g.userData.bullate=true;shapes.bullateRound=keep(g);
+}
 {
  const points=[],uv=[],indices=[],rows=24,cols=6;
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -358,6 +367,7 @@ export function plantModel(p,view,detail=1){
   const dormant=s.dormant,clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
   if(form==='unmodeled'){
     const frame=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({color:'#aeb5a3',wireframe:true,transparent:true,opacity:.42}));frame.position.y=h/2;g.add(frame);g.userData.unmodeled=true;
+  }else if(['wireShrub','mirrorShrub','myrtleShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(profile&&form!=='maple'){g.userData.architecture=drawTree(b,{profile,info,p,s,detail},{bud,flower:petalFlower,detailedFlower,shade:palette});
   }else if((form==='botanical'||['fivepetal','airy','spike','bell','globe'].includes(form))&&info.appearance?.leafShape){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(EXTENDED_FORMS.has(form)){drawBotanical(b,{info,s,p,detail,rand},{bud,cone,flower:petalFlower,detailedFlower,shade:palette,foliageKind});
