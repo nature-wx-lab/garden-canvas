@@ -15,7 +15,7 @@ test('every catalog entry has an explicit evidence record and no unsupported com
  const allowed=new Set(['sources','basis','status','unconfirmed','arrangement','inflorescence','flowerShape','habit','leafShape','leafTexture','leafColor','barkColor','barkPattern','petals','persistence','flowerMonths','flowerTiming','emergenceMonths','dormantMonths','leafPattern','patternColor','flowerLayers','flowerPattern','scientificName','phenologyRegion','leafLength','leafRelief','seasonalColors','stemColor','leaflets','compoundType','standingWinter','flowerSeasons','leafMargin','architecture','winterClimateSensitive','lifeForm','flowerPatternColor','outerFlowerPattern','flowerRadius','seedHeadMonths','seedColor','flowerPalette','flowerGuides','foliageMonths','leaflessBloom','flowerOptions','leafletShape','flowerFadeTo','headRadius','inflorescenceLength','leafletCounts','leafUnderside','springShootColor','stamenCount','leafFlushAfterFlower','monthlyLeafColors','bracts','flowerOutsideColor','flowerEyeColor','monthlyPatternColors']);
  for(const [id,a] of Object.entries(APPEARANCE_DATA)){
   assert.ok(Object.keys(a).every(k=>allowed.has(k)),id);assert.ok(['attributes','unconfirmed','partial'].includes(a.status));
-  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au','www.nparks.gov.sg','provenwinners.jp'].includes(u.hostname));assert.ok(['catalog-entry','species','genus'].includes(source.scope));}
+  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au','www.nparks.gov.sg','provenwinners.jp','pacificbulbsociety.org'].includes(u.hostname));assert.ok(['catalog-entry','species','genus'].includes(source.scope));}
   for(const [field,index] of Object.entries(a.basis)){assert.ok(Object.hasOwn(a,field));assert.ok(Number.isInteger(index)&&index>=0&&index<a.sources.length,id+':'+field);}
   for(const field of ['flowerMonths','emergenceMonths','dormantMonths'])if(a[field])assert.ok(a[field].length>0&&a[field].every(m=>Number.isInteger(m)&&m>=1&&m<=12),id);
   for(let m=1;m<=12;m++){const s=seasonAt(CATALOG[id],m);assert.ok(s.leafDensity>=0&&s.leafDensity<=1);assert.ok(s.leafScale>=0&&s.leafScale<=1);if(s.groundDormant)assert.equal(s.bloom,false);}
@@ -38,6 +38,29 @@ test('summer flowers preserve opposite leaves, bracted heads and the documented 
  assert.equal(plantModel(makePlant('p-4fd14a60fc7f',415,2,2),view(1)).children.length,0);
  const dry=plantModel(makePlant('p-771fe3fdbf03',416,2,2),view(1));assert.ok(dry.children.some(m=>m.userData.component==='seed'));assert.ok(!dry.children.some(m=>m.userData.component==='anther'));dispose(dry);
  const annual=makePlant('p-3cefec433578',417,2,2);assert.equal(plantModel(annual,view(1)).children.length,0);assert.equal(stateAt(annual,{...view(6),year:1}).present,false);
+});
+test('star jasmine keeps its perennial creeping wood and distinct variegation through winter',()=>{
+ for(const id of ['p-80db4c717520','p-14d3d08c7235','p-e09876a84582','p-a10fa59634ba','p-6c518cb68dc1']){
+  const p=makePlant(id,421,2,2),summer=plantModel(p,view(6)),winter=plantModel(p,view(1));
+  const wood=g=>g.children.filter(m=>m.userData.component==='wood').map(m=>[...m.instanceMatrix.array]);
+  assert.ok(wood(summer).length>0);assert.deepEqual(wood(summer),wood(winter));
+  assert.ok(winter.children.some(m=>m.userData.component.startsWith('leaf')));
+  if(id!=='p-14d3d08c7235')assert.ok(summer.children.some(m=>m.userData.component.includes('mosaic')));
+  dispose(summer);dispose(winter);
+ }
+ const white=plantModel(makePlant('p-14d3d08c7235',422,2,2),view(6));assert.ok(white.children.some(m=>m.userData.component==='anther'));dispose(white);
+ assert.ok(CATALOG['p-80db4c717520'].height[1]<=.2);assert.ok(CATALOG['p-14d3d08c7235'].height[1]<1);
+});
+test('small bulbs distinguish spring dormancy, autumn flowers and recurved or unconstricted flowers',()=>{
+ for(const id of ['p-8f8cd8c0c33d','p-4df8a087cdeb','p-db9489e27120','p-19ea7408e3ef','p-789e60b36291','p-040659e18f2b','p-91482789209b']){
+  const p=makePlant(id,431,2,2);assert.equal(plantModel(p,view(7)).children.length,0);
+  const spring=plantModel(p,view(3));assert.ok(spring.children.length>0);
+  if(id==='p-8f8cd8c0c33d')assert.ok(spring.children.some(m=>m.geometry.userData.recurvedTepal));dispose(spring);
+ }
+ const p=makePlant('p-35f78064f6e3',432,2,2),autumn=plantModel(p,view(9)),winter=plantModel(p,view(1));
+ assert.ok(autumn.children.some(m=>m.userData.component==='anther'));assert.ok(!autumn.children.some(m=>m.userData.component.startsWith('leaf')));
+ assert.ok(winter.children.some(m=>m.userData.component.startsWith('leaf')));assert.ok(!winter.children.some(m=>m.userData.component==='anther'));assert.equal(plantModel(p,view(7)).children.length,0);dispose(autumn);dispose(winter);
+ const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,color:'#749dd1',shape:'azureBell'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});assert.deepEqual(parts,[{shape:'bell6',kind:'petal'}]);
 });
 test('cranesbills retain their lobed foliage, five petals, ten anthers and distinct winter habit',()=>{
  const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,color:'#7c77b5',shape:'cranesbill'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});

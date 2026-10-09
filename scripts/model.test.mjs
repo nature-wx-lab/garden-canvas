@@ -6,7 +6,7 @@ const fixture=()=>{const d=emptyDocument();d.plans.A.plants=[makePlant('maple',1
 const task=(type,month,repeat='annual',min=10,max=20,count=1)=>({id:1,type,month,repeat,min,max,count});
 test('released catalogue revisions preserve saved garden contents when models are enriched',()=>{
  const original=fixture();original.plans.A.plants.push(makePlant('p-281a043a4b8a',2,5,4));
- for(const revision of ['2026-10-10.4','2026-10-10.5','2026-10-10.6']){
+ for(const revision of ['2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7']){
   const saved={...clone(original),catalogVersion:revision};assert.deepEqual(validateDocument(saved),original);
  }
 });

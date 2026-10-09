@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.8.2';
+import {treeProfile} from './tree-profiles.js?v=0.8.3';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -24,6 +24,13 @@ export function seasonAt(info,month){
  if(a.foliageMonths){
   density=a.foliageMonths.includes(month)?1:0;scale=1;
   phase=density?'資料の葉の展開期':'葉のない時期';
+ }else if(a.persistence==='autumnBulb'){
+  // Acis flowers before or with its autumn foliage; summer rest is not winter dieback.
+  density=[1,1,1,1,.8,.25,0,0,0,.4,1,1][m];scale=month===10?.65:1;
+  phase=density===0?'夏の休眠・葉のない時期（表示目安）':month===10?'花とともに葉が出る時期（表示目安）':'秋〜春の葉（表示目安）';
+ }else if(a.persistence==='autumnLeafBulb'){
+  density=[1,1,1,1,.6,.2,0,0,.3,.7,1,1][m];scale=month===9?.55:1;
+  phase=density===0?'球根で夏の休眠':month>=9&&month<=10?'秋の葉出し（資料の地域での参考）':'秋〜春の葉（表示目安）';
  }else if(a.persistence==='lateSpringBulb'){
   // Triteleia foliage overwinters, wanes at flowering, and is absent in summer/autumn.
   density=[1,1,1,1,.8,.4,0,0,0,0,0,.5][m];scale=month===12?.65:1;
@@ -70,7 +77,7 @@ export function seasonAt(info,month){
  if(a.seasonalColors?.[season])color=a.seasonalColors[season];
  const woody=!!profile||['tree','shrub','conifer','maple','olive','rose','hydrangea','clematis','climbingrose','mophead','lavender'].includes(info.form);
  const leaflessFlowering=!!a.leaflessBloom&&bloom&&dormant;
- const groundDormant=dormant&&!woody&&!a.standingWinter&&!leaflessFlowering&&(leaf==='herb'||!!a.foliageMonths||['summerDormant','springEphemeral','springBulb','lateSpringBulb'].includes(a.persistence)||['cyclamen','tulip','narcissus','globe'].includes(info.form));
+ const groundDormant=dormant&&!woody&&!a.standingWinter&&!leaflessFlowering&&(leaf==='herb'||!!a.foliageMonths||['summerDormant','springEphemeral','springBulb','lateSpringBulb','autumnBulb','autumnLeafBulb'].includes(a.persistence)||['cyclamen','tulip','narcissus','globe'].includes(info.form));
  if(groundDormant)bloom=false;
  if(leaflessFlowering)phase='葉のない花茎の開花期';
  else if(groundDormant)phase=info.life==='annual'?'一年草の生育期外（低温期の参考）':'地上部のない休眠期';
