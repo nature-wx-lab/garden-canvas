@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { samplePlan, validatePlan, outlineFor, area, inside, validOutline, clone } from '../site/model.js';
+test('sample plan survives a JSON round trip without sharing references',()=>{const p=samplePlan(),q=validatePlan(JSON.parse(JSON.stringify(p)));assert.deepEqual(p,q);q.plants[0].x++;assert.notEqual(p.plants[0].x,q.plants[0].x);});
+test('L outline excludes its cutout and includes its boundary',()=>{const p=outlineFor('lshape',8,6);assert.equal(inside(7,5,p),false);assert.equal(inside(2,5,p),true);assert.equal(inside(0,2,p),true);assert.equal(validOutline(p,8,6),true);assert.equal(area(outlineFor('rectangle',8,6)),48);});
+test('crossing, duplicate and degenerate outlines are rejected',()=>{for(const p of [[[0,0],[5,5],[0,5],[5,0]],[[0,0],[5,0],[5,0],[0,5]],[[0,0],[.2,0],[0,.2]]])assert.equal(validOutline(p,8,6),false);});
+test('out of range, unknown kinds, unknown fields and nonfinite inputs fail closed',()=>{for(const mutate of [p=>p.width=100,p=>p.month=3.5,p=>p.plants[0].kind='constructor',p=>p.plants[0].height=Infinity,p=>p.plants[0].x=-1,p=>p.extra='unexpected',p=>p.plants[0].html='<img>',p=>p.plants[1].id=p.plants[0].id]){const p=samplePlan();mutate(p);assert.throws(()=>validatePlan(p));}});
+test('too many plants and points are rejected',()=>{const p=samplePlan();p.plants=Array.from({length:101},(_,i)=>({...p.plants[0],id:i+1}));assert.throws(()=>validatePlan(p));assert.equal(validOutline(Array(17).fill([1,1]),8,6),false);});
+test('invalid import leaves caller state unchanged',()=>{const current=samplePlan(),before=clone(current),bad=clone(current);bad.plants[0].spread=0;assert.throws(()=>validatePlan(bad));assert.deepEqual(current,before);});
+test('prototype-shaped JSON cannot supply extra catalog kinds or fields',()=>{const p=samplePlan();p.plants[0].kind='__proto__';assert.throws(()=>validatePlan(p));assert.throws(()=>validatePlan(JSON.parse('{"__proto__":{"polluted":true}}')));assert.equal({}.polluted,undefined);});

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; worker-src 'none'">
+  <meta name="description" content="庭の形と植物の配置を、3Dで気軽に試す庭のキャンバス。無料の初期試作版。">
+  <title>庭のキャンバス｜Garden Canvas</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+<header class="header">
+  <div class="brand"><span class="brand-mark" aria-hidden="true">芽</span><div><h1>庭のキャンバス <small>Garden Canvas</small></h1><p>植えて、眺めて、入れ替えて。理想の庭を見つけよう。</p></div><span class="badge">初期試作版</span></div>
+  <div class="file-actions"><button id="export">保存</button><button id="import">開く</button><input id="file" type="file" accept=".json,application/json" hidden><button id="help">使い方</button></div>
+</header>
+<main class="workspace">
+  <aside class="panel" aria-label="庭の編集">
+    <section>
+      <h2><span>01</span> 庭をつくる</h2>
+      <div class="fields"><label>幅 (m)<input id="width" type="number" min="2" max="30" step="0.5" value="8"></label><label>奥行き (m)<input id="depth" type="number" min="2" max="30" step="0.5" value="6"></label></div>
+      <label>庭の形<select id="shape"><option value="rectangle">長方形</option><option value="lshape">L字形</option><option value="custom">自由な形を描く</option></select></label>
+      <div id="outline-tools" hidden><p class="hint">真上の庭で角を順にクリック。3〜16点で囲みます。</p><div class="button-row"><button id="finish-outline">形を確定</button><button id="cancel-outline">取消</button></div><p id="outline-count" class="hint">0点</p></div>
+      <p class="hint">白い線は1m間隔。寸法変更は配置も同じ割合で伸縮します。</p>
+    </section>
+    <section>
+      <h2><span>02</span> 植物を置く</h2>
+      <div id="catalog" class="catalog" aria-label="配置用植物の種類"></div>
+      <p class="hint">種類を選び、庭の空いている場所をクリック。</p>
+    </section>
+    <section id="selection-panel">
+      <h2><span>03</span> 選んだ植物を調整</h2>
+      <p id="no-selection" class="hint">庭の植物、または下の一覧から選べます。</p>
+      <div id="selected-fields" hidden>
+        <label>植物の形<select id="kind"></select></label>
+        <div class="fields"><label>高さ (m)<input id="height" type="number" min="0.1" max="8" step="0.1"></label><label>株・樹冠の幅 (m)<input id="spread" type="number" min="0.1" max="6" step="0.1"></label></div>
+        <div class="fields"><label>横位置 (m)<input id="plant-x" type="number" min="0" max="30" step="0.1"></label><label>奥行位置 (m)<input id="plant-z" type="number" min="0" max="30" step="0.1"></label></div>
+        <div class="button-row"><button id="move">場所を移す</button><button id="remove" class="danger">取り除く</button></div>
+        <p class="hint">寸法は自分で設定する配置検討用の値です。</p>
+      </div>
+    </section>
+    <section class="plant-list-section"><h2>庭の植物 <span id="count">0株</span></h2><div id="plant-list" class="plant-list"></div></section>
+  </aside>
+  <div class="canvas-column">
+    <div class="toolbar"><div class="button-row"><button id="orbit" aria-pressed="true">眺める・選ぶ</button><button id="undo" disabled>元に戻す</button></div><div class="button-row"><button id="view-home">全体</button><button id="view-top">真上</button><button id="view-eye">低い視点</button><button id="zoom-in" aria-label="拡大">＋</button><button id="zoom-out" aria-label="縮小">−</button></div></div>
+    <div id="viewport" tabindex="0" aria-label="庭の3D表示。ドラッグで回転、ホイールや2本指で拡大。植物は一覧からも選べます。">
+      <div class="view-label"><span class="live-dot"></span><span id="view-status">庭の3D表示を準備しています</span></div>
+      <div id="loading" class="loading">庭を読み込んでいます…<noscript>このツールにはJavaScriptが必要です。</noscript></div>
+      <div id="error" class="error" hidden></div>
+      <div class="canvas-hint">ドラッグで回転 · ホイール / 2本指で拡大縮小</div>
+    </div>
+    <div class="season"><label for="month">季節イメージ <strong id="month-label">6月</strong></label><input id="month" type="range" min="1" max="12" step="1" value="6"><div class="season-ends"><span>1月</span><span>12月</span></div></div>
+    <div class="bottom-bar"><p id="status" role="status">まずはサンプルの庭を動かしてみましょう。</p><span id="area"></span></div>
+    <p class="disclaimer">植物は配置用の模式表現です。季節はイメージで、実在品種の開花・成長予測ではありません。保存は端末へのファイル書き出しです。</p>
+  </div>
+</main>
+<footer><span>Nature Wx Lab · Garden Canvas 0.1</span><span>庭の入力内容を送信する機能・アクセス解析はありません。</span><a href="https://github.com/nature-wx-lab/garden-canvas" target="_blank" rel="noopener noreferrer">GitHub</a></footer>
+<dialog id="help-dialog"><div class="dialog-content"><h2>自分の手で、庭を試そう。</h2><ol><li>幅・奥行きと庭の形を決めます。「自由な形」では真上の画面で角を囲みます。</li><li>植物の種類を選び、庭をクリックして配置します。</li><li>植物を選んで寸法を変えたり、「場所を移す」で別の場所をクリックします。</li><li>ドラッグで回転。真上・低い視点や季節を変えて眺めます。</li><li>「保存」でJSONファイルを端末に書き出し、「開く」で続きができます。</li></ol><h3>この初期版について</h3><p>4種類の配置用モデルを使う試作です。品種別の生育、年数による変化、剪定・作業時間、購入予算、AI提案、実写品質はこれから開発します。</p><h3>入力とプライバシー</h3><p>庭のデータは開いている画面の中だけで扱い、再読込するとサンプルに戻ります。住所・位置情報・写真は取得しません。保存ファイルを他人に渡す際は、庭の寸法と配置が含まれることをご確認ください。サイト配信元のGitHubには通常のアクセス情報が送られます。</p><button id="help-close" class="primary">閉じる</button></div></dialog>
+</body>
+</html>
