@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.8.4';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.8.5';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 export const TRAIT_VALUES={heart:'心形',round:'円形',kidney:'腎形',triangular:'三角形',lobed:'切れ込みのある葉',compound:'複葉',serrated:'鋸歯のある葉',narrow:'細葉',blade:'線形・剣形',needle:'針形',leaf:'卵形・楕円形',obovate:'倒卵形',spoon:'へら形',arrow:'矢じり形',margin:'覆輪',center:'中斑',spots:'斑点',silverVeins:'銀葉・緑の葉脈',stripes:'縞斑',evergreen:'常緑',semiEvergreen:'半常緑（寒さで変化）',deciduous:'落葉（幹・枝は残る）',winterDormant:'冬に地上部休眠',summerDormant:'夏に地上部休眠',bell:'鐘形',trumpet:'漏斗・ラッパ形',tube:'筒形',urn:'壺形',cup:'杯形',flat:'平開',star:'星形',cross:'十字形',pea:'蝶形',lipped:'唇形',spurred:'距のある花',spoonRay:'スプーン状の花弁',pompon:'ポンポン咲き',smooth:'平滑',peeling:'剥離する樹皮',furrowed:'縦に割れる樹皮',scaly:'鱗片状',lenticels:'皮目',clump:'株立ち',mound:'こんもり',creeping:'地面に広がる',rosette:'ロゼット',upright:'直立',arching:'弓状',spreading:'横に広がる',weeping:'枝垂れ',columnar:'細い直立形',pyramidal:'円錐形',vase:'箒状',rounded:'丸い樹冠',multistem:'根元から株立ち',oval:'卵形の樹冠',layered:'段状の横枝',irregular:'不規則な枝'};
@@ -58,3 +58,7 @@ Object.assign(TRAIT_VALUES,{amaranthHead:'色づいた苞が集まる花房と�
 Object.assign(TRAIT_VALUES,{pinwheel:'細い筒と同じ向きに重なる5裂の花冠',mosaic:'不規則な面状の斑'});
 Object.assign(TRAIT_VALUES,{bullateRound:'葉脈間がふくらむ小さな丸い革質葉',myrtleFour:'4枚の白い花弁と多数の白い雄しべ',corokiaStar:'5枚の細い黄色の花弁',coprosmaFemale:'小さな緑色の雌花と突き出す2本の柱頭',leathery:'厚みのある革質の楕円葉'});
 Object.assign(TRAIT_VALUES,{fawnLily:'下向きの花と反り返る6枚の花被',autumnSnowflake:'下向きの6枚の白い花被（緑の先端斑なし）',glorySnow:'白い中心と短い筒をもつ6裂の花',openSquill:'中央線のある6枚の花被（副花冠なし）',azureBell:'口元がくびれない6裂の小さな釣鐘花',autumnBulb:'秋の花・秋〜春の葉、夏は休眠',autumnLeafBulb:'秋〜春に葉、春に開花、夏は地上部休眠'});
+
+Object.assign(TRAIT_VALUES,{woodPoppy:'4枚の花弁状の萼片と多数の黄色い雄しべ',anemonopsis:'下向きの外側の萼片と内側の紫色の先端の花弁',glaucidiumPalm:'7〜11中裂して鋸歯のある大きな掌状葉',anemonopsisLeaflet:'浅く3裂し粗い鋸歯のある卵形の小葉'});
+
+Object.assign(TRAIT_VALUES,{eremophila:'白い毛の萼・白い喉部と褐色の斑点を持つ唇形花',mintBush:'上唇2裂・下唇3裂の小さな唇形花'});

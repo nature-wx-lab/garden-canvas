@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.8.4';
-import {foliageKind} from './appearance.js?v=0.8.4';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.4';
-import {drawTree} from './tree-model.js?v=0.8.4';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.4';
+import {treeProfile} from './tree-profiles.js?v=0.8.5';
+import {foliageKind} from './appearance.js?v=0.8.5';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.5';
+import {drawTree} from './tree-model.js?v=0.8.5';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.5';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.8.4';
+import { plantInfo, stateAt } from './model.js?v=0.8.5';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -104,14 +104,15 @@ shapes.obovate=outlineLeaf([[0,0],[-.12,.22],[-.35,.6],[-.35,.82],[-.18,.99],[0,
  for(let j=0;j<128;j++){const an=j*Math.PI*2/128,rr=.44*(1+.10*Math.cos(an*8))*(1+.012*Math.cos(an*64));pts.push([Math.sin(an)*rr,Math.cos(an)*rr]);}
  shapes.peltate=outlineLeaf(pts);
 }
-for(const name of ['geraniumPalm','geraniumRound']){
+for(const name of ['geraniumPalm','geraniumRound','glaucidiumPalm']){
  const pts=[[0,0]];
  for(let j=0;j<=180;j++){
-  const an=(-150+j*300/180)*Math.PI/180,deep=name==='geraniumPalm',r=(deep?.30:.54)+(deep?.46:.20)*Math.pow(.5+.5*Math.cos(an*6),.55),tooth=1+.026*Math.cos(an*72);
+  const an=(-150+j*300/180)*Math.PI/180,deep=name==='geraniumPalm',poppy=name==='glaucidiumPalm',r=(poppy?.46:deep?.30:.54)+(poppy?.27:deep?.46:.20)*Math.pow(.5+.5*Math.cos(an*(poppy?10:6)),.55),tooth=1+(poppy?.055:.026)*Math.cos(an*(poppy?100:72));
   pts.push([Math.sin(an)*r*tooth,.22+Math.cos(an)*r*tooth]);
  }
- shapes[name]=outlineLeaf(pts);shapes[name].userData.palmateLobes=5;
+ shapes[name]=outlineLeaf(pts);shapes[name].userData.palmateLobes=name==='glaucidiumPalm'?9:5;
 }
+shapes.anemonopsisLeaflet=outlineLeaf([[0,0],[-.15,.03],[-.28,.12],[-.24,.16],[-.39,.27],[-.32,.32],[-.44,.51],[-.34,.48],[-.29,.65],[-.24,.56],[-.22,.75],[-.17,.71],[-.14,.88],[-.10,.83],[0,1],[.10,.83],[.14,.88],[.17,.71],[.22,.75],[.24,.56],[.29,.65],[.34,.48],[.44,.51],[.32,.32],[.39,.27],[.24,.16],[.28,.12],[.15,.03]]);
 for(const name of ['round','kidney','lobed']){
  const pts=[[0,0]];
  for(let j=0;j<=84;j++){
@@ -225,7 +226,7 @@ function windShader(shader,kind){
     shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
       totalEmissiveRadiance+=diffuseColor.rgb*0.10;
     `);
-  }else if(kind.startsWith('leaf')||kind.startsWith('petal')||kind==='grass'){
+  }else if(kind.startsWith('leaf')||kind.startsWith('petal')||kind==='sepal'||kind==='grass'){
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
       float fold=abs(vUv.x-0.5)*2.0;
       float midrib=1.0-smoothstep(0.012,0.025,abs(vUv.x-0.5));
@@ -281,7 +282,7 @@ export function batch(group,height=1,flex=.06,phase=0){
     const key=geometry.uuid+kind;if(!entries.has(key))entries.set(key,{geometry,kind,items:[],colors:[],wind:[]});const e=entries.get(key);e.items.push(matrix.clone());colour.set(color);e.colors.push(colour.clone());e.wind.push(height,flex,phase,flutter);
   }
   function add(shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0){
-    dummy.position.set(x,y,z);dummy.scale.set(sx,sy,sz);dummy.rotation.set(rx,ry,rz,'YXZ');dummy.updateMatrix();push(typeof shape==='string'?shapes[shape]:shape,kind,dummy.matrix,color,kind.startsWith('leaf')||kind.startsWith('petal')||['maple','grass'].includes(kind)?1:0);
+    dummy.position.set(x,y,z);dummy.scale.set(sx,sy,sz);dummy.rotation.set(rx,ry,rz,'YXZ');dummy.updateMatrix();push(typeof shape==='string'?shapes[shape]:shape,kind,dummy.matrix,color,kind.startsWith('leaf')||kind.startsWith('petal')||['sepal','maple','grass'].includes(kind)?1:0);
   }
   function branch(a,b,r,color,kind='wood'){
     const va=new THREE.Vector3(...a),vb=new THREE.Vector3(...b),dir=vb.clone().sub(va),length=dir.length();if(length<.0001)return;
@@ -367,7 +368,7 @@ export function plantModel(p,view,detail=1){
   const dormant=s.dormant,clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
   if(form==='unmodeled'){
     const frame=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({color:'#aeb5a3',wireframe:true,transparent:true,opacity:.42}));frame.position.y=h/2;g.add(frame);g.userData.unmodeled=true;
-  }else if(['wireShrub','mirrorShrub','myrtleShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
+  }else if(['wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(profile&&form!=='maple'){g.userData.architecture=drawTree(b,{profile,info,p,s,detail},{bud,flower:petalFlower,detailedFlower,shade:palette});
   }else if((form==='botanical'||['fivepetal','airy','spike','bell','globe'].includes(form))&&info.appearance?.leafShape){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(EXTENDED_FORMS.has(form)){drawBotanical(b,{info,s,p,detail,rand},{bud,cone,flower:petalFlower,detailedFlower,shade:palette,foliageKind});
@@ -450,7 +451,7 @@ export function plantModel(p,view,detail=1){
     if(radius>0&&bounds.max.y>0){const horizontal=w/(2*radius);g.scale.set(horizontal,h/bounds.max.y,horizontal);}
     if(dormant)for(const mesh of [...g.children])if(['garden-0.3-maple','garden-0.3-petiole'].includes(mesh.material?.customProgramCacheKey())){g.remove(mesh);mesh.geometry.dispose();mesh.dispose();}
   }
-  if(!profile||form==='maple'){
+  if((!profile||form==='maple')&&!['woodPoppy','anemonopsis'].includes(info.appearance?.architecture)){
     // Thin the same deterministic leaf set through budbreak and leaf-fall.
     for(const mesh of [...g.children]){
       const kind=mesh.material?.customProgramCacheKey?.();

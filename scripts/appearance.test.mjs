@@ -15,7 +15,7 @@ test('every catalog entry has an explicit evidence record and no unsupported com
  const allowed=new Set(['sources','basis','status','unconfirmed','arrangement','inflorescence','flowerShape','habit','leafShape','leafTexture','leafColor','barkColor','barkPattern','petals','persistence','flowerMonths','flowerTiming','emergenceMonths','dormantMonths','leafPattern','patternColor','flowerLayers','flowerPattern','scientificName','phenologyRegion','leafLength','leafRelief','seasonalColors','stemColor','leaflets','compoundType','standingWinter','flowerSeasons','leafMargin','architecture','winterClimateSensitive','lifeForm','flowerPatternColor','outerFlowerPattern','flowerRadius','seedHeadMonths','seedColor','flowerPalette','flowerGuides','foliageMonths','leaflessBloom','flowerOptions','leafletShape','flowerFadeTo','headRadius','inflorescenceLength','leafletCounts','leafUnderside','springShootColor','stamenCount','leafFlushAfterFlower','monthlyLeafColors','bracts','flowerOutsideColor','flowerEyeColor','monthlyPatternColors']);
  for(const [id,a] of Object.entries(APPEARANCE_DATA)){
   assert.ok(Object.keys(a).every(k=>allowed.has(k)),id);assert.ok(['attributes','unconfirmed','partial'].includes(a.status));
-  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au','www.nparks.gov.sg','provenwinners.jp','pacificbulbsociety.org','keys.landcareresearch.co.nz','plantipp.eu','www.wairere.nz'].includes(u.hostname));assert.ok(['catalog-entry','species','genus'].includes(source.scope));}
+  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au','www.nparks.gov.sg','provenwinners.jp','pacificbulbsociety.org','keys.landcareresearch.co.nz','plantipp.eu','www.wairere.nz','hosho.ees.hokudai.ac.jp','www.hokudai.ac.jp','www.lab.toho-u.ac.jp','eprints.lib.hokudai.ac.jp','www.town.karuizawa.lg.jp','library.dbca.wa.gov.au','www.hinshu2.maff.go.jp','matsunaga-kadan.com','oniduka.base.shop'].includes(u.hostname));assert.ok(['catalog-entry','species','genus'].includes(source.scope));}
   for(const [field,index] of Object.entries(a.basis)){assert.ok(Object.hasOwn(a,field));assert.ok(Number.isInteger(index)&&index>=0&&index<a.sources.length,id+':'+field);}
   for(const field of ['flowerMonths','emergenceMonths','dormantMonths'])if(a[field])assert.ok(a[field].length>0&&a[field].every(m=>Number.isInteger(m)&&m>=1&&m<=12),id);
   for(let m=1;m<=12;m++){const s=seasonAt(CATALOG[id],m);assert.ok(s.leafDensity>=0&&s.leafDensity<=1);assert.ok(s.leafScale>=0&&s.leafScale<=1);if(s.groundDormant)assert.equal(s.bloom,false);}
@@ -271,4 +271,28 @@ test('small evergreen shrubs keep their fine wood, seasonal variegation and dist
  assert.equal(record('corokiaStar').filter(p=>p.geometry==='narrow').length,5);
  assert.equal(record('coprosmaFemale').filter(p=>p.kind==='stigma').length,2);
  assert.equal(record('coprosmaFemale').filter(p=>p.kind==='anther').length,0);
+});
+
+test('woodland perennials distinguish sepals, compound leaves and complete winter dieback',()=>{
+ const record=(shape,layers=1)=>{const parts=[];detailedFlower({add:(geometry,kind)=>parts.push({geometry,kind}),branch(){}},{x:0,y:0,z:0,r:.03,color:'#ded0e0',shape,layers},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});return parts;};
+ const poppy=record('woodPoppy');assert.equal(poppy.filter(p=>p.kind==='sepal').length,4);assert.equal(poppy.filter(p=>p.kind==='carpel').length,2);assert.equal(poppy.filter(p=>p.kind==='petal').length,0);
+ assert.equal(record('anemonopsis').filter(p=>p.kind==='sepal').length,8);assert.equal(record('anemonopsis',3).filter(p=>p.kind==='sepal').length,24);
+ for(const id of ['p-314236d1056b','p-b2294b83d59b','p-c4216e00fd87','p-2ed45d98362a']){
+  const p=makePlant(id,440,2,2);assert.equal(plantModel(p,view(1)).children.length,0,id);
+  const m=CATALOG[id].appearance.architecture==='woodPoppy'?4:8,g=plantModel(p,view(m));assert.ok(g.children.some(m=>m.userData.component==='sepal'),id);
+  for(const child of g.children)assert.ok([...child.instanceMatrix.array].every(Number.isFinite),id);dispose(g);
+ }
+});
+
+test('Australian shrubs keep woolly alternate leaves distinct from narrow and broad variegated mintbush leaves',()=>{
+ const silver=CATALOG['p-99200802e07f'],narrow=CATALOG['p-5ded43f9b419'],broad=CATALOG['p-1b3f07b3036f'];
+ assert.equal(silver.appearance.arrangement,'alternate');assert.equal(narrow.appearance.arrangement,'opposite');assert.notEqual(narrow.appearance.leafShape,broad.appearance.leafShape);
+ assert.notEqual(seasonAt(broad,1).leafPatternColor,seasonAt(broad,6).leafPatternColor);
+ for(const id of ['p-99200802e07f','p-dc7f89ffc613','p-5ded43f9b419','p-1b3f07b3036f']){
+  const p=makePlant(id,450,2,2),spring=plantModel(p,view(4)),winter=plantModel(p,view(1));
+  assert.ok(spring.children.some(m=>m.userData.component==='anther'),id);assert.ok(!winter.children.some(m=>m.userData.component==='anther'),id);
+  assert.ok(winter.children.some(m=>m.userData.component.startsWith('leaf')),id);
+  if(id==='p-99200802e07f')assert.ok(spring.children.some(m=>m.userData.component==='leaf-woolly'));
+  for(const g of [spring,winter]){for(const m of g.children)assert.ok([...m.instanceMatrix.array].every(Number.isFinite));dispose(g);}
+ }
 });
