@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.8.5';
-import {foliageKind} from './appearance.js?v=0.8.5';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.5';
-import {drawTree} from './tree-model.js?v=0.8.5';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.5';
+import {treeProfile} from './tree-profiles.js?v=0.8.6';
+import {foliageKind} from './appearance.js?v=0.8.6';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.6';
+import {drawTree} from './tree-model.js?v=0.8.6';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.6';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.8.5';
+import { plantInfo, stateAt } from './model.js?v=0.8.6';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -14,12 +14,13 @@ const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
 function curvedLeaf(type){
-  const elm=type==='elm',corrugated=type==='hostaCorrugated'||elm,ruffled=type==='hostaRuffled',wavy=type==='wavyStrap',undulate=type==='wavyElliptic';if(corrugated&&!elm||ruffled)type='hosta';if(wavy)type='strap';
+  const elm=type==='elm',corrugated=type==='hostaCorrugated'||elm,ruffled=type==='hostaRuffled',wavy=type==='wavyStrap',slender=type==='wavyLance',undulate=type==='wavyElliptic'||slender;if(corrugated&&!elm||ruffled)type='hosta';if(wavy)type='strap';
   const positions=[],uvs=[],indices=[],rows=type==='needle'?2:type==='crenate'?40:ruffled?28:type==='serrated'?20:14,cols=type==='needle'?1:corrugated?16:ruffled?8:4;
   for(let i=0;i<=rows;i++){
     const t=i/rows;
     let width=Math.pow(Math.sin(Math.PI*t),.85)*.43;
     if(type==='narrow')width*=.2;
+    if(slender)width*=.30;
     if(type==='petal')width=Math.pow(Math.sin(Math.PI*t),.58)*.4;
     if(type==='hosta')width=Math.pow(Math.sin(Math.PI*t),.64)*.53;
     if(type==='blade'||type==='needle')width=(1-t)*.055;
@@ -28,6 +29,7 @@ function curvedLeaf(type){
     if(type==='serrated')width*=i%2?.93:1.02;
     if(type==='lanceSerrate')width*=.24*(i%2?.94:1.03);
     if(type==='ovateSerrate')width*=.55*(i%2?.92:1.02);
+    if(type==='broadToothed')width*=1.10*(1-t*.30)*(i%2?.91:1.05);
     if(elm)width*=.75*(i%2?.91:1.02);
     if(type==='calycanthus')width*=i%5===2?1.025:1;
     if(type==='obovateSerrate')width*=Math.pow(t,.35)*1.2*(i%2?.94:1.02);
@@ -39,14 +41,14 @@ function curvedLeaf(type){
       const u=j/cols*2-1,x=u*width+(elm?.055*Math.sin(Math.PI*t):type==='calycanthus'?.06*Math.sin(Math.PI*t)*(1-t):0);
       const cup=(type==='petal'?.18:type==='hosta'?.2:.12)*u*u*Math.sin(Math.PI*t);
       const bend=type==='blade'?.62*t*t:type==='sword'?.19*t*t:type==='strap'?.34*t*t:type==='petal'?.28*t*t:.23*t*t;
-      const relief=corrugated?.021*Math.cos(u*25+Math.sin(t*4)*1.6)*Math.sin(Math.PI*t)*Math.sin(Math.PI*j/cols):ruffled?.06*Math.sin(t*32)*Math.pow(Math.abs(u),3)*Math.sin(Math.PI*t):undulate?.065*Math.sin(t*23)*Math.pow(Math.abs(u),2)*Math.sin(Math.PI*t):0;
+      const relief=corrugated?.021*Math.cos(u*25+Math.sin(t*4)*1.6)*Math.sin(Math.PI*t)*Math.sin(Math.PI*j/cols):ruffled?.06*Math.sin(t*32)*Math.pow(Math.abs(u),3)*Math.sin(Math.PI*t):undulate?(slender?.014:.065)*Math.sin(t*23)*Math.pow(Math.abs(u),2)*Math.sin(Math.PI*t):0;
       positions.push(x,t,bend+cup+relief+(type==='sword'?Math.abs(x)*.55:.014*Math.cos(t*24+Math.abs(u)*8)*Math.abs(u)));uvs.push(j/cols,t);
       if(i<rows&&j<cols){const a=i*(cols+1)+j,b=a+cols+1;indices.push(a,b,a+1,b,b+1,a+1);}
     }
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();return keep(g);
 }
-for(const type of ['leaf','narrow','lanceSerrate','ovateSerrate','obovateSerrate','oakLance','wavyElliptic','elm','calycanthus','hosta','hostaCorrugated','hostaRuffled','petal','blade','sword','strap','wavyStrap','needle','serrated','crenate','leathery'])shapes[type]=curvedLeaf(type);
+for(const type of ['leaf','narrow','lanceSerrate','ovateSerrate','broadToothed','obovateSerrate','oakLance','wavyElliptic','wavyLance','elm','calycanthus','hosta','hostaCorrugated','hostaRuffled','petal','blade','sword','strap','wavyStrap','needle','serrated','crenate','leathery'])shapes[type]=curvedLeaf(type);
 {
  const positions=[],uvs=[],indices=[],rows=20,cols=12;
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -226,7 +228,7 @@ function windShader(shader,kind){
     shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
       totalEmissiveRadiance+=diffuseColor.rgb*0.10;
     `);
-  }else if(kind.startsWith('leaf')||kind.startsWith('petal')||kind==='sepal'||kind==='grass'){
+  }else if(kind.startsWith('leaf')||kind.startsWith('petal')||kind.startsWith('sepal')||kind==='grass'){
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
       float fold=abs(vUv.x-0.5)*2.0;
       float midrib=1.0-smoothstep(0.012,0.025,abs(vUv.x-0.5));
@@ -237,7 +239,7 @@ function windShader(shader,kind){
     `);
     if(kind.startsWith('leaf-hosta'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*70.0)');
     const surface=kind.replace(/-cranesbill-veins$/,'').replace(/-guide$/,'').replace('woolly-','').replace('glossy-','').replace('palm-',''),hex=surface.match(/-([0-9a-f]{6})$/)?.[1];
-    const pattern=surface.replace(/^(leaf|petal)-/,'').replace(/^hosta-?/,'').replace(/-(?:gold|[0-9a-f]{6})$/,'');
+    const pattern=surface.replace(/^(leaf|petal|sepal)-/,'').replace(/^hosta-?/,'').replace(/-(?:gold|[0-9a-f]{6})$/,'');
     const c=hex?new THREE.Color('#'+hex):null;
     const tint=c?`vec3(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`:kind.startsWith('petal')?'vec3(0.34,0.07,0.23)':kind.endsWith('-gold')?'vec3(0.70,0.69,0.32)':'vec3(0.79,0.83,0.72)';
     const masks={base:'1.0-smoothstep(0.18,0.52,vUv.y)',tip:'smoothstep(0.5,0.92,vUv.y)',blush:'(1.0-smoothstep(0.20,0.65,vUv.y))*(1.0-smoothstep(0.25,0.75,fold))',margin:'smoothstep(0.61+0.035*sin(vUv.y*53.0),0.79,fold)',center:'1.0-smoothstep(0.25+0.07*sin(vUv.y*36.0),0.47,fold)',stripes:'smoothstep(0.48,0.64,sin(vUv.x*39.0+sin(vUv.y*7.0)*0.65))',spots:'smoothstep(0.73,0.9,sin(vUv.x*79.0+cos(vUv.y*27.0))*sin(vUv.y*91.0+sin(vUv.x*47.0)))',silverVeins:'(1.0-midrib)*(1.0-smoothstep(0.16,0.33,abs(sin((vUv.y-fold*0.38)*32.0))))'};
@@ -282,7 +284,7 @@ export function batch(group,height=1,flex=.06,phase=0){
     const key=geometry.uuid+kind;if(!entries.has(key))entries.set(key,{geometry,kind,items:[],colors:[],wind:[]});const e=entries.get(key);e.items.push(matrix.clone());colour.set(color);e.colors.push(colour.clone());e.wind.push(height,flex,phase,flutter);
   }
   function add(shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0){
-    dummy.position.set(x,y,z);dummy.scale.set(sx,sy,sz);dummy.rotation.set(rx,ry,rz,'YXZ');dummy.updateMatrix();push(typeof shape==='string'?shapes[shape]:shape,kind,dummy.matrix,color,kind.startsWith('leaf')||kind.startsWith('petal')||['sepal','maple','grass'].includes(kind)?1:0);
+    dummy.position.set(x,y,z);dummy.scale.set(sx,sy,sz);dummy.rotation.set(rx,ry,rz,'YXZ');dummy.updateMatrix();push(typeof shape==='string'?shapes[shape]:shape,kind,dummy.matrix,color,kind.startsWith('leaf')||kind.startsWith('petal')||kind.startsWith('sepal')||['maple','grass'].includes(kind)?1:0);
   }
   function branch(a,b,r,color,kind='wood'){
     const va=new THREE.Vector3(...a),vb=new THREE.Vector3(...b),dir=vb.clone().sub(va),length=dir.length();if(length<.0001)return;
@@ -368,7 +370,7 @@ export function plantModel(p,view,detail=1){
   const dormant=s.dormant,clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
   if(form==='unmodeled'){
     const frame=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({color:'#aeb5a3',wireframe:true,transparent:true,opacity:.42}));frame.position.y=h/2;g.add(frame);g.userData.unmodeled=true;
-  }else if(['wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
+  }else if(['wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(profile&&form!=='maple'){g.userData.architecture=drawTree(b,{profile,info,p,s,detail},{bud,flower:petalFlower,detailedFlower,shade:palette});
   }else if((form==='botanical'||['fivepetal','airy','spike','bell','globe'].includes(form))&&info.appearance?.leafShape){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(EXTENDED_FORMS.has(form)){drawBotanical(b,{info,s,p,detail,rand},{bud,cone,flower:petalFlower,detailedFlower,shade:palette,foliageKind});
@@ -451,7 +453,7 @@ export function plantModel(p,view,detail=1){
     if(radius>0&&bounds.max.y>0){const horizontal=w/(2*radius);g.scale.set(horizontal,h/bounds.max.y,horizontal);}
     if(dormant)for(const mesh of [...g.children])if(['garden-0.3-maple','garden-0.3-petiole'].includes(mesh.material?.customProgramCacheKey())){g.remove(mesh);mesh.geometry.dispose();mesh.dispose();}
   }
-  if((!profile||form==='maple')&&!['woodPoppy','anemonopsis'].includes(info.appearance?.architecture)){
+  if((!profile||form==='maple')&&!['woodPoppy','anemonopsis','nigella','yellowNigella','larkspur'].includes(info.appearance?.architecture)){
     // Thin the same deterministic leaf set through budbreak and leaf-fall.
     for(const mesh of [...g.children]){
       const kind=mesh.material?.customProgramCacheKey?.();

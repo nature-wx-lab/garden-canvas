@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.8.5';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.8.5';
-import { seasonAt } from './catalog-search.js?v=0.8.5';
+import {treeProfile} from './tree-profiles.js?v=0.8.6';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.8.6';
+import { seasonAt } from './catalog-search.js?v=0.8.6';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -58,6 +58,15 @@ export function stateAt(p,view){
     if(last&&!unsupported){const recovery=Math.min(1,(dateIndex(view)-last.at)/p.management.recovery);height=Math.min(height,p.management.height)+(height-Math.min(height,p.management.height))*recovery;spread=Math.min(spread,p.management.spread)+(spread-Math.min(spread,p.management.spread))*recovery;leafHeight=Math.min(leafHeight,height);}
   }
   const season=seasonAt(info,view.month),flowerOptions=info.appearance?.flowerOptions;
+  if(info.life==='annual'&&info.appearance?.persistence==='coolSeasonAnnual'){
+    const last=(info.appearance.flowerMonths||info.bloom).at(-1)||6;
+    const floweringYear=Math.floor(p.start/12)+(p.start%12>=last?1:0);
+    if(dateIndex(view)>=floweringYear*12+last){
+      // An old annual does not become an autumn seedling without a new planting.
+      Object.assign(season,{bloom:false,dormant:true,groundDormant:!season.seedHeads,leafDensity:0,leafScale:0,shootScale:1,phase:season.seedHeads?'花後の枯れ茎・種子（残した場合）':'花後に生育終了'});
+      season.label=season.phase;
+    }
+  }
   if(flowerOptions?.length)season.flowerColor=flowerOptions[(p.id-1)%flowerOptions.length];
   return {present,expired,...season,age:Math.max(0,age)/12,height,spread,leafHeight,natural,trunkHeight,basis,last,unsupported,winter:[12,1,2].includes(view.month)};
 }
@@ -72,7 +81,7 @@ function migrateV1(v){
 }
 export function validateDocument(input){
   const bad=()=>{throw new Error('対応していない庭データ、または範囲外の値です。元の庭は変更していません。');};
-  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
+  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
   if(!keys(v,['version','modelVersion','catalogVersion','active','plans','view'])||v.version!==2||v.modelVersion!==MODEL_VERSION||v.catalogVersion!==CATALOG_VERSION||!['A','B'].includes(v.active)||!keys(v.plans,['A','B'])||!v.plans.A||!v.plans[v.active])bad();
   const view=v.view;
   if(!keys(view,['month','year','reference','footprints','camera'])||!integer(view.month,1,12)||!integer(view.year,0,10)||typeof view.reference!=='boolean'||typeof view.footprints!=='boolean')bad();

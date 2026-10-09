@@ -296,3 +296,32 @@ test('Australian shrubs keep woolly alternate leaves distinct from narrow and br
   for(const g of [spring,winter]){for(const m of g.children)assert.ok([...m.instanceMatrix.array].every(Number.isFinite));dispose(g);}
  }
 });
+
+test('glorybowers distinguish butterfly corollas, hanging panicles and deciduous suckering shrubs',()=>{
+ const parts=[];detailedFlower({add:(shape,kind,color)=>parts.push({shape,kind,color}),branch(){}},{x:0,y:0,z:0,color:'#b0c6e6',shape:'blueButterfly'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
+ assert.equal(parts.filter(p=>p.kind==='petal'&&p.shape==='petal').length,5);assert.equal(parts.filter(p=>p.kind==='petal'&&p.color==='#554dae').length,1);assert.equal(parts.filter(p=>p.kind==='anther').length,4);
+ for(const id of ['p-7c51c37e8599','p-60496d393518','p-ce1eaf50b885']){
+  const p=makePlant(id,460,2,2),summer=plantModel(p,view(id==='p-60496d393518'?10:8)),winter=plantModel(p,view(1));
+  const wood=g=>g.children.filter(m=>m.userData.component.startsWith('wood')).map(m=>[m.userData.component,Array.from(m.instanceMatrix.array)]);
+  assert.deepEqual(wood(summer),wood(winter),id);assert.ok(summer.children.some(m=>m.userData.component==='anther'),id);
+  assert.equal(winter.children.some(m=>m.userData.component.startsWith('leaf')),id!=='p-ce1eaf50b885',id);
+  for(const g of [summer,winter]){for(const m of g.children)assert.ok([...m.instanceMatrix.array].every(Number.isFinite));dispose(g);}
+ }
+ assert.equal(seasonAt(CATALOG['p-60496d393518'],6).bloom,false);assert.equal(seasonAt(CATALOG['p-60496d393518'],10).bloom,true);
+});
+
+test('cool-season annuals retain young winter leaves but do not regrow after their flowering cycle',()=>{
+ const ids=['p-fc28707d1143','p-6f55989d531c','p-be7b48352e96','p-256aa8c76bb6','p-61e0b96679a0','p-6c983212a22c'];
+ for(const id of ids){
+  const p=makePlant(id,470,2,2),winter=stateAt(p,view(1)),summer=plantModel(p,view(6));
+  assert.equal(CATALOG[id].life,'annual');assert.equal(winter.groundDormant,false);assert.ok(winter.shootScale<.4);
+  assert.ok(summer.children.some(m=>m.userData.component.startsWith('sepal')),id);dispose(summer);
+  const old=stateAt(p,view(11));assert.equal(old.leafDensity,0,id);assert.equal(old.bloom,false);
+  const next={...p,start:9};assert.ok(stateAt(next,view(11)).leafDensity>0,id);
+  assert.equal(stateAt(p,{...view(6),year:1}).present,false);
+ }
+ const growing=plantModel(makePlant('p-6f55989d531c',471,2,2),view(6)),transformer=plantModel(makePlant('p-6f55989d531c',471,2,2),view(12));
+ const stems=g=>g.children.filter(m=>m.userData.component==='stem').map(m=>Array.from(m.instanceMatrix.array));assert.deepEqual(stems(growing),stems(transformer));dispose(growing);assert.ok(transformer.children.some(m=>m.userData.component==='seed'));assert.ok(!transformer.children.some(m=>m.userData.component.startsWith('leaf')));dispose(transformer);
+ const white=plantModel(makePlant('p-6c983212a22c',472,2,2),view(6));assert.ok(white.children.some(m=>m.userData.component==='spur'));dispose(white);
+ const picotee=plantModel(makePlant('p-61e0b96679a0',473,2,2),view(6));assert.ok(picotee.children.some(m=>m.userData.component==='sepal-margin-aa90bd'));dispose(picotee);
+});
