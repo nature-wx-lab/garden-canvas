@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.8.8';
-import {foliageKind} from './appearance.js?v=0.8.8';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.8';
-import {drawTree} from './tree-model.js?v=0.8.8';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.8';
+import {treeProfile} from './tree-profiles.js?v=0.8.9';
+import {foliageKind} from './appearance.js?v=0.8.9';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.8.9';
+import {drawTree} from './tree-model.js?v=0.8.9';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.8.9';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.8.8';
+import { plantInfo, stateAt } from './model.js?v=0.8.9';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -24,9 +24,9 @@ const shapes={};
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();shapes.tinyCross=keep(g);
 }
 function curvedLeaf(type){
-  const elm=type==='elm',corrugated=type==='hostaCorrugated'||elm,ruffled=type==='hostaRuffled',wavy=type==='wavyStrap',slender=type==='wavyLance',undulate=type==='wavyElliptic'||slender;if(corrugated&&!elm||ruffled)type='hosta';if(wavy)type='strap';
+  const chloranthus=type==='chloranthusLeaf',elm=type==='elm',corrugated=type==='hostaCorrugated'||elm||chloranthus,ruffled=type==='hostaRuffled',wavy=type==='wavyStrap',slender=type==='wavyLance',undulate=type==='wavyElliptic'||slender;if(corrugated&&!elm&&!chloranthus||ruffled)type='hosta';if(wavy)type='strap';
   const cabbage=type==='seaKaleLeaf'||type==='crambeHeart';
-  const positions=[],uvs=[],indices=[],rows=type==='needle'?2:type==='crenate'?40:ruffled||cabbage?28:type==='serrated'?20:14,cols=type==='needle'?1:corrugated?16:ruffled||cabbage?8:4;
+  const positions=[],uvs=[],indices=[],rows=chloranthus?32:type==='needle'?2:type==='crenate'?40:ruffled||cabbage?28:type==='serrated'?20:14,cols=type==='needle'?1:corrugated?16:ruffled||cabbage?8:4;
   for(let i=0;i<=rows;i++){
     const t=i/rows;
     let width=Math.pow(Math.sin(Math.PI*t),.85)*.43;
@@ -37,6 +37,7 @@ function curvedLeaf(type){
     if(type==='blade'||type==='needle')width=(1-t)*.055;
     if(type==='sword')width=.046*Math.pow(1-t,.4);
     if(type==='strap')width=.082*Math.pow(Math.sin(Math.PI*t*.88+.16),.22);
+    if(chloranthus)width*=1.05*(i%2?.91:1.05);
     if(type==='serrated')width*=i%2?.93:1.02;
     if(type==='lanceSerrate')width*=.24*(i%2?.94:1.03);
     if(type==='ovateSerrate')width*=.55*(i%2?.92:1.02);
@@ -61,7 +62,7 @@ function curvedLeaf(type){
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();return keep(g);
 }
-for(const type of ['leaf','narrow','lanceSerrate','ovateSerrate','broadToothed','seaKaleLeaf','crambeHeart','obovateSerrate','oakLance','wavyElliptic','wavyLance','elm','calycanthus','hosta','hostaCorrugated','hostaRuffled','petal','blade','sword','strap','wavyStrap','needle','serrated','crenate','leathery'])shapes[type]=curvedLeaf(type);
+for(const type of ['leaf','chloranthusLeaf','narrow','lanceSerrate','ovateSerrate','broadToothed','seaKaleLeaf','crambeHeart','obovateSerrate','oakLance','wavyElliptic','wavyLance','elm','calycanthus','hosta','hostaCorrugated','hostaRuffled','petal','blade','sword','strap','wavyStrap','needle','serrated','crenate','leathery'])shapes[type]=curvedLeaf(type);
 {
  const positions=[],uvs=[],indices=[],rows=24,cols=4;
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -122,6 +123,11 @@ shapes.triangular=outlineLeaf([[0,0],[-.46,.06],[-.29,.44],[0,1],[.29,.44],[.46,
 shapes.arrow=outlineLeaf([[0,0],[-.4,-.12],[-.24,.4],[0,1],[.24,.4],[.4,-.12]]);
 shapes.spoon=outlineLeaf([[0,0],[-.055,.38],[-.32,.59],[-.34,.84],[-.17,.98],[0,1],[.17,.98],[.34,.84],[.32,.59],[.055,.38]]);
 shapes.canaryGlume=outlineLeaf([[0,0],[-.13,.20],[-.27,.66],[-.24,.83],[0,1],[.24,.83],[.27,.66],[.13,.20]]);
+for(const type of ['acaenaRounded','acaenaToothed']){
+ const pts=[[0,0]],round=type==='acaenaRounded';
+ for(let i=0;i<=80;i++){const t=i/80,an=(-145+t*290)*Math.PI/180,rad=.47*(1+(round?.065:.095)*Math.cos(an*(round?12:8)));pts.push([Math.sin(an)*rad,.42+Math.cos(an)*rad]);}
+ shapes[type]=outlineLeaf(pts);shapes[type].userData.acaenaLeaflet=true;
+}
 shapes.claspingOvate=outlineLeaf([[0,0],[-.21,-.08],[-.41,.08],[-.46,.34],[-.32,.68],[0,1],[.32,.68],[.46,.34],[.41,.08],[.21,-.08]]);
 shapes.globulariaSpoon=outlineLeaf([[0,0],[-.05,.32],[-.24,.51],[-.32,.77],[-.28,.94],[-.13,.98],[0,.94],[.13,.98],[.28,.94],[.32,.77],[.24,.51],[.05,.32]]);
 for(const type of ['mallowPalm','mallowLobed']){
@@ -487,7 +493,7 @@ export function plantModel(p,view,detail=1){
     if(radius>0&&bounds.max.y>0){const horizontal=w/(2*radius);g.scale.set(horizontal,h/bounds.max.y,horizontal);}
     if(dormant)for(const mesh of [...g.children])if(['garden-0.3-maple','garden-0.3-petiole'].includes(mesh.material?.customProgramCacheKey())){g.remove(mesh);mesh.geometry.dispose();mesh.dispose();}
   }
-  if((!profile||form==='maple')&&!['woodPoppy','anemonopsis','nigella','yellowNigella','larkspur'].includes(info.appearance?.architecture)){
+  if((!profile||form==='maple')&&!['chloranthus','acaenaMat','woodPoppy','anemonopsis','nigella','yellowNigella','larkspur'].includes(info.appearance?.architecture)){
     // Thin the same deterministic leaf set through budbreak and leaf-fall.
     for(const mesh of [...g.children]){
       const kind=mesh.material?.customProgramCacheKey?.();
