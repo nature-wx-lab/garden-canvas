@@ -1,9 +1,9 @@
 // Distinct botanical silhouettes, still reference geometry rather than scanned specimens.
 const TAU=Math.PI*2;
-export const EXTENDED_FORMS=new Set(['hellebore','clematis','climbingrose','conifer','tree','shrub','mophead','heuchera','fern','cyclamen','tulip','narcissus','iris','lily','globe','bell','rosette','cactus','waterlily','floating','aquatic','fivepetal']);
+export const EXTENDED_FORMS=new Set(['airy','torch','hellebore','clematis','climbingrose','conifer','tree','shrub','mophead','heuchera','fern','cyclamen','tulip','narcissus','iris','lily','globe','bell','rosette','cactus','waterlily','floating','aquatic','fivepetal']);
 export function drawBotanical(b,{info,s,p,detail,rand},kit){
  const {bud,cone,flower,shade}=kit,h=s.height,w=s.spread,form=info.form;
- const green=info.leafColor||'#567447',brown='#80715b',color=info.flower,dormant=s.dormant;
+ const green=s.leafColor||info.leafColor||'#567447',brown='#80715b',color=info.flower,dormant=s.dormant;
  const count=n=>Math.max(1,Math.round(n*detail));
  const leaf=(x,y,z,size,a,pitch=1.05,shape='leaf',base=green)=>{
   b.add(shape,'leaf',shade(rand,base,.08),x,y,z,size*.8,size,size,pitch,a,0);
@@ -16,6 +16,22 @@ export function drawBotanical(b,{info,s,p,detail,rand},kit){
   }
   b.add(bud,'seed','#c8ad52',x,y+.008,z,r*.14,.009,r*.14);
  };
+ if(form==='airy'){
+  if(dormant)return;
+  for(let i=0;i<count(11);i++){
+   const a=i*2.399,x=Math.sin(a)*w*.25,z=Math.cos(a)*w*.25,y=h*(.6+rand()*.35);b.branch([0,0,0],[x,y,z],.0015,green);
+   for(let k=1;k<5;k++){const t=k/6;leaf(x*t,y*t,z*t,Math.min(.08,w*.16),a+k*2.4,.8,'serrated');}
+   if(s.bloom)for(let j=0;j<count(9);j++){const aa=j*2.399,rr=Math.sqrt(j/9)*Math.min(.12,w*.2),end=[x+Math.sin(aa)*rr,y+.04-rand()*.04,z+Math.cos(aa)*rr];b.branch([x,y-.08,z],end,.00065,green);flatFlower(...end,.014,5);}
+  }return;
+ }
+ if(form==='torch'){
+  if(dormant)return;
+  for(let i=0;i<count(34);i++)leaf(0,.01,0,Math.min(w*.85,h*.7),i*2.399,.45,'blade');
+  if(s.bloom)for(let i=0;i<count(5);i++){
+   const a=i*2.399,x=Math.sin(a)*w*.2,z=Math.cos(a)*w*.2,y=h*(.78+rand()*.18);b.branch([x,0,z],[x,y,z],.004,green);
+   for(let j=0;j<count(110);j++){const t=j/count(110),aa=j*2.399,rr=.025*Math.sin(t*Math.PI);b.add('petal','petal',color,x+Math.sin(aa)*rr,y-.22+t*.22,z+Math.cos(aa)*rr,.012,.026,.021,2.5,aa,0);}
+  }return;
+ }
  if(['tree','shrub','conifer'].includes(form)){
   const trunk=form==='shrub'?.06:h*.27;
   b.branch([0,0,0],[w*.025,h*.92,0],Math.max(.008,h*.012),brown);

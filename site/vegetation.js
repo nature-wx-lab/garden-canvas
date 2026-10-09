@@ -1,6 +1,8 @@
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.4.0';
+import {treeProfile} from './tree-profiles.js?v=0.5.0';
+import {drawTree} from './tree-model.js?v=0.5.0';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.5.0';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.4.0';
+import { plantInfo, stateAt } from './model.js?v=0.5.0';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -10,14 +12,16 @@ const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
 function curvedLeaf(type){
-  const positions=[],uvs=[],indices=[],rows=6,cols=4;
+  const positions=[],uvs=[],indices=[],rows=type==='needle'?2:type==='serrated'?10:4,cols=type==='needle'?1:2;
   for(let i=0;i<=rows;i++){
     const t=i/rows;
     let width=Math.pow(Math.sin(Math.PI*t),.85)*.43;
     if(type==='narrow')width*=.2;
     if(type==='petal')width=Math.pow(Math.sin(Math.PI*t),.58)*.4;
     if(type==='hosta')width=Math.pow(Math.sin(Math.PI*t),.64)*.53;
-    if(type==='blade')width=(1-t)*.055;
+    if(type==='blade'||type==='needle')width=(1-t)*.055;
+    if(type==='serrated')width*=i%2?.93:1.02;
+    if(type==='leathery')width*=.9;
     for(let j=0;j<=cols;j++){
       const u=j/cols*2-1,x=u*width;
       const cup=(type==='petal'?.18:type==='hosta'?.2:.12)*u*u*Math.sin(Math.PI*t);
@@ -28,7 +32,21 @@ function curvedLeaf(type){
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();return keep(g);
 }
-for(const type of ['leaf','narrow','hosta','petal','blade'])shapes[type]=curvedLeaf(type);
+for(const type of ['leaf','narrow','hosta','petal','blade','needle','serrated','leathery'])shapes[type]=curvedLeaf(type);
+
+// Lobed and fan-shaped blades have their own outlines, rather than a recoloured oval.
+function outlineLeaf(points){
+ const shape=new THREE.Shape();points.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();
+ const g=new THREE.ShapeGeometry(shape),pos=g.attributes.position,uv=g.attributes.uv;
+ for(let i=0;i<pos.count;i++){const x=pos.getX(i),y=pos.getY(i);pos.setZ(i,.055*x*x+.025*Math.sin(y*4));uv.setXY(i,x+.5,y);}
+ g.computeVertexNormals();return keep(g);
+}
+shapes.heart=outlineLeaf([[0,0],[-.16,-.08],[-.34,.02],[-.44,.23],[-.43,.42],[-.31,.67],[0,1],[.31,.67],[.43,.42],[.44,.23],[.34,.02],[.16,-.08]]);
+shapes.ginkgo=outlineLeaf([[0,0],[-.11,.3],[-.42,.62],[-.55,.86],[-.45,.93],[-.34,.99],[-.18,1],[-.06,.94],[0,.82],[.06,.94],[.18,1],[.34,.99],[.45,.93],[.55,.86],[.42,.62],[.11,.3]]);
+shapes.oak=outlineLeaf([[0,0],[-.18,.12],[-.24,.22],[-.13,.27],[-.34,.38],[-.37,.48],[-.2,.53],[-.36,.67],[-.31,.78],[-.15,.75],[-.15,.92],[0,1],[.15,.92],[.15,.75],[.31,.78],[.36,.67],[.2,.53],[.37,.48],[.34,.38],[.13,.27],[.24,.22],[.18,.12]]);
+shapes.star=outlineLeaf([[0,0],[-.38,.12],[-.2,.35],[-.6,.55],[-.21,.58],[0,1],[.21,.58],[.6,.55],[.2,.35],[.38,.12]]);
+shapes.tulipLeaf=outlineLeaf([[0,0],[-.32,.14],[-.45,.4],[-.27,.5],[-.43,.85],[-.12,.80],[0,.7],[.12,.80],[.43,.85],[.27,.5],[.45,.4],[.32,.14]]);
+
 // Acer palmatum: seven radiating, deeply divided lobes, with fine marginal teeth.
 // The blade grows from the petiole origin, not along a serrated strap.
 function mapleLeaf(steps=16,rings=[.45,1]){
@@ -160,9 +178,9 @@ export function batch(group,height=1,flex=.06,phase=0){
   }}};
 }
 const palette=(rand,base,variation=.09)=>{const c=new THREE.Color(base);c.offsetHSL((rand()-.5)*.04,(rand()-.5)*.1,(rand()-.5)*variation);return c;};
-function petalFlower(b,x,y,z,r,color,rand,layers=1){
-  for(let layer=0;layer<layers;layer++)for(let k=0;k<(layers>1?7:11);k++){
-    const a=k*Math.PI*2/(layers>1?7:11)+layer*.6,length=r*(1-layer*.19)*(1+(rand()-.5)*.14);
+function petalFlower(b,x,y,z,r,color,rand,layers=1,petals=null){
+  for(let layer=0;layer<layers;layer++)for(let k=0;k<(petals||(layers>1?7:11));k++){
+    const a=k*Math.PI*2/(petals||(layers>1?7:11))+layer*.6,length=r*(1-layer*.19)*(1+(rand()-.5)*.14);
     b.add('petal','petal',palette(rand,color,.055),x+Math.sin(a)*r*.11,y+layer*r*.07,z+Math.cos(a)*r*.11,length*.37,length,length,Math.PI/2+(layers>1?-.18-layer*.15:.2),a,0);
   }
   b.add(layers>1?bud:cone,'seed',layers>1?'#bd9572':'#926025',x,y+(layers>1?.005:r*.14),z,r*.22,r*(layers>1?.09:.35),r*.22);
@@ -228,10 +246,11 @@ function mapleModel(b,p,s,view,detail,clipped){
 export function plantModel(p,view,detail=1){
   const s=stateAt(p,view),info=plantInfo(p.kind),g=new THREE.Group();g.userData.plantId=p.id;if(!s.present)return g;
   const rand=random(p.id),h=s.height,w=s.spread,lh=s.leafHeight,form=info.form;
-  const woody=['maple','olive'].includes(form),flex=woody?.025:form==='grass'?.105:.065,b=batch(g,h,flex,p.id*1.73);
+  const profile=treeProfile(info),woody=!!profile||['maple','olive'].includes(form),flex=woody?.025:form==='grass'?.105:.065,b=batch(g,h,flex,p.id*1.73);
   const dormant=s.dormant,clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
   if(form==='unmodeled'){
     const frame=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({color:'#aeb5a3',wireframe:true,transparent:true,opacity:.42}));frame.position.y=h/2;g.add(frame);g.userData.unmodeled=true;
+  }else if(profile&&form!=='maple'){g.userData.architecture=drawTree(b,{profile,p,s,detail},{bud,flower:petalFlower,shade:palette});
   }else if(EXTENDED_FORMS.has(form)){drawBotanical(b,{info,s,p,detail,rand},{bud,cone,flower:petalFlower,shade:palette});
   }else if(form==='maple'){mapleModel(b,p,s,view,detail,clipped);
   }else if(woody){
@@ -311,6 +330,16 @@ export function plantModel(p,view,detail=1){
     g.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(g),radius=Math.max(Math.abs(bounds.min.x),Math.abs(bounds.max.x),Math.abs(bounds.min.z),Math.abs(bounds.max.z));
     if(radius>0&&bounds.max.y>0){const horizontal=w/(2*radius);g.scale.set(horizontal,h/bounds.max.y,horizontal);}
     if(dormant)for(const mesh of [...g.children])if(['garden-0.3-maple','garden-0.3-petiole'].includes(mesh.material?.customProgramCacheKey())){g.remove(mesh);mesh.geometry.dispose();mesh.dispose();}
+  }
+  if(!profile||form==='maple'){
+    // Thin the same deterministic leaf set through budbreak and leaf-fall.
+    for(const mesh of [...g.children]){
+      const kind=mesh.material?.customProgramCacheKey?.();
+      if(!mesh.isInstancedMesh||!['garden-0.3-leaf','garden-0.3-maple','garden-0.3-petiole'].includes(kind))continue;
+      const density=s.leafDensity??1,r=random(p.id*3571+41),matrix=new THREE.Matrix4(),color=new THREE.Color();let kept=0;
+      for(let i=0;i<mesh.count;i++)if(r()<density){mesh.getMatrixAt(i,matrix);mesh.getColorAt(i,color);if(kind!=='garden-0.3-petiole')matrix.scale(new THREE.Vector3(s.leafScale??1,s.leafScale??1,s.leafScale??1));mesh.setMatrixAt(kept,matrix);mesh.setColorAt(kept,color);kept++;}
+      mesh.count=kept;if(!kept){g.remove(mesh);mesh.geometry.dispose();mesh.dispose();}else{mesh.instanceMatrix.needsUpdate=true;mesh.instanceColor.needsUpdate=true;mesh.computeBoundingSphere();}
+    }
   }
   return g;
 }

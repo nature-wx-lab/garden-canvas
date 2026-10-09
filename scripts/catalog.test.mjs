@@ -7,15 +7,15 @@ import {emptyDocument,sampleDocument,validateDocument,makePlant,stateAt,taskEven
 import {plantModel} from '../site/vegetation.js';
 import {EXTENDED_FORMS} from '../site/botanical-models.js';
 const entries=Object.entries(CATALOG),view=month=>({month,year:0,reference:false});
-const fields='label latin genre form group leaf height spread bloom bloomKnown flower leafColor variegated colors sun moisture life growth season care bloomText bloomBasis source publisher sourceChecked aliases selectionSource visual'.split(' ').sort();
+const fields='label latin genre form group leaf height spread bloom bloomKnown flower leafColor variegated colors sun moisture life growth season care bloomText bloomBasis source publisher sourceChecked aliases selectionSource visual popularity'.split(' ').sort();
 test('catalog contains real plant names across all ten requested genres with a bounded public schema',()=>{
- assert.ok(entries.length>=1000);assert.deepEqual([...new Set(entries.map(([,p])=>p.genre))].sort(),[...GENRES].sort());
+ assert.ok(entries.length>=3000);assert.deepEqual([...new Set(entries.map(([,p])=>p.genre))].sort(),[...GENRES].sort());
  for(const [id,p] of Object.entries(EXPANDED_CATALOG)){
   assert.match(id,/^p-[a-f0-9]{12}$/);assert.deepEqual(Object.keys(p).sort(),fields);assert.ok(p.label.length>1&&p.label.length<130);
   assert.doesNotMatch(p.label,/専用土|肥料|マルチングチップ|リットル入り/);
   assert.ok(p.colors.every(c=>Object.hasOwn(COLORS,c)));assert.equal(new Set(p.bloom).size,p.bloom.length);assert.ok(p.bloom.every(m=>Number.isInteger(m)&&m>=1&&m<=12));
   for(const key of ['height','spread'])if(p[key])assert.ok(p[key].length===2&&p[key].every(v=>Number.isFinite(v)&&v>0&&v<=60)&&p[key][0]<=p[key][1],p.label+' '+key);
-  if(p.source){const u=new URL(p.source);assert.equal(u.protocol,'https:');assert.ok(['www.ogis.co.jp','www.engei.net'].includes(u.hostname));assert.equal(u.username,'');assert.equal(u.password,'');}
+  if(p.source){const u=new URL(p.source);assert.equal(u.protocol,'https:');assert.ok(['www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','ask.ifas.ufl.edu'].includes(u.hostname));assert.equal(u.username,'');assert.equal(u.password,'');}
   else {assert.equal(p.height,null);assert.equal(p.spread,null);assert.deepEqual(p.bloom,[]);assert.deepEqual(p.colors,['unknown']);assert.equal(p.form,'unmodeled');}
  }
 });

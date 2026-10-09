@@ -1,5 +1,6 @@
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.4.0';
-import { seasonAt } from './catalog-search.js?v=0.4.0';
+import {treeProfile} from './tree-profiles.js?v=0.5.0';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.5.0';
+import { seasonAt } from './catalog-search.js?v=0.5.0';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -35,7 +36,7 @@ export function contained(inner,outer){
 export const obstaclePoints=o=>[[o.x,o.z],[o.x+o.width,o.z],[o.x+o.width,o.z+o.depth],[o.x,o.z+o.depth]];
 export const canPlant=(plan,x,z)=>inside(x,z,plan.outline)&&!plan.obstacles.some(o=>inside(x,z,obstaclePoints(o)));
 export function makePlant(kind,id,x,z){
-  const info=plantInfo(kind),tree=info.group==='木',height=tree?1.5:info.group==='低木'?.65:info.form==='grass'?.65:.35,spread=tree?.85:info.group==='低木'?.55:.3;
+  const info=plantInfo(kind),tree=info.group==='木',height=tree?1.5:info.group==='低木'?.65:info.form==='grass'?.65:.35,spread=tree?round(height*(treeProfile(info)?.spread&&treeProfile(info)?.height?Math.min(1.6,treeProfile(info).spread[1]/treeProfile(info).height[1]):.65)):info.group==='低木'?.55:.3;
   return {id,kind,x,z,height,spread,leafHeight:round(info.leaf==='herb'||info.leaf==='grass'?height*.55:height),start:0,role:'new',price:null,locked:false,scenario:null,management:null,tasks:[]};
 }
 export function replacePlant(p,kind){if(p.locked)throw new Error('固定を解除してから交換してください。');const next=makePlant(kind,p.id,p.x,p.z);next.start=p.start;next.role=p.role;return next;}
@@ -69,11 +70,11 @@ function migrateV1(v){
 }
 export function validateDocument(input){
   const bad=()=>{throw new Error('対応していない庭データ、または範囲外の値です。元の庭は変更していません。');};
-  const v=input?.version===1?migrateV1(input):input?.catalogVersion==='2026-10-09.1'?{...input,catalogVersion:CATALOG_VERSION}:input;
+  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
   if(!keys(v,['version','modelVersion','catalogVersion','active','plans','view'])||v.version!==2||v.modelVersion!==MODEL_VERSION||v.catalogVersion!==CATALOG_VERSION||!['A','B'].includes(v.active)||!keys(v.plans,['A','B'])||!v.plans.A||!v.plans[v.active])bad();
   const view=v.view;
   if(!keys(view,['month','year','reference','footprints','camera'])||!integer(view.month,1,12)||!integer(view.year,0,10)||typeof view.reference!=='boolean'||typeof view.footprints!=='boolean')bad();
-  if(view.camera!==null&&(!keys(view.camera,['position','target'])||!['position','target'].every(k=>Array.isArray(view.camera[k])&&view.camera[k].length===3&&view.camera[k].every(n=>within(n,-150,150)))||Math.hypot(...view.camera.position.map((n,i)=>n-view.camera.target[i]))<.1||view.camera.position[1]<.1))bad();
+  if(view.camera!==null&&(!keys(view.camera,['position','target'])||!['position','target'].every(k=>Array.isArray(view.camera[k])&&view.camera[k].length===3&&view.camera[k].every(n=>within(n,-500,500)))||Math.hypot(...view.camera.position.map((n,i)=>n-view.camera.target[i]))<.1||view.camera.position[1]<.1))bad();
   for(const plan of Object.values(v.plans)){
     if(plan===null)continue;
     if(!keys(plan,['width','depth','outline','plants','zones','obstacles','hours','prep','sun','moisture'])||!within(plan.width,2,30)||!within(plan.depth,2,30)||!validOutline(plan.outline,plan.width,plan.depth)||!Array.isArray(plan.plants)||plan.plants.length>100||!Array.isArray(plan.zones)||plan.zones.length>12||!Array.isArray(plan.obstacles)||plan.obstacles.length>16||!Array.isArray(plan.hours)||plan.hours.length!==12||plan.hours.some(h=>h!==null&&!within(h,0,744))||!within(plan.prep,0,600)||!['sun','part','shade'].includes(plan.sun)||!['drained','moist'].includes(plan.moisture))bad();
@@ -81,12 +82,17 @@ export function validateDocument(input){
     for(const o of plan.obstacles)if(!keys(o,['type','x','z','width','depth','height'])||!['house','path','fence'].includes(o.type)||!within(o.x,0,30)||!within(o.z,0,30)||!within(o.width,.1,30)||!within(o.depth,.1,30)||!within(o.height,.02,8)||!contained(obstaclePoints(o),plan.outline))bad();
     const ids=new Set();
     for(const p of plan.plants){
-      if(!keys(p,['id','kind','x','z','height','spread','leafHeight','start','role','price','locked','scenario','management','tasks'])||!integer(p.id,1,1000000)||ids.has(p.id)||typeof p.kind!=='string'||!(Object.hasOwn(CATALOG,p.kind)||Object.hasOwn(LEGACY,p.kind))||!within(p.height,.1,15)||!within(p.spread,.1,15)||!within(p.leafHeight,.05,p.height)||!within(p.x,0,plan.width)||!within(p.z,0,plan.depth)||!canPlant(plan,p.x,p.z)||!integer(p.start,0,131)||!['new','existing','reference'].includes(p.role)||p.price!==null&&!integer(p.price,0,10000000)||typeof p.locked!=='boolean'||!Array.isArray(p.tasks)||p.tasks.length>36)bad();ids.add(p.id);
-      const s=p.scenario;if(s!==null&&(!keys(s,['year','height','spread','leafHeight'])||!integer(s.year,1,10)||!within(s.height,p.height,15)||!within(s.spread,p.spread,15)||!within(s.leafHeight,p.leafHeight,s.height)))bad();
-      const m=p.management;if(m!==null&&(!keys(m,['height','spread','method','recovery'])||!within(m.height,.1,15)||!within(m.spread,.1,15)||!['thin','trim'].includes(m.method)||!integer(m.recovery,1,36)))bad();
+      if(!keys(p,['id','kind','x','z','height','spread','leafHeight','start','role','price','locked','scenario','management','tasks'])||!integer(p.id,1,1000000)||ids.has(p.id)||typeof p.kind!=='string'||!(Object.hasOwn(CATALOG,p.kind)||Object.hasOwn(LEGACY,p.kind))||!within(p.height,.1,60)||!within(p.spread,.1,60)||!within(p.leafHeight,.05,p.height)||!within(p.x,0,plan.width)||!within(p.z,0,plan.depth)||!canPlant(plan,p.x,p.z)||!integer(p.start,0,131)||!['new','existing','reference'].includes(p.role)||p.price!==null&&!integer(p.price,0,10000000)||typeof p.locked!=='boolean'||!Array.isArray(p.tasks)||p.tasks.length>36)bad();ids.add(p.id);
+      const s=p.scenario;if(s!==null&&(!keys(s,['year','height','spread','leafHeight'])||!integer(s.year,1,10)||!within(s.height,p.height,60)||!within(s.spread,p.spread,60)||!within(s.leafHeight,p.leafHeight,s.height)))bad();
+      const m=p.management;if(m!==null&&(!keys(m,['height','spread','method','recovery'])||!within(m.height,.1,60)||!within(m.spread,.1,60)||!['thin','trim'].includes(m.method)||!integer(m.recovery,1,36)))bad();
       const taskIds=new Set();for(const t of p.tasks){if(!keys(t,['id','type','month','repeat','count','min','max'])||!integer(t.id,1,1000)||taskIds.has(t.id)||!Object.hasOwn(TASKS,t.type)||!integer(t.month,1,12)||!['annual','first'].includes(t.repeat)||!integer(t.count,1,t.type==='water'?31:1)||!(t.min===null&&t.max===null||within(t.min,0,10000)&&within(t.max,t.min,10000)))bad();taskIds.add(t.id);}
     }
   }return clone(v);
 }
 export function emptyDocument(width=8,depth=6){return {version:2,modelVersion:MODEL_VERSION,catalogVersion:CATALOG_VERSION,active:'A',plans:{A:{width,depth,outline:outlineFor('rectangle',width,depth),plants:[],zones:[],obstacles:[],hours:Array(12).fill(null),prep:0,sun:'part',moisture:'moist'},B:null},view:{month:6,year:0,reference:false,footprints:false,camera:null}};}
 export function sampleDocument(){const doc=emptyDocument();doc.plans.A.plants=[['maple',1.6,1.5],['hydrangea',6.2,1.4],['rose',2,3.7],['salvia',3.1,4.2],['echinacea',4,4.1],['grass',5.6,3.9],['hosta',1.3,2.7],['sedum',6.7,4.6]].map(([k,x,z],i)=>makePlant(k,i+1,x,z));doc.plans.A.zones=[{points:[[.5,.5],[3,.5],[3,4.8],[.5,4.8]]},{points:[[4.8,.5],[7.5,.5],[7.5,5.3],[4.8,5.3]]}];return doc;}
+
+export function treeGalleryDocument(){
+ const d=emptyDocument(20,13),specimens=[['Prunus x yedoensis',3.3,3,3.6],['Cercidiphyllum japonicum',10,3,4.2],['Metasequoia glyptostroboides',16,3,5.2],['Zelkova serrata',3.3,9.6,3.6],['Salix babylonica',10,9.6,3.5],['Ginkgo biloba',16,9.6,4.4]];
+ d.plans.A.plants=specimens.flatMap(([latin,x,z,h],i)=>{const item=Object.entries(CATALOG).find(([,v])=>v.latin===latin);if(!item)return [];const p=makePlant(item[0],i+1,x,z);const ratio=p.spread/p.height;p.height=h;p.spread=round(h*ratio);p.leafHeight=h;p.role='reference';return [p];});return d;
+}
