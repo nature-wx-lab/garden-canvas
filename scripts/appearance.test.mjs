@@ -12,10 +12,10 @@ const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstan
 
 test('every catalog entry has an explicit evidence record and no unsupported completion claim',()=>{
  assert.deepEqual(Object.keys(APPEARANCE_DATA).sort(),Object.keys(CATALOG).sort());
- const allowed=new Set(['sources','basis','status','unconfirmed','arrangement','inflorescence','flowerShape','habit','leafShape','leafTexture','leafColor','barkColor','barkPattern','petals','persistence','flowerMonths','flowerTiming','emergenceMonths','dormantMonths','leafPattern','patternColor','flowerLayers','flowerPattern','scientificName','phenologyRegion','leafLength','leafRelief','seasonalColors','stemColor','leaflets','compoundType','standingWinter','flowerSeasons','leafMargin','architecture','winterClimateSensitive','lifeForm','flowerPatternColor','outerFlowerPattern','flowerRadius','seedHeadMonths','seedColor','flowerPalette','flowerGuides','foliageMonths','leaflessBloom','flowerOptions','leafletShape','flowerFadeTo','headRadius','inflorescenceLength','leafletCounts','leafUnderside','springShootColor','stamenCount']);
+ const allowed=new Set(['sources','basis','status','unconfirmed','arrangement','inflorescence','flowerShape','habit','leafShape','leafTexture','leafColor','barkColor','barkPattern','petals','persistence','flowerMonths','flowerTiming','emergenceMonths','dormantMonths','leafPattern','patternColor','flowerLayers','flowerPattern','scientificName','phenologyRegion','leafLength','leafRelief','seasonalColors','stemColor','leaflets','compoundType','standingWinter','flowerSeasons','leafMargin','architecture','winterClimateSensitive','lifeForm','flowerPatternColor','outerFlowerPattern','flowerRadius','seedHeadMonths','seedColor','flowerPalette','flowerGuides','foliageMonths','leaflessBloom','flowerOptions','leafletShape','flowerFadeTo','headRadius','inflorescenceLength','leafletCounts','leafUnderside','springShootColor','stamenCount','leafFlushAfterFlower','monthlyLeafColors','bracts','flowerOutsideColor','flowerEyeColor','monthlyPatternColors']);
  for(const [id,a] of Object.entries(APPEARANCE_DATA)){
   assert.ok(Object.keys(a).every(k=>allowed.has(k)),id);assert.ok(['attributes','unconfirmed','partial'].includes(a.status));
-  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp'].includes(u.hostname));assert.ok(['catalog-entry','species','genus'].includes(source.scope));}
+  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au'].includes(u.hostname));assert.ok(['catalog-entry','species','genus'].includes(source.scope));}
   for(const [field,index] of Object.entries(a.basis)){assert.ok(Object.hasOwn(a,field));assert.ok(Number.isInteger(index)&&index>=0&&index<a.sources.length,id+':'+field);}
   for(const field of ['flowerMonths','emergenceMonths','dormantMonths'])if(a[field])assert.ok(a[field].length>0&&a[field].every(m=>Number.isInteger(m)&&m>=1&&m<=12),id);
   for(let m=1;m<=12;m++){const s=seasonAt(CATALOG[id],m);assert.ok(s.leafDensity>=0&&s.leafDensity<=1);assert.ok(s.leafScale>=0&&s.leafScale<=1);if(s.groundDormant)assert.equal(s.bloom,false);}
@@ -27,6 +27,48 @@ test('winter loss removes the whole herbaceous plant while dormant trees keep th
  const tree=plantModel(makePlant('maple',302,2,2),view(1));assert.ok(tree.children.some(m=>m.userData.component?.startsWith('wood')));assert.ok(!tree.children.some(m=>m.userData.component?.startsWith('leaf')));dispose(tree);
  const explicit={form:'hosta',leaf:'herb',bloom:[1],appearance:{persistence:'winterDormant',dormantMonths:[1,2]}};
  assert.equal(seasonAt(explicit,1).groundDormant,true);assert.equal(seasonAt(explicit,1).bloom,false);
+});
+test('Chilean blue crocus has six tepals, three anthers and no leaves in summer',()=>{
+ const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,color:'#396ec4',shape:'chileanCrocus'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
+ assert.equal(parts.filter(p=>p.shape==='petal').length,6);assert.equal(parts.filter(p=>p.kind==='anther').length,3);assert.equal(parts.filter(p=>p.kind==='staminode').length,3);
+ for(const id of ['p-f2be143fe8e2','p-be58de2d72b1','p-0c17f5e6428b','p-d60390169c0f']){
+  const info=CATALOG[id],p=makePlant(id,391,2,2);assert.equal(info.appearance.leafPattern,undefined);assert.deepEqual(info.appearance.emergenceMonths,[1,2]);
+  for(const month of [2,3,4]){const g=plantModel(p,view(month));assert.ok(g.children.some(m=>m.userData.component==='anther'));dispose(g);}
+  for(const month of [7,8,9])assert.equal(plantModel(p,view(month)).children.length,0);
+ }
+});
+test('flannel flowers retain ten bracts and protected evergreen leaves; annual tobacco does not regrow next year',()=>{
+ const info=CATALOG['p-c1a8de3aa502'],parts=[];
+ detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,color:'#ffffff',shape:info.appearance.flowerShape,bracts:info.appearance.bracts},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
+ assert.equal(parts.filter(p=>p.kind==='petal-woolly-tip-78976a').length,10);assert.ok(!parts.some(p=>p.kind==='petal'));
+ const winter=plantModel(makePlant('p-c1a8de3aa502',396,2,2),view(1));assert.ok(winter.children.some(m=>m.userData.component==='leaf-woolly'));assert.ok(!winter.children.some(m=>m.userData.component.startsWith('petal')));dispose(winter);
+ for(const id of ['p-9d11003cdcf2','p-b6018a56b0fc','p-eb1f476e1f78']){
+  const p=makePlant(id,397,2,2);assert.equal(plantModel(p,view(1)).children.length,0);assert.equal(stateAt(p,{...view(6),year:1}).present,false);
+  const bloom=plantModel(p,view(6));assert.ok(bloom.children.some(m=>m.userData.component.startsWith('petal')));dispose(bloom);
+ }
+ const tinker=CATALOG['p-9d11003cdcf2'].appearance;assert.equal(tinker.flowerOutsideColor,'#85915c');
+ const changing=CATALOG['p-eb1f476e1f78'];assert.notEqual(changing.flower,changing.appearance.flowerFadeTo);assert.ok(changing.appearance.flowerEyeColor);
+});
+test('redbud flowers attach to old branches before its leaves and goldchain racemes hang down',()=>{
+ const redbud=CATALOG['p-91a9e7ebc098'];assert.equal(seasonAt(redbud,3).leafDensity,0);assert.equal(seasonAt(redbud,3).bloom,true);assert.equal(seasonAt(redbud,6).leafDensity,1);
+ const g=plantModel(makePlant('p-91a9e7ebc098',392,2,2),view(3));assert.ok(g.children.some(m=>m.userData.component.startsWith('petal')));assert.ok(!g.children.some(m=>m.userData.component.startsWith('leaf')));dispose(g);
+ const p=makePlant('p-d31d2a2018c0',393,2,2),info=CATALOG[p.kind],branches=[];
+ drawTree({add(){},branch:(from,to,r,c,kind)=>{if(kind==='peduncle'&&r===.00065)branches.push({from,to});}},{profile:{habit:'spreading',leafShape:'compound'},info,p,s:stateAt(p,view(5)),detail:.45},{bud:'bud',shade:(_,c)=>c,detailedFlower(){},flower(){}});
+ assert.ok(branches.length>100);assert.ok(branches.every(({from,to})=>to[1]<from[1]));assert.equal(seasonAt(info,1).leafDensity,0);
+ const elm=CATALOG['p-f446d616f1b5'];assert.notEqual(seasonAt(elm,4).leafColor,seasonAt(elm,6).leafColor);assert.equal(elm.appearance.flowerShape,undefined);assert.equal(elm.bloomKnown,false);
+});
+test('sweetshrubs retain winter wood while evergreen hebes retain paired leaves and change their winter colour',()=>{
+ for(const id of ['p-108e05754c2f','p-1e6d5ebbf170','p-a1731a43eebc']){
+  const g=plantModel(makePlant(id,398,2,2),view(1));assert.ok(g.children.some(m=>m.userData.component.startsWith('wood')));assert.ok(!g.children.some(m=>m.userData.component.startsWith('leaf')));dispose(g);
+  const flowering=plantModel(makePlant(id,398,2,2),view(6));assert.ok(flowering.children.some(m=>m.userData.component==='anther'));dispose(flowering);
+ }
+ for(const id of ['p-eda5b577dd43','p-621be978a2f2','p-a425a22329b4']){
+  const info=CATALOG[id],winter=seasonAt(info,1),summer=seasonAt(info,6);assert.equal(info.appearance.arrangement,'opposite');assert.equal(winter.leafDensity,1);
+  assert.ok(winter.leafColor!==summer.leafColor||winter.leafPatternColor!==summer.leafPatternColor);
+  const g=plantModel(makePlant(id,399,2,2),view(1));assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf')));assert.ok(!g.children.some(m=>m.userData.component.startsWith('petal')));dispose(g);
+ }
+ const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,shape:'hebeFlower',color:'#aa88bb'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
+ assert.equal(parts.filter(p=>p.shape==='petal').length,4);assert.equal(parts.filter(p=>p.kind==='anther').length,2);
 });
 test('snowdrops flower with leaves in late winter and leave no above-ground plant in summer',()=>{
  for(const [id,info] of Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='snowdrop')){

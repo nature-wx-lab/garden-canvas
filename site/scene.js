@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant } from './model.js?v=0.8.0';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.8.0';
+import { plantInfo, stateAt, inside, canPlant } from './model.js?v=0.8.1';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.8.1';
 
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
 function mat(color){if(!sceneMaterials.has(color))sceneMaterials.set(color,new THREE.MeshStandardMaterial({color,roughness:.92}));return sceneMaterials.get(color);}
@@ -27,11 +27,11 @@ const contactGeometry=new THREE.PlaneGeometry(1,1);sharedGeometry.add(contactGeo
 
 export function createScene(container,onPick){
   const scene=new THREE.Scene();scene.background=new THREE.Color('#cbd2c6');scene.fog=new THREE.Fog('#cbd2c6',100,600);
-  const camera=new THREE.PerspectiveCamera(40,container.clientWidth/container.clientHeight,.05,650);
+  const camera=new THREE.PerspectiveCamera(40,container.clientWidth/container.clientHeight,.01,650);
   const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.setSize(container.clientWidth,container.clientHeight,false);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
   renderer.domElement.setAttribute('aria-label','風に揺れる庭の3Dキャンバス');container.append(renderer.domElement);
-  const controls=new OrbitControls(camera,renderer.domElement);controls.maxPolarAngle=Math.PI/2-.025;controls.minDistance=.6;controls.maxDistance=400;controls.enableDamping=false;
+  const controls=new OrbitControls(camera,renderer.domElement);controls.maxPolarAngle=Math.PI/2-.025;controls.minDistance=.12;controls.maxDistance=400;controls.enableDamping=false;
   const hemisphere=new THREE.HemisphereLight('#e6efff','#77704b',1.7);scene.add(hemisphere);
   const sun=new THREE.DirectionalLight('#fff0d2',2.8);sun.position.set(-7,12,8);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0002;sun.shadow.normalBias=.013;sun.shadow.radius=2.5;sun.shadow.intensity=.72;sun.shadow.camera.near=.5;sun.shadow.camera.far=350;scene.add(sun);
   const sky=new THREE.Mesh(new THREE.SphereGeometry(500,20,12),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color('#adc5d0')},bottom:{value:new THREE.Color('#e3e0ce')}},vertexShader:'varying vec3 skyDirection; void main(){skyDirection=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:'varying vec3 skyDirection;uniform vec3 top;uniform vec3 bottom;void main(){float t=smoothstep(-0.05,0.65,normalize(skyDirection).y);gl_FragColor=vec4(mix(bottom,top,t),1.0);#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}'}));
@@ -98,7 +98,7 @@ export function createScene(container,onPick){
   function setLight(value){const evening=value==='evening';sun.position.set(...(evening?[-11,6,5]:[-7,12,8]));sun.color.set(evening?'#ffd7a0':'#fff0d2');sun.intensity=evening?2.3:2.8;hemisphere.intensity=evening?1.3:1.7;sky.material.uniforms.top.value.set(evening?'#bac3ce':'#adc5d0');sky.material.uniforms.bottom.value.set(evening?'#e7cdb0':'#e3e0ce');dirty=true;}
   function setView(type){
     if(!plan)return;
-    if(type==='focus'&&selection){const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view);controls.target.set(p.x-plan.width/2,s.height*.52,p.z-plan.depth/2);const d=Math.max(.7,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);camera.position.copy(controls.target).add(new THREE.Vector3(d,d*.48,d));}
+    if(type==='focus'&&selection){const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view);controls.target.set(p.x-plan.width/2,s.height*.52,p.z-plan.depth/2);const d=Math.max(.16,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);camera.position.copy(controls.target).add(new THREE.Vector3(d,d*.48,d));}
     else{
       const bounds=new THREE.Box3(new THREE.Vector3(-plan.width/2,0,-plan.depth/2),new THREE.Vector3(plan.width/2,.1,plan.depth/2));
       for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;for(const sign of [-1,1])bounds.expandByPoint(new THREE.Vector3(p.x-plan.width/2+sign*s.spread/2,s.height,p.z-plan.depth/2+sign*s.spread/2));}
