@@ -1,147 +1,96 @@
-import * as THREE from './vendor/three.module.js';
-import { OrbitControls } from './vendor/OrbitControls.js';
-import { CATALOG, clone, outlineFor, area, inside, validOutline, validatePlan, samplePlan } from './model.js';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, stateAt, budget, calendar, observations, TASKS } from './model.js';
+import { createScene } from './scene.js';
 
-const $ = id => document.getElementById(id);
-let plan=samplePlan(), selected=null, mode='orbit', addKind='flower', draft=[], history=[], pointerStart=null;
-let scene,camera,renderer,controls,garden,plantsGroup,outlineGroup,selectionRing,dirty=true;
-const ray=new THREE.Raycaster(), plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
-const materials=new Map(), shared=[];
-const material=(color)=>{ if(!materials.has(color))materials.set(color,new THREE.MeshStandardMaterial({color,roughness:.88}));return materials.get(color); };
-const sphere=new THREE.SphereGeometry(1,7,5), stem=new THREE.CylinderGeometry(1,1,1,6), blade=new THREE.ConeGeometry(1,1,5);
-shared.push(sphere,stem,blade);
-const round=value=>Math.round(value*10)/10;
+const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
+let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
+const shown=()=>preview||doc,plan=()=>currentPlan(shown()),selectedPlant=()=>plan().plants.find(p=>p.id===selected);
+const number=id=>$(id).value.trim()===''?NaN:Number($(id).value),optional=id=>$(id).value.trim()===''?null:Number($(id).value);
+const yen=v=>`${v.toLocaleString('ja-JP')}円`,time=(a,b)=>a===b?`${round(a)}分`:`${round(a)}〜${round(b)}分`;
 const message=text=>$('status').textContent=text;
-const selectedPlant=()=>plan.plants.find(p=>p.id===selected);
-function checkpoint(){history.push(clone(plan));if(history.length>30)history.shift();$('undo').disabled=false;}
-function setMode(value){mode=value;controls.enabled=value!=='outline';$('orbit').setAttribute('aria-pressed',String(value==='orbit'));for(const el of $('catalog').children)el.setAttribute('aria-pressed',String(value==='add'&&el.dataset.kind===addKind));$('view-status').textContent=value==='add'?`${CATALOG[addKind].label}を置く場所をクリック`:value==='move'?'移動先をクリック':value==='outline'?'庭の角を順番にクリック':'庭の3D表示 · 1目盛り = 1m';$('viewport').dataset.mode=value;}
-function mesh(geo,color,x,y,z,sx,sy,sz){const m=new THREE.Mesh(geo,material(color));m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;return m;}
-function branch(group,a,b,r){const v=new THREE.Vector3(...b).sub(new THREE.Vector3(...a));const m=mesh(stem,0x837261,(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2,r,v.length(),r);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize());group.add(m);}
-function buildPlant(p){
-  const g=new THREE.Group();g.position.set(p.x-plan.width/2,.035,p.z-plan.depth/2);g.userData.plantId=p.id;
-  const h=p.height,w=p.spread,month=plan.month,winter=month===12||month<=2,autumn=month>=10&&month<=11;
-  if(p.kind==='deciduous'||p.kind==='evergreen'){
-    branch(g,[0,0,0],[0,h*.82,0],Math.max(.02,h*.023));
-    const color=p.kind==='evergreen'?0x64846b:autumn?0xb58543:month<=4?0x98ad63:0x77935c;
-    for(let i=0;i<9;i++){
-      const angle=i*2.399+p.id*.3,r=w*.27*(i<6?1:.65),y=h*(.52+(i%3)*.11),x=Math.cos(angle)*r,z=Math.sin(angle)*r;
-      branch(g,[0,h*.28,0],[x,y,z],Math.max(.012,h*.009));
-      if(p.kind==='evergreen'||!winter){
-        g.add(mesh(sphere,color,x,y,z,w*.23,h*.17,w*.23));
-        for(let k=0;k<3;k++)g.add(mesh(sphere,k%2?0x8a9d64:color,x+Math.cos(k*2+i)*w*.1,y+h*.06,z+Math.sin(k*2+i)*w*.1,w*.15,h*.11,w*.16));
-      }
-    }
-    if(!winter||p.kind==='evergreen')g.add(mesh(sphere,color,0,h*.87,0,w*.24,h*.13,w*.24));
-  }else if(p.kind==='flower'){
-    const foliage=winter?.2:1;
-    for(let i=0;i<11;i++){
-      const angle=i*2.399,r=w*.31*Math.sqrt((i+1)/11),x=Math.cos(angle)*r,z=Math.sin(angle)*r;
-      const leaf=mesh(sphere,winter?0x9a916f:0x648854,x,h*.19*foliage,z,w*.16,h*.24*foliage,w*.08);leaf.rotation.z=Math.cos(angle)*.5;g.add(leaf);
-      if(month>=4&&month<=9){
-        const y=h*(.55+((i*7)%5)*.09);branch(g,[x,0,z],[x,y,z],.009);
-        const color=month<=6?0xb77e9d:0xc3a269;
-        for(let k=0;k<5;k++){const a=k*Math.PI*2/5;g.add(mesh(sphere,color,x+Math.cos(a)*w*.047,y,z+Math.sin(a)*w*.047,w*.05,h*.023,w*.05));}
-        g.add(mesh(sphere,0xd8b663,x,y+.008,z,w*.033,h*.026,w*.033));
-      }
-    }
-  }else{
-    for(let i=0;i<17;i++){
-      const angle=i*2.399,r=w*.19*Math.sqrt(i/17),y=h*(.65+((i*11)%7)*.05),color=winter||autumn?0xb4a37a:0x8d9d69;
-      const m=mesh(blade,color,Math.cos(angle)*r,y/2,Math.sin(angle)*r,w*.045,y,w*.025);m.rotation.z=Math.cos(angle)*.28;m.rotation.x=Math.sin(angle)*.28;g.add(m);
-    }
-  }
-  return g;
+const nextId=items=>{let id=1;while(items.some(p=>p.id===id))id++;return id;};
+function button(text,action){const b=el('button',text);b.addEventListener('click',action);return b;}
+function options(id,values){$(id).replaceChildren(...values.map(([value,text])=>{const o=el('option',text);o.value=value;return o;}));}
+function editor(id){for(const b of document.querySelectorAll('[data-editor]')){const active=b.dataset.editor===id;b.setAttribute('aria-pressed',String(active));$(b.dataset.editor).hidden=!active;}}
+function insight(id){for(const b of document.querySelectorAll('[data-insight]')){const active=b.dataset.insight===id;b.setAttribute('aria-pressed',String(active));$(b.dataset.insight).hidden=!active;}}
+function sourceCard(target,kind){const info=plantInfo(kind),box=$(target);box.replaceChildren(el('strong',info.label),el('p',info.latin||'種類未指定'));
+  if(info.height)box.append(el('p',`成株：高さ ${info.height.join('〜')}m ／ 幅 ${info.spread.join('〜')}m`));
+  box.append(el('p',`生育：${info.growth}`),el('p',info.bloomText),el('p',info.care));
+  for(const [url,title] of [[info.source,info.publisher],[info.growthSource,'RHS 成株到達の資料']])if(url){const a=el('a',title+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';box.append(a,el('br'));}
+  box.append(el('p',`資料確認 ${CATALOG_VERSION.slice(0,10)}。海外の目安。日本の地域別予測ではありません。`,'hint'));
 }
-function disposeOwned(group){if(!group)return;group.traverse(o=>{if(o.geometry&&!shared.includes(o.geometry))o.geometry.dispose();if(o.material&&!Array.from(materials.values()).includes(o.material)&&o.material!==lineMaterial&&o.material!==ringMaterial)o.material.dispose();});scene.remove(group);}
-function rebuild(){
-  disposeOwned(garden);disposeOwned(plantsGroup);garden=new THREE.Group();plantsGroup=new THREE.Group();
-  const shape=new THREE.Shape(plan.outline.map(([x,z])=>new THREE.Vector2(x-plan.width/2,-z+plan.depth/2)));
-  const soil=new THREE.Mesh(new THREE.ShapeGeometry(shape),material(plan.month<=2||plan.month===12?0xadb18c:0xacba83));soil.rotation.x=-Math.PI/2;soil.receiveShadow=true;garden.add(soil);
-  const border=plan.outline.concat([plan.outline[0]]).map(([x,z])=>new THREE.Vector3(x-plan.width/2,.035,z-plan.depth/2));
-  garden.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(border),lineMaterial));
-  const grid=new THREE.GridHelper(Math.ceil(Math.max(plan.width,plan.depth)),Math.ceil(Math.max(plan.width,plan.depth)),0x91a087,0xa9b39f);grid.position.y=.012;grid.material.transparent=true;grid.material.opacity=.26;garden.add(grid);
-  const pad=mesh(new THREE.BoxGeometry(plan.width+.6,.16,plan.depth+.6),0xd8d9c4,0,-.16,0,1,1,1);pad.castShadow=false;garden.add(pad);
-  scene.add(garden);for(const p of plan.plants)plantsGroup.add(buildPlant(p));scene.add(plantsGroup);updateSelection();dirty=true;
-  $('area').textContent=`${area(plan.outline).toFixed(1)} m² · ${plan.plants.length}株`;
-  $('count').textContent=`${plan.plants.length}株`;
-  const list=$('plant-list');list.replaceChildren();for(const p of plan.plants){const b=document.createElement('button');b.textContent=`${p.id} ${CATALOG[p.kind].label}`;b.setAttribute('aria-pressed',String(p.id===selected));b.addEventListener('click',()=>select(p.id));list.append(b);}
+function checkpoint(){history.push(clone(doc));if(history.length>40)history.shift();future=[];}
+function mutate(fn,text,allowPreview=false){if(preview&&!allowPreview){message('交換プレビューを採用するか、元に戻ってから編集してください。');return false;}try{const next=clone(doc);fn(currentPlan(next),next);const checked=validateDocument(next);checkpoint();doc=checked;resetMode();sync();message(text);return true;}catch(e){message(e.message||'入力を確認してください。庭は変更していません。');return false;}}
+function withPlant(fn,text,allowLocked=false){return mutate(p=>{const target=p.plants.find(p=>p.id===selected);if(!target)throw new Error('先に植物を選んでください。');if(target.locked&&!allowLocked)throw new Error('固定を解除してから編集してください。');fn(target,p);},text);}
+function setMode(value){if(preview&&value!=='orbit'){message('交換プレビューを採用するか、元に戻ってください。');return;}mode=value;engine?.editing(['outline','zone','circle'].includes(value));$('orbit').setAttribute('aria-pressed',String(value==='orbit'));$('viewport').dataset.mode=value;
+  const statuses={orbit:`案 ${shown().active} · 3Dの参考表現`,add:`${plantInfo(addKind).label}を置く場所をクリック`,move:'移動先をクリック',clone:'複製する場所をクリック',outline:'庭の外周の角を順番にクリック',zone:'花壇の角を順番にクリック',circle:'中心 → 半径の順に2点クリック'};
+  $('view-status').textContent=statuses[value];for(const b of $('catalog').children)b.setAttribute('aria-pressed',String(value==='add'&&b.dataset.kind===addKind));
 }
-const lineMaterial=new THREE.LineBasicMaterial({color:0x69855a});
-function updateSelection(){
-  if(selectionRing){selectionRing.geometry.dispose();scene.remove(selectionRing);selectionRing=null;}
-  const p=selectedPlant();$('no-selection').hidden=!!p;$('selected-fields').hidden=!p;
-  if(p){$('kind').value=p.kind;$('height').value=p.height;$('spread').value=p.spread;$('plant-x').value=p.x;$('plant-z').value=p.z;
-    selectionRing=new THREE.Mesh(new THREE.RingGeometry(p.spread/2+.08,p.spread/2+.13,48),ringMaterial);selectionRing.rotation.x=-Math.PI/2;selectionRing.position.set(p.x-plan.width/2,.055,p.z-plan.depth/2);scene.add(selectionRing);
-  }dirty=true;
+function resetMode(){draft=[];copyPlant=null;engine?.drawDraft([]);$('outline-tools').hidden=true;setMode('orbit');}
+function select(id){selected=id;setMode('orbit');editor('plant-panel');sync();if(selectedPlant())message(`${plantInfo(selectedPlant().kind).label}を選びました。`);}
+function metrics(target,items){$(target).replaceChildren(...items.map(([value,label])=>{const d=el('div',undefined,'metric');d.append(el('strong',value),el('span',label));return d;}));}
+function table(headers,rows){const t=el('table'),head=el('thead'),tr=el('tr');headers.forEach(h=>tr.append(el('th',h)));head.append(tr);const body=el('tbody');rows.forEach(row=>{const r=el('tr');row.forEach(c=>r.append(el('td',c)));body.append(r);});t.append(head,body);return t;}
+function itemRow(text,remove){const row=el('div',undefined,'item-row');row.append(el('span',text),button('削除',remove));return row;}
+function syncSelected(){const p=selectedPlant();$('no-selection').hidden=!!p;$('selected-fields').hidden=!p;if(!p)return;const s=stateAt(p,shown().view),info=plantInfo(p.kind);$('selected-name').textContent=`#${p.id} ${info.label}`;$('lock').textContent=p.locked?'固定を解除':'固定する';$('lock').setAttribute('aria-pressed',String(p.locked));
+  $('plant-state').textContent=!s.present?'この月はまだ植え付け前です。':`表示：高さ ${s.height.toFixed(2)}m・幅 ${s.spread.toFixed(2)}m ／ 植えて ${s.age.toFixed(1)}年。${s.unsupported?'目標が主枝より低いため剪定形状は未対応。':s.last?'最後の剪定・切り戻し：'+Math.floor(s.last.at/12)+'年経過時の '+(s.last.at%12+1)+'月。':''}`;
+  for(const [id,value] of Object.entries({height:p.height,spread:p.spread,'leaf-height':p.leafHeight,price:p.price,'plant-x':p.x,'plant-z':p.z,'start-year':Math.floor(p.start/12),'start-month':p.start%12+1,role:p.role,'scenario-year':p.scenario?.year||3,'future-height':p.scenario?.height??p.height,'future-spread':p.scenario?.spread??p.spread,'future-leaf':p.scenario?.leafHeight??p.leafHeight,'target-height':p.management?.height??p.height,'target-spread':p.management?.spread??p.spread,'prune-method':p.management?.method||'thin',recovery:p.management?.recovery||6}))$(id).value=value??'';
+  $('replacement').value=Object.hasOwn(CATALOG,p.kind)?p.kind:'salvia';$('care-advice').textContent=info.care;
+  $('plant-tasks').replaceChildren(...p.tasks.map(t=>itemRow(`${t.month}月 ${TASKS[t.type]} ×${t.count} ／ ${t.repeat==='first'?'初年度':'毎年'} ／ ${t.min===null?'時間未入力':time(t.min,t.max)}`,()=>withPlant(p=>{p.tasks=p.tasks.filter(x=>x.id!==t.id);},'手入れ予定を削除しました。',true))));sourceCard('selected-source',p.kind);
 }
-const ringMaterial=new THREE.MeshBasicMaterial({color:0xf0cc72,side:THREE.DoubleSide});
-function select(id){selected=id;setMode('orbit');updateSelection();for(const b of $('plant-list').children)b.setAttribute('aria-pressed',String(b.textContent.startsWith(`${id} `)));message(`${CATALOG[selectedPlant().kind].label}を選びました。寸法や場所を変更できます。`);}
-function sync(){ $('width').value=plan.width;$('depth').value=plan.depth;$('month').value=plan.month;$('month-label').textContent=`${plan.month}月`;$('shape').value=JSON.stringify(plan.outline)===JSON.stringify(outlineFor('rectangle',plan.width,plan.depth))?'rectangle':JSON.stringify(plan.outline)===JSON.stringify(outlineFor('lshape',plan.width,plan.depth))?'lshape':'custom';rebuild(); }
-function view(type){
-  const size=Math.max(plan.width,plan.depth)*Math.max(1,1.4/camera.aspect);controls.target.set(0,0,0);
-  camera.position.set(...(type==='top'?[0,size*1.7,.001]:type==='eye'?[size*.9,2,size*1.1]:[size*.95,size*.85,size*1.05]));camera.lookAt(controls.target);controls.update();dirty=true;
+function syncGarden(){const p=plan();for(const id of ['width','depth','sun','moisture','prep'])$(id).value=p[id];$('shape').value=['rectangle','lshape'].find(k=>JSON.stringify(outlineFor(k,p.width,p.depth))===JSON.stringify(p.outline))||'custom';p.hours.forEach((h,i)=>$(`hours-${i}`).value=h??'');
+  $('zone-list').replaceChildren(...p.zones.map((z,i)=>itemRow(`花壇 ${i+1} · ${area(z.points).toFixed(1)}m²`,()=>mutate(p=>p.zones.splice(i,1),'花壇を取り除きました。植物は残ります。'))));
+  $('obstacle-list').replaceChildren(...p.obstacles.map((o,i)=>itemRow(`${{house:'建物',path:'通路',fence:'塀'}[o.type]} ${i+1} · ${o.width.toFixed(1)} × ${o.depth.toFixed(1)}m`,()=>mutate(p=>p.obstacles.splice(i,1),'外構を取り除きました。'))));
 }
-function groundPoint(event){const box=renderer.domElement.getBoundingClientRect();ray.setFromCamera(new THREE.Vector2((event.clientX-box.left)/box.width*2-1,-(event.clientY-box.top)/box.height*2+1),camera);const v=ray.ray.intersectPlane(plane,new THREE.Vector3());return v?{x:round(v.x+plan.width/2),z:round(v.z+plan.depth/2)}:null;}
-function handleClick(event){
-  const point=groundPoint(event);if(!point)return;
-  if(mode==='outline'){
-    if(point.x<0||point.x>plan.width||point.z<0||point.z>plan.depth){message('表示中の長方形の範囲内で角を選んでください。');return;}
-    if(draft.length>=16){message('角は16点までです。「形を確定」を押してください。');return;}
-    draft.push([point.x,point.z]);drawOutline();return;
-  }
-  if(mode==='add'||mode==='move'){
-    if(!inside(point.x,point.z,plan.outline)){message('庭の輪郭の内側を選んでください。');return;}
-    if(mode==='add'){
-      if(plan.plants.length>=100){message('初期版は100株まで配置できます。');return;}
-      checkpoint();const kind=addKind;selected=1;while(plan.plants.some(p=>p.id===selected))selected++;
-      plan.plants.push({id:selected,kind,x:point.x,z:point.z,height:CATALOG[kind].height,spread:CATALOG[kind].spread});
-      message(`${CATALOG[kind].label}を配置しました。続けて置くか、「眺める・選ぶ」で戻れます。`);
-    }else{const p=selectedPlant();if(!p)return;checkpoint();p.x=point.x;p.z=point.z;setMode('orbit');message('植物を移動しました。');}
-    rebuild();return;
-  }
-  const hits=ray.intersectObjects(plantsGroup.children,true);if(hits.length){let obj=hits[0].object;while(obj&&!obj.userData.plantId)obj=obj.parent;if(obj)select(obj.userData.plantId);}else{selected=null;updateSelection();for(const b of $('plant-list').children)b.setAttribute('aria-pressed','false');}
+function syncBudget(){const b=budget(plan());metrics('budget-summary',[[yen(b.total),'入力済み価格の小計'],[`${b.unknown}株`,'価格未入力'],[`${b.count}株`,'新規購入する株']]);$('budget-table').replaceChildren(table(['植物・初期サイズ','株数','単価','金額'],b.rows.map(r=>[`${plantInfo(r.kind).label} (${r.height}m × ${r.spread}m)`,r.count,r.price===null?'未入力':yen(r.price),r.price===null?'未確定':yen(r.total)])));}
+function syncCalendar(){const year=shown().view.year,months=calendar(plan(),year),total=months.reduce((a,m)=>({min:a.min+m.min,max:a.max+m.max,unknown:a.unknown+m.unknown,count:a.count+m.events.reduce((n,e)=>n+e.count,0)}),{min:0,max:0,unknown:0,count:0});const pruneCount=months.flatMap(m=>m.events).filter(e=>['prune','cutback'].includes(e.type)).length;
+  $('care-summary').textContent=`計画開始から ${year}年の予定：${total.count}回。入力済み時間 ${time(total.min,total.max)} / 年${total.unknown?` ＋ 時間未入力 ${total.unknown}件（合計未確定）`:''}。うち剪定・切り戻し ${pruneCount}件。`;
+  $('calendar').replaceChildren(...months.map(m=>{const b=button('',()=>{calendarMonth=m.month;syncCalendar();});b.append(el('strong',`${m.month}月`),el('span',m.events.length?`${m.events.length}件 · ${time(m.min,m.max)}`:'予定未登録'));if(m.unknown)b.append(el('br'),el('span',`時間未入力 ${m.unknown}件`));if(m.available!==null)b.append(el('br'),el('span',`使える ${round(m.available)}分${m.max>m.available?' · 超過':m.unknown?' · 判定未確定':''}`));b.classList.toggle('over',m.available!==null&&m.max>m.available);b.setAttribute('aria-pressed',String(m.month===calendarMonth));return b;}));
+  const m=months[calendarMonth-1];$('month-tasks').replaceChildren(el('strong',`${calendarMonth}月の予定`),...m.events.map(t=>{const p=el('p',`#${t.plantId} ${plantInfo(t.kind).label}：${TASKS[t.type]} ×${t.count} ／ ${t.min===null?'時間未入力':time(t.min*t.count,t.max*t.count)}`);p.append(document.createTextNode(' '),button('植物を調整',()=>select(t.plantId)));return p;}));if(!m.events.length)$('month-tasks').append(el('p','植物を選び、「手入れ予定」から追加できます。','hint'));
 }
-function drawOutline(){disposeOwned(outlineGroup);outlineGroup=new THREE.Group();const vertices=draft.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.08,z-plan.depth/2));if(vertices.length>1)outlineGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(vertices),lineMaterial));for(const p of vertices)outlineGroup.add(mesh(sphere,0xc28c37,p.x,p.y,p.z,.08,.06,.08));scene.add(outlineGroup);$('outline-count').textContent=`${draft.length}点`;dirty=true;}
-function endOutline(){draft=[];disposeOwned(outlineGroup);outlineGroup=null;$('outline-tools').hidden=true;setMode('orbit');}
-function applyOutline(points){if(plan.plants.some(p=>!inside(p.x,p.z,points))){message('輪郭の外に植物が残ります。先に植物を移すか取り除いてください。');return false;}checkpoint();plan.outline=points;endOutline();sync();message('庭の形を変更しました。');return true;}
+function syncIdeas(){const p=plan(),o=observations(p,shown().view);metrics('observations',[[`${o.visible}株`,'この時点に植わっている株'],[`${o.overlap}組`,'株幅・樹冠の重なり'],[`${o.outside}株`,'外周・外構への張り出し']]);
+  const flowers=[...new Set(p.plants.filter(p=>{const s=stateAt(p,shown().view);return s.present&&s.bloom;}).map(p=>plantInfo(p.kind).label))];$('season-story').textContent=`${shown().view.month}月の開花参考：${flowers.join('、')||'カタログ上の開花表示はありません。枝・葉・枯れ穂も見どころです。'}。重なりは平面の幅の参考で、根の競合や栽培可否の判定ではありません。`;
+  const candidateKinds=Object.keys(CATALOG).filter(k=>CATALOG[k].sun.includes(p.sun)&&CATALOG[k].moisture.includes(p.moisture)).slice(0,6);$('candidates').replaceChildren(...candidateKinds.map(k=>button(`${CATALOG[k].label} · ${CATALOG[k].season}`,()=>{if(selectedPlant())previewReplacement(k);else{addKind=k;setMode('add');sourceCard('catalog-info',k);message('庭をクリックして、この候補を配置できます。');}})));
+  if(!candidateKinds.length)$('candidates').append(el('p','このカタログでは条件に一致する候補が見つかりません。条件を緩めず、植物の追加収録をお待ちください。','hint'));
+  $('time-basis').textContent=shown().view.reference?'資料の成株上限寸法を表示中。指定年の予測ではありません。剪定シナリオは適用しません。通常表示に戻すと元の年数・設定へ戻ります。':`年数と季節は別々に指定できます。成長シナリオ未設定 ${o.unmodeled}株は初期寸法のまま。花期・落葉・葉量は地域差のある参考表現です。`;
+}
+function syncComparison(){const d=shown();if(!d.plans.B){$('comparison').replaceChildren(el('p','「Bに複製」で現在の庭を残して、別案をつくれます。'));return;}const rows=['A','B'].map(k=>{const p=d.plans[k],b=budget(p),c=calendar(p,d.view.year);return [k,`${p.plants.length}株`,`${yen(b.total)}${b.unknown?` ＋ ${b.unknown}株未入力`:''}`,`${c.reduce((n,m)=>n+m.events.reduce((s,e)=>s+e.count,0),0)}回`,`${time(c.reduce((n,m)=>n+m.min,0),c.reduce((n,m)=>n+m.max,0))}${c.some(m=>m.unknown)?' ＋ 未入力あり':''}`];});$('comparison').replaceChildren(table(['案','全株数','購入費','年間作業','年間時間'],rows));const a=budget(d.plans.A),b=budget(d.plans.B);$('comparison').append(el('p',`B − A：株数 ${d.plans.B.plants.length-d.plans.A.plants.length}株 ／ 入力済み購入費 ${yen(b.total-a.total)}${a.unknown||b.unknown?'（未入力があるため総額差は未確定）':''}`));}
+function sync(){const d=shown(),p=plan();if(selected&&!p.plants.some(p=>p.id===selected))selected=null;
+  $('plan-a').setAttribute('aria-pressed',String(d.active==='A'));$('plan-b').setAttribute('aria-pressed',String(d.active==='B'));$('plan-b').disabled=!d.plans.B||!!preview;$('plan-a').disabled=!!preview;$('duplicate-plan').disabled=!!preview||!!doc.plans.B;$('undo').disabled=!history.length||!!preview;$('redo').disabled=!future.length||!!preview;
+  $('count').textContent=`${p.plants.length}株`;$('area').textContent=`${area(p.outline).toFixed(1)}m² · ${p.plants.length}株`;
+  $('plant-list').replaceChildren(...p.plants.map(p=>{const b=button(`${p.locked?'固定 · ':''}#${p.id} ${plantInfo(p.kind).label}`,()=>select(p.id));b.setAttribute('aria-pressed',String(p.id===selected));return b;}));
+  for(const k of ['month','year'])$(k).value=d.view[k];$('month-label').textContent=`${d.view.month}月`;$('year-label').textContent=`${d.view.year}年`;$('reference').checked=d.view.reference;$('footprints').checked=d.view.footprints;
+  $('edit-body').inert=!!preview;$('preview-bar').hidden=!preview;syncSelected();syncGarden();syncBudget();syncCalendar();syncIdeas();syncComparison();engine?.render(p,d.view,selected);setMode(mode);
+}
+function previewReplacement(kind){const p=selectedPlant();if(!p){message('先に交換したい植物を選んでください。');return;}try{if(preview)throw new Error('まず現在のプレビューを採用するか、元に戻ってください。');if(p.kind===kind)throw new Error('交換先に別の植物を選んでください。');const next=clone(doc),target=currentPlan(next);target.plants[target.plants.findIndex(v=>v.id===p.id)]=replacePlant(p,kind);preview=validateDocument(next);resetMode();const before=budget(currentPlan(doc)),after=budget(target);$('preview-title').textContent=`${plantInfo(p.kind).label} → ${plantInfo(kind).label}`;$('preview-diff').textContent=`同じ位置・植える日で比較。入力済み購入費差 ${yen(after.total-before.total)}、価格未入力 ${after.unknown}株。旧植物の手入れ予定は引き継ぎません。`;sync();message('交換をプレビューしています。採用するまで元の案は変更されません。');}catch(e){preview=null;message(e.message);}}
+function startDrawing(value){if(preview)return;resetMode();draft=[];setMode(value);$('outline-tools').hidden=false;updateDraft();engine?.view('top');message(value==='circle'?'中心と円周の2点をクリックしてください。':'真上の庭で角を順にクリックし、「形を確定」を押します。');}
+function updateDraft(){engine?.drawDraft(draft);const lengths=draft.slice(1).map((p,i)=>Math.hypot(p[0]-draft[i][0],p[1]-draft[i][1]).toFixed(1));$('outline-count').textContent=`${draft.length}点${lengths.length?' · 辺 '+lengths.join(' / ')+'m':''}`;}
+function checkBoundary(p,points){if(p.plants.some(p=>!inside(p.x,p.z,points))||p.zones.some(z=>!contained(z.points,points))||p.obstacles.some(o=>!contained(obstaclePoints(o),points)))throw new Error('新しい外周から植物・花壇・外構がはみ出します。先に移すか取り除いてください。');}
+function finishDrawing(){let points=clone(draft);const type=mode;if(type==='circle'){if(points.length!==2){message('円は中心と円周の2点を選んでください。');return;}const [c,p]=points,r=Math.hypot(p[0]-c[0],p[1]-c[1]);points=Array.from({length:24},(_,i)=>[round(c[0]+Math.cos(i*Math.PI/12)*r),round(c[1]+Math.sin(i*Math.PI/12)*r)]);}const garden=plan();if(!validOutline(points,garden.width,garden.depth,type==='outline'?1:.04)){message('庭の寸法内で交差しない形を囲んでください。外周は1m²以上、花壇は0.04m²以上です。');return;}mutate(p=>{if(type==='outline'){checkBoundary(p,points);p.outline=points;}else{if(p.zones.length>=12)throw new Error('花壇は12区画までです。');p.zones.push({points});}},type==='outline'?'庭の輪郭を変更しました。':'花壇を追加しました。');}
+function pick(point){if(preview){if(point.id)select(point.id);return;}if(['outline','zone','circle'].includes(mode)){if(point.x<0||point.z<0||point.x>plan().width||point.z>plan().depth){message('庭の幅・奥行きの範囲内を選んでください。');return;}if(draft.length>=(mode==='circle'?2:32)){message('「形を確定」を押してください。');return;}draft.push([point.x,point.z]);updateDraft();return;}
+  if(['add','move','clone'].includes(mode)){if(!canPlant(plan(),point.x,point.z)){message('庭の輪郭の内側で、建物・通路・塀のない場所を選んでください。');return;}const action=mode;if(action==='move'){withPlant(p=>{p.x=point.x;p.z=point.z;},'植物を移動しました。');}else{let created;const source=copyPlant;const ok=mutate(p=>{if(p.plants.length>=100)throw new Error('1案につき100株までです。');created=nextId(p.plants);p.plants.push(action==='clone'?{...clone(source),id:created,x:point.x,z:point.z,locked:false}:makePlant(addKind,created,point.x,point.z));},action==='clone'?'同じ設定で植物を複製しました。':'植物を配置しました。初期サイズと植える日を調整できます。');if(ok){selected=created;if(action==='add')setMode('add');sync();}}return;}
+  if(point.id)select(point.id);else{selected=null;sync();}
+}
 function bind(){
-  for(const [kind,info] of Object.entries(CATALOG)){
-    const b=document.createElement('button');b.dataset.kind=kind;b.setAttribute('aria-pressed','false');const icon=document.createElement('span');icon.className=`plant-symbol ${kind}`;icon.setAttribute('aria-hidden','true');b.append(icon,document.createTextNode(info.label));b.addEventListener('click',()=>{if(mode==='outline')endOutline();addKind=kind;setMode('add');message('庭の中をクリックすると配置できます。');});$('catalog').append(b);
-    const opt=document.createElement('option');opt.value=kind;opt.textContent=info.label;$('kind').append(opt);
-  }
-  for(const id of ['width','depth'])$(id).addEventListener('change',()=>{const value=Number($(id).value);if(!Number.isFinite(value)||value<2||value>30){sync();message('庭の寸法は2〜30mで入力してください。');return;}endOutline();const next=clone(plan),ratio=value/plan[id],index=id==='width'?0:1;next[id]=value;next.outline=next.outline.map(p=>p.map((v,i)=>i===index?v*ratio:v));for(const p of next.plants)p[id==='width'?'x':'z']*=ratio;try{validatePlan(next);}catch{sync();message('変更後の輪郭が小さすぎます。庭の形か寸法を見直してください。');return;}checkpoint();plan=next;sync();view('home');message('庭の寸法と植物の配置を伸縮しました。植物自体の寸法は変わりません。');});
-  $('shape').addEventListener('change',()=>{const shape=$('shape').value;if(shape==='custom'){draft=[];setMode('outline');$('outline-tools').hidden=false;$('outline-count').textContent='0点';view('top');message('庭の角を順にクリックし、「形を確定」を押してください。');}else if(!applyOutline(outlineFor(shape,plan.width,plan.depth)))sync();});
-  $('finish-outline').addEventListener('click',()=>{if(!validOutline(draft,plan.width,plan.depth)){message('交差しない3〜16点で、1m²以上の形を囲んでください。');return;}applyOutline(clone(draft));});
-  $('cancel-outline').addEventListener('click',()=>{endOutline();sync();message('形の変更を取り消しました。');});
-  $('orbit').addEventListener('click',()=>{endOutline();sync();message('ドラッグで回転、植物をクリックで選択できます。');});
-  for(const type of ['home','top','eye'])$(`view-${type}`).addEventListener('click',()=>{if(mode==='outline'){message('形の編集中は真上の視点を使います。');return;}view(type);});
-  for(const [id,ratio] of [['zoom-in',.8],['zoom-out',1.25]])$(id).addEventListener('click',()=>{const offset=camera.position.clone().sub(controls.target),distance=Math.min(65,Math.max(2,offset.length()*ratio));camera.position.copy(controls.target).add(offset.setLength(distance));controls.update();dirty=true;});
-  $('month').addEventListener('input',()=>{plan.month=Number($('month').value);$('month-label').textContent=`${plan.month}月`;rebuild();});
-  for(const [id,key,min,max] of [['height','height',.1,8],['spread','spread',.1,6],['plant-x','x',0,30],['plant-z','z',0,30]])$(id).addEventListener('change',()=>{const p=selectedPlant(),value=Number($(id).value);if(!p)return;if(!Number.isFinite(value)||value<min||value>max||((key==='x'||key==='z')&&!inside(key==='x'?value:p.x,key==='z'?value:p.z,plan.outline))){updateSelection();message('庭の範囲内の位置と、有効な寸法を入力してください。');return;}checkpoint();p[key]=value;rebuild();message('選んだ植物を更新しました。');});
-  $('kind').addEventListener('change',()=>{const p=selectedPlant();if(!p)return;checkpoint();p.kind=$('kind').value;rebuild();message('同じ場所・同じ寸法で植物の形を交換しました。');});
-  $('move').addEventListener('click',()=>{setMode('move');message('移動したい場所を庭の中でクリックしてください。');});
-  $('remove').addEventListener('click',()=>{checkpoint();plan.plants=plan.plants.filter(p=>p.id!==selected);selected=null;setMode('orbit');rebuild();message('植物を取り除きました。「元に戻す」で戻せます。');});
-  $('undo').addEventListener('click',()=>{if(!history.length)return;plan=history.pop();selected=null;endOutline();sync();$('undo').disabled=!history.length;message('直前の編集に戻しました。');});
-  $('help').addEventListener('click',()=>$('help-dialog').showModal());$('help-close').addEventListener('click',()=>$('help-dialog').close());
-  $('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(validatePlan(plan),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='garden-canvas-plan.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);message('保存ファイルを端末へ書き出しました。庭の寸法と配置が含まれます。');});
-  $('import').addEventListener('click',()=>$('file').click());
-  $('file').addEventListener('change',async()=>{const file=$('file').files[0];if(!file)return;try{if(file.size>100000)throw new Error('ファイルが大きすぎます。100KB以内の庭データを選んでください。');const next=validatePlan(JSON.parse(await file.text()));checkpoint();plan=next;selected=null;endOutline();sync();view('home');message('保存した庭を開きました。');}catch{message('このファイルは開けません。対応する100KB以内の庭データを選んでください。元の庭は変更していません。');}finally{$('file').value='';}});
-  const activePointers=new Set();
-  renderer.domElement.addEventListener('pointerdown',e=>{activePointers.add(e.pointerId);pointerStart=activePointers.size===1?{id:e.pointerId,x:e.clientX,y:e.clientY}:null;});
-  renderer.domElement.addEventListener('pointermove',e=>{if(pointerStart&&Math.hypot(e.clientX-pointerStart.x,e.clientY-pointerStart.y)>=5)pointerStart=null;});
-  renderer.domElement.addEventListener('pointerup',e=>{activePointers.delete(e.pointerId);if(pointerStart&&pointerStart.id===e.pointerId&&Math.hypot(e.clientX-pointerStart.x,e.clientY-pointerStart.y)<5)handleClick(e);pointerStart=null;});
-  renderer.domElement.addEventListener('pointercancel',e=>{activePointers.delete(e.pointerId);pointerStart=null;});
-  $('viewport').addEventListener('keydown',e=>{if(e.key==='Escape'){endOutline();sync();}else if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();const offset=camera.position.clone().sub(controls.target);offset.applyAxisAngle(new THREE.Vector3(0,1,0),e.key==='ArrowLeft'?.12:-.12);camera.position.copy(controls.target).add(offset);controls.update();dirty=true;}});
+  for(const b of document.querySelectorAll('[data-editor]'))b.addEventListener('click',()=>editor(b.dataset.editor));for(const b of document.querySelectorAll('[data-insight]'))b.addEventListener('click',()=>insight(b.dataset.insight));
+  options('replacement',Object.entries(CATALOG).map(([k,v])=>[k,v.label]));for(const id of ['start-month','task-month'])options(id,Array.from({length:12},(_,i)=>[i+1,`${i+1}月`]));for(const id of ['start-year','scenario-year'])options(id,Array.from({length:id==='start-year'?11:10},(_,i)=>[i+(id==='start-year'?0:1),`${i+(id==='start-year'?0:1)}年`]));options('task-type',Object.entries(TASKS));$('task-month').value=6;
+  for(let i=0;i<12;i++){const label=el('label',`${i+1}月 (時間)`),input=el('input');input.id=`hours-${i}`;input.type='number';input.min=0;input.max=744;input.step=.25;input.placeholder='未設定';label.append(input);$('hours-inputs').append(label);}
+  function catalog(){const filter=$('catalog-filter').value;$('catalog').replaceChildren(...Object.entries(CATALOG).filter(([,v])=>filter==='all'||v.group===filter||filter==='低木'&&v.group==='小低木').map(([k,v])=>{const b=button('',()=>{resetMode();addKind=k;setMode('add');sourceCard('catalog-info',k);message('庭の空いている場所をクリックして配置してください。');});b.dataset.kind=k;b.dataset.form=v.form;b.append(el('span',undefined,'swatch'),el('strong',v.label),el('small',v.group));return b;}));setMode(mode);}$('catalog-filter').addEventListener('change',catalog);catalog();sourceCard('catalog-info','salvia');
+  $('orbit').addEventListener('click',()=>{resetMode();message('ドラッグで回転。植物をクリックすると選べます。');});for(const type of ['home','top','eye'])$(`view-${type}`).addEventListener('click',()=>{if(['outline','zone','circle'].includes(mode)){message('形の編集中は真上の視点を使います。');return;}engine?.view(type);});$('focus').addEventListener('click',()=>engine?.view('focus'));$('zoom-in').addEventListener('click',()=>engine?.zoom(.8));$('zoom-out').addEventListener('click',()=>engine?.zoom(1.25));
+  for(const key of ['month','year','reference','footprints'])$(key).addEventListener(['month','year'].includes(key)?'input':'change',()=>{const value=['month','year'].includes(key)?number(key):$(key).checked;doc.view[key]=value;if(preview)preview.view[key]=value;if(key==='month')calendarMonth=value;sync();});
+  for(const name of ['A','B'])$(`plan-${name.toLowerCase()}`).addEventListener('click',()=>{if(preview||!doc.plans[name])return;doc.active=name;selected=null;resetMode();sync();message(`案 ${name}に切り替えました。視点と時間は同じです。`);});
+  $('duplicate-plan').addEventListener('click',()=>mutate((p,d)=>{if(d.plans.B)throw new Error('案Bはすでにあります。');d.plans.B=clone(p);d.active='B';},'案Aを残し、案Bを作りました。Bを編集して比べられます。'));
+  $('undo').addEventListener('click',()=>{if(!history.length||preview)return;future.push(clone(doc));const view=doc.view;doc=history.pop();doc.view=view;resetMode();sync();message('編集を1つ戻しました。');});$('redo').addEventListener('click',()=>{if(!future.length||preview)return;history.push(clone(doc));const view=doc.view;doc=future.pop();doc.view=view;resetMode();sync();message('編集をやり直しました。');});
+  $('lock').addEventListener('click',()=>withPlant(p=>{p.locked=!p.locked;},'植物の固定を変更しました。固定中は配置・種類・寸法を変更できません。',true));$('move').addEventListener('click',()=>{if(selectedPlant()?.locked){message('固定を解除してから移動してください。');return;}setMode('move');message('庭の移動先をクリックしてください。');});$('clone-plant').addEventListener('click',()=>{copyPlant=clone(selectedPlant());setMode('clone');message('複製する場所を庭でクリックしてください。');});$('remove').addEventListener('click',()=>withPlant((p,g)=>{g.plants=g.plants.filter(v=>v.id!==p.id);},'植物を取り除きました。「戻す」で復元できます。'));
+  $('apply-plant').addEventListener('click',()=>{let cleared=false;const ok=withPlant(p=>{const h=number('height'),w=number('spread'),lh=number('leaf-height');if(!(h>=.1&&h<=15&&w>=.1&&w<=15&&lh>=.05&&lh<=h))throw new Error('高さ・幅は0.1〜15m、葉高は0.05m以上で高さ以下にしてください。');if(!canPlant(plan(),number('plant-x'),number('plant-z')))throw new Error('庭の中で外構に重ならない位置にしてください。');const updated=editSize(p,h,w,lh);cleared=updated.height!==p.height||updated.spread!==p.spread||updated.leafHeight!==p.leafHeight;Object.assign(p,updated,{x:number('plant-x'),z:number('plant-z'),start:number('start-year')*12+number('start-month')-1,role:$('role').value,price:cleared?null:optional('price')});},'初期サイズ・配置・購入を更新しました。');if(ok&&cleared)message('初期サイズを更新しました。購入単価と成長・剪定の寸法は解除したため、必要に応じて再入力してください。');});
+  $('preview-replace').addEventListener('click',()=>previewReplacement($('replacement').value));$('cancel-preview').addEventListener('click',()=>{preview=null;resetMode();sync();message('交換を取り消し、元の案へ戻りました。');});$('accept-preview').addEventListener('click',()=>{if(!preview)return;checkpoint();doc=validateDocument(preview);preview=null;resetMode();sync();message('交換を採用しました。価格や手入れは新しい植物に合わせて設定できます。');});
+  $('apply-scenario').addEventListener('click',()=>withPlant(p=>{if(number('future-height')<p.height||number('future-spread')<p.spread||number('future-leaf')<p.leafHeight)throw new Error('成長後の寸法は初期寸法以上にしてください。小さくする場合は剪定設定を使います。');p.scenario={year:number('scenario-year'),height:number('future-height'),spread:number('future-spread'),leafHeight:number('future-leaf')};},'自分で設定した成長シナリオを反映しました。年数スライダーで確認できます。'));$('clear-scenario').addEventListener('click',()=>withPlant(p=>{p.scenario=null;},'年次成長の仮定を解除しました。'));
+  $('apply-management').addEventListener('click',()=>withPlant(p=>{p.management={height:number('target-height'),spread:number('target-spread'),method:$('prune-method').value,recovery:number('recovery')};},'剪定寸法と回復の仮定を設定しました。「手入れ予定」に剪定月を登録すると表示に反映します。'));$('clear-management').addEventListener('click',()=>withPlant(p=>{p.management=null;},'剪定の寸法シナリオを解除しました。予定表の作業は残ります。'));
+  $('task-type').addEventListener('change',()=>{const water=$('task-type').value==='water';$('task-count').max=water?31:1;if(!water)$('task-count').value=1;});$('add-task').addEventListener('click',()=>withPlant(p=>{if(p.tasks.length>=36)throw new Error('1株につき手入れ予定は36件までです。');const t={id:nextId(p.tasks),type:$('task-type').value,month:number('task-month'),repeat:$('task-repeat').value,count:number('task-count'),min:optional('task-min'),max:optional('task-max')};if(p.tasks.some(e=>e.type===t.type&&e.month===t.month&&e.repeat===t.repeat))throw new Error('同じ種類・月・繰り返しの予定が登録済みです。');p.tasks.push(t);calendarMonth=t.month;},'手入れ予定を追加しました。予定表と3Dが同じ剪定月を参照します。',true));
+  $('resize-garden').addEventListener('click',()=>{const ok=mutate(p=>{if(p.plants.some(p=>p.locked))throw new Error('固定された植物があります。寸法変更で配置も伸縮するため、先に固定を解除してください。');const w=number('width'),d=number('depth'),rx=w/p.width,rz=d/p.depth;p.width=w;p.depth=d;p.outline=p.outline.map(([x,z])=>[round(x*rx),round(z*rz)]);p.zones.forEach(z=>{z.points=z.points.map(([x,z])=>[round(x*rx),round(z*rz)]);});p.obstacles.forEach(o=>{o.x=round(o.x*rx);o.z=round(o.z*rz);o.width=round(o.width*rx);o.depth=round(o.depth*rz);});p.plants.forEach(p=>{p.x=round(p.x*rx);p.z=round(p.z*rz);});},'庭と配置の平面寸法を伸縮しました。');if(ok)engine?.view('home');});
+  $('shape').addEventListener('change',()=>{if($('shape').value==='custom')startDrawing('outline');else{const shape=$('shape').value;mutate(p=>{const outline=outlineFor(shape,p.width,p.depth);checkBoundary(p,outline);p.outline=outline;},'庭の形を変更しました。');}});$('draw-outline').addEventListener('click',()=>startDrawing('outline'));$('draw-zone').addEventListener('click',()=>startDrawing('zone'));$('circle-zone').addEventListener('click',()=>startDrawing('circle'));$('finish-outline').addEventListener('click',finishDrawing);$('undo-point').addEventListener('click',()=>{draft.pop();updateDraft();});$('cancel-outline').addEventListener('click',()=>{resetMode();sync();message('形の編集を取り消しました。');});
+  $('obstacle-type').addEventListener('change',()=>{$('obstacle-height').value={house:2.5,path:.05,fence:1.5}[$('obstacle-type').value];});$('add-obstacle').addEventListener('click',()=>mutate(p=>{if(p.obstacles.length>=16)throw new Error('外構は16個までです。');const o={type:$('obstacle-type').value};for(const key of ['x','z','width','depth','height'])o[key]=number(`obstacle-${key}`);if(!contained(obstaclePoints(o),p.outline))throw new Error('外構全体が庭の輪郭に収まる位置と寸法にしてください。');if(p.plants.some(p=>inside(p.x,p.z,obstaclePoints(o))))throw new Error('外構の内側に植物があります。先に植物を移動してください。');p.obstacles.push(o);},'外構を配置しました。'));$('apply-conditions').addEventListener('click',()=>mutate(p=>{p.sun=$('sun').value;p.moisture=$('moisture').value;},'植物候補を庭の条件で絞りました。'));$('apply-hours').addEventListener('click',()=>mutate(p=>{p.hours=Array.from({length:12},(_,i)=>optional(`hours-${i}`));p.prep=number('prep');},'月別に使える時間を更新しました。作業予定は維持しています。'));
+  $('help').addEventListener('click',()=>$('help-dialog').showModal());$('help-close').addEventListener('click',()=>$('help-dialog').close());$('export').addEventListener('click',()=>{if(preview){message('プレビューを採用するか、元に戻ってから保存してください。');return;}const saved=clone(doc);const camera=engine?.capture()||null;const cameraFits=!camera||[...camera.position,...camera.target].every(n=>Number.isFinite(n)&&Math.abs(n)<=150)&&camera.position[1]>=.1;saved.view.camera=cameraFits?camera:null;const blob=new Blob([JSON.stringify(validateDocument(saved),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download='garden-canvas-plan-v2.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);message(cameraFits?'庭と案・視点・予定を保存ファイルに書き出しました。':'庭と案・予定を保存しました。遠すぎる視点は保存せず、開くと全体表示に戻ります。');});$('import').addEventListener('click',()=>{if(preview){message('プレビューを終了してから開いてください。');return;}$('file').click();});$('file').addEventListener('change',async()=>{const f=$('file').files[0];if(!f)return;try{if(f.size>3000000)throw new Error('庭ファイルは3MB以内です。');const input=JSON.parse(await f.text()),next=validateDocument(input);checkpoint();doc=next;selected=null;resetMode();sync();if(doc.view.camera)engine?.restore(doc.view.camera);else engine?.view('home');message(input.version===1?'旧版の配置を開きました。種類未指定の植物は実在植物へ交換できます。':'保存した庭・案・視点・予定を開きました。');}catch{message('この庭ファイルは開けません。対応する3MB以内のファイルを選んでください。元の庭は変更していません。');}finally{$('file').value='';}});
+  $('viewport').addEventListener('keydown',e=>{if(e.key==='Escape'){resetMode();sync();message('編集モードを終了しました。');}});$('viewport').addEventListener('render-failed',()=>{$('error').hidden=false;$('error').textContent='3D表示が停止しました。庭を「保存」してから再読込してください。';});
 }
-function init(){
-  scene=new THREE.Scene();scene.background=new THREE.Color(0xe9eee5);camera=new THREE.PerspectiveCamera(40,1,.1,200);
-  renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.setClearColor(0xe9eee5);renderer.domElement.setAttribute('aria-label','庭の3Dキャンバス');$('viewport').append(renderer.domElement);
-  scene.add(new THREE.HemisphereLight(0xfffff5,0x929b7c,2.7));const sun=new THREE.DirectionalLight(0xfff8df,3.1);sun.position.set(-5,12,6);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-22;sun.shadow.camera.right=22;sun.shadow.camera.top=22;sun.shadow.camera.bottom=-22;sun.shadow.bias=-.001;scene.add(sun);
-  controls=new OrbitControls(camera,renderer.domElement);controls.maxPolarAngle=Math.PI/2-.04;controls.minDistance=2;controls.maxDistance=65;controls.enableDamping=false;controls.addEventListener('change',()=>{dirty=true;});
-  camera.aspect=$('viewport').clientWidth/$('viewport').clientHeight;camera.updateProjectionMatrix();
-  new ResizeObserver(()=>{const box=$('viewport'),nextAspect=box.clientWidth/box.clientHeight,ratio=Math.max(1,1.4/nextAspect)/Math.max(1,1.4/camera.aspect);camera.position.sub(controls.target).multiplyScalar(ratio).add(controls.target);renderer.setSize(box.clientWidth,box.clientHeight,false);camera.aspect=nextAspect;camera.updateProjectionMatrix();dirty=true;}).observe($('viewport'));
-  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();$('error').hidden=false;$('error').textContent='3D表示が停止しました。必要な庭を「保存」してからページを再読込してください。';});
-  bind();sync();view('home');setMode('orbit');$('loading').hidden=true;
-  renderer.setAnimationLoop(()=>{if(dirty){renderer.render(scene,camera);dirty=false;}});
-}
-try{init();}catch{ $('loading').hidden=true;$('error').hidden=false;$('error').textContent='この環境では3D表示を開始できません。WebGL 2に対応したブラウザーでお試しください。'; }
+bind();
+try{engine=createScene($('viewport'),pick);sync();engine.view('home');$('loading').hidden=true;}catch{$('loading').hidden=true;$('error').hidden=false;$('error').textContent='3D表示を開始できません。WebGL 2対応のブラウザーでお試しください。';sync();}

@@ -9,7 +9,7 @@ import shutil
 import subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
-SITE={'site/index.html','site/404.html','site/styles.css','site/app.js','site/model.js','site/favicon.svg','site/vendor/three.module.js','site/vendor/three.core.js','site/vendor/OrbitControls.js','site/vendor/LICENSE.txt'}
+SITE={'site/index.html','site/404.html','site/styles.css','site/app.js','site/model.js','site/catalog.js','site/scene.js','site/favicon.svg','site/vendor/three.module.js','site/vendor/three.core.js','site/vendor/OrbitControls.js','site/vendor/LICENSE.txt'}
 ALLOWED=SITE|{'README.md','.gitignore','package.json','vendor-lock.json','scripts/release_check.py','scripts/model.test.mjs','.github/workflows/pages.yml'}
 NAMES={'nature-wx-lab','github-actions[bot]'}
 EMAIL=re.compile(r'[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}')
@@ -41,7 +41,7 @@ def audit():
     html=(ROOT/'site/index.html').read_text()
     for rule in ["connect-src 'none'","script-src 'self'","object-src 'none'","base-uri 'none'","form-action 'none'"]:
         if rule not in html:fail('required browser policy missing')
-    for path in ['site/app.js','site/model.js']:
+    for path in ['site/app.js','site/model.js','site/catalog.js','site/scene.js']:
         source=(ROOT/path).read_text()
         if re.search(r'\b(?:fetch|XMLHttpRequest|WebSocket|sendBeacon|eval)\s*\(|\.innerHTML\s*=|navigator\.geolocation',source):fail(path+' introduces an unreviewed network or injection surface')
     commits=git('rev-list','--all').decode().splitlines()
