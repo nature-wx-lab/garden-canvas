@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.10';
-import {foliageKind} from './appearance.js?v=0.9.10';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.10';
-import {drawTree} from './tree-model.js?v=0.9.10';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.10';
+import {treeProfile} from './tree-profiles.js?v=0.9.11';
+import {foliageKind} from './appearance.js?v=0.9.11';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.11';
+import {drawTree} from './tree-model.js?v=0.9.11';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.11';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.10';
+import { plantInfo, stateAt } from './model.js?v=0.9.11';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,6 +13,18 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+for(const type of ['liliumLeaf','liliumTepal','liliumTrumpet','liliumFunnel','liliumReflex','liliumHalfReflex']){
+ const pos=[],uv=[],idx=[],rows=44,cols=18,leaf=type==='liliumLeaf',trumpet=type==='liliumTrumpet',funnel=type==='liliumFunnel',reflex=type==='liliumReflex'||type==='liliumHalfReflex',half=type==='liliumHalfReflex';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t)),width=leaf?.5*Math.pow(sin,.85):reflex?.27*Math.pow(sin,.64):(.019+.52*Math.pow(sin,.70))*(trumpet?(.35+.65*t):1);
+  const radial=leaf?.13*t*t:reflex?.83*Math.sin(t*(half?1.9:2.8)):.025+(trumpet?.96*Math.pow(t,2.8):funnel?.95*Math.pow(t,1.8):1.03*Math.pow(t,1.38));
+  const height=leaf?t:reflex?.64*Math.sin(t*(half?2.3:3.90)):trumpet?1.85*t-.43*Math.pow(t,4):funnel?1.24*t-.43*t*t*t:1.20*t-.85*Math.pow(t,3);
+  const ripple=leaf?0:.018*Math.sin(t*36)*Math.pow(Math.abs(u),3)*sin;
+  pos.push(u*width,height+.065*u*u*sin+ripple,radial+(leaf?.025:.055)*u*u*sin);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 for(const type of ['muscariUrn','freesiaTube']){
  const pos=[],uv=[],idx=[],rows=24,cols=60,urn=type==='muscariUrn';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -487,6 +499,21 @@ function windShader(shader,kind){
     `);
     if(kind.startsWith('leaf-hosta'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*70.0)');
     if(kind==='leaf-iris-parallel')shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*95.0)');
+    if(kind==='leaf-lilium-parallel')shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*31.4)');
+    if(kind.startsWith('petal-lilium-')){
+      const name=kind.slice(13),linear=hex=>{const c=new THREE.Color(hex);return `vec3(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`;};
+      let paint='float band=(1.0-smoothstep(.12,.55,fold))*(1.0-smoothstep(.70,.97,vUv.y));';
+      if(name==='frontera'||name==='candy')paint+=`diffuseColor.rgb=mix(diffuseColor.rgb,${linear(name==='frontera'?'#c74685':'#c53375')},band*.94);`;
+      if(name==='kaveri')paint+=`float rim=max(smoothstep(.53,.92,fold),smoothstep(.83,.98,vUv.y));diffuseColor.rgb=mix(diffuseColor.rgb,${linear('#edc044')},rim);`;
+      if(name==='conca')paint+=`diffuseColor.rgb=mix(diffuseColor.rgb,${linear('#e5cc5c')},(1.0-smoothstep(.12,.88,vUv.y))*.92);`;
+      if(name==='auratum')paint+=`diffuseColor.rgb=mix(diffuseColor.rgb,${linear('#d6ba4f')},(1.0-smoothstep(.12,.27,fold))*.95);`;
+      if(name==='regale')paint+=`if(gl_FrontFacing){diffuseColor.rgb=mix(diffuseColor.rgb,${linear('#d9c05a')},1.0-smoothstep(.36,.72,vUv.y));}else{diffuseColor.rgb=mix(diffuseColor.rgb,${linear('#a35b75')},(1.0-smoothstep(.22,.64,fold))*(1.0-smoothstep(.83,1.0,vUv.y)));}`;
+      if(['frontera','candy','auratum','kuruma','claude','pinkmorning'].includes(name)){
+       const small=['frontera','candy'].includes(name),spot=linear(name==='claude'?'#bb7543':name==='pinkmorning'?'#a05055':'#6f2939');
+       paint+=`float specks=smoothstep(${small?'.86,.95':'.73,.88'},sin(vUv.x*81.0+sin(vUv.y*33.0))*cos(vUv.y*91.0+cos(vUv.x*39.0)))*(1.0-smoothstep(${small?'.34,.61':'.62,.95'},vUv.y));diffuseColor.rgb=mix(diffuseColor.rgb,${spot},specks*.90);`;
+      }
+      shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',paint+'\n#include <emissivemap_fragment>');
+    }
     if(kind==='leaf-blueberry-wax')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.58,0.67,0.67),0.13+0.08*sin(vUv.x*199.0)*cos(vUv.y*173.0));\n#include <emissivemap_fragment>`);
     const surface=kind.replace(/-outside-[0-9a-f]{6}$/,'').replace(/-dahlia$/,'').replace(/-cranesbill-veins$/,'').replace(/-guide$/,'').replace('woolly-','').replace('glossy-','').replace('palm-',''),hex=surface.match(/-([0-9a-f]{6})$/)?.[1];
     const pattern=surface.replace(/^(leaf|petal|sepal)-/,'').replace(/^hosta-?/,'').replace(/-(?:gold|[0-9a-f]{6})$/,'');

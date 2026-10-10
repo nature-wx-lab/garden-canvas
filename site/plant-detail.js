@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.10';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.11';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -17,6 +17,19 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='liliumFlower'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),name=palette.pattern||'proposal',reflex=['kuruma','claude','snowy','pinkmorning'].includes(name),trumpet=name==='regale',funnel=['rubellum','japonicum'].includes(name),tepal=reflex?palette.curl===false?'liliumHalfReflex':'liliumReflex':trumpet?'liliumTrumpet':funnel?'liliumFunnel':'liliumTepal';
+  for(let j=0;j<6;j++)f.add(tepal,'petal-lilium-'+name,shade(rand,color,.018),0,0,0,r*(j%2?1:.73),r,r,0,j*TAU/6,0);
+  const projection=trumpet?1.65:funnel?1.28:reflex?1.35:.88;
+  for(let j=0;j<6;j++){
+   const an=j*TAU/6,tip=[Math.sin(an)*r*.25,r*projection,Math.cos(an)*r*.25],mid=[tip[0]*.48,r*projection*.56,tip[2]*.48];
+   f.branch([0,0,0],mid,r*.012,'#cad09a','filament');f.branch(mid,tip,r*.010,'#cdd6a1','filament');
+   f.add(bud,'anther',palette.anther||'#934327',...tip,r*.037,r*.12,r*.033,.18,an,.18);
+  }
+  const end=[0,r*(projection+.12),0];f.branch([0,0,0],end,r*.016,'#b8c78f','style');
+  for(let j=0;j<3;j++){const an=j*TAU/3;f.add(bud,'stigma','#b3bc78',Math.sin(an)*r*.030,end[1],Math.cos(an)*r*.030,r*.040,r*.024,r*.040);}
+  return;
+ }
  if(shape==='muscariUrn'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw);
   f.add('muscariUrn','petal-muscari-mouth',color,0,0,0,r,r,r);
@@ -707,6 +720,31 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
 }
 
+function drawLilies(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,palette=a.flowerPalette||{},whorled=a.arrangement==='whorled',kuruma=palette.pattern==='kuruma',native=a.architecture==='nativeLily',heads=[],green=s.leafColor,top=h*.95,lean=Math.min(.035,h*.035),stemColor=a.stemColor||'#648052';
+ const axis=t=>[lean*Math.sin(t*1.4),top*t,lean*.4*t*t],stemRadius=Math.min(.004,h*.005);
+ for(let j=0;j<12;j++)b.branch(axis(j/12),axis((j+1)/12),stemRadius*(1-j/18),stemColor,'stem');
+ const leafAt=(t,an,len,width)=>{const at=axis(t);b.add('liliumLeaf','leaf-lilium-parallel',kit.shade(rand,green,.035),...at,width,len,len,.88+rand()*.40,an,(rand()-.5)*.12);};
+ if(whorled){
+  const levels=kuruma?[.28,.47]:[.19,.32,.45,.56];
+  for(const t of levels)for(let j=0;j<8;j++)leafAt(t,j*TAU/8+t,Math.min(a.leafLength,h*.28,w*.40),palette.leafWidth);
+  for(let j=0;j<6;j++)leafAt(.60+j*.048,j*2.399,Math.min(a.leafLength*.40,h*.13),palette.leafWidth*.45);
+ }else{
+  const count=native?15:a.architecture==='trumpetLily'?52:35;
+  for(let j=0;j<count;j++){const t=.075+j/count*.73,len=Math.min(a.leafLength,h*.30,w*.42)*(.68+.32*Math.sin(Math.PI*t));leafAt(t,j*2.399,len,palette.leafWidth*(.78+.22*Math.sin(Math.PI*t)));}
+ }
+ if(!s.bloom)return;
+ const count=palette.count||4,r=Math.min(a.flowerRadius,h*.18),raceme=whorled&&!kuruma;
+ for(let j=0;j<count;j++){
+  const t=raceme?.62+j/count*.37:.80+j/count*.18,an=j*2.399+.4,root=axis(t),reach=Math.min(w*.30,h*.20)*(raceme?.95-j/count*.45:1-j/count*.48),tip=[root[0]+Math.sin(an)*reach,root[1]+(whorled?.035:.030),root[2]+Math.cos(an)*reach],end=[tip[0]+Math.sin(an)*.012,tip[1]-(whorled?.025:0),tip[2]+Math.cos(an)*.012];
+  b.branch(root,tip,stemRadius*.45,stemColor,'pedicel');b.branch(tip,end,stemRadius*.35,stemColor,'pedicel');
+  const isBud=count>3&&j===count-1;
+  if(isBud)b.add(kit.bud,'flowerBud','#a8af83',...end,r*.20,r*.75,r*.20,.45,an,0);
+  else heads.push({at:end,an});
+ }
+ for(const {at,an} of heads)detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'liliumFlower',palette,tilt:palette.tilt,yaw:an},{...kit,rand});
+}
+
 function drawSpringRacemes(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,hy=a.architecture==='hyacinth',freesia=a.architecture==='freesia',palette=a.flowerPalette||{},n=Math.max(2,Math.round((hy?3:freesia?5:8)*detail)),heads=[];
  for(let i=0;i<n;i++){
@@ -847,6 +885,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
  const a=info.appearance||{},h=s.height,w=s.spread,green=s.leafColor||info.leafColor||'#587e45',stemColor=a.stemColor||green;
  const leafKind=foliageKind(info),shape=a.leafMargin==='crenate'?'crenate':a.leafShape||'leaf',leafyViolet=a.architecture==='leafyViolet',basal=!leafyViolet&&(a.arrangement==='basal'||['rosette','clump','mound','creeping'].includes(a.habit)),creeping=a.habit==='creeping';
  if(a.architecture==='narcissus'){drawNarcissus(b,{info,s,detail,rand},kit);return;}
+ if(['orientalLily','trumpetLily','nativeLily','martagonLily'].includes(a.architecture)){drawLilies(b,{info,s,detail,rand},kit);return;}
  if(['muscari','hyacinth','freesia'].includes(a.architecture)){drawSpringRacemes(b,{info,s,detail,rand},kit);return;}
  if(['miniIris','beardedIris','snakeIris','dietes','blackberryLily'].includes(a.architecture)){drawIrises(b,{info,s,detail,rand},kit);return;}
  if(['compactDahlia','tallDahlia','treeDahlia'].includes(a.architecture)){drawDahlias(b,{info,s,detail,rand},kit);return;}
