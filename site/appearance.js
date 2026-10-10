@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.61';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.62';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -177,3 +177,5 @@ Object.assign(TRAIT_VALUES,{calaminthaSmall:'浅い鋸歯と細毛のある小�
 Object.assign(TRAIT_VALUES,{abeliaCanes:'株元から分かれ、外へ湾曲する細い木質枝',abeliaSerrate:'小さな鋸歯・光沢・尖った先をもつ卵形葉',zabeliaOvate:'ほぼ全縁で葉縁と脈上に毛がある細長い卵形葉',abeliaFunnel:'長い筒と5裂する口・4本の雄しべ・花後に残る萼'});
 
 Object.assign(TRAIT_VALUES,{viburnumBranches:'対生する枝葉と種に応じた直立・開張する木質枝',viburnumLaurel:'硬く光沢のある全縁の長卵形葉',viburnumCoarse:'角ばる鋸歯と目立つ側脈のある卵形葉',viburnumHairy:'葉裏に毛がある鋸歯の卵形葉',viburnumObovate:'小さく先側が広い倒卵形葉',viburnumLobed:'大きく3裂し鋸歯のある掌状葉',viburnumSterileBall:'雄しべ・雌しべのない装飾花のみの球状花序',viburnumLacecap:'中央の小さな両性花と周囲の白い装飾花',viburnumSparse:'疎らに垂れる小さな5裂花',viburnumCorymb:'5裂の花筒と5本の雄しべをもつ花の集まり'});
+
+Object.assign(TRAIT_VALUES,{deutziaSprays:'株元から細い枝が弓状に広がり、短枝に花房をつける',deutziaLance:'細かな鋸歯と星状毛がある披針形の対生葉',deutziaOvate:'星状毛のある卵形〜披針形葉',deutziaStar:'5弁花と翼のある10本の雄しべ・3本の花柱',deutziaDouble:'重なる花弁の八重小花が球状に集まる',stellateHair:'細かな星状毛'});

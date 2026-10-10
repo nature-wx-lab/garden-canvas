@@ -10,6 +10,25 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Deutzia preserves cultivar habit, opposite hairy blades, flower anatomy, summer repeat and winter wood',()=>{
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='deutziaSprays');assert.equal(entries.length,9);
+ for(const [i,[id,info]] of entries.entries()){
+  let wood;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,7700+i,2,2),st=stateAt(p,view(month)),g=plantModel(p,view(month)),a=info.appearance;
+   const count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);
+   assert.ok(count('stem-deutzia')>0);assert.equal(count('petal-deutzia')>0,st.bloom,id+':'+month);assert.equal(count('leaf-deutzia')>0,st.leafDensity>0,id+': winter leaves');
+   if(st.bloom){const flowers=count('petal-deutzia')/(5*a.flowerLayers);assert.equal(count('anther-deutzia'),flowers*a.stamenCount);assert.equal(count('stigma-deutzia'),flowers*a.pistilCount);assert.equal(count('tooth-deutzia-filament'),flowers*a.stamenCount*2);}
+   if(st.leafDensity>0)assert.ok(count('hair-deutzia-stellate')>0);
+   const matrices=g.children.filter(m=>m.userData.component.startsWith('stem-deutzia')||m.userData.component.startsWith('wood-')).map(m=>[m.userData.component,[...m.instanceMatrix.array]]);if(!wood)wood=matrices;else assert.deepEqual(matrices,wood,id+': stable branches');
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}dispose(g);
+  }
+ }
+ assert.equal(CATALOG['p-b08f3dc049ff'].appearance.habit,'rounded');assert.equal(CATALOG['p-2b49e9a21c05'].appearance.habit,'arching');
+ assert.ok(CATALOG['p-2e1d3bf7de9a'].height[1]>CATALOG['p-b08f3dc049ff'].height[1]);
+ const shisen=CATALOG['p-2b49e9a21c05'];assert.ok(seasonAt(shisen,9).bloom);assert.ok(seasonAt(shisen,9).flowerDensity<seasonAt(shisen,6).flowerDensity);
+});
+
 test('Viburnum distinguishes sterile balls, lacecaps, pendant cymes, fruits and stable leafless winter wood',()=>{
  const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='viburnumBranches');assert.equal(entries.length,10);
  for(const [i,[id,info]] of entries.entries()){
