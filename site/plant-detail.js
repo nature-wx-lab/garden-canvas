@@ -1,6 +1,60 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.78';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.79';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function pittosporumLeafPoint(type,t,u){
+ const tobira=type==='tobira',round=type==='tandara',width=tobira?Math.pow(Math.sin(Math.PI*t),.46)*(.38+.94*t):Math.pow(Math.sin(Math.PI*t),round?.52:.70)*(1.13-.23*t);
+ const wave=tobira?.018:round?.055:.080;
+ return [u*width*.5,t,.038*u*u*Math.sin(Math.PI*t)-.035*t*t+wave*Math.sin(t*TAU*3.3+u*.7)*u*u*Math.sin(Math.PI*t)];
+}
+export function pittosporumFlowerGeometry(tobira){
+ const pos=[],uv=[],ix=[];
+ for(let k=0;k<5;k++){
+  const az=k*TAU/5,base=pos.length/3,rows=22,cols=8;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,open=Math.max(0,(t-.55)/.45),r=tobira?.08+.92*t:.16+.70*open*open,width=tobira?.25*Math.pow(Math.sin(Math.PI*t),.48):.11+.18*Math.pow(Math.sin(Math.PI*t),.6),y=tobira?.18+.18*Math.sin(Math.PI*t*.7):t*2.0-.30*open*open;
+   pos.push(Math.sin(az)*r+Math.cos(az)*u*width,y+.02*u*u,Math.cos(az)*r-Math.sin(az)*u*width);uv.push(j/cols,t);
+   if(i<rows&&j<cols){const q=base+i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.pittosporumPetals=5;return g;
+}
+function drawPittosporum(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,tobira=type==='tobira',sheen=type==='sheen',h=s.height,w=s.spread,leaves=[],tips=[];
+ const shoot=(root,az,rise,reach,order)=>{
+  const bend=sheen&&order>0?.19:.05,path=t=>[root[0]+Math.sin(az)*reach*t,root[1]+rise*((1+bend)*t-bend*t*t)-h*(sheen&&order>0?.025:0)*t*t*t,root[2]+Math.cos(az)*reach*t],nodes=order===0?16:order===1?12:order===2?9:8;
+  for(let j=1;j<=7;j++)b.branch(path((j-1)/7),path(j/7),(order===0?(tobira?.015:.008):order===1?.003:order===2?.0011:.0005)*(1-.65*j/7),order===0?a.barkColor:a.stemColor,'wood-pittosporum');
+  for(let j=1;j<=nodes;j++){
+   const t=tobira?.61+.37*j/nodes:.07+.90*j/nodes,at=path(t),theta=az+j*2.399963;
+   if(!tobira||order>=2||j>nodes-5)leaves.push({at,az:theta,roll:rand(),size:.77+rand()*.24,young:j===nodes});
+   if(order<3&&j>1&&j<nodes&&j%(order<2?2:3)===0){
+    const anchor=path(.10+.83*j/nodes),theta=az+(j%2?1:-1)*(.75+rand()*.6),r=order===0?.20:order===1?.085:.035;
+    shoot(anchor,theta,h*r*(.75+rand()*.7),w*r*(tobira?1.3:1.05),order+1);
+   }
+  }
+  if(order>=2)tips.push({at:path(1),az,roll:rand()});
+ };
+ const number=Math.round((tobira?9:7)*detail);
+ for(let j=0;j<number;j++){
+  const az=j*2.399963,low=j%3===0,root=[Math.sin(az)*w*.035,0,Math.cos(az)*w*.035];shoot(root,az,h*(tobira?(low?.34+rand()*.12:.52+rand()*.13):(low?.27+rand()*.18:.49+rand()*.31)),w*(tobira?(low?.28:.16+rand()*.06):(low?.27:.11+rand()*.08)),0);
+ }
+ for(const n of leaves){
+  const young=n.young&&[4,5].includes(s.month),L=a.leafLength*n.size*(young?.68:1),f=flowerFrame(b,n.at,.71+n.roll*.83,n.az),pattern=a.leafPattern?'-'+a.leafPattern+'-'+s.leafPatternColor.slice(1):'',col=young&&tobira?'#9da56e':s.leafColor;
+  f.branch([0,0,0],[0,L*.09,0],tobira?.001:.0005,a.stemColor,'petiole-pittosporum');f.add('pittosporum-'+type,'leaf-pittosporum-'+type+pattern,kit.shade(rand,col,.026),0,L*.09,0,L*a.leafWidth/a.leafLength,L,L);
+  if(!tobira&&s.bloom&&n.roll<.018){
+   const flower=flowerFrame(b,n.at,1.5,n.az),R=a.flowerRadius;flower.branch([0,0,0],[0,.004,0],.00045,a.stemColor,'pedicel-pittosporum');flower.add('pittosporum-tube','petal-pittosporum-axillary',s.flowerColor,0,.004,0,R,R,R);
+   for(let k=0;k<5;k++){const az=k*TAU/5;flower.add(kit.bud,'anther-pittosporum','#b4985c',Math.sin(az)*R*.12,.004+R*(1.05+k*.09),Math.cos(az)*R*.12,R*.045,R*.08,R*.045);}
+  }
+ }
+ if(tobira&&s.bloom)for(const n of tips){
+  if(n.roll>.46)continue;
+  const f=flowerFrame(b,n.at,.38,n.az),R=a.flowerRadius;
+  for(let j=0;j<7;j++){
+   const az=j*2.399963,rad=.019*Math.sqrt((j+.5)/7),at=[Math.sin(az)*rad,.011+rand()*.004,Math.cos(az)*rad],ff=flowerFrame(f,at,.18,az);f.branch([0,0,0],at,.00065,a.stemColor,'pedicel-pittosporum');
+   ff.add('pittosporum-flat','petal-pittosporum-terminal',j%3===0?'#e2d79e':s.flowerColor,0,0,0,R,R,R);ff.add(kit.bud,'pistil-pittosporum','#aab68c',0,R*.30,0,R*.15,R*.18,R*.15);
+   for(let k=0;k<5;k++){const az=k*TAU/5;ff.add(kit.bud,'anther-pittosporum','#dfcca2',Math.sin(az)*R*.27,R*.40,Math.cos(az)*R*.27,R*.05,R*.075,R*.05);}
+  }
+ }
+}
 export function hypericumLeafPoint(type,t,u){
  const low=type==='gold'||type==='silver',width=Math.pow(Math.sin(Math.PI*t),low?.49:.68)*(low?.83+.30*t:1.22-.40*t);
  return [u*width*.5,t,.032*u*u*Math.sin(Math.PI*t)-.035*t*t+.002*Math.cos(t*34-Math.abs(u)*8)*Math.sin(Math.PI*t)];
@@ -4332,6 +4386,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='pittosporumBranches'){drawPittosporum(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='hypericumShoots'){drawHypericum(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='ruscusCladodes'){drawRuscus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='hardyHibiscusCanes'){drawHardyHibiscus(b,{info,s,detail,rand},kit);return;}

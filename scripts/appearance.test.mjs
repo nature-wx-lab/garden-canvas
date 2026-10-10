@@ -10,6 +10,20 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Pittosporum distinguishes thick terminal Tobira foliage from black twigged variegated cultivars',()=>{
+ const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='pittosporumBranches');assert.equal(entries.length,5);
+ for(const [i,[id,info]] of entries.entries()){
+  const a=info.appearance,tobira=a.shootProfile==='tobira';let wood,leaves;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,9400+i,2,2);p.height=1.2;p.spread=.9;const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'pittosporumBranches');assert.ok(count('leaf-pittosporum')>0);assert.ok(count('wood-pittosporum')>0);assert.equal(count('petal-pittosporum')>0,(a.flowerMonths||[]).includes(month));assert.equal(count('anther-pittosporum'),count('petal-pittosporum')*5);assert.equal(count('petal-pittosporum-terminal')>0,tobira&&(a.flowerMonths||[]).includes(month));assert.equal(count('fruit'),0);
+   const skeleton=g.children.filter(m=>m.userData.component==='wood-pittosporum').map(m=>[...m.instanceMatrix.array]);if(!wood)wood=skeleton;else assert.deepEqual(skeleton,wood);if(!leaves)leaves=count('leaf-pittosporum');else assert.equal(count('leaf-pittosporum'),leaves);
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ assert.equal(CATALOG['p-974f3adcb924'].appearance.leafPattern,undefined);assert.equal(CATALOG['p-974f3adcb924'].variegated,false);assert.equal(CATALOG['p-656a5c7a0ee5'].appearance.flowerMonths,undefined);assert.equal(CATALOG['p-9ab79d403a6a'].appearance.leafPattern,'center');assert.equal(CATALOG['p-99b59943d1a8'].appearance.leafPattern,'margin');
+});
+
 test('Hypericum separates groundcovers from berry shrubs and keeps harvest months out of flowering',()=>{
  const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='hypericumShoots');assert.equal(entries.length,6);
  for(const [i,[id,info]] of entries.entries()){
