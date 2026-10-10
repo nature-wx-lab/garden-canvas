@@ -1,6 +1,76 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.52';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.53';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function iberisPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='petal'){
+  const width=t<.27?.04+.12*t:.47*Math.pow(Math.sin(Math.PI*(t-.21)/.79),.42);
+  return [u*width,t,.09*t*t-.045*u*u*sn];
+ }
+ const teeth=type==='toothed'?1-.25*Math.pow(Math.max(0,Math.cos((t-.15)*TAU*4.4)),6)*sn:1;
+ return [u*.5*Math.pow(sn,.55)*(.7+.3*t)*teeth,t,.03*t*t+.035*u*u*sn-.008*Math.exp(-u*u*55)*sn];
+}
+
+function iberisFlower(b,at,r,color,yaw,rand,kit){
+ const f=flowerFrame(b,at,.06,yaw);
+ for(let j=0;j<4;j++){
+  const an=j<2?(j===0?-.54:.54):j===2?2.34:3.94,len=r*(j<2?1:.46);
+  f.add('iberisPetal','petal-iberis',kit.shade(rand,color,.028),Math.sin(an)*r*.07,.0003,Math.cos(an)*r*.07,len*.68,len,len,1.47,an,0);
+  f.add('iberisEntire','calyx-iberis','#809265',0,-.0008,0,r*.30,r*.30,r*.30,1.67,an,0);
+ }
+ for(let j=0;j<6;j++){
+  const an=j*TAU/6,rr=r*.16,top=[Math.sin(an)*rr,r*(j<4?.30:.23),Math.cos(an)*rr];
+  f.branch([0,0,0],top,r*.013,'#e2daac','filament-iberis');f.add(kit.bud,'anther-iberis','#c7b264',...top,r*.048,r*.037,r*.030);
+ }
+ f.add(kit.bud,'stigma-iberis','#a2a768',0,r*.24,0,r*.05,r*.04,r*.05);
+}
+
+function drawIberis(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,type=a.shootProfile,annual=['amara','umbellata'].includes(type),tall=annual||type==='mermaid'||type==='pinkice',h=s.height*(annual?s.leafDensity===0?1:s.leafScale:1),w=s.spread*(annual?s.leafDensity===0?1:Math.max(.3,s.leafScale):1),L=Math.min(a.leafLength,w*.22)*s.leafScale,stem=a.stemColor,leafKind=a.leafTexture==='glossy'?'leaf-iberis-glossy':'leaf-iberis',leafShape=['amara','mermaid'].includes(type)?'iberisToothed':'iberisEntire',after=s.seedHeads,show=s.bloom||after;
+ const n=Math.max(8,Math.round((type==='mermaid'?20:annual?22:48)*detail)),headR=Math.min(a.headRadius,w*.18),r=a.flowerRadius;
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.35*Math.sqrt((i+.3)/n),topY=h*(tall?.65+rand()*.23:.34+rand()*.33),nodes=[[0,.007,0],[Math.sin(az)*rr*.58,h*(tall?.25:.09),Math.cos(az)*rr*.58],[Math.sin(az)*rr,topY,Math.cos(az)*rr]];
+  for(let j=1;j<3;j++){
+   b.branch(nodes[j-1],nodes[j],annual?.0008:.0010,j===1&&!annual?a.barkColor:stem,j===1&&!annual?'woodyBranch-iberis':'stem-iberis');
+   for(let k=0;k<14;k++)if((i===0&&k===0)||rand()<s.leafDensity){
+    if(s.leafDensity===0)continue;
+    const t=(k+.5)/14,pt=nodes[j-1].map((v,d)=>v+(nodes[j][d]-v)*t),angle=az+k*2.399963,len=L*(.66+rand()*.34);
+    b.add(leafShape,leafKind,kit.shade(rand,s.leafColor,.05),...pt,len*a.leafWidth/a.leafLength,len,len,.62+rand()*.65,angle,0);
+   }
+  }
+  // Short leafy side shoots fill the mat; the flower stalks emerge above them.
+  for(let q=0;q<3;q++){
+   const t=.35+q*.23,root=nodes[1].map((v,d)=>v+(nodes[2][d]-v)*t),an=az+(q%2?1:-1)*.9,len=w*(annual?.09:.13),tip=[root[0]+Math.sin(an)*len,root[1]+h*.09,root[2]+Math.cos(an)*len];
+   b.branch(root,tip,.0006,stem,'leafyShoot-iberis');
+   for(let k=0;k<13;k++)if(rand()<s.leafDensity){const u=(k+.4)/13,pt=root.map((v,d)=>v+(tip[d]-v)*u),ll=L*(.74+rand()*.26);b.add(leafShape,leafKind,kit.shade(rand,s.leafColor,.05),...pt,ll*a.leafWidth/a.leafLength,ll,ll,.50+rand()*.8,an+k*2.399963,0);}
+  }
+  if(!show)continue;
+  const branches=type==='mermaid'?3:2;
+  for(let q=0;q<branches;q++){
+   const an=az+q*TAU/branches,at=nodes[2],center=[at[0]+Math.sin(an)*w*.10,Math.min(h*.98,at[1]+h*.14+(q===0?.02:0)),at[2]+Math.cos(an)*w*.10];
+   b.branch(at,center,.0007,stem,'peduncle-iberis');
+   const count=type==='mermaid'?52:type==='amara'?85:38;
+   if(after&&type!=='umbellata')b.branch(center,[center[0],center[1]+h*.20,center[2]],.00045,'#9b9167','fruitAxis-iberis');
+   for(let j=0;j<count;j++){
+    const t=(j+.35)/count,angle=j*2.399963,elongated=after&&type!=='umbellata',rad=headR*(elongated?.55:Math.sqrt(t)),raised=elongated?h*.20*(1-t):type==='amara'?h*.10*(1-t):headR*.24*(1-t),pt=[center[0]+Math.sin(angle)*rad,center[1]+raised,center[2]+Math.cos(angle)*rad];
+    const root=[center[0],center[1]+(elongated?raised-.005:-.012),center[2]];
+    b.branch(root,pt,.0002,after?'#9b9167':stem,'pedicel-iberis');
+    if(after){
+     const f=flowerFrame(b,pt,.7,angle),sz=type==='amara'?.0022:.003;
+     for(const side of [-1,1])f.add(kit.bud,'silicle-iberis','#a7a071',side*sz*.36,0,0,sz*.63,sz,sz*.23);
+     f.branch([0,sz*.2,0],[0,sz*1.4,0],.00012,'#927e58','style-iberis');
+    }else if(t<.17||rand()>s.flowerDensity){
+     b.add(kit.bud,'flowerBud-iberis',type==='pinkice'?'#ae879f':type==='mermaid'?'#a684b0':'#bac5a1',...pt,r*.22,r*.27,r*.22);
+    }else{
+     const pal=a.flowerPalette,color=pal?new THREE.Color(pal.opening).lerp(new THREE.Color(pal.mature),t).getStyle():s.flowerColor;
+     iberisFlower(b,pt,r*(.84+rand()*.16),color,angle,rand,kit);
+    }
+   }
+  }
+ }
+}
+
 export function astilbeLeafPoint(t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),teeth=.88+.085*Math.cos(t*TAU*14)+.035*Math.cos(t*TAU*28);
  return [u*.5*Math.pow(sn,.74)*teeth*(1.08-.24*t),t,.075*u*u*sn+.055*t*t-.018*Math.exp(-u*u*80)*sn];
@@ -2479,6 +2549,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(info.appearance?.architecture==='iberisCorymbs'){drawIberis(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='astilbePlumes'){drawAstilbe(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='aquilegiaCymes'){drawAquilegia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='dianthusCymes'){drawDianthus(b,{info,s,detail,rand},kit);return;}
