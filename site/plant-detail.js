@@ -1,6 +1,93 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.69';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.70';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function nandinaLeafPoint(type,t,u){
+ const wide=type==='otafuku'||type==='twilight',profile=Math.pow(Math.sin(Math.PI*t),wide?.65:.88)*(1.06-.14*t);
+ return [u*profile*.5,t,Math.sin(Math.PI*t)*(.016+(type==='otafuku'?.11:.045)*u*u)-(type==='otafuku'?.055:.018)*t*t];
+}
+export function nandinaFlowerGeometry(){
+ const p=[],uv=[],ix=[],rows=16,cols=4;
+ for(let k=0;k<6;k++){
+  const start=p.length/3,az=k*TAU/6;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,r=.17+.83*t,width=.27*Math.pow(Math.sin(Math.PI*t),.77);
+   p.push(Math.sin(az)*r+Math.cos(az)*u*width,.12+.17*Math.sin(Math.PI*t)-.14*t*t+.08*u*u,Math.cos(az)*r-Math.sin(az)*u*width);uv.push(j/cols,t);
+   if(i<rows&&j<cols){const n=start+i*(cols+1)+j;ix.push(n,n+cols+1,n+1,n+1,n+cols+1,n+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.nandinaFlower={petals:6};return g;
+}
+function drawNandina(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,tall=type==='white',winter=[11,12,1,2].includes(s.month)||type==='seika'&&s.month<=4,growing=s.month>=4&&s.month<=(type==='seika'?9:6),tips=[],leaves=[],N=Math.round((tall?12:type==='twilight'?36:24)*detail);
+ for(let i=0;i<N;i++){
+  const az=i*2.399963+rand()*.25,rad=w*.28*Math.sqrt((i+.5)/N),top=h*(tall?.45+rand()*.32:.26+rand()*.38),base=[Math.sin(az)*rad*.5,0,Math.cos(az)*rad*.5],count=tall?13:type==='twilight'?11:9;let prev=base;
+  for(let j=1;j<=count;j++){
+   const t=j/count,at=[base[0]+Math.sin(az)*rad*t*.55,top*t,base[2]+Math.cos(az)*rad*t*.55],old=t<.7;
+   b.branch(prev,at,Math.min(.006,h*.006)*(1-t*.52),old?a.barkColor:a.stemColor,old?'wood-nandina-cane':'stem-nandina-cane');prev=at;
+   b.add(kit.bud,'leaf-scar-nandina','#8e896c',...at,Math.min(.0048,h*.0048)*(1-t*.48),.0003,Math.min(.0048,h*.0048)*(1-t*.48));
+   if(j>=(tall?5:1))leaves.push({at,az:az+j*2.399963,roll:rand(),young:j>=count-1,outer:i>N*.4||j>=count-1,size:.8+rand()*.2});
+  }tips.push({at:prev,az,roll:rand()});
+ }
+ for(const n of leaves){
+  if(n.roll>s.leafDensity)continue;
+  const young=n.young&&growing,frond=Math.min(tall?.34:type==='twilight'?.18:type==='otafuku'?.20:.28,w*(tall?.5:.55))*n.size,f=flowerFrame(b,n.at,.50+n.roll*.86,n.az),stalk=type==='twilight'&&young?'#c88395':a.stemColor,small=type==='otafuku'||type==='twilight',pairs=small?1:2;
+  let last=[0,0,0];
+  for(let j=1;j<=5;j++){const at=[0,frond*j/5,.013*Math.sin(j*Math.PI/5)];f.branch(last,at,.00075,stalk,'rachis-nandina-primary');last=at;}
+  const blade=(origin,angle,relative,terminal=false)=>{
+   const L=a.leafLength*n.size*(young?.75:1)*(terminal?1.1:1),pitch=-.12+rand()*.55,ff=flowerFrame(f,origin,0,0),outer=n.outer&&relative>.25;
+   let color=s.leafColor;
+   if(type==='lemon')color=outer?(growing?'#c4d271':'#aec763'):'#4e784d';
+   else if(type==='murasaki'&&young)color='#754961';
+   else if(type==='seika'&&young)color='#a84e51';
+   else if(type==='otafuku'&&young&&!winter)color='#a9995a';
+   else if(type==='white'&&young)color='#98aa72';
+   else if(type==='twilight')color=young?'#c5949d':winter?'#9d777e':'#598158';
+   const paint=type==='twilight'?(young?'young':n.outer?'mottled':'old'):'plain',back=new THREE.Color(color).lerp(new THREE.Color('#a1aea0'),.25).getHexString();
+   ff.add('nandina-'+type,`leaf-nandina-${type}-${paint}-underside-${back}`,kit.shade(rand,color,.037),0,0,0,L*a.leafWidth/a.leafLength,L,L,pitch,0,-angle);
+  };
+  for(let j=0;j<pairs;j++)for(const side of [-1,1]){
+   const y=frond*(small?.43:.30+j*.30),reach=frond*(small?.29:.35)*(1-j*.20),start=[0,y,.010],end=[side*reach,y+frond*.12,.016];f.branch(start,end,.00050,stalk,'rachis-nandina-secondary');
+   if(small){
+    for(const sign of [-1,1])blade([end[0]*.70,end[1]-.01,end[2]],side*.90+sign*.56,.7);
+    blade(end,side*.67,.9,true);
+   }else{
+    for(let l=0;l<2;l++){
+     const t=.45+l*.27,mid=start.map((v,k)=>v+(end[k]-v)*t);
+     for(const sign of [-1,1]){
+      const tip=[mid[0]+side*frond*.055,mid[1]+sign*frond*.078,mid[2]+.007];f.branch(mid,tip,.00030,stalk,'rachis-nandina-tertiary');
+      blade(tip,side*.8+sign*.43,t);blade([tip[0]*.94,tip[1],tip[2]],side*.8-sign*.54,t);
+     }
+    }blade(end,side*.75,1,true);
+   }
+  }
+  const terminalPairs=type==='otafuku'?1:2;
+  for(let j=0;j<terminalPairs;j++)for(const side of [-1,1])blade([0,frond*(.78+j*.12),.008],side*.82,.9);
+  blade(last,0,1,true);
+ }
+ for(const [i,n] of tips.entries()){
+  if(!s.bloom&&!a.fruitMonths?.includes(s.month))continue;
+  if(type!=='white'&&i!==0)continue;
+  if(type==='white'&&i%3!==0)continue;
+  const fruit=!s.bloom,len=type==='twilight'?.07:type==='murasaki'?.13:tall?.23:.15,R=a.flowerRadius,frame=flowerFrame(b,n.at,fruit?.23:.12,n.az),whorls=type==='twilight'?5:7;let prev=[0,0,0];
+  for(let j=1;j<=whorls;j++){
+   const t=j/whorls,at=[0,len*t,0];frame.branch(prev,at,.0009,'#8c9670','panicle-nandina-axis');prev=at;
+   for(let k=0;k<3;k++){
+    const az=k*TAU/3+j*.91,reach=len*.38*(1-t*.78),end=[Math.sin(az)*reach,len*t+len*.07,Math.cos(az)*reach];frame.branch(at,end,.0004,'#a7977c','panicle-nandina-branch');
+    const count=fruit?3:type==='twilight'?4:type==='seika'?8:5;
+    for(let m=0;m<count;m++){
+     const u=(m+.5)/count,an=m*2.399963,spread=len*.065,point=[end[0]*u+Math.sin(an)*spread,end[1]+len*.085*u,end[2]*u+Math.cos(an)*spread];frame.branch(end,point,.00020,'#a99d7e','panicle-nandina-pedicel');
+     const f2=flowerFrame(frame,point,.35+u*.8,an);
+     if(fruit){f2.add(kit.bud,'fruit-nandina-white',kit.shade(rand,a.fruitColor,.025),0,0,0,.004,.0042,.004);f2.add(kit.bud,'stigma-nandina-retained','#82765b',0,.0041,0,.00065,.0003,.00065);continue;}
+     if(m===count-1&&j===whorls){f2.add(kit.bud,'bud-nandina',a.flowerPalette.bud,0,R*.50,0,R*.31,R*.61,R*.31);continue;}
+     f2.add('nandinaCorolla',type==='twilight'?'petal-nandina-twilight':'petal-nandina',s.flowerColor,0,0,0,R,R,R);
+     f2.add(kit.bud,'ovary-nandina','#e3d5b6',0,R*.26,0,R*.17,R*.28,R*.17);f2.add(kit.bud,'stigma-nandina','#d6aa71',0,R*.64,0,R*.08,R*.07,R*.08);
+     for(let z=0;z<6;z++){const theta=z*TAU/6,point=[Math.sin(theta)*R*.27,R*.43,Math.cos(theta)*R*.27];f2.add(kit.bud,'anther-nandina','#d7bd68',...point,R*.09,R*.24,R*.08,Math.sin(theta)*.10,0,Math.cos(theta)*.10);}
+    }
+   }
+  }
+ }
+}
+
 export function euonymusLeafPoint(type,t,u){
  const rounded=type==='happiness',obovate=type==='compactus'||type==='gold';
  const profile=Math.pow(Math.sin(Math.PI*t),rounded?.53:.68)*(obovate?.71+.58*t:1),tooth=t>.16&&t<.96?1+.024*Math.sin(t*(rounded?70:132)):1;
@@ -3767,6 +3854,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='nandinaCanes'){drawNandina(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='euonymusBranches'){drawEuonymus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='osmanthusAxils'){drawOsmanthus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='magnoliaBranches'){drawMagnolia(b,{info,s,detail,rand},kit);return;}

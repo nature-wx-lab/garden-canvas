@@ -10,6 +10,25 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Nandina preserves compound leaf axes, cultivar winter colour and white fruit without inventing dwarf fruit',()=>{
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='nandinaCanes');assert.equal(entries.length,6);
+ for(const [i,[id,info]] of entries.entries()){
+  const a=info.appearance;let wood;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,8500+i,2,2),st=stateAt(p,view(month)),g=plantModel(p,view(month)),count=prefix=>g.children.filter(m=>m.userData.component.startsWith(prefix)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'nandinaCanes');assert.ok(count('leaf-nandina')>0);assert.ok(count('rachis-nandina-primary')>0);assert.ok(count('rachis-nandina-secondary')>0);
+   assert.equal(count('petal-nandina')>0,st.bloom,id+': flowering');assert.equal(count('fruit-nandina-white')>0,!!a.fruitMonths?.includes(month),id+': fruit timing');
+   if(st.bloom){assert.equal(count('anther-nandina'),6*count('petal-nandina'));assert.equal(g.children.find(m=>m.geometry.userData.nandinaFlower).geometry.userData.nandinaFlower.petals,6);}
+   if(['lemon','otafuku'].includes(a.shootProfile))assert.equal(count('petal-'),0);if(a.shootProfile!=='white')assert.equal(count('fruit-'),0);
+   const mat=g.children.filter(m=>/^(wood-nandina|stem-nandina)/.test(m.userData.component)).map(m=>[m.userData.component,[...m.instanceMatrix.array]]);if(!wood)wood=mat;else assert.deepEqual(mat,wood,id+': stable canes');
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ const lemon=CATALOG['p-a44198402ded'];assert.equal(seasonAt(lemon,1).leafColor,seasonAt(lemon,8).leafColor);assert.ok(lemon.height[1]>.9);
+ for(const id of ['p-ef2296b4b703','p-7d6813a5b963','p-fa380ccded5d'])assert.notEqual(seasonAt(CATALOG[id],1).leafColor,seasonAt(CATALOG[id],8).leafColor);
+ assert.equal(CATALOG['p-b594fc53301a'].appearance.leafPattern,'mottled');assert.equal(CATALOG['p-a01c6a7a5b5e'].appearance.fruitColor,'#e5d7a5');assert.equal(CATALOG['p-fa380ccded5d'].latin,"Nandina domestica 'Seika'");
+});
+
 test('Euonymus separates evergreen cultivar foliage, leafless corky winter branches and confirmed flowers and fruit',()=>{
  const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='euonymusBranches');assert.equal(entries.length,4);
  for(const [i,[id,info]] of entries.entries()){
