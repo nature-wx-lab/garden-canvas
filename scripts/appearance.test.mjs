@@ -10,6 +10,23 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Saxifragaceae keep winter rosettes, unequal petals, hairy leaves and distinct rhizomes or runners',()=>{
+ const entries=Object.entries(CATALOG).filter(([,p])=>['saxifrageRosettes','bergeniaRhizomes'].includes(p.appearance?.architecture));assert.equal(entries.length,7);
+ for(const [i,[id,info]] of entries.entries())for(let month=1;month<=12;month++){
+  const p=makePlant(id,7100+i,2,2),st=stateAt(p,view(month)),g=plantModel(p,view(month)),sax=info.appearance.architecture==='saxifrageRosettes';
+  const count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);
+  assert.equal(st.groundDormant,false);assert.ok(count(sax?'leaf-saxifrage':'leaf-bergenia')>0);assert.ok(count(sax?'runner-saxifrage':'rhizome-bergenia')>0);
+  assert.equal(count(sax?'petal-saxifrage':'petal-bergenia')>0,st.bloom);
+  if(sax&&st.bloom){assert.equal(count('petal-saxifrage-long')*3,count('petal-saxifrage-spotted')*2);assert.equal(count('anther-saxifrage'),count('petal-saxifrage-long')*5);}
+  if(sax||info.appearance.shootProfile==='dumbo')assert.ok(count(sax?'hair-saxifrage':'hair-bergenia')>0);
+  for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}dispose(g);
+ }
+ assert.equal(seasonAt(CATALOG['p-f9b0afaaa4ca'],10).bloom,true);assert.equal(seasonAt(CATALOG['p-8df7e24225e1'],10).bloom,false);
+ assert.notEqual(seasonAt(CATALOG['p-8df7e24225e1'],1).leafColor,seasonAt(CATALOG['p-8df7e24225e1'],7).leafColor);
+ assert.ok(seasonAt(CATALOG['p-5710cb13f030'],1).leafDensity<seasonAt(CATALOG['p-5710cb13f030'],7).leafDensity);
+ assert.equal(CATALOG['p-f9b0afaaa4ca'].spread,null,'40cm or more is not an upper bound');
+});
+
 test('Agapanthus fans distinguish cold winter loss, bicolour trumpets, closed doubles and fading leaf margins',()=>{
  const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='agapanthusFans');assert.equal(entries.length,15);
  for(const [i,[id,info]] of entries.entries())for(let month=1;month<=12;month++){

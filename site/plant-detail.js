@@ -1,6 +1,80 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.55';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.56';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function saxifrageLeafPoint(type,t,angle){
+ const sax=type==='saxifrageCordate',round=type==='bergeniaRound';
+ const notch=1-.92*Math.exp(-Math.pow((Math.abs(angle)-Math.PI)/(sax?.19:round?.22:.10),2));
+ const scallop=1-(sax?.085:.024)*Math.pow(Math.max(0,Math.cos(angle*(sax?9:26))),4);
+ const edge=(.58+.42*Math.cos(angle))*notch*scallop;
+ const r=t*edge,x=Math.sin(angle)*r*(sax?1.25:round?1.17:.92),y=Math.cos(angle)*r;
+ const vein=Math.cos(angle*(sax?7:6)),fold=(round?.040:.025)*vein*t*t;
+ return [x,y,.11*t*t+fold+.019*Math.sin(angle*17)*t*t];
+}
+
+function drawSaxifragaceae(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,typ=a.shootProfile,sax=a.architecture==='saxifrageRosettes',h=s.height,w=s.spread;
+ const L=Math.min(a.leafLength,w*(sax?.22:.44))*s.leafScale,stem=a.stemColor,crowns=[];
+ const leaf=(base,an,size,age)=>{
+  const rise=sax?Math.min(h*a.foliageHeightRatio,size*.48):Math.min(h*a.foliageHeightRatio*.60,L*.85)*(1-age*.85),tip=[base[0]+Math.sin(an)*size*.13,base[1]+rise,base[2]+Math.cos(an)*size*.13];
+  b.branch(base,tip,sax?.0009:.0032,stem,sax?'petiole-saxifrage':'petiole-bergenia');
+  const f=flowerFrame(b,tip,(sax?.65:.30)+age*(sax?.90:1.20)+(rand()-.5)*.18,an),ratio=a.leafWidth/a.leafLength;
+  const kind=sax?`leaf-saxifrage-${typ}-${age>.7?'green':age<.22?'pale':'variegated'}`:typ==='dumbo'?'leaf-bergenia-hairy':'leaf-bergenia-glossy';
+  f.add(a.leafShape,kind,kit.shade(rand,s.leafColor,.045),0,0,0,size*ratio,size,size);
+  if(sax||typ==='dumbo')for(let j=0;j<26;j++){
+   const angle=-Math.PI+(j+.3)*TAU/26,p=saxifrageLeafPoint(a.leafShape,1,angle),q=p.map((v,k)=>v*size*(k===0?ratio:1));
+   f.branch(q,[q[0]+Math.sin(angle)*.0011,q[1]+Math.cos(angle)*.0011,q[2]+.0007],.00009,'#bac3a8',sax?'hair-saxifrage':'hair-bergenia');
+  }
+ };
+ const n=sax?7:4;
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,reach=i===0?0:Math.max(0,w*.48-L*.76)*Math.sqrt(i/n),at=[Math.sin(az)*reach,.010,Math.cos(az)*reach];crowns.push(at);
+  if(i){
+   if(sax){const prev=[0,.012,0];for(let k=1;k<=6;k++){const t=k/6,p=[at[0]*t,.014+.006*Math.sin(t*Math.PI),at[2]*t];b.branch(prev,p,.0007,stem,'runner-saxifrage');prev.splice(0,3,...p);}}
+   else b.branch([0,.017,0],at,.009,'#89694f','rhizome-bergenia');
+  }
+  const count=Math.max(4,Math.round((sax?7:8)*detail));
+  for(let j=0;j<count;j++)if(j===0||rand()<s.leafDensity)leaf(at,j*2.399963+az,L*(.53+.47*j/count)*(sax&&i>3?.72:1),j/count);
+ }
+ if(!s.bloom&&!s.flowerBuds)return;
+ const heads=Math.max(2,Math.round((sax?5:typ==='snow'?7:5)*detail)),r=a.flowerRadius;
+ const flower=(pt,pitch,yaw,young=false)=>{
+  const f=flowerFrame(b,pt,pitch,yaw),calyx=sax?'#8a6571':typ==='snow'?'#8ba76e':'#9b5066';
+  if(young){f.add(kit.bud,sax?'bud-saxifrage':'bud-bergenia',calyx,0,r*.2,0,r*.19,r*.28,r*.19);return;}
+  if(sax){
+   for(const sign of [-1,1])f.add('narrow','petal-saxifrage-long','#eeeade',0,0,0,r*.36,r*(sign<0?1.35:1.18),r,1.58,sign*.34,0);
+   for(const an of [Math.PI-.75,Math.PI,Math.PI+.75])f.add('petal','petal-saxifrage-spotted','#eeeade',0,0,0,r*.38,r*.32,r,1.48,an,0);
+  }else{
+   f.add('tube','calyx-bergenia',calyx,0,-r*.40,0,r*.39,r*.48,r*.39);
+   for(let k=0;k<5;k++){
+    f.add('petal','petal-bergenia',kit.shade(rand,s.flowerColor,.025),0,0,0,r*.86,r*.91,r,.82,k*TAU/5,0);
+    if(typ==='sakura')f.add('petal','petal-bergenia-inner',s.flowerColor,0,r*.05,0,r*.40,r*.53,r,.53,k*TAU/5+.35,.12);
+   }
+  }
+  for(let k=0;k<5;k++)f.add('narrow',sax?'sepal-saxifrage':'sepal-bergenia',calyx,0,-r*.12,0,r*.30,r*.42,r,sax?1.9:.47,k*TAU/5,0);
+  f.add(kit.bud,sax?'ovary-saxifrage':'ovary-bergenia',sax?'#ceca99':typ==='snow'?'#a6b380':'#a9687e',0,r*.07,0,r*.18,r*.18,r*.18);
+  for(let k=0;k<10;k++){
+   const an=k*TAU/10,end=[Math.sin(an)*r*(sax?.34:.25),r*(sax?.27:.40),Math.cos(an)*r*(sax?.34:.25)];
+   f.branch([0,0,0],end,r*.009,typ==='dumbo'?'#aa637e':'#d9c9cb',sax?'filament-saxifrage':'filament-bergenia');
+   f.add(kit.bud,sax?'anther-saxifrage':'anther-bergenia',sax?'#bd8f92':typ==='snow'?'#b4ac89':'#a48386',...end,r*.034,r*.027,r*.038);
+  }
+  for(const sign of [-1,1])f.branch([sign*r*.055,r*.07,0],[sign*r*.12,r*(sax?.31:.37),0],r*.014,'#b8b48b',sax?'style-saxifrage':'style-bergenia');
+ };
+ for(let i=0;i<heads;i++){
+  const root=crowns[i%crowns.length],az=i*2.399963,top=[root[0]+Math.sin(az)*w*.04,h*(.77+rand()*.18),root[2]+Math.cos(az)*w*.04];
+  b.branch(root,top,sax?.0010:.0035,stem,sax?'scape-saxifrage':'scape-bergenia');
+  const branches=sax?7:6;
+  for(let j=0;j<branches;j++){
+   const t=(j+.4)/branches,an=az+j*2.399963,reach=(sax?Math.min(.11,w*.25):Math.min(.08,w*.21))*(1-t*.65),base=[top[0],top[1]*(sax?.55+t*.40:.77+t*.18),top[2]],end=[base[0]+Math.sin(an)*reach,base[1]+h*.07,base[2]+Math.cos(an)*reach];
+   b.branch(base,end,sax?.00045:.0014,stem,sax?'panicle-saxifrage':'panicle-bergenia');
+   for(let k=0;k<(sax?3:5);k++){
+    const aa=an+k*2.4,rr=r*(sax?1.3:1.9),pt=[end[0]+Math.sin(aa)*rr,end[1]+(k/5-.3)*rr,end[2]+Math.cos(aa)*rr];
+    b.branch(end,pt,sax?.00028:.0007,stem,sax?'pedicel-saxifrage':'pedicel-bergenia');flower(pt,sax?Math.PI/2+.15:.3+rand()*1.15,aa,s.flowerBuds||rand()>s.flowerDensity);
+   }
+  }
+ }
+}
+
 export function agapanthusPoint(type,t,u){
  if(type==='leaf'){
   const breadth=(.45+.55*Math.sin(Math.PI*Math.min(.95,t*1.07))**.35)*(t>.89?Math.sqrt((1-t)/.11):1);
@@ -2679,6 +2753,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(['saxifrageRosettes','bergeniaRhizomes'].includes(info.appearance?.architecture)){drawSaxifragaceae(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='agapanthusFans'){drawAgapanthus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='heucherellaCrowns'){drawHeucherella(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='iberisCorymbs'){drawIberis(b,{info,s,detail,rand},kit);return;}
