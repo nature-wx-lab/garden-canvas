@@ -1,6 +1,75 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.67';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.68';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function osmanthusLeafPoint(type,t,u){
+ const holly=['kaori','oni','shima','goshiki'].includes(type),small=type==='kaori',spines=small?[.19,.35,.51,.67,.81]:[.23,.48,.72],base=Math.pow(Math.sin(Math.PI*t),holly?.77:.73)*(1.02-.14*t);
+ let width=base*(holly?.68:1);
+ if(holly)for(const v of spines)width+=(small?.32:.52)*Math.max(0,1-Math.abs(t-v)/(small?.075:.11));
+ else width*=1+(t>.40?.018*Math.sin(t*112):0);
+ return [u*width*.5,t,Math.sin(Math.PI*t)*(.035+u*u*(holly?.085:.07))+(holly?.042:.009)*Math.sin(t*(small?32:22))*u*u];
+}
+export function osmanthusFlowerGeometry(holly=false){
+ const p=[],uv=[],ix=[],rings=4,sides=12;
+ for(let j=0;j<=rings;j++)for(let k=0;k<=sides;k++){
+  const t=j/rings,an=k*TAU/sides,r=.17+.12*t*t;p.push(Math.sin(an)*r,t*.45,Math.cos(an)*r);uv.push(k/sides,t*.3);
+  if(j<rings&&k<sides){const q=j*(sides+1)+k;ix.push(q,q+1,q+sides+1,q+1,q+sides+2,q+sides+1);}
+ }
+ for(let l=0;l<4;l++){
+  const start=p.length/3,an=l*TAU/4,rows=12,cols=6;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,r=.27+.73*t,width=.40*Math.pow(Math.sin(Math.PI*t),.56),y=.45+.17*Math.sin(Math.PI*t)-(holly?.42:.13)*t*t+.07*u*u*Math.sin(Math.PI*t);
+   p.push(Math.sin(an)*r+Math.cos(an)*u*width,y,Math.cos(an)*r-Math.sin(an)*u*width);uv.push(j/cols,.3+.7*t);
+   if(i<rows&&j<cols){const q=start+i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.osmanthusFlower={lobes:4,reflexed:holly};return g;
+}
+function drawOsmanthus(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,holly=['kaori','oni','shima','goshiki'].includes(type),small=type==='kaori',nodes=[],wood=[],leader=[],top=h*(small?.76:.61),radius=h*(small?.013:.018);
+ for(let j=0;j<=8;j++)leader.push([Math.sin(j*.71)*w*.013,top*j/8,Math.sin(j*.93)*w*.01]);
+ for(let j=1;j<leader.length;j++)wood.push({from:leader[j-1],to:leader[j],r:radius*(1-j*.09),old:true});
+ const shoot=(root,az,rise,reach,order)=>{
+  let previous=root;const N=order===0?8:small?7:6;
+  for(let j=0;j<N;j++){
+   const t=(j+1)/N,an=az+.17*Math.sin(t*4+az),at=[root[0]+Math.sin(an)*reach*t,root[1]+rise*t+reach*.08*Math.sin(Math.PI*t),root[2]+Math.cos(an)*reach*t];wood.push({from:previous,to:at,r:(order===0?.006:order===1?.0018:.00055)*Math.max(.5,Math.min(h,3))*(1-t*.63),old:order===0});previous=at;
+   if(order>0)nodes.push({at,an:an+j*Math.PI/2,order,t,roll:rand(),size:.72+rand()*.28});
+   if(order===0&&j>=2&&j<=6)shoot(at,an+(j%2?1:-1)*.91,h*.075,w*.12*(1-t*.3),1);
+   if(order===1&&(j===1||j===3||j===5))shoot(at,an+(j%4<2?1:-1)*.98,h*.025,w*.046,2);
+   if(small&&order===2&&(j===2||j===4))shoot(at,an+(j===2?1:-1)*.93,h*.010,w*.021,3);
+  }
+ };
+ const count=Math.round((small?22:19+Math.min(w*2,7))*detail);
+ for(let i=0;i<count;i++){
+  const t=(i+.5)/count,level=(small?.06:.12)+(small?.55:.40)*t,point=level/(top/h)*8,j=Math.min(7,Math.floor(point)),root=leader[j].map((v,k)=>v+(leader[j+1][k]-v)*(point-j)),tip=.30+.59*rand(),reach=w*.39*Math.sqrt(Math.max(.12,1-Math.pow((tip-.54)/.47,2)));
+  shoot(root,i*2.399963+rand()*.22,h*tip-root[1],reach,0);
+ }
+ for(const q of wood)b.branch(q.from,q.to,q.r,q.old?a.barkColor:a.stemColor,q.old?'wood-osmanthus-lenticels':'stem-osmanthus');
+ for(const n of nodes){
+  const young=[4,5].includes(s.month)&&n.t>.72;
+  for(const side of [-1,1]){
+   if((n.roll+(side===-1?.31:0))%1>s.leafDensity)continue;
+   const az=n.an+(side===1?0:Math.PI),P=small?.0012:.005,L=a.leafLength*n.size*(young?.68:1),at=[n.at[0]+Math.sin(az)*P,n.at[1]+P*.3,n.at[2]+Math.cos(az)*P],f=flowerFrame(b,at,.92+n.roll*.66,az),color=young?(a.springShootColor||'#80965b'):s.leafColor;
+   b.branch(n.at,at,small?.00015:.00055,a.stemColor,'petiole-osmanthus');
+   f.add('osmanthus-'+type,`leaf-osmanthus-${type}${young?'-young':''}-underside-${a.leafUnderside.slice(1)}`,kit.shade(rand,color,.033),0,0,0,L*a.leafWidth/a.leafLength,L,L);
+  }
+  if(n.t>.83||n.t<.25||n.roll>(small?.14:.24))continue;
+  const before=a.budMonths.includes(s.month);if(!s.bloom&&!before)continue;
+  if(s.bloom&&(n.roll*7.7)%1>(s.flowerDensity||1))continue;
+  for(const side of [-1,1]){
+   const az=n.an+(side===1?0:Math.PI),P=small?.002:.005,at=[n.at[0]+Math.sin(az)*P,n.at[1]+.002,n.at[2]+Math.cos(az)*P],f=flowerFrame(b,at,.85,az),N=small?4:holly?6:12;
+   for(let k=0;k<N;k++){
+    const t=(k+.5)/N,an=k*2.399963,r=(small?.004:holly?.006:.009)*Math.sqrt(t),end=[Math.sin(an)*r,.002+(small?.004:holly?.007:.013)*t,Math.cos(an)*r],R=a.flowerRadius,closed=!s.bloom||k%11===0,ff=flowerFrame(f,end,.65+1.1*t,an);
+    f.branch([0,0,0],end,.00014,a.stemColor,'pedicel-osmanthus');
+    if(closed){ff.add(kit.bud,'bud-osmanthus',a.flowerPalette.bud,0,R*.28,0,R*.34,R*.48,R*.34);continue;}
+    for(let l=0;l<4;l++){const theta=l*TAU/4;ff.add(kit.bud,'calyx-osmanthus','#8e9a61',Math.sin(theta)*R*.16,-R*.03,Math.cos(theta)*R*.16,R*.13,R*.18,R*.13);}
+    ff.add(holly?'osmanthusHollyCorolla':'osmanthusGoldCorolla','petal-osmanthus',s.flowerColor,0,0,0,R,R,R);
+    for(let l=0;l<2;l++){const sign=l===0?-1:1,from=[sign*R*.16,R*.18,0],end=[sign*R*.30,R*(holly?1.12:.62),0];ff.branch(from,end,R*.023,'#e5d5a4','filament-osmanthus');ff.add(kit.bud,'anther-osmanthus','#cbbb78',...end,R*.13,R*.18,R*.07);}
+    ff.add(kit.bud,'reduced-pistil-osmanthus','#b6b07b',0,R*.22,0,R*.075,R*.14,R*.075);
+   }
+  }
+ }
+}
+
 export function magnoliaLeafPoint(type,t,u){
  const broad=['denudata','sunrise','kobus'].includes(type),coco=type==='coco',profile=Math.pow(Math.sin(Math.PI*t),coco?.85:.64)*(broad?.63+.65*t:1.02-.12*t);
  return [u*profile*.5,t,Math.sin(Math.PI*t)*(.02+.07*u*u)+(coco?.008:.003)*Math.sin(t*20)*u*u];
@@ -3594,6 +3663,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='osmanthusAxils'){drawOsmanthus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='magnoliaBranches'){drawMagnolia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='camelliaBranches'){drawCamellia(b,{info,s,detail,rand},kit);return;}
  if(['oliveBranches','russianOliveBranches'].includes(info.appearance?.architecture)){drawOlives(b,{info,s,detail,rand},kit);return;}

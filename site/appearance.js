@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.67';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.68';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -186,3 +186,6 @@ Object.assign(TRAIT_VALUES,{syringaPanicles:"対生葉と枝分かれ、先端�
 
 Object.assign(TRAIT_VALUES,{oliveLance:'縁が内側へ巻く革質の細い対生葉・葉裏は銀白色',oliveSharp:'細長く先の尖る対生葉',russianOliveLance:'銀色の鱗片で覆われた細長い互生葉',oliveCorolla:'葉腋の小さな4裂花冠と2本の黄色い雄しべ',russianOliveCalyx:'外側が銀白・内側が黄色の4裂する筒状の萼（花弁なし）'});
 TRAIT_VALUES.oliveGreen='明るい緑色の細長い対生葉';
+
+Object.assign(TRAIT_VALUES,{osmanthusCorolla:"葉腋に集まる4裂花冠と2本の雄しべ",osmanthusAxils:"十字対生の葉と葉腋の花束",magnoliaTepals:"螺旋状に重なる花被と中央の雄しべ・雌しべ"});
+Object.assign(TRAIT_VALUES,{"osmanthus-kaori":"棘のある約1.3cmの極小葉","osmanthus-oni":"大きな棘と光沢を持つ厚い対生葉","osmanthus-shima":"大きな棘と白い覆輪のある対生葉","osmanthus-goshiki":"細かなクリーム色の散り斑と棘のある葉","osmanthus-gold":"細長く厚い革質の対生葉","osmanthus-repeat":"新芽が赤い細長い対生葉","osmanthus-red":"光沢のある長楕円形の対生葉"});
