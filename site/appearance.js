@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.50';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.51';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -153,3 +153,7 @@ Object.assign(TRAIT_VALUES,{scabiousTaxonHead:'種類別の小花・雄しべ・
 for(const type of ['knautia','caucasica','anthemifolia','atropurpurea','ochroleuca','columbaria','amethyst','cephalaria','stellata'])TRAIT_VALUES['scabLeaf-'+type]='羽状に切れ込む対生の茎葉';
 for(const type of ['knautia','anthemifolia','atropurpurea','ochroleuca','columbaria','amethyst','cephalaria','stellata'])TRAIT_VALUES['scabLeaf-'+type+'Basal']='株元のへら形・琴形または切れ込みのある葉';
 Object.assign(TRAIT_VALUES,{'scabLeaf-caucasica':'株元と異なり切れ込みのある茎葉','scabLeaf-caucasicaBasal':'切れ込みのない灰緑色の根生葉','scabLeaf-meltonBasal':'細長い根生葉','scabLeaf-succisella':'細長い披針形の対生葉','scabLeaf-teasel':'対生し基部が杯状につながる棘のある葉'});
+
+Object.assign(TRAIT_VALUES,{verbenaLance:'茎を抱く基部と鋸歯を持つ細長い対生葉',verbenaHastata:'葉脈と鋸歯が目立つ長い対生葉',verbenaBampton:'基部に深い切れ込みと鋸歯のある銅色の対生葉',verbenaSalver:'細い筒の先が5裂する小花'});
+
+Object.assign(TRAIT_VALUES,{dianthusLeaf:'対生し、基部が茎を抱く線状・披針形の葉',dianthusFringed:'縁が裂ける5枚の花弁と細い筒状の萼'});
