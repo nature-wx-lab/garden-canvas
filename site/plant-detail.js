@@ -1,6 +1,97 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.45';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.46';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+
+export function cotinusLeafPoint(t,u){
+ const wave=Math.pow(Math.max(0,Math.sin(Math.PI*t)),.53),width=.445*wave*(.64+.40*t);
+ return [u*width,t,.037*u*u*wave+.045*t*t];
+}
+
+// Cotinus smoke is elongated, hairy sterile pedicels. These shared meshes keep
+// the open branching panicle visible through the hairs, without a solid blob.
+export function smokePanicleGeometry(part){
+ const p=[],uv=[],ix=[];let state=379;
+ const rand=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
+ const ribbon=(from,to,width,bend=0)=>{
+  const direction=new THREE.Vector3(...to).sub(new THREE.Vector3(...from)),side=new THREE.Vector3(direction.z,.13,-direction.x).normalize();
+  for(let plane=0;plane<2;plane++){
+   const start=p.length/3,cross=plane?new THREE.Vector3().crossVectors(direction,side).normalize():side;
+   for(let j=0;j<=3;j++)for(const sign of [-1,1]){
+    const t=j/3,v=new THREE.Vector3(...from).addScaledVector(direction,t).addScaledVector(side,bend*Math.sin(t*Math.PI)).addScaledVector(cross,sign*width*.5*(1-t*.5));p.push(...v.toArray());uv.push(sign===1?1:0,t);
+    if(j<3&&sign===-1){const k=start+j*2;ix.push(k,k+1,k+2,k+1,k+3,k+2);}
+   }
+  }
+ };
+ const dotFlower=(at,yaw)=>{
+  for(let k=0;k<5;k++){
+   const angle=yaw+k*TAU/5,side=angle+Math.PI/2,start=p.length/3;
+   for(const [r,s] of [[0,0],[.009,-.0036],[.014,0],[.009,.0036]]){p.push(at[0]+Math.sin(angle)*r+Math.sin(side)*s,at[1]+r*.20,at[2]+Math.cos(angle)*r+Math.cos(side)*s);uv.push(s/.0072+.5,r/.014);}
+   ix.push(start,start+1,start+2,start,start+2,start+3);
+  }
+ };
+ if(part==='axis')ribbon([0,0,0],[.012,1,0],.0045);
+ for(let n=0;n<15;n++)for(let j=0;j<3;j++){
+  const t=.10+n*.058,angle=n*2.399+j*TAU/3,reach=.37*Math.pow(Math.sin(Math.PI*t),.75)*(1-t*.25),base=[.012*t,t,0],tip=[Math.sin(angle)*reach,t+.075+rand()*.035,Math.cos(angle)*reach];
+  if(part==='axis')ribbon(base,tip,.0022);
+  for(let k=0;k<8;k++){
+   const u=(k+.65)/8,at=base.map((v,l)=>v+(tip[l]-v)*u),az=angle+(k%2?-1:1)*(.45+rand()*.48),length=.075+rand()*.065,end=[at[0]+Math.sin(az)*length,at[1]+length*.7,at[2]+Math.cos(az)*length];
+   if(part==='axis')ribbon(at,end,.0010,.004);
+   if(part==='flower'&&k%3===0)dotFlower(end,az);
+   for(let q=0;q<6;q++){
+    const v=(q+.5)/6,root=at.map((z,l)=>z+(end[l]-z)*v),an=az+q*2.399,rr=.022+rand()*.034,finish=[root[0]+Math.sin(an)*rr,root[1]+rr*(.18+rand()*.8),root[2]+Math.cos(an)*rr],bend=(rand()-.5)*.030;
+    if(part==='hair')ribbon(root,finish,.00065,bend);
+   }
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.smokePanicle=part;return g;
+}
+
+function drawSmokeTree(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,wood=a.barkColor,young=a.stemColor,leafLength=Math.min(a.leafLength,w*.12,h*.13),panicle=Math.min(a.inflorescenceLength,h*.27,w*.30),leaves=[],ends=[],spread=a.habit==='spreading';
+ const mix=(x,y,t)=>x.map((v,k)=>v+(y[k]-v)*t),point=(angle,r,y)=>[Math.sin(angle)*r,y,Math.cos(angle)*r];
+ const curve=(points,r,color=wood,kind='wood-smoke')=>{for(let k=1;k<points.length;k++)b.branch(points[k-1],points[k],r*(1-k/(points.length+1)),color,kind);};
+ // All random geometry is prepared before month filtering, retaining the same
+ // trunks and twigs in winter, spring and summer.
+ for(let main=0;main<4;main++){
+  const az=main*2.399+rand()*.3,foot=point(az,w*.017,.006),fork=point(az,w*.10,h*(.22+rand()*.07)),r=Math.min(.034,h*.015)*(main===0?1:.79);
+  curve([foot,point(az-.12,w*.026,h*.17),fork],r);
+  for(let arm=0;arm<7;arm++){
+   const an=az+(arm-3)*.71+(rand()-.5)*.22,reach=w*(arm<2?.08+arm*.12:.29+rand()*.065),level=h*(arm<2?.82-arm*.06:.42+rand()*.30),end=point(an,reach,Math.min(h-panicle*.55,level)),bend=mix(fork,end,.5);bend[1]+=h*.03;
+   curve([fork,bend,end],r*.47);
+   const count=Math.max(4,Math.round((spread?12:10)*detail));
+   for(let twig=0;twig<count;twig++){
+    const t=.19+.78*(twig+.5)/count,at=t<.5?mix(fork,bend,t*2):mix(bend,end,(t-.5)*2),angle=an+(twig%2?1:-1)*(.46+rand()*.63),reach=Math.min(w*.18,.28)*( .76+rand()*.32),top=[at[0]+Math.sin(angle)*reach,at[1]+h*(.065+rand()*.08),at[2]+Math.cos(angle)*reach];
+    const radius=Math.hypot(top[0],top[2]),limit=w*.47-leafLength*.65;
+    if(radius>limit){top[0]*=limit/radius;top[2]*=limit/radius;}
+    top[1]=Math.min(h-panicle*.42,top[1]);curve([at,mix(at,top,.5),top],Math.min(.0042,h*.003),young,'wood-smoke-shoot');
+    const nodes=9+Math.round(rand()*3);
+    for(let n=0;n<nodes;n++){
+     const u=.17+.80*(n+.5)/nodes,root=mix(at,top,u),yaw=angle+n*2.39996,petiole=leafLength*(.18+rand()*.08),out=[root[0]+Math.sin(yaw)*petiole,root[1]+petiole*.43,root[2]+Math.cos(yaw)*petiole];
+     leaves.push({root,out,yaw,pitch:.40+rand()*.95,roll:(rand()-.5)*.70,size:.72+rand()*.28,visibility:rand(),tone:rand()});
+    }
+    ends.push({at:top,yaw:angle,pitch:.10+rand()*.32,size:.76+rand()*.24,visibility:rand(),tone:rand()});
+   }
+  }
+ }
+ for(const q of leaves){
+  if(q.visibility>s.leafDensity)continue;
+  const len=leafLength*q.size*s.leafScale;
+  b.branch(q.root,q.out,Math.min(.0009,len*.014),young,'petiole');
+  b.add('cotinusLeaf','leaf-cotinus',kit.shade(()=>q.tone,s.leafColor,.060),...q.out,len*(a.leafWidth/a.leafLength)/.76,len,len,q.pitch,q.yaw,q.roll);
+ }
+ if(!s.bloom)return;
+ const first=a.flowerMonths[0],early=s.month===first,late=a.flowerMonths.indexOf(s.month)>0,cp=a.flowerPalette;
+ for(const q of ends){
+  if(q.visibility>(s.flowerDensity||1)*.54)continue;
+  const scale=panicle*q.size*(early?.72:1),phase=cp.mixed?q.tone:early?.12:.90,color=new THREE.Color(cp.early).lerp(new THREE.Color(cp.late),phase).getStyle();
+  b.add('smokeAxis','panicleAxis',kit.shade(()=>q.tone,early?'#88935f':color,.035),...q.at,scale,scale,scale,q.pitch,q.yaw,0);
+  if(early)b.add('smokeFlower','tinyFlower','#c6c276',...q.at,scale,scale,scale,q.pitch,q.yaw,0);
+  // Flowering dates and the later hairy phase overlap; exact transitions remain
+  // marked as illustrative in each plant's source notes.
+  b.add('smokeHair','smokeHair',kit.shade(()=>q.tone,color,.045),...q.at,scale,scale,scale,q.pitch,q.yaw,0);
+  if(cp.dense&&late)b.add('smokeHair','smokeHair',color,...q.at,scale*.96,scale*.98,scale*.96,q.pitch,q.yaw+.31,0);
+ }
+}
 
 // A shoot contains its actual small leaves. Instances distribute connected shoots,
 // rather than using oversized needles to stand in for a whole conifer crown.
@@ -1622,6 +1713,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(info.appearance?.architecture==='smokeTree'){drawSmokeTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='coniferSprays'){drawConiferSprays(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenRoseCanes'){drawGardenRose(b,{info,s,p,detail,rand},kit);return;}
  if(['sideritisSpikes','silverMintSpikes','marrubiumWhorls','leonotisTiers'].includes(info.appearance?.architecture)){drawSilverMints(b,{info,s,p,detail,rand},kit);return;}
