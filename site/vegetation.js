@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.0';
-import {foliageKind} from './appearance.js?v=0.9.0';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.0';
-import {drawTree} from './tree-model.js?v=0.9.0';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.0';
+import {treeProfile} from './tree-profiles.js?v=0.9.1';
+import {foliageKind} from './appearance.js?v=0.9.1';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.1';
+import {drawTree} from './tree-model.js?v=0.9.1';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.1';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.0';
+import { plantInfo, stateAt } from './model.js?v=0.9.1';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -116,6 +116,29 @@ const filigree=[[0,0]];
 for(let j=0;j<22;j++){const t=.02+j*.043,w=.28*Math.sin((t+.13)*Math.PI/1.25);filigree.push([-.006,t],[-w,t+.10],[-.006,t+.015]);}
 filigree.push([0,1]);for(let j=21;j>=0;j--){const t=.02+j*.043,w=.28*Math.sin((t+.13)*Math.PI/1.25);filigree.push([.006,t+.015],[w,t+.10],[.006,t]);}shapes.filigree=outlineLeaf(filigree);
 shapes.heart=outlineLeaf([[0,0],[-.16,-.08],[-.34,.02],[-.44,.23],[-.43,.42],[-.31,.67],[0,1],[.31,.67],[.43,.42],[.44,.23],[.34,.02],[.16,-.08]]);
+{
+ const pts=[[0,0],[-.18,-.07],[-.32,.03]];
+ for(let j=0;j<27;j++){const t=j/27,y=.07+t*.9,w=.43*Math.pow(Math.sin((t+.18)*Math.PI/1.18),.75)*(j%2?1:.94);pts.push([-w,y]);}
+ pts.push([0,1]);for(let j=26;j>=0;j--){const t=j/27,y=.07+t*.9,w=.43*Math.pow(Math.sin((t+.18)*Math.PI/1.18),.75)*(j%2?1:.94);pts.push([w,y]);}pts.push([.32,.03],[.18,-.07]);shapes.vineHeart=outlineLeaf(pts);
+}
+for(const name of ['grapeShallow','grapeDivided']){
+ const deep=name==='grapeDivided',edge=[[0,0],[-.16,-.07],[-.35,.06],[-.47,.24],[-.30,.32],[-.53,.57],[-.29,.65],[-(deep?.10:.25),deep?.40:.59],[-.18,.85],[0,1],[.18,.85],[deep?.10:.25,deep?.40:.59],[.29,.65],[.53,.57],[.30,.32],[.47,.24],[.35,.06],[.16,-.07]],pts=[];
+ for(let i=0;i<edge.length;i++){const a=edge[i],b=edge[(i+1)%edge.length],dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy),n=Math.max(2,Math.ceil(length/.065));for(let j=0;j<n;j++){const t=j/n,tooth=j%2?.012:0;pts.push([a[0]+dx*t-dy/length*tooth,a[1]+dy*t+dx/length*tooth]);}}
+ shapes[name]=outlineLeaf(pts);shapes[name].userData.porcelainLobedLeaf=true;
+}
+for(const name of ['eryngoStrap','eryngoBract']){
+ const pts=[[0,0]],wide=name==='eryngoBract';
+ for(let j=0;j<15;j++){const t=.025+j*.064,w=(wide?.13:.07)*Math.pow(Math.sin(Math.PI*t),.55);pts.push([-w,t],[-w-(wide?.07:.055),t+.035],[-w*.93,t+.032]);}
+ pts.push([0,1]);for(let j=14;j>=0;j--){const t=.025+j*.064,w=(wide?.13:.07)*Math.pow(Math.sin(Math.PI*t),.55);pts.push([w*.93,t+.032],[w+(wide?.07:.055),t+.035],[w,t]);}shapes[name]=outlineLeaf(pts);
+ if(!wide){const p=shapes[name].attributes.position;for(let j=0;j<p.count;j++){const t=p.getY(j);p.setY(j,Math.sin(t*1.7)/1.7);p.setZ(j,p.getZ(j)+(1-Math.cos(t*1.7))*.43);}shapes[name].computeVertexNormals();}
+}
+{
+ const pts=[[0,0]];
+ for(let j=0;j<7;j++){
+  const an=(j-3)*.40,len=.5+.5*Math.cos(an),p=(a,r)=>[Math.sin(a)*r,Math.cos(a)*r];
+  pts.push(p(an-.12,.16),p(an-.08,len*.5),p(an-.14,len*.68),p(an-.045,len*.70),p(an-.04,len*.86),p(an,len),p(an+.04,len*.86),p(an+.045,len*.7),p(an+.14,len*.68),p(an+.08,len*.5),p(an+.12,.16));
+ }shapes.eryngoPalm=outlineLeaf(pts);
+}
 shapes.ginkgo=outlineLeaf([[0,0],[-.11,.3],[-.42,.62],[-.55,.86],[-.45,.93],[-.34,.99],[-.18,1],[-.06,.94],[0,.82],[.06,.94],[.18,1],[.34,.99],[.45,.93],[.55,.86],[.42,.62],[.11,.3]]);
 shapes.oak=outlineLeaf([[0,0],[-.18,.12],[-.24,.22],[-.13,.27],[-.34,.38],[-.37,.48],[-.2,.53],[-.36,.67],[-.31,.78],[-.15,.75],[-.15,.92],[0,1],[.15,.92],[.15,.75],[.31,.78],[.36,.67],[.2,.53],[.37,.48],[.34,.38],[.13,.27],[.24,.22],[.18,.12]]);
 shapes.star=outlineLeaf([[0,0],[-.38,.12],[-.2,.35],[-.6,.55],[-.21,.58],[0,1],[.21,.58],[.6,.55],[.2,.35],[.38,.12]]);
@@ -311,6 +334,8 @@ function windShader(shader,kind){
     masks.mottle='smoothstep(0.23,0.69,sin(vUv.x*11.0+sin(vUv.y*9.0))*cos(vUv.y*13.0+sin(vUv.x*10.0)))';
     masks.canaryVeins='1.0-smoothstep(0.018,0.041,min(abs(vUv.x-0.5),abs(abs(vUv.x-0.5)-0.14)))';
     masks.mosaic='smoothstep(-0.12,0.23,sin(vUv.x*14.0+sin(vUv.y*9.0)*1.7)*cos(vUv.y*12.0+sin(vUv.x*7.0)*1.4)+0.15*sin(vUv.y*49.0+vUv.x*31.0))';
+    masks.darkVeins='max(midrib,pow(max(0.0,cos((vUv.y-fold*0.40)*40.0)),24.0)*smoothstep(0.02,0.13,fold))';
+    if(kind.startsWith('leaf-porcelain'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float patches=smoothstep(-0.18,0.30,sin(vUv.x*15.0+sin(vUv.y*11.0)*1.7)*cos(vUv.y*13.0+sin(vUv.x*17.0))+0.16*sin(vUv.x*61.0+vUv.y*43.0));diffuseColor.rgb=mix(diffuseColor.rgb,mix(vec3(0.83,0.83,0.74),vec3(0.79,0.45,0.52),smoothstep(0.35,0.75,sin(vUv.x*8.0+vUv.y*9.0))),patches*${kind.endsWith('faint')?'0.18':'0.92'});\n#include <emissivemap_fragment>`);
     if(masks[pattern])shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,${tint},(${masks[pattern]})*${pattern==='mottle'?'0.34':'0.86'});\n#include <emissivemap_fragment>`);
     if(kind.startsWith('leaf-palm'))shader.fragmentShader=shader.fragmentShader.replace('float midrib=1.0-smoothstep(0.012,0.025,abs(vUv.x-0.5));',`vec2 palm=vec2(vUv.x-0.5,vUv.y-0.22);float radial=abs(sin(atan(palm.x,palm.y)*3.0))*length(palm);float midrib=1.0-smoothstep(0.002,0.008,radial);`);
     if(kind.endsWith('-cranesbill-veins'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float petalVeins=pow(max(0.0,cos(atan(vUv.x-0.5,vUv.y+0.08)*19.0+sin(vUv.y*8.0)*0.13)),35.0);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.14,0.055,0.17),petalVeins*0.58*smoothstep(0.04,0.18,vUv.y));\n#include <emissivemap_fragment>`);
@@ -440,7 +465,7 @@ export function plantModel(p,view,detail=1){
   const dormant=s.dormant,clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
   if(form==='unmodeled'){
     const frame=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({color:'#aeb5a3',wireframe:true,transparent:true,opacity:.42}));frame.position.y=h/2;g.add(frame);g.userData.unmodeled=true;
-  }else if(['silverBush','berzelia','wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory','blueEyeShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
+  }else if(['hydrangeaVine','porcelainVine','silverBush','berzelia','wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory','blueEyeShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(profile&&form!=='maple'){g.userData.architecture=drawTree(b,{profile,info,p,s,detail},{bud,flower:petalFlower,detailedFlower,shade:palette});
   }else if((form==='botanical'||['fivepetal','airy','spike','bell','globe'].includes(form))&&info.appearance?.leafShape){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(EXTENDED_FORMS.has(form)){drawBotanical(b,{info,s,p,detail,rand},{bud,cone,flower:petalFlower,detailedFlower,shade:palette,foliageKind});
