@@ -10,6 +10,22 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('nasturtiums, morning glories and snapdragons preserve connected flower structures and annual planting cycles',()=>{
+ const ids=['p-a0032b10b5dd','p-f0cc4f8c54d2','p-fca9b8064485','p-c87242eb7237','p-69b32ed7ceb6','p-fad2544ebf9b','p-6cfb0fb6d32e','p-bf6d05b25251'];
+ for(const id of ids)for(let month=1;month<=12;month++){
+  const g=plantModel(makePlant(id,3101,2,2),view(month));for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}dispose(g);
+ }
+ const components=(shape,extras={})=>{const out=[];detailedFlower({add:(shape,kind,color)=>out.push({shape,kind,color}),branch(){}},{x:0,y:0,z:0,color:'#eeeeee',shape,...extras},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});return out;};
+ const nast=components('nasturtiumFlower',{palette:{orchid:true}});assert.equal(nast.filter(p=>p.shape==='nasturtiumPetal').length,5);assert.equal(nast.filter(p=>p.kind==='spur').length,1);assert.equal(nast.filter(p=>p.kind==='anther').length,8);
+ assert.equal(components('nasturtiumFlower',{layers:3}).filter(p=>p.shape==='nasturtiumPetal').length,15);
+ assert.ok(components('morningGloryFunnel',{palette:{star:true}}).some(p=>p.shape==='morningGloryStar'));assert.ok(components('morningGloryFunnel',{palette:{picotee:true}}).some(p=>p.kind==='petal-morning-picotee'));
+ const corn=components('corncockleFlower');assert.equal(corn.filter(p=>p.kind==='petal-corncockle').length,5);assert.equal(corn.filter(p=>p.kind==='sepal').length,5);
+ const snap=components('snapdragonLips',{palette:CATALOG['p-6cfb0fb6d32e'].appearance.flowerPalette});assert.ok(snap.some(p=>p.shape==='trumpet'&&p.color==='#e9e5cc'));assert.equal(snap.filter(p=>p.kind==='palate').length,1);
+ for(const id of ['p-c87242eb7237','p-69b32ed7ceb6']){const p=makePlant(id,3102,2,2),summer=plantModel(p,view(8));assert.ok(summer.children.some(m=>m.userData.component==='support'));assert.ok(summer.children.some(m=>m.userData.component==='vine'));assert.equal(plantModel(p,view(12)).children.length,0);dispose(summer);}
+ const candy=makePlant('p-bf6d05b25251',3103,2,2);candy.start=9;
+ assert.ok(stateAt(candy,view(11)).bloom);assert.ok(!stateAt(candy,{...view(1),year:1}).groundDormant);assert.equal(stateAt(candy,{...view(7),year:1}).groundDormant,true);
+});
+
 test('spring annuals keep species flower structure and never become new autumn seedlings; perennial alyssums keep foliage',()=>{
  const annual=['p-409548bac9d3','p-411631280d5a','p-720a489d48f3','p-8a7dd8045e6b','p-1a0a1c3e9648','p-a5a729ddcef7','p-15e083e6747c','p-336e559a86c5','p-b6f60d3de0cb','p-04ac064d8f8a'],perennial=['p-a140132da4f5','p-ca0c6cc7eae8'];
  for(const id of [...annual,...perennial])for(let month=1;month<=12;month++){

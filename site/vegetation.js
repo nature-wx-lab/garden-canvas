@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.18';
-import {foliageKind} from './appearance.js?v=0.9.18';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.18';
-import {drawTree} from './tree-model.js?v=0.9.18';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.18';
+import {treeProfile} from './tree-profiles.js?v=0.9.19';
+import {foliageKind} from './appearance.js?v=0.9.19';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.19';
+import {drawTree} from './tree-model.js?v=0.9.19';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.19';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.18';
+import { plantInfo, stateAt } from './model.js?v=0.9.19';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,6 +13,25 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+for(const type of ['nasturtiumShield','morningGloryRound','morningGloryStar']){
+ const pos=[],uv=[],idx=[],rows=28,cols=100,leaf=type==='nasturtiumShield',star=type==='morningGloryStar';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,an=j/cols*Math.PI*2,edge=leaf?1+.025*Math.cos(an*9):star?.81+.19*Math.cos(an*5):.98+.025*Math.cos(an*5),r=leaf?t*edge:(.06+.94*Math.pow(t,2.25))*edge;
+  const y=leaf?.11*t*t+.024*Math.sin(an*9)*t*t:1.0*t-.10*Math.pow(t,5)+.035*Math.cos(an*5)*t*t;
+  pos.push(Math.sin(an)*r,y,Math.cos(an)*r);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
+for(const type of ['nasturtiumPetal','corncocklePetal','corncockleLeaf','snapdragonLeaf']){
+ const pos=[],uv=[],idx=[],rows=32,cols=14,leaf=type.endsWith('Leaf'),corn=type==='corncocklePetal';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t)),width=(leaf?type==='corncockleLeaf'?.066:.15:corn?.65:.64)*Math.pow(sin,leaf?.78:.43)*(leaf?1:.36+.72*t);
+  pos.push(u*width,t,.15*t*t+.032*u*u*sin+(leaf?0:.023*Math.sin(u*14+t*27)*Math.pow(Math.abs(u),3)*sin));uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 for(const type of ['calendulaLeaf','nemophilaLeaf','alyssumLeaf','auriniaLeaf','poppySegment','calendulaRay','poppyCup','poppyFrill']){
  const pos=[],uv=[],idx=[],rows=40,cols=16,ray=type==='calendulaRay',cup=type==='poppyCup'||type==='poppyFrill',nem=type==='nemophilaLeaf',spoon=type==='calendulaLeaf'||type==='auriniaLeaf';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -333,6 +352,7 @@ const filigree=[[0,0]];
 for(let j=0;j<22;j++){const t=.02+j*.043,w=.28*Math.sin((t+.13)*Math.PI/1.25);filigree.push([-.006,t],[-w,t+.10],[-.006,t+.015]);}
 filigree.push([0,1]);for(let j=21;j>=0;j--){const t=.02+j*.043,w=.28*Math.sin((t+.13)*Math.PI/1.25);filigree.push([.006,t+.015],[w,t+.10],[.006,t]);}shapes.filigree=outlineLeaf(filigree);
 shapes.heart=outlineLeaf([[0,0],[-.16,-.08],[-.34,.02],[-.44,.23],[-.43,.42],[-.31,.67],[0,1],[.31,.67],[.43,.42],[.44,.23],[.34,.02],[.16,-.08]]);
+shapes.morningGloryLeaf=outlineLeaf([[0,0],[-.16,-.10],[-.37,-.02],[-.49,.20],[-.56,.46],[-.35,.49],[-.22,.35],[-.23,.57],[-.12,.79],[0,1],[.12,.79],[.23,.57],[.22,.35],[.35,.49],[.56,.46],[.49,.20],[.37,-.02],[.16,-.10]]);shapes.morningGloryLeaf.userData.morningGloryLeaf=true;
 {
  const pts=[[0,0],[-.18,-.07],[-.32,.03]];
  for(let j=0;j<27;j++){const t=j/27,y=.07+t*.9,w=.43*Math.pow(Math.sin((t+.18)*Math.PI/1.18),.75)*(j%2?1:.94);pts.push([-w,y]);}
@@ -575,6 +595,22 @@ function windShader(shader,kind){
       ${kind.endsWith('-spots')?'float spot=1.0-smoothstep(.83,1.03,length(vec2(sector/.105,(vUv.y-.87)/.13)));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.18,.11,.36),spot);':'float eye=1.0-smoothstep(.19,.55,vUv.y);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.77,.82,.81),eye);'}
       diffuseColor.rgb*=1.0-lines*.09;
       #include <emissivemap_fragment>`);
+    if(kind==='leaf-nasturtium')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      float ray=1.0-smoothstep(.007,.023,abs(fract(vUv.x*9.0+.5)-.5));
+      float net=pow(max(0.0,cos(vUv.y*91.0+sin(vUv.x*56.5)*3.0)),22.0)*.045;
+      diffuseColor.rgb+=vec3(.10,.12,.07)*(ray*.62+net);\n#include <emissivemap_fragment>`);
+    if(kind.startsWith('petal-morning'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      float throat=1.0-smoothstep(.30,.68,vUv.y);float foldRay=pow(max(0.0,cos(vUv.x*31.4159)),30.0);
+      diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.80,.83,.72),throat);diffuseColor.rgb*=1.0-foldRay*.14;
+      ${kind.endsWith('-picotee')?'float rim=smoothstep(.955+.014*sin(vUv.x*163.0),.985,vUv.y);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.84,.83,.78),rim);':''}
+      #include <emissivemap_fragment>`);
+    if(kind==='petal-nasturtium-flame')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      float streak=sin(vUv.x*119.0+sin(vUv.y*61.0)*1.8)*.10+sin(vUv.x*273.0)*.035;
+      float yellow=smoothstep(.30+streak,.38+streak,vUv.y)*(1.0-smoothstep(.70+streak,.87+streak,vUv.y));
+      diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.78,.59,.18),yellow);\n#include <emissivemap_fragment>`);
+    if(kind==='petal-corncockle')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      float guide=1.0-smoothstep(.013,.026,min(abs(vUv.x-.5),abs(abs(vUv.x-.5)-.17*vUv.y)));
+      diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.85,.82,.78),1.0-smoothstep(.10,.53,vUv.y));diffuseColor.rgb*=1.0-guide*.36*smoothstep(.08,.30,vUv.y);\n#include <emissivemap_fragment>`);
     if(kind.startsWith('leaf-hosta'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*70.0)');
     if(kind==='leaf-persian-metal')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float network=max(midrib,pow(max(0.0,cos((vUv.y-fold*.32)*38.0)),22.0)*smoothstep(.03,.11,fold));float edge=smoothstep(.88,.99,fold);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.036,.10,.047),max(network,edge));diffuseColor.rgb+=vec3(.030,.020,.040)*(1.0-network)*pow(max(0.0,sin(vUv.x*521.0)*cos(vUv.y*413.0)),8.0);if(!gl_FrontFacing)diffuseColor.rgb=vec3(.188,.053,.131);\n#include <emissivemap_fragment>`);
     if(kind==='leaf-iris-parallel')shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*95.0)');
