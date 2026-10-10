@@ -10,6 +10,25 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('nine magnolias preserve flowers before leaves, evergreen undersides and species fruit across twelve months',()=>{
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='magnoliaBranches');assert.equal(entries.length,9);
+ for(const [i,[id,info]] of entries.entries()){
+  let skeleton;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,8200+i,2,2),st=stateAt(p,view(month)),g=plantModel(p,view(month)),a=info.appearance,parts=prefix=>g.children.filter(m=>m.userData.component?.startsWith(prefix)),count=prefix=>parts(prefix).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'magnoliaBranches');assert.equal(count('petal-magnolia')>0,st.bloom,id+': flower');
+   const leaves=g.children.filter(m=>m.geometry.userData.magnoliaLeaf&&!m.userData.component.includes('flower-bract'));assert.equal(leaves.length>0,st.leafDensity>0,id+': persistence');
+   if(st.bloom){const flowers=count('gynoecium-magnolia');assert.ok(flowers>0);assert.equal(count('carpel-magnolia'),flowers*a.pistilCount);assert.equal(count('anther-magnolia'),flowers*a.stamenCount);assert.equal(count('petal-magnolia')+count('sepal-magnolia-coco'),flowers*a.petals);if(a.shootProfile==='coco')assert.equal(count('sepal-magnolia-coco'),flowers*3);if(a.shootProfile==='kobus')assert.equal(count('leaf-magnolia-flower-bract'),flowers);}
+   assert.equal(count('aggregate-magnolia')>0,!!a.fruitMonths?.includes(month),id+': fruit months');
+   if(a.persistence==='deciduous'&&st.bloom)assert.equal(leaves.length,0,id+': flowering before foliage');
+   const wood=parts('wood-').concat(parts('stem-')).map(m=>[m.userData.component,[...m.instanceMatrix.array]]);if(!skeleton)skeleton=wood;else assert.deepEqual(wood,skeleton,id+': stable wood');
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ const australis=CATALOG['p-edbab760cf01'];assert.equal(australis.group,'木');assert.equal(australis.genre,'庭木');assert.equal(australis.appearance.persistence,'semiEvergreen');
+ assert.equal(CATALOG['p-17fd8bfe1a07'].appearance.fruitMonths,undefined);assert.deepEqual(CATALOG['p-0efb51bec561'].appearance.fruitMonths,[10]);
+});
+
 test('camellias retain alternate evergreen leaves, distinct flowers and stable winter branches for twelve months',()=>{
  const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='camelliaBranches');assert.equal(entries.length,6);
  for(const [i,[id,info]] of entries.entries()){

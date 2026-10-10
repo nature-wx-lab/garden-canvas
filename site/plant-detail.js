@@ -1,6 +1,91 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.66';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.67';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function magnoliaLeafPoint(type,t,u){
+ const broad=['denudata','sunrise','kobus'].includes(type),coco=type==='coco',profile=Math.pow(Math.sin(Math.PI*t),coco?.85:.64)*(broad?.63+.65*t:1.02-.12*t);
+ return [u*profile*.5,t,Math.sin(Math.PI*t)*(.02+.07*u*u)+(coco?.008:.003)*Math.sin(t*20)*u*u];
+}
+export function magnoliaTepalGeometry(type,outer=false){
+ const pos=[],uv=[],ix=[],rows=24,cols=6,coco=type==='coco',cup=['sunrise','denudata'].includes(type),big=['grandiflora','baby'].includes(type),thin=type==='kobus'||type==='portwine';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,width=(coco?.88:cup?.72:big?.92:thin?.45:.55)*Math.pow(Math.sin(Math.PI*t),.58),r=coco&&!outer?.07+Math.sin(Math.PI*t)*.91:cup?.10+.72*Math.sin(t*Math.PI*.68):.08+.92*t,y=coco&&!outer?t*1.75:cup?t*1.65:type==='kobus'?.22*Math.sin(Math.PI*t)-.12*t*t:big?.18*t+.30*t*t:.34*Math.sin(Math.PI*t*.7);
+  pos.push(u*width,y+.06*u*u*Math.sin(Math.PI*t)+.015*Math.sin(u*8)*t*t,r);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.magnoliaTepal={type,outer};return g;
+}
+function drawMagnolia(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,decid=a.persistence==='deciduous',big=['grandiflora','baby'].includes(type),axillary=['portwine','fairy','coco'].includes(type),pyramid=a.habit==='pyramidal',upright=type==='fairy',wood=[],nodes=[],tips=[];
+ const leaders=type==='denudata'||type==='portwine'?3:1,leaderTop=type==='denudata'?.38:pyramid?.88:upright?.78:.48,trunks=[];
+ for(let k=0;k<leaders;k++){
+  const angle=k*TAU/leaders,top=h*leaderTop,reach=leaders>1?w*.10:0,path=[[0,0,0]];
+  let previous=[0,0,0];
+  for(let j=1;j<=7;j++){const t=j/7,at=[Math.sin(angle)*reach*t+Math.sin(t*4)*w*.009,top*t,Math.cos(angle)*reach*t];wood.push({from:previous,to:at,r:h*(leaders>1?.014:.019)*(1-t*.80),old:true});previous=at;path.push(at);}trunks.push(path);
+ }
+ const shoot=(root,az,rise,reach,order)=>{
+  let previous=root;const n=order===0?8:6;
+  for(let j=0;j<n;j++){
+   const t=(j+1)/n,an=az+.13*Math.sin(t*4+az),at=[root[0]+Math.sin(an)*reach*t,root[1]+rise*t+reach*.055*Math.sin(Math.PI*t),root[2]+Math.cos(an)*reach*t];
+   wood.push({from:previous,to:at,r:(order===0?.010:order===1?.0031:.0011)*Math.max(.4,Math.min(h,3))*(1-t*.68),old:order===0||order===1&&j<2});previous=at;
+   const node={at,an:an+j*2.399963,order,t,size:.78+rand()*.22,roll:rand()};if(order>0)nodes.push(node);if(order>0&&j===n-1)tips.push(node);
+   if(order===0&&j>=2&&j<=6)shoot(at,an+(j%2?1:-1)*.9,h*(upright?.13:.055)*(1-t*.3),w*.10*(1-t*.35),1);
+   if(order===1&&(j===2||j===4))shoot(at,an+(j===2?1:-1)*1.10,h*.025,w*.05,2);
+   if(order===2&&w>2.1&&j===3)shoot(at,an+.95,h*.025,w*.025,3);
+  }
+ };
+ const count=Math.round((16+Math.min(w*2,12))*detail);
+ for(let i=0;i<count;i++){
+  const t=(i+.5)/count,angle=i*2.399963+rand()*.24,base=leaders>1?i%leaders:0,level=pyramid?.14+.65*t:upright?.10+.42*t:type==='denudata'?.10+.25*t:.14+.27*t,point=level/leaderTop*7,segment=Math.min(6,Math.floor(point)),part=point-segment,root=trunks[base][segment].map((v,j)=>v+(trunks[base][segment+1][j]-v)*part),tip=.35+.56*((i*.618034+.19)%1),reach=w*(pyramid?.40*(1-t*.78):upright?.26*(1-t*.4):.39*Math.sqrt(Math.max(.15,1-Math.pow((tip-.60)/.42,2)))),rise=pyramid?h*.10:upright?h*(.28+.10*t):h*tip-root[1];
+  shoot(root,angle,rise,reach,0);
+ }
+ for(const q of wood)b.branch(q.from,q.to,q.r,q.old?a.barkColor:a.stemColor,q.old?'wood-magnolia-'+(big&&h>4?'plates':type==='kobus'?'lenticels':'smooth'):'stem-magnolia');
+ for(const n of nodes){
+  if(n.roll>s.leafDensity||s.leafDensity===0)continue;
+  const L=a.leafLength*n.size*s.leafScale,P=type==='fairy'?0:type==='coco'?.007:L*.11,an=n.an,at=[n.at[0]+Math.sin(an)*P,n.at[1]+P*.25,n.at[2]+Math.cos(an)*P],f=flowerFrame(b,at,.65+n.roll*.65,an),spring=s.month>=4&&s.month<=5&&n.t>.72;
+  if(P)b.branch(n.at,at,.00085,a.stemColor,'petiole-magnolia');
+  f.add(a.leafShape,`leaf-magnolia-${big?'felt':decid?'soft':'glossy'}-underside-${a.leafUnderside.slice(1)}`,kit.shade(rand,spring?'#82975e':s.autumn?'#b5a25b':s.leafColor,.035),0,0,0,L*a.leafWidth/a.leafLength,L,L);
+  if(type==='fairy'&&n.order===1&&n.roll<.09){const f2=flowerFrame(b,n.at,.9,an+Math.PI);f2.add(a.leafShape,'leaf-magnolia-glossy-underside-718564',s.leafColor,0,0,0,L*a.leafWidth/a.leafLength,L,L);}
+  // Stipule scars encircle woody magnolia shoots; these rings persist after leaves fall.
+ }
+ for(const n of nodes)if(n.order===1&&n.t<.4)b.add(kit.bud,'stipule-scar-magnolia','#a3a18b',...n.at,.0024,.0005,.0024);
+ const buds=a.budMonths.includes(s.month),fruits=a.fruitMonths?.includes(s.month),flower=(n)=>{
+  const R=a.flowerRadius,az=n.an+1.8,offset=type==='coco'?.015:axillary?.008:R*.08,base=[n.at[0]+Math.sin(az)*offset,n.at[1]+(type==='coco'?-.012:axillary?.004:R*.13),n.at[2]+Math.cos(az)*offset],f=flowerFrame(b,base,type==='coco'?2.65:axillary?.9+n.roll*.8:decid?.12+n.roll*.30:.30+n.roll*.55,az),closed=!s.bloom||(n.roll*13.7)%1<.13;
+  b.branch(n.at,base,.0015,a.stemColor,'pedicel-magnolia');
+  if(closed){f.add(kit.bud,'bud-magnolia-hairy',a.flowerPalette.bud,0,R*.35,0,R*.24,R*.50,R*.24);return;}
+  f.add(kit.bud,'receptacle-magnolia','#dfd4b0',0,R*.04,0,R*.22,R*.12,R*.22);
+  const N=a.petals;
+  for(let k=0;k<N;k++){
+   const layer=Math.floor(k/3),az=k*TAU/3+(layer%2?Math.PI/3:0),scale=1-layer*.09,outer=type==='coco'&&k<3,shape=outer?'magnoliaTepal-coco-outer':'magnoliaTepal-'+type;
+   const color=outer?'#b1bd8a':s.flowerColor,kind=outer?'sepal-magnolia-coco':'petal-magnolia-'+type;
+   f.add(shape,kind,color,0,layer*R*.035,0,R*scale,R*scale,R*scale,0,az,0);
+  }
+  if(type==='kobus'){
+   for(let k=0;k<3;k++)f.add('magnoliaTepal-kobus','sepal-magnolia-kobus','#9a9e7a',0,-R*.02,0,R*.12,R*.1,R*.33,0,k*TAU/3,0);
+   f.add('magnolia-kobus','leaf-magnolia-flower-bract','#83966a',R*.12,-R*.04,0,R*.28,R*.62,R*.62,1.30,az+1.0,0);
+  }
+  f.add(kit.bud,'gynoecium-magnolia','#abb577',0,R*.43,0,R*.16,R*.37,R*.16);
+  for(let j=0;j<a.pistilCount;j++){
+   const theta=j*2.399963,t=(j+.5)/a.pistilCount,r=R*.15*Math.sqrt(1-Math.pow(2*t-1,2)),y=R*(.17+t*.62),at=[Math.sin(theta)*r,y,Math.cos(theta)*r];
+   f.add(kit.bud,'carpel-magnolia','#acb77b',...at,R*.045,R*.073,R*.033,0,theta,0);f.branch(at,[at[0]*1.22,y+R*.05,at[2]*1.22],R*.009,'#c4c994','stigma-magnolia');
+  }
+  for(let j=0;j<a.stamenCount;j++){
+   const an=j*2.399963,t=(j+.5)/a.stamenCount,r=R*(.17+.11*t),root=[Math.sin(an)*r,R*.06,Math.cos(an)*r],tip=[Math.sin(an)*r*1.2,R*(.25+.11*(1-t)),Math.cos(an)*r*1.2];
+   f.branch(root,tip,R*.008,'#d4c8ab','filament-magnolia');f.add(kit.bud,'anther-magnolia',type==='portwine'?'#8c645b':type==='fairy'?'#b39a83':'#d4c69a',...tip,R*.019,R*.052,R*.016,.15,an,0);
+  }
+ };
+ for(const n of axillary?nodes:tips){
+  if(axillary&&(n.order!==1||n.t>.78)||n.roll>.47)continue;
+  if(s.bloom&&n.roll<(s.flowerDensity||1)*.47||buds)flower(n);
+  if(fruits&&n.roll<.14){
+   const R=a.fruitRadius,typeK=type==='kobus',base=[n.at[0],n.at[1]+R*.4,n.at[2]],f=flowerFrame(b,base,typeK?.9:.3,n.an);
+   const bend=t=>typeK?R*.60*Math.sin(Math.PI*t):0;
+   if(typeK){for(let k=0;k<5;k++){const t=(k+.5)/5;f.add(kit.bud,'aggregate-magnolia',a.fruitColor,bend(t),R*2*t,0,R*.30,R*.29,R*.30);}}
+   else f.add(kit.bud,'aggregate-magnolia',a.fruitColor,0,R,0,R*.43,R,R*.43);
+   for(let j=0;j<20;j++){const t=(j+.5)/20,an=j*2.399963,r=R*.48*Math.sin(Math.PI*t),pt=[bend(t)+Math.sin(an)*r,R*2*t,Math.cos(an)*r];f.add(kit.bud,'follicle-magnolia',a.fruitColor,...pt,R*.18,R*.20,R*.13,0,an,0);if(j%3===0){const end=[pt[0]+Math.sin(an)*R*.06,pt[1]-R*.40,pt[2]+Math.cos(an)*R*.06];f.branch(pt,end,.00025,'#dbd8bc','seed-thread-magnolia');f.add(kit.bud,'seed-magnolia','#b84a35',...end,R*.13,R*.18,R*.10);}}
+  }
+ }
+}
+
 export function camelliaLeafPoint(type,t,u){
  const tea=type==='sayama'||type==='yabukita',fold=type==='sayama',wide=type==='kamo';
  const teeth=(Math.floor(t*36)%2?.975:1.025),profile=Math.pow(Math.sin(Math.PI*t),wide?.67:.86)*(wide?1.08-.15*t:1.02-.10*t)*teeth;
@@ -3509,6 +3594,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='magnoliaBranches'){drawMagnolia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='camelliaBranches'){drawCamellia(b,{info,s,detail,rand},kit);return;}
  if(['oliveBranches','russianOliveBranches'].includes(info.appearance?.architecture)){drawOlives(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='syringaPanicles'){drawSyringa(b,{info,s,detail,rand},kit);return;}
