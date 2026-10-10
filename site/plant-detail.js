@@ -1,6 +1,79 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.85';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.86';
 import * as THREE from './vendor/three.module.js';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.86';
 const TAU=Math.PI*2;
+export function broadMapleGeometry(type){
+ const full=type==='fullmoon',lobes=full?9:5,edge=[[0,0]],span=full?2.44:2.23,step=span*2/lobes;
+ for(let l=0;l<lobes;l++)for(let j=0;j<=32;j++){
+  const t=j/32,angle=-span+(l+t)*step,peak=Math.pow(1-Math.abs(t*2-1),full?.62:.78),radius=(full?.56:.39)+(full?.42:.58)*peak;
+  const tooth=full?.022*(j%2===0?1:-.4)*Math.sin(Math.PI*t):.052*Math.max(0,Math.cos(t*TAU*3))*Math.sin(Math.PI*t);
+  edge.push([Math.sin(angle)*(radius+tooth)*.70,.18+Math.cos(angle)*(radius+tooth)*.81]);
+ }
+ edge.push([0,0]);const pos=[0,.18,0],uv=[.5,.18],ix=[],rings=3,N=edge.length;
+ for(let k=1;k<=rings;k++)for(const [x,y] of edge){const f=k/rings;pos.push(x*f,.18+(y-.18)*f,.035*f*f*Math.sin(y*4)+.024*x*x);uv.push(x*.65+.5,.18+(y-.18)*f);}
+ for(let n=0;n<N-1;n++)ix.push(0,1+n,2+n);
+ for(let k=1;k<rings;k++)for(let n=0;n<N-1;n++){const q=1+(k-1)*N+n;ix.push(q,q+N,q+1,q+1,q+N,q+N+1);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();
+ // The ordered polar outline runs clockwise; all faces must expose -Z as the upper side.
+ const normal=g.attributes.normal,index=g.index;if(normal.getZ(Math.floor(pos.length/6))>0){for(let n=0;n<index.count;n+=3){const z=index.getX(n+1);index.setX(n+1,index.getX(n+2));index.setX(n+2,z);}g.computeVertexNormals();}
+ g.userData.palmateLobes=lobes;g.userData.broadMaple=type;return g;
+}
+function drawBroadMaple(b,{info,s,p,detail,rand},kit){
+ const a=info.appearance,full=a.shootProfile==='fullmoon',h=s.height,w=s.spread,sk=treeSkeleton({habit:full?'spreading':'columnar',trunk:full?.24:.26},p.id,detail),scale=q=>[q[0]*w,q[1]*h,q[2]*w];
+ for(const q of sk.segments)b.branch(scale(q.a),scale(q.b),Math.max(.0005,q.r*Math.min(h,w*1.3)),q.r<.002?a.stemColor:a.barkColor,'wood-broad-maple-'+(full?'smooth':'furrowed'));
+ const stride=Math.max(1,Math.round(1/Math.max(.3,detail)));
+ for(let i=0;i<sk.tips.length;i+=stride){
+  const tip=sk.tips[i],sites=twigLeafSites(tip,full?6:4,'opposite'),visible=sites.map(()=>rand()),yaw=sites.map(()=>rand());
+  for(let j=0;j<sites.length;j++){
+   const n=sites[j],at=scale(n.at),r=visible[j];if(r>s.leafDensity||s.leafDensity===0)continue;
+   const L=a.leafLength*(.75+r*.32)*s.leafScale,P=full?.033:.048,f=flowerFrame(b,at, .68+yaw[j]*.94,n.angle),color=kit.shade(rand,s.leafColor,.043);
+   f.branch([0,0,0],[0,P,0],.00065,full?'#956c60':'#a76b69','petiole-broad-maple');
+   f.add('broad-maple-'+a.shootProfile,'leaf-broad-maple-'+a.shootProfile+'-underside-'+a.leafUnderside.slice(1),color,0,P,0,L*a.leafWidth/a.leafLength,L,L,0,0,(yaw[j]-.5)*.16);
+  }
+  const at=scale(tip.b);
+  if(s.leafDensity===0)b.add(kit.bud,'bud-broad-maple','#8b5752',...at,.002,.005,.002,.24,tip.angle,0);
+  if(full&&s.bloom&&i%7===0){
+   const head=[at[0],at[1]-.035,at[2]];b.branch(at,head,.0005,'#a15f64','pedicel-maple');
+   for(let k=0;k<5;k++){
+    const az=k*2.399,end=[head[0]+Math.sin(az)*.012,head[1]-.012*(1+k%2),head[2]+Math.cos(az)*.012];b.branch(head,end,.0004,'#a15f64','pedicel-maple');
+    const f=flowerFrame(b,end,Math.PI-.22,az);
+    for(let z=0;z<5;z++){f.add('petal','calyx-maple',s.flowerColor,0,0,0,.0028,.004,.004,1.05,z*TAU/5,0);f.add('petal','petal-maple','#d9b4a5',0,.0008,0,.0012,.002,.002,1.02,(z+.5)*TAU/5,0);}
+    for(let z=0;z<8;z++){const ph=z*TAU/8,pt=[Math.sin(ph)*.0015,.004,Math.cos(ph)*.0015];f.branch([0,0,0],pt,.00012,'#e3c7b1','filament-maple');f.add(kit.bud,'anther-maple','#b29c64',...pt,.0004,.0005,.0004);}
+   }
+  }
+ }
+}
+export function blueSpruceShootGeometry(type){
+ const pos=[],uv=[],ix=[],N=120,globosa=type==='globosa',length=.11,needle=globosa?.022:.026;
+ for(let i=0;i<N;i++){
+  const az=i*2.399963,t=(i+.5)/N,base=pos.length/3,L=needle*(.78+.22*Math.sin(i*3.1)**2),dir=new THREE.Vector3(Math.sin(az),.27+t*.26,Math.cos(az)).normalize(),side=new THREE.Vector3(Math.cos(az),0,-Math.sin(az)),other=dir.clone().cross(side).normalize(),root=new THREE.Vector3(Math.sin(az)*.0012,t*length,Math.cos(az)*.0012);
+  for(let j=0;j<=2;j++)for(let v=0;v<=4;v++){
+   const f=j/2,an=v/4*TAU,r=.00075*(j===2?0:j===0?.62:1),p=root.clone().addScaledVector(dir,L*f).addScaledVector(other,(globosa?.003:.0007)*f*f).addScaledVector(side,Math.sin(an)*r).addScaledVector(other,Math.cos(an)*r);pos.push(p.x,p.y,p.z);uv.push(v/4,f);
+   if(j<2&&v<4){const q=base+j*5+v;ix.push(q,q+1,q+5,q+1,q+6,q+5);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.blueSpruce={type,needles:N,sides:4,arrangement:'spiral',length};return g;
+}
+function drawBlueSpruce(b,{info,s,detail,rand},kit){
+ const a=info.appearance,globe=a.shootProfile==='globosa',h=s.height,w=s.spread,shoots=[],count=Math.round((globe?40:48)*detail);
+ const shoot=(origin,az,rise,reach,order)=>{
+  const path=t=>[origin[0]+Math.sin(az)*reach*t,origin[1]+rise*t+(order===0?.026: .012)*h*t*t,origin[2]+Math.cos(az)*reach*t];
+  for(let j=1;j<=4;j++)b.branch(path((j-1)/4),path(j/4),(order===0?.0045:order===1?.0016:.0008)*Math.max(.5,Math.min(h,1.5))*(1-j*.10),order?a.stemColor:a.barkColor,'wood-blue-spruce');
+  const nodes=order===0?7:order===1?4:1;
+  if(order<2)for(let j=1;j<=nodes;j++){
+   const t=.12+j*.80/nodes,side=j%2?1:-1;shoot(path(t),az+side*(.50+rand()*.52),h*(order===0?.021:.012),w*(order===0?.060:.025),order+1);
+  }
+  const leafSites=order===0?3:order===1?2:1;
+  for(let j=0;j<leafSites;j++){const t=order===0?.45+j*.23:order===1?.2+j*.52:.12;shoots.push({at:path(t),az,pitch:Math.atan2(reach,rise+(order===0?.052:.024)*h*t),scale:.78+rand()*.22});}
+ };
+ b.branch([0,0,0],[0,h*(globe?.77:.98),0],h*(globe?.014:.023),a.barkColor,'wood-blue-spruce');
+ for(let k=0;k<count;k++){
+  const f=(k+.4)/count,az=k*2.399963+(globe?rand()*.4:Math.floor(k/6)*.35),y=globe?.10+f*.65:.12+f*.76,reach=w*(globe?Math.sqrt(Math.max(.01,1-(y-.38)**2/.40**2))*.33:.43*Math.pow(1-f,.9));
+  shoot([0,y*h,0],az,h*(globe?.03+rand()*.04:.006),reach,0);
+ }
+ if(!globe)shoots.push({at:[0,h*.86,0],az:0,pitch:0,scale:1});
+ for(const n of shoots){const L=n.scale,frame=flowerFrame(b,n.at,n.pitch,n.az);frame.branch([0,0,0],[0,.11*L,0],.0009,a.stemColor,'twig-blue-spruce');frame.add('spruce-shoot-'+a.shootProfile,'leaf-blue-spruce',kit.shade(rand,s.leafColor,.040),0,0,0,L,L,L);frame.add(kit.bud,'bud-blue-spruce','#9c7956',0,.114*L,0,.0024,.004,.0024);}
+}
 export function rosaceousLeafPoint(type,t,u){
  const sn=Math.sin(Math.PI*t),nine=type==='diabolo',rhaph=type==='rhaphiolepis',blue=type==='blueKazoo',cycle=t*(rhaph?13:19)%1;
  let half=.5*Math.pow(sn,rhaph?.58:blue?.67:.73)*(rhaph?.66+.60*t:1.10-.20*t);
@@ -4766,6 +4839,8 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='broadMaple'){drawBroadMaple(b,{info,s,p,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='blueSpruce'){drawBlueSpruce(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='rosaceousBranches'){drawRosaceousBranches(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='southernShrubs'){drawSouthernShrubs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='capeProteaceae'){drawCapeProteaceae(b,{info,s,detail,rand},kit);return;}
