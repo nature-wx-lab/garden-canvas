@@ -1,6 +1,6 @@
 // Branch topology is constructed before seasonal foliage, so winter reveals the same tree.
 // Dimensions belong to the plan; these branching parameters are visual interpretations.
-import {foliageKind} from './appearance.js?v=0.9.26';
+import {foliageKind} from './appearance.js?v=0.9.27';
 const TAU=Math.PI*2,clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function rng(seed){let n=seed>>>0;return()=>{n^=n<<13;n^=n>>>17;n^=n<<5;return(n>>>0)/4294967296;};}
 const mix=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t);

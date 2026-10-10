@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.26';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.27';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -1273,6 +1273,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(['blueFescue','snowTussock','goldMillet','redMelica','crystalSedge','redHookSedge','goldMatRush','goldDwarfBamboo','sweetFlagFans','whitetopSedge'].includes(info.appearance?.architecture)){drawGrassAndSedgeProfiles(b,{info,s,detail,rand},kit);return;}
  if(['spurgeCanes','spurgeDome','snowSpurge','gauraWands'].includes(info.appearance?.architecture)){drawSpurgesAndGaura(b,{info,s,detail,rand},kit);return;}
  if(['diphylleiaUmbrella','jeffersoniaBasal','ranzaniaTrifoliate','deinantheCymes','kirengeshomaBells','pteridophyllumFern','hylomeconPinnate','eomeconBasal','araliaHerb','saururusRaceme','parnassiaScapes','cornusHerb'].includes(info.appearance?.architecture)){drawWoodlandSpecies(b,{info,s,detail,rand},kit);return;}
  if(['primroseRosette','gerberaRosette','brunneraSprays'].includes(info.appearance?.architecture)){drawBasalFlowerForms(b,{info,s,detail,rand},kit);return;}
@@ -3387,6 +3388,106 @@ function drawSpurgesAndGaura(b,{info,s,detail,rand},kit){
     const aa=an+j*TAU/arms+k*1.47,end=[center[0]+Math.sin(aa)*ray,center[1]+length*.12,center[2]+Math.cos(aa)*ray];line(center,end,.0006,'cymeRay');
     flower(end,a.flowerRadius*(.8+.2*rand()),.6,aa);
     if(k>3)for(let fork=0;fork<2;fork++){const ak=aa+(fork?1:-1)*.65,tip=[end[0]+Math.sin(ak)*a.flowerRadius*1.5,end[1]+a.flowerRadius*1.7,end[2]+Math.cos(ak)*a.flowerRadius*1.5];line(end,tip,.0004,'cymeFork');flower(tip,a.flowerRadius*.83,.48,ak);}
+   }
+  }
+ }
+}
+
+function drawGrassAndSedgeProfiles(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,arch=a.architecture,h=s.height,w=s.spread,col=s.leafColor,kind=foliageKind({...info,appearance:{...a,patternColor:s.leafPatternColor}});
+ const snow=arch==='snowTussock',millet=arch==='goldMillet',melica=arch==='redMelica',crystal=arch==='crystalSedge',hook=arch==='redHookSedge',rush=arch==='goldMatRush',flag=arch==='sweetFlagFans',white=arch==='whitetopSedge',fescue=arch==='blueFescue';
+ const blade=(at,length,yaw,pitch,width=1)=>b.add(a.leafShape,kind,kit.shade(rand,col,.06),...at,length*width,length,length,pitch,yaw,(rand()-.5)*.13);
+ const line=(from,to,r,color=col,part='culm')=>{
+  if(white&&part==='culm'){
+   const v=new THREE.Vector3(...from),end=new THREE.Vector3(...to),direction=end.clone().sub(v),len=direction.length(),rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize()),'YXZ');
+   b.add('triangularCulm',part,color,...v.add(end).multiplyScalar(.5).toArray(),r,len,r,rotation.x,rotation.y,rotation.z);
+  }else b.branch(from,to,r,color,part);
+ };
+ const curve=(path,r,color=col,part='culm',steps=15)=>{let old=path(0);for(let k=1;k<=steps;k++){const at=path(k/steps);line(old,at,r,color,part);old=at;}};
+ const glume=(at,len,yaw,pitch,color)=>{
+  b.add('grassGlume','glume',color,...at,len,len,len,pitch,yaw,0);
+  b.add('grassGlume','glume',color,...at,len*.86,len*.92,len*.85,pitch,yaw+.9,0);
+ };
+ if(arch==='goldDwarfBamboo'){
+  const n=Math.round(23*detail),foliage=[];
+  for(let i=0;i<n;i++){
+   const an=i*2.399,rr=w*.36*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,0,Math.cos(an)*rr],height=h*(.56+rand()*.40),tip=[root[0]+Math.sin(an)*w*.05,height,root[2]+Math.cos(an)*w*.05];
+   line(root,tip,.0017,'#9b9c60','bambooCulm');
+   for(let k=1;k<9;k++){
+    const t=k/9,at=root.map((v,j)=>v+(tip[j]-v)*t),yaw=an+(k%2)*Math.PI,len=Math.min(a.leafLength,w*.26),end=[at[0]+Math.sin(yaw)*len*.39,at[1]+len*.22,at[2]+Math.cos(yaw)*len*.39];
+    b.add(kit.bud,'bambooNode','#998d5c',...at,.0024,.0011,.0024);line(at,end,.0008,'#b2a46b','bambooTwig');
+    foliage.push({end,len,yaw});
+   }
+  }
+  for(const {end,len,yaw} of foliage)if(s.leafDensity>0&&rand()<=s.leafDensity)for(let j=0;j<3;j++)blade(end,len*(.65+rand()*.35),yaw+(j-1)*.68,.74+rand()*.75);
+  return;
+ }
+ const count=Math.max(20,Math.round((fescue?780:snow?290:millet?100:melica?110:crystal?165:rush?220:flag?180:white?100:260)*detail*s.leafDensity));
+ for(let i=0;i<count;i++){
+  const an=i*2.399,rr=w*(flag?.20:.18)*Math.sqrt((i+.5)/count),root=[Math.sin(an)*rr,.003,Math.cos(an)*rr];
+  let length=h*(snow?.57:millet?.66:melica?.47:white?.61:1.0)*(.52+rand()*.46);
+  let yaw=an,pitch=.12+rand()*.65,width=1;
+  if(flag){const fan=Math.floor(i/15),fanYaw=fan*2.399;root[0]=Math.sin(fanYaw)*w*.21;root[2]=Math.cos(fanYaw)*w*.21;yaw=fanYaw+(i%2?Math.PI:0)+(rand()-.5)*.13;pitch=.06+(i%15)/15*.85;width=a.leafWidth/(length*.018);}
+  if(fescue){pitch=.02+rand()*1.1;width=.0012/(length*.018);}
+  if(crystal){pitch=.13+rand()*1.12;length=Math.min(a.leafLength,h*.91)*(.58+rand()*.42);}
+  if(millet)width=1.35;
+  blade(root,length,yaw,pitch,width);
+  if(crystal&&i%2===0){
+   const f=flowerFrame(b,root,pitch,yaw);
+   for(const side of [-1,1])for(let j=1;j<13;j++){
+    const t=j/13,at=[side*length*.035,length*t,length*(.12*t*t+.006+.012*Math.sin(t*6))],end=[at[0]+side*.0015,at[1]+.002+rand()*.002,at[2]+.0007];
+    f.branch(at,end,.00010,'#dce0d6','membranousEdge');
+   }
+  }
+ }
+ if(!s.bloom&&!s.seedHeads)return;
+ const stems=Math.max(3,Math.round((snow?27:millet?14:melica?28:crystal?8:rush?11:flag?5:white?25:hook?10:24)*detail)),flowerColor=s.bloom?s.flowerColor:(a.seedColor||'#b5a483');
+ for(let i=0;i<stems;i++){
+  const an=i*2.399,rr=w*.21*Math.sqrt((i+.5)/stems),root=[Math.sin(an)*rr*.5,.003,Math.cos(an)*rr*.5],top=h*(snow||melica?.70+rand()*.29:flag?.54+rand()*.22:crystal?1.06+rand()*.32:rush?.45+rand()*.25:.80+rand()*.22),reach=w*(snow?.37:melica?.25:.14);
+  const path=t=>[root[0]+Math.sin(an)*reach*t*t,top*(snow||melica?Math.sin(t*1.86)/.96:t),root[2]+Math.cos(an)*reach*t*t],tip=path(1);curve(path,Math.max(.00045,h*.0013));
+  if(melica||millet)for(let node=0;node<4;node++){
+   const t=.12+node*.105,at=path(t),yaw=an+(node%2)*Math.PI,len=h*(.22-node*.026);
+   line(path(t-.045),at,.0019,col,'leafSheath');blade(at,len,yaw,.83+node*.10,millet?1.35:1);
+  }
+  if(white){
+   const f=flowerFrame(b,tip,-.04,an),n=3+i%4;
+   for(let j=0;j<n;j++){const len=.035+.025*rand();f.add('whitetopBract',patternKind('bract','tip','#517d46'),'#efeee2',0,0,0,len,len,len,1.40+rand()*.20,j*TAU/n,0);}
+   for(let j=0;j<20;j++){const aa=j*2.399,r=.004*Math.sqrt((j+.5)/20);f.add(kit.bud,'spikelet',s.bloom?'#d0c5a0':'#8d7050',Math.sin(aa)*r,.002+rand()*.003,Math.cos(aa)*r,.0011,.0020,.0010);}
+  }else if(flag){
+   const f=flowerFrame(b,path(.75),-.30,an),len=Math.min(.075,h*.45);f.add(a.leafShape,kind,col,0,0,0,len*.7,len*1.6,len*1.6,.2,0,0);
+   f.branch([0,0,0],[0,len,0],.0017,'#bdbd76','spadix');
+   for(let j=0;j<120;j++){const aa=j*2.399,yy=len*j/120;f.add(kit.bud,'spadixFlower','#c7c783',Math.sin(aa)*.002,yy,Math.cos(aa)*.002,.0008,.0006,.0008);}
+  }else if(crystal||hook||rush){
+   const groups=rush?9:1;
+   for(let g=0;g<groups;g++){
+    const ya=an+g*2.399,center=rush?[tip[0]+Math.sin(ya)*.018,tip[1]-g*.017,tip[2]+Math.cos(ya)*.018]:tip;
+    if(rush)line(path(Math.max(.2,1-g*.045)),center,.0006,col,'flowerBranch');
+    const n=hook?32:rush?9:22;
+    for(let j=0;j<n;j++){
+     const aa=j*2.399,at=[center[0]+Math.sin(aa)*.003,center[1]+(hook?j*.0013:Math.cos(j*.7)*.004),center[2]+Math.cos(aa)*.003];
+     if(rush){b.add(kit.bud,'flower',flowerColor,...at,.0017,.0035,.0017);}
+     else glume(at,hook?.003:.004,aa,.65,flowerColor);
+     if(hook&&!s.bloom){const hookEnd=[at[0]+.001,at[1]+.004,at[2]];line(at,hookEnd,.00013,'#8b7150','seedHook');line(hookEnd,[hookEnd[0]+.001,hookEnd[1]-.0015,hookEnd[2]],.00013,'#8b7150','seedHook');}
+    }
+   }
+  }else if(melica){
+   for(let j=0;j<44;j++){
+    const t=.48+j*.0115,at=path(t),ya=an+(j%3-1)*.40,reach=.006+rand()*.005,end=[at[0]+Math.sin(ya)*reach,at[1]-.008,at[2]+Math.cos(ya)*reach];line(at,end,.00025,flowerColor,'spikeletPedicel');
+    for(let k=0;k<3;k++)glume([end[0],end[1]-k*.003,end[2]],.0065,ya+k*.22,2.6,flowerColor);
+   }
+  }else{
+   // Airy millet panicles, compact fescue spikelets, and long pendulous snow-tussock panicles.
+   const tiers=snow?16:millet?9:8;
+   for(let j=0;j<tiers;j++){
+    const t=.56+j/tiers*.42,at=path(t),ya=an+j*2.399;
+    for(let arm=0;arm<(snow?5:3);arm++){
+     const az=ya+arm*TAU/(snow?5:3),ray=(snow?.08:millet?.075:.025)*(1-(t-.5)*1.2),drop=snow?-.16:millet?.025:.035;
+     const branch=q=>[at[0]+Math.sin(az)*ray*q,at[1]+drop*q*q,at[2]+Math.cos(az)*ray*q];curve(branch,.00025,flowerColor,'panicleBranch',snow?8:4);
+     for(let k=1;k<=(snow?14:millet?5:4);k++){
+      const q=k/(snow?14:millet?5:4),p=branch(q),end=[p[0]+Math.cos(az)*.006,p[1]-(snow?.008:.002),p[2]+Math.sin(az)*.006];line(p,end,.00015,flowerColor,'spikeletPedicel');glume(end,snow?.007:millet?.003:.006,az,snow?2.6:.35,flowerColor);
+     }
+    }
    }
   }
  }

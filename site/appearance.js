@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.26';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.27';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 export const TRAIT_VALUES={heart:'心形',round:'円形',kidney:'腎形',triangular:'三角形',lobed:'切れ込みのある葉',compound:'複葉',serrated:'鋸歯のある葉',narrow:'細葉',blade:'線形・剣形',needle:'針形',leaf:'卵形・楕円形',obovate:'倒卵形',spoon:'へら形',arrow:'矢じり形',margin:'覆輪',center:'中斑',spots:'斑点',silverVeins:'銀葉・緑の葉脈',stripes:'縞斑',evergreen:'常緑',semiEvergreen:'半常緑（寒さで変化）',deciduous:'落葉（幹・枝は残る）',winterDormant:'冬に地上部休眠',summerDormant:'夏に地上部休眠',bell:'鐘形',trumpet:'漏斗・ラッパ形',tube:'筒形',urn:'壺形',cup:'杯形',flat:'平開',star:'星形',cross:'十字形',pea:'蝶形',lipped:'唇形',spurred:'距のある花',spoonRay:'スプーン状の花弁',pompon:'ポンポン咲き',smooth:'平滑',peeling:'剥離する樹皮',furrowed:'縦に割れる樹皮',scaly:'鱗片状',lenticels:'皮目',clump:'株立ち',mound:'こんもり',creeping:'地面に広がる',rosette:'ロゼット',upright:'直立',arching:'弓状',spreading:'横に広がる',weeping:'枝垂れ',columnar:'細い直立形',pyramidal:'円錐形',vase:'箒状',rounded:'丸い樹冠',multistem:'根元から株立ち',oval:'卵形の樹冠',layered:'段状の横枝',irregular:'不規則な枝'};
@@ -34,6 +34,7 @@ Object.assign(TRAIT_VALUES,{springBulb:'冬〜春に葉と花、夏に地上部�
 export function patternKind(base,pattern,color){
  return pattern?base+'-'+pattern+(/^#[0-9a-f]{6}$/i.test(color||'')?'-'+color.slice(1).toLowerCase():''):base;
 }
+Object.assign(TRAIT_VALUES,{fescueNeedle:'折り畳まれた細い針状葉',milletBlade:'平たく柔らかな線形葉',sedgeRibbon:'細い帯状葉',ficiniaBlade:'切形の先端と白い薄膜の葉縁',lomandraBlade:'先端に小さな裂けのある細葉',acorusBlade:'二列に重なり扇状に開く細葉',goldBambooLeaf:'尖った笹葉',sweetFlagSpadix:'葉状の苞の横につく細い肉穂花序',whitetopHead:'緑の先端を持つ白い苞と中央の小穂'});
 export function foliageKind(info){
  const a=info.appearance||{},pattern=a.leafPattern;
  const base=info.form==='hosta'?'leaf-hosta':'leaf';
