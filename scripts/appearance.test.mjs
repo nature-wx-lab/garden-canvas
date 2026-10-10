@@ -10,6 +10,29 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('alcea cultivars keep basal winter leaves, hairy blades and distinct double flower organs',()=>{
+ const ids=['p-5aa887b5e439','p-e5751ffbccdf','p-a91ea7f5104d','p-45f5acc7be7a','p-8c6bdede5462','p-176020827f01','p-a71bf6087bae'];
+ for(const id of ids)for(let month=1;month<=12;month++){
+  const g=plantModel(makePlant(id,4701,2,2),view(month)),has=k=>g.children.some(m=>m.userData.component===k);
+  for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
+  if(month===1){if(id===ids[6]){assert.ok(has('leaf-alcea-underside-b7bdaa'));assert.ok(!has('floweringStem'));}else assert.equal(g.children.length,0,id);}
+  if(month===6){assert.ok(has('stellateHair'));assert.ok(has('stemHair'));assert.ok(has('calyx'));assert.ok(has('epicalyx'));assert.equal(has('staminalColumn'),id===ids[6]||id===ids[4]);}
+  if(month===10)assert.ok(has('mericarp'));
+  dispose(g);
+ }
+ const parts=layers=>{const out=[];detailedFlower({add:(shape,kind)=>out.push({shape,kind}),branch:(from,to,r,color,kind)=>out.push({kind})},{x:0,y:0,z:0,shape:'alceaRuffled',layers,color:'#dddddd'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});return out;};
+ for(const layers of [1,6]){const ps=parts(layers);assert.equal(ps.filter(x=>x.kind==='calyx').length,5);assert.equal(ps.filter(x=>x.kind==='epicalyx').length,7);assert.equal(ps.filter(x=>x.kind==='petal-alcea-veins').length,layers===1?5:50);assert.equal(ps.filter(x=>x.kind==='anther').length,layers===1?55:0);}
+ const dark=plantModel(makePlant(ids[4],4701,2,2),view(6)),white=plantModel(makePlant(ids[4],4702,2,2),view(6));
+ assert.ok(dark.children.some(m=>m.userData.component==='petal-alcea-ripple'));assert.ok(!white.children.some(m=>m.userData.component==='petal-alcea-ripple'));assert.ok(!white.children.some(m=>m.userData.component==='staminalColumn'));dispose(dark);dispose(white);
+ assert.ok(CATALOG[ids[2]].height[1]<CATALOG[ids[0]].height[1]);
+ const flowerY=month=>{const g=plantModel(makePlant(ids[0],4701,2,2),view(month)),p=g.children.find(m=>m.userData.component==='petal-alcea-veins'),ys=Array.from({length:p.count},(_,i)=>p.instanceMatrix.array[i*16+13]);dispose(g);return ys.reduce((a,b)=>a+b,0)/ys.length;};
+ assert.ok(flowerY(9)>flowerY(6),'flowers progress up the stem');
+ const winterPlant=makePlant(ids[6],4706,2,2);winterPlant.spread=.6;
+ const rosette=plantModel(winterPlant,view(1)),blade=rosette.children.find(m=>m.userData.component==='leaf-alcea-underside-b7bdaa');blade.computeBoundingBox();
+ assert.ok(blade.boundingBox.max.y>.055,'retained leaves sit above short lawn blades');
+ assert.ok(blade.boundingBox.max.x-blade.boundingBox.min.x>.20,'winter leaves retain a mature basal blade size');dispose(rosette);
+});
+
 test('seven monocots separate fans, racemes, flower organs and leafless bulb phases',()=>{
  const ids=['p-2cd7939ef0a4','p-1a778ae3707d','p-627c04df8f36','p-f0c5907f4bfd','p-82befeb10f78','p-be8815c76ab6','p-8ab41e05ecf8'];
  for(const id of ids)for(let month=1;month<=12;month++){
