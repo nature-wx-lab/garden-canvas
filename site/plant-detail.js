@@ -1,6 +1,75 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.47';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.48';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+// Cultivar heads: true-size rays, teeth, overlapping pompons and tubular discs.
+// Flower age varies within a clump; temperature colour is only a seasonal guide.
+export function daisyRayPoint(type,t,u){
+ const broad=type==='daisyNotchedRay',notch=type==='daisyShallowRay'?.045:broad?.15:.018,sn=Math.max(0,Math.sin(t*Math.PI));
+ const edge=1-notch*Math.pow(.5+.5*Math.cos((u+1)*Math.PI*(broad?4:3)),8)*Math.pow(t,8),width=.5*Math.pow(sn,broad?.36:.58)*(.35+.65*t);
+ return [u*width,.075*u*u*sn+.032*Math.sin(u*18)*sn+.09*t*t,t*edge];
+}
+export function daisyLeafPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),cut=['brachyFine','brachyBroad','brachyRound','margueriteCut'].includes(type),round=type==='brachyRound',narrow=type==='brachyFine'||type==='margueriteCut',lobes=type==='margueriteCut'?5:round?2:4;
+ let width=.5*Math.pow(sn,type==='gazaniaSpoon'?.48:.78)*(type==='gazaniaSpoon'?.38+t*.65:1);
+ if(cut)width*=.09+.91*Math.pow(.5+.5*Math.cos((t-.18)*TAU*lobes),narrow?3.2:round?.55:1.7);
+ if(type==='bidensCut')width*=.38+.62*Math.pow(.5+.5*Math.cos((t-.2)*TAU*2),.55);
+ if(type==='osteoToothed'||type==='bidensCut')width*=.82+.18*((t*9)%1);
+ return [u*width,t,.045*u*u*sn+.07*t*t+(type==='gazaniaSpoon'?.055*Math.abs(u)*sn:0)];
+}
+
+function drawDaisyBranches(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,type=a.shootProfile,coreo=type.startsWith('coreopsis'),brachy=type.startsWith('brachy'),gaz=type==='gazaniaSpoon',osteo=type==='osteoToothed',marg=type==='margueriteCut',grand=type==='coreopsisGrandiflora',winter=a.persistence==='semiDormant'&&[12,1,2].includes(s.month)&&!s.bloom,h=s.height,w=s.spread,green=s.leafColor,leafKind=foliageKind(info),st=a.stemColor;
+ const L=Math.min(a.leafLength,h*(gaz?.7:.35),w*.3)*s.leafScale,W=L*a.leafWidth/a.leafLength,sites=[];
+ const mix=(v,q,t)=>v.map((x,k)=>x+(q[k]-x)*t),point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r];
+ const line=(v,q,r,part='stem')=>b.branch(v,q,r,st,part);
+ const leaf=(at,az,size=1,split=false)=>{
+  const f=flowerFrame(b,at,-(.72+rand()*.75),az),len=L*size;
+  if(split){
+   f.branch([0,0,0],[0,len*.8,0],.00023,green,'leafRachis');
+   f.add('coreopsisFine',leafKind,green,0,len*.33,0,W*.67,len*.67,len,0,0,0);
+   for(let q=0;q<(type==='coreopsisPinnate'?2:1);q++)for(const side of [-1,1])f.add('coreopsisFine',leafKind,kit.shade(rand,green,.035),0,len*(.22+q*.2),0,W*.6,len*(.58-q*.12),len,0,0,side*(.65+q*.1));
+  }else f.add(type,leafKind,kit.shade(rand,green,.055),0,0,0,W*size,len,len,0,0,(rand()-.5)*.25);
+ };
+ const stems=Math.max(8,Math.round((brachy?38:gaz?24:grand?23:marg?19:30)*detail));
+ for(let stem=0;stem<stems;stem++){
+  const az=stem*2.39996+rand()*.28,radius=w*(.045+.38*Math.sqrt((stem+.5)/stems)),height=h*(winter?.045+rand()*.06:(brachy?.28:coreo?.47:.40)+rand()*(brachy?.35:coreo?.27:.32)),base=point(az,radius*(gaz?.54:brachy?.40:coreo?.32:.22),.005),mid=point(az+.07,radius*.62,height*.5),tip=point(az,radius,height);
+  if(gaz){
+   const crown=point(az,radius*.66,h*(.08+rand()*.28));line(base,crown,.0014,'stem');for(let j=0;j<9;j++)leaf(mix(base,crown,.4+j/15),az+j*2.399,.82+rand()*.18);
+   sites.push({base:crown,end:point(az,radius,h*(.70+rand()*.23)),tone:rand(),chance:rand(),yaw:az});continue;
+  }
+  line(base,mid,Math.min(.0012,h*.005),marg||osteo?'wood-daisy-base':'stem');line(mid,tip,Math.min(.0008,h*.003));
+  const nodes=brachy?8:grand?9:coreo?7:6;
+  for(let n=0;n<nodes;n++){
+   const t=.12+n*.83/nodes,at=t<.5?mix(base,mid,t*2):mix(mid,tip,(t-.5)*2),yaw=az+n*(coreo||type==='bidensCut'?Math.PI/2:2.39996);
+   for(let side=0;side<(a.arrangement==='opposite'?2:1);side++)if(rand()<s.leafDensity)leaf(at,yaw+side*Math.PI,(.7+rand()*.3)*(winter?.70:1),coreo&&(type==='coreopsisPinnate'||grand&&n>4||type==='coreopsisBroad'&&n%3===1));
+   if(n<2||n>nodes-2||winter)continue;
+   for(let side=0;side<(brachy?2:1);side++){
+    const aa=yaw+(side?1:-1)*.75,reach=Math.min(w*.16,L*(brachy?2.2:2.6)),end=[at[0]+Math.sin(aa)*reach,Math.min(h*.86,at[1]+h*(brachy?.07:.10)),at[2]+Math.cos(aa)*reach];line(at,end,.00045);
+    for(let j=1;j<=4;j++)if(rand()<s.leafDensity)leaf(mix(at,end,j/5),aa+j*2.1,.6+rand()*.2,coreo&&type==='coreopsisPinnate');
+    if(n%2===1)sites.push({base:end,end:[end[0]+Math.sin(aa)*L*.5,Math.min(h-a.flowerRadius,end[1]+h*(brachy?.30:coreo?.18:.25)),end[2]+Math.cos(aa)*L*.5],tone:rand(),chance:rand(),yaw:aa});
+   }
+  }
+  if(!winter)sites.push({base:tip,end:[tip[0],Math.min(h-a.flowerRadius,tip[1]+h*(brachy?.33:coreo?.18:.24)),tip[2]],tone:rand(),chance:rand(),yaw:az});
+ }
+ if(!s.bloom)return;
+ for(const q of sites){
+  if(q.chance>(s.flowerDensity??1)*.8)continue;
+  line(q.base,q.end,Math.min(.00065,h*.0024),'peduncle');
+  const pal={...a.flowerPalette},pattern=pal.profile,age=q.tone,autumn=[9,10,11].includes(s.month),hot=[7,8].includes(s.month);let color=info.flower;
+  const blend=(first,last,t)=>new THREE.Color(first).lerp(new THREE.Color(last),t).getStyle();
+  if(pattern==='ageOrange')color=blend(info.flower,'#d58b50',age);
+  if(pattern==='agePink')color=blend(info.flower,'#d79fb8',age);
+  if(pattern==='ageCream')color=blend(info.flower,'#eee4bb',age);
+  if(pattern==='summerPale')color=hot?'#e8dfe1':'#d3b0cd';
+  if(pattern==='redSatin')color=autumn?'#862440':'#ae3e66';
+  pal.coverage=pattern==='rim'?.85:pattern==='cosmic'?(autumn?.60:.18)+age*.2:pattern==='redShift'?(autumn?.62:.22)+age*.16:pattern==='starEye'?.16+age*.27:pattern==='goldBase'?.36:.48;
+  if(pattern==='redShift'&&!autumn)color=blend('#eee4c1','#e0cb74',age);
+  if(pattern==='starEye'&&age>.77)pal.rim=pal.base;
+  detailedFlower(b,{x:q.end[0],y:q.end[1],z:q.end[2],r:a.flowerRadius*(.90+age*.10),color,shape:'daisyCultivarHead',palette:pal,tilt:(rand()-.5)*.65,yaw:q.yaw},{...kit,rand});
+ }
+}
+
 
 // Myrtaceae share floral structures, but their leaf blades, phyllotaxy and
 // branching are kept separate. Units are metres after instancing.
@@ -368,6 +437,32 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='daisyCultivarHead'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),pompon=palette.profile==='pompon',brachy=palette.type.startsWith('brachy'),coreo=palette.type.startsWith('coreopsis'),rays=palette.rays||8,ratio=palette.diskRatio||.25,rayShape=coreo?(palette.notches<.1?'daisyShallowRay':'daisyNotchedRay'):'daisyRoundRay';
+  f.add(bud,'receptacle','#728255',0,-r*.10,0,r*.29,r*.16,r*.29);
+  const colorHex=col=>new THREE.Color(col).getHexString();
+  let paint='petal-daisy';
+  if(palette.base){const mode=palette.profile==='stripes'?'stripes':palette.profile==='rim'?'rim':'eye',coverage=Math.round((palette.coverage||.45)*5)/5;paint+='-'+mode+'-'+colorHex(palette.base)+'-'+Math.round(coverage*100);}
+  if(palette.rim)paint+='-rimAccent-'+colorHex(palette.rim);
+  const rings=pompon?10:brachy&&rays>28?2:1,per=pompon?18:Math.ceil(rays/rings);
+  for(let ring=0;ring<rings;ring++){
+   const t=ring/Math.max(1,rings-1),n=pompon?Math.max(8,per-ring):per;
+   for(let j=0;j<n;j++){
+    const az=j*TAU/n+ring*2.39996+(rand()-.5)*.07,lr=r*(pompon?.9*Math.sqrt(1-t*t*.97):.90-ring*.16),rad=pompon?r*(.05+.12*(1-t)):r*.14;
+    f.add(rayShape,paint,shade(rand,color,.022),Math.sin(az)*rad,pompon?r*t*.78:0,Math.cos(az)*rad,lr*(pompon?.46:palette.rayWidth||.5),lr,lr,pompon?-.10-t*.30:(rand()-.5)*.10,az,0);
+   }
+  }
+  if(!pompon){
+   const n=brachy?44:70;
+   for(let j=0;j<n;j++){
+    const t=(j+.5)/n,an=j*2.39996,rr=r*ratio*Math.sqrt(t),yy=r*(.08+.10*(1-t)),tip=[Math.sin(an)*rr,yy,Math.cos(an)*rr],co=t>.57&&palette.type!=='osteoToothed'?'#c7ac48':palette.center;
+    f.add(bud,'discFloret',co,...tip,r*.022,r*.037,r*.022);
+    if(j%2===0)f.add(bud,'anther',palette.type==='osteoToothed'?'#a591b4':'#dac373',tip[0],yy+r*.032,tip[2],r*.009,r*.012,r*.009);
+   }
+  }
+  for(let j=0;j<8;j++)f.add('coreopsisFine','involucre','#6e8854',0,-r*.14,0,r*.13,r*.46,r*.46,1.28,j*TAU/8,0);
+  return;
+ }
  if(shape==='gardenRose'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),count=petals,high=palette.profile==='high',chalice=palette.profile==='chalice',deep=palette.profile==='deepCup'||chalice,rosette=palette.profile==='rosette',flat=palette.profile==='flat'||rosette,wave=palette.wavy;
   const rings=Math.max(2,Math.ceil(count/(rosette?9:7))),per=Math.floor(count/rings);
@@ -1849,6 +1944,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(info.appearance?.architecture==='daisyBranches'){drawDaisyBranches(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='myrtaceousTree'){drawMyrtaceousTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='smokeTree'){drawSmokeTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='coniferSprays'){drawConiferSprays(b,{info,s,p,detail,rand},kit);return;}

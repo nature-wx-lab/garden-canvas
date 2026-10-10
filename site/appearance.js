@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.47';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.48';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -144,3 +144,5 @@ Object.assign(TRAIT_VALUES,{gardenRoseCanes:"品種別の木立ち・つる性�
 Object.assign(TRAIT_VALUES,{cotinusObovate:'先が丸く、縁に鋸歯のない倒卵形の葉',smokePedicels:'小さな5弁花と、花後に伸びて毛が目立つ花柄',smokeTree:'根元から分かれて外へ開くスモークツリーの枝'});
 
 Object.assign(TRAIT_VALUES,{myrtaceousTree:'樹種別の常緑の枝と葉',feijoaOval:'白い毛の葉裏と厚い丸先の楕円葉',myrtusPointed:'光沢のある尖った対生葉',teaBlunt:'縁が内側へ巻く小さな丸先の葉',melaleucaOvate:'複数の縦脈を持つ短い卵形の対生葉',teaPointed:'細く尖った全縁葉',feijoaBrush:'巻き返る4弁と赤い長い雄しべ・黄色い葯',myrtusFive:'白い5弁と多数の長い白い雄しべ',teaFive:'小さな5弁と短い雄しべ',melaleucaClaws:'5つに分かれ先が内側へ曲がる雄しべの束',bottlebrush:'長い雄しべが集まる円筒形の花穂'});
+
+Object.assign(TRAIT_VALUES,{daisyBranches:'葉のつく枝から伸びる細い花茎',coreopsisFine:'細い対生葉',coreopsisBroad:'対生する披針形葉と一部の側裂片',coreopsisPinnate:'細く羽状に分かれる対生葉',coreopsisGrandiflora:'幅のある下葉と分裂する上部の葉',bidensCut:'粗い鋸歯を持ち3つに裂ける葉',brachyFine:'線形の裂片へ深く切れ込む小葉',brachyBroad:'やや幅広い尖った裂片を持つ小葉',brachyRound:'丸みのある裂片を持つ小葉',margueriteCut:'灰緑色の細かく分裂する葉',gazaniaSpoon:'厚く細長いへら形葉と淡い葉裏',osteoToothed:'枝先に集まる厚めの互生の鋸歯葉',daisyCultivarHead:'品種別の舌状花・花色の分布と中央の筒状花'});
