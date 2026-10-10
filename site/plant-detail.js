@@ -1,6 +1,76 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.74';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.75';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function pomeShrubLeafPoint(type,t,u){
+ const pyr=type==='harlequin',cycle=(t*18)%1,tooth=pyr&&t>.12&&t<.92?1+.036*(cycle<.7?cycle/.7:(1-cycle)/.3):1;
+ const width=Math.pow(Math.sin(Math.PI*t),pyr?.53:.60)*(.88+.20*t)*tooth;
+ return [u*width*.5,t,.044*u*u*Math.sin(Math.PI*t)-.035*t*t];
+}
+export function pomeShrubFlowerGeometry(){
+ const pos=[],uv=[],ix=[];
+ for(let k=0;k<5;k++){
+  const az=k*TAU/5,base=pos.length/3,rows=16,cols=8;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,r=.17+.83*t,width=.47*Math.pow(Math.sin(Math.PI*t),.50),y=.10+.19*Math.sin(Math.PI*t*.8)+.045*u*u;
+   pos.push(Math.sin(az)*r+Math.cos(az)*u*width,y,Math.cos(az)*r-Math.sin(az)*u*width);uv.push(j/cols,t);
+   if(i<rows&&j<cols){const q=base+i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.pomeShrubFlower={petals:5};return g;
+}
+function drawPomeShrubs(b,{info,s,detail,rand},kit){
+ const a=info.appearance,pyr=a.shootProfile==='harlequin',h=s.height,w=s.spread,leaves=[],tips=[],wood=[],type=a.shootProfile;
+ const shoot=(origin,az,rise,reach,order)=>{
+  const bend=pyr?.14:.26,path=t=>[origin[0]+Math.sin(az)*reach*t,origin[1]+rise*((1+bend)*t-bend*t*t)-h*(pyr?.012:.045)*t*t*t,origin[2]+Math.cos(az)*reach*t],steps=8,count=order===0?18:order===1?12:7;
+  for(let j=1;j<=steps;j++)wood.push({from:path((j-1)/steps),to:path(j/steps),r:(order===0?.004:order===1?.0017:.0008)*(1-.73*j/steps),order});
+  for(let j=1;j<=count;j++){
+   const t=.05+j*.91/count,at=path(t),angle=az+j*2.399963;
+   leaves.push({at,az:angle,roll:rand(),size:.70+rand()*.30,young:j===count});
+   if(order<2&&j>1&&j<count&&j%(order===0?2:3)===0){
+    const side=j%4<2?-1:1,theta=az+side*(.48+rand()*.48),length=(order===0?.16:.067)*( .75+rand()*.45);
+    shoot(at,theta,h*length*(.7+rand()*.75),w*length*(pyr?.85:1.1),order+1);
+   }
+  }
+  if(order===2)tips.push({at:path(.92),az,roll:rand()});
+ };
+ for(let k=0;k<Math.round(22*detail);k++){
+  const az=k*2.399963+rand()*.32,low=k%3===0;
+  shoot([Math.sin(az)*w*.025,0,Math.cos(az)*w*.025],az,h*(low?.16+rand()*.15:.35+rand()*.43),w*(low?.35:.16+rand()*.17),0);
+ }
+ for(const n of wood){
+  b.branch(n.from,n.to,n.r,n.order===0?a.barkColor:a.stemColor,'wood-pome-shrub');
+  if(pyr&&n.r>.004)b.add(kit.bud,'lenticel-pome-shrub','#b3a090',n.to[0],n.to[1],n.to[2]+n.r,.0006,.00045,.0004);
+ }
+ for(const n of leaves){
+  if(pyr&&n.roll>Math.max(.84,s.leafDensity))continue;
+  const young=n.young&&[4,5].includes(s.month),L=a.leafLength*n.size*(young?.68:1),f=flowerFrame(b,n.at,.68+n.roll*.85,n.az),color=young?(pyr?'#b08c73':'#9ba58d'):s.leafColor;
+  f.branch([0,0,0],[0,.0025,0],.0003,a.stemColor,'petiole-pome-shrub');
+  const kind=pyr?`leaf-pome-harlequin-${s.leafPatternColor.slice(1)}-underside-b7bf9e`:'leaf-pome-silver-underside-c2c4b4';
+  f.add('pome-'+type,kind,kit.shade(rand,color,.028),0,.0025,0,L*a.leafWidth/a.leafLength,L,L);
+  if(pyr&&n.roll<.010)f.branch([0,0,0],[.002,.011,.002],.0008,'#926d54','thorn-pome-shrub');
+ }
+ const ripe=a.fruitMonths.includes(s.month),green=a.greenFruitMonths?.includes(s.month);
+ for(const n of tips){
+  const fruit=!pyr&&(ripe||green)&&n.roll<([2,3,4,5].includes(s.month)?.12:.50),flower=s.bloom&&n.roll<(pyr?.12:.38);
+  if(!fruit&&!flower)continue;
+  const cluster=flowerFrame(b,n.at,.50,n.az),count=fruit?5:pyr?13:7,spread=fruit?.010:.014;
+  for(let j=0;j<count;j++){
+   const az=j*2.399963,rad=spread*Math.sqrt((j+.5)/count),at=[Math.sin(az)*rad,.012+rand()*.005,Math.cos(az)*rad];cluster.branch([0,0,0],at,.00027,a.stemColor,'pedicel-pome-shrub');
+   const f=flowerFrame(cluster,at,fruit?1.6:rand()*.40,az),R=fruit?a.fruitRadius*(green?.75:1):a.flowerRadius;
+   if(fruit){
+    f.add(kit.bud,'fruit-glossy-pome-shrub',kit.shade(rand,green?'#87935e':a.fruitColor,.025),0,R,0,R,R*.93,R);
+    f.add(kit.bud,'calyx-eye-pome-shrub','#624f3f',0,R*1.89,0,R*.32,R*.08,R*.32);
+    for(let k=0;k<5;k++)f.add(kit.cone,'calyx-tooth-pome-shrub',green?'#758356':'#89705b',Math.sin(k*TAU/5)*R*.26,R*1.90,Math.cos(k*TAU/5)*R*.26,R*.12,R*.34,R*.12,.48,k*TAU/5,0);
+   }else{
+    f.add('pomeFlower','petal-pome-shrub',s.flowerColor,0,0,0,R,R,R);f.add(kit.bud,'flower-disc-pome-shrub','#c6bf8b',0,R*.12,0,R*.24,R*.10,R*.24);
+    for(let k=0;k<a.stamenCount;k++){
+     const theta=k*TAU/a.stamenCount,end=[Math.sin(theta)*R*.38,R*(.42+(k%3)*.05),Math.cos(theta)*R*.38];f.branch([end[0]*.4,R*.12,end[2]*.4],end,R*.018,'#e4d9be','filament-pome-shrub');f.add(kit.bud,'anther-pome-shrub','#b09b73',...end,R*.049,R*.039,R*.044);
+    }
+   }
+  }
+ }
+}
+
 export function ardisiaLeafPoint(type,t,u){
  const tall=type==='benikujaku',phase=t*(tall?12:21),cycle=phase%1,teeth=t>.05&&t<.96?(tall?.035*Math.cos(phase*TAU):.055*(cycle<.72?cycle/.72:(1-cycle)/.28)):0;
  const width=Math.pow(Math.sin(Math.PI*t),tall?.70:.76)*(1.02-.14*t)*(1+teeth),wave=(tall?.006:.004)*Math.cos(phase*TAU)*Math.pow(Math.abs(u),3);
@@ -4090,6 +4160,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='pomeShrubSprays'){drawPomeShrubs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='ardisiaShoots'){drawArdisia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='callicarpaArches'){drawCallicarpa(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardeniaBranches'){drawGardenia(b,{info,s,detail,rand},kit);return;}

@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.74';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.74';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.74';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.74';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.74';
-import { createScene } from './scene.js?v=0.9.74';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.75';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.75';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.75';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.75';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.75';
+import { createScene } from './scene.js?v=0.9.75';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;

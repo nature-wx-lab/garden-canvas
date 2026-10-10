@@ -10,6 +10,21 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Pome shrubs distinguish silver leaves and winter fruit from fruitless variegated Harlequin',()=>{
+ const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='pomeShrubSprays');assert.equal(entries.length,3);
+ for(const [i,[id,info]] of entries.entries()){
+  const a=info.appearance,pyr=a.shootProfile==='harlequin';assert.equal(info.genre,'庭木');let wood;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,9000+i,2,2);p.height=.7;p.spread=.8;const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'pomeShrubSprays');assert.ok(count('leaf-pome')>0);assert.equal(count('petal-pome')>0,a.flowerMonths.includes(month));assert.equal(count('anther-pome'),count('petal-pome')*20);
+   assert.equal(count('fruit-glossy-pome')>0,a.fruitMonths.includes(month)||!!a.greenFruitMonths?.includes(month));assert.equal(count('calyx-tooth-pome'),count('fruit-glossy-pome')*5);assert.equal(count('thorn-pome')>0,pyr);
+   const skeleton=g.children.filter(m=>m.userData.component==='wood-pome-shrub').map(m=>[...m.instanceMatrix.array]);if(!wood)wood=skeleton;else assert.deepEqual(skeleton,wood);
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ assert.deepEqual(CATALOG['p-b220e445c388'].appearance.fruitMonths,[]);assert.deepEqual(CATALOG['p-0d10f47aa5af'].appearance.flowerMonths,[6,7,8]);assert.deepEqual(CATALOG['p-85194e28d7c8'].appearance.flowerMonths,[3,4,5]);
+});
+
 test('Ardisia retains evergreen alternate leaves and carries seasonal flowers and fruit below foliage',()=>{
  const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='ardisiaShoots');assert.equal(entries.length,3);
  for(const [i,[id,info]] of entries.entries()){
