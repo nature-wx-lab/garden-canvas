@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.13';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.14';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -18,13 +18,22 @@ function flowerFrame(b,origin,pitch,yaw){
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
  if(shape==='helleboreCup'||shape==='helleboreBell'||shape==='tessenFlower'){
-  const f=flowerFrame(b,[x,y,z],tilt,yaw),tessen=shape==='tessenFlower',bell=shape==='helleboreBell',sepal=tessen?'clematisSepal':bell?'helleboreBell':'helleboreSepal';
-  for(let j=0;j<(tessen?6:5);j++)f.add(sepal,tessen?'sepal-clematis-green':palette.pinkBack?'sepal-hellebore-pinkback':'sepal',shade(rand,color,.025),0,0,0,r,r,r,0,j*TAU/(tessen?6:5)+.10,0);
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),tessen=shape==='tessenFlower',bell=shape==='helleboreBell',sepal=tessen?'clematisSepal':bell?'helleboreBell':palette.sword?'helleboreSword':palette.frill?'helleboreFrill':'helleboreSepal';
+  const sepalKind=tessen?'sepal-clematis-green':palette.paint?'sepal-hellebore-'+palette.paint:palette.pinkBack?'sepal-hellebore-pinkback':patternKind('sepal',pattern,patternColor);
+  const whorls=tessen?1:Math.max(1,layers);
+  for(let layer=0;layer<whorls;layer++){
+   const n=layer?7+layer*2:tessen?6:5,size=1-layer*.13;
+   for(let j=0;j<n;j++)f.add(sepal,sepalKind,shade(rand,color,.025),0,layer*r*.035,0,r*size,r*size,r*size,layer*.10,j*TAU/n+.10+layer*.41,0);
+  }
   if(tessen){
    for(let j=0;j<85;j++){const t=(j+.5)/85,an=j*2.399,rad=r*.34*Math.sqrt(t),yy=r*.30*Math.sqrt(1-t),len=r*(.20+.14*t);f.add('narrow','petal','#40274c',Math.sin(an)*rad,yy,Math.cos(an)*rad,len*.55,len,len,.15+t*.80,an,0);}return;
   }
   // The coloured parts are sepals; the true petals form small tubular nectaries.
-  for(let j=0;j<10;j++){const an=j*TAU/10,rr=r*.23;f.add('tube','nectary',palette.nectary||'#8a9b52',Math.sin(an)*rr,r*.10,Math.cos(an)*rr,r*.055,r*.22,r*.055,.18,an,0);}
+  if(whorls===1)for(let j=0;j<10;j++){
+   const an=j*TAU/10,rr=r*.23;
+   if(palette.semiDouble)f.add('helleboreFrill','nectary',palette.nectary||color,Math.sin(an)*rr,r*.07,Math.cos(an)*rr,r*.29,r*.53,r*.53,.46,an,0);
+   else f.add('tube','nectary',palette.nectary||'#8a9b52',Math.sin(an)*rr,r*.10,Math.cos(an)*rr,r*.055,r*.22,r*.055,.18,an,0);
+  }
   for(let j=0;j<48;j++){
    const t=(j+.5)/48,an=j*2.399,rr=r*(.07+.20*Math.sqrt(t)),at=[Math.sin(an)*rr,r*(bell?.53:.26+.17*t),Math.cos(an)*rr];
    f.branch([0,0,0],at,r*.008,'#d6d6a6','filament');f.add(bud,'anther','#e0dcac',...at,r*.025,r*.032,r*.022,.2,an,.2);
@@ -763,27 +772,31 @@ function drawHelleboreProfiles(b,{info,s,detail,rand},kit){
    const off=(j-(n-1)/2)/Math.max(1,(n-1)/2),angle=yaw+off*(n===3?1.06:1.42),reach=size*(n===3?.16:fine?.33:.11)*Math.abs(off),root=[at[0]+Math.sin(angle)*reach,at[1]-.025*size*Math.abs(off),at[2]+Math.cos(angle)*reach];
    if(reach)b.branch(at,root,size*.008,stem,'petiole');
    const length=size*(.78+.22*Math.cos(off*1.5)),width=n===3?.78:fine?.58:.38;
-   b.add(fine&&!bract?'helleboreFineLeaf':'helleboreLeaf',leafKind,kit.shade(rand,green,.035),...root,length*width,length,length,1.16+Math.abs(off)*.28+(rand()-.5)*.10,angle,(rand()-.5)*.08);
+   b.add(fine&&!bract?'helleboreFineLeaf':a.leafShape==='vesicariusLeaf'?'vesicariusLeaf':'helleboreLeaf',leafKind,kit.shade(rand,green,.035),...root,length*width*s.leafScale,length*s.leafScale,length*s.leafScale,1.16+Math.abs(off)*.28+(rand()-.5)*.10,angle,(rand()-.5)*.08);
   }
  };
- const curved=(points,r,kind)=>{for(let j=1;j<points.length;j++)b.branch(points[j-1],points[j],r*(1-j*.08),stem,kind);};
+ const curved=(points,r,kind)=>{
+  const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)),false,'centripetal'),segments=12;
+  let previous=points[0];
+  for(let j=1;j<=segments;j++){const next=curve.getPoint(j/segments).toArray();b.branch(previous,next,r*(1-j/segments*.24),stem,kind);previous=next;}
+ };
  const count=caulescent?3:5;
  for(let i=0;i<count;i++){
   const an=i*2.399,extent=w*(caulescent?.13:.12),top=[Math.sin(an)*extent,h*(.62+rand()*.20),Math.cos(an)*extent],bend=[top[0]*.38,h*.43,top[2]*.38];
   if(caulescent||s.bloom)curved([[0,0,0],bend,top],caulescent?.0035:.0028,caulescent?'stem':'scape');
-  if(caulescent&&s.leafDensity>0)for(let node=0;node<3;node++){
+  if(caulescent&&s.leafDensity>0)for(let node=0;node<Math.ceil(3*s.leafDensity);node++){
    const t=.20+node*.25,attach=[top[0]*t,h*t*.84,top[2]*t],yaw=an+node*2.3,rr=Math.min(w*.19,h*.25),end=[attach[0]+Math.sin(yaw)*rr,attach[1]+h*.07,attach[2]+Math.cos(yaw)*rr];
    curved([attach,[(attach[0]+end[0])*.5,attach[1]+h*.06,(attach[2]+end[2])*.5],end],.0017,'petiole');compound(end,yaw,Math.min(a.leafLength||.10,w*.28,h*.42));
   }
   if(!s.bloom)continue;
-  for(let j=0;j<(caulescent?5:3);j++){
+  for(let j=0;j<(palette.fewFlowers?2:caulescent?5:3);j++){
    const yaw=an+j*2.18,rr=Math.min(w*.18,.060)*(.65+rand()*.4),tip=[top[0]+Math.sin(yaw)*rr,top[1]+h*(.04+rand()*.10),top[2]+Math.cos(yaw)*rr],neck=[tip[0]-Math.sin(yaw)*.009,tip[1]+.018,tip[2]-Math.cos(yaw)*.009];
    curved([top,[(top[0]+neck[0])*.5,neck[1]-.003,(top[2]+neck[2])*.5],neck,tip],.0017,'pedicel');
-   if(j===0&&s.leafDensity>0)compound(top,yaw,Math.min(.037,h*.11),true);
-   detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:Math.min(a.flowerRadius,h*.19),color:s.flowerColor,shape:a.flowerShape,palette,tilt:(palette.tilt||2.25)+(rand()-.5)*.24,yaw},{...kit,rand});
+   if(j===0&&s.leafDensity>0)compound(top,yaw,Math.min(.060,h*.17),true);
+   detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:Math.min(a.flowerRadius,h*.19),color:s.flowerColor,shape:a.flowerShape,layers:a.flowerLayers||1,pattern:a.flowerPattern,patternColor:a.flowerPatternColor,palette,tilt:(palette.tilt||2.25)+(rand()-.5)*.24,yaw},{...kit,rand});
   }
  }
- if(!caulescent&&s.leafDensity>0)for(let i=0;i<7;i++){
+ if(!caulescent&&s.leafDensity>0)for(let i=0;i<Math.ceil(7*s.leafDensity);i++){
   const an=i*2.399,rr=w*(.13+rand()*.12),end=[Math.sin(an)*rr,h*(.24+rand()*.14),Math.cos(an)*rr];
   curved([[0,0,0],[end[0]*.52,end[1]*.72,end[2]*.52],end],.002,'petiole');compound(end,an,Math.min(a.leafLength||.10,w*.33,h*.50));
  }

@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.13';
-import {foliageKind} from './appearance.js?v=0.9.13';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.13';
-import {drawTree} from './tree-model.js?v=0.9.13';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.13';
+import {treeProfile} from './tree-profiles.js?v=0.9.14';
+import {foliageKind} from './appearance.js?v=0.9.14';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.14';
+import {drawTree} from './tree-model.js?v=0.9.14';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.14';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.13';
+import { plantInfo, stateAt } from './model.js?v=0.9.14';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,12 +13,13 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
-for(const type of ['helleboreSepal','helleboreBell','clematisSepal','helleboreLeaf','helleboreFineLeaf']){
- const pos=[],uv=[],idx=[],rows=40,cols=18,leaf=type.endsWith('Leaf'),fine=type==='helleboreFineLeaf',bell=type==='helleboreBell',clematis=type==='clematisSepal';
+for(const type of ['helleboreSepal','helleboreBell','helleboreSword','helleboreFrill','clematisSepal','helleboreLeaf','helleboreFineLeaf','vesicariusLeaf']){
+ const pos=[],uv=[],idx=[],rows=40,cols=18,leaf=type.endsWith('Leaf'),fine=type==='helleboreFineLeaf',bell=type==='helleboreBell',clematis=type==='clematisSepal',sword=type==='helleboreSword',frill=type==='helleboreFrill',vesicarius=type==='vesicariusLeaf';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
-  const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t)),width=(leaf?fine?.11:.39:clematis?.40:.69)*Math.pow(sin,leaf?.82:clematis?.65:.44)*(leaf&&t>.26?(i%2?.93:1.05):1);
-  const height=leaf?t:bell?1.1*t:.09*t+.32*t*t,radial=leaf?.20*t*t:bell?.63*Math.sin(t*1.95):t;
-  pos.push(u*width,height+(leaf?.022:.033)*u*u*sin,radial+(leaf?.06:-.1)*u*u*sin);uv.push(j/cols,t);
+  const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t)),width=(leaf?fine?.11:vesicarius?.62:.39:clematis?.40:sword?.35:.69)*Math.pow(sin,leaf?.82:clematis||sword?.85:.44)*(leaf&&t>.26?(i%2?.93:1.05):1)*(vesicarius?.70+.30*Math.cos(t*5*Math.PI):1);
+  const height=leaf?t:bell?1.1*t:.09*t+.32*t*t,radial=leaf?.12*t+.30*t*t*t:bell?.63*Math.sin(t*1.95):t;
+  const wave=frill?.07*Math.sin(u*14+t*24)*Math.pow(Math.abs(u),3)*sin:sword?.17*u*t*t+.025*Math.sin(t*23)*u:0;
+  pos.push(u*width,height+(leaf?.040:.033)*u*u*sin+wave,radial+(leaf?.12:-.1)*u*u*sin);uv.push(j/cols,t);
   if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
@@ -525,6 +526,21 @@ function windShader(shader,kind){
     if(kind==='leaf-crocus-stripe')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.62,.67,.58),1.0-smoothstep(.09,.16,fold));\n#include <emissivemap_fragment>`);
     if(kind==='leaf-hellebore-silver')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float net=min(abs(sin(vUv.x*22.0+sin(vUv.y*31.0)*.4)),abs(sin(vUv.y*26.0+sin(vUv.x*35.0)*.55)));float silver=1.0-smoothstep(.06,.21,net);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.55,.60,.53),silver*.73);\n#include <emissivemap_fragment>`);
     if(kind==='sepal-hellebore-pinkback')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`if(!gl_FrontFacing){diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.42,.17,.26),.30+.40*vUv.y);}else{diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.30,.38,.14),1.0-smoothstep(.08,.38,vUv.y));}\n#include <emissivemap_fragment>`);
+    if(kind.startsWith('sepal-hellebore-')&&kind!=='sepal-hellebore-pinkback'){
+      const name=kind.slice(16),linear=hex=>{const c=new THREE.Color(hex);return `vec3(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`;};
+      let paint='float rim=max(smoothstep(.78,.97,fold),smoothstep(.84,.99,vUv.y));float base=1.0-smoothstep(.13,.55,vUv.y);';
+      if(['goldPicotee','goldFlash','pinkBand','greenRim','vesicarius'].includes(name)){
+       const tone=linear(name==='greenRim'?'#7b9952':name==='pinkBand'?'#b77986':name==='vesicarius'?'#783b50':'#983d54');
+       paint+=`diffuseColor.rgb=mix(diffuseColor.rgb,${tone},${name==='goldFlash'?'base*.94':name==='pinkBand'?'smoothstep(.42,.92,vUv.y)*.88':name==='vesicarius'?'smoothstep(.65,.95,vUv.y)':'rim'});`;
+       if(name==='goldPicotee')paint+=`diffuseColor.rgb=mix(diffuseColor.rgb,${tone},base*.83);if(!gl_FrontFacing)diffuseColor.rgb=mix(diffuseColor.rgb,${tone},.67);`;
+      }
+      if(['goldSpots','goldSand','goldBlotch','guttatus'].includes(name)){
+       const sand=name==='goldSand',blotch=name==='goldBlotch';
+       paint+=`float specks=smoothstep(${blotch?'.12,.38':'.73,.92'},sin(vUv.x*${sand?'173.0':'69.0'}+cos(vUv.y*27.0))*sin(vUv.y*${sand?'191.0':'81.0'}+sin(vUv.x*47.0)));diffuseColor.rgb=mix(diffuseColor.rgb,${linear('#87354b')},specks*${blotch?'(1.0-smoothstep(.37,.78,vUv.y))':'.90'});`;
+      }
+      if(name==='pinkVeins')paint+=`float network=max(midrib,pow(max(0.0,cos((vUv.y-fold*.37)*31.0)),30.0)*.75);diffuseColor.rgb=mix(diffuseColor.rgb,${linear('#b36f86')},network*.45);`;
+      shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',paint+'\n#include <emissivemap_fragment>');
+    }
     if(kind==='sepal-clematis-green')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float line=(1.0-smoothstep(.11,.29,fold))*(1.0-smoothstep(.80,1.0,vUv.y));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.54,.60,.30),line*.42);\n#include <emissivemap_fragment>`);
     if(kind.startsWith('petal-bulb-')){
       const name=kind.slice(11),linear=hex=>{const c=new THREE.Color(hex);return `vec3(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`;};
