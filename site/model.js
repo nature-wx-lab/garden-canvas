@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.107';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.107';
-import { seasonAt } from './catalog-search.js?v=0.9.107';
+import {treeProfile} from './tree-profiles.js?v=0.9.108';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.108';
+import { seasonAt } from './catalog-search.js?v=0.9.108';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -40,7 +40,7 @@ export function contained(inner,outer){
 export const obstaclePoints=o=>[[o.x,o.z],[o.x+o.width,o.z],[o.x+o.width,o.z+o.depth],[o.x,o.z+o.depth]];
 export const canPlant=(plan,x,z)=>inside(x,z,plan.outline)&&!plan.obstacles.some(o=>inside(x,z,obstaclePoints(o)));
 export function makePlant(kind,id,x,z){
-  const info=plantInfo(kind),tree=info.group==='木',arch=info.appearance?.architecture,floater=arch?.startsWith('salvinia')?.03:arch==='amazonFrogbit'?.06:arch==='waterHyacinth'?.3:['waterCoin','marsileaMutica','bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(arch)?.12:null,height=floater??(tree?1.5:info.group==='低木'?.65:info.form==='grass'?.65:.35),spread=tree?round(height*(treeProfile(info)?.spread&&treeProfile(info)?.height?Math.min(1.6,treeProfile(info).spread[1]/treeProfile(info).height[1]):.65)):info.group==='低木'?.55:.3;
+  const info=plantInfo(kind),tree=info.group==='木',arch=info.appearance?.architecture,floater=arch?.startsWith('salvinia')?.03:arch==='amazonFrogbit'?.06:arch==='waterHyacinth'?.3:['waterCoin','marsileaMutica','bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(arch)?.12:null,height=floater??(arch==='submergedShoots'?(info.appearance.lifeForm==='moss'?.05:Math.min(.35,info.height?.[1]??.35)):tree?1.5:info.group==='低木'?.65:info.form==='grass'?.65:.35),spread=tree?round(height*(treeProfile(info)?.spread&&treeProfile(info)?.height?Math.min(1.6,treeProfile(info).spread[1]/treeProfile(info).height[1]):.65)):info.group==='低木'?.55:.3;
   return {id,kind,x,z,height,spread,leafHeight:round(info.leaf==='herb'||info.leaf==='grass'?height*.55:height),start:0,role:'new',price:null,locked:false,scenario:null,management:null,tasks:[]};
 }
 export function replacePlant(p,kind){if(p.locked)throw new Error('固定を解除してから交換してください。');const next=makePlant(kind,p.id,p.x,p.z);next.start=p.start;next.role=p.role;return next;}
@@ -92,6 +92,7 @@ export function stateAt(p,view){
     }
   }
   if(flowerOptions?.length)season.flowerColor=flowerOptions[(p.id-1)%flowerOptions.length];
+  if(info.appearance?.waterSurfaceModel&&view.waterDepth>=.02){season.bloom=false;season.flowerDensity=0;}
   return {present,expired,standingDead:!!standingDead,...season,waterDepth:Number.isFinite(view.waterDepth)?Math.max(0,Math.min(2,view.waterDepth)):0,age:Math.max(0,age)/12,height,spread,leafHeight,natural,trunkHeight,basis,last,unsupported,winter:[12,1,2].includes(view.month)};
 }
 export function budget(plan){const rows=new Map();let total=0,unknown=0,count=0;for(const p of plan.plants){if(p.role!=='new')continue;count++;const key=[p.kind,p.height,p.spread,p.price].join('|');if(!rows.has(key))rows.set(key,{kind:p.kind,height:p.height,spread:p.spread,price:p.price,count:0,total:0});const row=rows.get(key);row.count++;if(p.price===null)unknown++;else{total+=p.price;row.total+=p.price;}}return {total,unknown,count,rows:[...rows.values()]};}
@@ -105,7 +106,7 @@ function migrateV1(v){
 }
 export function validateDocument(input){
   const bad=()=>{throw new Error('対応していない庭データ、または範囲外の値です。元の庭は変更していません。');};
-  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10','2026-10-10.11','2026-10-10.12','2026-10-10.13','2026-10-10.14','2026-10-10.15','2026-10-10.16','2026-10-10.17','2026-10-10.18','2026-10-10.19','2026-10-10.20','2026-10-10.21','2026-10-10.22','2026-10-10.23','2026-10-10.24','2026-10-10.25','2026-10-10.26','2026-10-10.27','2026-10-10.28','2026-10-10.29','2026-10-10.30','2026-10-10.31','2026-10-10.32','2026-10-10.33','2026-10-10.34','2026-10-10.35','2026-10-10.36','2026-10-10.37','2026-10-10.38','2026-10-10.39','2026-10-10.40','2026-10-10.41','2026-10-10.42','2026-10-10.43','2026-10-10.44','2026-10-10.45','2026-10-10.46','2026-10-10.47','2026-10-10.48','2026-10-10.49','2026-10-10.50','2026-10-10.51','2026-10-10.52','2026-10-10.53','2026-10-10.54','2026-10-10.55','2026-10-10.56','2026-10-10.57','2026-10-10.58','2026-10-10.59','2026-10-10.60','2026-10-10.61','2026-10-10.62','2026-10-10.63','2026-10-10.64','2026-10-10.65','2026-10-10.66',...Array.from({length:44},(_,i)=>`2026-10-11.${i+1}`)].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
+  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10','2026-10-10.11','2026-10-10.12','2026-10-10.13','2026-10-10.14','2026-10-10.15','2026-10-10.16','2026-10-10.17','2026-10-10.18','2026-10-10.19','2026-10-10.20','2026-10-10.21','2026-10-10.22','2026-10-10.23','2026-10-10.24','2026-10-10.25','2026-10-10.26','2026-10-10.27','2026-10-10.28','2026-10-10.29','2026-10-10.30','2026-10-10.31','2026-10-10.32','2026-10-10.33','2026-10-10.34','2026-10-10.35','2026-10-10.36','2026-10-10.37','2026-10-10.38','2026-10-10.39','2026-10-10.40','2026-10-10.41','2026-10-10.42','2026-10-10.43','2026-10-10.44','2026-10-10.45','2026-10-10.46','2026-10-10.47','2026-10-10.48','2026-10-10.49','2026-10-10.50','2026-10-10.51','2026-10-10.52','2026-10-10.53','2026-10-10.54','2026-10-10.55','2026-10-10.56','2026-10-10.57','2026-10-10.58','2026-10-10.59','2026-10-10.60','2026-10-10.61','2026-10-10.62','2026-10-10.63','2026-10-10.64','2026-10-10.65','2026-10-10.66',...Array.from({length:45},(_,i)=>`2026-10-11.${i+1}`)].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
   if(!keys(v,['version','modelVersion','catalogVersion','active','plans','view'])||v.version!==2||v.modelVersion!==MODEL_VERSION||v.catalogVersion!==CATALOG_VERSION||!['A','B'].includes(v.active)||!keys(v.plans,['A','B'])||!v.plans.A||!v.plans[v.active])bad();
   const view=v.view;
   if(!keys(view,['month','year','reference','footprints','camera'])||!integer(view.month,1,12)||!integer(view.year,0,10)||typeof view.reference!=='boolean'||typeof view.footprints!=='boolean')bad();

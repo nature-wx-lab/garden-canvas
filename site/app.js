@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.107';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.107';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.107';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.107';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.107';
-import { createScene } from './scene.js?v=0.9.107';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.108';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.108';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.108';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.108';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.108';
+import { createScene } from './scene.js?v=0.9.108';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
@@ -29,12 +29,12 @@ function sourceCard(target,kind){const info=plantInfo(kind),box=$(target);box.re
   box.append(el('p',info.bloomText),el('p',info.care));
   const traits=appearanceSummary(info);if(traits)box.append(el('p',traits,'habit-note'));
   const appearance=info.appearance;
-  if(appearance?.architecture==='submergedShoots')box.append(el('p','水中葉の見本です。「庭をつくる」で池の水深を設定すると、水底から描きます。池の外や水深0mでは、形を見るための見本表示になります。水温・結氷・水質による生育変化は未再現です。','hint'));
+  if(appearance?.architecture==='submergedShoots')box.append(el('p',appearance.waterSurfaceModel?'水深2cm未満では水上の姿、それ以上では水中の姿を表示します。水中では花を表示しません。変化する水位に応じた新葉の展開速度、水温・結氷の影響は未再現です。':'水中葉の見本です。「庭をつくる」で池の水深を設定すると、水底から描きます。池の外や水深0mでは、形を見るための見本表示になります。水温・結氷・水質による生育変化は未再現です。','hint'));
   if(appearance?.phenologyRegion==='grower-cold')box.append(el('p','冬姿の参考：おぎはら植物園の寒冷地での記載。暖地の実測時期ではありません。','hint'));
   else if(appearance?.phenologyRegion)box.append(el('p',appearance.phenologyRegion,'hint'));
   if(appearance?.winterClimateSensitive)box.append(el('p','冬姿は気候で変わります。暖地では葉が残り、強い寒さでは地上部が枯れる場合があるという資料に基づく参考表示です。','hint'));
   if(appearance?.unconfirmed.length)box.append(el('p',`細部の資料未確認：${appearance.unconfirmed.map(k=>TRAIT_LABELS[k]||k).join('・')}`,'hint'));
-  box.append(el('p',appearance?.flowerTiming==='months'&&appearance.flowerMonths?.length?`開花月の記載あり：${appearance.flowerMonths.join('・')}月。出典の地域・栽培条件での目安です。`:!info.bloomKnown&&!appearance?.flowerMonths?.length?'開花月は資料未確認です。実や葉の観賞期を開花月として扱っていません。':'季節表記を月に区分した参考表示。芽出し・落葉の正確な月は、資料に記載がある植物だけ採用しています。','hint'));
+  box.append(el('p',appearance?.lifeForm==='moss'?'コケ植物なので花は付けません。胞子のうの季節変化は未確認です。':appearance?.flowerTiming==='months'&&appearance.flowerMonths?.length?`開花月の記載あり：${appearance.flowerMonths.join('・')}月。出典の地域・栽培条件での目安です。`:!info.bloomKnown&&!appearance?.flowerMonths?.length?'開花月は資料未確認です。実や葉の観賞期を開花月として扱っていません。':'季節表記を月に区分した参考表示。芽出し・落葉の正確な月は、資料に記載がある植物だけ採用しています。','hint'));
   const months=el('div',undefined,'phenology');months.setAttribute('aria-label','12か月の開花参考');
   for(let month=1;month<=12;month++){const phase=seasonAt(info,month),cell=button(String(month),()=>{doc.view.month=month;if(preview)preview.view.month=month;calendarMonth=month;sync();message(`${info.label}・${month}月：${phase.label}`);});cell.dataset.phase=phase.bloom?'flower':phase.dormant?'dormant':phase.autumn?'autumn':phase.known?'outside':'unknown';cell.title=`${month}月：${phase.label}`;cell.setAttribute('aria-label',cell.title);months.append(cell);}box.append(months);
   box.append(el('p',info.form==='unmodeled'?'外観は未対応です。配置すると寸法の枠を表示します。':'資料で分かる特徴を描いた参考3Dです。未確認の細部・月には共通の近似が残ります。全品種の実物同等の再現は未完成です。','hint'));
@@ -94,7 +94,7 @@ function syncCalendar(){const year=shown().view.year,months=calendar(plan(),year
   const m=months[calendarMonth-1];$('month-tasks').replaceChildren(el('strong',`${calendarMonth}月の予定`),...m.events.map(t=>{const p=el('p',`#${t.plantId} ${plantInfo(t.kind).label}：${TASKS[t.type]} ×${t.count} ／ ${t.min===null?'時間未入力':time(t.min*t.count,t.max*t.count)}`);p.append(document.createTextNode(' '),button('植物を調整',()=>select(t.plantId)));return p;}));if(!m.events.length)$('month-tasks').append(el('p','植物を選び、「手入れ予定」から追加できます。','hint'));
 }
 function syncIdeas(){const p=plan(),o=observations(p,shown().view);metrics('observations',[[`${o.visible}株`,'この時点に植わっている株'],[`${o.overlap}組`,'株幅・樹冠の重なり'],[`${o.outside}株`,'外周・外構への張り出し']]);
-  const flowers=[...new Set(p.plants.filter(p=>{const s=stateAt(p,shown().view);return s.present&&s.bloom;}).map(p=>plantInfo(p.kind).label))];$('season-story').textContent=`${shown().view.month}月の開花参考：${flowers.join('、')||'カタログ上の開花表示はありません。枝・葉・枯れ穂も見どころです。'}。重なりは平面の幅の参考で、根の競合や栽培可否の判定ではありません。`;
+  const flowers=[...new Set(p.plants.filter(plant=>{const s=stateAt(plant,{...shown().view,waterDepth:pondDepthAt(p,plant.x,plant.z)});return s.present&&s.bloom;}).map(p=>plantInfo(p.kind).label))];$('season-story').textContent=`${shown().view.month}月の開花参考：${flowers.join('、')||'カタログ上の開花表示はありません。枝・葉・枯れ穂も見どころです'}。重なりは平面の幅の参考で、根の競合や栽培可否の判定ではありません。`;
   const candidateKinds=Object.keys(CATALOG).filter(k=>CATALOG[k].sun.includes(p.sun)&&CATALOG[k].moisture.includes(p.moisture)).slice(0,6);$('candidates').replaceChildren(...candidateKinds.map(k=>button(`${CATALOG[k].label} · ${CATALOG[k].season}`,()=>{if(selectedPlant())previewReplacement(k);else{addKind=k;setMode('add');sourceCard('catalog-info',k);message('庭をクリックして、この候補を配置できます。');}})));
   if(!candidateKinds.length)$('candidates').append(el('p','このカタログでは条件に一致する候補が見つかりません。条件を緩めず、植物の追加収録をお待ちください。','hint'));
   $('time-basis').textContent=shown().view.reference?'資料の成株上限寸法を表示中。指定年の予測ではありません。剪定シナリオは適用しません。通常表示に戻すと元の年数・設定へ戻ります。':`年数と季節は別々に指定できます。成長シナリオ未設定 ${o.unmodeled}株は初期寸法のまま。花期・落葉・葉量は地域差のある参考表現です。`;

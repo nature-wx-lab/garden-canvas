@@ -4,9 +4,18 @@ import {emptyDocument,sampleDocument,validateDocument,makePlant,clone,outlineFor
 const view=(year,month,reference=false)=>({year,month,reference,footprints:false,camera:null});
 const fixture=()=>{const d=emptyDocument();d.plans.A.plants=[makePlant('maple',1,2,2)];return d;};
 const task=(type,month,repeat='annual',min=10,max=20,count=1)=>({id:1,type,month,repeat,min,max,count});
+test('water-surface flowering disappears at the same depth boundary as the rendered flowers',()=>{
+ for(const kind of ['p-9802ede000e2','p-891f594612ae']){
+  const plant=makePlant(kind,1,2,2);
+  assert.equal(stateAt(plant,{...view(0,5),waterDepth:.019}).bloom,true);
+  assert.equal(stateAt(plant,{...view(0,5),waterDepth:.02}).bloom,false);
+  assert.equal(stateAt(plant,{...view(0,5),waterDepth:.3}).bloom,false);
+  assert.equal(stateAt(plant,{...view(0,1),waterDepth:0}).bloom,false);
+ }
+});
 test('released catalogue revisions preserve saved garden contents when models are enriched',()=>{
  const original=fixture();original.plans.A.plants.push(makePlant('p-281a043a4b8a',2,5,4));
- for(const revision of ['2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.53','2026-10-10.54','2026-10-10.55','2026-10-10.56','2026-10-10.57','2026-10-10.58',...Array.from({length:44},(_,i)=>`2026-10-11.${i+1}`)]){
+ for(const revision of ['2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.53','2026-10-10.54','2026-10-10.55','2026-10-10.56','2026-10-10.57','2026-10-10.58',...Array.from({length:45},(_,i)=>`2026-10-11.${i+1}`)]){
   const saved={...clone(original),catalogVersion:revision};assert.deepEqual(validateDocument(saved),original);
  }
 });
