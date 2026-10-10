@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.34';
+import {treeProfile} from './tree-profiles.js?v=0.9.35';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -64,6 +64,15 @@ export function seasonAt(info,month){
  }else if(a.persistence==='winterLeafIris'){
   density=[.8,1,1,1,1,.25,0,0,0,0,0,.35][m];scale=month===12?.4:month===1?.7:1;
   phase=density===0?'地下の貯蔵器官で夏秋の休眠':month<=2||month===12?'冬の葉出し（表示上の目安）':'春の葉・初夏の黄変（表示上の目安）';
+ }else if(a.persistence==='floweringLeafBulb'){
+  // Ornithogalum pyrenaicum loses foliage during flowering, not two months later.
+  // Domestic source gives a season, so boundary months remain display conventions.
+  const first=flowerMonths[0]||4,last=flowerMonths.at(-1)||5;
+  density=month<Math.max(1,first-2)||month>last?0:month===first-2?.35:month===first?.45:month===last?0:1;
+  scale=month===first-2?.4:1;phase=density===0?'球根で休眠（境界月は表示目安）':month>=first?'開花中に葉が枯れる時期（表示目安）':'花茎より先に展開する根生葉';
+ }else if(a.persistence==='siculumBulb'){
+  density=[0,0,.4,1,1,.55,0,0,0,0,0,0][m];scale=month===3?.5:1;
+  phase=density===0?'球根で休眠（境界月は表示目安）':month===6?'花後に葉が枯れる時期（表示目安）':'春の根生葉と初夏の花';
  }else if(a.persistence==='springBulb'){
   // Late-winter snowdrops retain their leaves through flowering, then die back.
   // Month boundaries are a temperate display convention; sources describe the cycle.
@@ -106,7 +115,7 @@ export function seasonAt(info,month){
  if(a.seasonalColors?.[season])color=a.seasonalColors[season];
  const woody=!!profile||['tree','shrub','conifer','maple','olive','rose','hydrangea','clematis','climbingrose','mophead','lavender'].includes(info.form);
  const leaflessFlowering=!!a.leaflessBloom&&bloom&&dormant;
- const groundDormant=dormant&&!woody&&!(a.persistence==='coolSeasonAnnual'&&a.seedHeadMonths?.includes(month))&&!a.standingWinter&&!leaflessFlowering&&(leaf==='herb'||!!a.foliageMonths||['deciduousHellebore','summerDormant','springEphemeral','springBulb','lateSpringBulb','autumnBulb','autumnLeafBulb'].includes(a.persistence)||['cyclamen','tulip','narcissus','globe'].includes(info.form));
+ const groundDormant=dormant&&!woody&&!(['coolSeasonAnnual','siculumBulb'].includes(a.persistence)&&a.seedHeadMonths?.includes(month))&&!a.standingWinter&&!leaflessFlowering&&(leaf==='herb'||!!a.foliageMonths||['deciduousHellebore','summerDormant','springEphemeral','springBulb','lateSpringBulb','autumnBulb','autumnLeafBulb'].includes(a.persistence)||['cyclamen','tulip','narcissus','globe'].includes(info.form));
  if(groundDormant)bloom=false;
  if(leaflessFlowering)phase='葉のない花茎の開花期';
  else if(groundDormant)phase=a.persistence==='frostDormantTuber'?'霜後の地上部休眠（冬期の表示目安）':info.life==='annual'?'一年草の生育期外（低温期の参考）':'地上部のない休眠期';

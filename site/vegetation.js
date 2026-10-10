@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.34';
-import {foliageKind} from './appearance.js?v=0.9.34';
-import {detailedFlower,drawDetailedHerb,salviniaPoint} from './plant-detail.js?v=0.9.34';
-import {drawTree} from './tree-model.js?v=0.9.34';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.34';
+import {treeProfile} from './tree-profiles.js?v=0.9.35';
+import {foliageKind} from './appearance.js?v=0.9.35';
+import {detailedFlower,drawDetailedHerb,salviniaPoint} from './plant-detail.js?v=0.9.35';
+import {drawTree} from './tree-model.js?v=0.9.35';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.35';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.34';
+import { plantInfo, stateAt } from './model.js?v=0.9.35';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -14,6 +14,16 @@ const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const TAU=Math.PI*2;
 const shapes={};
+// Flattened equitant fans, arching ribbons and six distinct petaloid segments.
+for(const type of ['libertiaSword','anthericumRibbon','tofieldiaSword','ornithogalumRibbon','rhodoxisKeeled','siculumKeeled','aristeaSword','monocotNarrowTepal','monocotBroadTepal','libertiaInnerTepal','siculumTepal']){
+ const p=[],uv=[],ix=[],rows=40,cols=18,petal=type.endsWith('Tepal'),bell=type==='siculumTepal',ribbon=type.endsWith('Ribbon'),fold=type.endsWith('Keeled')||type==='aristeaSword',lib=type==='libertiaSword';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sn=Math.max(0,Math.sin(t*Math.PI)),width=(petal?(type==='monocotNarrowTepal'?.16:bell?.30:.50):.5)*Math.pow(sn,petal?.50:.28)*(petal?.30+t*.70:1),tip=type==='libertiaInnerTepal'?1-.075*Math.exp(-u*u*35)*Math.pow(t,8):1;
+  const y=bell?t*1.28:t*tip,z=bell?.08+.56*Math.sin(t*1.3):petal?.06*t*t+.16*u*u*sn:ribbon?.55*t*t*t:lib?.035*t*t:fold?.15*t*t+.026*Math.abs(u)*sn:.12*t*t;
+  p.push(u*width,y,z);uv.push(j/cols,t);if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 // Seven low herbs: leaf thickness, teeth, bifid petals and continuous corolla tubes.
 for(const type of ['onosmaBristly','buglossoidesLance','mertensiaFleshy','nierembergiaSpoon','stellariaPointed','dryasCrenate','strawberryLeaflet','stellariaPetal','lowHerbPetal','onosmaTube','mertensiaBell','gromwellSalver','nierembergiaCup']){
  const p=[],uv=[],ix=[],rows=40,corolla=['onosmaTube','mertensiaBell','gromwellSalver','nierembergiaCup'].includes(type),cols=corolla?100:24;
@@ -1237,7 +1247,7 @@ export function plantModel(p,view,detail=1){
     if(radius>0&&bounds.max.y>0){const horizontal=w/(2*radius);g.scale.set(horizontal,h/bounds.max.y,horizontal);}
     if(dormant)for(const mesh of [...g.children])if(['garden-0.3-maple','garden-0.3-petiole'].includes(mesh.material?.customProgramCacheKey())){g.remove(mesh);mesh.geometry.dispose();mesh.dispose();}
   }
-  if((!profile||form==='maple')&&!['chloranthus','acaenaMat','woodPoppy','anemonopsis','nigella','yellowNigella','larkspur'].includes(info.appearance?.architecture)){
+  if((!profile||form==='maple')&&!['libertiaFans','anthericumPanicle','tofieldiaRaceme','ornithogalumRaceme','rhodoxisClump','siculumUmbel','aristeaFans','chloranthus','acaenaMat','woodPoppy','anemonopsis','nigella','yellowNigella','larkspur'].includes(info.appearance?.architecture)){
     // Thin the same deterministic leaf set through budbreak and leaf-fall.
     for(const mesh of [...g.children]){
       const kind=mesh.material?.customProgramCacheKey?.();

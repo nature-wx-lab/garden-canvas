@@ -10,6 +10,32 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('seven monocots separate fans, racemes, flower organs and leafless bulb phases',()=>{
+ const ids=['p-2cd7939ef0a4','p-1a778ae3707d','p-627c04df8f36','p-f0c5907f4bfd','p-82befeb10f78','p-be8815c76ab6','p-8ab41e05ecf8'];
+ for(const id of ids)for(let month=1;month<=12;month++){
+  const g=plantModel(makePlant(id,4601,2,2),view(month)),has=k=>g.children.some(m=>m.userData.component===k);
+  for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
+  if(month===1){if([ids[1],ids[3],ids[4],ids[5]].includes(id))assert.equal(g.children.length,0,id);else assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf')),id);}
+  if(id===ids[3]&&month===5){assert.ok(has('anther'));assert.ok(!g.children.some(m=>m.userData.component==='leaf'));assert.equal(seasonAt(CATALOG[id],5).groundDormant,false);}
+  if(id===ids[3]&&month===7)assert.equal(g.children.length,0,id);
+  if(id===ids[5]&&[6,7].includes(month))assert.equal(g.children.find(m=>m.userData.component==='floralScape').count,21,'all three seven-segment scapes stay connected as leaves die');
+  if(id===ids[5]&&month===7){assert.ok(has('uprightCapsule'));assert.ok(!has('anther'));assert.ok(!has('leaf'));}
+  if(id===ids[5]&&month===9)assert.equal(g.children.length,0,id);
+  if(id===ids[6]&&month===6){assert.ok(has('stemWing'));assert.ok(has('scariousBract'));assert.ok(has('spentFlower'));}
+  if(id===ids[2]&&month===6)assert.ok(has('bracteole'));
+  dispose(g);
+ }
+ const parts=shape=>{const out=[];detailedFlower({add:(shape,kind)=>out.push({shape,kind}),branch:(from,to,r,color,kind)=>out.push({kind})},{x:0,y:0,z:0,shape,color:'#dddddd'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});return out;};
+ for(const shape of ['libertiaWhite','anthericumStar','tofieldiaStar','ornithogalumStar','rhodoxisStar','siculumBell','aristeaBlue']){
+  const ps=parts(shape);assert.equal(ps.filter(x=>x.kind.startsWith('petal')).length,6,shape);assert.equal(ps.filter(x=>x.kind==='anther').length,['libertiaWhite','aristeaBlue'].includes(shape)?3:6,shape);
+ }
+ assert.equal(parts('libertiaWhite').filter(x=>x.shape==='libertiaInnerTepal').length,3);
+ assert.equal(parts('tofieldiaStar').filter(x=>x.kind==='style').length,3);
+ assert.equal(parts('ornithogalumStar').filter(x=>x.kind==='flattenedFilament').length,6);
+ assert.notEqual(seasonAt(CATALOG[ids[0]],1).leafPatternColor,seasonAt(CATALOG[ids[0]],7).leafPatternColor);
+ assert.ok(seasonAt(CATALOG[ids[2]],1).leafDensity>0);assert.equal(seasonAt(CATALOG[ids[4]],1).groundDormant,true);
+});
+
 test('seven low herbs distinguish hairy and succulent foliage, seasonal shoots and floral organs',()=>{
  const ids=['p-eb3e85895cf0','p-3ae4c4420803','p-1e2973ec88a8','p-6538675cf4cc','p-51ca617a418b','p-565b7daf5926','p-b4a7d7ba619b'];
  for(const id of ids)for(let month=1;month<=12;month++){
