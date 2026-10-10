@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.27';
-import {foliageKind} from './appearance.js?v=0.9.27';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.27';
-import {drawTree} from './tree-model.js?v=0.9.27';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.27';
+import {treeProfile} from './tree-profiles.js?v=0.9.28';
+import {foliageKind} from './appearance.js?v=0.9.28';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.28';
+import {drawTree} from './tree-model.js?v=0.9.28';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.28';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.27';
+import { plantInfo, stateAt } from './model.js?v=0.9.28';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,6 +13,16 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+shapes.horsetailCulm=keep(new THREE.CylinderGeometry(1,1,1,18,1));
+for(const type of ['umbrellaBract','twigRushBlade','reducedSheath','horsetailSheath']){
+ const p=[],uv=[],ix=[],rows=28,cols=8,bract=type==='umbrellaBract',rush=type==='twigRushBlade';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,wide=(bract?.027:rush?.004:.20)*Math.pow(1-t,bract?.68:rush?.35:1),fold=rush?.004*(1-t):.018;
+  p.push(u*wide,t,(bract?.24:rush?.07:.035)*t*t+fold*Math.abs(u)*(1-t));uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 shapes.triangularCulm=keep(new THREE.CylinderGeometry(1,1,1,3,1));
 // Narrow leaves retain their own cross-section and apex instead of sharing a broad blade.
 for(const type of ['fescueNeedle','milletBlade','sedgeRibbon','ficiniaBlade','lomandraBlade','acorusBlade','goldBambooLeaf','whitetopBract','grassGlume']){
