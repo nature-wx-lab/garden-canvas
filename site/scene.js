@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant } from './model.js?v=0.9.28';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.28';
+import { plantInfo, stateAt, inside, canPlant, zoneAt } from './model.js?v=0.9.29';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.29';
 
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
 function mat(color){if(!sceneMaterials.has(color))sceneMaterials.set(color,new THREE.MeshStandardMaterial({color,roughness:.92}));return sceneMaterials.get(color);}
@@ -19,6 +19,10 @@ const turfTexture=grainTexture('grass'),soilTexture=grainTexture('soil');
 const turf=new THREE.MeshStandardMaterial({map:turfTexture,bumpMap:turfTexture,bumpScale:.014,roughness:1});
 const soil=new THREE.MeshStandardMaterial({map:soilTexture,bumpMap:soilTexture,bumpScale:.023,roughness:1});
 sharedMaterials.add(turf);sharedMaterials.add(soil);
+const waterNormals=new Uint8Array(128*128*4);
+for(let y=0;y<128;y++)for(let x=0;x<128;x++){const i=(y*128+x)*4,phase=x/128*Math.PI*12+y/128*Math.PI*8;waterNormals[i]=128+Math.round(15*Math.cos(phase));waterNormals[i+1]=128+Math.round(11*Math.sin(phase+y/128*Math.PI*4));waterNormals[i+2]=254;waterNormals[i+3]=255;}
+const rippleTexture=new THREE.DataTexture(waterNormals,128,128,THREE.RGBAFormat);rippleTexture.wrapS=rippleTexture.wrapT=THREE.RepeatWrapping;rippleTexture.magFilter=THREE.LinearFilter;rippleTexture.needsUpdate=true;
+const water=new THREE.MeshPhysicalMaterial({color:'#537b73',roughness:.25,metalness:.18,clearcoat:.65,clearcoatRoughness:.25,normalMap:rippleTexture,normalScale:new THREE.Vector2(.3,.3)});sharedMaterials.add(water);
 const shadowSize=64,shadowData=new Uint8Array(shadowSize*shadowSize*4);
 for(let y=0;y<shadowSize;y++)for(let x=0;x<shadowSize;x++){const i=(y*shadowSize+x)*4,r=Math.hypot(x/63*2-1,y/63*2-1);shadowData[i]=33;shadowData[i+1]=39;shadowData[i+2]=20;shadowData[i+3]=Math.max(0,Math.round((1-Math.min(1,r))**2*90));}
 const contactTexture=new THREE.DataTexture(shadowData,shadowSize,shadowSize,THREE.RGBAFormat);contactTexture.needsUpdate=true;contactTexture.magFilter=THREE.LinearFilter;
@@ -65,7 +69,8 @@ export function createScene(container,onPick){
     const candidates=Math.min(7000,Math.round(plan.width*plan.depth*180));
     for(let i=0;i<candidates;i++){
       const x=rand()*plan.width,z=rand()*plan.depth;if(!canPlant(plan,x,z))continue;
-      if(plan.zones.some(zone=>inside(x,z,zone.points))){
+      const zone=zoneAt(plan,x,z);if(zone?.kind==='water')continue;
+      if(zone){
         const dummy=new THREE.Object3D(),size=.015+rand()*.025;dummy.position.set(x-plan.width/2,.018,z-plan.depth/2);dummy.rotation.set(rand(),rand()*6,rand());dummy.scale.set(size,.008+rand()*.008,size*.42);dummy.updateMatrix();matrices.push(dummy.matrix.clone());colors.push(new THREE.Color().setHSL(.07+rand()*.025,.32+rand()*.15,.16+rand()*.14));
       }else{
         const h=.025+rand()*.028;
@@ -78,7 +83,7 @@ export function createScene(container,onPick){
   function render(next,nextView,id){
     plan=next;view=nextView;selection=id;dispose(root);root=new THREE.Group();plants=new THREE.Group();root.add(plants);scene.add(root);
     const shape=polygon(plan.outline,0,turf);const earth=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false}),mat('#807357'));earth.rotation.x=-Math.PI/2;earth.position.y=-.186;earth.castShadow=true;earth.receiveShadow=true;root.add(earth);
-    for(const z of plan.zones){polygon(z.points,.006,soil);line([...z.points,z.points[0]].map(([x,z])=>new THREE.Vector3(x-plan.width/2,.012,z-plan.depth/2)),'#756d51');}
+    for(const [i,z] of plan.zones.entries()){polygon(z.points,.006+i*.0002,z.kind==='water'?water:soil);line([...z.points,z.points[0]].map(([x,z])=>new THREE.Vector3(x-plan.width/2,.012,z-plan.depth/2)),z.kind==='water'?'#6c8981':'#756d51');}
     groundDetail();
     if(view.footprints){const verts=[];for(let x=0;x<=plan.width;x++)for(let z=0;z<plan.depth;z+=.25)if(inside(x,z,plan.outline)&&inside(x,z+.25,plan.outline))verts.push(new THREE.Vector3(x-plan.width/2,.014,z-plan.depth/2),new THREE.Vector3(x-plan.width/2,.014,z+.25-plan.depth/2));for(let z=0;z<=plan.depth;z++)for(let x=0;x<plan.width;x+=.25)if(inside(x,z,plan.outline)&&inside(x+.25,z,plan.outline))verts.push(new THREE.Vector3(x-plan.width/2,.014,z-plan.depth/2),new THREE.Vector3(x+.25-plan.width/2,.014,z-plan.depth/2));root.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(verts),new THREE.LineBasicMaterial({color:'#f2efcd',transparent:true,opacity:.48})));}
     for(const o of plan.obstacles){const cx=o.x+o.width/2-plan.width/2,cz=o.z+o.depth/2-plan.depth/2;
@@ -88,7 +93,7 @@ export function createScene(container,onPick){
     }
     const detail=Math.min(1,Math.sqrt(18/Math.max(1,plan.plants.length)));
     for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;const g=plantModel(p,view,detail);g.position.set(p.x-plan.width/2,.012,p.z-plan.depth/2);plants.add(g);
-      const contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.rotation.x=-Math.PI/2;contact.position.set(g.position.x,.012,g.position.z);contact.scale.set(s.spread*.95,s.spread*.95,1);root.add(contact);
+      const contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.rotation.x=-Math.PI/2;contact.position.set(g.position.x,.012,g.position.z);contact.scale.set(s.spread*.95,s.spread*.95,1);if(zoneAt(plan,p.x,p.z)?.kind!=='water')root.add(contact);
       if(view.footprints)circle(p.x,p.z,s.spread/2,'#9bb9b1');if(p.id===id){circle(p.x,p.z,s.spread/2+.06,'#d2b05f',.018);if(p.management){circle(p.x,p.z,p.management.spread/2,'#7bacad',p.management.height);for(const a of [0,Math.PI]){const x=p.x-plan.width/2+Math.cos(a)*p.management.spread/2,z=p.z-plan.depth/2;line([new THREE.Vector3(x,.04,z),new THREE.Vector3(x,p.management.height,z)],'#7bacad');}}}
     }
     const size=Math.max(plan.width,plan.depth)+8;Object.assign(sun.shadow.camera,{left:-size/2,right:size/2,top:size/2,bottom:-size/2});sun.shadow.camera.updateProjectionMatrix();

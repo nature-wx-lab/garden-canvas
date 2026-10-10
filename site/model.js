@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.28';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.28';
-import { seasonAt } from './catalog-search.js?v=0.9.28';
+import {treeProfile} from './tree-profiles.js?v=0.9.29';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.29';
+import { seasonAt } from './catalog-search.js?v=0.9.29';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -14,6 +14,7 @@ const keys=(o,expected)=>o&&Object.getPrototypeOf(o)===Object.prototype&&Object.
 const cross=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
 const onSegment=(p,a,b)=>Math.abs(cross(a,b,p))<1e-8&&p[0]>=Math.min(a[0],b[0])-1e-8&&p[0]<=Math.max(a[0],b[0])+1e-8&&p[1]>=Math.min(a[1],b[1])-1e-8&&p[1]<=Math.max(a[1],b[1])+1e-8;
 export function inside(x,z,points){let result=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const a=points[i],b=points[j];if(onSegment([x,z],a,b))return true;if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])result=!result;}return result;}
+export const zoneAt=(plan,x,z)=>plan.zones.findLast(zone=>inside(x,z,zone.points));
 export const area=points=>Math.abs(points.reduce((s,p,i)=>{const q=points[(i+1)%points.length];return s+p[0]*q[1]-q[0]*p[1];},0)/2);
 export const outlineFor=(shape,w,d)=>shape==='lshape'?[[0,0],[w,0],[w,d*.55],[w*.55,d*.55],[w*.55,d],[0,d]]:[[0,0],[w,0],[w,d],[0,d]];
 export function validOutline(points,w,d,minArea=1){
@@ -91,7 +92,7 @@ function migrateV1(v){
 }
 export function validateDocument(input){
   const bad=()=>{throw new Error('対応していない庭データ、または範囲外の値です。元の庭は変更していません。');};
-  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10','2026-10-10.11','2026-10-10.12','2026-10-10.13','2026-10-10.14','2026-10-10.15','2026-10-10.16','2026-10-10.17','2026-10-10.18','2026-10-10.19','2026-10-10.20','2026-10-10.21','2026-10-10.22','2026-10-10.23','2026-10-10.24','2026-10-10.25','2026-10-10.26','2026-10-10.27','2026-10-10.28','2026-10-10.29','2026-10-10.30','2026-10-10.31','2026-10-10.32','2026-10-10.33','2026-10-10.34','2026-10-10.35','2026-10-10.36','2026-10-10.37','2026-10-10.38','2026-10-10.39','2026-10-10.40','2026-10-10.41'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
+  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10','2026-10-10.11','2026-10-10.12','2026-10-10.13','2026-10-10.14','2026-10-10.15','2026-10-10.16','2026-10-10.17','2026-10-10.18','2026-10-10.19','2026-10-10.20','2026-10-10.21','2026-10-10.22','2026-10-10.23','2026-10-10.24','2026-10-10.25','2026-10-10.26','2026-10-10.27','2026-10-10.28','2026-10-10.29','2026-10-10.30','2026-10-10.31','2026-10-10.32','2026-10-10.33','2026-10-10.34','2026-10-10.35','2026-10-10.36','2026-10-10.37','2026-10-10.38','2026-10-10.39','2026-10-10.40','2026-10-10.41','2026-10-10.42'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
   if(!keys(v,['version','modelVersion','catalogVersion','active','plans','view'])||v.version!==2||v.modelVersion!==MODEL_VERSION||v.catalogVersion!==CATALOG_VERSION||!['A','B'].includes(v.active)||!keys(v.plans,['A','B'])||!v.plans.A||!v.plans[v.active])bad();
   const view=v.view;
   if(!keys(view,['month','year','reference','footprints','camera'])||!integer(view.month,1,12)||!integer(view.year,0,10)||typeof view.reference!=='boolean'||typeof view.footprints!=='boolean')bad();
@@ -99,7 +100,7 @@ export function validateDocument(input){
   for(const plan of Object.values(v.plans)){
     if(plan===null)continue;
     if(!keys(plan,['width','depth','outline','plants','zones','obstacles','hours','prep','sun','moisture'])||!within(plan.width,2,30)||!within(plan.depth,2,30)||!validOutline(plan.outline,plan.width,plan.depth)||!Array.isArray(plan.plants)||plan.plants.length>100||!Array.isArray(plan.zones)||plan.zones.length>12||!Array.isArray(plan.obstacles)||plan.obstacles.length>16||!Array.isArray(plan.hours)||plan.hours.length!==12||plan.hours.some(h=>h!==null&&!within(h,0,744))||!within(plan.prep,0,600)||!['sun','part','shade'].includes(plan.sun)||!['drained','moist'].includes(plan.moisture))bad();
-    for(const z of plan.zones)if(!keys(z,['points'])||!validOutline(z.points,plan.width,plan.depth,.04)||!contained(z.points,plan.outline))bad();
+    for(const z of plan.zones)if(!(keys(z,['points'])||keys(z,['points','kind'])&&['soil','water'].includes(z.kind))||!validOutline(z.points,plan.width,plan.depth,.04)||!contained(z.points,plan.outline))bad();
     for(const o of plan.obstacles)if(!keys(o,['type','x','z','width','depth','height'])||!['house','path','fence'].includes(o.type)||!within(o.x,0,30)||!within(o.z,0,30)||!within(o.width,.1,30)||!within(o.depth,.1,30)||!within(o.height,.02,8)||!contained(obstaclePoints(o),plan.outline))bad();
     const ids=new Set();
     for(const p of plan.plants){

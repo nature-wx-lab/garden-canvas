@@ -72,3 +72,11 @@ test('maple uses broad palmate blades and preserves input dimensions',()=>{
   }
 });
 import {Box3} from '../site/vendor/three.module.js';
+
+test('water zones preserve old soil plans and strictly validate new surface kinds',()=>{
+ const old=sampleDocument();assert.deepEqual(validateDocument(old),old);
+ const d=sampleDocument();d.plans.A.zones[0].kind='water';d.plans.A.zones[1].kind='soil';
+ assert.deepEqual(validateDocument(JSON.parse(JSON.stringify(d))),d);
+ for(const kind of ['pond','__proto__',null,{},1]){const bad=clone(d);bad.plans.A.zones[0].kind=kind;assert.throws(()=>validateDocument(bad));}
+ const bad=clone(d);bad.plans.A.zones[0].depth=3;assert.throws(()=>validateDocument(bad));
+});
