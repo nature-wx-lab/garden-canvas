@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.19';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.19';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.19';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.19';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.19';
-import { createScene } from './scene.js?v=0.9.19';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.20';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.20';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.20';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.20';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.20';
+import { createScene } from './scene.js?v=0.9.20';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
@@ -27,7 +27,7 @@ function sourceCard(target,kind){const info=plantInfo(kind),box=$(target);box.re
   else if(appearance?.phenologyRegion)box.append(el('p',appearance.phenologyRegion,'hint'));
   if(appearance?.winterClimateSensitive)box.append(el('p','冬姿は気候で変わります。暖地では葉が残り、強い寒さでは地上部が枯れる場合があるという資料に基づく参考表示です。','hint'));
   if(appearance?.unconfirmed.length)box.append(el('p',`細部の資料未確認：${appearance.unconfirmed.map(k=>TRAIT_LABELS[k]||k).join('・')}`,'hint'));
-  box.append(el('p',appearance?.flowerTiming==='months'?`開花月の記載あり：${appearance.flowerMonths.join('・')}月。出典の地域・栽培条件での目安です。`:'季節表記を月に区分した参考表示。芽出し・落葉の正確な月は、資料に記載がある植物だけ採用しています。','hint'));
+  box.append(el('p',appearance?.flowerTiming==='months'&&appearance.flowerMonths?.length?`開花月の記載あり：${appearance.flowerMonths.join('・')}月。出典の地域・栽培条件での目安です。`:!info.bloomKnown&&!appearance?.flowerMonths?.length?'開花月は資料未確認です。実や葉の観賞期を開花月として扱っていません。':'季節表記を月に区分した参考表示。芽出し・落葉の正確な月は、資料に記載がある植物だけ採用しています。','hint'));
   const months=el('div',undefined,'phenology');months.setAttribute('aria-label','12か月の開花参考');
   for(let month=1;month<=12;month++){const phase=seasonAt(info,month),cell=button(String(month),()=>{doc.view.month=month;if(preview)preview.view.month=month;calendarMonth=month;sync();message(`${info.label}・${month}月：${phase.label}`);});cell.dataset.phase=phase.bloom?'flower':phase.dormant?'dormant':phase.autumn?'autumn':phase.known?'outside':'unknown';cell.title=`${month}月：${phase.label}`;cell.setAttribute('aria-label',cell.title);months.append(cell);}box.append(months);
   box.append(el('p',info.form==='unmodeled'?'外観は未対応です。配置すると寸法の枠を表示します。':'資料で分かる特徴を描いた参考3Dです。未確認の細部・月には共通の近似が残ります。全品種の実物同等の再現は未完成です。','hint'));

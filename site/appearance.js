@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.19';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.20';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 export const TRAIT_VALUES={heart:'心形',round:'円形',kidney:'腎形',triangular:'三角形',lobed:'切れ込みのある葉',compound:'複葉',serrated:'鋸歯のある葉',narrow:'細葉',blade:'線形・剣形',needle:'針形',leaf:'卵形・楕円形',obovate:'倒卵形',spoon:'へら形',arrow:'矢じり形',margin:'覆輪',center:'中斑',spots:'斑点',silverVeins:'銀葉・緑の葉脈',stripes:'縞斑',evergreen:'常緑',semiEvergreen:'半常緑（寒さで変化）',deciduous:'落葉（幹・枝は残る）',winterDormant:'冬に地上部休眠',summerDormant:'夏に地上部休眠',bell:'鐘形',trumpet:'漏斗・ラッパ形',tube:'筒形',urn:'壺形',cup:'杯形',flat:'平開',star:'星形',cross:'十字形',pea:'蝶形',lipped:'唇形',spurred:'距のある花',spoonRay:'スプーン状の花弁',pompon:'ポンポン咲き',smooth:'平滑',peeling:'剥離する樹皮',furrowed:'縦に割れる樹皮',scaly:'鱗片状',lenticels:'皮目',clump:'株立ち',mound:'こんもり',creeping:'地面に広がる',rosette:'ロゼット',upright:'直立',arching:'弓状',spreading:'横に広がる',weeping:'枝垂れ',columnar:'細い直立形',pyramidal:'円錐形',vase:'箒状',rounded:'丸い樹冠',multistem:'根元から株立ち',oval:'卵形の樹冠',layered:'段状の横枝',irregular:'不規則な枝'};
@@ -102,3 +102,5 @@ Object.assign(TRAIT_VALUES,{autumnHellebore:'10月から葉出し、6〜7月に�
 Object.assign(TRAIT_VALUES,{feltOval:'毛に覆われる厚い楕円葉',feltRound:'毛に覆われる小さな丸葉',wireRound:'細い柄をもつ小さな丸葉',groundIvyLeaf:'丸い鋸歯のある腎形の葉',newLookLeaf:'丸い大きな切れ込みのある幅広い銀葉',curlyLeucothoe:'強く反り返り波打つ厚い葉',persianLeaf:'太い葉脈と浅い鋸歯のある細長い葉',gardeniaFlower:'クチナシの筒と重なり合う裂片（一重型の参考）',pityrodiaFlower:'白い毛の萼と桃色の筒状の唇形花',groundIvyFlower:'葉腋に付く小さな筒状の唇形花'});
 
 Object.assign(TRAIT_VALUES,{grassRibbon:'弓なりに垂れる細い帯状葉',hakoneBlade:'茎に付く細い竹葉状の葉',dichondraLeaf:'切れ込みのある丸い腎形葉',pericallisLeaf:'丸く広い鋸歯葉',pericallisHead:'暗い花芯を囲む舌状花',nemesiaLips:'上唇4裂・広い下唇と膨らんだ喉部',sedgeSpike:'短い小穂',featherPanicle:'枝分かれした羽毛状の穂'});
+
+Object.assign(TRAIT_VALUES,{foxFaceLeaf:"毛のある大きな浅裂葉",solanumStar:"5裂の星形花と中央の葯",kaleRound:"大きく波打つ丸い照葉",pepperLeaf:"先の尖った全縁葉",pepperMosaic:"白・紫・緑の不規則な斑",cloverLeaflet:"毛のある丸〜倒卵形の小葉",crimsonRaceme:"赤い蝶形花が集まる細長い花穂",iceSpoon:"粒状の貯水細胞をもつ多肉質のへら形葉",bladderCells:"膨らんだ細胞が輝く表面",mesembFlower:"細い多数の花弁と中央の雄しべ",pinkSageLeaf:"丸みのある鋸歯をもつ卵形葉",pinkSageLips:"曲がる花筒と上下の唇・突き出す雄しべ",coreopsisLinear:"細い線形の対生葉",coreopsisHead:"先が裂けた舌状花と黄色い筒状花"});

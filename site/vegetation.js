@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.19';
-import {foliageKind} from './appearance.js?v=0.9.19';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.19';
-import {drawTree} from './tree-model.js?v=0.9.19';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.19';
+import {treeProfile} from './tree-profiles.js?v=0.9.20';
+import {foliageKind} from './appearance.js?v=0.9.20';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.20';
+import {drawTree} from './tree-model.js?v=0.9.20';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.20';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.19';
+import { plantInfo, stateAt } from './model.js?v=0.9.20';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,6 +13,31 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+for(const type of ['foxFaceLeaf','pepperLeaf','kaleRound','cloverLeaflet','iceSpoon','pinkSageLeaf','coreopsisLinear','coreopsisRay']){
+ const kale=type==='kaleRound',pos=[],uv=[],idx=[],rows=kale?96:40,cols=kale?32:18,fox=type==='foxFaceLeaf',clover=type==='cloverLeaflet',ice=type==='iceSpoon',sage=type==='pinkSageLeaf',ray=type==='coreopsisRay';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t));
+  let width=(kale?.63:fox?.52:clover?.50:ice?.25:sage?.39:ray?.41:type==='coreopsisLinear'?.037:.22)*Math.pow(sin,kale||clover?.49:ray?.30:.73);
+  if(kale)width*=(.30+.90*t)*(1+.08*Math.sin(t*35));
+  if(fox)width*=.64+.36*Math.pow(.5+.5*Math.cos((t-.1)*Math.PI*7),.6);
+  if(sage||clover)width*=.95+.05*Math.cos(t*Math.PI*(sage?17:28));
+  if(ice)width*=.35+.90*t;
+  const wave=kale?.056*Math.sin(t*35+u*5)*Math.pow(Math.abs(u),3)*sin:fox?.018*Math.sin(t*27)*u*u:0;
+  const tip=ray?-.14*Math.pow(t,9)*(.5+.5*Math.cos(u*Math.PI*3)):0;
+  pos.push(u*width,t+tip,(kale?.23:ice?.08:.13)*t*t+(ice?.12:.08)*u*u*sin+wave);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
+for(const type of ['solanumStar','pepperFruit','foxFaceFruit']){
+ const pos=[],uv=[],idx=[],rows=26,cols=60,star=type==='solanumStar',fox=type==='foxFaceFruit';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,an=j/cols*Math.PI*2,rad=star?t*(.69+.31*Math.cos(an*5)):(fox?.48:.17)*Math.pow(Math.sin(Math.PI*t),fox?.58:.60)*(1.23-.65*t),y=star?.09*t+.08*t*t*Math.cos(an*5):t;
+  pos.push(Math.sin(an)*rad,y,Math.cos(an)*rad);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 for(const type of ['nasturtiumShield','morningGloryRound','morningGloryStar']){
  const pos=[],uv=[],idx=[],rows=28,cols=100,leaf=type==='nasturtiumShield',star=type==='morningGloryStar';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -589,6 +614,15 @@ function windShader(shader,kind){
       diffuseColor.rgb*=shade;
       diffuseColor.rgb+=diffuseColor.rgb*(midrib*0.23+veins*0.055);
     `);
+    if(kind.startsWith('leaf-pepperMosaic'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      float cloud=sin(vUv.x*15.0+sin(vUv.y*13.0)*2.0)+sin(vUv.y*23.0-vUv.x*8.0)*.62;
+      float fleck=sin(vUv.x*193.0+sin(vUv.y*167.0)*2.0)*sin(vUv.y*219.0);
+      float white=smoothstep(.26,.43,cloud+fleck*.19),purple=smoothstep(-.85,-.60,cloud)*(1.0-white);
+      diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.65,.38,.68),purple*.74);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.78,.78,.68),white);
+      #include <emissivemap_fragment>`);
+    if(kind==='leaf-ice-cells')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      vec2 cell=fract(vUv*vec2(31.0,63.0))-.5;float bead=1.0-smoothstep(.12,.28,length(cell));
+      diffuseColor.rgb+=vec3(.13,.14,.10)*bead;\n#include <emissivemap_fragment>`);
     if(kind.startsWith('petal-nemophila'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
       float sector=fract(vUv.x*5.0+0.5)-0.5;
       float lines=pow(max(0.0,cos(sector*52.0+vUv.y*4.0)),28.0)*vUv.y;
@@ -736,7 +770,7 @@ function windShader(shader,kind){
 const materialCache=new Map();
 function material(kind){
   if(materialCache.has(kind))return materialCache.get(kind);
-  const m=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:kind.startsWith('leaf-glossy')?.42:kind.startsWith('leaf')||kind==='maple'?.76:.88,side:THREE.DoubleSide});
+  const m=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:kind.startsWith('fruit-glossy')?.32:kind.startsWith('leaf-glossy')?.42:kind.startsWith('leaf')||kind==='maple'?.76:.88,side:THREE.DoubleSide});
   m.defines={USE_UV:''};m.onBeforeCompile=s=>windShader(s,kind);m.customProgramCacheKey=()=>`garden-0.3-${kind}`;
   materialCache.set(kind,m);sharedMaterials.add(m);return m;
 }

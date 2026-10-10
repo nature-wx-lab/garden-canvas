@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.19';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.19';
-import { seasonAt } from './catalog-search.js?v=0.9.19';
+import {treeProfile} from './tree-profiles.js?v=0.9.20';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.20';
+import { seasonAt } from './catalog-search.js?v=0.9.20';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -67,8 +67,15 @@ export function stateAt(p,view){
       season.label=season.phase;
     }
   }
-  if(info.life==='annual'&&info.appearance?.persistence==='warmSeasonAnnual'&&dateIndex(view)>=Math.floor(p.start/12)*12+11){
+  const warmEnd=info.appearance?.foliageMonths?.includes(12)?12:11;
+  if(info.life==='annual'&&info.appearance?.persistence==='warmSeasonAnnual'&&dateIndex(view)>=Math.floor(p.start/12)*12+warmEnd){
     Object.assign(season,{bloom:false,dormant:true,groundDormant:true,leafDensity:0,leafScale:0,shootScale:1,phase:'低温期を迎えて生育終了',label:'低温期を迎えて生育終了'});
+  }
+  if(info.appearance?.architecture==='ornamentalKale'){
+    const firstSpring=Math.floor(p.start/12)+(p.start%12>=4?1:0),springIndex=firstSpring*12+1;
+    // The first winter rosette elongates in spring. An uncut stem does not
+    // revert to a fresh seedling when the calendar reaches the next autumn.
+    season.kaleBolting=Math.max(0,Math.min(1,(dateIndex(view)-springIndex+1)/3));
   }
   if(flowerOptions?.length)season.flowerColor=flowerOptions[(p.id-1)%flowerOptions.length];
   return {present,expired,...season,age:Math.max(0,age)/12,height,spread,leafHeight,natural,trunkHeight,basis,last,unsupported,winter:[12,1,2].includes(view.month)};
@@ -84,7 +91,7 @@ function migrateV1(v){
 }
 export function validateDocument(input){
   const bad=()=>{throw new Error('対応していない庭データ、または範囲外の値です。元の庭は変更していません。');};
-  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10','2026-10-10.11','2026-10-10.12','2026-10-10.13','2026-10-10.14','2026-10-10.15','2026-10-10.16','2026-10-10.17','2026-10-10.18','2026-10-10.19','2026-10-10.20','2026-10-10.21','2026-10-10.22','2026-10-10.23','2026-10-10.24','2026-10-10.25','2026-10-10.26','2026-10-10.27','2026-10-10.28','2026-10-10.29','2026-10-10.30','2026-10-10.31','2026-10-10.32','2026-10-10.33'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
+  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10','2026-10-10.11','2026-10-10.12','2026-10-10.13','2026-10-10.14','2026-10-10.15','2026-10-10.16','2026-10-10.17','2026-10-10.18','2026-10-10.19','2026-10-10.20','2026-10-10.21','2026-10-10.22','2026-10-10.23','2026-10-10.24','2026-10-10.25','2026-10-10.26','2026-10-10.27','2026-10-10.28','2026-10-10.29','2026-10-10.30','2026-10-10.31','2026-10-10.32','2026-10-10.33','2026-10-10.34'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
   if(!keys(v,['version','modelVersion','catalogVersion','active','plans','view'])||v.version!==2||v.modelVersion!==MODEL_VERSION||v.catalogVersion!==CATALOG_VERSION||!['A','B'].includes(v.active)||!keys(v.plans,['A','B'])||!v.plans.A||!v.plans[v.active])bad();
   const view=v.view;
   if(!keys(view,['month','year','reference','footprints','camera'])||!integer(view.month,1,12)||!integer(view.year,0,10)||typeof view.reference!=='boolean'||typeof view.footprints!=='boolean')bad();
