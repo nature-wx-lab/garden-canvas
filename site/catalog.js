@@ -1,7 +1,7 @@
-import { EXPANDED_CATALOG, BASE_POPULARITY } from './catalog-data.js?v=0.9.2';
-import {attachAppearance} from './appearance.js?v=0.9.2';
+import { EXPANDED_CATALOG, BASE_POPULARITY } from './catalog-data.js?v=0.9.3';
+import {attachAppearance} from './appearance.js?v=0.9.3';
 // Public botanical facts; monthly boundaries and procedural geometry are display conventions.
-export const CATALOG_VERSION='2026-10-10.17';
+export const CATALOG_VERSION='2026-10-10.18';
 const nc='https://plants.ces.ncsu.edu/plants/';
 const mo='https://plantfinder.mobot.org/PlantFinderDetails.aspx?taxonid=';
 const BASE_CATALOG={

@@ -61,7 +61,7 @@ test('every catalog entry has an explicit evidence record and no unsupported com
  const allowed=new Set(['sources','basis','status','unconfirmed','arrangement','inflorescence','flowerShape','habit','leafShape','leafTexture','leafColor','barkColor','barkPattern','petals','persistence','flowerMonths','flowerTiming','emergenceMonths','dormantMonths','leafPattern','patternColor','flowerLayers','flowerPattern','scientificName','phenologyRegion','leafLength','leafRelief','seasonalColors','stemColor','leaflets','compoundType','standingWinter','flowerSeasons','leafMargin','architecture','winterClimateSensitive','lifeForm','flowerPatternColor','outerFlowerPattern','flowerRadius','seedHeadMonths','seedColor','flowerPalette','flowerGuides','foliageMonths','leaflessBloom','flowerOptions','leafletShape','flowerFadeTo','headRadius','inflorescenceLength','leafletCounts','leafUnderside','springShootColor','stamenCount','leafFlushAfterFlower','monthlyLeafColors','bracts','flowerOutsideColor','flowerEyeColor','monthlyPatternColors']);
  for(const [id,a] of Object.entries(APPEARANCE_DATA)){
   assert.ok(Object.keys(a).every(k=>allowed.has(k)),id);assert.ok(['attributes','unconfirmed','partial'].includes(a.status));
-  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['plantsofhawaii.org','www.takii.co.jp','shop.takii.co.jp','bibliotecadelbotanico.org','w3.biosci.utexas.edu','www.gardentrials.com','pmc.ncbi.nlm.nih.gov','pza.sanbi.org','floraseries.landcareresearch.co.nz','staff.fukuoka-edu.ac.jp','flora.uniud.it','www3.gobiernodecanarias.org','www.nzflora.info','agrobiodiversity.uniag.sk','www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au','www.nparks.gov.sg','provenwinners.jp','pacificbulbsociety.org','keys.landcareresearch.co.nz','plantipp.eu','www.wairere.nz','hosho.ees.hokudai.ac.jp','www.hokudai.ac.jp','www.lab.toho-u.ac.jp','eprints.lib.hokudai.ac.jp','www.town.karuizawa.lg.jp','library.dbca.wa.gov.au','www.hinshu2.maff.go.jp','matsunaga-kadan.com','oniduka.base.shop'].includes(u.hostname));assert.ok(['catalog-entry','species','genus'].includes(source.scope));}
+  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['www.efloras.org','www.royalvanzanten.com','www.panamseed.com','www.fleuroselect.com','hakusan1.co.jp','plantsofhawaii.org','www.takii.co.jp','shop.takii.co.jp','bibliotecadelbotanico.org','w3.biosci.utexas.edu','www.gardentrials.com','pmc.ncbi.nlm.nih.gov','pza.sanbi.org','floraseries.landcareresearch.co.nz','staff.fukuoka-edu.ac.jp','flora.uniud.it','www3.gobiernodecanarias.org','www.nzflora.info','agrobiodiversity.uniag.sk','www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au','www.nparks.gov.sg','provenwinners.jp','pacificbulbsociety.org','keys.landcareresearch.co.nz','plantipp.eu','www.wairere.nz','hosho.ees.hokudai.ac.jp','www.hokudai.ac.jp','www.lab.toho-u.ac.jp','eprints.lib.hokudai.ac.jp','www.town.karuizawa.lg.jp','library.dbca.wa.gov.au','www.hinshu2.maff.go.jp','matsunaga-kadan.com','oniduka.base.shop'].includes(u.hostname));assert.ok(['catalog-entry','species','genus'].includes(source.scope));}
   for(const [field,index] of Object.entries(a.basis)){assert.ok(Object.hasOwn(a,field));assert.ok(Number.isInteger(index)&&index>=0&&index<a.sources.length,id+':'+field);}
   for(const field of ['flowerMonths','emergenceMonths','dormantMonths'])if(a[field])assert.ok(a[field].length>0&&a[field].every(m=>Number.isInteger(m)&&m>=1&&m<=12),id);
   for(let m=1;m<=12;m++){const s=seasonAt(CATALOG[id],m);assert.ok(s.leafDensity>=0&&s.leafDensity<=1);assert.ok(s.leafScale>=0&&s.leafScale<=1);if(s.groundDormant)assert.equal(s.bloom,false);}
@@ -443,4 +443,40 @@ test('silver plants retain documented winter foliage and distinguish Japanese be
  }
  const astelia=makePlant('p-928f3f1df9b2',523,2,2),winter=plantModel(astelia,view(1)),summer=plantModel(astelia,view(6));
  const blades=g=>g.children.find(m=>m.geometry.userData.asteliaBlade);assert.ok(blades(winter));assert.deepEqual([...blades(winter).instanceMatrix.array],[...blades(summer).instanceMatrix.array]);assert.notEqual(stateAt(astelia,view(1)).leafColor,stateAt(astelia,view(6)).leafColor);dispose(winter);dispose(summer);
+});
+
+test('celosia distinguishes cockscombs, terminal Dracula heads and branched plumes without post-winter regrowth',()=>{
+ const ids=['p-0d7284ac4c9f','p-7d6b310a39da','p-25f6d511fd01','p-579dd16aa7f5','p-747988314240'];
+ for(const id of ids){
+  const p=makePlant(id,551,2,2),summer=plantModel(p,view(9)),winter=plantModel(p,view(1));assert.equal(winter.children.length,0,id);
+  assert.ok(summer.children.some(m=>m.userData.component.startsWith('sepal')),id);
+  assert.equal(summer.children.some(m=>m.geometry.userData.celosiaCrest),['p-0d7284ac4c9f','p-7d6b310a39da'].includes(id));
+  for(const m of summer.children)assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);dispose(summer);
+  const autumnPlant={...p,start:8};assert.equal(stateAt(autumnPlant,{...view(5),year:1}).groundDormant,true,id);assert.equal(stateAt(p,{...view(9),year:1}).present,false,id);
+ }
+ assert.equal(seasonAt(CATALOG['p-579dd16aa7f5'],8).bloom,false);assert.equal(seasonAt(CATALOG['p-579dd16aa7f5'],10).bloom,true);
+ const counts=id=>{const g=plantModel(makePlant(id,552,2,2),view(9));const n=g.children.filter(m=>m.geometry.userData.celosiaCrest).reduce((n,m)=>n+m.count,0);dispose(g);return n;};
+ assert.ok(counts('p-7d6b310a39da')<counts('p-0d7284ac4c9f'));
+});
+
+test('monarda winter seed stems keep their height while Bergamo remains a flowering-cycle annual',()=>{
+ for(const id of ['p-1d891e02bfb8','p-1c5cbca2e8b7']){
+  const p=makePlant(id,553,2,2),summer=plantModel(p,view(7)),winter=plantModel(p,view(1));
+  const stems=g=>g.children.find(m=>m.geometry.userData.squareStem);assert.ok(stems(summer));assert.ok(stems(winter));assert.deepEqual([...stems(summer).instanceMatrix.array],[...stems(winter).instanceMatrix.array]);
+  assert.deepEqual(summer.scale.toArray(),winter.scale.toArray());assert.ok(winter.children.some(m=>m.userData.component==='seed'));assert.ok(!winter.children.some(m=>m.userData.component.startsWith('petal')));
+  assert.ok(summer.children.some(m=>m.geometry.userData.monardaTube));dispose(summer);dispose(winter);
+ }
+ const berg=makePlant('p-0d0942c2daa1',554,2,2);assert.equal(CATALOG[berg.kind].life,'annual');assert.equal(stateAt(berg,view(10)).groundDormant,true);assert.equal(stateAt(berg,{...view(7),year:1}).present,false);
+ assert.equal(plantModel(makePlant('p-521d2705f039',555,2,2),view(1)).children.length,0);
+});
+
+test('gaillardias have distinct ray proportions and patterns and documented winter dieback',()=>{
+ for(const id of ['p-c72a3b014377','p-e37cb35247ad','p-d6e55daa5fd3','p-374d3d02fcb2','p-97744f7111c2']){
+  const p=makePlant(id,556,2,2),g=plantModel(p,view(7));assert.equal(plantModel(p,view(1)).children.length,0,id);assert.equal(CATALOG[id].appearance.arrangement,'alternate');
+  assert.ok(g.children.some(m=>m.userData.component==='receptacle'));assert.ok(g.children.some(m=>m.userData.component==='stigma'));
+  if(id==='p-374d3d02fcb2')assert.ok(g.children.some(m=>m.userData.component==='petal-gaillardiaYellowRim-bd6249'));
+  if(id==='p-97744f7111c2')assert.ok(g.children.some(m=>m.userData.component==='petal-gaillardiaRedBase-bd6249'));
+  for(const m of g.children)assert.ok([...m.instanceMatrix.array].every(Number.isFinite));dispose(g);
+ }
+ assert.equal(seasonAt(CATALOG['p-97744f7111c2'],12).bloom,true);assert.equal(seasonAt(CATALOG['p-97744f7111c2'],1).bloom,false);
 });

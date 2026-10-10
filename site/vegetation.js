@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.2';
-import {foliageKind} from './appearance.js?v=0.9.2';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.2';
-import {drawTree} from './tree-model.js?v=0.9.2';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.2';
+import {treeProfile} from './tree-profiles.js?v=0.9.3';
+import {foliageKind} from './appearance.js?v=0.9.3';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.3';
+import {drawTree} from './tree-model.js?v=0.9.3';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.3';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.2';
+import { plantInfo, stateAt } from './model.js?v=0.9.3';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -110,6 +110,29 @@ function outlineLeaf(points){
  g.computeVertexNormals();return keep(g);
 }
 shapes.soapwortPetal=outlineLeaf([[0,0],[-.10,.38],[-.30,.57],[-.38,.80],[-.27,.96],[-.08,1],[0,.94],[.08,1],[.27,.96],[.38,.80],[.30,.57],[.10,.38]]);
+{const g=new THREE.CylinderGeometry(1,1,1,4);g.translate(0,.5,0);g.userData.squareStem=true;shapes.squareStem=keep(g);}
+shapes.celosiaTepal=outlineLeaf([[0,0],[-.13,.37],[0,1],[.13,.37]]);
+shapes.gaillardiaRay=outlineLeaf([[0,0],[-.09,.27],[-.19,.58],[-.24,.83],[-.19,.97],[-.11,1],[-.075,.90],[0,1.025],[.075,.90],[.11,1],[.19,.97],[.24,.83],[.19,.58],[.09,.27]]);
+shapes.gaillardiaSplitRay=outlineLeaf([[0,0],[-.04,.48],[-.13,.68],[-.23,.94],[-.18,1],[-.05,.78],[0,1.08],[.05,.78],[.18,1],[.23,.94],[.13,.68],[.04,.48]]);
+shapes.gaillardiaLobed=outlineLeaf([[0,0],[-.05,.10],[-.19,.18],[-.08,.26],[-.26,.36],[-.10,.44],[-.28,.57],[-.11,.64],[-.22,.80],[0,1],[.22,.80],[.11,.64],[.28,.57],[.10,.44],[.26,.36],[.08,.26],[.19,.18],[.05,.10]]);
+{
+ const p=[],uv=[],idx=[],rows=28,cols=120;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,an=j/cols*Math.PI*2,profile=Math.pow(Math.sin(t*Math.PI),.66),fold=1+.22*Math.sin(an*11+t*10)+.10*Math.sin(an*23-t*17);
+  p.push(Math.cos(an)*profile*fold*.82,t+profile*.026*Math.sin(an*17+t*29),Math.sin(an)*profile*fold*.38);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+1,k+cols+1,k+1,k+cols+2,k+cols+1);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData.celosiaCrest=true;shapes.celosiaCrest=keep(g);
+}
+{
+ const p=[],uv=[],idx=[],rows=16,cols=16;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,an=j/cols*Math.PI*2,rr=.050+.030*t;
+  p.push(Math.sin(an)*rr,t*.82,t*t*.32+Math.cos(an)*rr);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+1,k+cols+1,k+1,k+cols+2,k+cols+1);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData.monardaTube=true;shapes.monardaTube=keep(g);
+}
 for(const name of ['balloonCorolla','balloonBud','cowherbCalyx']){
  const p=[],uv=[],idx=[],rows=20,cols=80,bloom=name==='balloonCorolla',calyx=name==='cowherbCalyx';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -345,6 +368,9 @@ function windShader(shader,kind){
     masks.canaryVeins='1.0-smoothstep(0.018,0.041,min(abs(vUv.x-0.5),abs(abs(vUv.x-0.5)-0.14)))';
     masks.mosaic='smoothstep(-0.12,0.23,sin(vUv.x*14.0+sin(vUv.y*9.0)*1.7)*cos(vUv.y*12.0+sin(vUv.x*7.0)*1.4)+0.15*sin(vUv.y*49.0+vUv.x*31.0))';
     masks.darkVeins='max(midrib,pow(max(0.0,cos((vUv.y-fold*0.40)*40.0)),24.0)*smoothstep(0.02,0.13,fold))';
+    masks.gaillardiaYellowRim='1.0-smoothstep(0.78+0.025*sin(vUv.x*38.0),0.86,vUv.y)';
+    masks.gaillardiaRedBase='1.0-smoothstep(0.40+0.06*cos(vUv.x*29.0),0.52,vUv.y)';
+    if(kind==='sepal-celosia-velvet')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb*=0.92+0.08*sin(vUv.x*499.0)*cos(vUv.y*401.0);\n#include <emissivemap_fragment>`);
     if(kind.startsWith('petal-balloon'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float balloonRib=pow(max(0.0,cos(vUv.x*31.4159)),40.0);float fineRib=pow(max(0.0,cos(vUv.x*219.91+sin(vUv.y*24.0)*0.7)),28.0)*smoothstep(0.15,0.75,vUv.y);diffuseColor.rgb*=0.70+0.30*vUv.y-0.20*balloonRib-0.07*fineRib;${kind.endsWith('splash')?'float splash=smoothstep(0.51,0.66,sin(vUv.x*42.0+sin(vUv.y*9.0)*0.4)*cos(vUv.x*27.0-vUv.y*1.4));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.18,0.10,0.38),splash*0.85);':''}\n#include <emissivemap_fragment>`);
     if(kind==='petal-soapwort-veins')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb*=1.0-0.28*pow(max(0.0,cos(atan(vUv.x-0.5,vUv.y+0.02)*22.0)),20.0)*(1.0-smoothstep(0.15,0.65,vUv.y));\n#include <emissivemap_fragment>`);
     if(kind.startsWith('leaf-porcelain'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float patches=smoothstep(-0.18,0.30,sin(vUv.x*15.0+sin(vUv.y*11.0)*1.7)*cos(vUv.y*13.0+sin(vUv.x*17.0))+0.16*sin(vUv.x*61.0+vUv.y*43.0));diffuseColor.rgb=mix(diffuseColor.rgb,mix(vec3(0.83,0.83,0.74),vec3(0.79,0.45,0.52),smoothstep(0.35,0.75,sin(vUv.x*8.0+vUv.y*9.0))),patches*${kind.endsWith('faint')?'0.18':'0.92'});\n#include <emissivemap_fragment>`);
