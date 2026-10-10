@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.23';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.24';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
