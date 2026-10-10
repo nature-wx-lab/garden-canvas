@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.16';
-import {foliageKind} from './appearance.js?v=0.9.16';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.16';
-import {drawTree} from './tree-model.js?v=0.9.16';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.16';
+import {treeProfile} from './tree-profiles.js?v=0.9.17';
+import {foliageKind} from './appearance.js?v=0.9.17';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.17';
+import {drawTree} from './tree-model.js?v=0.9.17';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.17';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.16';
+import { plantInfo, stateAt } from './model.js?v=0.9.17';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,16 +13,17 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
-for(const type of ['feltOval','feltRound','wireRound','groundIvyLeaf','dichondraLeaf','newLookLeaf','curlyLeucothoe','persianLeaf']){
- const pos=[],uv=[],idx=[],rows=32,cols=12,ivy=type==='groundIvyLeaf',kidney=type==='dichondraLeaf',dust=type==='newLookLeaf',curly=type==='curlyLeucothoe',persian=type==='persianLeaf',round=type==='feltRound'||type==='wireRound';
+for(const type of ['feltOval','feltRound','wireRound','groundIvyLeaf','dichondraLeaf','pericallisLeaf','newLookLeaf','curlyLeucothoe','persianLeaf']){
+ const pos=[],uv=[],idx=[],rows=32,cols=12,ivy=type==='groundIvyLeaf',kidney=type==='dichondraLeaf',pericallis=type==='pericallisLeaf',dust=type==='newLookLeaf',curly=type==='curlyLeucothoe',persian=type==='persianLeaf',round=type==='feltRound'||type==='wireRound';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
   const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t));
-  let width=(ivy?.69:kidney?.65:dust?.62:curly?.40:persian?.26:round?.52:.44)*Math.pow(sin,ivy||kidney?.42:round?.49:dust?.62:.84);
+  let width=(ivy?.69:pericallis?.59:kidney?.65:dust?.62:curly?.40:persian?.26:round?.52:.44)*Math.pow(sin,ivy||kidney||pericallis?.42:round?.49:dust?.62:.84);
   if(ivy)width*=.92+.08*Math.cos(t*Math.PI*12);
+  if(pericallis)width*=.92+.08*Math.cos(t*Math.PI*15);
   if(dust)width*=.82+.18*Math.cos((t-.12)*Math.PI*9);
   if(persian)width*=i%2?.985:1.015;
   const relief=persian?.024*Math.cos(t*38-Math.abs(u)*8)*Math.abs(u)*sin:curly?.08*Math.sin(t*23)*u*u*sin:.013*Math.cos(t*24)*u*u*sin;
-  const y=curly?.72*Math.sin(t*2.2):t-(ivy||kidney?.23*Math.exp(-Math.pow((t-.14)/.14,2))*u*u:0),z=curly?.60*(1-Math.cos(t*2.2)):.16*t*t;
+  const y=curly?.72*Math.sin(t*2.2):t-(ivy||kidney||pericallis?.23*Math.exp(-Math.pow((t-.14)/.14,2))*u*u:0),z=curly?.60*(1-Math.cos(t*2.2)):.16*t*t;
   pos.push(u*width,y,z+.075*u*u*sin+relief);uv.push(j/cols,t);
   if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
  }
