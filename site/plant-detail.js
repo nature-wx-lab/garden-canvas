@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.7';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.8';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -17,6 +17,22 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='narcissusFlower'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),hoop=palette.corona==='hoop',split=palette.corona==='split',corona=palette.color||color;
+  f.branch([0,-r*.40,0],[0,0,0],r*.10,'#a7b080','perianthTube');
+  for(let j=0;j<6;j++){
+   const an=j*TAU/6,len=r*(hoop?.80:1);
+   f.add(hoop?'narrow':palette.reflexed?'narcissusNarrowTepal':'narcissusTepal','petal',shade(rand,color,.018),0,(j%2)*r*.025,0,len*(hoop?.14:1),len,len,hoop?1.20:palette.reflexed?1.96:1.48,an,0);
+   if(split)f.add('narcissusSplitCorona','corona',corona,0,r*(j%2?.13:.08),0,r*.70,r*.69,r*.69,1.40,an,0);
+  }
+  const length=r*(palette.length||.35),width=r*(palette.width||.32);
+  if(!split)f.add(hoop?'narcissusHoop':palette.corona==='trumpet'?'narcissusTrumpet':'narcissusCup','corona',corona,0,r*.03,0,width,length,width);
+  for(let j=0;j<6;j++){
+   const an=j*TAU/6,tip=[Math.sin(an)*r*.09,length*(hoop?.78:.55),Math.cos(an)*r*.09];
+   f.branch([0,0,0],tip,r*.009,'#e4d8a0','filament');f.add(bud,'anther','#d5ae49',...tip,r*.035,r*.07,r*.026);
+  }
+  f.branch([0,0,0],[0,length*.70,0],r*.013,'#d1d29a','style');f.add(bud,'stigma','#cfcd8d',0,length*.70,0,r*.045,r*.023,r*.045);return;
+ }
  if(shape==='dahliaHead'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),single=layers<=2||palette.openDisc,disc=r*(single?.23:.055),sector=rand()*TAU;
   for(let j=0;j<8;j++)f.add('leaf','bract','#70804e',0,-r*.06,0,r*.27,r*.34,r,1.9,j*TAU/8,0);
@@ -646,6 +662,30 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
 }
 
+function drawNarcissus(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,palette=a.flowerPalette||{},hoop=palette.corona==='hoop',green=s.leafColor,kind=foliageKind(info),bulbs=Math.max(3,Math.round(5*detail));
+ for(let i=0;i<bulbs;i++){
+  const an=i*2.399,rr=Math.sqrt(i/bulbs)*Math.min(w*.26,.11),x=Math.sin(an)*rr,z=Math.cos(an)*rr;
+  // Each bulb has a basal fan, never leaves spaced up a flowering stem.
+  for(let j=0;j<(hoop?5:4);j++){
+   const len=h*(.60+rand()*.29),width=hoop?.0022:Math.min(.013,h*.037),yaw=an+(j%2)*Math.PI+(rand()-.5)*.32;
+   b.add('narcissusLeaf',kind,kit.shade(rand,green,.035),x+(j-1.5)*.002,.006,z,width/.028,len,len,.06+rand()*.20,yaw,0);
+  }
+  if(!s.bloom&&!s.flowerBuds)continue;
+  const top=h*(.79+rand()*.14),head=[x+Math.sin(an)*h*.035,top,z+Math.cos(an)*h*.035];
+  b.branch([x,0,z],head,Math.min(.003,h*.009),'#7e996b','scape');
+  b.add('narrow','spathe','#bba67d',...head,.012,.045,.045,.70,an+.7,0);
+  const n=palette.count||1,r=a.flowerRadius||.035;
+  for(let j=0;j<n;j++){
+   const yaw=an+(j-(n-1)/2)*(n===2?1.18:TAU/n),reach=n===1?r*.45:r*(1.0+.35*(j%2)),at=[head[0]+Math.sin(yaw)*reach,top+(n===1?0:(j%3)*r*.27),head[2]+Math.cos(yaw)*reach];
+   b.branch(head,at,Math.min(.0014,h*.005),'#93a276','pedicel');
+   if(!s.bloom){b.add(kit.bud,'flowerBud','#c5c49c',...at,r*.18,r*.52,r*.18,.75,yaw,0);continue;}
+   const fc=palette.fade&&j%3===0?palette.fade:s.flowerColor;
+   detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:fc,shape:'narcissusFlower',palette,tilt:palette.reflexed?1.92+rand()*.14:hoop?1.08+rand()*.18:1.24+rand()*.23,yaw},{...kit,rand});
+  }
+ }
+}
+
 function drawDahlias(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,tree=a.architecture==='treeDahlia',compact=a.architecture==='compactDahlia',green=s.leafColor,kind=foliageKind(info),stem=a.stemColor||'#77885a',growth=s.shootScale||1;
  const leaf=(at,angle,size,n=5)=>{
@@ -692,6 +732,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
  const a=info.appearance||{},h=s.height,w=s.spread,green=s.leafColor||info.leafColor||'#587e45',stemColor=a.stemColor||green;
  const leafKind=foliageKind(info),shape=a.leafMargin==='crenate'?'crenate':a.leafShape||'leaf',leafyViolet=a.architecture==='leafyViolet',basal=!leafyViolet&&(a.arrangement==='basal'||['rosette','clump','mound','creeping'].includes(a.habit)),creeping=a.habit==='creeping';
+ if(a.architecture==='narcissus'){drawNarcissus(b,{info,s,detail,rand},kit);return;}
  if(['compactDahlia','tallDahlia','treeDahlia'].includes(a.architecture)){drawDahlias(b,{info,s,detail,rand},kit);return;}
  if(a.architecture?.startsWith('celosia')){drawCelosias(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='beeBalm'||a.architecture==='tieredMonarda'){drawMonardas(b,{info,s,detail,rand},kit);return;}

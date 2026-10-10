@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.7';
-import {foliageKind} from './appearance.js?v=0.9.7';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.7';
-import {drawTree} from './tree-model.js?v=0.9.7';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.7';
+import {treeProfile} from './tree-profiles.js?v=0.9.8';
+import {foliageKind} from './appearance.js?v=0.9.8';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.8';
+import {drawTree} from './tree-model.js?v=0.9.8';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.8';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.7';
+import { plantInfo, stateAt } from './model.js?v=0.9.8';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -69,6 +69,26 @@ function curvedLeaf(type){
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();g.userData[type]=true;return keep(g);
 }
 for(const type of ['birchLeaf','fringeLeaf','laurelLeaf'])shapes[type]=curvedLeaf(type);
+for(const type of ['narcissusLeaf','narcissusTepal','narcissusNarrowTepal','narcissusSplitCorona']){
+ const pos=[],uv=[],idx=[],rows=32,cols=12,leaf=type==='narcissusLeaf',split=type==='narcissusSplitCorona',narrow=type==='narcissusNarrowTepal';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,width=leaf?.014*Math.pow(Math.max(0,Math.sin(Math.PI*(t*.96+.02))),.18):Math.pow(Math.max(0,Math.sin(Math.PI*t)),split?.42:.63)*(narrow?.24:split?.55:.41);
+  const fold=leaf?.003*Math.abs(u):.008*Math.cos(t*19-Math.abs(u)*5)*Math.abs(u)*Math.sin(Math.PI*t);
+  pos.push(u*width,t,leaf?.20*t*t+fold:.12*u*u*Math.sin(Math.PI*t)+fold+(split?.045*Math.sin(t*23)*Math.pow(Math.abs(u),3):narrow?.13*u*t*t:0));uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
+for(const type of ['narcissusCup','narcissusTrumpet','narcissusHoop']){
+ const pos=[],uv=[],idx=[],rows=24,cols=96,hoop=type==='narcissusHoop',trumpet=type==='narcissusTrumpet';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,an=j/cols*Math.PI*2,radius=(hoop?.07+.93*t:trumpet?.46+.54*Math.pow(t,2.3):.54+.46*Math.pow(t,1.4))*(1+.025*Math.cos(an*18)*t);
+  const rim=Math.pow(t,9),y=t+rim*(.055*Math.sin(an*17)+.022*Math.cos(an*31));
+  pos.push(Math.sin(an)*(radius+.06*rim*Math.sin(an*17)),y,Math.cos(an)*(radius+.06*rim*Math.sin(an*17)));uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+1,k+cols+1,k+1,k+cols+2,k+cols+1);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 for(const type of ['dahliaLeaf','dahliaCutLeaf','dahliaRay','dahliaRoundRay','dahliaTwistedRay','dahliaSplitRay']){
  const positions=[],uv=[],idx=[],rows=32,cols=12,leaf=type.includes('Leaf'),cut=type==='dahliaCutLeaf',round=type==='dahliaRoundRay',twist=type==='dahliaTwistedRay',split=type==='dahliaSplitRay';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
