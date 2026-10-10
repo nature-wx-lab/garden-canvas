@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.99';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.100';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -235,3 +235,5 @@ Object.assign(TRAIT_VALUES,{ballotaRound:'白い毛と深いしわを持つ丸�
 Object.assign(TRAIT_VALUES,{lambEar:'厚い長楕円形の葉を覆う白い毛',betonyLeaf:'丸い鋸歯としわのある小判形の葉',orientalGermander:'細い裂片に深く切れ込む葉',poliumLeaf:'縁が巻き白い毛に覆われた細い葉',germanderOvate:'粗いしわと鋸歯のある対生葉',betonyLips:'上唇と3裂した下唇を持つ筒状花',germanderLip:'上唇がほぼなく下唇と雄しべが目立つ花'});
 
 Object.assign(TRAIT_VALUES,{hopBlade:'掌状に深く裂ける黄金色の葉',akebiLeaflet:'弱い波状鋸歯と散り斑のある3〜5小葉',henryLeaflet:'銀色の葉脈と鋸歯のある3〜5小葉',grapeBlade:'3〜5裂し鋸歯のある銅葉',angelIvyBlade:'白い不規則な覆輪のある3〜5裂葉',telosmaHeart:'3本の基部葉脈を持つ対生する心形葉',hopBracts:'細い花柱と重なる苞を持つ雌花',akebiaSepals:'花弁のない3枚の萼と雌雄異花',grapeStamens:'花弁が脱落して雄しべが見える小花',telosmaStar:'長い筒から5裂する黄緑〜淡黄の花'});
+
+Object.assign(TRAIT_VALUES,{rhodiolaNarrow:'互生する細長い多肉質の葉',smallPeaOval:'先端小葉を伴う羽状の小葉',lotusSlender:'3〜5枚に分かれる細い小葉',lotusSilky:'絹毛のある5枚の小葉',lotusNeedle:'輪生状に見える針状の小葉',rhodiolaCrown:'直立し先だけ反る細い花弁が集まる花穂',peaStandardWingsKeel:'旗弁・翼弁・竜骨弁を分けた蝶形花',parrotBeak:'反る旗弁と鎌状に尖る竜骨弁'});
