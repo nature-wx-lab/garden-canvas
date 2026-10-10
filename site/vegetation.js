@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.11';
-import {foliageKind} from './appearance.js?v=0.9.11';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.11';
-import {drawTree} from './tree-model.js?v=0.9.11';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.11';
+import {treeProfile} from './tree-profiles.js?v=0.9.12';
+import {foliageKind} from './appearance.js?v=0.9.12';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.12';
+import {drawTree} from './tree-model.js?v=0.9.12';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.12';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.11';
+import { plantInfo, stateAt } from './model.js?v=0.9.12';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,6 +13,18 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+for(const type of ['tulipCup','tulipPointed','crocusCup','saraLeaf','speciesTulipLeaf','crocusLinear']){
+ const pos=[],uv=[],idx=[],rows=40,cols=18,leaf=type.endsWith('Leaf')||type==='crocusLinear',sara=type==='saraLeaf',crocus=type==='crocusCup',linear=type==='crocusLinear',pointed=type==='tulipPointed';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t)),width=leaf?.50*Math.pow(sin,linear?.18:sara?.64:.83):.52*Math.pow(sin,pointed?.72:.43);
+  const radius=leaf?(sara?.52:.21)*t*t:.025+(crocus?.67:pointed?.58:.69)*Math.sin(t*(crocus?1.8:1.43));
+  const height=leaf?t:(crocus?1.22:pointed?1.72:1.40)*t;
+  const wave=sara?.052*Math.sin(t*33)*Math.pow(Math.abs(u),3)*sin:0;
+  pos.push(u*width,height+wave,radius+(leaf?.045:-.20)*u*u*sin);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 for(const type of ['liliumLeaf','liliumTepal','liliumTrumpet','liliumFunnel','liliumReflex','liliumHalfReflex']){
  const pos=[],uv=[],idx=[],rows=44,cols=18,leaf=type==='liliumLeaf',trumpet=type==='liliumTrumpet',funnel=type==='liliumFunnel',reflex=type==='liliumReflex'||type==='liliumHalfReflex',half=type==='liliumHalfReflex';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -500,6 +512,16 @@ function windShader(shader,kind){
     if(kind.startsWith('leaf-hosta'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*70.0)');
     if(kind==='leaf-iris-parallel')shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*95.0)');
     if(kind==='leaf-lilium-parallel')shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*31.4)');
+    if(kind==='leaf-crocus-stripe')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.62,.67,.58),1.0-smoothstep(.09,.16,fold));\n#include <emissivemap_fragment>`);
+    if(kind.startsWith('petal-bulb-')){
+      const name=kind.slice(11),linear=hex=>{const c=new THREE.Color(hex);return `vec3(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`;};
+      let paint='';
+      if(name==='sara')paint=`float flame=(1.0-smoothstep(.25,.73,fold))*(smoothstep(.30,.78,vUv.y));diffuseColor.rgb=mix(diffuseColor.rgb,${linear('#e88031')},flame);`;
+      else if(name.startsWith('persian'))paint=`float stripe=smoothstep(.65+.025*sin(vUv.y*34.0),.83,fold);float grain=.92+.08*sin(vUv.x*521.0)*cos(vUv.y*617.0);diffuseColor.rgb=mix(diffuseColor.rgb,${linear('#e4d5dc')}*grain,stripe*.94);diffuseColor.rgb=mix(diffuseColor.rgb,${linear('#c6b355')},1.0-smoothstep(.10,.22,vUv.y));`;
+      else if(name.startsWith('clusiana-outer'))paint=`if(!gl_FrontFacing){float band=1.0-smoothstep(.60,.94,fold);diffuseColor.rgb=mix(diffuseColor.rgb,${linear(name.endsWith('yellow')?'#c45a3f':'#a94062')},band);}`;
+      else if(name==='crocus-striped')paint=`float stripe=smoothstep(.35,.60,sin(vUv.x*32.0+sin(vUv.y*7.0)*.5));diffuseColor.rgb=mix(diffuseColor.rgb,${linear('#77519d')},stripe*.80);`;
+      shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',paint+'\n#include <emissivemap_fragment>');
+    }
     if(kind.startsWith('petal-lilium-')){
       const name=kind.slice(13),linear=hex=>{const c=new THREE.Color(hex);return `vec3(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`;};
       let paint='float band=(1.0-smoothstep(.12,.55,fold))*(1.0-smoothstep(.70,.97,vUv.y));';

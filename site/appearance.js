@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.11';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.12';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 export const TRAIT_VALUES={heart:'心形',round:'円形',kidney:'腎形',triangular:'三角形',lobed:'切れ込みのある葉',compound:'複葉',serrated:'鋸歯のある葉',narrow:'細葉',blade:'線形・剣形',needle:'針形',leaf:'卵形・楕円形',obovate:'倒卵形',spoon:'へら形',arrow:'矢じり形',margin:'覆輪',center:'中斑',spots:'斑点',silverVeins:'銀葉・緑の葉脈',stripes:'縞斑',evergreen:'常緑',semiEvergreen:'半常緑（寒さで変化）',deciduous:'落葉（幹・枝は残る）',winterDormant:'冬に地上部休眠',summerDormant:'夏に地上部休眠',bell:'鐘形',trumpet:'漏斗・ラッパ形',tube:'筒形',urn:'壺形',cup:'杯形',flat:'平開',star:'星形',cross:'十字形',pea:'蝶形',lipped:'唇形',spurred:'距のある花',spoonRay:'スプーン状の花弁',pompon:'ポンポン咲き',smooth:'平滑',peeling:'剥離する樹皮',furrowed:'縦に割れる樹皮',scaly:'鱗片状',lenticels:'皮目',clump:'株立ち',mound:'こんもり',creeping:'地面に広がる',rosette:'ロゼット',upright:'直立',arching:'弓状',spreading:'横に広がる',weeping:'枝垂れ',columnar:'細い直立形',pyramidal:'円錐形',vase:'箒状',rounded:'丸い樹冠',multistem:'根元から株立ち',oval:'卵形の樹冠',layered:'段状の横枝',irregular:'不規則な枝'};
@@ -90,3 +90,5 @@ Object.assign(TRAIT_VALUES,{irisSword:'二列に重なり扇状に広がる剣�
 Object.assign(TRAIT_VALUES,{hyacinthStrap:'肉厚で光沢のある幅広い帯状葉',muscariLeaf:'溝があり弓状に伸びる線形葉',muscariUrn:'口がくびれ6つに浅く裂ける小さな壺形花',hyacinthFlower:'短い花筒と強く反り返る6枚の花被',freesiaFlower:'漏斗形の花筒と不等な6裂片・3本の雄しべ'});
 
 Object.assign(TRAIT_VALUES,{liliumLeaf:'細長い全縁の平行脈の葉',liliumFlower:'6枚の花被・6本の長い雄しべと3裂する柱頭'});
+
+Object.assign(TRAIT_VALUES,{speciesTulipFlower:'上向きの6枚の花被・6本の雄しべと短い3裂の柱頭',earlyCrocusFlower:'杯状の6枚の花被・3本の雄しべと3分岐の柱頭',saraLeaf:'縁が強く波打ち横に広がる幅広い葉',speciesTulipLeaf:'青緑色で茎を抱く細長い葉',crocusLinear:'中央に銀白線が入る細い線形葉'});
