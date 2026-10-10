@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.40';
-import {foliageKind} from './appearance.js?v=0.9.40';
-import {detailedFlower,drawDetailedHerb,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint,silverMintLeafPoint,roseLeafPoint} from './plant-detail.js?v=0.9.40';
-import {drawTree} from './tree-model.js?v=0.9.40';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.40';
+import {treeProfile} from './tree-profiles.js?v=0.9.41';
+import {foliageKind} from './appearance.js?v=0.9.41';
+import {detailedFlower,drawDetailedHerb,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint,silverMintLeafPoint,roseLeafPoint} from './plant-detail.js?v=0.9.41';
+import {drawTree} from './tree-model.js?v=0.9.41';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.41';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.40';
+import { plantInfo, stateAt } from './model.js?v=0.9.41';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -15,7 +15,7 @@ const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.Sphe
 const TAU=Math.PI*2;
 const shapes={};
 for(const type of ['roseLeaflet','roseRoundPetal','roseWavedPetal','rosePointedPetal','roseSepal']){
- const p=[],uv=[],ix=[],rows=54,cols=32;
+ const p=[],uv=[],ix=[],rows=type==='roseLeaflet'?54:24,cols=type==='roseLeaflet'?6:18;
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
   const t=i/rows,u=j/cols*2-1,sn=Math.max(0,Math.sin(t*Math.PI));let pos;
   if(type==='roseLeaflet')pos=roseLeafPoint(t,u);
@@ -23,7 +23,7 @@ for(const type of ['roseLeaflet','roseRoundPetal','roseWavedPetal','rosePointedP
   else{
    const wave=type==='roseWavedPetal',pointed=type==='rosePointedPetal',width=.78*Math.pow(Math.sin(t*Math.PI*.57),.75),fold=u*u,rim=Math.pow(t,5);
    // Broad, rounded distal edge: a rose petal is not a pointed leaf silhouette.
-   pos=[u*width,t*(1-(pointed?.32:.20)*fold)-(pointed?0:.035)*Math.exp(-u*u*20)*rim,.28*fold*t-.12*t*t+(wave?.045:.014)*Math.sin(u*(wave?13:7)+t*4)*rim];
+   pos=[Math.sin(u*1.1)/Math.sin(1.1)*width,t*(1-(pointed?.22:.14)*fold)-(pointed?0:.025)*Math.exp(-u*u*20)*rim,.53*fold*Math.sin(t*Math.PI*.62)-.15*t*t+(wave?.045:.022)*Math.sin(u*(wave?13:7)+t*4)*rim];
   }
   p.push(...pos);uv.push(j/cols,t);if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
  }
@@ -1097,8 +1097,11 @@ function windShader(shader,kind){
       }
       shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',paint+'\n#include <emissivemap_fragment>');
     }
+    if(kind.startsWith('petal-rose')||kind==='petal-button-eye'){
+      shader.fragmentShader=shader.fragmentShader.replace('midrib*0.23+veins*0.055','veins*0.014').replace('mix(0.77,1.08,fold)*mix(0.85,1.05,vUv.y)','mix(0.94,1.02,fold)*mix(0.93,1.04,vUv.y)');
+    }
     if(kind.startsWith('petal-rose-rim-')){
-      const rim=new THREE.Color('#'+kind.slice(-6));shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float roseRim=smoothstep(0.84,0.99,vUv.y)+smoothstep(0.455,0.50,abs(vUv.x-0.5))*smoothstep(0.65,0.90,vUv.y);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(${rim.r.toFixed(5)},${rim.g.toFixed(5)},${rim.b.toFixed(5)}),min(0.87,roseRim));\n#include <emissivemap_fragment>`);
+      const rim=new THREE.Color('#'+kind.slice(-6));shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float roseRim=smoothstep(${kind.includes('-broad-')?'0.56,0.88':'0.84,0.99'},vUv.y)+smoothstep(${kind.includes('-broad-')?'0.31,0.49':'0.455,0.50'},abs(vUv.x-0.5))*smoothstep(0.65,0.90,vUv.y);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(${rim.r.toFixed(5)},${rim.g.toFixed(5)},${rim.b.toFixed(5)}),min(0.87,roseRim));\n#include <emissivemap_fragment>`);
     }
     if(kind==='sepal-celosia-velvet')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb*=0.92+0.08*sin(vUv.x*499.0)*cos(vUv.y*401.0);\n#include <emissivemap_fragment>`);
     if(kind.startsWith('petal-balloon'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float balloonRib=pow(max(0.0,cos(vUv.x*31.4159)),40.0);float fineRib=pow(max(0.0,cos(vUv.x*219.91+sin(vUv.y*24.0)*0.7)),28.0)*smoothstep(0.15,0.75,vUv.y);diffuseColor.rgb*=0.70+0.30*vUv.y-0.20*balloonRib-0.07*fineRib;${kind.endsWith('splash')?'float splash=smoothstep(0.51,0.66,sin(vUv.x*42.0+sin(vUv.y*9.0)*0.4)*cos(vUv.x*27.0-vUv.y*1.4));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.18,0.10,0.38),splash*0.85);':''}\n#include <emissivemap_fragment>`);

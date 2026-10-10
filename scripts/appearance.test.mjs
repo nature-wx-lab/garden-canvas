@@ -10,6 +10,24 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('climbing roses distinguish single and repeat seasons, button eyes and exposed stamens',()=>{
+ const ids=['p-8b959100d6a5','p-6011d93a3dfc','p-3fe6c8d496cf','p-dcb3c7378b3d','p-84d62ab0b18c','p-583035d6f662','p-46c7ea1f1f3f','p-52a69d0190a3','p-731b605dcf5a'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],p=makePlant(id,5200+i,2,2);let winterWood;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component.startsWith(k)),wood=g.children.filter(m=>m.userData.component.startsWith('wood-rose')).map(m=>[...m.instanceMatrix.array]);
+   if(month===1)winterWood=wood;else assert.deepEqual(wood,winterWood);
+   assert.ok(has('wood-rose'));if([1,2,12].includes(month)){assert.ok(!has('leaf'));assert.ok(!has('petal'));}
+   if(month===5){assert.ok(has('petal-rose'));if(i===5)assert.ok(has('petal-button-eye'));if(i===8)assert.ok(has('anther'));}
+   if(i===5&&month===10)assert.ok(!has('petal'));
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ const a=CATALOG[ids[5]].appearance;assert.ok(a.flowerPalette.rambling);assert.ok(a.flowerPalette.buttonEye);
+ for(const id of [ids[4],ids[6],ids[7]]){assert.equal(seasonAt(CATALOG[id],8).bloom,false);assert.ok(seasonAt(CATALOG[id],10).flowerDensity<.3);}
+ assert.ok(CATALOG[ids[3]].appearance.flowerPalette.ageTo);assert.ok(CATALOG[ids[0]].appearance.flowerPalette.rimWidth);
+});
+
 test('eight garden roses distinguish petal counts, rims, canes and leafless winter wood',()=>{
  const ids=['p-8b9c35e7dce9','p-5783228b0f93','p-81cf1325d049','p-dc62dd0183aa','p-8a2e1f357d5f','p-3def2072cc37','p-90ba8f0b4835','p-2ccb229fb3e3'];
  const petals=[25,28,25,38,45,65,29,38];
