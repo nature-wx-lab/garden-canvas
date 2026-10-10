@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.24';
-import {foliageKind} from './appearance.js?v=0.9.24';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.24';
-import {drawTree} from './tree-model.js?v=0.9.24';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.24';
+import {treeProfile} from './tree-profiles.js?v=0.9.25';
+import {foliageKind} from './appearance.js?v=0.9.25';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.25';
+import {drawTree} from './tree-model.js?v=0.9.25';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.25';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.24';
+import { plantInfo, stateAt } from './model.js?v=0.9.25';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,6 +13,30 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+// Woodland leaves: petiole attachment, apical clefts and teeth are geometry.
+for(const type of ['diphylleiaShield','jeffersoniaKidney','ranzaniaLeaflet','kirengeshomaPalm','eomeconKidney']){
+ const pos=[],uv=[],idx=[],rows=24,cols=160,shield=type==='diphylleiaShield',kidney=type==='jeffersoniaKidney'||type==='eomeconKidney',kir=type==='kirengeshomaPalm';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,an=(j/cols-.5)*Math.PI*(shield?1.98:1.82),tooth=type==='eomeconKidney'?.96+.04*Math.cos(an*18):kidney?1:.975+.025*Math.cos(an*65),lobes=shield?(.70+.30*Math.pow(.5+.5*Math.cos(an*6),.8)):kir?(.55+.45*Math.pow(.5+.5*Math.cos(an*5),.7)):type==='ranzaniaLeaflet'?.87+.13*Math.cos(an*3):1;
+  const notch=type==='jeffersoniaKidney'?1-.24*Math.exp(-an*an/ .040):1,rr=t*tooth*lobes*notch,wide=kidney?.61:.53;
+  pos.push(Math.sin(an)*rr*wide,(Math.cos(an)*rr+(shield?0:.82))*.55,.08*rr*rr+.014*Math.cos(an*(shield?6:kir?5:8))*rr);uv.push(.5+Math.sin(an)*t*.5,.5+Math.cos(an)*t*.5);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
+for(const type of ['deinantheBifid','hylomeconSegment','araliaLeaflet','saururusHeart','parnassiaHeart','cornusHerbLeaf','woodlandPetal','kirengeshomaPetal']){
+ const pos=[],uv=[],idx=[],rows=56,cols=24,heart=type==='saururusHeart'||type==='parnassiaHeart',dein=type==='deinantheBifid',petal=type.endsWith('Petal'),bell=type==='kirengeshomaPetal',corn=type==='cornusHerbLeaf';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sn=Math.max(0,Math.sin(Math.PI*t));let width=(petal?.56:heart?.44:dein?.38:corn?.30:type==='araliaLeaflet'?.38:.29)*Math.pow(sn,petal?.38:.65);
+  if(heart)width=.46*Math.pow(Math.sin((.13+.87*t)*Math.PI),.80);
+  if(!heart&&!petal&&!corn)width*=.92+.08*Math.cos(t*(dein?82:72));
+  if(type==='hylomeconSegment')width*=.86+.14*Math.cos(t*23);
+  const yy=t-(dein?.18*Math.pow(t,7)*Math.exp(-u*u*14):0)-(heart?.12*(1-t)*Math.sin(Math.abs(u)*Math.PI/2):0),rib=dein?.010*Math.sin((t-Math.abs(u)*.24)*50)*Math.sin(Math.abs(u)*Math.PI):0;
+  pos.push(u*width,yy,(petal?.12:.065)*t*t+(bell?.20:petal?.16:.07)*u*u*sn+rib);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 // Curved meshes retain the basal notch, venation relief and divided leaf margins.
 for(const type of ['primroseLeaf','gerberaLeaf','brunneraHeart','tapienLeaf','stolonPhloxLeaf','primrosePetal','gerberaRay','smallSalverPetal']){
  const pos=[],uv=[],idx=[],rows=64,cols=20,prim=type==='primroseLeaf',gerb=type==='gerberaLeaf',heart=type==='brunneraHeart',tap=type==='tapienLeaf',petal=type.endsWith('Petal'),ray=type==='gerberaRay';
