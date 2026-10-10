@@ -10,6 +10,25 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Euonymus separates evergreen cultivar foliage, leafless corky winter branches and confirmed flowers and fruit',()=>{
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='euonymusBranches');assert.equal(entries.length,4);
+ for(const [i,[id,info]] of entries.entries()){
+  const a=info.appearance;let skeleton;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,8400+i,2,2),st=stateAt(p,view(month)),g=plantModel(p,view(month)),count=prefix=>g.children.filter(m=>m.userData.component.startsWith(prefix)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'euonymusBranches');assert.equal(count('leaf-euonymus')>0,st.leafDensity>0,id+': foliage');assert.equal(count('petal-euonymus')>0,st.bloom,id+': flower month');assert.equal(count('fruit-euonymus')>0,!!a.fruitMonths?.includes(month),id+': fruit month');
+   if(a.shootProfile==='compactus'){assert.ok(count('cork-wing-euonymus')>0);if(month===1){assert.equal(count('leaf-euonymus'),0);assert.ok(count('bud-euonymus')>0);}}
+   else {assert.ok(count('leaf-euonymus')>0);assert.equal(count('cork-wing-euonymus'),0);}
+   if(a.shootProfile==='happiness'){assert.equal(st.bloom,false);assert.equal(count('fruit-'),0);assert.equal(count('petal-'),0);}
+   if(st.bloom){assert.equal(count('anther-euonymus'),count('petal-euonymus')*4);assert.equal(g.children.find(m=>m.geometry.userData.euonymusFlower).geometry.userData.euonymusFlower.petals,4);}
+   const wood=g.children.filter(m=>/^(wood-euonymus|stem-euonymus|cork-wing-euonymus)/.test(m.userData.component)).map(m=>[m.userData.component,[...m.instanceMatrix.array]]);if(!skeleton)skeleton=wood;else assert.deepEqual(wood,skeleton,id+': permanent wood');
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ assert.equal(CATALOG['p-72d7a5468742'].appearance.leafLength,.02);assert.equal(CATALOG['p-358c267b368f'].appearance.persistence,'evergreen');assert.ok(CATALOG['p-7a4e676f27c9'].height[1]>3);
+ assert.notEqual(seasonAt(CATALOG['p-7a4e676f27c9'],7).leafColor,seasonAt(CATALOG['p-7a4e676f27c9'],11).leafColor);
+});
+
 test('Osmanthus has opposite evergreen leaves, four-lobed axillary flowers and cultivar-specific annual colour',()=>{
  const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='osmanthusAxils');assert.equal(entries.length,9);
  for(const [i,[id,info]] of entries.entries()){

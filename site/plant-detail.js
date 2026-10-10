@@ -1,6 +1,110 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.68';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.69';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function euonymusLeafPoint(type,t,u){
+ const rounded=type==='happiness',obovate=type==='compactus'||type==='gold';
+ const profile=Math.pow(Math.sin(Math.PI*t),rounded?.53:.68)*(obovate?.71+.58*t:1),tooth=t>.16&&t<.96?1+.024*Math.sin(t*(rounded?70:132)):1;
+ return [u*profile*tooth*.5,t,Math.sin(Math.PI*t)*(.016+u*u*(type==='compactus'?.032:.075))];
+}
+export function euonymusFlowerGeometry(){
+ const p=[],uv=[],ix=[],rows=12,cols=4;
+ for(let k=0;k<4;k++){
+  const start=p.length/3,az=k*TAU/4;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,r=.24+.76*t,width=.37*Math.pow(Math.sin(Math.PI*t),.55);
+   p.push(Math.sin(az)*r+Math.cos(az)*u*width,.10+.16*Math.sin(Math.PI*t)+.07*u*u,Math.cos(az)*r-Math.sin(az)*u*width);uv.push(j/cols,t);
+   if(i<rows&&j<cols){const n=start+i*(cols+1)+j;ix.push(n,n+cols+1,n+1,n+1,n+cols+1,n+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.euonymusFlower={petals:4};return g;
+}
+export function euonymusWingGeometry(){
+ const p=[],uv=[],ix=[],rows=12;
+ for(let k=0;k<4;k++){
+  const offset=p.length/3,az=k*TAU/4;
+  for(let i=0;i<=rows;i++)for(let side=0;side<2;side++){
+   const t=i/rows,r=side?1+.85*Math.pow(Math.sin(Math.PI*t),.35)*(1+.09*Math.sin(t*25)):0.75;
+   p.push(Math.sin(az)*r,t-.5,Math.cos(az)*r);uv.push(side,t);
+   if(i<rows&&side===0){const n=offset+i*2;ix.push(n,n+1,n+2,n+1,n+3,n+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.euonymusWings=4;return g;
+}
+function drawEuonymus(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,decid=type==='compactus',small=type==='dandel'||type==='happiness',nodes=[],wood=[],leaders=[],nLeaders=small?7:decid?4:2,baseTop=small?.23:decid?.30:.62;
+ for(let k=0;k<nLeaders;k++){
+  const angle=k*TAU/nLeaders,path=[[0,0,0]];
+  for(let j=1;j<=6;j++){
+   const t=j/6,at=[Math.sin(angle)*w*.08*t,baseTop*h*t,Math.cos(angle)*w*.08*t];wood.push({from:path.at(-1),to:at,r:h*(small?.009:.016)*(1-t*.62),old:true,wings:decid});path.push(at);
+  }leaders.push(path);
+ }
+ const shoot=(root,az,rise,reach,order)=>{
+  let previous=root;const N=order===0?8:small?7:6;
+  for(let j=0;j<N;j++){
+   const t=(j+1)/N,an=az+.16*Math.sin(t*4+az),at=[root[0]+Math.sin(an)*reach*t,root[1]+rise*t+reach*.07*Math.sin(Math.PI*t),root[2]+Math.cos(an)*reach*t];
+   wood.push({from:previous,to:at,r:(order===0?.006:order===1?.0017:.00055)*Math.max(.28,Math.min(h,3))*(1-t*.6),old:order===0,wings:decid&&(order===0||order===1&&j<4)});previous=at;
+   if(order>0)nodes.push({at,an:an+j*Math.PI/2,order,t,roll:rand(),size:.8+rand()*.2});
+   if(order===0&&j>=1&&j<=6)shoot(at,an+(j%2?1:-1)*(.68+rand()*.50),h*(small?.055:.055)*(.6+rand()*.8),w*.13*(1-t*.20),1);
+   if(order===1&&(j===1||j===3||j===5))shoot(at,an+(j%4<2?1:-1)*(.68+rand()*.52),h*.03,w*.060,2);
+   if(type==='happiness'&&order===2&&j===3)shoot(at,an+.93,h*.025,w*.026,3);
+  }
+ };
+ const count=Math.round((small?22:21+Math.min(w*2,8))*detail);
+ for(let i=0;i<count;i++){
+  const t=(i+.5)/count,level=(small?.025:.06)+(small?.16:decid?.21:.46)*t,point=level/baseTop*6,j=Math.min(5,Math.floor(point)),tr=leaders[i%nLeaders],root=tr[j].map((v,k)=>v+(tr[j+1][k]-v)*(point-j)),tip=(small?.27:.30)+(small?.53:.54)*rand(),reach=w*.40*Math.sqrt(Math.max(.18,1-Math.pow((tip-.51)/.43,2)));
+  shoot(root,i*2.399963+rand()*.24,h*tip-root[1],reach,0);
+ }
+ if(small)for(let i=0;i<12;i++){
+  const az=i*2.399963+rand()*.2,root=leaders[i%nLeaders][1];
+  shoot(root,az,h*(.14+rand()*.15),w*(.22+rand()*.14),0);
+ }
+ for(const q of wood){
+  b.branch(q.from,q.to,q.r,q.old?a.barkColor:a.stemColor,q.old?'wood-euonymus':'stem-euonymus');
+  if(q.wings){
+   const from=new THREE.Vector3(...q.from),to=new THREE.Vector3(...q.to),v=to.clone().sub(from),length=v.length(),rotation=new THREE.Euler(0,0,0,'YXZ').setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize()));
+   b.add('euonymusWings','cork-wing-euonymus','#9a8870',...from.add(to).multiplyScalar(.5).toArray(),Math.max(.0018,q.r*1.35),length,Math.max(.0018,q.r*1.35),rotation.x,rotation.y,rotation.z);
+  }
+ }
+ for(const n of nodes){
+  const spring=[4,5].includes(s.month),young=n.t>.76,winter=[11,12,1,2].includes(s.month);
+  for(const side of [-1,1]){
+   if(s.leafDensity===0||(n.roll+(side===-1?.37:0))%1>s.leafDensity)continue;
+   const az=n.an+(side===1?0:Math.PI),P=type==='happiness'?.004:.006,L=a.leafLength*n.size*s.leafScale*(spring&&young?.73:1),at=[n.at[0]+Math.sin(az)*P,n.at[1]+P*.30,n.at[2]+Math.cos(az)*P],f=flowerFrame(b,at,.75+n.roll*.55,az);
+   let color=s.leafColor;
+   if(type==='happiness')color=young?(spring?'#c7d77c':'#d8c847'):n.t>.36?'#bab94b':'#45613b';
+   if(type==='gold'&&young)color=spring?'#dbd875':'#a9b35b';
+   b.branch(n.at,at,small?.00020:.00045,a.stemColor,'petiole-euonymus');
+   const back=decid&&s.autumn?new THREE.Color(color).lerp(new THREE.Color('#b58d79'),.25).getHexString():type==='happiness'||type==='gold'&&young?new THREE.Color(color).lerp(new THREE.Color('#a5ae80'),.22).getHexString():a.leafUnderside.slice(1);
+   f.add('euonymus-'+type,`leaf-euonymus-${type}${type==='dandel'?(winter?'-pink':spring&&young?'-white':'-cream'):''}-underside-${back}`,kit.shade(rand,color,.034),0,0,0,L*a.leafWidth/a.leafLength,L,L);
+  }
+  if(decid&&s.leafDensity===0&&n.t>.8)b.add(kit.bud,'bud-euonymus-winter','#866b4e',...n.at,.0015,.0032,.0015,.15,n.an,0);
+  if(type==='happiness'||n.order!==1||n.t<.28||n.t>.83||n.roll>(type==='dandel'?.045:.24))continue;
+  if(!s.bloom&&!a.fruitMonths?.includes(s.month))continue;
+  const origin=n.at,az=n.an+1.1,cyme=flowerFrame(b,origin,decid?1.7:1.1,az),stalk=decid?.012:.022;
+  cyme.branch([0,0,0],[0,stalk,0],.00028,a.stemColor,'peduncle-euonymus');
+  const flowers=decid?3:7;
+  for(let k=0;k<flowers;k++){
+   const theta=k*2.399963,r=k===0?0:stalk*.6,y=stalk+(k===0?stalk*.40:stalk*.65),at=[Math.sin(theta)*r,y,Math.cos(theta)*r],f=flowerFrame(cyme,at,.3,theta),R=a.flowerRadius;
+   cyme.branch([0,stalk,0],at,.00018,a.stemColor,'pedicel-euonymus');
+   if(s.bloom){
+    f.add(kit.bud,'disc-euonymus','#9eaf75',0,R*.11,0,R*.34,R*.12,R*.34);f.add('euonymusCorolla','petal-euonymus',s.flowerColor,0,0,0,R,R,R);
+    for(let l=0;l<4;l++){
+     const angle=l*TAU/4+Math.PI/4,point=[Math.sin(angle)*R*.29,R*.40,Math.cos(angle)*R*.29];
+     f.add(kit.bud,'calyx-euonymus','#839766',Math.sin(angle)*R*.36,0,Math.cos(angle)*R*.36,R*.24,R*.08,R*.24);
+     f.branch([point[0],R*.16,point[2]],point,R*.02,'#cdd0a0','filament-euonymus');f.add(kit.bud,'anther-euonymus','#d7ca89',...point,R*.10,R*.10,R*.07);
+    }f.add(kit.bud,'style-euonymus','#bac290',0,R*.30,0,R*.045,R*.18,R*.045);
+   }else if(k<(decid?2:4)){
+    const radius=.0043,open=(n.roll*13.1+k*.27)%1>.18;
+    f.add(kit.bud,'fruit-euonymus-capsule','#b86e7b',0,0,0,radius*(open?.64:1),radius*.9,radius*(open?.64:1));
+    if(open){
+     for(let v=0;v<4;v++){const ang=v*TAU/4;f.add('euonymus-happiness','capsule-valve-euonymus','#b87583',Math.sin(ang)*radius*.36,0,Math.cos(ang)*radius*.36,radius*.90,radius*1.4,radius*1.4,1.6,ang,0);}
+     const seeds=decid?1:2;for(let v=0;v<seeds;v++)f.add(kit.bud,'aril-euonymus','#d96835',(v-(seeds-1)*.5)*radius*.80,-radius*.72,radius*.36,radius*.46,radius*.62,radius*.45);
+    }
+   }
+  }
+ }
+}
+
 export function osmanthusLeafPoint(type,t,u){
  const holly=['kaori','oni','shima','goshiki'].includes(type),small=type==='kaori',spines=small?[.19,.35,.51,.67,.81]:[.23,.48,.72],base=Math.pow(Math.sin(Math.PI*t),holly?.77:.73)*(1.02-.14*t);
  let width=base*(holly?.68:1);
@@ -3663,6 +3767,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='euonymusBranches'){drawEuonymus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='osmanthusAxils'){drawOsmanthus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='magnoliaBranches'){drawMagnolia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='camelliaBranches'){drawCamellia(b,{info,s,detail,rand},kit);return;}
