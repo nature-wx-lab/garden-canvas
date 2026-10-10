@@ -10,6 +10,25 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('garden annuals and corrected perennials retain their organ structures and winter life cycles',()=>{
+ const ids=['p-2a5b37983b21','p-5d75f1ae4997','p-a354a22e1dd7','p-b256aaf37c02','p-db707ffc5146','p-fb7a9affec35','p-54918635b6af','p-2cf364e777f9','p-96949665479a','p-3658ef87557a','p-9462b1b1a60a','p-a82b1a9b31fc','p-005ed6f28b42','p-44a6bfe3331b'];
+ for(const id of ids)for(let month=1;month<=12;month++){
+  const g=plantModel(makePlant(id,3301,2,2),view(month));for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}dispose(g);
+ }
+ const parts=(shape,extra={})=>{const out=[];detailedFlower({add:(shape,kind,color)=>out.push({shape,kind,color}),branch:(from,to,r,color,kind)=>out.push({kind})},{x:0,y:0,z:0,color:'#c4a7c9',shape,...extra},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});return out;};
+ const oen=parts('oenotheraCup');assert.equal(oen.filter(x=>x.kind==='petal-oenothera-veins').length,4);assert.equal(oen.filter(x=>x.kind==='anther').length,8);assert.equal(oen.filter(x=>x.kind==='stigma').length,4);
+ assert.equal(parts('delphiniumBee',{layers:2}).filter(x=>x.kind==='spur').length,1);
+ assert.equal(parts('hollyhockCup').filter(x=>x.kind==='staminalColumn').length,1);assert.equal(parts('hollyhockCup',{layers:5}).filter(x=>x.kind==='staminalColumn').length,0);
+ assert.equal(parts('scabiosaHead').filter(x=>x.kind==='anther').length,72*4);
+ assert.ok(parts('portulacaDouble',{layers:6,palette:{mermaid:true}}).some(x=>x.kind==='petal-portulaca-mermaid'));
+ for(const id of ['p-fb7a9affec35','p-3658ef87557a','p-9462b1b1a60a'])assert.equal(CATALOG[id].life,'perennial');
+ const shasta=plantModel(makePlant('p-fb7a9affec35',3302,2,2),view(1));assert.ok(shasta.children.some(x=>x.geometry.userData.shastaLeaf));assert.ok(!shasta.children.some(x=>x.userData.component==='stem'||x.userData.component==='discFloret'));dispose(shasta);
+ assert.equal(plantModel(makePlant('p-3658ef87557a',3303,2,2),view(1)).children.length,0);
+ const cream=plantModel(makePlant('p-9462b1b1a60a',3304,2,2),view(1));assert.ok(cream.children.some(x=>x.userData.component==='seedBristle'));assert.ok(!cream.children.some(x=>x.userData.component==='bristle'));dispose(cream);
+ const flash=plantModel(makePlant('p-a82b1a9b31fc',3305,2,2),view(9));assert.ok(flash.children.some(x=>x.userData.component.startsWith('leaf-purpleFlash')));assert.ok(!flash.children.some(x=>x.geometry.userData.pepperFruit));dispose(flash);
+ const pink=makePlant('p-44a6bfe3331b',3306,2,2);pink.start=4;assert.equal(stateAt(pink,view(12)).bloom,true);assert.equal(stateAt(pink,{...view(1),year:1}).groundDormant,true);
+});
+
 test('ornamental fruit, winter kale and small annuals keep distinct organs and dated annual endings',()=>{
  const ids=['p-2673b7ee5407','p-555eb9d2ee8c','p-3a3c359bb429','p-ce7e61872af9','p-890749606b69','p-aa558d9c279e','p-dcde9009b020','p-ca95e20664c7','p-8561b3e74ece'];
  for(const id of ids)for(let month=1;month<=12;month++){
