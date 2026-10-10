@@ -1,6 +1,56 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.70';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.71';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function sarcandraLeafPoint(t,u){
+ const cycle=(t*18)%1,tooth=t>.08&&t<.96?1+.10*(cycle<.72?cycle/.72:(1-cycle)/.28):1;
+ const width=Math.pow(Math.sin(Math.PI*t),.77)*(.96+.13*t)*tooth;
+ return [u*width*.5,t,.037*Math.sin(Math.PI*t)*u*u+.003*Math.sin(t*18*Math.PI)*Math.abs(u)-.065*t*t];
+}
+function drawSarcandra(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,dark=a.shootProfile==='dark',mixed=a.shootProfile==='mixed',tips=[],leaves=[],N=Math.max(8,Math.round(18*detail));
+ const youngSeason=[4,5,6].includes(s.month),groups=mixed?2:1;
+ for(let group=0;group<groups;group++)for(let i=0;i<N;i++){
+  const az=i*2.399963+rand()*.5,offset=mixed?(group===0?-1:1)*w*.18:0,r=w*(mixed?.16:.28)*Math.sqrt((i+.5)/N),top=h*(.48+rand()*.37),base=[offset+Math.sin(az)*r*.40,0,Math.cos(az)*r*.40],count=7;let last=base;
+  for(let j=1;j<=count;j++){
+   const t=j/count,at=[base[0]+Math.sin(az)*r*t*.63,top*t,base[2]+Math.cos(az)*r*t*.63],color=dark?'#66453e':j>3?'#68834d':'#887454';
+   b.branch(last,at,Math.min(.004,h*.005)*(1-t*.40),color,'stem-sarcandra-cane');last=at;
+   b.add(kit.bud,'node-sarcandra',color,...at,.0035,.002,.0035);
+   if(j>=2)for(let side=0;side<2;side++)leaves.push({at,az:az+j*Math.PI/2+side*Math.PI,roll:rand(),size:.8+rand()*.30,young:j===count});
+   if(j===4&&i%3===0)for(let side=0;side<2;side++){
+    const theta=az+side*Math.PI,end=[at[0]+Math.sin(theta)*w*.12,at[1]+h*.19,at[2]+Math.cos(theta)*w*.12];
+    b.branch(at,end,.0023,color,'stem-sarcandra-axillary');
+    for(let node=1;node<=2;node++)for(let sign=0;sign<2;sign++)leaves.push({at:at.map((v,k)=>v+(end[k]-v)*node/2),az:theta+node*Math.PI/2+sign*Math.PI,roll:rand(),size:.76+rand()*.2,young:node===2});
+    tips.push({at:end,az:theta,fruit:group===1?'yellow':a.shootProfile,roll:rand()});
+   }
+  }tips.push({at:last,az,fruit:group===1?'yellow':a.shootProfile,roll:rand()});
+ }
+ for(const n of leaves){
+  const young=n.young&&youngSeason,L=Math.min(a.leafLength*n.size,w*(mixed?.26:.35))*(young?.70:1),pitch=young?.12+n.roll*.20:1.08+n.roll*.48,frame=flowerFrame(b,n.at,pitch,n.az),petiole=.012*n.size;
+  frame.branch([0,0,0],[0,petiole,0],.0009,dark?'#66453e':'#718f4b','petiole-sarcandra');
+  const color=dark?(young?'#654037':'#425c45'):(young?'#8caa59':a.leafColor),back=dark?'788571':'8c9e72';
+  frame.add('sarcandraLeaf',`leaf-sarcandra-${young?'young':'mature'}-underside-${back}`,kit.shade(rand,color,.055),0,petiole,0,L*a.leafWidth/a.leafLength,L,L,0,(n.roll-.5)*.64,0);
+ }
+ for(const n of tips){
+  const fruit=a.fruitMonths?.includes(s.month),green=a.greenFruitMonths?.includes(s.month);
+  if(!s.bloom&&!fruit&&!green)continue;
+  if(dark&&(fruit||green))continue;
+  const f=flowerFrame(b,n.at,.10+n.roll*.20,n.az),axis=.032,stemColor=dark?'#704b45':fruit?'#977246':'#83944d';
+  f.branch([0,0,0],[0,axis,0],.0012,stemColor,'inflorescence-sarcandra-axis');
+  for(let fork=0;fork<3;fork++){
+   const yaw=fork*TAU/3,reach=.011,root=[0,axis*.45,0],end=[Math.sin(yaw)*reach,axis*(.83+fork*.12),Math.cos(yaw)*reach];f.branch(root,end,.0007,stemColor,'inflorescence-sarcandra-branch');
+   for(let second=0;second<2;second++){
+    const theta=yaw+(second===0?-.55:.55),tip=[end[0]+Math.sin(theta)*.007,end[1]+.013, end[2]+Math.cos(theta)*.007];f.branch(end,tip,.00045,stemColor,'inflorescence-sarcandra-tip');
+    for(let j=0;j<4;j++){
+     const t=(j+.5)/4,ang=j*2.399963+theta,position=end.map((v,k)=>v+(tip[k]-v)*t);position[0]+=Math.sin(ang)*.0025;position[2]+=Math.cos(ang)*.0025;
+     const ff=flowerFrame(f,position,.3,ang);
+     if(fruit||green){const color=green?'#819456':n.fruit==='yellow'?'#e6ae3c':'#d45236';ff.add(kit.bud,`fruit-glossy-sarcandra-${green?'green':n.fruit==='yellow'?'yellow':'red'}`,color,0,0,0,.0032,.0031,.0032);ff.add(kit.bud,'stigma-sarcandra-retained','#765a38',0,.0031,0,.0005,.00025,.0005);}
+     else {ff.add(kit.bud,'ovary-sarcandra','#95aa5e',0,0,0,.0009,.0011,.0009);ff.add(kit.bud,'stigma-sarcandra','#c5cc86',0,.0011,0,.00035,.0002,.00035);ff.add(kit.bud,'stamen-sarcandra-single','#d1d5a1',0,.0006,-.001,.00055,.0012,.00035);}
+    }
+   }
+  }
+ }
+}
+
 export function nandinaLeafPoint(type,t,u){
  const wide=type==='otafuku'||type==='twilight',profile=Math.pow(Math.sin(Math.PI*t),wide?.65:.88)*(1.06-.14*t);
  return [u*profile*.5,t,Math.sin(Math.PI*t)*(.016+(type==='otafuku'?.11:.045)*u*u)-(type==='otafuku'?.055:.018)*t*t];
@@ -3854,6 +3904,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='sarcandraCanes'){drawSarcandra(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='nandinaCanes'){drawNandina(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='euonymusBranches'){drawEuonymus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='osmanthusAxils'){drawOsmanthus(b,{info,s,detail,rand},kit);return;}
