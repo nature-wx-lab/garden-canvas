@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.31';
-import {foliageKind} from './appearance.js?v=0.9.31';
-import {detailedFlower,drawDetailedHerb,salviniaPoint} from './plant-detail.js?v=0.9.31';
-import {drawTree} from './tree-model.js?v=0.9.31';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.31';
+import {treeProfile} from './tree-profiles.js?v=0.9.32';
+import {foliageKind} from './appearance.js?v=0.9.32';
+import {detailedFlower,drawDetailedHerb,salviniaPoint} from './plant-detail.js?v=0.9.32';
+import {drawTree} from './tree-model.js?v=0.9.32';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.32';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.31';
+import { plantInfo, stateAt } from './model.js?v=0.9.32';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -12,7 +12,30 @@ export const wind={time:{value:0},strength:{value:1}};
 export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^=s>>>17;s^=s<<5;return (s>>>0)/4294967296;};}
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
+const TAU=Math.PI*2;
 const shapes={};
+// Distinct laminae and continuous bell corollas for six Campanulaceae forms.
+for(const type of ['edraianthusLinear','phyteumaBasal','michauxiaRough','jasioneOblong','tracheliumSerrate','wahlenbergiaLeaf','michauxiaLobe','jasioneLobe','phyteumaLobe','edraianthusBell','wahlenbergiaBell']){
+ const p=[],uv=[],ix=[],rows=32,cols=type.endsWith('Bell')?100:18;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sn=Math.max(0,Math.sin(Math.PI*t));
+  if(type.endsWith('Bell')){
+   const an=j/cols*TAU,open=type==='wahlenbergiaBell',lobe=.60+.40*Math.pow((1+Math.cos(an*5))/2,.55),rr=(.18+t*(open?.69:.45))*(t<.6?1:1-(1-lobe)*(t-.6)/.4),yy=t*(open?1.10:1.75)-(open?.12:.04)*Math.pow(t,5);
+   p.push(Math.sin(an)*rr,yy,Math.cos(an)*rr);
+  }else if(type==='michauxiaLobe'){
+   p.push(u*.19*Math.pow(sn,.52),.32*Math.sin(t*Math.PI*1.25)-.43*t*t,.08+Math.sin(t*Math.PI*.72)*.96);
+  }else if(type==='jasioneLobe'){
+   p.push(u*.18*Math.pow(sn,.52),t,.10*t*t);
+  }else if(type==='phyteumaLobe'){
+   p.push(u*.035*Math.pow(sn,.45),t,.22*Math.sin(t*Math.PI));
+  }else{
+   const linear=type==='edraianthusLinear',phy=type==='phyteumaBasal',rough=type==='michauxiaRough',jas=type==='jasioneOblong',tra=type==='tracheliumSerrate',width=(linear?.033:phy?.28:rough?.20:jas?.14:tra?.30:.17)*Math.pow(sn,linear?.45:phy?.6:.7)*(phy?1.22-t*.50:jas||type==='wahlenbergiaLeaf'?.20+t*.8:1),serr=phy||rough||tra?1-.075*Math.pow((1+Math.cos(t*Math.PI*(tra?34:22)))/2,2):1;
+   p.push(u*width*serr,t,-.13*t*t-.032*u*u*sn+.015*Math.sin(t*31-Math.abs(u)*7)*Math.abs(u)*sn);
+  }
+  uv.push(j/cols,t);if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 // Peltate Hydrocotyle leaves attach at the centre, not at a basal notch.
 for(const type of ['waterCoinShield','marsileaWedge','bacopaOvate','bacopaRound','bacopaSpoon','bacopaCorolla']){
  const p=[],uv=[],ix=[],rows=28,cols=type==='waterCoinShield'||type==='bacopaCorolla'?120:24,coin=type==='waterCoinShield',fern=type==='marsileaWedge',corolla=type==='bacopaCorolla';
@@ -909,6 +932,10 @@ function windShader(shader,kind){
       float side=pow(max(0.0,cos((vUv.y-bacopaFold*.28)*32.0)),22.0)*(1.0-smoothstep(.80,1.0,bacopaFold));
       float mesh=pow(max(0.0,cos(vUv.x*39.0+sin(vUv.y*34.0))*cos(vUv.y*43.0)),10.0);
       diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.73,.78,.46),max(max(bacopaMidrib,side)*.78,mesh*.30));
+      #include <emissivemap_fragment>`);
+    if(kind==='petal-wahlenbergia')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float wahlVein=pow(max(0.0,cos(vUv.x*94.2478)),26.0);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.52,.56,.76),wahlVein*.35);
+      #include <emissivemap_fragment>`);
+    if(kind==='leaf-wahlenbergia')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float wahlEdge=smoothstep(.94,.995,abs(vUv.x-.5)*2.0);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.77,.79,.62),wahlEdge*.76);
       #include <emissivemap_fragment>`);
     if(kind==='petal-bacopa')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
       float vein=pow(max(0.0,cos(vUv.x*94.2478+sin(vUv.y*16.0)*.3)),25.0);diffuseColor.rgb*=1.0-.16*vein;

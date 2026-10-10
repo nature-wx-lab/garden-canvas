@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.31';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.32';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -25,6 +25,42 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(['edraianthusBell','wahlenbergiaBell','phyteumaFloret','jasioneFloret','tracheliumFloret','michauxiaReflexed'].includes(shape)){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),mich=shape==='michauxiaReflexed',phy=shape==='phyteumaFloret',jas=shape==='jasioneFloret',tra=shape==='tracheliumFloret',wahl=shape==='wahlenbergiaBell',n=mich?8:5;
+  if(mich){
+   f.add(bud,'ovary','#99a76c',0,-r*.05,0,r*.23,r*.19,r*.23);
+   for(let j=0;j<n;j++){
+    const an=j*TAU/n;f.add('michauxiaLobe','petal',color,0,0,0,r,r,r,0,an,0);
+    f.add('narrow','sepal','#6e8051',0,-r*.12,0,r*.20,r*.55,r*.55,2.1,an,0);
+    f.add('narrow','calyxAppendage','#6e8051',0,-r*.12,0,r*.15,r*.26,r*.26,2.65,an+Math.PI/n,0);
+    f.branch([0,0,0],[Math.sin(an)*r*.11,r*.40,Math.cos(an)*r*.11],r*.012,'#dad6b7','filament');f.add(bud,'anther','#cec18a',Math.sin(an)*r*.11,r*.40,Math.cos(an)*r*.11,r*.028,r*.070,r*.019);
+   }
+   let last=[0,0,0];for(let k=1;k<=14;k++){
+    const t=k/14,at=[0,t*r*1.08,-r*.19*t*t];f.branch(last,at,r*.023,'#d0ca9e','style');
+    for(let j=0;j<9;j++){const an=j*TAU/9+k*.19;f.branch(at,[Math.sin(an)*r*.070,at[1]+r*.014,at[2]+Math.cos(an)*r*.070],r*.006,'#ded3aa','pollenHair');}last=at;
+   }
+   for(let j=0;j<n;j++){const an=j*TAU/n;f.branch(last,[Math.sin(an)*r*.10,last[1]+r*.06,last[2]+Math.cos(an)*r*.10],r*.015,'#c7c694','stigma');}return;
+  }
+  if(shape.endsWith('Bell'))f.add(shape,wahl?'petal-wahlenbergia':'petal',color,0,0,0,r,r,r);
+  else if(phy){
+   f.add('tube','corollaTube',color,0,r*.11,0,r*.055,r*.22,r*.055);
+   for(let j=0;j<5;j++)f.add('phyteumaLobe','petal',color,0,r*.18,0,r,r,r,.12,j*TAU/5,0);
+  }else{
+   f.add('tube','corollaTube',color,0,r*(tra?1.45:.45),0,r*.17,r*(tra?2.9:.9),r*.17);
+   for(let j=0;j<5;j++)f.add(jas?'jasioneLobe':'narrow','petal',color,0,r*(tra?2.9:.9),0,r*(jas?1:.70),r,r,1.33,j*TAU/5,0);
+  }
+  for(let j=0;j<5;j++)f.add('narrow','sepal','#758154',0,-r*.06,0,r*.18,r*(wahl?.70:.50),r,.6,j*TAU/5,0);
+  const styleTop=wahl?r*.93:phy?r*1.34:jas?r*1.7:tra?r*5.1:r*1.56;
+  f.branch([0,r*.05,0],[0,styleTop,0],r*(tra?.038:jas?.036:.022),jas?'#a3abd8':tra?'#a6a0bf':'#d4cbe4','style');
+  if(jas||tra){
+   f.add(bud,'stigma',jas?'#e4e1f1':'#c7c0d5',0,styleTop,0,r*(jas?.07:.09),r*(jas?.14:.08),r*(jas?.07:.09));
+  }else for(let j=0;j<3;j++){const an=j*TAU/3;f.branch([0,styleTop,0],[Math.sin(an)*r*.10,styleTop+r*.05,Math.cos(an)*r*.10],r*.025,'#d5cee0','stigma');}
+  if(!wahl)for(let j=0;j<5;j++){
+   const an=j*TAU/5,rr=jas?r*.11:r*.07,at=[Math.sin(an)*rr,r*(jas?.68:tra?1.8:.36),Math.cos(an)*rr];
+   f.add(bud,jas?'connateAnther':'anther',jas?'#b4a4ca':'#c0b5c9',...at,r*.04,r*.16,r*.04,0,an,0);
+  }
+  return;
+ }
  if(shape==='bacopaCorolla'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw);
   f.add('bacopaCorolla','petal-bacopa',color,0,0,0,r,r,r);
@@ -1293,6 +1329,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(['edraianthusTuft','phyteumaHeads','michauxiaAxis','jasioneHeads','tracheliumCorymb','wahlenbergiaTuft'].includes(info.appearance?.architecture)){drawBellFamily(b,{info,s,detail,rand},kit);return;}
  if(['waterCoin','marsileaMutica','bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(info.appearance?.architecture)){drawWaterMargin(b,{info,s,detail,rand},kit);return;}
  if(['waterHyacinth','amazonFrogbit','salviniaNatans','salviniaMolesta','salviniaCucullata'].includes(info.appearance?.architecture)){drawFreeFloaters(b,{info,s,detail,rand},kit);return;}
  if(['waterArrowhead','nupharEmergent','floatingHeart','waterPoppy'].includes(info.appearance?.architecture)){drawFloatingAquatics(b,{info,s,detail,rand},kit);return;}
@@ -3591,6 +3628,61 @@ function drawAquaticReeds(b,{info,s,detail,rand},kit){
  function spikeletLocal(builder,at,len,yaw,pitch,color){
   const f=flowerFrame(builder,at,pitch,yaw);f.branch([0,0,0],[0,len,0],.00015,color,'spikeletAxis');
   for(let j=0;j<8;j++)f.add('grassGlume','glume',color,(j%2?1:-1)*.0003,len*j/8,0,.0017,.0017,.0017,.27,j%2*Math.PI,0);
+ }
+}
+
+function drawBellFamily(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,arch=a.architecture,mich=arch==='michauxiaAxis',tra=arch==='tracheliumCorymb',phy=arch==='phyteumaHeads',jas=arch==='jasioneHeads',edra=arch==='edraianthusTuft',wahl=arch==='wahlenbergiaTuft',h=s.height,w=s.spread,len=Math.min(a.leafLength,w*(mich?.50:.27)),winter=[12,1,2].includes(s.month),leafKind=wahl?'leaf-wahlenbergia':mich?'leaf-rough':'leaf',green=s.leafColor;
+ const leaf=(at,size,yaw,pitch,shape=a.leafShape)=>{
+  const f=flowerFrame(b,at,pitch,yaw);f.add(shape,leafKind,kit.shade(rand,green,.05),0,0,0,size,size,size);
+  f.branch([0,0,-.00002],[0,size*.90,-size*.105],Math.min(.00035,size*.007),'#8f9b64','leafVein');
+  if(mich)for(let j=0;j<14;j++){const t=.12+rand()*.71,u=(rand()-.5)*.24,at=[u*size,t*size,-.13*t*t*size-.001];f.branch(at,[at[0]+.0006,at[1]+.0005,at[2]-.0012],.000075,'#c2c5a3','leafHair');}
+ };
+ const leaves=Math.max(8,Math.round((mich?23:tra?18:edra?100:wahl?86:60)*detail*s.leafDensity));
+ for(let i=0;i<leaves;i++){
+  const an=i*2.399,rr=w*(mich||tra?.10:.27)*Math.sqrt((i+.2)/leaves),at=[Math.sin(an)*rr,.007,Math.cos(an)*rr],ll=len*(.63+rand()*.37)*s.leafScale;
+  if(phy){const tip=[at[0]+Math.sin(an)*ll*.40,.010+ll*.12,at[2]+Math.cos(an)*ll*.40];b.branch(at,tip,.00045,a.stemColor,'petiole');leaf(tip,ll*.69,an,1.1);}
+  else leaf(at,ll,an,.73+rand()*.64);
+ }
+ if(winter&&!edra)return;
+ if(!s.bloom&&!mich&&!tra)return;
+ const stems=Math.max(3,Math.round((mich?3:tra?5:edra?12:wahl?22:phy?13:15)*detail)),scales=s.bloom?1:.54;
+ for(let i=0;i<stems;i++){
+  const an=i*2.399,rr=w*(mich?.09:.26)*Math.sqrt((i+.5)/stems),root=[Math.sin(an)*rr,.008,Math.cos(an)*rr],top=h*(.62+rand()*.36)*scales,lean=w*(edra?.18:mich?.04:.09),points=[root];
+  for(let k=1;k<=7;k++){
+   const t=k/7,at=[root[0]+Math.sin(an)*lean*t*t,top*t,root[2]+Math.cos(an)*lean*t*t];b.branch(points.at(-1),at,mich?.0045*(1-t*.60):tra?.0019*(1-t*.52):.00065,a.stemColor,mich||tra?'floweringAxis':'flowerScape');points.push(at);
+   if((mich||tra||phy)&&k<6){const size=len*(1-k*.12);leaf(at,size,an+k*2.399,1.05,phy?'edraianthusLinear':a.leafShape);}
+   if(mich)for(let j=0;j<12;j++){const angle=j*2.399,pt=points[k-1].map((v,n)=>v+(at[n]-v)*(j+.3)/12);b.branch(pt,[pt[0]+Math.sin(angle)*.0027,pt[1]+.0008,pt[2]+Math.cos(angle)*.0027],.00013,'#b5ba91','stemHair');}
+  }
+  if(!s.bloom)continue;
+  const end=points.at(-1),heads=[];
+  if(mich){
+   for(let j=1;j<7;j++){
+    const angle=an+j*2.399,rr=w*(.10+.15*(1-j/7)),at=[end[0]+Math.sin(angle)*rr,top*(.30+j*.095),end[2]+Math.cos(angle)*rr],base=points[Math.max(1,j-1)];b.branch(base,at,.0016,a.stemColor,'pedicel');
+    if(j%4===0){b.add(kit.bud,'bud','#cfd1b7',...at,a.flowerRadius*.23,a.flowerRadius*.59,a.flowerRadius*.23,.4,angle,0);continue;}
+    detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius*(.86+rand()*.14),color:s.flowerColor,shape:a.flowerShape,tilt:2.12,yaw:angle},{...kit,rand});
+   }continue;
+  }
+  if(tra){
+   for(let j=0;j<4;j++){const angle=an+j*TAU/4,at=[end[0]+Math.sin(angle)*w*.14,end[1]-(j?top*.065:0),end[2]+Math.cos(angle)*w*.14];b.branch(points[5],at,.0009,a.stemColor,'corymbBranch');heads.push(at);}
+  }else heads.push(end);
+  for(const head of heads){
+   if(wahl){
+    detailedFlower(b,{x:head[0],y:head[1],z:head[2],r:a.flowerRadius,color:s.flowerColor,shape:a.flowerShape,tilt:.40+rand()*.60,yaw:an},{...kit,rand});continue;
+   }
+   if(edra){
+    for(let j=0;j<10;j++)b.add('edraianthusLinear','involucre','#778a51',...head,.027,.027,.027,1.6,j*TAU/10,0);
+    for(let j=0;j<6;j++){const angle=j*2.399,rr=.009*Math.sqrt((j+.5)/6),at=[head[0]+Math.sin(angle)*rr,head[1],head[2]+Math.cos(angle)*rr];detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius,color:s.flowerColor,shape:a.flowerShape,tilt:.15+rand()*.35,yaw:angle},{...kit,rand});}continue;
+   }
+   const hr=a.headRadius*(tra?.70:1),n=tra?88:phy?26:130;
+   if(phy||jas)for(let j=0;j<(phy?7:12);j++)b.add('edraianthusLinear','involucre','#768551',head[0],head[1]-.003,head[2],phy?hr*1.90:hr*.78,phy?hr*1.90:hr*.78,hr,1.80,j*TAU/(phy?7:12),0);
+   for(let j=0;j<n;j++){
+    const t=(j+.5)/n,angle=j*2.399,polar=1-1.65*t,rad=hr*(tra?Math.sqrt(t):Math.sqrt(1-polar*polar)),at=[head[0]+Math.sin(angle)*rad,head[1]+hr*(tra?.10+.12*(1-t):.65+polar),head[2]+Math.cos(angle)*rad];
+    if(tra)b.branch(head,at,.00020,a.stemColor,'corymbPedicel');
+    detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius*(.86+rand()*.14),color:kit.shade(rand,s.flowerColor,.055),shape:a.flowerShape,tilt:tra?.1:Math.acos(polar),yaw:angle},{...kit,rand});
+   }
+  }
  }
 }
 
