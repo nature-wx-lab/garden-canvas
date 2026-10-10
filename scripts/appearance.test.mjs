@@ -10,6 +10,26 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Ardisia retains evergreen alternate leaves and carries seasonal flowers and fruit below foliage',()=>{
+ const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='ardisiaShoots');assert.equal(entries.length,3);
+ for(const [i,[id,info]] of entries.entries()){
+  const a=info.appearance;assert.equal(a.arrangement,'alternate');assert.equal(a.persistence,'evergreen');let wood;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,8900+i,2,2);p.height=a.shootProfile==='benikujaku'?.4:.15;p.spread=a.shootProfile==='benikujaku'?.38:.30;
+   const g=plantModel(p,view(month)),count=prefix=>g.children.filter(m=>m.userData.component.startsWith(prefix)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'ardisiaShoots');assert.ok(count('leaf-ardisia')>0);assert.ok(count('wood-ardisia')>0);
+   assert.equal(count('petal-ardisia')>0,a.flowerMonths.includes(month));assert.equal(count('anther-ardisia'),count('petal-ardisia')*5);
+   assert.equal(count('fruit-glossy-ardisia')>0,a.fruitMonths.includes(month)||a.greenFruitMonths.includes(month));
+   assert.equal(count('leaf-gland-ardisia')>0,a.shootProfile==='benikujaku');
+   const skeleton=g.children.filter(m=>m.userData.component.startsWith('wood-ardisia')).map(m=>[...m.instanceMatrix.array]);if(!wood)wood=skeleton;else assert.deepEqual(skeleton,wood);
+   const leafY=g.children.filter(m=>m.userData.component.startsWith('leaf-ardisia')).flatMap(m=>Array.from({length:m.count},(_,j)=>m.instanceMatrix.array[j*16+13]));
+   for(const m of g.children.filter(m=>m.userData.component.startsWith('fruit-glossy-ardisia')))for(let j=0;j<m.count;j++)assert.ok(m.instanceMatrix.array[j*16+13]<Math.max(...leafY));
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ assert.deepEqual(CATALOG['p-57d148418dd3'].appearance.fruitMonths,[11,12,1,2,3,4]);assert.equal(CATALOG['p-a24bc9d8ffd0'].source,'https://item.rakuten.co.jp/chigusa/10015368/');
+});
+
 test('Callicarpa preserves simple opposite leaves, species serration, axillary cymes and leafless winter canes',()=>{
  const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='callicarpaArches');assert.equal(entries.length,4);
  for(const [i,[id,info]] of entries.entries()){

@@ -1,6 +1,67 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.73';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.74';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function ardisiaLeafPoint(type,t,u){
+ const tall=type==='benikujaku',phase=t*(tall?12:21),cycle=phase%1,teeth=t>.05&&t<.96?(tall?.035*Math.cos(phase*TAU):.055*(cycle<.72?cycle/.72:(1-cycle)/.28)):0;
+ const width=Math.pow(Math.sin(Math.PI*t),tall?.70:.76)*(1.02-.14*t)*(1+teeth),wave=(tall?.006:.004)*Math.cos(phase*TAU)*Math.pow(Math.abs(u),3);
+ return [u*width*.5,t,Math.sin(Math.PI*t)*(.05*u*u+wave)-.08*t*t];
+}
+export function ardisiaFlowerGeometry(){
+ const pos=[],uv=[],ix=[];
+ for(let k=0;k<5;k++){
+  const az=k*TAU/5,start=pos.length/3,rows=14,cols=6;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,r=.10+.90*t,width=.40*Math.pow(Math.sin(Math.PI*t),.81),y=.06+.20*Math.sin(Math.PI*t)-.17*t*t;
+   pos.push(Math.sin(az)*r+Math.cos(az)*u*width,y,Math.cos(az)*r-Math.sin(az)*u*width);uv.push(j/cols,t);
+   if(i<rows&&j<cols){const q=start+i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.ardisiaFlower={lobes:5};return g;
+}
+function drawArdisia(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,tall=type==='benikujaku',h=s.height,w=s.spread,leaves=[],clusters=[],shoots=tall?1:Math.round(15*detail);
+ const addLeaves=(at,angle,tier,level)=>{
+  const count=tall?6:4;
+  for(let k=0;k<count;k++){
+   const az=angle+k*(tall?2.399963:TAU/count),rise=tall?(k-(count-1)*.5)*h*.027:k*.0015,origin=[at[0],at[1]+rise,at[2]];
+   if(tall)b.branch(at,origin,.0014,a.stemColor,'wood-ardisia-leafy-shoot');
+   leaves.push({at:origin,az,young:tier===1&&k>=3,size:.73+rand()*.26,roll:rand(),level});
+  }
+ };
+ for(let i=0;i<shoots;i++){
+  const az=i*2.399963,rad=tall?0:w*.31*Math.sqrt((i+.5)/shoots),root=[Math.sin(az)*rad,0,Math.cos(az)*rad],height=h*(tall?.80:.27+rand()*.39),tip=[root[0]+Math.sin(az)*h*.025,height,root[2]+Math.cos(az)*h*.025];
+  b.branch(root,tip,tall?Math.min(.007,h*.02):.00125,a.barkColor,'wood-ardisia');
+  for(let tier=0;tier<2;tier++){const at=tip.map((v,k)=>k===1?v-h*(tier===0?.18:0):v);addLeaves(at,az+tier*.63,tier,tier);}
+  if(tall){
+   for(let branch=0;branch<6;branch++){
+    const angle=branch*2.399963,base=[0,h*(.35+branch*.065),0],end=[Math.sin(angle)*w*.13,h*(.43+branch*.065),Math.cos(angle)*w*.13];b.branch(base,end,.0022,a.barkColor,'wood-ardisia-lateral');
+    addLeaves(end,angle,branch>3?1:0,branch);clusters.push({at:end,az:angle,roll:rand()});
+   }
+  }else clusters.push({at:[tip[0],tip[1]-h*.15,tip[2]],az,roll:rand()});
+ }
+ for(const n of leaves){
+  const flush=tall&&n.young&&s.month>=6&&s.month<=10,L=a.leafLength*n.size*(flush?.80:1),P=.004,f=flowerFrame(b,n.at,n.young?.50+n.roll*.52:1.01+n.roll*.55,n.az),kind=`leaf-ardisia-${type}${flush?'-flush':''}-underside-${a.leafUnderside.slice(1)}`;
+  f.branch([0,0,0],[0,P,0],.00035,a.stemColor,'petiole-ardisia');f.add('ardisia-'+type,kind,kit.shade(rand,tall?(flush?'#70465e':n.level<2?'#4f6247':'#49484b'):a.leafColor,.035),0,P,0,L*a.leafWidth/a.leafLength,L,L);
+  if(tall)for(let k=1;k<10;k++)for(const side of [-1,1]){const p=ardisiaLeafPoint(type,k/12,side);f.add(kit.bud,'leaf-gland-ardisia','#746359',p[0]*L*a.leafWidth/a.leafLength,P+p[1]*L,p[2]*L,.00035,.00045,.00030);}
+ }
+ for(const n of clusters){
+  const flower=s.bloom&&(tall||n.roll<.52),ripe=a.fruitMonths.includes(s.month),green=a.greenFruitMonths.includes(s.month),fruit=(ripe||green)&&n.roll<(tall?.70:type==='white'?.16:.25);
+  if(!flower&&!fruit)continue;
+  const downward=flowerFrame(b,n.at,2.73,n.az),len=tall?.038:.013,spread=tall?.021:.008,count=flower?(tall?9:3):(tall?6:1);
+  downward.branch([0,0,0],[0,len*.50,0],.00055,a.stemColor,'peduncle-ardisia');
+  for(let j=0;j<count;j++){
+   const az=j*2.399963,rad=spread*Math.sqrt((j+.5)/count),at=[Math.sin(az)*rad,len*(.68+(j%3)*.16),Math.cos(az)*rad];downward.branch([0,len*.50,0],at,.00025,a.stemColor,'pedicel-ardisia');
+   const f=flowerFrame(downward,at,.2,az);
+   if(fruit){const R=a.fruitRadius*(green?.73:1);f.add(kit.bud,'fruit-glossy-ardisia',ripe?a.fruitColor:'#81935e',0,R*.70,0,R,R,R);for(let k=0;k<5;k++)f.add('ardisia-white','calyx-ardisia','#65805b',0,0,0,R*.24,R*.45,R*.45,.72,k*TAU/5,0);}
+   else{
+    const R=a.flowerRadius;f.add('ardisiaFlower','petal-ardisia',s.flowerColor,0,0,0,R,R,R);
+    for(let k=0;k<5;k++){const az=k*TAU/5;f.add(kit.cone,'anther-ardisia','#dab468',Math.sin(az)*R*.13,R*.28,Math.cos(az)*R*.13,R*.10,R*.62,R*.10,-.10,az,0);}
+    f.branch([0,0,0],[0,R*.94,0],R*.024,'#dfd0a8','style-ardisia');
+   }
+  }
+ }
+}
+
 export function callicarpaLeafPoint(type,t,u){
  const small=type==='dichotoma',serrate=t>(small?.49:.06)&&t<.94,cycle=(t*(small?11:24))%1,tooth=serrate?1+(small?.15:.055)*(cycle<.70?cycle/.70:(1-cycle)/.30):1;
  const width=Math.pow(Math.sin(Math.PI*t),.88)*(small?.64+.66*t:1.08-.28*t)*tooth,vein=.004*Math.cos(t*18*Math.PI-Math.abs(u)*3);
@@ -4029,6 +4090,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='ardisiaShoots'){drawArdisia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='callicarpaArches'){drawCallicarpa(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardeniaBranches'){drawGardenia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='sarcandraCanes'){drawSarcandra(b,{info,s,detail,rand},kit);return;}
