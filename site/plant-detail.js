@@ -1,6 +1,142 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.46';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.47';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+
+// Myrtaceae share floral structures, but their leaf blades, phyllotaxy and
+// branching are kept separate. Units are metres after instancing.
+export function myrtaceousLeafPoint(type,t,u){
+ const s=Math.pow(Math.max(0,Math.sin(Math.PI*t)),type==='feijoaOval'?.53:type==='teaBlunt'?.55:1.02),blunt=type==='feijoaOval'||type==='teaBlunt';
+ const width=.5*s*(blunt?.87+.14*t:1.03-.16*t),curl=type==='feijoaOval'?.10:type==='teaBlunt'?.16:.045;
+ return [u*width,t,curl*u*u*s+.035*t*t];
+}
+
+// One shared mesh contains each flower's fine filaments, including the five
+// joined staminal bundles of Melaleuca. Tips are separate yellow anthers.
+export function myrtaceousFlowerGeometry(type,part){
+ const p=[],uv=[],ix=[];
+ const ribbon=(points,width)=>{
+  for(let plane=0;plane<2;plane++){
+   const start=p.length/3;
+   for(let j=0;j<points.length;j++)for(const sign of [-1,1]){
+    const v=points[j];p.push(v[0]+(plane?0:sign*width/2),v[1],v[2]+(plane?sign*width/2:0));uv.push(sign===1?1:0,j/(points.length-1));
+    if(j<points.length-1&&sign===-1){const k=start+j*2;ix.push(k,k+1,k+2,k+1,k+3,k+2);}
+   }
+  }
+ };
+ const dot=(v,r)=>{const start=p.length/3;for(const q of [[-r,0,0],[r,0,0],[0,r,0],[0,0,r],[0,0,-r]]){p.push(v[0]+q[0],v[1]+q[1],v[2]+q[2]);uv.push(.5,.5);}ix.push(start,start+2,start+3,start+1,start+3,start+2,start,start+4,start+2,start+1,start+2,start+4);};
+ const line=(base,end,bend=.02,width=.007)=>{
+  const points=[];for(let j=0;j<=5;j++){const t=j/5;points.push(base.map((v,k)=>v+(end[k]-v)*t+(k===1?bend*Math.sin(t*Math.PI):0)));}
+  if(part==='filaments')ribbon(points,width);else dot(end,width*1.7);
+ };
+ const brush=type.endsWith('Brush'),claws=type==='thymifoliaStamens';
+ if(brush){
+  const call=type==='callistemonBrush',lin=type==='linariifoliaBrush',squar=type==='squarrosaBrush',flowers=call?28:15,hairs=call?22:lin?36:squar?9:20;
+  for(let flower=0;flower<flowers;flower++){
+   const az=flower*2.39996,y=.06+.87*(flower+.5)/flowers,base=[Math.sin(az)*.035,y,Math.cos(az)*.035];
+   for(let bundle=0;bundle<(call?1:5);bundle++){
+    const bAngle=bundle*TAU/5;
+    const root=[base[0]+Math.sin(az)*.045,base[1]+Math.sin(bAngle)*.022,base[2]+Math.cos(az)*.045];
+    if(part==='filaments'&&!call)ribbon([base,root],.009);
+    for(let k=0;k<hairs;k++){
+     const a=az+(call?(k/(hairs-1)-.5)*2:(bundle-2)*.18+(k/(hairs-1)-.5)*.65),r=(call?.36:lin?.40:squar?.26:.31)*( .84+.16*Math.sin(flower*3.7+k*2.9)**2),end=[base[0]+Math.sin(a)*r,y+Math.cos(k*2.399+bAngle)*r*.5,base[2]+Math.cos(a)*r];
+     line(root,end,.028,call?.006:.004);
+    }
+   }
+  }
+ }else if(claws){
+  for(let bundle=0;bundle<5;bundle++){
+   const az=bundle*TAU/5,root=[Math.sin(az)*.32,.10,Math.cos(az)*.32];
+   if(part==='filaments')ribbon([[0,0,0],root],.06);
+   for(let k=0;k<40;k++){
+    const angle=az+(k/39-.5)*1.03,reach=.74+.24*Math.sin(k*2.399)**2,points=[];
+    for(let j=0;j<=8;j++){
+     const t=j/8,r=.32+(reach-.32)*Math.sin(t*Math.PI*.70),y=.10+.25*t+.23*Math.pow(t,3);points.push([Math.sin(angle)*r,y,Math.cos(angle)*r]);
+    }
+    if(part==='filaments')ribbon(points,.007);else dot(points.at(-1),.011);
+   }
+  }
+ }else{
+  const feij=type==='feijoaStamens',myrt=type==='myrtusStamens',count=feij?38:myrt?85:35;
+  for(let k=0;k<count;k++){
+   const an=k*2.39996,rad=(feij?.46:myrt?.78:.40)*Math.sqrt((k+.6)/count),y=feij?1.28-rad*.20:myrt?.84-rad*.37:.30;
+   line([Math.sin(an)*.10,0,Math.cos(an)*.10],[Math.sin(an)*rad,y,Math.cos(an)*rad],.10,feij?.022:myrt?.011:.009);
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.myrtaceousFlower=type;g.userData.part=part;return g;
+}
+
+function drawMyrtaceousTree(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,type=a.shootProfile,feijoa=type==='feijoa',myrtus=type==='myrtus',tea=['brachyandrum','scoparium','lanigerum'].includes(type),low=type==='thymifolia',formanii=type==='formanii',fine=!feijoa&&!myrtus,wide=a.habit==='spreading'||a.habit==='arching',upright=a.habit==='upright';
+ const leafLength=Math.min(a.leafLength,h*.13,w*.13),wood=a.barkColor,young=a.stemColor,sites=[],flowers=[];
+ const mix=(a,b,t)=>a.map((v,k)=>v+(b[k]-v)*t),rad=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r];
+ const curve=(points,r,youngBranch=false)=>{for(let k=1;k<points.length;k++)b.branch(points[k-1],points[k],r*(1-.5*k/points.length),youngBranch?young:wood,youngBranch?'wood-myrtaceous-shoot':'wood-'+a.barkPattern);};
+ const trunks=feijoa?3:low?5:4;
+ for(let main=0;main<trunks;main++){
+  const az=main*2.399+.1*rand(),base=rad(az,w*.025,.004),fork=rad(az,w*.07,h*(low?.07:feijoa?.22:.13)),radius=Math.min(.026,h*(low?.008:.013));
+  curve([base,rad(az+.08,w*.042,fork[1]*.6),fork],radius);
+  for(let arm=0;arm<(fine?7:6);arm++){
+   const an=az+(arm-3)*.61+(rand()-.5)*.27,reach=w*((feijoa||myrtus)?(arm<2?.13+rand()*.10:.26+rand()*.11):arm<2?.05+arm*.10:upright?.18+rand()*.1:.25+rand()*.13),top=h*((feijoa||myrtus)?(arm<2?.80+rand()*.10:.47+rand()*.30):low?(arm>3?.22+rand()*.24:.58+rand()*.32):arm===0?.94:.45+rand()*.38),end=rad(an,reach,top),bend=mix(fork,end,.5);bend[1]+=h*(wide?.06:.015);
+   curve([fork,bend,end],radius*.47);
+   const count=Math.max(4,Math.round((fine?14:12)*detail));
+   for(let twig=0;twig<count;twig++){
+    const t=.16+.82*(twig+.12+rand()*.75)/count,at=t<.5?mix(fork,bend,t*2):mix(bend,end,(t-.5)*2),angle=an+(twig%2?1:-1)*(.48+rand()*.67),reach=Math.min(w*(wide?.20:.15),fine?.23:.34)*(.57+rand()*.65),tip=[at[0]+Math.sin(angle)*reach,Math.min(h-leafLength*.5,at[1]+h*(low?.07:wide?.035+rand()*.10:.08+rand()*.08)),at[2]+Math.cos(angle)*reach];
+    const r=Math.hypot(tip[0],tip[2]),limit=w*.47-leafLength*.60;if(r>limit){tip[0]*=limit/r;tip[2]*=limit/r;}
+    curve([at,mix(at,tip,.5),tip],Math.min(fine?.0006:.0023,h*.0017),true);
+    const nodes=fine?24:11;
+    for(let n=0;n<nodes;n++){
+     const u=.08+.9*(n+.5)/nodes,node=mix(at,tip,u),opposite=a.arrangement==='opposite',number=formanii&&n>10?3:opposite?2:1;
+     for(let side=0;side<number;side++)sites.push({at:node,yaw:angle+side*TAU/number+n*(number>1?Math.PI/2:2.39996),pitch:.70+rand()*.80,roll:(rand()-.5)*.4,size:.76+rand()*.24,tone:rand(),chance:rand(),young:n>nodes-3});
+     if((feijoa||myrtus)&&n%3===2){
+      const forkAngle=angle+(n%2?1:-1)*(.65+rand()*.65),forkLength=leafLength*(1.1+rand()*.8),last=[node[0]+Math.sin(forkAngle)*forkLength,node[1]+forkLength*(.35+rand()*.4),node[2]+Math.cos(forkAngle)*forkLength];curve([node,last],.00065,true);
+      for(let j=1;j<=4;j++)for(let side=0;side<2;side++)sites.push({at:mix(node,last,j/4),yaw:forkAngle+side*Math.PI+j*Math.PI/2,pitch:.6+rand()*1.15,roll:(rand()-.5)*.65,size:.77+rand()*.23,tone:rand(),chance:rand(),young:j===4});
+     }
+     // Fine twiglets carry true-size small leaves, not enlarged broad blades.
+     if(fine&&n%4===1)for(let sideTwig=0;sideTwig<(low?2:1);sideTwig++){
+      const an2=angle+(sideTwig?1:-1)*( .7+rand()*.8),shortEnd=[node[0]+Math.sin(an2)*reach*.35,node[1]+h*(.016+rand()*.032),node[2]+Math.cos(an2)*reach*.35];curve([node,shortEnd],.00020,true);
+      const littleNodes=low?10:5;for(let q=1;q<=littleNodes;q++)for(let side=0;side<(opposite?2:1);side++)sites.push({at:mix(node,shortEnd,q/littleNodes),yaw:an2+side*Math.PI+q*(opposite?1.57:2.399),pitch:.8+rand()*.7,roll:0,size:.66+rand()*.24,tone:rand(),chance:rand(),young:q===5});
+     }
+     if((feijoa?n===1||n===3:low?n===5||n===10:myrtus||tea?n===nodes-3:n===nodes-2))flowers.push({at:node,yaw:angle,pitch:.25+rand()*.95,tone:rand(),chance:rand()});
+    }
+   }
+  }
+ }
+ const leafKind=['bracteata','linariifolia','squarrosa','callistemon'].includes(type)?'leaf-myrtaceae-veins':foliageKind(info);
+ for(const q of sites){
+  if(q.chance>s.leafDensity)continue;
+  const len=leafLength*q.size*s.leafScale,color=q.young&&a.springShootColor&&(a.flushMonths||[]).includes(s.month)?a.springShootColor:s.leafColor,petiole=len*(feijoa?.12:myrtus?.06:.025),at=[q.at[0]+Math.sin(q.yaw)*petiole,q.at[1]+petiole*.23,q.at[2]+Math.cos(q.yaw)*petiole];
+  if(feijoa||myrtus)b.branch(q.at,at,Math.min(.0007,len*.011),young,'petiole');
+  b.add(a.leafShape,leafKind,kit.shade(()=>q.tone,color,.06),...at,len*a.leafWidth/a.leafLength,len,len,-q.pitch,q.yaw,q.roll);
+ }
+ const fruit=(a.fruitMonths||[]).includes(s.month);
+ if(!s.bloom&&!fruit)return;
+ for(const q of flowers){
+  if(q.chance>(fruit?.08:(s.flowerDensity??1)*(feijoa?.30:myrtus?.28:tea?.55:low?.35:.24)))continue;
+  const r=a.flowerRadius||.01,end=[q.at[0]+Math.sin(q.yaw)*r,q.at[1]+r,q.at[2]+Math.cos(q.yaw)*r];
+  if(fruit){
+   const fr=a.fruitRadius;b.branch(q.at,[end[0],end[1]-fr*.45,end[2]],.0006,young,'fruitPedicel');
+   b.add(kit.bud,'fruit',a.fruitColor,end[0],end[1]-fr*1.3,end[2],fr*(feijoa?.63:1),fr,fr*(feijoa?.63:1),.20,q.yaw,0);
+   if(feijoa)for(let k=0;k<4;k++)b.add('teaBlunt','persistentCalyx','#867b5e',end[0],end[1]-fr*2.22,end[2],fr*.26,fr*.27,fr*.27,1.85,q.yaw+k*TAU/4,0);
+   continue;
+  }
+  b.branch(q.at,end,.0006,young,'peduncle');
+  const frame=flowerFrame(b,end,q.pitch,q.yaw),cp=a.flowerPalette,kind=feijoa?'feijoaStamens':myrtus?'myrtusStamens':tea?'teaStamens':low?'thymifoliaStamens':type+'Brush',scale=(feijoa||myrtus||tea||low)?r:a.inflorescenceLength;
+  if(feijoa||myrtus||tea){
+   const petals=feijoa?4:5;
+   for(let k=0;k<petals;k++){
+    const an=k*TAU/petals;
+    frame.add('myrtaceousPetal',feijoa?'petal-feijoa-outside-f5efdf':'petal-myrtaceous',feijoa?'#bc547c':'#f5f0df',0,0,0,r,r,r,0,an,0);
+    if(feijoa)frame.add('teaBlunt','sepal','#a4ab8d',0,-r*.08,0,r*.22,r*.38,r*.30,1.95,an,0);
+   }
+   frame.add(kit.bud,'floralCup',cp.center,0,r*.025,0,r*(feijoa?.23:.19),r*.10,r*(feijoa?.23:.19),0,0,0);
+  }
+  frame.add(kind+'Filaments','stamen-'+type,cp.stamens,0,0,0,scale,scale,scale,0,0,0);
+  frame.add(kind+'Tips','anther-'+type,low?'#ded5ce':cp.anthers,0,0,0,scale,scale,scale,0,0,0);
+  if(!feijoa&&!myrtus&&!tea&&!low){
+   frame.branch([0,0,0],[0,scale*1.12,0],.0007,young,'flowerAxis');
+   if(type==='callistemon')for(let j=0;j<4;j++)frame.add(a.leafShape,leafKind,s.leafColor,0,scale*(.97+j*.07),0,leafLength*.6*a.leafWidth/a.leafLength,leafLength*.6,leafLength*.6,-.6,j*2.399,0);
+  }
+ }
+}
 
 export function cotinusLeafPoint(t,u){
  const wave=Math.pow(Math.max(0,Math.sin(Math.PI*t)),.53),width=.445*wave*(.64+.40*t);
@@ -1713,6 +1849,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(info.appearance?.architecture==='myrtaceousTree'){drawMyrtaceousTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='smokeTree'){drawSmokeTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='coniferSprays'){drawConiferSprays(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenRoseCanes'){drawGardenRose(b,{info,s,p,detail,rand},kit);return;}
