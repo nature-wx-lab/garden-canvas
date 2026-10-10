@@ -1,6 +1,108 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.62';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.63';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function hamamelidPoint(type,t,u){
+ const ribbon=type==='loropetalumRibbon',loro=type==='loropetalumOvate',sym=type==='fothergillaSymmetric';
+ if(ribbon){const angle=.8*Math.sin(t*5.5),width=.5*Math.pow(Math.sin(Math.PI*t),.20);return [u*width*Math.cos(angle)+.08*Math.sin(t*8)*t,t-.12*t*t,.15*Math.sin(t*4.7)+u*width*.15*Math.sin(angle)];}
+ const teething=loro?1:t<.48?1:1-.13*(1-Math.abs(Math.sin((t-.48)*Math.PI*16)));
+ const outline=Math.pow(Math.sin(Math.PI*t),loro?.69:.54)*(loro?1.08-.28*t:1.04-.10*t)*teething;
+ const offset=sym?0:.075*Math.sin(Math.PI*t)*(1-t),y=t+(!sym?.045*u*Math.sin(Math.PI*t):0);
+ return [u*outline*.5+offset,y,Math.sin(Math.PI*t)*(.025+.075*u*u)+(loro?.006:.018)*Math.cos(t*Math.PI*16)*Math.abs(u)];
+}
+// A flower head has no petals. Crossed ribbons retain fine stamens without thousands of cylinders.
+export function fothergillaHeadGeometry(part){
+ const pos=[],uv=[],ix=[],flowers=20,stamens=16;
+ const dot=(at,r)=>{
+  const start=pos.length/3;for(const q of [[r,0,0],[-r,0,0],[0,r,0],[0,-r,0],[0,0,r],[0,0,-r]]){pos.push(...at.map((x,k)=>x+q[k]));uv.push(.5,.5);}
+  for(const q of [[0,2,4],[2,1,4],[1,3,4],[3,0,4],[2,0,5],[1,2,5],[3,1,5],[0,3,5]])ix.push(...q.map(x=>x+start));
+ };
+ for(let i=0;i<flowers;i++){
+  const az=i*2.399963,y=.10+.56*(i+.5)/flowers,base=[Math.sin(az)*.06,y,Math.cos(az)*.06];
+  for(let k=0;k<stamens;k++){
+   const an=az+(k/(stamens-1)-.5)*2.7,r=.29+.085*Math.sin(k*2.13+i*1.97)**2,dy=.05+Math.cos(k*2.399963)*.14,end=[base[0]+Math.sin(an)*r,y+dy,base[2]+Math.cos(an)*r];
+   if(part==='anthers'){dot(end,.014);continue;}
+   for(let plane=0;plane<2;plane++){
+    const start=pos.length/3;for(let step=0;step<=3;step++)for(const sign of [-1,1]){
+     const t=step/3,q=base.map((v,j)=>v+(end[j]-v)*t+(j===1?.045*Math.sin(Math.PI*t):0));q[plane===0?0:2]+=sign*.004;pos.push(...q);uv.push(sign===1?1:0,t);
+     if(step<3&&sign===-1){const v=start+step*2;ix.push(v,v+1,v+2,v+1,v+3,v+2);}
+    }
+   }
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.fothergillaHead={part,flowers,stamens,petals:0};return g;
+}
+function drawHamamelid(b,{info,s,detail,rand},kit){
+ const a=info.appearance,typ=a.shootProfile,loro=a.architecture==='loropetalumShoots',creeping=typ==='ruby',weeping=typ==='plum',major=typ==='major',h=s.height,w=s.spread,nodes=[],tips=[],wood=[],count=Math.round((loro?creeping?7:12+Math.min(6,h*2):major?6:9)*detail);
+ const shoot=(root,az,rise,reach,order)=>{
+  let prev=root;const num=order===0?10:order===1?7:order===2?(loro&&!creeping?6:4):4;
+  for(let j=0;j<num;j++){
+   const t=(j+1)/num,zig=(j%2?1:-1)*(loro?.018:.038)*reach,an=az+.12*Math.sin(t*5+az),bow=creeping?.4:weeping?.67:loro?.26:.10;
+   const at=[root[0]+Math.sin(an)*reach*t+Math.cos(an)*zig,Math.max(.015,root[1]+rise*(t+bow*Math.sin(Math.PI*t))-(weeping&&order>0?Math.min(h*.11,reach*.30)*t*t:0)),root[2]+Math.cos(an)*reach*t-Math.sin(an)*zig];
+   wood.push({from:prev,to:at,r:(order===0?.010:order===1?.0028:.0009)*Math.max(.25,Math.min(1.8,h))*(1-t*.66),old:order===0&&j<5});prev=at;
+   nodes.push({at,an:an+(j%2?1:-1)*Math.PI/2,order,t,roll:rand(),size:.78+.22*rand()});
+   if(order===0&&j>=1&&j<=7)shoot(at,an+(j%2?1:-1)*(.70+rand()*.5),h*(creeping?.13:major?.25:.16)*(1-t),w*(creeping?.10:major?.15:.17)*(1-t*.4),1);
+   if(order===1&&(j===1||j===3||j===5))shoot(at,an+(j%2?1:-1)*.85,h*(creeping?.09:.045),w*(creeping?.04:.060),2);
+   if(loro&&!creeping&&order===2&&(j===1||j===3))shoot(at,an+(j===1?1:-1)*.8,h*.015,w*.026,3);
+   if(j===num-1)tips.push({at,an,index:tips.length,roll:rand()});
+  }
+ };
+ for(let i=0;i<count;i++){
+  const an=i*2.399963+(rand()-.5)*.45,edge=Math.sqrt((i+.5)/count),root=[Math.sin(an)*w*.05*edge,0,Math.cos(an)*w*.05*edge];
+  const rise=h*(creeping?.20+.25*rand():major?.55+.35*rand():.92*Math.sqrt(1-.78*edge*edge));
+  shoot(root,an,rise,w*(creeping?.40:major?.24:.32)*edge,0);
+ }
+ for(const q of wood)b.branch(q.from,q.to,q.r,q.old?a.barkColor:a.stemColor,q.old?'wood-smooth':loro?'stem-loropetalum':'stem-fothergilla');
+ for(const n of nodes){
+  if(n.order===0&&n.t<.21)continue;
+  if(s.leafDensity===0){b.add(kit.bud,'bud-fothergilla-downy','#a99475',...n.at,.0012,.0024,.0012,.25,n.an,0);continue;}
+  if(n.roll>s.leafDensity)continue;
+  const an=n.an,L=a.leafLength*n.size*s.leafScale,pet=L*.09,at=[n.at[0]+Math.sin(an)*pet,n.at[1]+pet*.25,n.at[2]+Math.cos(an)*pet],f=flowerFrame(b,at,.90+n.roll*.53,an);
+  b.branch(n.at,at,.0005,a.stemColor,loro?'petiole-loropetalum':'petiole-fothergilla');
+  const young=loro&&n.t>.65&&[4,5,6].includes(s.month),base=young?(typ==='beni'?'#8e5c70':typ==='sitisai'?'#bb829b':'#845566'):s.leafColor,autumn=!loro&&[10,11].includes(s.month);
+  const kind=loro?(typ==='sitisai'?`leaf-loropetalum-mottled-${Math.floor(n.roll*3)}`:'leaf-loropetalum-woolly'):autumn?`leaf-fothergilla-autumn-${major?'major':typ}`:'leaf-fothergilla-woolly';
+  f.add(a.leafShape,kind,kit.shade(rand,base,.075),0,0,0,L*a.leafWidth/a.leafLength,L,L);
+  // Fine radiating hairs remain on the underside; their placement is a visual approximation.
+  for(let k=0;k<(loro?1:2);k++){
+   const point=hamamelidPoint(a.leafShape,.28+k*.24,(n.roll-.5)*1.2).map((v,j)=>v*L*(j===0?a.leafWidth/a.leafLength:1));point[2]-=.0002;
+   for(let z=0;z<4;z++){const az=z*TAU/4;f.branch(point,[point[0]+Math.sin(az)*.00035,point[1]+Math.cos(az)*.00035,point[2]-.00015],.000025,'#c7c8b4',loro?'hair-loropetalum':'hair-fothergilla');}
+  }
+ }
+ const before=!s.bloom&&a.flowerMonths.includes(s.month+1);
+ for(const tip of tips){
+  if(tip.roll>(loro?creeping?.56:.24:.55))continue;
+  if(!loro){
+   if(s.bloom){
+    const f=flowerFrame(b,tip.at,.10+tip.roll*.5,tip.an),len=a.inflorescenceLength;
+    f.branch([0,0,0],[0,len*.66,0],.00065,'#8d9572','rachis-fothergilla');
+    f.add('fothergillaFilaments','filaments-fothergilla',s.flowerColor,0,0,0,len,len,len);
+    f.add('fothergillaAnthers','anthers-fothergilla','#d9cd91',0,0,0,len,len,len);
+    for(let k=0;k<20;k++){const az=k*2.399963,y=len*(.10+.56*(k+.5)/20);f.add(kit.bud,'calyx-fothergilla','#a8b18f',Math.sin(az)*len*.06,y,Math.cos(az)*len*.06,len*.035,len*.05,len*.035);}
+   }else if(before)b.add(kit.bud,'bud-fothergilla-flower-downy','#b2a78d',...tip.at,.004,.009,.004,.2,tip.an,0);
+   else if(a.fruitMonths.includes(s.month)&&tip.index%3===0){
+    const f=flowerFrame(b,tip.at,.2,tip.an);
+    for(let k=0;k<4;k++){
+     const az=k*2.399963,at=[Math.sin(az)*.004,k*.006,Math.cos(az)*.004];f.add(kit.bud,'fruit-fothergilla-capsule',a.fruitColor,...at,.003,.004,.003);
+     for(const side of [-1,1]){const mid=[at[0]+side*.002,at[1]+.005,at[2]],end=[at[0]+side*.003,at[1]+.006,at[2]+.0005];f.branch(at,mid,.00035,a.fruitColor,'horn-fothergilla');f.branch(mid,end,.0002,a.fruitColor,'horn-fothergilla');}
+    }
+   }
+   continue;
+  }
+  if(!s.bloom&&!before)continue;if(s.bloom&&tip.roll>s.flowerDensity*(creeping?.56:.24))continue;
+  for(let j=0;j<4;j++){
+   const az=j*2.399963,at=[tip.at[0]+Math.sin(az)*.007,tip.at[1]+.002*j,tip.at[2]+Math.cos(az)*.007],f=flowerFrame(b,at,.25+tip.roll*.8,az+tip.an),L=a.flowerLength;
+   f.add(kit.bud,'calyx-loropetalum','#885777',0,0,0,.0018,.0013,.0018);
+   if(before||j===3&&tip.index%4===0){f.add(kit.bud,'bud-loropetalum',s.flowerColor,0,.001,0,.0027,.003,.0027);continue;}
+   for(let k=0;k<4;k++){
+    const an=k*TAU/4;f.add('loropetalumRibbon','petal-loropetalum',s.flowerColor,Math.sin(an)*.001,.0005,Math.cos(an)*.001,.0015,L,L,1.20+Math.sin(k+tip.index)*.20,an,0);
+    f.add('narrow','sepal-loropetalum','#995675',0,0,0,.0018,.0022,.001,1,an,0);
+    const st=[Math.sin(an)*.0012,.0017,Math.cos(an)*.0012];f.add(kit.bud,'anther-loropetalum','#b76287',...st,.00030,.0004,.00025);
+    f.branch(st,[st[0]*.6,.0021,st[2]*.6],.00013,'#bd7695','connective-loropetalum');
+    f.add('narrow','staminode-loropetalum','#a77391',0,0,0,.0005,.0007,.0005,.5,an+Math.PI/4,0);
+   }
+  }
+ }
+}
+
 export function deutziaPoint(type,t,u){
  const petal=type==='deutziaPetal',leaf=type==='deutziaLance'||type==='deutziaOvate';
  const width=Math.pow(Math.sin(Math.PI*t),petal?.72:.80)*(petal?.50+.52*t:type==='deutziaLance'?1.05-.35*t:1.14-.27*t)*(leaf?1-.055*(1-Math.abs(Math.sin(t*Math.PI*15))):1);
@@ -3153,6 +3255,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(['loropetalumShoots','fothergillaBranches'].includes(info.appearance?.architecture)){drawHamamelid(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='deutziaSprays'){drawDeutzia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='viburnumBranches'){drawViburnum(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='abeliaCanes'){drawAbelia(b,{info,s,detail,rand},kit);return;}
