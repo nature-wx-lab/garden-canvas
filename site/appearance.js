@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.102';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.103';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -241,3 +241,5 @@ Object.assign(TRAIT_VALUES,{rhodiolaNarrow:'互生する細長い多肉質の葉
 Object.assign(TRAIT_VALUES,{penstemonBroad:'銅葉にもなる細かな鋸歯のある対生葉',penstemonNarrow:'細長い対生葉',penstemonLinear:'特に細い線状の対生葉',phygeliusOvate:'細かな鋸歯のある卵形の対生葉',rehmanniaCrenate:'深い鋸歯と毛のある根出葉・互生葉',leycesteriaOvate:'先が長く尖る卵形の対生葉',bilabiateFiveLobedTube:'筒部から上下2唇・5裂に開く花',hangingFiveLobedTube:'下垂する筒状で先が5裂する花'});
 
 Object.assign(TRAIT_VALUES,{plantagoRibbed:'複数の縦脈が目立つ広い根出葉',acanthusVariegated:'白い斑と深い切れ込みのある葉',acanthusBroad:'幅広く波状に裂けるアカンサスの葉',acanthusSpiny:'細かく深く裂け、縁が尖る葉',francoaLyrate:'先の裂片が大きい波状の根出葉',fourLobedPapery:'小さな4裂の薄い花冠',fourPetalCross:'4枚の花弁を十字状に開く花',acanthusLowerLip:'大きな萼の下に3裂の下唇だけを持つ花冠'});
+
+Object.assign(TRAIT_VALUES,{poppyOriental:'毛があり深く羽状に裂けたオリエンタルポピーの葉',poppyGlaucous:'白粉を帯びた厚い裂葉と茎を抱く上葉',poppyCambrica:'淡緑色で羽状に裂けるカンブリカの葉',poppyRhoeas:'粗い毛と不規則な切れ込みのあるヒナゲシの葉',poppyRupifragum:'柔らかい綿毛と鋸歯を持つ灰緑色の葉',poppyCrumpledCup:'薄くしわのある杯状の花弁と多数の雄しべ'});
