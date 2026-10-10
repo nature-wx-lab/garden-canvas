@@ -5,6 +5,7 @@ import {TREE_PROFILES,treeProfile} from '../site/tree-profiles.js';
 import {treeSkeleton} from '../site/tree-model.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
+import {detailedFlower} from '../site/plant-detail.js';
 const find=latin=>Object.entries(CATALOG).find(([,p])=>p.latin===latin);
 const meshKind=(g,kind)=>g.children.find(m=>m.userData.component===kind||m.userData.component?.startsWith(kind+'-'));
 function dispose(g){for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}}
@@ -65,4 +66,25 @@ test('native tree foliage and flower architectures render all twelve months with
  }
  assert.equal(treeProfile(CATALOG['p-40ae63adf07a']).leafShape,'tridentMaple');
  assert.equal(seasonAt(CATALOG['p-bb669fddd8e8'],10).bloom,true);assert.equal(seasonAt(CATALOG['p-bb669fddd8e8'],4).bloom,false);
+});
+test('white birch, dissected maple, fringe trees and laurel preserve distinct blades and seasonal wood',()=>{
+ const ids=['p-099311434563','p-8989a4f8a978','p-be19e942796c','p-c96a46e05e7c','p-0fef6c3a99a6','p-d31d2a2018c0','p-6c21ebc26883','p-0f0f86aa7af9','p-706096647827','p-1e717a58d222','p-b1b31b5fe68a'];
+ for(const id of ids){
+  const p={...makePlant(id,581,2,2),height:2,leafHeight:2,spread:1.8},info=CATALOG[id];let winterWood;
+  for(const month of [1,5,7]){
+   const g=plantModel(p,{month,year:0,reference:false},.45),wood=g.children.filter(m=>m.userData.component.startsWith('wood')).map(m=>[...m.instanceMatrix.array]);
+   assert.ok(wood.length,info.label);if(month===1)winterWood=wood;else assert.deepEqual(wood,winterWood,info.label);
+   const hasLeaves=g.children.some(m=>m.userData.component.startsWith('leaf'));assert.equal(hasLeaves,month!==1||info.leaf==='evergreen',info.label);
+   if(month===7&&info.appearance.leafShape!=='compound')assert.ok(g.children.some(m=>m.geometry.userData[info.appearance.leafShape]),info.label);
+   if(month===5&&info.appearance.architecture==='fringeTree')assert.ok(g.children.some(m=>m.geometry.userData.fringePetal));
+   if(id==='p-099311434563')assert.ok(g.children.some(m=>m.userData.component==='wood-birchPaper'));
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),info.label);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),info.label);}dispose(g);
+  }
+ }
+ assert.equal(treeProfile(CATALOG['p-c96a46e05e7c']).habit,'spreading');
+ const maple=treeSkeleton({...treeProfile(CATALOG['p-8989a4f8a978']),architecture:'laceMaple'},581);assert.ok(maple.tips.every(t=>t.b[1]<t.a[1]));
+ const bay=CATALOG['p-1e717a58d222'];assert.equal(bay.variegated,false);assert.equal(bay.appearance.leafPattern,undefined);
+ const parts=shape=>{const out=[];detailedFlower({add:(g,k)=>out.push({g,k}),branch(){}},{x:0,y:0,z:0,r:.016,color:'#eeeecc',shape},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});return out;};
+ assert.equal(parts('fringeFlower').filter(p=>p.g==='fringePetal').length,4);assert.equal(parts('fringeFlower').filter(p=>p.k==='anther').length,2);
+ assert.equal(parts('laurelFlower').filter(p=>p.g==='petal').length,4);assert.equal(parts('laurelFlower').filter(p=>p.k==='anther').length,10);
 });

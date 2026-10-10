@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.5';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.6';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -17,6 +17,20 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='fringeFlower'||shape==='laurelFlower'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),fringe=shape==='fringeFlower';
+  for(let j=0;j<4;j++){
+   const an=j*TAU/4;f.add(fringe?'fringePetal':'petal','petal',color,0,0,0,r*(fringe?1:.60),r,r,fringe?1.28+rand()*.30:1.16,an,0);
+   if(fringe)f.add('narrow','sepal','#8f9e72',0,0,0,r*.07,r*.10,r,.6,an,0);
+  }
+  const count=fringe?2:10;
+  for(let j=0;j<count;j++){
+   const an=j*TAU/count,tip=[Math.sin(an)*r*(fringe?.065:.26),r*(fringe?.14:.65),Math.cos(an)*r*(fringe?.065:.26)];
+   f.branch([0,0,0],tip,r*(fringe?.008:.019),'#d9d4aa','filament');f.add(bud,'anther','#c8bd73',...tip,r*(fringe?.025:.085),r*(fringe?.038:.09),r*(fringe?.02:.05));
+   if(!fringe&&j>5)for(const side of [-1,1])f.add(bud,'nectary','#c8c072',Math.sin(an)*r*.11+side*r*.055,r*.12,Math.cos(an)*r*.11,r*.034,r*.032,r*.030);
+  }
+  return;
+ }
  if(shape==='rhododendronFunnel'||shape==='azaleaFunnel'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),az=shape==='azaleaFunnel';
   f.add(shape,kind,color,0,0,0,r,r,r);
@@ -1271,17 +1285,17 @@ function drawGlorybowers(b,{info,s,detail,rand},kit){
 }
 
 function drawBlueberries(b,{info,s,detail,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,small=a.leafLength<.02,column=a.habit==='columnar',wood=a.barkColor||'#918a79',young=a.stemColor||'#99946e',size=Math.min(a.leafLength,h*.20,w*.16),leaves=[],clusters=[];
+ const a=info.appearance,h=s.height,w=s.spread,small=a.leafLength<.02,column=a.habit==='columnar',upright=a.habit==='upright',wood=a.barkColor||'#918a79',young=a.stemColor||'#99946e',size=Math.min(a.leafLength,h*.20,w*.16),leaves=[],clusters=[];
  const mix=(p,q,t)=>p.map((v,i)=>v+(q[i]-v)*t),segment=(p,q,r)=>b.branch(p,q,r,wood,a.barkPattern?'wood-'+a.barkPattern:'wood');
  // Persistent canes and their lateral fruiting twigs are built independently of season.
  const canes=small?16:7;
  for(let i=0;i<canes;i++){
-  const an=i*2.399+rand()*.35,radial=Math.sqrt((i+.5)/canes),reach=w*(column?.13:.15+.18*radial)*(.8+rand()*.20),top=h*(column?.68+rand()*.21:.40+.48*Math.sqrt(1-radial*radial)),base=[Math.sin(an)*w*.025,0,Math.cos(an)*w*.025];let prev=base;
+  const an=i*2.399+rand()*.35,radial=Math.sqrt((i+.5)/canes),reach=w*(column?.13:upright?.15+.11*radial:.15+.18*radial)*(.8+rand()*.20),top=h*(column?.68+rand()*.21:upright?.59+.30*Math.sqrt(1-radial*radial):.40+.48*Math.sqrt(1-radial*radial)),base=[Math.sin(an)*w*.025,0,Math.cos(an)*w*.025];let prev=base;
   for(let j=1;j<=8;j++){
    const t=j/8,node=[Math.sin(an)*reach*t,top*t,Math.cos(an)*reach*t];segment(prev,node,h*.009*(1-t*.83));prev=node;
    if(j<2)continue;
    for(let side=0;side<(small?4:3);side++){
-    const yaw=an+j*2.399+side*1.9,len=w*(column?.10:small?.14:.17)*(.7+rand()*.4),tip=[node[0]+Math.sin(yaw)*len,node[1]+h*(column?.15:small?.08:.075),node[2]+Math.cos(yaw)*len];let old=node;
+    const yaw=an+j*2.399+side*1.9,len=w*(column?.10:small?.14:.17)*(.7+rand()*.4),tip=[node[0]+Math.sin(yaw)*len,node[1]+h*(column?.15:upright?.11:small?.08:.075),node[2]+Math.cos(yaw)*len];let old=node;
     const nodes=small?12:10;
     for(let k=1;k<=nodes;k++){
      const tt=k/nodes,at=mix(node,tip,tt);at[1]+=Math.sin(tt*Math.PI)*h*.015;segment(old,at,h*.0015*(1-tt*.7));old=at;

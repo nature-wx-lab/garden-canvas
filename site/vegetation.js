@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.5';
-import {foliageKind} from './appearance.js?v=0.9.5';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.5';
-import {drawTree} from './tree-model.js?v=0.9.5';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.5';
+import {treeProfile} from './tree-profiles.js?v=0.9.6';
+import {foliageKind} from './appearance.js?v=0.9.6';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.6';
+import {drawTree} from './tree-model.js?v=0.9.6';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.6';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.5';
+import { plantInfo, stateAt } from './model.js?v=0.9.6';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -25,8 +25,8 @@ const shapes={};
 }
 function curvedLeaf(type){
   const chloranthus=type==='chloranthusLeaf',elm=type==='elm',corrugated=type==='hostaCorrugated'||elm||chloranthus,ruffled=type==='hostaRuffled',wavy=type==='wavyStrap',slender=type==='wavyLance',undulate=type==='wavyElliptic'||slender;if(corrugated&&!elm&&!chloranthus||ruffled)type='hosta';if(wavy)type='strap';
-  const cabbage=type==='seaKaleLeaf'||type==='crambeHeart';
-  const positions=[],uvs=[],indices=[],rows=chloranthus?32:type==='needle'?2:type==='crenate'?40:ruffled||cabbage?28:type==='serrated'?20:14,cols=type==='needle'?1:corrugated?16:ruffled||cabbage?8:4;
+  const cabbage=type==='seaKaleLeaf'||type==='crambeHeart',birch=type==='birchLeaf',laurel=type==='laurelLeaf';
+  const positions=[],uvs=[],indices=[],rows=chloranthus||birch?32:type==='needle'?2:type==='crenate'?40:ruffled||cabbage||laurel?28:type==='serrated'?20:14,cols=type==='needle'?1:corrugated?16:ruffled||cabbage||birch||laurel?8:4;
   for(let i=0;i<=rows;i++){
     const t=i/rows;
     let width=Math.pow(Math.sin(Math.PI*t),.85)*.43;
@@ -53,18 +53,22 @@ function curvedLeaf(type){
     if(type==='rhododendronLeaf')width*=.49*Math.pow(Math.max(.00001,Math.sin(Math.PI*t)),-.12);
     if(type==='pierisLeaf')width*=.40*Math.pow(t,.17)*(i%2?.985:1.015);
     if(type==='blueberryLeaf')width*=.58;
+    if(birch)width*=.88*(1-t*.46)*(i%4===0?1.10:i%2?.94:1.02);
+    if(laurel)width*=.42*(1+.045*Math.sin(t*27));
+    if(type==='fringeLeaf')width*=.66*(1-t*.13);
     for(let j=0;j<=cols;j++){
       const u=j/cols*2-1,x=u*width+(elm?.055*Math.sin(Math.PI*t):type==='calycanthus'?.06*Math.sin(Math.PI*t)*(1-t):0);
       const cup=(type==='petal'?.18:type==='hosta'?.2:.12)*u*u*Math.sin(Math.PI*t);
       const bend=type==='blade'?.62*t*t:type==='sword'?.19*t*t:type==='strap'?.34*t*t:type==='petal'?.28*t*t:.23*t*t;
-      const relief=corrugated?.021*Math.cos(u*25+Math.sin(t*4)*1.6)*Math.sin(Math.PI*t)*Math.sin(Math.PI*j/cols):ruffled?.06*Math.sin(t*32)*Math.pow(Math.abs(u),3)*Math.sin(Math.PI*t):undulate?(slender?.014:.065)*Math.sin(t*23)*Math.pow(Math.abs(u),2)*Math.sin(Math.PI*t):0;
+      const relief=laurel?.040*Math.sin(t*27)*u*u*Math.sin(Math.PI*t):birch?.015*Math.cos(t*48-Math.abs(u)*8)*Math.abs(u)*Math.sin(Math.PI*t):corrugated?.021*Math.cos(u*25+Math.sin(t*4)*1.6)*Math.sin(Math.PI*t)*Math.sin(Math.PI*j/cols):ruffled?.06*Math.sin(t*32)*Math.pow(Math.abs(u),3)*Math.sin(Math.PI*t):undulate?(slender?.014:.065)*Math.sin(t*23)*Math.pow(Math.abs(u),2)*Math.sin(Math.PI*t):0;
       const cabbageFold=cabbage?.075*Math.sin(t*29)*Math.pow(Math.abs(u),3)*Math.sin(Math.PI*t)+.027*Math.cos(t*48-Math.abs(u)*10)*Math.abs(u)*Math.sin(Math.PI*t):0;
       positions.push(x,t-(type==='crambeHeart'?.18*Math.exp(-Math.pow((t-.12)/.13,2))*u*u:0),bend+cup+relief+cabbageFold+(type==='sword'?Math.abs(x)*.55:.014*Math.cos(t*24+Math.abs(u)*8)*Math.abs(u)));uvs.push(j/cols,t);
       if(i<rows&&j<cols){const a=i*(cols+1)+j,b=a+cols+1;indices.push(a,b,a+1,b,b+1,a+1);}
     }
   }
-  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();return keep(g);
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();g.userData[type]=true;return keep(g);
 }
+for(const type of ['birchLeaf','fringeLeaf','laurelLeaf'])shapes[type]=curvedLeaf(type);
 for(const type of ['leaf','blueberryLeaf','rhododendronLeaf','pierisLeaf','chloranthusLeaf','narrow','lanceSerrate','ovateSerrate','broadToothed','seaKaleLeaf','crambeHeart','obovateSerrate','oakLance','wavyElliptic','wavyLance','elm','calycanthus','hosta','hostaCorrugated','hostaRuffled','petal','blade','sword','strap','wavyStrap','needle','serrated','crenate','leathery'])shapes[type]=curvedLeaf(type);
 {
  const g=new THREE.SphereGeometry(1,20,14),p=g.attributes.position;
@@ -320,6 +324,28 @@ function mapleLeaf(steps=16,rings=[.45,1]){
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.userData.palmateLobes=7;return keep(geometry);
 }
 shapes.maple=mapleLeaf();shapes.mapleLow=mapleLeaf(8,[1]);
+{
+ // Seven deeply cut lobes with secondary incisions remain one connected blade.
+ const edge=[[0,0]],point=(a,r)=>[Math.sin(a)*r,Math.cos(a)*r];
+ for(let l=0;l<7;l++){
+  const angle=(l-3)*.53,length=.94-.15*Math.abs(l-3);
+  edge.push(point(angle-.22,.09));
+  for(let j=1;j<=9;j++){const t=j/10,wide=.085*Math.sin(Math.PI*t);edge.push(point(angle-wide,t*length),point(angle-wide*.27,(t+.017)*length));}
+  edge.push(point(angle,length));
+  for(let j=9;j>=1;j--){const t=j/10,wide=.085*Math.sin(Math.PI*t);edge.push(point(angle+wide*.27,(t+.017)*length),point(angle+wide,t*length));}
+  edge.push(point(angle+.22,.09));
+ }
+ shapes.laceMaple=outlineLeaf(edge);shapes.laceMaple.userData.palmateLobes=7;shapes.laceMaple.userData.laceMaple=true;
+}
+{
+ const p=[],uv=[],idx=[],rows=20;
+ for(let i=0;i<=rows;i++)for(let j=0;j<3;j++){
+  const t=i/rows,u=j-1,twist=t*1.45,width=.048*Math.pow(Math.sin(Math.PI*t),.42);
+  p.push(u*width*Math.cos(twist)+.11*Math.sin(t*2.5),t,u*width*Math.sin(twist)+.22*t*t-.10*Math.sin(t*Math.PI));uv.push(j/2,t);
+  if(i<rows&&j<2){const k=i*3+j;idx.push(k,k+3,k+1,k+1,k+3,k+4);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData.fringePetal=true;shapes.fringePetal=keep(g);
+}
 const windGLSL=`
 attribute vec4 gardenWind;
 uniform float gardenTime;
@@ -437,6 +463,9 @@ function windShader(shader,kind){
     if(kind==='wood-lichen')shader.fragmentShader=shader.fragmentShader.replace('diffuseColor.rgb*=0.84+0.16*ridges;',`float lichenMask=sin(vUv.x*21.0+sin(vUv.y*53.0))*sin(vUv.y*37.0+cos(vUv.x*17.0));
       diffuseColor.rgb=mix(diffuseColor.rgb*(0.94+0.06*ridges),vec3(0.55,0.60,0.51),smoothstep(0.10,0.48,lichenMask)*0.82);`);
     if(kind==='wood-lenticels')shader.fragmentShader=shader.fragmentShader.replace('0.84+0.16*ridges','0.92-0.23*pow(max(0.0,sin(vUv.y*147.0+sin(vUv.x*24.0))),18.0)');
+    if(kind==='wood-birchPaper')shader.fragmentShader=shader.fragmentShader.replace('diffuseColor.rgb*=0.84+0.16*ridges;',`float lenticel=pow(max(0.0,sin(vUv.y*183.0+floor(vUv.x*19.0)*1.7)),34.0)*smoothstep(-0.15,0.50,sin(vUv.x*63.0));
+      float peel=smoothstep(0.75,0.96,sin(vUv.y*31.0+sin(vUv.x*8.0)*0.6))*smoothstep(0.1,0.6,sin(vUv.x*16.0));
+      diffuseColor.rgb=diffuseColor.rgb*(0.96+0.04*ridges)*(1.0-lenticel*0.65);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.57,0.49,0.40),peel*0.35);`);
     if(kind==='wood-peeling'||kind==='wood-scaly')shader.fragmentShader=shader.fragmentShader.replace('0.84+0.16*ridges','0.82+0.18*sin(floor(vUv.x*17.0)*13.0+floor(vUv.y*27.0)*5.0)');
   }
 }

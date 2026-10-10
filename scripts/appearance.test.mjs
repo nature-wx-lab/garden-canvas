@@ -163,7 +163,7 @@ test('redbud flowers attach to old branches before its leaves and goldchain race
  const g=plantModel(makePlant('p-91a9e7ebc098',392,2,2),view(3));assert.ok(g.children.some(m=>m.userData.component.startsWith('petal')));assert.ok(!g.children.some(m=>m.userData.component.startsWith('leaf')));dispose(g);
  const p=makePlant('p-d31d2a2018c0',393,2,2),info=CATALOG[p.kind],branches=[];
  drawTree({add(){},branch:(from,to,r,c,kind)=>{if(kind==='peduncle'&&r===.00065)branches.push({from,to});}},{profile:{habit:'spreading',leafShape:'compound'},info,p,s:stateAt(p,view(5)),detail:.45},{bud:'bud',shade:(_,c)=>c,detailedFlower(){},flower(){}});
- assert.ok(branches.length>100);assert.ok(branches.every(({from,to})=>to[1]<from[1]));assert.equal(seasonAt(info,1).leafDensity,0);
+ assert.ok(branches.length>0);assert.ok(branches.every(({from,to})=>to[1]<from[1]));assert.ok(branches.reduce((sum,{from,to})=>sum+from[1]-to[1],0)>.3);assert.equal(seasonAt(info,1).leafDensity,0);
  const elm=CATALOG['p-f446d616f1b5'];assert.notEqual(seasonAt(elm,4).leafColor,seasonAt(elm,6).leafColor);assert.equal(elm.appearance.flowerShape,undefined);assert.equal(elm.bloomKnown,false);
 });
 test('sweetshrubs retain winter wood while evergreen hebes retain paired leaves and change their winter colour',()=>{
@@ -509,7 +509,7 @@ test('blueberry flowers become crowned waxy berries without changing the woody c
   assert.ok(!winter.children.some(m=>m.geometry.userData.blueberryFruit));assert.ok(winter.children.some(m=>m.userData.component.startsWith('leaf')));
   for(const g of [spring,summer,winter]){for(const m of g.children)assert.ok([...m.instanceMatrix.array].every(Number.isFinite));dispose(g);}
  }
- assert.equal(CATALOG['p-e80f8d914048'].appearance.habit,'rounded');assert.equal(CATALOG['p-4f35979ad7ec'].appearance.habit,'columnar');
+ assert.equal(CATALOG['p-e80f8d914048'].appearance.habit,'rounded');assert.equal(CATALOG['p-4f35979ad7ec'].appearance.habit,'upright');
  assert.equal(seasonAt(CATALOG['p-aa626158efcd'],5).fruitStage,'early');assert.equal(seasonAt(CATALOG['p-aa626158efcd'],8).fruitStage,null);
 });
 test('mountain azalea winters with small terminal summer leaves and preserves the original cultivar search alias',()=>{

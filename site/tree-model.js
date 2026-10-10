@@ -1,6 +1,6 @@
 // Branch topology is constructed before seasonal foliage, so winter reveals the same tree.
 // Dimensions belong to the plan; these branching parameters are visual interpretations.
-import {foliageKind} from './appearance.js?v=0.9.5';
+import {foliageKind} from './appearance.js?v=0.9.6';
 const TAU=Math.PI*2,clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function rng(seed){let n=seed>>>0;return()=>{n^=n<<13;n^=n>>>17;n^=n<<5;return(n>>>0)/4294967296;};}
 const mix=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t);
@@ -16,25 +16,27 @@ export function twigLeafSites(tip,count,arrangement='alternate',terminal=false){
 export function treeSkeleton(profile,seed,detail=1){
  const lod=detail<.55?2:1,r=rng(seed*7919+101),segments=[],tips=[],branchSites=[],habit=profile.habit,conic=habit==='pyramidal',vase=habit==='vase',weep=habit==='weeping',column=habit==='columnar',layered=habit==='layered',terminal=profile.architecture==='terminalLeaves',redbud=profile.architecture==='weepingRedbud',airy=profile.architecture==='openCompound',loose=profile.architecture==='looseShrub';
  const trunk=profile.trunk??(vase?.28:habit==='multistem'?.04:conic?.12:weep?.32:layered?.27:.29);
+ const birch=profile.architecture==='whiteBirch',lace=profile.architecture==='laceMaple',fringe=profile.architecture==='fringeTree';
  function curve(a,b,radius,bow=.01){
   let last=a;
   for(let j=1;j<=4;j++){const t=j/4,p=mix(a,b,t);p[0]+=Math.sin(t*Math.PI)*bow;p[2]-=Math.sin(t*Math.PI)*bow*.55;segments.push({a:last,b:p,r:radius*(1-t*.45)});last=p;}
  }
  const roots=redbud||loose?3:habit==='multistem'?4:1;
  for(let root=0;root<roots;root++){
-  const az=root*2.399+.2,origin=point(az,root?.025:0,0),fork=point(az,roots>1?.08:.018,trunk),top=point(az,conic||column?.015:roots>1?.18:.08,(conic||column?.985:.90)-root*.025);
+  const az=root*2.399+.2,origin=point(az,root?.025:0,0),fork=point(az,roots>1?.08:.018,trunk),top=point(az,conic||column?.015:roots>1?.18:.08,(conic||column?.985:lace?.67:.90)-root*.025);
   curve(origin,fork,.016,.008);for(let k=0;k<5;k++){const a=az+k*TAU/5;curve(origin,point(a,.06,.004),.005,0);}
   if(!vase&&!loose)curve(fork,top,.011,.016);
-  const mainCount=loose?5:terminal?9:airy||redbud?7:conic?42:vase?13:layered?18:weep?16:roots>1?10:habit==='rounded'?22:20;
+  const mainCount=loose?5:terminal?9:airy||redbud?7:fringe?12:birch?18:conic?42:vase?13:layered?18:weep?16:roots>1?10:habit==='rounded'?22:20;
   for(let i=0;i<mainCount;i++){
    const f=(i+.3)/mainCount,angle=az+i*2.399+r()*.4;
-   let origin=loose?fork:conic||column?mix(fork,top,f*.93):vase?fork:mix(fork,top,f*.57);
+   let origin=loose?fork:conic||column||birch?mix(fork,top,f*.93):vase?fork:mix(fork,top,f*.57);
    let y,reach;
    if(conic){y=trunk+(.94-trunk)*f;reach=.45*Math.pow(1-f,.85);}
    else if(column){y=.35+f*.6;reach=.22+Math.sin(f*Math.PI)*.18;}
    else if(vase){y=.77+r()*.19;reach=.32+r()*.10;}
    else if(layered){y=.37+Math.floor(i/3)*.115;reach=.44*(1-f*.35);}
-   else if(weep){y=.72+r()*.15;reach=.25+r()*.17;}
+   else if(weep){y=(lace?.67:.72)+r()*.15;reach=(lace?.31:.25)+r()*(lace?.11:.17);}
+   else if(birch){y=.37+f*.55;reach=.16+.18*Math.sin(f*Math.PI);}
    else if(habit==='spreading'||habit==='irregular'){y=.53+r()*.38;reach=(.46-(y-.53)*.38)*(.86+r()*.18);}
    else {y=.48+f*.42;reach=.23+.18*Math.sin(f*Math.PI);}
    const end=point(angle,reach,y),elbow=mix(origin,end,.52);elbow[1]+=(vase?.035:weep?.10:.018);
@@ -43,14 +45,14 @@ export function treeSkeleton(profile,seed,detail=1){
     const t=(j+1)/6,q=t<.52?t/.52:(t-.52)/.48,at=t<.52?mix(origin,elbow,q):mix(elbow,end,q),bow=Math.sin(q*Math.PI)*(t<.52?.014:.012);
     at[0]+=bow;at[2]-=bow*.55;branchSites.push({at,angle:angle+j*2.399});
    }
-   const laterals=loose?3:terminal||airy?4:conic?10:7;
+   const laterals=loose?3:terminal||airy?4:fringe||birch?5:conic?10:7;
    for(let j=0;j<laterals;j+=lod){
     const t=(conic?.18:.52)+j*(conic?.085:.43/Math.max(1,laterals-1)),base=t<.52?mix(origin,elbow,t/.52):mix(elbow,end,(t-.52)/.48),side=j%2?1:-1,sa=angle+side*(.5+r()*.65),extent=(conic?.08:.10)*(1-f*.30);
     const target=[base[0]+Math.sin(sa)*extent,base[1]+(vase||column?.10:conic?.014:.035)+r()*.025,base[2]+Math.cos(sa)*extent];
     curve(base,target,.0019,.006);
     for(let k=0;k<(terminal?1:airy||loose?2:4);k+=lod){
      const a=sa+(k-1.5)*.58,start=mix(base,target,.28+k*.18),length=.07+r()*.045;
-     let tip=[start[0]+Math.sin(a)*length,start[1]+(weep?-.14-r()*.16:conic?.005:vase?.065:.026)+r()*.025,start[2]+Math.cos(a)*length];
+     let tip=[start[0]+Math.sin(a)*length,start[1]+(weep?-.14-r()*.16:birch?-.035:conic?.005:vase?.065:.026)+r()*.025,start[2]+Math.cos(a)*length];
      const radial=Math.hypot(tip[0],tip[2]);if(radial>.46){tip[0]*=.46/radial;tip[2]*=.46/radial;}tip[1]=clamp(tip[1],.12,.965);
      if(weep){const bend=mix(start,tip,.30);bend[1]+= .025;curve(start,bend,.0010,.004);curve(bend,tip,.00065,.003);}else curve(start,tip,.0009,.006);
      tips.push({a:start,b:tip,angle:a,seed:Math.floor(r()*1e8)});
@@ -65,7 +67,7 @@ export function drawTree(b,{profile,info,p,s,detail},kit){
  const bark=profile.bark||'#706653',base=s.leafColor||profile.green||'#50783b',leafKind=foliageKind(info),woodKind=profile.barkPattern?'wood-'+profile.barkPattern:'wood';
  const rootHeight=s.natural.height*sk.trunk;
  const scale=a=>[a[0]*w,a[1]<=sk.trunk?a[1]/sk.trunk*rootHeight:rootHeight+(a[1]-sk.trunk)/(1-sk.trunk)*(h-rootHeight),a[2]*w];
- for(const seg of sk.segments)b.branch(scale(seg.a),scale(seg.b),Math.max(.0006,seg.r*Math.min(s.natural.height,s.natural.spread*1.3)*(a.architecture==='fineTwigs'?.72:1)),a.stemColor&&seg.r<.0019?a.stemColor:bark,woodKind);
+ for(const seg of sk.segments){const young=a.stemColor&&seg.r<(a.architecture==='whiteBirch'?.0035:.0019);b.branch(scale(seg.a),scale(seg.b),Math.max(.0006,seg.r*Math.min(s.natural.height,s.natural.spread*1.3)*(['fineTwigs','whiteBirch','laceMaple'].includes(a.architecture)?.72:1)),young?a.stemColor:bark,young&&a.architecture==='whiteBirch'?'wood-smooth':woodKind);}
  const needle=['needle','pine','feather','scale'].includes(leaf),compound=leaf==='compound';
  const size=a.leafLength||Math.max(Math.min(profile.leafSize||.095,Math.max(.035,w*.095)),w*.023); // Larger distant crowns use a bounded foliage LOD.
  const density=s.leafDensity??(s.dormant?0:1),flowerDensity=s.flowerDensity??(s.bloom?1:0),stride=Math.max(1,Math.round(1/Math.max(.28,detail)));
@@ -82,7 +84,7 @@ export function drawTree(b,{profile,info,p,s,detail},kit){
   }
  }
  for(let i=0;i<sk.tips.length;i+=stride){
-  const tip=sk.tips[i],r=rng(tip.seed+19),nodes=a.architecture==='looseShrub'?4:needle?5:compound?4:a.architecture==='terminalLeaves'?6:10;
+  const tip=sk.tips[i],r=rng(tip.seed+19),nodes=a.architecture==='looseShrub'?4:needle?5:compound?4:['terminalLeaves','whiteBirch','fringeTree'].includes(a.architecture)?6:a.architecture==='laceMaple'?14:10;
   const sites=twigLeafSites(tip,nodes,a.arrangement,a.architecture==='terminalLeaves');
   for(let n=0;n<nodes;n++){
    const center=scale(sites[n].at),angle=sites[n].angle;
@@ -135,17 +137,18 @@ export function drawTree(b,{profile,info,p,s,detail},kit){
       kit.detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius||.013,color:c,shape:a.flowerShape,yaw},{bud,rand:r,shade});
      }
     }else if(a.flowerShape==='catkin'){
-     let last=pos;
-     for(let j=0;j<15;j++){const t=(j+1)/15,at=[pos[0]+Math.sin(angle)*.018*t,pos[1]-.07*t,pos[2]+Math.cos(angle)*.018*t];b.branch(last,at,.00035,'#849259','peduncle');for(let k=0;k<3;k++)b.add(bud,'seed',c,at[0]+Math.sin(k*TAU/3)*.002,at[1],at[2]+Math.cos(k*TAU/3)*.002,.0018,.0021,.0018);last=at;}
+     const length=a.inflorescenceLength||.07;let last=pos;
+     for(let j=0;j<18;j++){const t=(j+1)/18,at=[pos[0]+Math.sin(angle)*.018*t,pos[1]-length*t,pos[2]+Math.cos(angle)*.018*t];b.branch(last,at,.00035,'#849259','peduncle');for(let k=0;k<3;k++)b.add(bud,'catkin',c,at[0]+Math.sin(k*TAU/3)*.002,at[1],at[2]+Math.cos(k*TAU/3)*.002,.0018,length/22,.0018);last=at;}
+     if(a.architecture==='whiteBirch')for(let j=0;j<10;j++){const t=(j+1)/10,at=[pos[0]-.013,pos[1]+.028*t,pos[2]];b.add(bud,'femaleCatkin','#8f9d66',...at,.0021,.0025,.0021);}
     }else if(a.flowerShape&&kit.detailedFlower){
-     const panicle=a.inflorescence==='panicle',axillary=a.inflorescence==='axillaryRaceme',single=a.architecture==='longstalkHolly';
-     const clusters=single?1:panicle?23:axillary?4:['cyme','corymb','umbel'].includes(a.inflorescence)?9:1,length=a.inflorescenceLength||.075;
+     const panicle=a.inflorescence==='panicle',axillary=a.inflorescence==='axillaryRaceme',axilUmbel=a.inflorescence==='axillaryUmbel',single=a.architecture==='longstalkHolly';
+     const clusters=single?1:panicle?(a.architecture==='fringeTree'?49:23):axillary||axilUmbel?4:['cyme','corymb','umbel'].includes(a.inflorescence)?9:1,length=a.inflorescenceLength||.075;
      const head=single?[pos[0]+Math.sin(angle)*.03,pos[1]-.01,pos[2]+Math.cos(angle)*.03]:[...pos];
      if(single)b.branch(pos,head,.0005,'#81905a','peduncle');
      if(panicle)b.branch(pos,[pos[0],pos[1]+length,pos[2]],.00055,'#81905a','peduncle');
      for(let j=0;j<clusters;j++){
-      const aa=j*2.399,f=j/Math.max(1,clusters-1),rr=panicle?(1-f)*length*.40:clusters>1?Math.sqrt(f)*(axillary?.014:.022):0;
-      const at=[head[0]+Math.sin(aa)*rr,head[1]+(panicle?f*length:axillary?f*.035:0),head[2]+Math.cos(aa)*rr];
+      const aa=j*2.399,f=j/Math.max(1,clusters-1),rr=panicle?(1-f)*length*.40:clusters>1?Math.sqrt(f)*(axillary?.014:axilUmbel?.008:.022):0;
+      const at=[head[0]+Math.sin(aa)*rr,head[1]+(panicle?f*length:axillary?f*.035:axilUmbel?.006:0),head[2]+Math.cos(aa)*rr];
       if(clusters>1)b.branch(panicle?[pos[0],at[1],pos[2]]:pos,at,.00025,'#8b9760','peduncle');
       kit.detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius||(a.flowerShape==='linearPetals'?.004:clusters>1?.006:profile.flowerSize||.009),color:c,shape:a.flowerShape,petals:a.petals||5,stamenCount:a.stamenCount||2,layers:a.flowerLayers||1,pattern:a.flowerPattern,patternColor:a.flowerPatternColor,palette:a.flowerPalette,tilt:a.flowerShape==='sweetshrub'?.65+r()*.55:0,yaw:angle},{bud,rand:r,shade});
      }
