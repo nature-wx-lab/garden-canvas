@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.37';
-import {foliageKind} from './appearance.js?v=0.9.37';
-import {detailedFlower,drawDetailedHerb,salviniaPoint,alceaLeafPoint} from './plant-detail.js?v=0.9.37';
-import {drawTree} from './tree-model.js?v=0.9.37';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.37';
+import {treeProfile} from './tree-profiles.js?v=0.9.38';
+import {foliageKind} from './appearance.js?v=0.9.38';
+import {detailedFlower,drawDetailedHerb,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint} from './plant-detail.js?v=0.9.38';
+import {drawTree} from './tree-model.js?v=0.9.38';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.38';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.37';
+import { plantInfo, stateAt } from './model.js?v=0.9.38';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -14,6 +14,18 @@ const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const TAU=Math.PI*2;
 const shapes={};
+shapes.mintSquareStem=keep(new THREE.CylinderGeometry(1,1,1,4,1));
+for(const type of ['keiskeaLance','isodonOvate','chelonopsisElliptic','triporaOvate','leucosceptrumBroad','melittisCrenate','woodlandMintTube','chelonopsisTube','melittisTube','mintLip']){
+ const p=[],uv=[],ix=[],rows=48,cols=40,tube=type.endsWith('Tube'),lip=type==='mintLip';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1;let pos;
+  if(tube){const an=j/cols*TAU,wide=type==='melittisTube',long=type==='chelonopsisTube',rad=(wide?.22:long?.14:.22)+(wide?.15:long?.10:.14)*Math.sin(t*Math.PI*.6);pos=[Math.sin(an)*rad,t,Math.cos(an)*rad+.08*t*t];}
+  else if(lip){const width=.40*Math.pow(Math.sin(t*Math.PI),.50)*(1+.08*Math.cos(t*43)),y=t*(1-.10*Math.exp(-u*u*25)*Math.pow(t,8));pos=[u*width,y,.10*u*u*Math.sin(t*Math.PI)+.08*t*t];}
+  else pos=woodlandMintLeafPoint(type,t,u);
+  p.push(...pos);uv.push(j/cols,t);if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 // Paired spring-bulb leaves, pleated orchid blades, and their distinct flower surfaces.
 for(const type of ['puschkiniaStrap','bletillaPlicate','puschkiniaTepal','puschkiniaCorona','bletillaSepal','bletillaPetal','bletillaLip']){
  const p=[],uv=[],ix=[],rows=36,cols=64,corona=type==='puschkiniaCorona',lip=type==='bletillaLip',leaf=type==='puschkiniaStrap'||type==='bletillaPlicate',pleat=type==='bletillaPlicate';
@@ -871,6 +883,9 @@ function windShader(shader,kind){
       diffuseColor.rgb*=shade;
       diffuseColor.rgb+=diffuseColor.rgb*(midrib*0.23+veins*0.055);
     `);
+    if(kind==='leaf-tripora-margin'||kind==='petal-tripora-lower'||kind==='petal-melittis-lower')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      ${kind==='leaf-tripora-margin'?`float wav=.025*sin(vUv.y*81.0)+.032*sin(vUv.y*29.0);float margin=smoothstep(.30+wav,.37+wav,abs(vUv.x-.5));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.91,.91,.81),margin*.93);`:kind==='petal-tripora-lower'?`float pale=(1.0-smoothstep(.40,.68,vUv.y))*(1.0-smoothstep(.27,.38,abs(vUv.x-.5)));float spot=step(.81,sin(vUv.x*72.0+vUv.y*15.0)*sin(vUv.y*82.0));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.83,.84,.90),pale*(1.0-spot)*.88);`:`float rim=smoothstep(.33,.46,abs(vUv.x-.5));float throat=1.0-smoothstep(.10,.30,vUv.y);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.94,.92,.88),max(rim,throat));`}
+      #include <emissivemap_fragment>`);
     if(kind==='petal-bletilla-lip')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
       float pale=(1.0-smoothstep(.57,.83,vUv.y))*(1.0-smoothstep(.27,.47,abs(vUv.x-.5)));
       diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.93,.90,.94),pale*.9);
@@ -1281,7 +1296,7 @@ export function plantModel(p,view,detail=1){
     if(radius>0&&bounds.max.y>0){const horizontal=w/(2*radius);g.scale.set(horizontal,h/bounds.max.y,horizontal);}
     if(dormant)for(const mesh of [...g.children])if(['garden-0.3-maple','garden-0.3-petiole'].includes(mesh.material?.customProgramCacheKey())){g.remove(mesh);mesh.geometry.dispose();mesh.dispose();}
   }
-  if((!profile||form==='maple')&&!['puschkiniaScapes','bletillaShoots','roseaSpire','rugosaSpire','libertiaFans','anthericumPanicle','tofieldiaRaceme','ornithogalumRaceme','rhodoxisClump','siculumUmbel','aristeaFans','chloranthus','acaenaMat','woodPoppy','anemonopsis','nigella','yellowNigella','larkspur'].includes(info.appearance?.architecture)){
+  if((!profile||form==='maple')&&!['keiskeaRacemes','isodonPanicles','chelonopsisAxils','triporaCymes','leucosceptrumSpikes','melittisAxils','puschkiniaScapes','bletillaShoots','roseaSpire','rugosaSpire','libertiaFans','anthericumPanicle','tofieldiaRaceme','ornithogalumRaceme','rhodoxisClump','siculumUmbel','aristeaFans','chloranthus','acaenaMat','woodPoppy','anemonopsis','nigella','yellowNigella','larkspur'].includes(info.appearance?.architecture)){
     // Thin the same deterministic leaf set through budbreak and leaf-fall.
     for(const mesh of [...g.children]){
       const kind=mesh.material?.customProgramCacheKey?.();

@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.37';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.38';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 export const TRAIT_VALUES={heart:'心形',round:'円形',kidney:'腎形',triangular:'三角形',lobed:'切れ込みのある葉',compound:'複葉',serrated:'鋸歯のある葉',narrow:'細葉',blade:'線形・剣形',needle:'針形',leaf:'卵形・楕円形',obovate:'倒卵形',spoon:'へら形',arrow:'矢じり形',margin:'覆輪',center:'中斑',spots:'斑点',silverVeins:'銀葉・緑の葉脈',stripes:'縞斑',evergreen:'常緑',semiEvergreen:'半常緑（寒さで変化）',deciduous:'落葉（幹・枝は残る）',winterDormant:'冬に地上部休眠',summerDormant:'夏に地上部休眠',bell:'鐘形',trumpet:'漏斗・ラッパ形',tube:'筒形',urn:'壺形',cup:'杯形',flat:'平開',star:'星形',cross:'十字形',pea:'蝶形',lipped:'唇形',spurred:'距のある花',spoonRay:'スプーン状の花弁',pompon:'ポンポン咲き',smooth:'平滑',peeling:'剥離する樹皮',furrowed:'縦に割れる樹皮',scaly:'鱗片状',lenticels:'皮目',clump:'株立ち',mound:'こんもり',creeping:'地面に広がる',rosette:'ロゼット',upright:'直立',arching:'弓状',spreading:'横に広がる',weeping:'枝垂れ',columnar:'細い直立形',pyramidal:'円錐形',vase:'箒状',rounded:'丸い樹冠',multistem:'根元から株立ち',oval:'卵形の樹冠',layered:'段状の横枝',irregular:'不規則な枝'};
@@ -30,6 +30,8 @@ TRAIT_VALUES.pincushion='小花が集まる頭花と突き出す雄しべ';
 TRAIT_VALUES.squill='6枚の花被・青い中央線・短い副花冠';
 TRAIT_VALUES.salver='細い筒の先で5枚に平開する花';
 TRAIT_VALUES.sedgeSpike='小さな褐色の穂';
+Object.assign(TRAIT_VALUES,{keiskeaLance:'細かい鋸歯のある長楕円葉',isodonOvate:'鋸歯のある卵形の対生葉',chelonopsisElliptic:'先の尖る楕円形の鋸歯葉',triporaOvate:'不規則な白い縁斑のある小さな卵形葉',leucosceptrumBroad:'葉脈が目立つ広楕円形の鋸歯葉',melittisCrenate:'丸い鋸歯と深い葉脈・毛のある卵形葉',keiskeaWhite:'片側に並ぶ白い小花と突き出す4本の雄しべ',isodonDark:'上側4裂・舟形の下側1裂の濃紫色の小花',chelonopsisBell:'長い筒と短い上唇・3裂の下唇',triporaBlue:'不等な5裂花冠と弓状の4本の雄しべ・花柱',leucosceptrumCream:'短い上唇と3裂の下唇・4本の雄しべ',melittisBicolor:'白い上唇と紫色の中央下唇・3裂の萼'});
+
 Object.assign(TRAIT_VALUES,{standingGrass:'冬も枯れ葉・枯れ穂が残る',lateSpringBulb:'冬〜春に葉、夏秋は地上部休眠',lanceSerrate:'細長い鋸歯のある葉',peltate:'葉の中央に柄がつく盾状葉',wavyStrap:'縁が波打つ帯状葉',discHead:'舌状花のない筒状花の頭花',hangingStraps:'下向きの細長い花弁',oneSidedSpike:'横向きの軸の片側につく小穂',grassPanicle:'枝分かれした細い円錐状の小穂'});
 Object.assign(TRAIT_VALUES,{springBulb:'冬〜春に葉と花、夏に地上部休眠',strap:'帯状の葉',sword:'剣形の葉',feather:'羽状に細かく裂ける葉',filigree:'糸状に細かく裂ける葉',violet:'上・横・下で異なる5枚の花弁と距',snowdrop:'下向きの外花被3枚と短い内花被',spikelet:'垂れ下がる小穂',bractedHead:'細かな花の頭状花序ととげ状の苞',columnHead:'柱状の花芯と下向きの舌状花',spathe:'仏炎苞と肉穂花序',stamens:'花弁がなく雄しべが目立つ花'});
 export function patternKind(base,pattern,color){
