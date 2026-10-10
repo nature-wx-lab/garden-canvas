@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.12';
-import {foliageKind} from './appearance.js?v=0.9.12';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.12';
-import {drawTree} from './tree-model.js?v=0.9.12';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.12';
+import {treeProfile} from './tree-profiles.js?v=0.9.13';
+import {foliageKind} from './appearance.js?v=0.9.13';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.13';
+import {drawTree} from './tree-model.js?v=0.9.13';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.13';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.12';
+import { plantInfo, stateAt } from './model.js?v=0.9.13';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,6 +13,16 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+for(const type of ['helleboreSepal','helleboreBell','clematisSepal','helleboreLeaf','helleboreFineLeaf']){
+ const pos=[],uv=[],idx=[],rows=40,cols=18,leaf=type.endsWith('Leaf'),fine=type==='helleboreFineLeaf',bell=type==='helleboreBell',clematis=type==='clematisSepal';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t)),width=(leaf?fine?.11:.39:clematis?.40:.69)*Math.pow(sin,leaf?.82:clematis?.65:.44)*(leaf&&t>.26?(i%2?.93:1.05):1);
+  const height=leaf?t:bell?1.1*t:.09*t+.32*t*t,radial=leaf?.20*t*t:bell?.63*Math.sin(t*1.95):t;
+  pos.push(u*width,height+(leaf?.022:.033)*u*u*sin,radial+(leaf?.06:-.1)*u*u*sin);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 for(const type of ['tulipCup','tulipPointed','crocusCup','saraLeaf','speciesTulipLeaf','crocusLinear']){
  const pos=[],uv=[],idx=[],rows=40,cols=18,leaf=type.endsWith('Leaf')||type==='crocusLinear',sara=type==='saraLeaf',crocus=type==='crocusCup',linear=type==='crocusLinear',pointed=type==='tulipPointed';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -513,6 +523,9 @@ function windShader(shader,kind){
     if(kind==='leaf-iris-parallel')shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*95.0)');
     if(kind==='leaf-lilium-parallel')shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*31.4)');
     if(kind==='leaf-crocus-stripe')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.62,.67,.58),1.0-smoothstep(.09,.16,fold));\n#include <emissivemap_fragment>`);
+    if(kind==='leaf-hellebore-silver')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float net=min(abs(sin(vUv.x*22.0+sin(vUv.y*31.0)*.4)),abs(sin(vUv.y*26.0+sin(vUv.x*35.0)*.55)));float silver=1.0-smoothstep(.06,.21,net);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.55,.60,.53),silver*.73);\n#include <emissivemap_fragment>`);
+    if(kind==='sepal-hellebore-pinkback')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`if(!gl_FrontFacing){diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.42,.17,.26),.30+.40*vUv.y);}else{diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.30,.38,.14),1.0-smoothstep(.08,.38,vUv.y));}\n#include <emissivemap_fragment>`);
+    if(kind==='sepal-clematis-green')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float line=(1.0-smoothstep(.11,.29,fold))*(1.0-smoothstep(.80,1.0,vUv.y));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.54,.60,.30),line*.42);\n#include <emissivemap_fragment>`);
     if(kind.startsWith('petal-bulb-')){
       const name=kind.slice(11),linear=hex=>{const c=new THREE.Color(hex);return `vec3(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`;};
       let paint='';
@@ -715,6 +728,7 @@ export function plantModel(p,view,detail=1){
   }else if(['blueberryCanes','rhododendronTruss','fineAzalea','terminalPieris','kalmiaCluster','tieredEnkianthus','archingLeucothoe','hydrangeaVine','porcelainVine','silverBush','berzelia','wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory','blueEyeShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(profile&&form!=='maple'){g.userData.architecture=drawTree(b,{profile,info,p,s,detail},{bud,flower:petalFlower,detailedFlower,shade:palette});
   }else if((form==='botanical'||['fivepetal','airy','spike','bell','globe'].includes(form))&&info.appearance?.leafShape){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
+  }else if(info.appearance?.architecture==='tessen'){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(EXTENDED_FORMS.has(form)){drawBotanical(b,{info,s,p,detail,rand},{bud,cone,flower:petalFlower,detailedFlower,shade:palette,foliageKind});
   }else if(form==='maple'){mapleModel(b,p,s,view,detail,clipped,info);
   }else if(woody){

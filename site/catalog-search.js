@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.12';
+import {treeProfile} from './tree-profiles.js?v=0.9.13';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -24,6 +24,9 @@ export function seasonAt(info,month){
  if(a.foliageMonths){
   density=a.foliageMonths.includes(month)?1:0;scale=1;
   phase=density?'資料の葉の展開期':'葉のない時期';
+ }else if(a.persistence==='deciduousHellebore'){
+  density=[0,.12,.50,.90,1,1,1,1,1,.80,.25,0][m];scale=month===2?.35:month===3?.65:1;
+  phase=density===0?'古葉が枯れた時期（開花と葉の展開は別）':month<=3?'花と前後する新葉の展開（表示目安）':month>=10?'古葉が枯れる時期（表示目安）':'葉のある時期';
  }else if(a.persistence==='frostDormantTuber'){
   // Sources describe frost dieback and spring shoots. These month boundaries
   // are a temperate display convention, not a cultivar-specific emergence date.
@@ -100,12 +103,12 @@ export function seasonAt(info,month){
  if(a.seasonalColors?.[season])color=a.seasonalColors[season];
  const woody=!!profile||['tree','shrub','conifer','maple','olive','rose','hydrangea','clematis','climbingrose','mophead','lavender'].includes(info.form);
  const leaflessFlowering=!!a.leaflessBloom&&bloom&&dormant;
- const groundDormant=dormant&&!woody&&!(a.persistence==='coolSeasonAnnual'&&a.seedHeadMonths?.includes(month))&&!a.standingWinter&&!leaflessFlowering&&(leaf==='herb'||!!a.foliageMonths||['summerDormant','springEphemeral','springBulb','lateSpringBulb','autumnBulb','autumnLeafBulb'].includes(a.persistence)||['cyclamen','tulip','narcissus','globe'].includes(info.form));
+ const groundDormant=dormant&&!woody&&!(a.persistence==='coolSeasonAnnual'&&a.seedHeadMonths?.includes(month))&&!a.standingWinter&&!leaflessFlowering&&(leaf==='herb'||!!a.foliageMonths||['deciduousHellebore','summerDormant','springEphemeral','springBulb','lateSpringBulb','autumnBulb','autumnLeafBulb'].includes(a.persistence)||['cyclamen','tulip','narcissus','globe'].includes(info.form));
  if(groundDormant)bloom=false;
  if(leaflessFlowering)phase='葉のない花茎の開花期';
  else if(groundDormant)phase=a.persistence==='frostDormantTuber'?'霜後の地上部休眠（冬期の表示目安）':info.life==='annual'?'一年草の生育期外（低温期の参考）':'地上部のない休眠期';
  const bloomIndex=flowerMonths.indexOf(month),flowerDensity=bloom?(a.architecture==='avalanche'&&month>=7?.24:flowerMonths.length>2&&(bloomIndex===0||bloomIndex===flowerMonths.length-1)?.65:1):0;
- const shootScale=a.architecture==='beeBalm'&&a.standingWinter&&a.seedHeadMonths?.includes(month)?1:a.persistence==='semiDormant'&&a.architecture!=='beeBalm'&&[12,1,2].includes(month)?.15:!woody&&!dormant&&scale<1?scale:1;
+ const shootScale=a.architecture==='helleboreProfile'||a.architecture==='beeBalm'&&a.standingWinter&&a.seedHeadMonths?.includes(month)?1:a.persistence==='semiDormant'&&a.architecture!=='beeBalm'&&[12,1,2].includes(month)?.15:!woody&&!dormant&&scale<1?scale:1;
  const headPhase=a.architecture==='berzelia'?bloom?'flower':[11,12,1,2].includes(month)?'bud':'dry':null;
  const retainedSummerLeaves=!!a.winterLeafLength&&[11,12,1,2,3].includes(month);
  if(retainedSummerLeaves)phase='春葉が落ち、小さな夏葉が冬を越す時期（地域差あり）';
