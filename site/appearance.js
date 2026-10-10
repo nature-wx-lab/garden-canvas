@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.77';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.78';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -204,4 +204,4 @@ Object.assign(TRAIT_VALUES,{ardisiaShoots:"直立茎の上部に集まる互生�
 
 Object.assign(TRAIT_VALUES,{pomeShrubSprays:'小さな互生葉を密生させる細かい分枝',cotoneasterSilver:'縁に銀白の毛が見える小さな楕円形の単葉',pyracanthaRound:'丸みのある細かい鋸歯葉と不規則な外斑',pomeFive:'5枚の丸い花弁と多数の雄しべが集まる小花'});
 
-Object.assign(TRAIT_VALUES,{ruscusCladodes:'常緑の葉状枝を付ける株立ちの細い茎',danaeCladode:'両端が細い笹状の葉状枝・縦に走る脈',ruscusCladode:'先端が刺状の硬い卵形の葉状枝',danaeRaceme:'枝先の短い花序に付く小さな鐘状花',ruscusCladodeFlower:'葉状枝中央の小さな花・花被片は3枚ずつ2段',hardyHibiscusCanes:'株元から毎春伸び直す茎と大きな互生葉',hibiscusBroad:'先が尖り浅い鋸歯のある広い卵形の葉',hibiscusPalm:'細長い裂片へ深く切れ込むモミジ状の葉',hibiscusColumn:'5枚の幅広い花弁・中央の雄しべ筒と5裂の柱頭'});
+Object.assign(TRAIT_VALUES,{hypericumShoots:'対生する葉・枝先の黄色い花と種類ごとに異なる草姿',hypericumOvate:'全縁で広い卵形の対生葉',hypericumGold:'黄金色からライム色に変わる楕円形の葉',hypericumSilver:'短毛を帯びた小さな銀色の楕円葉',hypericumStamens:'黄色い5枚の花弁・束状に広がる多数の雄しべ',ruscusCladodes:'常緑の葉状枝を付ける株立ちの細い茎',danaeCladode:'両端が細い笹状の葉状枝・縦に走る脈',ruscusCladode:'先端が刺状の硬い卵形の葉状枝',danaeRaceme:'枝先の短い花序に付く小さな鐘状花',ruscusCladodeFlower:'葉状枝中央の小さな花・花被片は3枚ずつ2段',hardyHibiscusCanes:'株元から毎春伸び直す茎と大きな互生葉',hibiscusBroad:'先が尖り浅い鋸歯のある広い卵形の葉',hibiscusPalm:'細長い裂片へ深く切れ込むモミジ状の葉',hibiscusColumn:'5枚の幅広い花弁・中央の雄しべ筒と5裂の柱頭'});

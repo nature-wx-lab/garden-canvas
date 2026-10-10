@@ -1,6 +1,66 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.77';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.78';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function hypericumLeafPoint(type,t,u){
+ const low=type==='gold'||type==='silver',width=Math.pow(Math.sin(Math.PI*t),low?.49:.68)*(low?.83+.30*t:1.22-.40*t);
+ return [u*width*.5,t,.032*u*u*Math.sin(Math.PI*t)-.035*t*t+.002*Math.cos(t*34-Math.abs(u)*8)*Math.sin(Math.PI*t)];
+}
+export function hypericumFlowerGeometry(){
+ const pos=[],uv=[],ix=[];
+ for(let k=0;k<5;k++){
+  const az=k*TAU/5,base=pos.length/3,rows=20,cols=10;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,r=.07+.93*t,x=u*.52*Math.pow(Math.sin(Math.PI*t),.46)+.09*t,y=.13*Math.sin(t*Math.PI*.7)+.025*u*u;
+   pos.push(Math.sin(az)*r+Math.cos(az)*x,y,Math.cos(az)*r-Math.sin(az)*x);uv.push(j/cols,t);
+   if(i<rows&&j<cols){const q=base+i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.hypericumPetals=5;return g;
+}
+function drawHypericum(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,low=['gold','silver'].includes(type),h=s.height,w=s.spread,leaves=[],tips=[],stems=Math.round((low?19:11)*detail);
+ const shoot=(root,az,rise,reach,order)=>{
+  const path=t=>[root[0]+Math.sin(az)*reach*t,root[1]+rise*(1.14*t-.14*t*t),root[2]+Math.cos(az)*reach*t],nodes=order?5:9;
+  for(let j=1;j<=6;j++)b.branch(path((j-1)/6),path(j/6),(low?.0013:order?.0017:.004)*(1-.67*j/6),order?a.stemColor:a.barkColor,'wood-hypericum');
+  for(let j=1;j<=nodes;j++){
+   const at=path(.12+.84*j/nodes),theta=az+j*Math.PI/2;
+   for(let k=0;k<2;k++)leaves.push({at,az:theta+k*Math.PI,roll:rand(),size:.75+rand()*.25,young:j===nodes});
+   if(order===0&&j>2&&j<8&&j%2===1)for(let k=0;k<2;k++)shoot(at,theta+k*Math.PI,h*(low?.18:.20)*( .65+rand()*.6),w*(low?.12:.18),1);
+  }
+  tips.push({at:path(1),az,roll:rand()});
+ };
+ for(let j=0;j<stems;j++){
+  const az=j*2.399963,rad=w*(low?.22:.07)*Math.sqrt((j+.5)/stems),root=[Math.sin(az)*rad,0,Math.cos(az)*rad];shoot(root,az,h*(.36+rand()*.42),w*(low?.20:.19),0);
+ }
+ for(const n of leaves){
+  if(n.roll>s.leafDensity||s.leafDensity===0)continue;
+  const young=n.young&&s.month<=5,L=a.leafLength*n.size*(young?.55:1),frame=flowerFrame(b,n.at,.73+n.roll*.76,n.az),color=kit.shade(rand,s.leafColor,.025);
+  frame.add('hypericum-'+(low?type:'ovate'),'leaf-hypericum-'+(type==='silver'?'woolly':type)+'-underside-a6ad80',color,0,.001,0,L*a.leafWidth/a.leafLength,L,L);
+ }
+ const ripe=a.fruitMonths.includes(s.month);
+ for(const n of tips){
+  const flower=s.bloom&&n.roll<(low?.27:.44),fruit=ripe&&!low&&n.roll<.75&&(!s.bloom||n.roll>=.44);
+  if(!flower&&!fruit){if(s.leafDensity===0)b.add(kit.bud,'bud-hypericum','#92724e',...n.at,low?.0008:.0017,low?.0019:.004,low?.0008:.0017);continue;}
+  const f=flowerFrame(b,n.at,.28+n.roll*.45,n.az),number=low?(type==='gold'?1:2):5;
+  for(let j=0;j<number;j++){
+   const az=j*2.399963,reach=low?.009:.024,at=[Math.sin(az)*reach,.015+j*.001,Math.cos(az)*reach],ff=flowerFrame(f,at,.25,az),R=fruit?a.fruitRadius:a.flowerRadius;
+   f.branch([0,0,0],at,low?.0004:.00065,a.stemColor,'pedicel-hypericum');
+   for(let k=0;k<5;k++)ff.add('hypericum-gold','sepal-hypericum','#899049',0,0,0,R*.62,R*.92,R*.92,fruit?2.03:1.65,k*TAU/5,0);
+   if(fruit){
+    const copper=type==='copper',white=type==='jewelryWhite',col=copper?(s.month<9?'#96504a':a.fruitColor):a.fruitColor,elongate=white?1.25:1.10;
+    ff.add(kit.bud,'fruit-glossy-hypericum',col,0,R*.75,0,R,R*elongate,R);
+    for(let k=0;k<3;k++){const az=k*TAU/3;ff.branch([0,R*(.75+elongate),0],[Math.sin(az)*R*.14,R*(.97+elongate),Math.cos(az)*R*.14],.00022,'#806653','fruit-style-hypericum');}
+   }else{
+    ff.add('hypericum-flower','petal-hypericum','#f2ce33',0,0,0,R,R,R);
+    for(let k=0;k<a.stamenCount;k++){
+     const bundle=k%5,angle=bundle*TAU/5+.47*Math.sin(k*2.399963),rad=R*(.18+.58*((k*.618034)%1)),base=[Math.sin(bundle*TAU/5)*R*.12,0,Math.cos(bundle*TAU/5)*R*.12],end=[Math.sin(angle)*rad,R*(.35+.48*(1-rad/R)),Math.cos(angle)*rad];
+     ff.branch(base,end,R*.009,'#efc743','filament-hypericum');ff.add(kit.bud,'anther-hypericum','#ead697',...end,R*.023,R*.017,R*.023);
+    }
+    for(let k=0;k<(a.pistilCount||3);k++){const az=k*TAU/(a.pistilCount||3),end=[Math.sin(az)*R*.065,R*.43,Math.cos(az)*R*.065];ff.branch([0,0,0],end,R*.016,'#d2ad40','style-hypericum');}
+   }
+  }
+ }
+}
 export function ruscusCladodePoint(type,t,u){
  const danae=type==='danae',width=Math.pow(Math.sin(Math.PI*t),danae?.94:.67)*(danae?.93+.12*t:1.12-.28*t),tip=!danae&&t>.93?(1-t)/.07:1;
  return [u*width*.5*tip,t,.025*u*u*Math.sin(Math.PI*t)-.03*t*t+.002*Math.cos(u*21)*Math.sin(Math.PI*t)];
@@ -4272,6 +4332,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='hypericumShoots'){drawHypericum(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='ruscusCladodes'){drawRuscus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='hardyHibiscusCanes'){drawHardyHibiscus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='pomeShrubSprays'){drawPomeShrubs(b,{info,s,detail,rand},kit);return;}

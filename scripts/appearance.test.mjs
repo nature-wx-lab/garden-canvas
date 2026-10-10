@@ -10,6 +10,22 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Hypericum separates groundcovers from berry shrubs and keeps harvest months out of flowering',()=>{
+ const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='hypericumShoots');assert.equal(entries.length,6);
+ for(const [i,[id,info]] of entries.entries()){
+  const a=info.appearance,low=['gold','silver'].includes(a.shootProfile);let skeleton;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,9300+i,2,2);p.height=low?.15:1.2;p.spread=low?.3:.8;const st=stateAt(p,view(month)),g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'hypericumShoots');assert.ok(count('wood-hypericum')>0);assert.equal(count('leaf-hypericum')>0,st.leafDensity>0);assert.equal(count('petal-hypericum')>0,a.flowerMonths.includes(month));assert.equal(count('anther-hypericum'),count('petal-hypericum')*a.stamenCount);assert.equal(count('style-hypericum'),count('petal-hypericum')*(a.shootProfile==='gold'?5:3));
+   assert.equal(count('fruit-glossy-hypericum')>0,a.fruitMonths.includes(month));assert.equal(count('fruit-style-hypericum'),count('fruit-glossy-hypericum')*3);if(low)assert.equal(count('fruit-glossy-hypericum'),0);
+   const wood=g.children.filter(m=>m.userData.component==='wood-hypericum').map(m=>[...m.instanceMatrix.array]);if(!skeleton)skeleton=wood;else assert.deepEqual(wood,skeleton);
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ for(const id of ['p-ace5ffbac57a','p-7e5a2b796a76']){assert.deepEqual(CATALOG[id].bloom,[6,7]);assert.equal(seasonAt(CATALOG[id],9).bloom,false);}
+ assert.deepEqual(CATALOG['p-88cdd77b80b2'].height,[.05,.1]);assert.notEqual(seasonAt(CATALOG['p-3fd1e45e5a68'],5).leafColor,seasonAt(CATALOG['p-3fd1e45e5a68'],10).leafColor);
+});
+
 test('Ruscus cladodes remain evergreen and distinguish central berries from Danae terminal racemes',()=>{
  const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='ruscusCladodes');assert.equal(entries.length,2);
  for(const [i,[id,info]] of entries.entries()){
