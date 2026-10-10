@@ -1,7 +1,92 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.91';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.92';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.91';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.92';
 const TAU=Math.PI*2;
+export function blueShrubLeafPoint(type,t,u){
+ const leuco=type==='leucophyllum',pav=type==='pavilionBlue',sorbet=type==='summerSorbet',sn=Math.sin(Math.PI*t),tooth=leuco?1:1+(pav?.16:sorbet?.055:.065)*Math.pow(Math.max(0,Math.sin(t*Math.PI*(pav?9:11))),3)*sn;
+ const width=.5*Math.pow(sn,leuco?.62:sorbet?.59:.79)*(leuco?.58+.79*t:sorbet?1.07-.20*t:1.16-.28*t)*tooth;
+ return [u*width,t,(leuco?.09:.055)*u*u*sn-.06*t*t+.009*Math.pow(Math.abs(u),3)*Math.sin(t*18)*sn];
+}
+export function blueShrubCorollaGeometry(type){
+ const leuco=type==='leucophyllum',pos=[],uv=[],ix=[],rings=20,sides=40;
+ for(let j=0;j<=rings;j++)for(let k=0;k<=sides;k++){
+  const t=j/rings,az=k/sides*TAU,r=leuco?.15+.54*Math.pow(t,1.65):.12+.18*t;
+  pos.push(Math.sin(az)*r,t*(leuco?1.35:1.0),Math.cos(az)*r);uv.push(k/sides,t*.66);
+  if(j<rings&&k<sides){const q=j*(sides+1)+k;ix.push(q,q+sides+1,q+1,q+1,q+sides+1,q+sides+2);}
+ }
+ const angles=leuco?[-.56,.56,1.82,Math.PI,4.46]:[-1.05,-.35,.35,1.05,Math.PI];
+ for(let k=0;k<5;k++){
+  const az=angles[k],lower=!leuco&&k===4,base=pos.length/3,rows=18,cols=14;
+  for(let j=0;j<=rows;j++)for(let z=0;z<=cols;z++){
+   const t=j/rows,u=z/cols*2-1,sn=Math.sin(Math.PI*t),r=(leuco?.59:.27)+(leuco?.47:lower?1.13:.59)*t,x=u*(leuco?.57:lower?.42:.34)*Math.pow(sn,.55),fringe=lower?.10*Math.pow(Math.abs(u),2)*Math.sin(t*43+u*5)*sn:0,y=(leuco?1.32:1)+(leuco?.34:lower?-.35:.13)*t+.09*u*u*sn;
+   pos.push(Math.sin(az)*(r+fringe)+Math.cos(az)*x,y,Math.cos(az)*(r+fringe)-Math.sin(az)*x);uv.push((az/TAU+1)%1+(z/cols-.5)*.14,.66+t*.34);
+   if(j<rows&&z<cols){const q=base+j*(cols+1)+z;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.blueShrubCorolla={upper:leuco?2:4,lower:leuco?3:1,fringed:!leuco};return g;
+}
+function drawBlueShrubs(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,leuco=type==='leucophyllum',pav=type==='pavilionBlue',sorbet=type==='summerSorbet',h=s.height,w=s.spread,wood=[],nodes=[],heads=[],leaders=leuco?5:pav?7:5,bases=[];
+ const shoot=(root,az,rise,reach,order)=>{
+  const N=leuco?10:pav?9:8,path=t=>[root[0]+Math.sin(az+.07*Math.sin(t*4))*reach*t,root[1]+rise*t+h*.015*Math.sin(t*Math.PI),root[2]+Math.cos(az+.07*Math.sin(t*4))*reach*t];
+  for(let j=1;j<=N;j++){
+   const at=path(j/N),t=j/N,roll=rand();wood.push({from:path((j-1)/N),to:at,r:(order===0?.0032:order===1?.0008:.0004)*Math.max(.5,h)*(1-t*.65),old:order===0&&j<3});
+   nodes.push({at,az:az+j*Math.PI/2,roll,size:.78+rand()*.22,order,j,t});
+   if(leuco&&order===0&&j>=2&&j<N)shoot(at,az+(j%2?1:-1)*(.65+rand()*.35),h*.11,w*.09,1);
+   if(leuco&&order===1&&(j===3||j===7))shoot(at,az+(j%2?1:-1)*.8,h*.035,w*.05,2);
+   if(!leuco&&order===0&&!pav&&(j===3||j===5))shoot(at,az+(j%2?1:-1)*.65,h*.18,w*.12,1);
+   if(!leuco&&j>=N-3&&(order===0||j>=N-1))heads.push({at,az:az+j*Math.PI/2,roll,top:j===N,tier:j-(N-3),size:order===0?1:.72});
+  }
+ };
+ for(let k=0;k<leaders;k++){
+  const az=k*2.399963,path=t=>[Math.sin(az)*w*(leuco?.065:.04)*t,h*(leuco?.33:.20)*t,Math.cos(az)*w*(leuco?.065:.04)*t];
+  for(let j=1;j<=5;j++)wood.push({from:path((j-1)/5),to:path(j/5),r:h*(leuco?.01:.007)*(1-j*.11),old:true});bases.push(path);
+ }
+ const count=Math.round((leuco?34:pav?19:27)*detail);
+ for(let i=0;i<count;i++){
+  const t=(i+.5)/count,root=bases[i%leaders](.15+t*.80),az=i*2.399963+rand()*.27,tip=h*(leuco?.28+.53*t:pav?.59+.32*t:.36+.53*t),reach=w*(leuco?.39:pav?.29:sorbet?.40:.36)*(.40+.60*Math.pow(Math.sin(t*Math.PI),.65));shoot(root,az,tip-root[1],reach,0);
+ }
+ for(const q of wood)b.branch(q.from,q.to,Math.max(.00025,q.r),q.old||s.leafDensity===0?a.barkColor:a.stemColor,'wood-blueShrub-'+type);
+ for(const n of nodes){
+  if(n.roll>s.leafDensity||s.leafDensity===0)continue;
+  const pairs=leuco&&n.j%3===0?1:2;
+  for(let k=0;k<pairs;k++){
+   const az=n.az+k*Math.PI,L=a.leafLength*n.size*s.leafScale*(n.t>.8&&!leuco?.72:1),f=flowerFrame(b,n.at,.78+n.roll*.68,az),pet=leuco?.002:pav?.009:.006;
+   f.branch([0,0,0],[0,pet,0],leuco?.00035:.0005,a.stemColor,'petiole-blueShrub');
+   const kind=patternKind('leaf-blueShrub-'+type+(sorbet?'':'-woolly'),sorbet?'margin':null,s.leafPatternColor)+(sorbet?'':'-underside-'+a.leafUnderside.slice(1));
+   f.add('blueShrub-leaf-'+type,kind,kit.shade(rand,s.leafColor,.035),0,pet,0,L*a.leafWidth/a.leafLength,L,L,.08,0,(n.roll-.5)*.14);
+   if(leuco&&s.bloom&&n.order>0&&n.j>2&&n.roll<s.flowerDensity*.24){
+    const ff=flowerFrame(b,n.at,.95+n.roll*.25,az),R=a.flowerRadius;
+    ff.branch([0,0,0],[0,.005,0],.00045,a.stemColor,'pedicel-leucophyllum');
+    for(let z=0;z<5;z++)ff.add('narrow','calyx-leucophyllum','#b6bbaa',0,.004,0,.002,.006,.003,.15,z*TAU/5,0);
+    ff.add('blueShrub-leuco','petal-leucophyllum-spotted',s.flowerColor,0,.005,0,R,R,R);
+    for(let z=0;z<4;z++){const an=(z+.5)*TAU/4;ff.branch([Math.sin(an)*R*.24,R*.55,Math.cos(an)*R*.24],[Math.sin(an)*R*.21,R*.99,Math.cos(an)*R*.21],.00018,'#e5d3d4','filament-leucophyllum');ff.add(kit.bud,'anther-leucophyllum','#d5c19a',Math.sin(an)*R*.21,R*.99,Math.cos(an)*R*.21,.0006,.0005,.0008);}
+    ff.branch([0,.009,0],[0,.005+R*1.72,0],.0002,'#ded2d2','style-leucophyllum');ff.add(kit.bud,'stigma-leucophyllum','#e2d6c9',0,.005+R*1.72,0,.00055,.0004,.0006);
+   }
+  }
+ }
+ if(leuco||!s.bloom)return;
+ for(const head of heads){
+  if(head.roll>s.flowerDensity*.83)continue;
+  for(const side of [-1,1]){
+   const az=head.az+(side<0?Math.PI:0),R=.011*head.size,origin=[head.at[0]+Math.sin(az)*.010,head.at[1]+.008,head.at[2]+Math.cos(az)*.010];b.branch(head.at,origin,.0006,a.stemColor,'peduncle-caryopteris');
+   const count=Math.round((pav?15:11)*head.size);
+   for(let j=0;j<count;j++){
+    const an=j*2.399963,rr=R*Math.sqrt((j+.5)/count),point=[origin[0]+Math.sin(an)*rr,origin[1]+R*(.18+.86*Math.sqrt(1-(rr/R)**2)),origin[2]+Math.cos(an)*rr];b.branch(origin,point,.00025,a.stemColor,'pedicel-caryopteris');
+    const ff=flowerFrame(b,point,.25+.65*(rr/R),an),r=a.flowerRadius;
+    ff.add(kit.bud,'calyx-caryopteris','#9ca88b',0,.001,0,.0016,.0024,.0016);
+    if(head.top&&j%3!==0){ff.add(kit.bud,'bud-caryopteris',j%2?'#a8aec9':s.flowerColor,0,.004,0,.0020,.0030,.0020);continue;}
+    ff.add('blueShrub-cary','petal-caryopteris',s.flowerColor,0,.001,0,r,r,r);
+    for(let z=0;z<4;z++){
+     const an2=(z-1.5)*.56,to=[Math.sin(an2)*r*.86,.013+(z%2)*.001,Math.cos(an2)*r*.48];ff.branch([0,.003,0],to,.00017,s.flowerColor,'filament-caryopteris');ff.add(kit.bud,'anther-caryopteris','#686587',...to,.00055,.0004,.0006);
+    }
+    for(let z=0;z<9;z++){const ang=Math.PI+(z-4)*.09,rr2=r*(1.22+.09*Math.sin(z*2));ff.branch([Math.sin(ang)*r*.86,r*.75,Math.cos(ang)*r*.86],[Math.sin(ang)*rr2,r*.62,Math.cos(ang)*rr2],.00017,s.flowerColor,'fringe-caryopteris');}
+    ff.branch([0,.002,0],[0,.012,-.001],.00013,'#adb0db','style-caryopteris');for(const sign of [-1,1])ff.branch([0,.012,-.001],[sign*.0008,.013,-.001],.0001,'#b6b1ce','stigma-caryopteris');
+   }
+  }
+ }
+}
+
 export function hedgeLeafPoint(type,t,u){
  const ole=type==='oleander',green=type==='greenGlobal',sn=Math.sin(Math.PI*t),width=.5*Math.pow(sn,ole?.91:green?.67:.62)*(ole?1.04-.08*t:1.12-.24*t);
  return [u*width,t,(ole?.034:green?.055:.067)*u*u*sn-.040*t*t+(!ole?.010*Math.pow(Math.abs(u),3)*Math.sin(t*17)*sn:0)];
@@ -5240,6 +5325,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='blueShrubs'){drawBlueShrubs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='privetOleander'){drawPrivetOleander(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vitexBranches'){drawVitex(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='berryShrub'){drawBerryShrub(b,{info,s,detail,rand},kit);return;}
