@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.54';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.55';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -164,3 +164,4 @@ Object.assign(TRAIT_VALUES,{astilbeLeaflet:'先の尖った小葉に重なる鋸
 
 Object.assign(TRAIT_VALUES,{iberisEntire:'柄がなく互生する細い全縁の葉',iberisToothed:'柄がなく互生する浅い切れ込みのある葉',iberisUnequal:'外側2枚が大きい4弁花の集まる花序'});
 Object.assign(TRAIT_VALUES,{round5:'丸い5裂の掌状葉',round7:'浅く7裂する丸い掌状葉',cut5:'中央裂片が長い5裂の掌状葉',oak5:'二次裂片も深く切れ込む掌状葉',pointed5:'カエデ形に深く切れ込む葉',plum7:'丸い7裂片と浅い二次裂片を持つ葉',veil:'銀緑の葉面と掌状に分かれる葉脈',veins:'掌状に枝分かれする葉脈',heucherellaBell:'5裂の萼と細い花弁がつく小さな鐘形花'});
+Object.assign(TRAIT_VALUES,{agapanthusStrap:'根元から2列に重なる帯状葉',agapanthusTrumpet:'6裂する筒状のラッパ形花',agapanthusDouble:'通常より花被片の多い白い花',agapanthusClosed:'花被片が重なり開ききらない袋咲き',distichous:'2列・扇状'});

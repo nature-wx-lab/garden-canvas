@@ -1,6 +1,57 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.54';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.55';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function agapanthusPoint(type,t,u){
+ if(type==='leaf'){
+  const breadth=(.45+.55*Math.sin(Math.PI*Math.min(.95,t*1.07))**.35)*(t>.89?Math.sqrt((1-t)/.11):1);
+  return [u*breadth*.5,1.78*t-.82*t*t,.20*t+.68*t*t+u*u*.03*Math.sin(Math.PI*t)];
+ }
+ const closed=type==='closed',angle=u*Math.PI/(type==='diamond'?12:6),opening=Math.max(0,(t-.46)/.54),taper=t<.55?1:Math.pow(Math.max(0,Math.cos((t-.55)/.45*Math.PI/2)),.52);
+ const radius=closed?.08+.53*Math.pow(Math.sin(Math.PI*t),1.35):.065+.18*t*t+.42*opening*opening;
+ return [Math.sin(angle*taper)*radius,t-(closed?0:.12*opening*opening),Math.cos(angle*taper)*radius];
+}
+
+function drawAgapanthus(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,green=s.leafColor,L=Math.min(a.leafLength,w*.55)*s.leafScale,stem=a.stemColor;
+ const crowns=[],n=Math.max(3,Math.round((type==='summer'?7:5)*detail));
+ const leafKind=type==='silver'&&[3,4,5,6,7].includes(s.month)?'leaf-agapanthus-margin':'leaf-agapanthus'+(type==='northern'?'-purplebase':'');
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.13*Math.sqrt((i+.2)/n),at=[Math.sin(az)*rr,.008,Math.cos(az)*rr];crowns.push(at);
+  const leaves=type==='summer'?14:12;
+  for(let k=0;k<leaves;k++){
+   const size=L*(.60+.4*k/leaves),an=az+(k%2?Math.PI:0)+(rand()-.5)*.24,pitch=k<3?-.38:.02+rand()*.34;
+   if(k!==0&&rand()>s.leafDensity)continue;
+   b.add('agapanthusLeaf',leafKind,kit.shade(rand,green,.055),at[0],at[1]+.002*k,at[2],Math.min(a.leafWidth,w*.075)*s.leafScale,size,size,pitch,an,0);
+  }
+ }
+ const before=s.flowerBuds;if(!s.bloom&&!before)return;
+ const heads=Math.max(2,Math.round((type==='summer'?8:type==='queen'||type==='umbrella'?5:6)*detail)),r=a.flowerRadius,hr=Math.min(a.headRadius,w*.22),pal=a.flowerPalette;
+ for(let i=0;i<heads;i++){
+  const root=crowns[i%crowns.length],az=i*2.399963,top=[root[0]+Math.sin(az)*w*.23,h*(.69+rand()*.24)-hr*.40,root[2]+Math.cos(az)*w*.23];
+  if(before){top[1]*=.76;b.branch(root,top,Math.min(.008,h*.010),stem,'scape-agapanthus');b.add(kit.bud,'spathe-agapanthus','#849c65',...top,hr*.35,hr*.73,hr*.35);continue;}
+  b.branch(root,top,Math.min(.008,h*.010),stem,'scape-agapanthus');
+  for(let q=0;q<2;q++)b.add('iberisEntire','bract-agapanthus','#b7ac89',...top,hr*.30,hr*.55,hr*.3,1.5,q*Math.PI+az,0);
+  const count=Math.max(18,Math.round(pal.count*detail));
+  for(let j=0;j<count;j++){
+   const t=(j+.4)/count,an=j*2.399963,yv=1-t*1.35,rv=Math.sqrt(Math.max(0,1-yv*yv)),pedicel=hr*(.86+rand()*.14),pt=[top[0]+Math.sin(an)*rv*pedicel,top[1]+yv*pedicel,top[2]+Math.cos(an)*rv*pedicel];
+   b.branch(top,pt,Math.min(.001,h*.0018),type==='black'?'#4f4d59':stem,'pedicel-agapanthus');
+   const young=t<.23||rand()>s.flowerDensity,pendulous=['queen','fireworks','enigma'].includes(type),pitch=young?Math.acos(yv):pendulous?1.28+t*.90:Math.acos(yv)+.18,f=flowerFrame(b,pt,pitch,an);
+   if(young){const pale=['queen','fireworks','enigma'].includes(type);f.add(kit.bud,'bud-agapanthus',pale?'#d7d7df':pal.bud,0,r*.34,0,r*.10,r*.32,r*.10);f.add(kit.bud,'bud-agapanthus',pal.base,0,r*.08,0,r*.075,r*.17,r*.075);continue;}
+   const petals=a.petals,shape=type==='pleno'?'agapanthusClosed':type==='diamond'?'agapanthusDiamond':'agapanthusTepal',kind=`petal-agapanthus-${pal.base.slice(1)}-${pal.stripe.slice(1)}`;
+   for(let k=0;k<petals;k++){
+    const layer=type==='pleno'&&k>=6?1:0,angle=k*TAU/(type==='pleno'?6:petals)+(layer?.35:0),sz=r*(layer?.77:1);
+    f.add(shape,kind,kit.shade(rand,s.flowerColor,.025),0,layer*r*.14,0,sz*.75,sz,sz*.75,layer?.10:0,angle,0);
+   }
+   for(let k=0;k<a.stamenCount;k++){
+    const an=k*TAU/a.stamenCount,to=[Math.sin(an)*r*.27,r*1.02,Math.cos(an)*r*.27];
+    f.branch([Math.sin(an)*r*.11,r*.24,Math.cos(an)*r*.11],to,r*.014,'#ddd7df','filament-agapanthus');f.add(kit.bud,'anther-agapanthus',type==='diamond'?'#c2b792':'#a59ca9',...to,r*.017,r*.014,r*.042);
+   }
+   if(type!=='pleno')f.branch([0,r*.20,0],[0,r*1.04,0],r*.018,'#d2d4c8','style-agapanthus');
+  }
+ }
+}
+
 // Palmately lobed leaves share a petiole origin, not a feather-shaped midrib.
 export function heucherellaLeafPoint(type,t,angle){
  const seven=type.endsWith('7'),lobes=seven?[-2.5,-1.67,-.83,0,.83,1.67,2.5]:[-2.2,-1.1,0,1.1,2.2];
@@ -2628,6 +2679,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(info.appearance?.architecture==='agapanthusFans'){drawAgapanthus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='heucherellaCrowns'){drawHeucherella(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='iberisCorymbs'){drawIberis(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='astilbePlumes'){drawAstilbe(b,{info,s,p,detail,rand},kit);return;}

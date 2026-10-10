@@ -10,6 +10,20 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Agapanthus fans distinguish cold winter loss, bicolour trumpets, closed doubles and fading leaf margins',()=>{
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='agapanthusFans');assert.equal(entries.length,15);
+ for(const [i,[id,info]] of entries.entries())for(let month=1;month<=12;month++){
+  const p=makePlant(id,7000+i,2,2),st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component.startsWith(k));
+  if(st.groundDormant){assert.equal(g.children.length,0,id+':'+month);continue;}
+  assert.ok(has('leaf-agapanthus'));assert.equal(g.userData.architecture,'agapanthusFans');assert.equal(has('petal-agapanthus'),st.bloom,id+':'+month);assert.equal(has('spathe-agapanthus'),st.flowerBuds);
+  if(st.bloom){const count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);assert.equal(count('anther-agapanthus'),count('petal-agapanthus')/info.appearance.petals*info.appearance.stamenCount);}
+  if(info.appearance.shootProfile==='silver')assert.equal(has('leaf-agapanthus-margin'),[3,4,5,6,7].includes(month));
+  for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}dispose(g);
+ }
+ const winter=entries.filter(([,p])=>seasonAt(p,1).groundDormant);assert.equal(winter.length,14);assert.equal(seasonAt(CATALOG['p-e0e65a82a219'],1).groundDormant,false);
+ assert.equal(CATALOG['p-4b10b55a8582'].height[1],.7);assert.equal(CATALOG['p-202a392f3c9a'].appearance.flowerShape,'agapanthusClosed');assert.equal(CATALOG['p-fdf562bb983f'].appearance.petals,12);
+});
+
 test('Heucherella preserves palmate foliage, trailing stems and rare or stamenless flowers throughout the year',()=>{
  const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='heucherellaCrowns');assert.equal(entries.length,12);
  for(const [i,[id,info]] of entries.entries())for(let month=1;month<=12;month++){
