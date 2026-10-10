@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.21';
-import {foliageKind} from './appearance.js?v=0.9.21';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.21';
-import {drawTree} from './tree-model.js?v=0.9.21';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.21';
+import {treeProfile} from './tree-profiles.js?v=0.9.22';
+import {foliageKind} from './appearance.js?v=0.9.22';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.22';
+import {drawTree} from './tree-model.js?v=0.9.22';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.22';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.21';
+import { plantInfo, stateAt } from './model.js?v=0.9.22';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -410,6 +410,13 @@ for(let j=0;j<22;j++){const t=.02+j*.043,w=.28*Math.sin((t+.13)*Math.PI/1.25);fi
 filigree.push([0,1]);for(let j=21;j>=0;j--){const t=.02+j*.043,w=.28*Math.sin((t+.13)*Math.PI/1.25);filigree.push([.006,t+.015],[w,t+.10],[.006,t]);}shapes.filigree=outlineLeaf(filigree);
 shapes.heart=outlineLeaf([[0,0],[-.16,-.08],[-.34,.02],[-.44,.23],[-.43,.42],[-.31,.67],[0,1],[.31,.67],[.43,.42],[.44,.23],[.34,.02],[.16,-.08]]);
 shapes.morningGloryLeaf=outlineLeaf([[0,0],[-.16,-.10],[-.37,-.02],[-.49,.20],[-.56,.46],[-.35,.49],[-.22,.35],[-.23,.57],[-.12,.79],[0,1],[.12,.79],[.23,.57],[.22,.35],[.35,.49],[.56,.46],[.49,.20],[.37,-.02],[.16,-.10]]);shapes.morningGloryLeaf.userData.morningGloryLeaf=true;
+shapes.sunflowerRay=outlineLeaf([[0,0],[-.11,.25],[-.20,.60],[-.15,.86],[-.05,.98],[0,1],[.08,.94],[.18,.71],[.19,.48],[.07,.13]]);
+shapes.sunflowerBract=outlineLeaf([[0,0],[-.13,.08],[-.21,.35],[-.14,.65],[0,1],[.14,.65],[.21,.35],[.13,.08]]);
+{
+ const pts=[[0,0],[-.14,-.06],[-.28,.01]];
+ for(let j=0;j<24;j++){const t=j/24,y=.04+t*.93,w=.40*Math.pow(Math.sin((t+.21)*Math.PI/1.21),.77)*(j%2?1:.91);pts.push([-w,y]);}
+ pts.push([0,1]);for(let j=23;j>=0;j--){const t=j/24,y=.04+t*.93,w=.40*Math.pow(Math.sin((t+.21)*Math.PI/1.21),.77)*(j%2?1:.91);pts.push([w,y]);}pts.push([.28,.01],[.14,-.06]);shapes.sunflowerLeaf=outlineLeaf(pts);shapes.sunflowerLeaf.userData.sunflowerLeaf=true;
+}
 {
  const pts=[[0,0],[-.18,-.07],[-.32,.03]];
  for(let j=0;j<27;j++){const t=j/27,y=.07+t*.9,w=.43*Math.pow(Math.sin((t+.18)*Math.PI/1.18),.75)*(j%2?1:.94);pts.push([-w,y]);}
@@ -646,6 +653,11 @@ function windShader(shader,kind){
       diffuseColor.rgb*=shade;
       diffuseColor.rgb+=diffuseColor.rgb*(midrib*0.23+veins*0.055);
     `);
+    if(kind.startsWith('leaf-morningMottle'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      float mottles=sin(vUv.x*24.0+sin(vUv.y*31.0)*1.5)*sin(vUv.y*21.0+sin(vUv.x*17.0));
+      float fine=sin(vUv.x*123.0)*cos(vUv.y*173.0)*.12;
+      diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.69,.74,.60),smoothstep(.58,.79,mottles+fine));
+      #include <emissivemap_fragment>`);
     if(kind.startsWith('leaf-purpleFlash'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
       float cloud=sin(vUv.x*5.0+sin(vUv.y*4.0)*1.3)+sin(vUv.y*6.0-vUv.x*2.0)*.6;
       float fleck=sin(vUv.x*191.0+sin(vUv.y*143.0)*2.0)*sin(vUv.y*203.0);

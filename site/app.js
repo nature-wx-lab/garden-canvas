@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.21';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.21';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.21';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.21';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.21';
-import { createScene } from './scene.js?v=0.9.21';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.22';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.22';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.22';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.22';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.22';
+import { createScene } from './scene.js?v=0.9.22';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
@@ -17,6 +17,12 @@ function options(id,values){$(id).replaceChildren(...values.map(([value,text])=>
 function editor(id){for(const b of document.querySelectorAll('[data-editor]')){const active=b.dataset.editor===id;b.setAttribute('aria-pressed',String(active));$(b.dataset.editor).hidden=!active;}}
 function insight(id){for(const b of document.querySelectorAll('[data-insight]')){const active=b.dataset.insight===id;b.setAttribute('aria-pressed',String(active));$(b.dataset.insight).hidden=!active;}}
 function sourceCard(target,kind){const info=plantInfo(kind),box=$(target);box.replaceChildren(el('strong',info.label),el('p',info.latin||'学名未確認'));
+  if(info.appearance?.collection){
+   box.replaceChildren(el('strong',info.label),el('p',info.care));
+   if(info.appearance.components)for(const id of info.appearance.components)box.append(button(`${plantInfo(id).label}を選ぶ`,()=>chooseKind(id)));
+   else box.append(el('p','構成する植物を確認できるまで外観は未対応です。','hint'));
+   for(const url of new Set([info.source,...info.appearance.sources.map(s=>s.url)])){const a=el('a','構成・栽培情報の出典 ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';box.append(el('br'),a);}return;
+  }
   box.append(el('p',`資料の高さ：${info.height?info.height.join('〜')+'m':'未確認'} ／ 幅：${info.spread?info.spread.join('〜')+'m':'未確認'}`));
   const tree=treeProfile(info);if(tree)box.append(el('p',HABITS[tree.habit]+' · '+(tree.leaf==='evergreen'?'常緑':'落葉'),'habit-note'));
   if(info.popularity?.length)box.append(el('p',info.popularity.map(r=>`${r.publisher} ${r.category} 人気順 ${r.rank}位（${r.checked}確認）`).join(' ／ '),'hint'));
@@ -39,11 +45,16 @@ function sourceCard(target,kind){const info=plantInfo(kind),box=$(target);box.re
   else box.append(el('p','名称を収録済み。植物属性は公開資料で確認するまで空欄にしています。','hint'));
 }
 let catalogIndex=0;
+function chooseKind(kind){
+ const info=plantInfo(kind);resetMode();sourceCard('catalog-info',kind);$('catalog-info').closest('details').open=true;
+ if(info.appearance?.collection){message(info.appearance.components?'セットに含まれる植物を選んでください。':'この混合種の構成植物は未確認です。名前は一覧に残しています。');return;}
+ addKind=kind;setMode('add');message(info.form==='unmodeled'?'庭をクリックすると寸法枠を配置します。植物の外観は未対応です。':'庭をクリックして参考モデルを配置できます。');
+}
 function drawCatalog(){
   const genre=$('catalog-filter').value,results=searchCatalog(CATALOG,{query:$('catalog-search').value,genre,color:$('catalog-color').value,status:$('catalog-status').value,popular:$('catalog-popular').checked,habit:$('catalog-habit').value}),page=catalogPage(results,catalogIndex);catalogIndex=page.index;
   $('catalog-count').textContent=`${page.total.toLocaleString('ja-JP')}件${page.total?' ・ '+(page.index*24+1)+'〜'+Math.min(page.total,(page.index+1)*24):''}`;
   $('catalog-page').textContent=`${page.index+1} / ${page.pages}`;$('catalog-prev').disabled=page.index===0;$('catalog-next').disabled=page.index===page.pages-1;$('rose-guide').hidden=genre!=='バラ';
-  $('catalog').replaceChildren(...page.entries.map(([k,v])=>{const b=button('',()=>{resetMode();addKind=k;setMode('add');sourceCard('catalog-info',k);$('catalog-info').closest('details').open=true;message(v.form==='unmodeled'?'庭をクリックすると寸法枠を配置します。植物の外観は未対応です。':'庭をクリックして参考モデルを配置できます。');});b.dataset.kind=k;b.dataset.form=v.form;const swatch=el('span',undefined,'swatch');swatch.dataset.color=(v.colors||['unknown'])[0];b.append(swatch,el('strong',v.label),el('small',`${v.genre} · ${treeProfile(v)?HABITS[treeProfile(v).habit]:v.form==='unmodeled'?'寸法枠':'参考3D'}`));return b;}));
+  $('catalog').replaceChildren(...page.entries.map(([k,v])=>{const b=button('',()=>chooseKind(k));b.dataset.kind=k;b.dataset.form=v.form;const swatch=el('span',undefined,'swatch');swatch.dataset.color=(v.colors||['unknown'])[0];b.append(swatch,el('strong',v.label),el('small',`${v.genre} · ${v.appearance?.collection?(v.appearance.components?'中の植物を選ぶ':'混合種・構成未確認'):treeProfile(v)?HABITS[treeProfile(v).habit]:v.form==='unmodeled'?'寸法枠':'参考3D'}`));return b;}));
   if(!page.total)$('catalog').append(el('p','該当する植物がありません。検索語や絞り込みを変えてください。','hint'));setMode(mode);
 }
 function drawReplacement(kind=selectedPlant()?.kind){
@@ -109,7 +120,7 @@ function bind(){
   for(const b of document.querySelectorAll('[data-editor]'))b.addEventListener('click',()=>editor(b.dataset.editor));for(const b of document.querySelectorAll('[data-insight]'))b.addEventListener('click',()=>insight(b.dataset.insight));
   drawReplacement();$('replacement-search').addEventListener('input',()=>drawReplacement());for(const id of ['start-month','task-month'])options(id,Array.from({length:12},(_,i)=>[i+1,`${i+1}月`]));for(const id of ['start-year','scenario-year'])options(id,Array.from({length:id==='start-year'?11:10},(_,i)=>[i+(id==='start-year'?0:1),`${i+(id==='start-year'?0:1)}年`]));options('task-type',Object.entries(TASKS));$('task-month').value=6;
   for(let i=0;i<12;i++){const label=el('label',`${i+1}月 (時間)`),input=el('input');input.id=`hours-${i}`;input.type='number';input.min=0;input.max=744;input.step=.25;input.placeholder='未設定';label.append(input);$('hours-inputs').append(label);}
-  const modeled=Object.values(CATALOG).filter(p=>p.form!=='unmodeled').length;$('catalog-coverage').textContent=`外観の参考表示 ${modeled.toLocaleString('ja-JP')}件 ／ 外観未対応 ${(Object.keys(CATALOG).length-modeled).toLocaleString('ja-JP')}件。未対応の植物は寸法枠で配置できます。`;
+  const values=Object.values(CATALOG),collections=values.filter(p=>p.appearance?.collection).length,modeled=values.filter(p=>p.form!=='unmodeled').length;$('catalog-coverage').textContent=`外観の参考表示 ${modeled.toLocaleString('ja-JP')}件 ／ 外観未対応 ${(values.length-modeled-collections).toLocaleString('ja-JP')}件 ／ セット・混合種 ${collections}件。未対応の植物は寸法枠で配置できます。`;
   $('catalog-total').textContent=`${Object.keys(CATALOG).length.toLocaleString('ja-JP')}件`;
   options('catalog-filter',[['all','10ジャンルすべて'],...GENRES.map(g=>[g,`${g} (${Object.values(CATALOG).filter(p=>p.genre===g).length})`])]);options('catalog-color',[['all','花色すべて'],...Object.entries(COLORS)]);
   options('catalog-habit',[['all','樹形すべて'],...Object.entries(HABITS)]);

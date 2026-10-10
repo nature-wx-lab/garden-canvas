@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.21';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.22';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -17,6 +17,19 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='sunflowerHead'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),disc=r*.57;
+  f.add(bud,'receptacle','#71864c',0,-r*.08,0,disc,r*.14,disc);
+  for(let layer=0;layer<2;layer++)for(let j=0;j<20;j++){
+   const an=j*TAU/20+layer*.14,len=r*(layer?.51:.57);
+   f.add('sunflowerRay','petal',shade(rand,color,.05),Math.sin(an)*disc*.81,layer*r*.025,Math.cos(an)*disc*.81,len*.74,len,len,1.39+(rand()-.5)*.15,an,0);
+  }
+  for(let j=0;j<720;j++){
+   const t=(j+.5)/720,an=j*2.399963,rr=disc*Math.sqrt(t),yy=r*(.07+.10*Math.sqrt(1-t));
+   f.add(bud,'discFloret',shade(rand,t>.40?'#b59b41':'#7f8744',.06),Math.sin(an)*rr,yy,Math.cos(an)*rr,r*.018,r*(t>.40?.045:.023),r*.018,0,an,0);
+  }
+  for(let layer=0;layer<3;layer++)for(let j=0;j<10;j++){const an=j*TAU/10+layer*.29;f.add('sunflowerBract','involucre','#718c50',Math.sin(an)*disc*.64,-r*(.08+layer*.023),Math.cos(an)*disc*.64,r*.45,r*.45,r,1.55+layer*.15,an,0);}return;
+ }
  if(shape==='gardenDaisy'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),n=palette.rayCount||28,disc=r*.28;
   for(let j=0;j<12;j++)f.add('narrow','involucre','#6c854d',0,-r*.09,0,r*.31,r*.38,r,1.27,j*TAU/12,0);
@@ -1172,6 +1185,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(info.appearance?.architecture==='sunspot'){drawSunspot(b,{info,s,rand},kit);return;}
  if(['uprightYellow','annualScabiosa','shastaAlaska','pacificDelphinium','summerHollyhock','pinkEveningPrimrose','creamFalls','doublePortulaca'].includes(info.appearance?.architecture)){drawGardenFlowerForms(b,{info,s,p,detail,rand},kit);return;}
  if(['foxFace','ornamentalKale','ornamentalPepper','crimsonClover','livingstoneDaisy','pinkSage','compactPinkCoreopsis'].includes(info.appearance?.architecture)){drawFruitAndLeafPlants(b,{info,s,p,detail,rand},kit);return;}
  if(s.groundDormant)return;
@@ -2001,12 +2015,18 @@ function drawVineAndSpikeAnnuals(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,green=s.leafColor,arch=a.architecture,leafKind=foliageKind(info),size=Math.min(a.leafLength,h*.40,w*.32);
  if(arch==='morningGlory'){
   // The visible support is an example of training, not a naturally rigid stem.
-  for(const x of [-w*.30,w*.30])b.branch([x,0,0],[x,h,0],.0035,'#a7a082','support');
-  for(let k=1;k<7;k++)b.branch([-w*.30,h*k/7,0],[w*.30,h*k/7,0],.002,'#aaa38a','support');
+  const andon=!!a.flowerPalette?.andon;
+  if(andon){
+   for(let i=0;i<3;i++){const an=i*TAU/3;b.branch([Math.sin(an)*w*.30,0,Math.cos(an)*w*.30],[Math.sin(an)*w*.30,h,Math.cos(an)*w*.30],.0035,'#a7a082','support');}
+   for(const t of [.32,.62,.92])for(let j=0;j<40;j++){const an=j*TAU/40,an2=(j+1)*TAU/40;b.branch([Math.sin(an)*w*.30,h*t,Math.cos(an)*w*.30],[Math.sin(an2)*w*.30,h*t,Math.cos(an2)*w*.30],.002,'#aaa38a','support');}
+  }else{
+   for(const x of [-w*.30,w*.30])b.branch([x,0,0],[x,h,0],.0035,'#a7a082','support');
+   for(let k=1;k<7;k++)b.branch([-w*.30,h*k/7,0],[w*.30,h*k/7,0],.002,'#aaa38a','support');
+  }
   for(let i=0;i<4;i++){
-   let prev=[(i-1.5)*w*.10,.005,0];const baseX=(i%2?1:-1)*w*.30;
+   let prev=[(i-1.5)*w*.10,.005,0];const baseX=andon?Math.sin(i*TAU/3)*w*.30:(i%2?1:-1)*w*.30,baseZ=andon?Math.cos(i*TAU/3)*w*.30:0;
    for(let j=1;j<=28;j++){
-    const t=j/28,turn=i*1.3+t*TAU*5,at=[baseX+Math.sin(turn)*.012,h*t*.96,Math.cos(turn)*.014];b.branch(prev,at,.0018,a.stemColor,'vine');prev=at;
+    const t=j/28,turn=i*1.3+t*TAU*5,at=[baseX+Math.sin(turn)*.012,h*t*.96,baseZ+Math.cos(turn)*.014];b.branch(prev,at,.0018,a.stemColor,'vine');prev=at;
     if(j%2)continue;
     const outward=turn+i,reach=w*(.13+.08*rand()),len=size*(.58+.42*Math.sin(t*Math.PI*.86)),leafAt=[at[0]+Math.sin(outward)*reach,at[1]+len*.14,at[2]+Math.cos(outward)*reach];
     b.branch(at,leafAt,.0011,green,'petiole');b.add(a.leafShape,leafKind,kit.shade(rand,green,.055),...leafAt,len,len,len,.65+rand()*.55,outward,(rand()-.5)*.25);
@@ -2055,6 +2075,24 @@ function drawVineAndSpikeAnnuals(b,{info,s,detail,rand},kit){
    detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius*(.86+.14*rand()),color:s.flowerColor,shape:a.flowerShape,tilt:.16+rand()*.55,yaw:turn},{...kit,rand});
   }
  }
+}
+
+function drawSunspot(b,{info,s,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,green=s.leafColor,ll=Math.min(a.leafLength,w*.55,h*.25),stem=Math.min(.012,h*.011),tip=[h*.014,h*.92,0];
+ let prev=[0,0,0];
+ for(let j=1;j<=14;j++){
+  const t=j/14,at=[Math.sin(t*2)*h*.016,h*t*.92,0];b.branch(prev,at,stem*(1-t*.50),green,'stem');prev=at;
+  if(j===14)continue;
+  const count=j<4?2:1;
+  for(let k=0;k<count;k++){
+   const an=j*2.399+k*Math.PI,len=ll*(.44+.56*Math.sin(Math.PI*(t*.88+.03))),reach=len*.40,leafAt=[at[0]+Math.sin(an)*reach,at[1]+len*.14,Math.cos(an)*reach];
+   b.branch(at,leafAt,stem*.16,green,'petiole');b.add('sunflowerLeaf','leaf-woolly',kit.shade(rand,green,.07),...leafAt,len,len,len,1.03+(rand()-.5)*.25,an,.10*Math.sin(j));
+  }
+ }
+ const r=Math.min(a.flowerRadius,w*.34,h*.20);b.branch(prev,tip,stem*.5,green,'peduncle');
+ if(s.bloom)detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r,color:s.flowerColor,shape:'sunflowerHead',tilt:1.20,yaw:.22},{...kit,rand});
+ else if(s.month<=7){const f=flowerFrame(b,tip,.42,.22);f.add(kit.bud,'flowerBud','#6c8450',0,r*.11,0,r*.33,r*.37,r*.33);for(let j=0;j<20;j++)f.add('sunflowerBract','involucre',green,0,0,0,r*.58,r*.58,r,.48,j*2.399,0);}
 }
 
 function drawGardenFlowerForms(b,{info,s,p,detail,rand},kit){
