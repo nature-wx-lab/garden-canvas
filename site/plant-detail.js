@@ -1,6 +1,84 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.84';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.85';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function rosaceousLeafPoint(type,t,u){
+ const sn=Math.sin(Math.PI*t),nine=type==='diabolo',rhaph=type==='rhaphiolepis',blue=type==='blueKazoo',cycle=t*(rhaph?13:19)%1;
+ let half=.5*Math.pow(sn,rhaph?.58:blue?.67:.73)*(rhaph?.66+.60*t:1.10-.20*t);
+ if(nine){const edge=[[0,0],[.18,.33],[.37,.50],[.54,.29],[.63,.19],[.76,.25],[1,0]];for(let i=1;i<edge.length;i++)if(t<=edge[i][0]){const [x0,y0]=edge[i-1],[x1,y1]=edge[i];half=y0+(y1-y0)*(t-x0)/(x1-x0);break;}}
+ const tooth=(rhaph&&t<.45?0:1)*sn*(nine?.016:type==='japonica'?.022:.012)*(cycle<.7?cycle/.7:(1-cycle)/.3),fine=type==='japonica'?.006*sn*Math.max(0,Math.sin(t*TAU*57)):0;
+ return [u*(half+tooth+fine),t,.034*u*u*sn-.032*t*t+.004*Math.sin(t*33)*u*u];
+}
+export function rosaceousFlowerGeometry(type,part){
+ const pos=[],uv=[],ix=[],hall=type==='halliana',blue=type==='blueKazoo',petals=hall?10:5;
+ if(part==='petal')for(let k=0;k<petals;k++){
+  const inner=k>=5,az=k*TAU/5+(inner?.46:0),base=pos.length/3,rows=18,cols=10;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,r=(.10+.90*t)*(inner?.77:1),width=.52*Math.pow(Math.sin(Math.PI*t),.39)*(inner?.75:1),dip=hall?.042*Math.exp(-Math.pow(u/.20,2))*Math.pow(t,9):0,y=.12+(hall?.39:.11)*t*t+.075*u*u*Math.sin(Math.PI*t)+(inner?.17:0);
+   pos.push(Math.sin(az)*(r-dip)+Math.cos(az)*u*width,y,Math.cos(az)*(r-dip)-Math.sin(az)*u*width);uv.push(j/cols,t);
+   if(i<rows&&j<cols){const q=base+i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}
+  }
+ }else for(let k=0;k<(type==='rhaphiolepis'?20:25);k++){
+  const az=k*2.399963,rr=blue?.82:.42,y=blue?1.10+(k%3)*.12:.47+(k%4)*.055,end=[Math.sin(az)*rr,y,Math.cos(az)*rr];
+  if(part==='filament'){
+   const base=pos.length/3,r=blue?.018:.013,start=[end[0]*.23,.10,end[2]*.23];
+   for(let j=0;j<2;j++)for(let v=0;v<4;v++){const an=v/3*TAU;pos.push((j?end[0]:start[0])+Math.cos(an)*r,j?end[1]:start[1],(j?end[2]:start[2])+Math.sin(an)*r);uv.push(v/3,j);if(!j&&v<3)ix.push(base+v,base+v+1,base+v+4,base+v+1,base+v+5,base+v+4);}
+  }else{
+   const base=pos.length/3,r=blue?.052:.038;
+   for(const v of [[r,0,0],[-r,0,0],[0,r,0],[0,-r,0],[0,0,r],[0,0,-r]]){pos.push(...end.map((x,j)=>x+v[j]));uv.push(.5,.5);}
+   for(const face of [[0,2,4],[4,2,1],[1,2,5],[5,2,0],[4,3,0],[1,3,4],[5,3,1],[0,3,5]])ix.push(...face.map(v=>v+base));
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.rosaceousFlower={type,part,petals};return g;
+}
+function drawRosaceousBranches(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,nine=type==='diabolo',blue=type==='blueKazoo',rhaph=type==='rhaphiolepis',hall=type==='halliana',japan=type==='japonica',h=s.height,w=s.spread,leaves=[],heads=[],axils=[];
+ const shoot=(root,az,rise,reach,order)=>{
+  const bend=nine?.32:hall?.16:blue?.19:.10,path=t=>[root[0]+Math.sin(az)*reach*(.74*t+.26*t*t),root[1]+rise*((1+bend)*t-bend*t*t),root[2]+Math.cos(az)*reach*(.74*t+.26*t*t)],nodes=rhaph?9:order===0?16:11;
+  for(let j=1;j<=8;j++)b.branch(path((j-1)/8),path(j/8),(order===0?(hall?.018:nine?.010:.005):order===1?.0022:.0008)*(1-.69*j/8),order?a.stemColor:a.barkColor,nine&&order===0?'wood-ninebark-peeling':'wood-rosaceous-'+type);
+  for(let j=1;j<=nodes;j++){
+   const t=.07+j*.90/nodes,at=path(t),theta=az+j*2.399963,roll=rand(),size=.74+rand()*.26;
+   if(!rhaph||j>nodes-6)leaves.push({at,az:theta,roll,size,young:j>nodes-2});
+   if(japan&&order<2&&j>2)axils.push({at,az:theta,roll});
+   if(order<2&&j>2&&j<nodes-1&&j%(order===0?2:3)===0){const f=order===0?.14:.058,side=j%4<2?-1:1;shoot(at,az+side*(.62+rand()*.55),h*f*(.55+rand()*.55),w*f*(nine?1.16:1),order+1);}
+  }
+  if(order===2)heads.push({at:path(.96),az,roll:rand()});
+ };
+ if(hall){
+  const top=[h*.017,h*.36,0];b.branch([0,0,0],top,h*.027,a.barkColor,'wood-rosaceous-halliana');
+  for(let k=0;k<9;k++){const az=k*2.399963,y=.15+(k%3)*.07;shoot([top[0]*y/.36,h*y,0],az,h*(.53+rand()*.15),w*(.21+rand()*.09),0);}
+ }else for(let k=0;k<Math.round((blue?18:rhaph?13:nine?10:12)*detail);k++){
+  const az=k*2.399963,low=k%3===0;shoot([Math.sin(az)*w*.025,0,Math.cos(az)*w*.025],az,h*(low?.29+rand()*.20:.64+rand()*.14),w*(low?.30:.16+rand()*.10),0);
+ }
+ for(const n of leaves){
+  if(n.roll>s.leafDensity||s.leafDensity===0)continue;
+  const young=n.young&&(rhaph?s.springFlush:blue?s.month>=4&&s.month<=9:s.month===4),L=a.leafLength*n.size*s.leafScale*(young?.70:1),colour=young?(nine?'#784856':blue?'#8a6475':rhaph?'#ac7561':'#859563'):s.autumn?(nine?'#663e42':blue?'#a75f68':'#a2864c'):s.leafColor,P=blue?.0035:rhaph?.004:.012,f=flowerFrame(b,n.at,.88+n.roll*.58,n.az);
+  f.branch([0,0,0],[0,P,0],.00045,a.stemColor,'petiole-rosaceous');f.add('rosaceous-leaf-'+type,'leaf-rosaceous-'+type+(young?'-young':'')+'-underside-'+a.leafUnderside.slice(1),kit.shade(rand,colour,.035),0,P,0,L*a.leafWidth/a.leafLength,L,L);
+ }
+ if(!rhaph&&s.leafDensity===0)for(const n of heads)b.add(kit.bud,'bud-rosaceous-winter','#806255',...n.at,.0018,.004,.0018,.18,n.az,0);
+ const floret=(frame,at,roll,az)=>{
+  const f=flowerFrame(frame,at,hall?1.87+roll*.54:.15+roll*.30,az),R=a.flowerRadius;
+  f.add('rosaceous-flower-'+type+'-petal','petal-rosaceous-'+type,s.flowerColor,0,0,0,R,R,R);
+  f.add('rosaceous-flower-'+type+'-filament','filament-rosaceous-'+type,rhaph?'#b36970':'#e2d5c0',0,0,0,R,R,R);f.add('rosaceous-flower-'+type+'-anther','anther-rosaceous-'+type,blue?'#eee4ce':'#c6a058',0,0,0,R,R,R);
+  f.add(kit.bud,'disc-rosaceous',rhaph?'#a86167':'#8d9560',0,R*.10,0,R*.20,R*.10,R*.20);
+  for(let k=0;k<5;k++)f.add(kit.cone,'calyx-rosaceous',hall?'#aa6372':'#819060',Math.sin(k*TAU/5)*R*.16,0,Math.cos(k*TAU/5)*R*.16,R*.10,R*.29,R*.10,.75,k*TAU/5,0);
+ };
+ if(japan){
+  for(const n of axils){
+   const flower=s.bloom&&n.roll<.58,fruit=a.fruitMonths.includes(s.month)&&n.roll<.11;if(!flower&&!fruit)continue;
+   const f=flowerFrame(b,n.at,1.2,n.az),count=flower?2:1;
+   for(let j=0;j<count;j++){const at=[(j-.5)*.006,.009+j*.004,0];f.branch([0,0,0],at,.0004,a.stemColor,'pedicel-rosaceous');if(flower)floret(f,at,n.roll,n.az+j);else{f.add(kit.bud,'fruit-rosaceous-japonica',a.fruitColor,...at,.005,.005,.005);f.add(kit.bud,'fruit-scar-rosaceous','#6b4642',at[0],at[1]+.005,at[2],.0006,.00025,.0006);}}
+  }
+ }else for(const n of heads){
+  const flowering=s.bloom&&n.roll<(blue?.38:nine?.34:hall?.32:.35),fruit=rhaph&&a.fruitMonths.includes(s.month)&&n.roll<.30;if(!flowering&&!fruit)continue;
+  const f=flowerFrame(b,n.at,hall?.10:.36,n.az),count=fruit?7:blue?160:nine?38:hall?5:9,radius=blue?.023:nine?.028:hall?.022:.019;
+  for(let k=0;k<count;k++){
+   const phi=k*2.399963,rr=radius*Math.sqrt((k+.5)/count),at=[Math.sin(phi)*rr,(hall?-.033:blue?.011:.018)+(hall?-.018*(k%3):Math.sqrt(Math.max(0,1-rr*rr/radius**2))*(nine?.025:.008)),Math.cos(phi)*rr];
+   f.branch([0,0,0],at,hall?.0005:.00025,hall?'#aa6776':a.stemColor,'pedicel-rosaceous');
+   if(fruit){f.add(kit.bud,'fruit-rosaceous-rhaphiolepis',a.fruitColor,...at,.005,.005,.005);f.add(kit.bud,'fruit-scar-rosaceous','#74675a',at[0],at[1]+.0048,at[2],.001,.0004,.001);}
+   else floret(f,at,n.roll,phi);
+  }
+ }
+}
 export function southernLeafPoint(type,t,u){
  const mardi=type==='mardi',west=type==='westringia',sn=Math.sin(Math.PI*t),width=mardi?Math.pow(sn,.40)*(.42+.90*t):Math.pow(sn,type==='drummondii'?.44:west?.69:.90),teeth=mardi&&t>.75?.09*Math.max(0,Math.sin((t-.75)*TAU*14)):0;
  return [u*(width*.5+teeth),t,(west?.075:.025)*u*u*sn-.035*t*t];
@@ -4688,6 +4766,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='rosaceousBranches'){drawRosaceousBranches(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='southernShrubs'){drawSouthernShrubs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='capeProteaceae'){drawCapeProteaceae(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='banksiaBranches'){drawBanksia(b,{info,s,detail,rand},kit);return;}
