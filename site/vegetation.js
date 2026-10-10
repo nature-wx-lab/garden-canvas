@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.42';
-import {foliageKind} from './appearance.js?v=0.9.42';
-import {detailedFlower,drawDetailedHerb,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint,silverMintLeafPoint,roseLeafPoint} from './plant-detail.js?v=0.9.42';
-import {drawTree} from './tree-model.js?v=0.9.42';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.42';
+import {treeProfile} from './tree-profiles.js?v=0.9.43';
+import {foliageKind} from './appearance.js?v=0.9.43';
+import {detailedFlower,drawDetailedHerb,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint,silverMintLeafPoint,roseLeafPoint} from './plant-detail.js?v=0.9.43';
+import {drawTree} from './tree-model.js?v=0.9.43';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.43';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.42';
+import { plantInfo, stateAt } from './model.js?v=0.9.43';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -14,7 +14,7 @@ const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const TAU=Math.PI*2;
 const shapes={};
-for(const type of ['roseLeaflet','roseRoundPetal','roseWavedPetal','rosePointedPetal','roseNotchedPetal','roseJewelPetal','roseSepal']){
+for(const type of ['roseLeaflet','roseRoundPetal','roseWavedPetal','rosePointedPetal','roseNotchedPetal','roseJewelPetal','roseChalicePetal','roseSepal']){
  const p=[],uv=[],ix=[],rows=type==='roseLeaflet'?54:24,cols=type==='roseLeaflet'?6:18;
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
   const t=i/rows,u=j/cols*2-1,sn=Math.max(0,Math.sin(t*Math.PI));let pos;
@@ -27,6 +27,10 @@ for(const type of ['roseLeaflet','roseRoundPetal','roseWavedPetal','rosePointedP
    pos=[Math.sin(angle)*rad,.52*t*t-.21*u*u*t+(pointed?.11*Math.exp(-u*u*18):-.022*Math.exp(-u*u*24))*rim+(wave?.09:.035)*Math.sin(u*(wave?15:8)+t*3)*rim,Math.cos(angle)*rad];
    if(notch)pos[1]-=.11*Math.pow(.5+.5*Math.cos(u*20+1.2),10)*rim;
    if(jewel){pos[1]+=.15*Math.exp(-u*u*65)*rim;pos[2]-=.16*Math.exp(-u*u*32)*rim;}
+   if(type==='roseChalicePetal'){
+    const round=Math.sin(t*2.20);
+    pos=[Math.sin(angle)*round,.52*(1-Math.cos(t*2.20))-.14*u*u*t+.025*Math.sin(u*8+2)*rim,Math.cos(angle)*round];
+   }
   }
   p.push(...pos);uv.push(j/cols,t);if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
  }
@@ -1114,7 +1118,7 @@ function windShader(shader,kind){
     const outsideHex=kind.match(/-outside-([0-9a-f]{6})$/)?.[1];
     if(kind.includes('-dahlia'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos(vUv.x*61.0+sin(vUv.y*8.0)*0.45)');
     if(kind.startsWith('leaf-grass'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos(vUv.x*69.0)');
-    if(outsideHex){const out=new THREE.Color('#'+outsideHex);shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`if(${kind.includes('-dahlia')?'!':''}gl_FrontFacing)diffuseColor.rgb=mix(diffuseColor.rgb,vec3(${out.r.toFixed(5)},${out.g.toFixed(5)},${out.b.toFixed(5)}),0.92);\n#include <emissivemap_fragment>`);}
+    if(outsideHex){const out=new THREE.Color('#'+outsideHex);shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`if(${kind.includes('-dahlia')||kind.startsWith('petal-rose')?'!':''}gl_FrontFacing)diffuseColor.rgb=mix(diffuseColor.rgb,vec3(${out.r.toFixed(5)},${out.g.toFixed(5)},${out.b.toFixed(5)}),0.92);\n#include <emissivemap_fragment>`);}
     if(kind==='petal-enkianthus-veins')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float enkVeins=pow(max(0.0,cos(vUv.x*125.664+sin(vUv.y*8.0)*0.4)),28.0);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.48,0.11,0.22),0.55*enkVeins+0.23*smoothstep(0.72,0.99,vUv.y));\n#include <emissivemap_fragment>`);
     if(kind.startsWith('leaf-palm'))shader.fragmentShader=shader.fragmentShader.replace('float midrib=1.0-smoothstep(0.012,0.025,abs(vUv.x-0.5));',`vec2 palm=vec2(vUv.x-0.5,vUv.y-0.22);float radial=abs(sin(atan(palm.x,palm.y)*3.0))*length(palm);float midrib=1.0-smoothstep(0.002,0.008,radial);`);
     if(kind.endsWith('-cranesbill-veins'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float petalVeins=pow(max(0.0,cos(atan(vUv.x-0.5,vUv.y+0.08)*19.0+sin(vUv.y*8.0)*0.13)),35.0);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.14,0.055,0.17),petalVeins*0.58*smoothstep(0.04,0.18,vUv.y));\n#include <emissivemap_fragment>`);
