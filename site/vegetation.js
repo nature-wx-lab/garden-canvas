@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.17';
-import {foliageKind} from './appearance.js?v=0.9.17';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.17';
-import {drawTree} from './tree-model.js?v=0.9.17';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.17';
+import {treeProfile} from './tree-profiles.js?v=0.9.18';
+import {foliageKind} from './appearance.js?v=0.9.18';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.18';
+import {drawTree} from './tree-model.js?v=0.9.18';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.18';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.17';
+import { plantInfo, stateAt } from './model.js?v=0.9.18';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,6 +13,30 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+for(const type of ['calendulaLeaf','nemophilaLeaf','alyssumLeaf','auriniaLeaf','poppySegment','calendulaRay','poppyCup','poppyFrill']){
+ const pos=[],uv=[],idx=[],rows=40,cols=16,ray=type==='calendulaRay',cup=type==='poppyCup'||type==='poppyFrill',nem=type==='nemophilaLeaf',spoon=type==='calendulaLeaf'||type==='auriniaLeaf';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t)),frill=type==='poppyFrill';
+  let width=(cup?.86:ray?.18:type==='poppySegment'?.17:type==='alyssumLeaf'?.17:nem?.31:.23)*Math.pow(sin,cup?.40:ray?.37:spoon?.60:.77);
+  if(nem)width*=.28+.72*Math.pow(.5+.5*Math.cos((t-.08)*Math.PI*10),.62);
+  if(spoon)width*=.36+.80*t;
+  const ripple=cup?(.010+(frill?.075:0))*Math.sin(u*18+t*27)*Math.pow(Math.abs(u),3)*sin:ray?.015*Math.cos(u*9)*sin:.018*Math.cos(t*22)*u*u*sin;
+  const yy=cup?.88*t-.14*t*t:ray?.14*t*t:t,zz=cup?.04+.91*t:ray?t:.17*t*t;
+  pos.push(u*width,yy+ripple,zz+(cup?-.13:.042)*u*u*sin);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
+{
+ // A single fused corolla, with five rounded lobes around its continuous cup.
+ const pos=[],uv=[],idx=[],rows=22,cols=100;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,an=j/cols*Math.PI*2,r=t*(.90+.10*Math.cos(an*5)*Math.pow(t,6));
+  pos.push(Math.sin(an)*r,.34*t*t+.018*Math.cos(an*5)*t,Math.cos(an)*r);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData.nemophilaCup=true;shapes.nemophilaCup=keep(g);
+}
 for(const type of ['feltOval','feltRound','wireRound','groundIvyLeaf','dichondraLeaf','pericallisLeaf','newLookLeaf','curlyLeucothoe','persianLeaf']){
  const pos=[],uv=[],idx=[],rows=32,cols=12,ivy=type==='groundIvyLeaf',kidney=type==='dichondraLeaf',pericallis=type==='pericallisLeaf',dust=type==='newLookLeaf',curly=type==='curlyLeucothoe',persian=type==='persianLeaf',round=type==='feltRound'||type==='wireRound';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -545,6 +569,12 @@ function windShader(shader,kind){
       diffuseColor.rgb*=shade;
       diffuseColor.rgb+=diffuseColor.rgb*(midrib*0.23+veins*0.055);
     `);
+    if(kind.startsWith('petal-nemophila'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      float sector=fract(vUv.x*5.0+0.5)-0.5;
+      float lines=pow(max(0.0,cos(sector*52.0+vUv.y*4.0)),28.0)*vUv.y;
+      ${kind.endsWith('-spots')?'float spot=1.0-smoothstep(.83,1.03,length(vec2(sector/.105,(vUv.y-.87)/.13)));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.18,.11,.36),spot);':'float eye=1.0-smoothstep(.19,.55,vUv.y);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.77,.82,.81),eye);'}
+      diffuseColor.rgb*=1.0-lines*.09;
+      #include <emissivemap_fragment>`);
     if(kind.startsWith('leaf-hosta'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*70.0)');
     if(kind==='leaf-persian-metal')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float network=max(midrib,pow(max(0.0,cos((vUv.y-fold*.32)*38.0)),22.0)*smoothstep(.03,.11,fold));float edge=smoothstep(.88,.99,fold);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.036,.10,.047),max(network,edge));diffuseColor.rgb+=vec3(.030,.020,.040)*(1.0-network)*pow(max(0.0,sin(vUv.x*521.0)*cos(vUv.y*413.0)),8.0);if(!gl_FrontFacing)diffuseColor.rgb=vec3(.188,.053,.131);\n#include <emissivemap_fragment>`);
     if(kind==='leaf-iris-parallel')shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*95.0)');
