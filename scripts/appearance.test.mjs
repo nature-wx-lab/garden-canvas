@@ -10,6 +10,23 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Stachys and Teucrium keep low winter leaves and distinguish lipped flowers, wool and divided blades',()=>{
+ const ids=['p-97f66d2db7b8','p-136a4145bb60','p-718d932f7fbd','p-4a7fe6ebe665','p-b4a113c2a9a7','p-361129ca7b6d','p-8aaa7fd07b8b','p-f75086367f06','p-adfe2cc556c9'];
+ for(const [i,id] of ids.entries()){
+  const a=CATALOG[id].appearance;let wood;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,11300+i,2,2);p.height=i===8?.15:.5;p.spread=.5;const g=plantModel(p,view(month)),count=key=>g.children.filter(m=>m.userData.component.startsWith(key)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'betonyGermander');assert.ok(count('leaf-betony')>0);assert.equal(count('petal-betony')>0,a.flowerMonths.includes(month));assert.equal(count('fruit'),0);
+   if(i<8&&[12,1,2].includes(month))assert.equal(count('stem-betony-square'),0);
+   if(i===8){const x=g.children.filter(m=>['wood-polium','stem-polium'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(!wood)wood=x;else assert.deepEqual(x,wood);assert.ok(count('wood-polium')>0);}
+   assert.equal(count('anther-betony'),count('petal-betony')*4);
+   assert.equal(count('petal-betony-teucrium')>0,i>=6&&a.flowerMonths.includes(month));
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ assert.deepEqual(CATALOG[ids[6]].appearance.flowerMonths,[6,7]);assert.notEqual(CATALOG[ids[0]].appearance.leafShape,CATALOG[ids[2]].appearance.leafShape);
+});
+
 test('Textured mints separate living winter foliage from dry Phlomis stems and keep unresolved flowers hidden',()=>{
  const ids=['p-ac81f56321b6','p-b1e0749b1935','p-9ca4fb57fac1','p-66770d29e666','p-04d2ee5bc147','p-422c087e0692'];
  for(const [i,id] of ids.entries()){
