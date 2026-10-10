@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.39';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.40';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 export const TRAIT_VALUES={heart:'心形',round:'円形',kidney:'腎形',triangular:'三角形',lobed:'切れ込みのある葉',compound:'複葉',serrated:'鋸歯のある葉',narrow:'細葉',blade:'線形・剣形',needle:'針形',leaf:'卵形・楕円形',obovate:'倒卵形',spoon:'へら形',arrow:'矢じり形',margin:'覆輪',center:'中斑',spots:'斑点',silverVeins:'銀葉・緑の葉脈',stripes:'縞斑',evergreen:'常緑',semiEvergreen:'半常緑（寒さで変化）',deciduous:'落葉（幹・枝は残る）',winterDormant:'冬に地上部休眠',summerDormant:'夏に地上部休眠',bell:'鐘形',trumpet:'漏斗・ラッパ形',tube:'筒形',urn:'壺形',cup:'杯形',flat:'平開',star:'星形',cross:'十字形',pea:'蝶形',lipped:'唇形',spurred:'距のある花',spoonRay:'スプーン状の花弁',pompon:'ポンポン咲き',smooth:'平滑',peeling:'剥離する樹皮',furrowed:'縦に割れる樹皮',scaly:'鱗片状',lenticels:'皮目',clump:'株立ち',mound:'こんもり',creeping:'地面に広がる',rosette:'ロゼット',upright:'直立',arching:'弓状',spreading:'横に広がる',weeping:'枝垂れ',columnar:'細い直立形',pyramidal:'円錐形',vase:'箒状',rounded:'丸い樹冠',multistem:'根元から株立ち',oval:'卵形の樹冠',layered:'段状の横枝',irregular:'不規則な枝'};
@@ -136,3 +136,5 @@ Object.assign(TRAIT_VALUES,{onosmaBristly:'剛毛を持つ細長い根生葉',bu
 Object.assign(TRAIT_VALUES,{libertiaSword:'硬い扇状の剣葉・冬春の橙色の筋',anthericumRibbon:'花茎より短い弓なりの細葉',tofieldiaSword:'二列に並ぶ薄い剣状葉',ornithogalumRibbon:'花期に枯れ込む灰緑色の細い根生葉',rhodoxisKeeled:'折れ目と細毛のある小さな根生葉',siculumKeeled:'折れ目のある幅広い根生葉',aristeaSword:'扇状に並ぶ柔らかい剣葉',libertiaWhite:'大小3枚ずつの白い花被',anthericumStar:'細い外花被・幅広い内花被と長い花柱',tofieldiaStar:'小さな6花被・6本の雄しべと3花柱',ornithogalumStar:'緑の筋を持つ細い6花被',rhodoxisStar:'黄色い葯が見える桃紫色の6花被',siculumBell:'下向きの釣鐘花・桃色の筋と緑の基部',aristeaBlue:'6枚の青い花被と褐色の薄い苞',floweringLeafBulb:'開花中に葉が枯れ込む球根',siculumBulb:'花後に葉が枯れて球根で休眠'});
 
 Object.assign(TRAIT_VALUES,{roseaPalm:'毛と浅い掌状の切れ込み・丸い鋸歯を持つ葉',rugosaPalm:'凹凸と掌状の切れ込みが強い灰緑色の葉',alceaRuffled:'広い外花弁と中心の細かな八重花弁・一重では雄しべ筒'});
+
+Object.assign(TRAIT_VALUES,{gardenRoseCanes:"品種別の木立ち・つる性の枝",gardenRose:"花径・花弁数・重なりを分けた八重のバラ",roseLeaflet:"先の尖った鋸歯のある卵形小葉"});
