@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.92';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.93';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -221,3 +221,5 @@ Object.assign(TRAIT_VALUES,{vitexThree:'幅広い1〜3小葉・紫の葉裏',vit
 Object.assign(TRAIT_VALUES,{silverPrivetOvate:'白い覆輪の小さな全縁対生葉',tinyPrivet:'短い節間に密につく極小の楕円葉',oleanderLance:'主に3輪生する厚い細葉・淡い中央脈',privetFour:'短い筒と4裂する白い小花・2本の雄しべ',oleanderCorona:'重なり合う花冠と筒口の細く裂けた副花冠'});
 
 Object.assign(TRAIT_VALUES,{leucoSpoon:'星状毛に覆われた全縁の銀色の小さな倒卵形葉',incanaToothed:'粗い鋸歯のある対生葉・銀白色の葉裏',sorbetOval:'無毛の小さな楕円葉と不規則な黄色い覆輪',caryopterisLance:'対生する灰緑の細長い葉と浅い鋸歯',leucoBell:'葉腋に1輪ずつ咲く上2裂・下3裂の筒状花と下唇の斑点',caryopterisFringe:'段状に集まる小花・上4裂と縁が細裂する長い下唇・4本の長い雄しべ'});
+
+Object.assign(TRAIT_VALUES,{illiciumLance:'枝先に集まる光沢のある全縁の革質葉',ceanothusSmall:'3本の主脈がある小さく厚い光沢葉',ceanothusOvate:'細かな鋸歯と3本の主脈がある薄い卵形葉',illiciumStraps:'細い帯状の花被が幾重にも開く花',illiciumCup:'幅広く厚い花被が重なる小さな杯状花',ceanothusHoods:'5枚の匙状の花弁・5枚の萼・5本の雄しべが集まる小花の花房'});
