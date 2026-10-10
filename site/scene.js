@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt } from './model.js?v=0.9.29';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.29';
+import { plantInfo, stateAt, inside, canPlant, zoneAt } from './model.js?v=0.9.30';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.30';
 
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
 function mat(color){if(!sceneMaterials.has(color))sceneMaterials.set(color,new THREE.MeshStandardMaterial({color,roughness:.92}));return sceneMaterials.get(color);}
@@ -128,5 +128,5 @@ export function createScene(container,onPick){
     if(moving&&lastTick)elapsed+=Math.min(.1,(now-lastTick)/1000);lastTick=now;wind.time.value=elapsed;
     renderer.render(scene,camera);lastDraw=now;dirty=false;container.dataset.frames=String(++frameCount);container.dataset.windTime=elapsed.toFixed(2);
   });
-  return {render,wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(.6,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{if(!c)return;camera.position.fromArray(c.position);controls.target.fromArray(c.target);controls.update();dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
+  return {render,wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(controls.minDistance,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{if(!c)return;camera.position.fromArray(c.position);controls.target.fromArray(c.target);controls.update();dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
 }

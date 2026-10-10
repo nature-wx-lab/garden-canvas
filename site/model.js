@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.29';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.29';
-import { seasonAt } from './catalog-search.js?v=0.9.29';
+import {treeProfile} from './tree-profiles.js?v=0.9.30';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.30';
+import { seasonAt } from './catalog-search.js?v=0.9.30';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -37,7 +37,7 @@ export function contained(inner,outer){
 export const obstaclePoints=o=>[[o.x,o.z],[o.x+o.width,o.z],[o.x+o.width,o.z+o.depth],[o.x,o.z+o.depth]];
 export const canPlant=(plan,x,z)=>inside(x,z,plan.outline)&&!plan.obstacles.some(o=>inside(x,z,obstaclePoints(o)));
 export function makePlant(kind,id,x,z){
-  const info=plantInfo(kind),tree=info.group==='木',height=tree?1.5:info.group==='低木'?.65:info.form==='grass'?.65:.35,spread=tree?round(height*(treeProfile(info)?.spread&&treeProfile(info)?.height?Math.min(1.6,treeProfile(info).spread[1]/treeProfile(info).height[1]):.65)):info.group==='低木'?.55:.3;
+  const info=plantInfo(kind),tree=info.group==='木',arch=info.appearance?.architecture,floater=arch?.startsWith('salvinia')?.03:arch==='amazonFrogbit'?.06:arch==='waterHyacinth'?.3:null,height=floater??(tree?1.5:info.group==='低木'?.65:info.form==='grass'?.65:.35),spread=tree?round(height*(treeProfile(info)?.spread&&treeProfile(info)?.height?Math.min(1.6,treeProfile(info).spread[1]/treeProfile(info).height[1]):.65)):info.group==='低木'?.55:.3;
   return {id,kind,x,z,height,spread,leafHeight:round(info.leaf==='herb'||info.leaf==='grass'?height*.55:height),start:0,role:'new',price:null,locked:false,scenario:null,management:null,tasks:[]};
 }
 export function replacePlant(p,kind){if(p.locked)throw new Error('固定を解除してから交換してください。');const next=makePlant(kind,p.id,p.x,p.z);next.start=p.start;next.role=p.role;return next;}
@@ -92,7 +92,7 @@ function migrateV1(v){
 }
 export function validateDocument(input){
   const bad=()=>{throw new Error('対応していない庭データ、または範囲外の値です。元の庭は変更していません。');};
-  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10','2026-10-10.11','2026-10-10.12','2026-10-10.13','2026-10-10.14','2026-10-10.15','2026-10-10.16','2026-10-10.17','2026-10-10.18','2026-10-10.19','2026-10-10.20','2026-10-10.21','2026-10-10.22','2026-10-10.23','2026-10-10.24','2026-10-10.25','2026-10-10.26','2026-10-10.27','2026-10-10.28','2026-10-10.29','2026-10-10.30','2026-10-10.31','2026-10-10.32','2026-10-10.33','2026-10-10.34','2026-10-10.35','2026-10-10.36','2026-10-10.37','2026-10-10.38','2026-10-10.39','2026-10-10.40','2026-10-10.41','2026-10-10.42'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
+  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10','2026-10-10.11','2026-10-10.12','2026-10-10.13','2026-10-10.14','2026-10-10.15','2026-10-10.16','2026-10-10.17','2026-10-10.18','2026-10-10.19','2026-10-10.20','2026-10-10.21','2026-10-10.22','2026-10-10.23','2026-10-10.24','2026-10-10.25','2026-10-10.26','2026-10-10.27','2026-10-10.28','2026-10-10.29','2026-10-10.30','2026-10-10.31','2026-10-10.32','2026-10-10.33','2026-10-10.34','2026-10-10.35','2026-10-10.36','2026-10-10.37','2026-10-10.38','2026-10-10.39','2026-10-10.40','2026-10-10.41','2026-10-10.42','2026-10-10.43'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
   if(!keys(v,['version','modelVersion','catalogVersion','active','plans','view'])||v.version!==2||v.modelVersion!==MODEL_VERSION||v.catalogVersion!==CATALOG_VERSION||!['A','B'].includes(v.active)||!keys(v.plans,['A','B'])||!v.plans.A||!v.plans[v.active])bad();
   const view=v.view;
   if(!keys(view,['month','year','reference','footprints','camera'])||!integer(view.month,1,12)||!integer(view.year,0,10)||typeof view.reference!=='boolean'||typeof view.footprints!=='boolean')bad();

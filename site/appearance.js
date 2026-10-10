@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.29';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.30';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 export const TRAIT_VALUES={heart:'心形',round:'円形',kidney:'腎形',triangular:'三角形',lobed:'切れ込みのある葉',compound:'複葉',serrated:'鋸歯のある葉',narrow:'細葉',blade:'線形・剣形',needle:'針形',leaf:'卵形・楕円形',obovate:'倒卵形',spoon:'へら形',arrow:'矢じり形',margin:'覆輪',center:'中斑',spots:'斑点',silverVeins:'銀葉・緑の葉脈',stripes:'縞斑',evergreen:'常緑',semiEvergreen:'半常緑（寒さで変化）',deciduous:'落葉（幹・枝は残る）',winterDormant:'冬に地上部休眠',summerDormant:'夏に地上部休眠',bell:'鐘形',trumpet:'漏斗・ラッパ形',tube:'筒形',urn:'壺形',cup:'杯形',flat:'平開',star:'星形',cross:'十字形',pea:'蝶形',lipped:'唇形',spurred:'距のある花',spoonRay:'スプーン状の花弁',pompon:'ポンポン咲き',smooth:'平滑',peeling:'剥離する樹皮',furrowed:'縦に割れる樹皮',scaly:'鱗片状',lenticels:'皮目',clump:'株立ち',mound:'こんもり',creeping:'地面に広がる',rosette:'ロゼット',upright:'直立',arching:'弓状',spreading:'横に広がる',weeping:'枝垂れ',columnar:'細い直立形',pyramidal:'円錐形',vase:'箒状',rounded:'丸い樹冠',multistem:'根元から株立ち',oval:'卵形の樹冠',layered:'段状の横枝',irregular:'不規則な枝'};
@@ -118,3 +118,5 @@ Object.assign(TRAIT_VALUES,{diphylleiaShield:'葉の裏側に柄がつく大き�
 Object.assign(TRAIT_VALUES,{spurgeLinearLeaf:'螺旋状に密につく細長い全縁葉',spurgeBroadLeaf:'互生するやや幅のある披針形葉',snowSpurgeLeaf:'細い枝に対生する小さな楕円葉',gauraLeaf:'株元と花茎につく細い披針形葉',spurgeCyathium:'2枚の苞と中央の蜜腺・杯状花序（花弁なし）',snowSpurgeCyathium:'小さな杯状花序と多数の白い花弁状の苞',gauraButterfly:'4枚の花弁と8本の長い雄しべ'});
 
 Object.assign(TRAIT_VALUES,{winterSubmerged:'冬は水上葉が消え、水中葉で越冬',sagittariaLong:'長い柄の先に付く細長い楕円葉',sagittariaFemale:'白い3弁と緑色の雌しべの集合',nupharSagittate:'基部が矢じり形に切れ込む長い葉',nupharCup:'黄色い5枚の萼・内側の小花弁・円盤状の柱頭',floatingCordate:'切れ込みのある丸い浮葉',waterPoppyCordate:'光沢のある広卵形〜心形の浮葉',fringedWaterFlower:'縁が細かい房状になる黄色い5裂花冠',waterPoppyCup:'淡黄色の3弁が重なり濃い花心を囲む花'});
+
+Object.assign(TRAIT_VALUES,{salviniaFlat:'対になった平たい楕円の浮葉・先端が離れた分岐毛',salviniaFolded:'二つ折りで波打つ浮葉・先端がつながる4分岐の毛',salviniaHood:'縁がフード状に巻く浮葉・分岐しない毛',hyacinthOrbicular:'膨らんだ葉柄の先に付く光沢のある丸い葉',frogbitOrbicular:'短い柄の丸い浮葉・葉裏に海綿状の組織',hyacinthEye:'淡紫の6裂花被・上側の裂片に黄色と紫の斑紋',frogbitFlowers:'細い3弁の雄花と分かれた柱頭の雌花',sporeAnnual:'冬は浮葉が消え胞子で越冬する一年性の水生シダ'});
