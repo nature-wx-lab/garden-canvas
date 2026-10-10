@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.88';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.89';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -213,3 +213,5 @@ Object.assign(TRAIT_VALUES,{fullmoonNine:'丸い輪郭に7〜11の浅い裂片�
 Object.assign(TRAIT_VALUES,{wisteriaPinnate:'1本の葉軸に奇数枚の全縁の小葉が並ぶ羽状複葉',broomSmall:'細い緑枝に付く小さな単葉と下部の三出葉',hagiNarrow:'細長い三小葉',hagiRound:'丸みの強い三小葉',campylotropisSmall:'小さく丸い三小葉と白い毛のある葉裏',woodyPeaFlower:'大きい旗弁・左右の翼弁・舟形に合わさる竜骨弁'});
 
 Object.assign(TRAIT_VALUES,{peonyLobed:'二回に分かれる複葉と深く3裂する小葉',peonyEntire:'二回三出複葉・全縁の幅広い小葉',peonyLayers:'品種ごとに層数の異なる大きな花弁と多数の雄しべ',woodlandPeonyCup:'水平に開かず杯状に重なる花弁と3〜4個の雌しべ'});
+
+Object.assign(TRAIT_VALUES,{sakakiEntire:'細長い全縁の革質互生葉',ilexSerrate:'細かい鋸歯と短毛のある互生葉',marylineWavy:'波打つ革質葉・黄色い中斑と銀灰色の葉裏',myrtlePointed:'小さく先の尖る全縁の対生葉と油点',sakakiBell:'葉腋から下向きに開く白い5弁花',ilexFemale:'淡紫色の小花・中心の子房と円盤状柱頭',oleasterCalyx:'4裂する小さな萼筒（花弁なし）',myrtleFive:'5枚の白い花弁と多数の細い雄しべ'});

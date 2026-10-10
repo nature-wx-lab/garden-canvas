@@ -1,7 +1,83 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.88';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.89';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.88';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.89';
 const TAU=Math.PI*2;
+export function berryShrubLeafPoint(type,t,u){
+ const ilex=type==='dainagon',mary=type==='maryline',silky=type==='silky',sn=Math.sin(Math.PI*t),edge=ilex?1-.035*(1-(t*34%1))*Math.pow(Math.sin(Math.PI*t),.3):1;
+ const width=.5*Math.pow(sn,silky?.84:ilex?.68:mary?.65:.76)*(ilex?1.20-.38*t:1.08-.16*t)*edge;
+ return [u*width,t,(mary?.065:.037)*u*u*sn-.030*t*t+(mary?.023*Math.sin(t*23)*Math.pow(Math.abs(u),3)*sn:0)];
+}
+export function berryShrubFlowerGeometry(type){
+ if(type==='maryline'){const g=oliveFlowerGeometry(true);g.userData.berryShrubFlower={type,petals:0,calyxLobes:4};return g;}
+ const pos=[],uv=[],ix=[],rows=20,cols=10,N=5;
+ for(let k=0;k<N;k++){
+  const az=k*TAU/N,base=pos.length/3;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,sn=Math.sin(Math.PI*t),r=.13+.85*t,x=u*(type==='sakaki'?.48:type==='silky'?.65:.45)*Math.pow(sn,.5),y=type==='sakaki'?.55*t*t:type==='silky'?.16*t*t+.07*u*u*sn:.045*sn;
+   pos.push(Math.sin(az)*r+Math.cos(az)*x,y,Math.cos(az)*r-Math.sin(az)*x);uv.push(j/cols,t);
+   if(i<rows&&j<cols){const q=base+i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.berryShrubFlower={type,petals:5};return g;
+}
+function drawBerryShrub(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,sakaki=type==='sakaki',ilex=type==='dainagon',mary=type==='maryline',silky=type==='silky',h=s.height,w=s.spread,wood=[],nodes=[],tips=[],bases=[];
+ const leaders=sakaki?1:ilex?3:mary?5:4;
+ for(let k=0;k<leaders;k++){
+  const az=k*2.399963,offset=w*(sakaki?0:.045),rise=h*(sakaki?.98:.47+rand()*.16),reach=w*(sakaki?.015:.10+rand()*.08),path=t=>[Math.sin(az)*offset+Math.sin(az+t*.15)*reach*t,h*.015+rise*t,Math.cos(az)*offset+Math.cos(az+t*.15)*reach*t];
+  for(let j=1;j<=8;j++)wood.push({from:path((j-1)/8),to:path(j/8),r:Math.max(.007,h*(sakaki?.018:.010))*(1-j*.10),old:true});
+  bases.push({path,az});
+ }
+ const shoot=(root,az,rise,reach,order)=>{
+  const N=order===0?8:order===1?6:4,path=t=>[root[0]+Math.sin(az+.12*Math.sin(t*4))*reach*t,root[1]+rise*t+h*(ilex?.023:.010)*Math.sin(t*Math.PI)-h*(ilex?.018:.004)*t*t,root[2]+Math.cos(az+.12*Math.sin(t*4))*reach*t];
+  for(let j=0;j<N;j++){
+   const t=(j+1)/N,at=path(t);wood.push({from:path(j/N),to:at,r:Math.max(.6,Math.min(2,h))*(order===0?.0048:order===1?.0015:.00065)*(1-t*.63),old:order===0&&j<5});
+   if(order>0)nodes.push({at,az:az+(silky?j*Math.PI/2:mary?j*2.399963:(j%2?1:-1)*1.06),roll:rand(),size:.72+rand()*.28,order,t});
+   if(order===0&&j>=1&&j<=6)shoot(at,az+(j%2?1:-1)*(.60+rand()*.45),h*(sakaki?.018:mary?.035:.04)*(1-t*.45),w*(mary?.072:.086)*(1-t*.34),1);
+   if(order===1&&(j===2||!ilex&&j===4))shoot(at,az+(j===2?1:-1)*.98,h*.022,w*.055,2);
+  }
+  tips.push({at:path(1),az});
+ };
+ const count=Math.max(8,Math.round((sakaki?22:ilex?11:mary?24:22)*detail));
+ for(let i=0;i<count;i++){
+  const t=(i+.5)/count,base=bases[i%leaders],az=i*2.399963+rand()*.30,root=base.path(sakaki?.12+t*.77:ilex?.18+t*.72:.08+t*.80),reach=w*(sakaki?.43*(1-t*.72):mary?.29+.09*Math.sin(Math.PI*t):.25+.14*Math.sin(Math.PI*t)),tip=h*(sakaki?.23+.71*t:mary?.23+.68*t:silky?.23+.69*t:.38+.54*t);
+  shoot(root,az,tip-root[1],reach,0);
+ }
+ for(const q of wood)b.branch(q.from,q.to,q.r,q.old?a.barkColor:a.stemColor,'wood-berry-'+(q.old?'old-':'young-')+type);
+ if(sakaki)for(const n of tips){let prev=n.at;for(let k=1;k<=4;k++){const t=k/4,at=[n.at[0]+Math.sin(n.az)*.016*t,n.at[1]+.012*t-.008*t*t,n.at[2]+Math.cos(n.az)*.016*t];b.branch(prev,at,.0017*(1-t*.7),'#758447','bud-sakaki-curved');prev=at;}}
+ for(const n of nodes){
+  for(const side of silky?[-1,1]:[1]){
+   const roll=(n.roll+(side===-1?.33:0))%1;if(roll>s.leafDensity||s.leafDensity===0)continue;
+   const az=n.az+(side===-1?Math.PI:0),P=ilex?.007:sakaki?.006:.003,at=[n.at[0]+Math.sin(az)*P,n.at[1]+P*.15,n.at[2]+Math.cos(az)*P],f=flowerFrame(b,at,.92+roll*.83,az),L=a.leafLength*n.size*s.leafScale;
+   b.branch(n.at,at,.0005,a.stemColor,'petiole-berry-'+type);
+   f.add('berry-shrub-leaf-'+type,'leaf-berry-'+type+'-underside-'+a.leafUnderside.slice(1),kit.shade(rand,s.leafColor,.045),0,0,0,L*a.leafWidth/a.leafLength,L,L,0,0,(roll-.5)*.12);
+  }
+  if(n.order!==1||n.t>.88||n.roll>(ilex?.78:mary?.29:sakaki?.32:.24))continue;
+  const fruit=a.fruitMonths.includes(s.month);if(!s.bloom&&!fruit)continue;
+  if(fruit&&ilex&&s.month===12&&n.roll>.30)continue;
+  const count=ilex?1+Math.floor(n.roll*5):silky?1:n.roll<.12?2:1;
+  for(let k=0;k<count;k++){
+   const az=n.az+k*2.399963,stalk=ilex?.008:silky?.025:.010,at=[n.at[0]+Math.sin(az)*stalk*.85,n.at[1]+stalk*(ilex?.15:-.55),n.at[2]+Math.cos(az)*stalk*.85];b.branch(n.at,at,.00045,a.stemColor,'pedicel-berry-'+type);
+   if(fruit){
+    const R=a.fruitRadius*(.84+.16*n.size);b.add(kit.bud,'fruit-glossy-berry-'+type,a.fruitColor,...at,R,R*(silky?1.15:1),R,0,az,0);
+    const tip=[at[0],at[1]-R*(silky?1.08:.94),at[2]];b.add(kit.bud,'fruit-scar-berry-'+type,'#564b43',...tip,R*.22,R*.08,R*.22);
+    if(silky)for(let j=0;j<5;j++){const a2=j*TAU/5;b.add('narrow','calyx-fruit-myrtle','#6f6250',...tip,R*.24,R*.30,R*.23,2.12,a2,0);}
+    continue;
+   }
+   const R=a.flowerRadius,frame=flowerFrame(b,at,sakaki?2.75:mary?2.0:silky?.40:1.3,az),F=mary?a.flowerLength:R;
+   frame.add('berry-shrub-flower-'+type,(mary?'sepal':'petal')+'-berry-'+type,s.flowerColor,0,0,0,R,F,R);
+   const stamens=silky?48:sakaki?24:ilex?5:4;
+   for(let j=0;j<stamens;j++){
+    const a2=j*2.399963,rr=R*(ilex?.42:mary?.24:.26+.47*(j%7)/6),pt=[Math.sin(a2)*rr,F*(silky?.75+.32*(j%5)/4:sakaki?.54:ilex?.14:1.01),Math.cos(a2)*rr];
+    frame.branch([pt[0]*.26,0,pt[2]*.26],pt,R*(silky?.010:.022),silky?'#efece1':'#d8cc9e',ilex?'staminode-berry-dainagon':'filament-berry-'+type);
+    frame.add(kit.bud,'anther-berry-'+type,ilex?'#dad8c3':'#d2bd69',...pt,R*(ilex?.055:.030),R*.040,R*.045);
+   }
+   if(ilex){frame.add(kit.bud,'ovary-berry-dainagon','#b7b88a',0,R*.22,0,R*.24,R*.28,R*.24);frame.add(kit.bud,'stigma-disc-dainagon','#bfb99c',0,R*.52,0,R*.27,R*.035,R*.27);}
+   else frame.branch([0,0,0],[0,F*(sakaki?.91:mary?1.12:1.08),0],R*.020,'#bdd19c','style-berry-'+type);
+  }
+ }
+}
+
 export function peonyLeafGeometry(type){
  const tree=type==='tree',pos=[],uv=[],ix=[];
  if(tree){
@@ -5007,6 +5083,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='berryShrub'){drawBerryShrub(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='peonyShoots'){drawPeony(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='woodyPea'){drawWoodyPea(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='broadMaple'){drawBroadMaple(b,{info,s,p,detail,rand},kit);return;}
