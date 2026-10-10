@@ -10,6 +10,23 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Ruscus cladodes remain evergreen and distinguish central berries from Danae terminal racemes',()=>{
+ const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='ruscusCladodes');assert.equal(entries.length,2);
+ for(const [i,[id,info]] of entries.entries()){
+  const a=info.appearance,danae=a.shootProfile==='danae';let wood,leaves;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,9200+i,2,2);p.height=danae?.7:.25;p.spread=danae?.75:.30;const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'ruscusCladodes');assert.equal(g.userData.groundDormant,undefined);assert.ok(count('leaf-ruscus')>0);assert.equal(count('scale-leaf-ruscus'),count('leaf-ruscus'));
+   assert.equal(count('fruit-glossy-ruscus-cladode')>0,!danae);assert.equal(count('fruit-glossy-ruscus-raceme')>0,danae);assert.equal(count('raceme-ruscus')>0,danae);
+   assert.equal(count(danae?'petal-ruscus-danae':'tepal-ruscus')>0,a.flowerMonths.includes(month));if(!danae)assert.equal(count('tepal-ruscus'),count('flower-center-ruscus')*6);
+   const skeleton=g.children.filter(m=>m.userData.component==='stem-ruscus').map(m=>[...m.instanceMatrix.array]);if(!wood)wood=skeleton;else assert.deepEqual(skeleton,wood);
+   if(!leaves)leaves=count('leaf-ruscus');else assert.equal(count('leaf-ruscus'),leaves);
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ assert.equal(CATALOG['p-989b73023564'].latin,'Danae racemosa');assert.deepEqual(CATALOG['p-b5b2e6bb9aae'].height,[.25,.25]);
+});
+
 test('Hardy hibiscus loses all aboveground parts in winter and regrows with cultivar specific leaves and large flowers',()=>{
  const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='hardyHibiscusCanes');assert.equal(entries.length,3);
  for(const [i,[id,info]] of entries.entries()){

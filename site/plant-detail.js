@@ -1,6 +1,60 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.76';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.77';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function ruscusCladodePoint(type,t,u){
+ const danae=type==='danae',width=Math.pow(Math.sin(Math.PI*t),danae?.94:.67)*(danae?.93+.12*t:1.12-.28*t),tip=!danae&&t>.93?(1-t)/.07:1;
+ return [u*width*.5*tip,t,.025*u*u*Math.sin(Math.PI*t)-.03*t*t+.002*Math.cos(u*21)*Math.sin(Math.PI*t)];
+}
+export function danaeBellGeometry(){
+ const pos=[],uv=[],ix=[],rows=14,cols=36;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,az=j/cols*TAU,r=.18+.30*Math.sin(Math.PI*t*.8)+.10*Math.pow(t,5),edge=.14*Math.pow(t,8)*Math.cos(az*6);
+  pos.push(Math.sin(az)*r,t+edge,Math.cos(az)*r);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const q=i*(cols+1)+j;ix.push(q,q+1,q+cols+1,q+1,q+cols+2,q+cols+1);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
+}
+function drawRuscus(b,{info,s,detail,rand},kit){
+ const a=info.appearance,danae=a.shootProfile==='danae',h=s.height,w=s.spread,leaves=[],tips=[],stems=Math.round((danae?12:15)*detail);
+ const shoot=(root,az,rise,reach,order)=>{
+  const path=t=>[root[0]+Math.sin(az)*reach*t*t,root[1]+rise*((danae?1.9:1.18)*t-(danae?.9:.18)*t*t),root[2]+Math.cos(az)*reach*t*t],steps=8,nodes=order?6:10;
+  for(let j=1;j<=steps;j++)b.branch(path((j-1)/steps),path(j/steps),(order?.0011:.0021)*(1-.63*j/steps),a.stemColor,'stem-ruscus');
+  for(let j=1;j<=nodes;j++){
+   const t=.17+.79*j/nodes,at=path(t),angle=az+(j%2?1:-1)*(1.02+rand()*.25),roll=rand();leaves.push({at,az:angle,roll,size:.75+rand()*.30});
+   if(order===0&&j>2&&j<8&&j%2===1){const reach2=w*(danae?.17:.09),theta=angle;shoot(at,theta,h*(danae?.12:.20),reach2,1);}
+  }
+  tips.push({at:path(1),az,roll:rand()});
+ };
+ for(let i=0;i<stems;i++){
+  const az=i*2.399963,r=w*.13*Math.sqrt((i+.5)/stems),root=[Math.sin(az)*r,0,Math.cos(az)*r];shoot(root,az,h*(.55+rand()*.35),w*(danae?.30:.15),0);
+ }
+ for(const n of leaves){
+  const L=Math.min(a.leafLength,w*(danae?.16:.16))*n.size,P=danae?.007:.0017,f=flowerFrame(b,n.at,danae?1.05+n.roll*.65:.52+n.roll*.63,n.az),color=kit.shade(rand,a.leafColor,.025);
+  f.branch([0,0,0],[0,P,0],.00065,a.stemColor,'cladode-stalk-ruscus');
+  f.add('ruscus-'+a.shootProfile,'leaf-ruscus-'+a.shootProfile,color,0,P,0,L*a.leafWidth/a.leafLength,L,L);
+  f.add('ruscus-christmas','scale-leaf-ruscus','#aab18a',0,0,0,.001,.003,.003,.5,0,0);
+  if(danae)continue;
+  const origin=[0,P+L*.48,.006*L],R=a.fruitRadius,fruit=n.roll<.30,flower=!fruit&&n.roll<.39&&s.bloom;
+  if(fruit){
+   const color=n.roll<.23?a.fruitColor:n.roll<.27?'#d9953d':'#a8b865';f.branch(origin,[origin[0],origin[1],R*.60],.0005,a.stemColor,'fruit-stalk-ruscus');f.add(kit.bud,'fruit-glossy-ruscus-cladode',color,0,origin[1],R*1.45,R,R*1.04,R);f.add(kit.bud,'fruit-style-ruscus','#715f40',0,origin[1],R*2.43,R*.10,R*.10,R*.07);
+  }else if(flower){
+   const ff=flowerFrame(f,origin,Math.PI/2,0),r=a.flowerRadius;
+   for(let k=0;k<6;k++){const outer=k%2===0,az=k*TAU/6;ff.add('ruscus-christmas','tepal-ruscus',s.flowerColor,0,.0002,0,r*(outer?.80:.38),r*(outer?1:.73),r,Math.PI/2,az,0);}
+   ff.add(kit.bud,'flower-center-ruscus','#806181',0,r*.23,0,r*.25,r*.28,r*.25);
+  }
+ }
+ if(!danae)return;
+ for(const n of tips){
+  const peak=[10,11,12,1].includes(s.month),fruit=n.roll<(peak?.36:.12),flower=s.bloom&&!fruit&&n.roll<.47;if(!fruit&&!flower)continue;
+  const f=flowerFrame(b,n.at,1.23,n.az),len=.030,number=fruit?3:6;f.branch([0,0,0],[0,len,0],.00075,a.stemColor,'raceme-ruscus');
+  for(let j=0;j<number;j++){
+   const az=j*2.399963,at=[Math.sin(az)*.008,len*(.3+.6*j/number),Math.cos(az)*.008],R=a.fruitRadius;f.branch([0,at[1]-.002,0],at,.00045,a.stemColor,'pedicel-ruscus');
+   if(fruit){const col=[12,1,2].includes(s.month)?'#ce422c':[9,10,11].includes(s.month)?'#e88b31':'#acac52';f.add(kit.bud,'fruit-glossy-ruscus-raceme',col,...at,R,R,R);f.add(kit.bud,'fruit-style-ruscus','#6f633c',at[0],at[1]+R*.99,at[2],R*.09,R*.05,R*.09);}
+   else{const ff=flowerFrame(f,at,2.2,az);ff.add('danae-bell','petal-ruscus-danae',s.flowerColor,0,0,0,a.flowerRadius*2,a.flowerRadius*2,a.flowerRadius*2);}
+  }
+ }
+}
+
 export function hardyHibiscusLeafPoint(type,t,u){
  const broad=type==='broad',cycle=(t*25)%1,tooth=1+.038*(cycle<.65?cycle/.65:(1-cycle)/.35);
  const width=broad?Math.pow(Math.sin(Math.PI*t),.70)*(1.13-.28*t):.21*Math.pow(Math.sin(Math.PI*t),.72)+.75*Math.exp(-Math.pow((t-.51)/.085,2))+.48*Math.exp(-Math.pow((t-.25)/.060,2));
@@ -4218,6 +4272,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='ruscusCladodes'){drawRuscus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='hardyHibiscusCanes'){drawHardyHibiscus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='pomeShrubSprays'){drawPomeShrubs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='ardisiaShoots'){drawArdisia(b,{info,s,detail,rand},kit);return;}
