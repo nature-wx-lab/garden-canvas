@@ -1,6 +1,95 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.65';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.66';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function camelliaLeafPoint(type,t,u){
+ const tea=type==='sayama'||type==='yabukita',fold=type==='sayama',wide=type==='kamo';
+ const teeth=(Math.floor(t*36)%2?.975:1.025),profile=Math.pow(Math.sin(Math.PI*t),wide?.67:.86)*(wide?1.08-.15*t:1.02-.10*t)*teeth;
+ return [u*profile*.5,t,Math.sin(Math.PI*t)*(.024+(fold?.17:.045)*u*u)+(fold?.022:.005)*Math.sin(t*(tea?38:32))*u*u];
+}
+export function camelliaCorollaGeometry(type){
+ const pos=[],uv=[],ix=[],outer=[],petals=type==='elina'||type==='robiraki'?5:type==='sayama'||type==='yabukita'?7:6,rows=16,cols=6;
+ for(let l=0;l<petals;l++){
+  const start=pos.length/3,an=l*TAU/petals+(l%2?.045:0),cup=type==='kamo'?.72:type==='elina'?.70:type==='robiraki'?.15:.32;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,r=.10+.90*t,width=(type==='elina'?.65:.74)*Math.pow(Math.sin(Math.PI*t),.49),x=u*width,y=cup*Math.sin(t*Math.PI*.58)+.045*u*u*Math.sin(Math.PI*t)+.02*Math.sin(u*11+l)*t*t;
+   pos.push(Math.sin(an)*r+Math.cos(an)*x,y,Math.cos(an)*r-Math.sin(an)*x);uv.push(j/cols,i/rows);outer.push(l<2?1:0);
+   if(i<rows&&j<cols){const k=start+i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.setAttribute('camelliaOuter',new THREE.Float32BufferAttribute(outer,1));g.userData.camelliaFlower={type,petals,outerPinkPetals:type==='elina'?2:0};return g;
+}
+export function camelliaStamenGeometry(type,part){
+ const pos=[],uv=[],ix=[],count={elina:25,sayama:100,yabukita:100,robiraki:80,taiwan:45,kamo:110}[type],tube=type==='kamo'||type==='elina';
+ for(let k=0;k<count;k++){
+  const an=k*2.399963,edge=Math.sqrt((k+.5)/count),r=(tube?.17:.30)*edge,H=type==='elina'?1.24:type==='kamo'?.82:.65,h=H*(1-.23*edge+.05*Math.sin(k*1.9));
+  const end=[Math.sin(an)*r,h,Math.cos(an)*r];
+  if(part==='anthers'){
+   const st=pos.length/3,R=type==='elina'?.048:.025;
+   for(const v of [[R,0,0],[-R,0,0],[0,R*.75,0],[0,-R*.75,0],[0,0,R*.70],[0,0,-R*.70]]){pos.push(...end.map((n,j)=>n+v[j]));uv.push(.5,.5);}
+   for(const f of [[0,2,4],[2,1,4],[1,3,4],[3,0,4],[2,0,5],[1,2,5],[3,1,5],[0,3,5]])ix.push(...f.map(n=>n+st));
+  }else for(let plane=0;plane<2;plane++){
+   const st=pos.length/3;
+   for(let j=0;j<=4;j++)for(const sign of [-1,1]){
+    const t=j/4,q=[end[0]*(tube?.70+.3*t:t*t),h*t,end[2]*(tube?.70+.3*t:t*t)];q[plane===0?0:2]+=sign*(type==='elina'?.011:.006);pos.push(...q);uv.push(sign===1?1:0,t);
+    if(j<4&&sign===-1){const v=st+j*2;ix.push(v,v+1,v+2,v+1,v+3,v+2);}
+   }
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.camelliaStamens={type,part,count};return g;
+}
+function drawCamellia(b,{info,s,detail,rand},kit){
+ const a=info.appearance,typ=a.shootProfile,elina=typ==='elina',tea=['sayama','yabukita'].includes(typ),h=s.height,w=s.spread,wood=[],nodes=[],tips=[];
+ const leader=elina?.97:a.habit==='rounded'?.47:.72,trunk=[];
+ for(let j=0;j<=8;j++)trunk.push([Math.sin(j*.68)*w*.009,h*leader*j/8,Math.sin(j*1.12)*w*.008]);
+ for(let j=1;j<trunk.length;j++)wood.push({from:trunk[j-1],to:trunk[j],r:h*.015*(1-j*.10),old:true});
+ const shoot=(root,az,rise,reach,order)=>{
+  const n=order===0?9:order===1?7:6;let previous=root;
+  for(let j=0;j<n;j++){
+   const t=(j+1)/n,an=az+.12*Math.sin(t*4+az),droop=elina?(order===0?reach*.48:reach*.65)*Math.pow(Math.max(0,(t-.38)/.62),1.35):0;
+   const at=[root[0]+Math.sin(an)*reach*t,root[1]+rise*t+reach*(elina?.22:.05)*Math.sin(Math.PI*t)-droop,root[2]+Math.cos(an)*reach*t];
+   wood.push({from:previous,to:at,r:(order===0?.008:order===1?.0023:order===2?.0009:.00055)*Math.max(.3,Math.min(h,2))*(1-t*.65),old:order===0&&j<5});previous=at;
+   const node={at,an:an+j*2.399963,t,order,size:.78+rand()*.22,roll:rand()};if(order>0)nodes.push(node);if(j===n-1&&order>=1)tips.push(node);
+   if(order===0&&j>=2&&j<=7)shoot(at,an+(j%2?1:-1)*(.62+rand()*.54),h*(tea?.13:elina?.08:.10)*(1-t*.3),w*(elina?.18:.14)*(1-t*.35),1);
+   if(order===1&&(j===1||j===3||j===5))shoot(at,an+(j%4<2?1:-1)*1.03,h*(tea?.055:.030),w*(elina?.060:.050),2);
+   if(order===2&&(j===2||j===4)&&(!elina||w>1.1))shoot(at,an+(j===2?1:-1)*.82,h*.018,w*.025,3);
+  }
+ };
+ const count=Math.round((elina?17:18+Math.min(w*2,6))*detail);
+ for(let i=0;i<count;i++){
+  const t=(i+.5)/count,an=i*2.399963+rand()*.18,rounded=a.habit==='rounded',level=elina?.20+.72*t:rounded?.12+.32*t:.12+.40*t,root=[Math.sin(level*5.44)*w*.009,h*level,Math.sin(level*8.96)*w*.008];
+  const tip=rounded?.30+.58*((i*.6180339+.29)%1):0,reach=w*(elina?.45*(1-t*.60):rounded?.38*Math.sqrt(Math.max(.12,1-Math.pow((tip-.57)/.41,2))):.33*Math.sqrt(1-t*t*.68)),rise=elina?reach*.20:rounded?h*tip-root[1]:h*(.26+.18*t);
+  wood.push({from:trunk[Math.min(8,Math.round(level/leader*8))],to:root,r:h*.004,old:true});shoot(root,an,rise,reach,0);
+ }
+ for(const q of wood)if(q.from.some((v,i)=>v!==q.to[i]))b.branch(q.from,q.to,q.r,q.old?a.barkColor:a.stemColor,q.old?'wood-camellia-smooth':'stem-camellia');
+ for(const n of nodes){
+  const spring=s.month>=3&&s.month<=5,young=spring&&n.t>.72,L=a.leafLength*n.size*(young?.72:1),P=elina?.0033:.0055,an=n.an,at=[n.at[0]+Math.sin(an)*P,n.at[1]+P*.35,n.at[2]+Math.cos(an)*P],f=flowerFrame(b,at,(typ==='sayama'?.48:.80)+n.roll*.48,an);
+  b.branch(n.at,at,.00045,a.stemColor,'petiole-camellia');
+  f.add(a.leafShape,`leaf-camellia-${typ==='sayama'?'leathery':'glossy'}-underside-${a.leafUnderside.slice(1)}`,kit.shade(rand,young?(elina?a.springShootColor:tea?'#8baf50':'#718b50'):s.leafColor,.035),0,0,0,L*a.leafWidth/a.leafLength,L,L);
+  if(young&&elina){const q=camelliaLeafPoint(typ,.18,.6).map((v,j)=>v*L*(j===0?a.leafWidth/a.leafLength:1));f.branch(q,[q[0]+.0002,q[1],q[2]+.0004],.000035,'#b9ac94','hair-camellia-young');}
+ }
+ const before=a.budMonths.includes(s.month),show=s.bloom||before;
+ if(!show)return;
+ const flower=(node,k)=>{
+  const R=a.flowerRadius,az=node.an+1.9+k*2.0,at=[node.at[0]+Math.sin(az)*R*.38,node.at[1]+(elina?-R*.6:R*.2),node.at[2]+Math.cos(az)*R*.38],f=flowerFrame(b,at,elina?2.8:tea?1.8:1.0+node.roll*.75,az),closed=!s.bloom||node.roll<.13;
+  b.branch(node.at,at,elina?.0003:.0007,a.stemColor,'pedicel-camellia');f.add(kit.bud,'calyx-camellia','#859267',0,-R*.05,0,R*.26,R*.17,R*.26);
+  if(closed){
+   f.add(kit.bud,'bud-camellia-flower',a.flowerPalette.bud,0,R*.28,0,R*(elina?.35:.46),R*(elina?.60:.48),R*(elina?.35:.46));
+   if(typ==='kamo'&&s.bloom){f.branch([0,R*.61,0],[0,R*.97,0],R*.011,'#e6ddba','style-camellia-protruding');f.add(kit.bud,'stigma-camellia-protruding','#d7d19e',0,R*.99,0,R*.028,R*.019,R*.028);}return;
+  }
+  f.add(kit.bud,'receptacle-camellia','#e5dcc1',0,R*.02,0,R*.20,R*.04,R*.20);
+  f.add(a.flowerShape,elina?'petal-camellia-pinkoutside':'petal-camellia',s.flowerColor,0,0,0,R,R,R);
+  f.add('camellia-filaments-'+typ,'filaments-camellia','#f0e9d5',0,0,0,R,R,R);
+  f.add('camellia-anthers-'+typ,'anthers-camellia','#d7b153',0,0,0,R,R,R);
+  const style=elina?1.5:typ==='kamo'?.90:.75;f.branch([0,0,0],[0,R*style,0],R*.012,'#e6ddbb','style-camellia');
+  for(let j=0;j<3;j++){const an=j*TAU/3;f.add(kit.bud,'stigma-camellia','#d9d1ab',Math.sin(an)*R*.024,R*style,Math.cos(an)*R*.024,R*.018,R*.010,R*.018);}
+ };
+ for(const n of tea||elina?nodes:tips){
+  // Tea and Elina flowers sit in leaf axils; large camellias flower near shoot ends.
+  if((tea||elina)&&(n.order!==1||n.t>.80)||n.roll>.42)continue;
+  flower(n,0);if(elina&&n.roll>.30)flower(n,1);
+ }
+}
+
 export function oliveLeafPoint(type,t,u){
  const sharp=type==='oliveSharp',russian=type==='russianOliveLance',profile=Math.pow(Math.sin(Math.PI*t),sharp?.90:.73)*(russian?1.10-.18*t:1.04-.08*t);
  return [u*profile*.5,t,Math.sin(Math.PI*t)*(.033+.065*u*u)+.012*Math.sin(t*9)*u*t];
@@ -3420,6 +3509,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='camelliaBranches'){drawCamellia(b,{info,s,detail,rand},kit);return;}
  if(['oliveBranches','russianOliveBranches'].includes(info.appearance?.architecture)){drawOlives(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='syringaPanicles'){drawSyringa(b,{info,s,detail,rand},kit);return;}
  if(['loropetalumShoots','fothergillaBranches'].includes(info.appearance?.architecture)){drawHamamelid(b,{info,s,detail,rand},kit);return;}
