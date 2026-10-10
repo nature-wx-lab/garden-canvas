@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.4';
-import {foliageKind} from './appearance.js?v=0.9.4';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.4';
-import {drawTree} from './tree-model.js?v=0.9.4';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.4';
+import {treeProfile} from './tree-profiles.js?v=0.9.5';
+import {foliageKind} from './appearance.js?v=0.9.5';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.5';
+import {drawTree} from './tree-model.js?v=0.9.5';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.5';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.4';
+import { plantInfo, stateAt } from './model.js?v=0.9.5';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -52,6 +52,7 @@ function curvedLeaf(type){
     if(type==='leathery')width*=.9;
     if(type==='rhododendronLeaf')width*=.49*Math.pow(Math.max(.00001,Math.sin(Math.PI*t)),-.12);
     if(type==='pierisLeaf')width*=.40*Math.pow(t,.17)*(i%2?.985:1.015);
+    if(type==='blueberryLeaf')width*=.58;
     for(let j=0;j<=cols;j++){
       const u=j/cols*2-1,x=u*width+(elm?.055*Math.sin(Math.PI*t):type==='calycanthus'?.06*Math.sin(Math.PI*t)*(1-t):0);
       const cup=(type==='petal'?.18:type==='hosta'?.2:.12)*u*u*Math.sin(Math.PI*t);
@@ -64,11 +65,15 @@ function curvedLeaf(type){
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();return keep(g);
 }
-for(const type of ['leaf','rhododendronLeaf','pierisLeaf','chloranthusLeaf','narrow','lanceSerrate','ovateSerrate','broadToothed','seaKaleLeaf','crambeHeart','obovateSerrate','oakLance','wavyElliptic','wavyLance','elm','calycanthus','hosta','hostaCorrugated','hostaRuffled','petal','blade','sword','strap','wavyStrap','needle','serrated','crenate','leathery'])shapes[type]=curvedLeaf(type);
+for(const type of ['leaf','blueberryLeaf','rhododendronLeaf','pierisLeaf','chloranthusLeaf','narrow','lanceSerrate','ovateSerrate','broadToothed','seaKaleLeaf','crambeHeart','obovateSerrate','oakLance','wavyElliptic','wavyLance','elm','calycanthus','hosta','hostaCorrugated','hostaRuffled','petal','blade','sword','strap','wavyStrap','needle','serrated','crenate','leathery'])shapes[type]=curvedLeaf(type);
+{
+ const g=new THREE.SphereGeometry(1,20,14),p=g.attributes.position;
+ for(let i=0;i<p.count;i++){const y=p.getY(i);p.setY(i,y*.82-.13*Math.pow(Math.max(0,y),9));}p.needsUpdate=true;g.computeVertexNormals();g.userData.blueberryFruit=true;shapes.blueberryFruit=keep(g);
+}
 // A connected corolla, rather than five disconnected triangles, preserves the
 // fused flower tube, folds and outline as the camera moves around a flower.
-for(const type of ['rhododendronFunnel','azaleaFunnel','kalmiaCup','kalmiaBud','pierisUrn','enkianthusBell','enkianthusRound']){
- const pos=[],uv=[],idx=[],rows=22,cols=80,kalmia=type==='kalmiaCup',closed=type==='kalmiaBud',urn=type==='pierisUrn',bell=type.startsWith('enkianthus');
+for(const type of ['rhododendronFunnel','azaleaFunnel','kalmiaCup','kalmiaBud','pierisUrn','blueberryUrn','enkianthusBell','enkianthusRound']){
+ const pos=[],uv=[],idx=[],rows=22,cols=80,kalmia=type==='kalmiaCup',closed=type==='kalmiaBud',urn=type==='pierisUrn'||type==='blueberryUrn',bell=type.startsWith('enkianthus');
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
   const t=i/rows,an=j/cols*Math.PI*2,lobe=.5+.5*Math.cos(an*5),rib=.5+.5*Math.cos(an*10);
   let radius=.09+.93*Math.pow(t,1.7),y=1.25*t-.17*Math.pow(t,5)*(1-lobe);
@@ -369,6 +374,11 @@ function windShader(shader,kind){
     shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
       totalEmissiveRadiance+=diffuseColor.rgb*0.10;
     `);
+  }else if(kind==='fruit-blueberry-wax'){
+    shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+      float wax=smoothstep(-0.30,0.36,sin(vUv.x*43.0+sin(vUv.y*29.0))*cos(vUv.y*31.0)+0.3*sin(vUv.x*281.0)*cos(vUv.y*197.0));
+      diffuseColor.rgb*=0.55+0.50*wax;
+    `);
   }else if(kind.startsWith('leaf')||kind.startsWith('petal')||kind.startsWith('sepal')||kind==='grass'){
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
       float fold=abs(vUv.x-0.5)*2.0;
@@ -379,6 +389,7 @@ function windShader(shader,kind){
       diffuseColor.rgb+=diffuseColor.rgb*(midrib*0.23+veins*0.055);
     `);
     if(kind.startsWith('leaf-hosta'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*70.0)');
+    if(kind==='leaf-blueberry-wax')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.58,0.67,0.67),0.13+0.08*sin(vUv.x*199.0)*cos(vUv.y*173.0));\n#include <emissivemap_fragment>`);
     const surface=kind.replace(/-outside-[0-9a-f]{6}$/,'').replace(/-cranesbill-veins$/,'').replace(/-guide$/,'').replace('woolly-','').replace('glossy-','').replace('palm-',''),hex=surface.match(/-([0-9a-f]{6})$/)?.[1];
     const pattern=surface.replace(/^(leaf|petal|sepal)-/,'').replace(/^hosta-?/,'').replace(/-(?:gold|[0-9a-f]{6})$/,'');
     const c=hex?new THREE.Color('#'+hex):null;
@@ -530,7 +541,7 @@ export function plantModel(p,view,detail=1){
   const dormant=s.dormant,clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
   if(form==='unmodeled'){
     const frame=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({color:'#aeb5a3',wireframe:true,transparent:true,opacity:.42}));frame.position.y=h/2;g.add(frame);g.userData.unmodeled=true;
-  }else if(['rhododendronTruss','fineAzalea','terminalPieris','kalmiaCluster','tieredEnkianthus','archingLeucothoe','hydrangeaVine','porcelainVine','silverBush','berzelia','wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory','blueEyeShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
+  }else if(['blueberryCanes','rhododendronTruss','fineAzalea','terminalPieris','kalmiaCluster','tieredEnkianthus','archingLeucothoe','hydrangeaVine','porcelainVine','silverBush','berzelia','wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory','blueEyeShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(profile&&form!=='maple'){g.userData.architecture=drawTree(b,{profile,info,p,s,detail},{bud,flower:petalFlower,detailedFlower,shade:palette});
   }else if((form==='botanical'||['fivepetal','airy','spike','bell','globe'].includes(form))&&info.appearance?.leafShape){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(EXTENDED_FORMS.has(form)){drawBotanical(b,{info,s,p,detail,rand},{bud,cone,flower:petalFlower,detailedFlower,shade:palette,foliageKind});

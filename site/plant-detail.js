@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.4';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.5';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -40,7 +40,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   }
   f.branch([0,0,0],[r*.05,r*.50,r*.1],r*.016,'#b6bc86','style');return;
  }
- if(shape==='pierisUrn'||shape==='enkianthusBell'){
+ if(shape==='pierisUrn'||shape==='blueberryUrn'||shape==='enkianthusBell'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),bell=shape==='enkianthusBell',willow=palette.willow;
   f.add(willow?'enkianthusRound':shape,bell&&!willow?'petal-enkianthus-veins':'petal',color,0,0,0,r,r,r);
   for(let k=0;k<5;k++)f.add('narrow','sepal','#94a073',0,0,0,r*.25,r*.48,r,.40,k*TAU/5,0);
@@ -642,6 +642,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
  if(a.architecture==='giantCrambe'||a.architecture==='seaKale'){drawCrambes(b,{info,s,detail,rand},kit);return;}
  if(['nigella','yellowNigella','larkspur'].includes(a.architecture)){drawFineAnnuals(b,{info,s,detail,rand},kit);return;}
  if(['blueButterfly','bridalVeil','roseGlory'].includes(a.architecture)){drawGlorybowers(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='blueberryCanes'){drawBlueberries(b,{info,s,detail,rand},kit);return;}
  if(['rhododendronTruss','fineAzalea','terminalPieris','kalmiaCluster','tieredEnkianthus','archingLeucothoe'].includes(a.architecture)){drawEricaceousShrubs(b,{info,s,detail,rand},kit);return;}
  if(['wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush'].includes(a.architecture)){drawSmallShrubs(b,{info,s,detail,rand},kit);return;}
  if(['woodPoppy','anemonopsis'].includes(a.architecture)){drawWoodlandFlowers(b,{info,s,detail,rand},kit);return;}
@@ -1269,6 +1270,53 @@ function drawGlorybowers(b,{info,s,detail,rand},kit){
  }
 }
 
+function drawBlueberries(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,small=a.leafLength<.02,column=a.habit==='columnar',wood=a.barkColor||'#918a79',young=a.stemColor||'#99946e',size=Math.min(a.leafLength,h*.20,w*.16),leaves=[],clusters=[];
+ const mix=(p,q,t)=>p.map((v,i)=>v+(q[i]-v)*t),segment=(p,q,r)=>b.branch(p,q,r,wood,a.barkPattern?'wood-'+a.barkPattern:'wood');
+ // Persistent canes and their lateral fruiting twigs are built independently of season.
+ const canes=small?16:7;
+ for(let i=0;i<canes;i++){
+  const an=i*2.399+rand()*.35,radial=Math.sqrt((i+.5)/canes),reach=w*(column?.13:.15+.18*radial)*(.8+rand()*.20),top=h*(column?.68+rand()*.21:.40+.48*Math.sqrt(1-radial*radial)),base=[Math.sin(an)*w*.025,0,Math.cos(an)*w*.025];let prev=base;
+  for(let j=1;j<=8;j++){
+   const t=j/8,node=[Math.sin(an)*reach*t,top*t,Math.cos(an)*reach*t];segment(prev,node,h*.009*(1-t*.83));prev=node;
+   if(j<2)continue;
+   for(let side=0;side<(small?4:3);side++){
+    const yaw=an+j*2.399+side*1.9,len=w*(column?.10:small?.14:.17)*(.7+rand()*.4),tip=[node[0]+Math.sin(yaw)*len,node[1]+h*(column?.15:small?.08:.075),node[2]+Math.cos(yaw)*len];let old=node;
+    const nodes=small?12:10;
+    for(let k=1;k<=nodes;k++){
+     const tt=k/nodes,at=mix(node,tip,tt);at[1]+=Math.sin(tt*Math.PI)*h*.015;segment(old,at,h*.0015*(1-tt*.7));old=at;
+     leaves.push({at,yaw:yaw+(k%2?1:-1)*1.1+rand()*.3,size:size*(.70+rand()*.3),chance:rand(),shade:rand(),young:k>7,pitch:.65+rand()*.65});
+     if(k%3===0){
+      const da=yaw+(k%2?1:-1)*1.05,end=[at[0]+Math.sin(da)*len*.50,at[1]+h*.045,at[2]+Math.cos(da)*len*.50];segment(at,end,h*.0006);
+      for(let q=1;q<=6;q++)leaves.push({at:mix(at,end,q/6),yaw:da+(q%2?1:-1)*1.2,size:size*(.70+rand()*.3),chance:rand(),shade:rand(),young:q===6,pitch:.65+rand()*.65});
+     }
+    }
+    clusters.push({at:mix(node,tip,.88),yaw,chance:rand(),count:small?3:5+Math.floor(rand()*4),phase:rand()});
+   }
+  }
+ }
+ for(const l of leaves){
+  if(l.chance>s.leafDensity)continue;
+  const at=[l.at[0]+Math.sin(l.yaw)*size*.10,l.at[1]+size*.035,l.at[2]+Math.cos(l.yaw)*size*.10],color=l.young&&s.springFlush?a.springShootColor:s.leafColor;
+  b.branch(l.at,at,size*.013,young,'petiole');b.add('blueberryLeaf',small?'leaf-blueberry-wax':foliageKind(info),kit.shade(()=>l.shade,color,.055),...at,l.size,l.size,l.size,l.pitch,l.yaw,0);
+ }
+ if(!s.bloom&&!s.fruitStage)return;
+ for(const c of clusters){
+  if(c.chance>(small?.38:.6))continue;
+  const radius=a.flowerRadius,fruitR=a.fruitRadius,len=small?.018:.042;
+  for(let j=0;j<c.count;j++){
+   const an=c.yaw+j*2.399,t=(j+.5)/c.count,from=[c.at[0]+Math.sin(c.yaw)*len*t*.45,c.at[1]-len*t*.25,c.at[2]+Math.cos(c.yaw)*len*t*.45],at=[from[0]+Math.sin(an)*len*.4,from[1]-len*(.35+t*.32),from[2]+Math.cos(an)*len*.4];
+   b.branch(c.at,from,.00055,young,'flowerStem');b.branch(from,at,.00035,young,'pedicel');
+   if(s.bloom){detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:radius*(.90+.10*Math.sin(j)**2),shape:'blueberryUrn',color:info.flower,tilt:Math.PI-.12,yaw:an},{...kit,rand});continue;}
+   // Individual berries ripen unevenly within one cluster; the five calyx lobes remain.
+   const mature=s.fruitStage==='ripe'&&((j+c.phase*5)%5)>1.1,r=fruitR*(mature?1:.74),color=mature?a.fruitColor:j%3===0?'#b69b9e':'#b8c0a0',frame=flowerFrame(b,at,Math.PI-.35,an);
+   frame.add('blueberryFruit',mature?'fruit-blueberry-wax':'fruit',color,0,r*.65,0,r,r,r);
+   frame.add(kit.bud,'fruitCalyx',mature?'#41434f':'#907c70',0,r*1.42,0,r*.34,r*.075,r*.34);
+   for(let k=0;k<5;k++)frame.add('narrow','fruitCalyx',mature?'#57606c':'#97a580',Math.sin(k*TAU/5)*r*.29,r*1.44,Math.cos(k*TAU/5)*r*.29,r*.52,r*.56,r*.56,.72,k*TAU/5,0);
+  }
+ }
+}
+
 function drawEricaceousShrubs(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,arch=a.architecture,az=arch==='fineAzalea',pieris=arch==='terminalPieris',kalmia=arch==='kalmiaCluster',enk=arch==='tieredEnkianthus',leuco=arch==='archingLeucothoe',column=a.habit==='columnar';
  const wood=a.barkColor||'#8a7564',young=a.stemColor||wood,woodKind=a.barkPattern?'wood-'+a.barkPattern:'wood',leafSize=Math.min(a.leafLength||.08,h*.22,w*.23),leaves=[],ends=[],axils=[];
@@ -1320,8 +1368,8 @@ function drawEricaceousShrubs(b,{info,s,detail,rand},kit){
  }
  const leafKind=foliageKind(info);
  for(const l of leaves){
-  if(l.chance>(s.leafDensity??1))continue;
-  const length=l.size*(s.leafScale??1),color=l.young&&s.springFlush&&a.springShootColor?a.springShootColor:s.leafColor,at=[l.at[0]+Math.sin(l.yaw)*length*.11,l.at[1]+length*.025,l.at[2]+Math.cos(l.yaw)*length*.11];
+  if(s.retainedSummerLeaves?!l.young:l.chance>(s.leafDensity??1))continue;
+  const length=l.size*(s.retainedSummerLeaves?a.winterLeafLength/a.leafLength:s.leafScale??1),color=l.young&&s.springFlush&&a.springShootColor?a.springShootColor:s.leafColor,at=[l.at[0]+Math.sin(l.yaw)*length*.11,l.at[1]+length*.025,l.at[2]+Math.cos(l.yaw)*length*.11];
   b.branch(l.at,at,Math.max(.00012,length*.013),young,'petiole');b.add(a.leafShape,leafKind,kit.shade(()=>l.shade,color,.065),...at,length,length,length,l.pitch,l.yaw,l.roll);
  }
  function raceme(at,yaw,chance){
