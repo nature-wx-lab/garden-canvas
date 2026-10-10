@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt } from './model.js?v=0.9.105';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.105';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt } from './model.js?v=0.9.106';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.106';
 
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
 function mat(color){if(!sceneMaterials.has(color))sceneMaterials.set(color,new THREE.MeshStandardMaterial({color,roughness:.92}));return sceneMaterials.get(color);}
@@ -27,8 +27,19 @@ const shadowSize=64,shadowData=new Uint8Array(shadowSize*shadowSize*4);
 for(let y=0;y<shadowSize;y++)for(let x=0;x<shadowSize;x++){const i=(y*shadowSize+x)*4,r=Math.hypot(x/63*2-1,y/63*2-1);shadowData[i]=33;shadowData[i+1]=39;shadowData[i+2]=20;shadowData[i+3]=Math.max(0,Math.round((1-Math.min(1,r))**2*90));}
 const contactTexture=new THREE.DataTexture(shadowData,shadowSize,shadowSize,THREE.RGBAFormat);contactTexture.needsUpdate=true;contactTexture.magFilter=THREE.LinearFilter;
 const contactMaterial=new THREE.MeshBasicMaterial({map:contactTexture,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1});sharedMaterials.add(contactMaterial);
+const pondShadow=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking});sharedMaterials.add(pondShadow);
 const contactGeometry=new THREE.PlaneGeometry(1,1);sharedGeometry.add(contactGeometry);
 
+// Use the same last-zone-wins rule as planting. Fragment clipping also handles overlapping ponds.
+export function pondMaskCode(plan){
+ const num=x=>'('+Number(x).toFixed(5)+')',lines=['float gardenPondDepth=0.0;float gardenZoneOwner=-1.0;'];
+ for(const [i,zone] of plan.zones.entries()){
+  const pts=zone.points.map(([x,z])=>[x-plan.width/2,z-plan.depth/2]);lines.push('{bool pondInside=false;');
+  for(let j=0;j<pts.length;j++){const a=pts[j],b=pts[(j+1)%pts.length];if(Math.abs(a[1]-b[1])<1e-10)continue;lines.push(`if(((pondXZ.y>${num(a[1])})!=(pondXZ.y>${num(b[1])}))&&pondXZ.x<(${num(b[0]-a[0])}*(pondXZ.y-${num(a[1])})/${num(b[1]-a[1])}+${num(a[0])}))pondInside=!pondInside;`);}
+  lines.push(`if(pondInside){gardenPondDepth=${num(zone.kind==='water'?(zone.depth??0):0)};gardenZoneOwner=${num(i)};}}`);
+ }
+ return lines.join('\n');
+}
 export function createScene(container,onPick){
   const scene=new THREE.Scene();scene.background=new THREE.Color('#cbd2c6');scene.fog=new THREE.Fog('#cbd2c6',100,600);
   const camera=new THREE.PerspectiveCamera(40,container.clientWidth/container.clientHeight,.01,650);
@@ -42,6 +53,7 @@ export function createScene(container,onPick){
   // Shader directives need their own lines.
   sky.material.fragmentShader=sky.material.fragmentShader.replace(';#include',';\n#include');scene.add(sky);
   const backdrop=new THREE.Mesh(new THREE.PlaneGeometry(180,180),new THREE.MeshStandardMaterial({color:'#bbc0a8',roughness:1}));backdrop.rotation.x=-Math.PI/2;backdrop.position.y=-.19;backdrop.receiveShadow=true;scene.add(backdrop);
+  let pondClips=[];
   let dirty=true,root=null,plants=null,draft=null,plan=null,view=null,selection=null,visible=true,windLevel=1,frameCount=0,lastDraw=0,lastTick=0,elapsed=0;
   const textureStatus=document.createElement('div');textureStatus.className='texture-status';textureStatus.textContent='芝と土の質感を読み込み中…';textureStatus.setAttribute('role','status');container.append(textureStatus);
   let texturesLoaded=0,textureFailed=false;container.dataset.textures='loading';
@@ -58,9 +70,15 @@ export function createScene(container,onPick){
   const visibilityObserver=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;dirty=true;lastTick=0;},{threshold:0});visibilityObserver.observe(container);
   document.addEventListener('visibilitychange',()=>{lastTick=0;dirty=true;});
   reduced.addEventListener('change',e=>{if(e.matches){setWind(0);container.dispatchEvent(new CustomEvent('wind-reduced'));}});
-  controls.addEventListener('change',()=>{dirty=true;});
+  controls.addEventListener('change',()=>{camera.position.y=Math.max(.1,camera.position.y);dirty=true;});
   function dispose(group){if(!group)return;group.traverse(o=>{if(o.geometry&&!sharedGeometry.has(o.geometry))o.geometry.dispose();if(o.isInstancedMesh)o.dispose();if(o.material&&!sharedMaterials.has(o.material)&&!Array.from(sceneMaterials.values()).includes(o.material))o.material.dispose();});scene.remove(group);}
   function line(points,color,group=root,opacity=1){const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color,transparent:opacity<1,opacity}));group.add(l);return l;}
+  function pondClip(base,mode='ground',owner=-1){
+    if(!plan.zones.some(z=>z.kind==='water'&&z.depth>0))return base;
+    const m=base.clone(),code=pondMaskCode(plan),condition=mode==='ground'?'pondState.x>.001&&gardenPondWorld.y>-pondState.x+.002':mode==='wall'?'abs(pondSide.x-pondOther.x)<.001||gardenPondWorld.y>-min(pondSide.x,pondOther.x)+.002||gardenPondWorld.y<-max(pondSide.x,pondOther.x)-.002':`pondState.y!=${Number(owner).toFixed(1)}`;
+    m.onBeforeCompile=shader=>{shader.vertexShader='varying vec3 gardenPondWorld;varying vec2 gardenPondEdge;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ngardenPondWorld=(modelMatrix*vec4(position,1.0)).xyz;gardenPondEdge=normal.xz;');shader.fragmentShader=`varying vec3 gardenPondWorld;varying vec2 gardenPondEdge;vec2 gardenPondAt(vec2 pondXZ){${code}return vec2(gardenPondDepth,gardenZoneOwner); }\n`+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>\nvec2 pondState=gardenPondAt(gardenPondWorld.xz);${mode==='wall'?'vec2 pondSide=gardenPondAt(gardenPondWorld.xz+normalize(gardenPondEdge)*.0002);vec2 pondOther=gardenPondAt(gardenPondWorld.xz-normalize(gardenPondEdge)*.0002);':''}if(${condition})discard;`);};
+    m.customProgramCacheKey=()=>mode+owner+code;pondClips.push(m);return m;
+  }
   function polygon(points,y,material){const shape=new THREE.Shape(points.map(([x,z])=>new THREE.Vector2(x-plan.width/2,-z+plan.depth/2)));const m=new THREE.Mesh(new THREE.ShapeGeometry(shape),material);m.rotation.x=-Math.PI/2;m.position.y=y;m.receiveShadow=true;root.add(m);return shape;}
   function circle(x,z,r,color,y=.04){line(Array.from({length:65},(_,i)=>{const a=i*Math.PI/32;return new THREE.Vector3(x-plan.width/2+Math.cos(a)*r,y,z-plan.depth/2+Math.sin(a)*r);}),color);}
   function solid(color,x,y,z,sx,sy,sz){const m=new THREE.Mesh(box,mat(color));m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;root.add(m);return m;}
@@ -81,9 +99,16 @@ export function createScene(container,onPick){
     if(matrices.length){const chips=new THREE.InstancedMesh(pebbleGeometry,mat('#ffffff'),matrices.length);matrices.forEach((m,i)=>{chips.setMatrixAt(i,m);chips.setColorAt(i,colors[i]);});chips.receiveShadow=true;mulch.add(chips);root.add(mulch);}else pebbleGeometry.dispose();
   }
   function render(next,nextView,id){
-    plan=next;view=nextView;selection=id;dispose(root);root=new THREE.Group();plants=new THREE.Group();root.add(plants);scene.add(root);
-    const shape=polygon(plan.outline,0,turf);const earth=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false}),mat('#807357'));earth.rotation.x=-Math.PI/2;earth.position.y=-.186;earth.castShadow=true;earth.receiveShadow=true;root.add(earth);
-    for(const [i,z] of plan.zones.entries()){polygon(z.points,.006+i*.0002,z.kind==='water'?water:soil);line([...z.points,z.points[0]].map(([x,z])=>new THREE.Vector3(x-plan.width/2,.012,z-plan.depth/2)),z.kind==='water'?'#6c8981':'#756d51');}
+    plan=next;view=nextView;selection=id;dispose(root);for(const material of pondClips)material.dispose();pondClips=[];root=new THREE.Group();plants=new THREE.Group();root.add(plants);scene.add(root);
+    backdrop.material=pondClip(mat('#bbc0a8'));const shape=polygon(plan.outline,0,pondClip(turf));const earth=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false}),pondClip(mat('#807357')));earth.customDepthMaterial=pondClip(pondShadow);earth.rotation.x=-Math.PI/2;earth.position.y=-.186;earth.castShadow=true;earth.receiveShadow=true;root.add(earth);
+    for(const [i,z] of plan.zones.entries()){
+      let surface=z.kind==='water'?water:soil;
+      if(z.kind==='water'&&z.depth>0){surface=water.clone();surface.transparent=true;surface.opacity=.20;surface.depthWrite=false;surface.side=THREE.DoubleSide;pondClips.push(surface);polygon(z.points,-z.depth,pondClip(soil,'owner',i));}
+      if(plan.zones.some(zone=>zone.kind==='water'&&zone.depth>0)){const wallDepth=Math.max(...plan.zones.map(zone=>zone.kind==='water'?(zone.depth??0):0));const positions=[];for(let j=0;j<z.points.length;j++){const [ax,az]=z.points[j],[bx,bz]=z.points[(j+1)%z.points.length],a=[ax-plan.width/2,0,az-plan.depth/2],b=[bx-plan.width/2,0,bz-plan.depth/2],c=[b[0],-wallDepth,b[2]],d=[a[0],-wallDepth,a[2]];positions.push(...a,...b,...c,...a,...c,...d);}
+       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();const wallMaterial=pondClip(mat('#81765b'),'wall',i);wallMaterial.side=THREE.DoubleSide;const walls=new THREE.Mesh(geometry,wallMaterial);walls.receiveShadow=true;root.add(walls);
+      }
+      polygon(z.points,.006+i*.0002,pondClip(surface,'owner',i));line([...z.points,z.points[0]].map(([x,z])=>new THREE.Vector3(x-plan.width/2,.012,z-plan.depth/2)),z.kind==='water'?'#6c8981':'#756d51');
+    }
     groundDetail();
     if(view.footprints){const verts=[];for(let x=0;x<=plan.width;x++)for(let z=0;z<plan.depth;z+=.25)if(inside(x,z,plan.outline)&&inside(x,z+.25,plan.outline))verts.push(new THREE.Vector3(x-plan.width/2,.014,z-plan.depth/2),new THREE.Vector3(x-plan.width/2,.014,z+.25-plan.depth/2));for(let z=0;z<=plan.depth;z++)for(let x=0;x<plan.width;x+=.25)if(inside(x,z,plan.outline)&&inside(x+.25,z,plan.outline))verts.push(new THREE.Vector3(x-plan.width/2,.014,z-plan.depth/2),new THREE.Vector3(x+.25-plan.width/2,.014,z-plan.depth/2));root.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(verts),new THREE.LineBasicMaterial({color:'#f2efcd',transparent:true,opacity:.48})));}
     for(const o of plan.obstacles){const cx=o.x+o.width/2-plan.width/2,cz=o.z+o.depth/2-plan.depth/2;
@@ -92,7 +117,7 @@ export function createScene(container,onPick){
       else{solid('#827660',cx,o.height/2,cz,o.width,o.height,o.depth);const count=Math.min(80,Math.ceil(o.width/.16));for(let j=0;j<count;j++)solid('#a0947b',o.x+(j+.5)*o.width/count-plan.width/2,o.height/2,cz,o.width/count*.87,o.height,o.depth+.025);}
     }
     const detail=Math.min(1,Math.sqrt(18/Math.max(1,plan.plants.length)));
-    for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;const g=plantModel(p,view,detail);g.position.set(p.x-plan.width/2,.012,p.z-plan.depth/2);plants.add(g);
+    for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;const depth=pondDepthAt(plan,p.x,p.z),g=plantModel(p,{...view,waterDepth:depth},detail);g.position.set(p.x-plan.width/2,plantBaseAt(plan,p),p.z-plan.depth/2);plants.add(g);
       const contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.rotation.x=-Math.PI/2;contact.position.set(g.position.x,.012,g.position.z);contact.scale.set(s.spread*.95,s.spread*.95,1);if(zoneAt(plan,p.x,p.z)?.kind!=='water')root.add(contact);
       if(view.footprints)circle(p.x,p.z,s.spread/2,'#9bb9b1');if(p.id===id){circle(p.x,p.z,s.spread/2+.06,'#d2b05f',.018);if(p.management){circle(p.x,p.z,p.management.spread/2,'#7bacad',p.management.height);for(const a of [0,Math.PI]){const x=p.x-plan.width/2+Math.cos(a)*p.management.spread/2,z=p.z-plan.depth/2;line([new THREE.Vector3(x,.04,z),new THREE.Vector3(x,p.management.height,z)],'#7bacad');}}}
     }
@@ -103,7 +128,7 @@ export function createScene(container,onPick){
   function setLight(value){const evening=value==='evening';sun.position.set(...(evening?[-11,6,5]:[-7,12,8]));sun.color.set(evening?'#ffd7a0':'#fff0d2');sun.intensity=evening?2.3:2.8;hemisphere.intensity=evening?1.3:1.7;sky.material.uniforms.top.value.set(evening?'#bac3ce':'#adc5d0');sky.material.uniforms.bottom.value.set(evening?'#e7cdb0':'#e3e0ce');dirty=true;}
   function setView(type){
     if(!plan)return;
-    if(type==='focus'&&selection){const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view);controls.target.set(p.x-plan.width/2,s.height*.52,p.z-plan.depth/2);const d=Math.max(.16,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);camera.position.copy(controls.target).add(new THREE.Vector3(d,d*.48,d));}
+    if(type==='focus'&&selection){const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view);controls.target.set(p.x-plan.width/2,plantBaseAt(plan,p)+Math.min(s.height,pondDepthAt(plan,p.x,p.z)||s.height)*.52,p.z-plan.depth/2);const d=Math.max(.16,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);camera.position.copy(controls.target).add(new THREE.Vector3(d,d*.48,d));}
     else{
       const bounds=new THREE.Box3(new THREE.Vector3(-plan.width/2,0,-plan.depth/2),new THREE.Vector3(plan.width/2,.1,plan.depth/2));
       for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;for(const sign of [-1,1])bounds.expandByPoint(new THREE.Vector3(p.x-plan.width/2+sign*s.spread/2,s.height,p.z-plan.depth/2+sign*s.spread/2));}
@@ -115,7 +140,7 @@ export function createScene(container,onPick){
       for(const point of fitPoints){const delta=point.sub(controls.target);distance=Math.max(distance,delta.dot(direction)+1.13*Math.max(Math.abs(delta.dot(right))/(tan*camera.aspect),Math.abs(delta.dot(up))/tan));}
       camera.position.copy(controls.target).addScaledVector(direction,distance);if(type==='eye')camera.position.y=1.6;
     }
-    camera.lookAt(controls.target);controls.update();dirty=true;
+    camera.position.y=Math.max(.1,camera.position.y);camera.lookAt(controls.target);controls.update();dirty=true;
   }
   new ResizeObserver(()=>{const aspect=container.clientWidth/container.clientHeight,ratio=Math.max(1,1.6/aspect)/Math.max(1,1.6/camera.aspect);camera.position.sub(controls.target).multiplyScalar(ratio).add(controls.target);renderer.setSize(container.clientWidth,container.clientHeight,false);camera.aspect=aspect;camera.updateProjectionMatrix();dirty=true;}).observe(container);
   const ray=new THREE.Raycaster(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0),pointers=new Set();let start=null;

@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.105';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.106';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -247,3 +247,5 @@ Object.assign(TRAIT_VALUES,{poppyOriental:'毛があり深く羽状に裂けた�
 Object.assign(TRAIT_VALUES,{'namedTreeLeaf-redRobin':'厚く光沢と鋸歯のある楕円形の葉','namedTreeLeaf-genpei':'細長い鋸歯葉と葉柄の蜜腺','namedTreeLeaf-natsumatsuri':'短い葉柄と全縁の小さい楕円形の葉','namedTreeLeaf-ena':'不規則な白覆輪のある心形の葉','namedTreeLeaf-hakuro':'対生する細長い斑入りの葉','namedTreeLeaf-asahiyama':'鋸歯と尖った先端を持つ卵形の葉','namedTreeLeaf-osuzu':'対生し表面の粗い全縁の長い葉','namedTreeLeaf-annabelle':'大きい鋸歯と心形の基部を持つ対生葉',crepe:'細い基部と縮れた白覆輪の6枚の花弁',waxyCup:'黄色い17〜19枚の花被が半開するロウバイの花'});
 
 Object.assign(TRAIT_VALUES,{bipinnateFern:'広い三角形の二回羽状葉',ostrichFrond:'基部と先端が細くなる羽根状の葉',irisSword:'扇状に並ぶ剣状葉',coptisFiveLeaflets:'5小葉に分かれる常緑の葉',gunneraPalmate:'大きく掌状に裂ける葉',phylaSpoon:'葉先側に鋸歯のある対生葉',cottonHairy:'銀色の毛に覆われた対生葉',asperulaWhorl:'葉と托葉が輪生する細葉',fringedIris:'黄の隆起と紫斑がある3枚の外花被・3枚の内花被',coptisSepals:'白い5萼片と黄色い小さな花弁',gunneraPanicle:'微小花が集まる円錐花序',phylaHead:'小さい筒状花が密集する花穂',cottonNotched:'先が浅く2裂する5枚の白い花弁',asperulaTubes:'長い花筒と4裂する小さな花冠'});
+
+Object.assign(TRAIT_VALUES,{cabombaFan:'対生する扇状の細裂葉',ceratophyllumFork:'輪生する二又に分かれた葉',egeriaWhorl:'細かな鋸歯と中脈のある輪生葉',ovalisAlternate:'互生する卵形葉',palustrisOpposite:'対生する赤い楕円形葉',rotalaSubmerged:'水中で細長くなる対生葉',glossoSpoon:'匍匐茎に対生するへら形葉',hygrophilaOpposite:'対生する長楕円形の葉',waterTurion:'低温期は短く密な冬芽',submergedPersistent:'保護された水中で葉を保つ参考条件',cabombaPerianth:'白い3萼片と3花弁・黄色い蜜腺',egeriaPetals:'白い3花弁と黄色い雄しべ',ludwigiaApetalous:'花弁のない4萼片の小花',glossoLips:'上下の唇に分かれる5裂の小花'});

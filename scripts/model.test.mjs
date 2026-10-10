@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {emptyDocument,sampleDocument,validateDocument,makePlant,clone,outlineFor,validOutline,contained,canPlant,stateAt,replacePlant,editSize,budget,calendar,taskEvents,observations} from '../site/model.js';
+import {emptyDocument,sampleDocument,validateDocument,makePlant,clone,outlineFor,validOutline,contained,canPlant,stateAt,replacePlant,editSize,budget,calendar,taskEvents,observations,pondDepthAt,plantBaseAt} from '../site/model.js';
 const view=(year,month,reference=false)=>({year,month,reference,footprints:false,camera:null});
 const fixture=()=>{const d=emptyDocument();d.plans.A.plants=[makePlant('maple',1,2,2)];return d;};
 const task=(type,month,repeat='annual',min=10,max=20,count=1)=>({id:1,type,month,repeat,min,max,count});
 test('released catalogue revisions preserve saved garden contents when models are enriched',()=>{
  const original=fixture();original.plans.A.plants.push(makePlant('p-281a043a4b8a',2,5,4));
- for(const revision of ['2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.53','2026-10-10.54','2026-10-10.55','2026-10-10.56','2026-10-10.57','2026-10-10.58',...Array.from({length:42},(_,i)=>`2026-10-11.${i+1}`)]){
+ for(const revision of ['2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.53','2026-10-10.54','2026-10-10.55','2026-10-10.56','2026-10-10.57','2026-10-10.58',...Array.from({length:43},(_,i)=>`2026-10-11.${i+1}`)]){
   const saved={...clone(original),catalogVersion:revision};assert.deepEqual(validateDocument(saved),original);
  }
 });
@@ -79,4 +79,21 @@ test('water zones preserve old soil plans and strictly validate new surface kind
  assert.deepEqual(validateDocument(JSON.parse(JSON.stringify(d))),d);
  for(const kind of ['pond','__proto__',null,{},1]){const bad=clone(d);bad.plans.A.zones[0].kind=kind;assert.throws(()=>validateDocument(bad));}
  const bad=clone(d);bad.plans.A.zones[0].depth=3;assert.throws(()=>validateDocument(bad));
+});
+
+import {pondMaskCode} from '../site/scene.js';
+test('submerged model bases follow pond depth and ordinary plants stay at surface',()=>{
+ const doc=emptyDocument(8,6),p=makePlant('p-790697efed42',12101,2,2);doc.plans.A.zones=[{kind:'water',depth:.4,points:[[1,1],[4,1],[4,4],[1,4]]}];
+ assert.equal(plantBaseAt(doc.plans.A,p),-.388);assert.equal(stateAt(p,{...doc.view,waterDepth:.4}).waterDepth,.4);
+ p.x=6;assert.equal(plantBaseAt(doc.plans.A,p),.012);
+});
+
+test('pond depth preserves flat legacy plans and overlapping zones use the last zone',()=>{
+ const d=emptyDocument(),p=d.plans.A,pts=[[1,1],[5,1],[5,4],[1,4]];p.zones=[{points:pts,kind:'water',depth:.5},{points:[[3,2],[6,2],[6,5],[3,5]],kind:'water',depth:.3},{points:[[1.5,1.5],[2.5,1.5],[2.5,2.5],[1.5,2.5]],kind:'soil'}];
+ assert.deepEqual(validateDocument(JSON.parse(JSON.stringify(d))),d);assert.equal(pondDepthAt(p,1.2,1.2),.5);assert.equal(pondDepthAt(p,4,3),.3);assert.equal(pondDepthAt(p,2,2),0);assert.equal(pondDepthAt(p,7,5),0);
+ assert.equal(plantBaseAt(p,makePlant('maple',3,4,3)),.012);
+ for(const depth of [0,.01,.3,2]){const good=clone(d);good.plans.A.zones[0].depth=depth;assert.doesNotThrow(()=>validateDocument(good));}
+ for(const depth of [-.1,2.01,NaN,Infinity,'0.3',null]){const bad=clone(d);bad.plans.A.zones[0].depth=depth;assert.throws(()=>validateDocument(bad));}
+ const bad=clone(d);bad.plans.A.zones[2].depth=.2;assert.throws(()=>validateDocument(bad));delete p.zones[0].depth;assert.equal(pondDepthAt(p,1.2,1.2),0);assert.doesNotThrow(()=>validateDocument(d));
+ const mask=pondMaskCode(p);assert.ok(!mask.includes('--'));assert.ok(!mask.includes('/(0.00000)'));assert.ok(mask.includes('gardenPondDepth=(0.30000)'));assert.ok(mask.includes('gardenZoneOwner=(2.00000)'));
 });
