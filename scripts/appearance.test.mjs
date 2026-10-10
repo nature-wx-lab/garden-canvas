@@ -10,6 +10,22 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('spring racemes retain post-flowering foliage and rest in summer without winter flowers',()=>{
+ const ids=['p-0ee7dee3eb63','p-8b533b243e51','p-5f4e8f2b98cd','p-a1cc3b916321','p-22edb96199c8','p-89a52aa63fc6','p-292e2b8d70b9','p-78167af46f86','p-de59451c1ae6','p-21250dff15b3','p-1b6da361575a','p-718a3437316d','p-e19de18723c1'];
+ for(const id of ids){
+  const p=makePlant(id,601,2,2);assert.equal(plantModel(p,view(8)).children.length,0,id);assert.equal(seasonAt(CATALOG[id],1).bloom,false,id);assert.ok(seasonAt(CATALOG[id],5).leafDensity>0,id);
+  for(let month=1;month<=12;month++){const g=plantModel(p,view(month));for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}dispose(g);}
+ }
+ assert.equal(seasonAt(CATALOG['p-0ee7dee3eb63'],3).bloom,false);assert.equal(seasonAt(CATALOG['p-5f4e8f2b98cd'],11).groundDormant,false);
+});
+test('urns, reflexed hyacinth tepals and one-sided freesia sprays are anatomically distinct',()=>{
+ const collect=(shape,palette={})=>{const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,r:.02,color:'#ddd',shape,palette},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});return parts;};
+ const muscari=collect('muscariUrn'),hyacinth=collect('hyacinthFlower'),freesia=collect('freesiaFlower'),double=collect('freesiaFlower',{style:'double',throat:'#ddccaa'});
+ assert.equal(muscari.filter(p=>p.shape==='muscariUrn').length,1);assert.equal(hyacinth.filter(p=>p.shape==='hyacinthReflex').length,6);assert.equal(freesia.filter(p=>p.shape==='freesiaLobe').length,6);assert.equal(double.filter(p=>p.shape==='freesiaLobe').length,12);assert.equal(freesia.filter(p=>p.kind==='anther').length,3);
+ for(const [id,shape] of [['p-0ee7dee3eb63','muscariUrn'],['p-89a52aa63fc6','hyacinthReflex'],['p-718a3437316d','freesiaLobe']]){const g=plantModel(makePlant(id,602,2,2),view(4));assert.ok(g.children.some(m=>m.geometry.userData[shape]));dispose(g);}
+ assert.equal(CATALOG['p-22edb96199c8'].appearance.flowerPalette.tip,'#eeeade');assert.ok(CATALOG['p-0ee7dee3eb63'].aliases.includes('ムスカリ ジェニーロビンソン'));
+});
+
 test('irises distinguish bulb summer rest, evergreen fans and standing winter seed capsules',()=>{
  const minis=['p-83455ccfe550','p-e07c146d9e20','p-5ab42afe5e28','p-5b3272352a33'];
  for(const id of [...minis,'p-275ac3f1523d'])assert.equal(plantModel(makePlant(id,591,2,2),view(8)).children.length,0,id);

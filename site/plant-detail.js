@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.9';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.10';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -17,6 +17,26 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='muscariUrn'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw);
+  f.add('muscariUrn','petal-muscari-mouth',color,0,0,0,r,r,r);
+  // The six stamens sit inside the narrow mouth, not outside like a lily.
+  for(let j=0;j<6;j++){const an=j*TAU/6;f.add(bud,'anther','#c8c395',Math.sin(an)*r*.20,r*1.38,Math.cos(an)*r*.20,r*.045,r*.085,r*.045);}return;
+ }
+ if(shape==='hyacinthFlower'||shape==='freesiaFlower'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),hy=shape==='hyacinthFlower',throat=palette.throat||color;
+  f.add('freesiaTube','petal',hy?color:throat,0,0,0,r*(hy?.55:1),r*(hy?.48:1),r*(hy?.55:1));
+  const layers=hy?1:palette.style==='double'?2:1;
+  for(let layer=0;layer<layers;layer++)for(let j=0;j<6;j++){
+   const an=j*TAU/6+layer*.52,rr=r*(hy?.16:.29),len=r*(hy?1:layer?.70:1.10),flowerKind=hy?'petal':'petal-freesia-'+throat.slice(1)+(palette.veins&&j>=2&&j<=4?'-veins':'');
+   f.add(hy?'hyacinthReflex':'freesiaLobe',flowerKind,shade(rand,color,.015),Math.sin(an)*rr,r*(hy?.49:1.08+layer*.08),Math.cos(an)*rr,len*(hy?.85:j===0?1.14:1),len,len,hy?.25:layer?.28:.67,an,0);
+  }
+  for(let j=0;j<(hy?6:3);j++){
+   const an=j*TAU/(hy?6:3),tip=[Math.sin(an)*r*.13,r*(hy?.58:1.45),Math.cos(an)*r*.13];f.branch([0,0,0],tip,r*.011,'#d9d1b1','filament');f.add(bud,'anther',hy?'#ac986a':'#e0d8bf',...tip,r*.04,r*(hy?.045:.15),r*.032);
+  }
+  if(!hy){f.branch([0,0,0],[0,r*1.56,0],r*.014,'#e7dfc7','style');for(let j=0;j<3;j++){const an=j*TAU/3;f.branch([0,r*1.56,0],[Math.sin(an)*r*.12,r*1.72,Math.cos(an)*r*.12],r*.012,'#e7dfc7','stigma');}}
+  return;
+ }
  if(shape==='irisFlower'||shape==='blackberryFlower'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),blackberry=shape==='blackberryFlower',beard=palette.bearded,flat=palette.flat,snake=palette.snake,pattern=palette.pattern||'gold';
   f.branch([0,-r*.40,0],[0,0,0],r*.075,'#a2af76','perianthTube');
@@ -687,6 +707,41 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
 }
 
+function drawSpringRacemes(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,hy=a.architecture==='hyacinth',freesia=a.architecture==='freesia',palette=a.flowerPalette||{},n=Math.max(2,Math.round((hy?3:freesia?5:8)*detail)),heads=[];
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,rr=Math.sqrt(i/n)*Math.min(w*.25,hy?.08:.09),x=Math.sin(yaw)*rr,z=Math.cos(yaw)*rr,top=h*(.91+rand()*.09);
+  for(let j=0;j<(hy?5:freesia?6:4);j++){
+   const angle=freesia?yaw+(j%2)*Math.PI:yaw+j*2.399,len=h*(hy?.60:freesia?.66:palette.longLeaf?1.0:.73)*(.80+rand()*.20),width=hy?.024:freesia?.016:palette.width||.008;
+   b.add(hy?'hyacinthStrap':freesia?'irisSword':'muscariLeaf',hy?'leaf-glossy':freesia?'leaf-iris-parallel':'leaf',kit.shade(rand,s.leafColor,.035),x,.004,z,width/(hy?.114:freesia?.068:.048),len,len,.09+rand()*.12,angle,0);
+  }
+  if(!s.bloom)continue;
+  const base=hy?top*.31:freesia?top*.77:top-Math.min(palette.head||.06,h*.38);
+  b.branch([x,0,z],[x,base,z],hy?.004:freesia?.0018:.0016,'#879c67','scape');
+  if(freesia){
+   let previous=[x,base,z];
+   for(let j=0;j<8;j++){
+    const t=j/7,reach=h*.34*t,at=[x+Math.sin(yaw)*reach,base+h*(.04+.10*Math.sin(t*2)),z+Math.cos(yaw)*reach];
+    b.branch(previous,at,.0012,'#8ca36d','rachis');b.add('narrow','bract','#96aa72',...at,.006,.018,.018,.70,yaw,0);
+    if(j<5)heads.push({at,yaw:yaw+(j%2?.14:-.14),color:s.flowerColor,tilt:.68,shape:'freesiaFlower',r:a.flowerRadius*(1-j*.045)});
+    else b.add(kit.bud,'flowerBud',j===5?s.flowerColor:'#9aaf75',at[0],at[1]+.004,at[2],.004,.014-(j-5)*.003,.004,.60,yaw,0);
+    previous=at;
+   }
+   continue;
+  }
+  b.branch([x,base,z],[x,top,z],hy?.004:.0015,'#8fa471','rachis');
+  const count=hy?52:110,headLength=top-base;
+  for(let j=0;j<count;j++){
+   const t=(j+.5)/count,an=j*2.399+yaw,rr=(hy?.016:.006)*(.55+.45*Math.sin(Math.PI*t)),at=[x+Math.sin(an)*rr,base+t*headLength,z+Math.cos(an)*rr],root=[x,at[1],z],young=t>(palette.whiteTop||.85);
+   b.branch(root,at,hy?.0007:.00030,'#96a574','pedicel');
+   const color=!hy&&young?palette.tip||s.flowerColor:!hy&&palette.earlyColor&&t>.55?palette.earlyColor:s.flowerColor;
+   if(t>.94)b.add(kit.bud,'flowerBud',color,...at,hy?.0035:.0026,hy?.005:.003,hy?.0035:.0026);
+   else heads.push({at,yaw:an,color,tilt:hy?1.76:2.06,shape:hy?'hyacinthFlower':'muscariUrn',r:a.flowerRadius*(.93-t*.12)});
+  }
+ }
+ for(const {at,yaw,color,tilt,shape,r} of heads)detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color,shape,palette,tilt,yaw},{...kit,rand});
+}
+
 function drawIrises(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,mini=a.architecture==='miniIris',snake=a.architecture==='snakeIris',hio=a.architecture==='blackberryLily',beard=a.architecture==='beardedIris',quill=mini||snake,green=s.leafColor,kind=foliageKind(info),n=Math.max(3,Math.round((quill?6:4)*detail)),heads=[];
  for(let i=0;i<n;i++){
@@ -792,6 +847,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
  const a=info.appearance||{},h=s.height,w=s.spread,green=s.leafColor||info.leafColor||'#587e45',stemColor=a.stemColor||green;
  const leafKind=foliageKind(info),shape=a.leafMargin==='crenate'?'crenate':a.leafShape||'leaf',leafyViolet=a.architecture==='leafyViolet',basal=!leafyViolet&&(a.arrangement==='basal'||['rosette','clump','mound','creeping'].includes(a.habit)),creeping=a.habit==='creeping';
  if(a.architecture==='narcissus'){drawNarcissus(b,{info,s,detail,rand},kit);return;}
+ if(['muscari','hyacinth','freesia'].includes(a.architecture)){drawSpringRacemes(b,{info,s,detail,rand},kit);return;}
  if(['miniIris','beardedIris','snakeIris','dietes','blackberryLily'].includes(a.architecture)){drawIrises(b,{info,s,detail,rand},kit);return;}
  if(['compactDahlia','tallDahlia','treeDahlia'].includes(a.architecture)){drawDahlias(b,{info,s,detail,rand},kit);return;}
  if(a.architecture?.startsWith('celosia')){drawCelosias(b,{info,s,detail,rand},kit);return;}

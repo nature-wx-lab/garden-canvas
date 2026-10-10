@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.9';
-import {foliageKind} from './appearance.js?v=0.9.9';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.9';
-import {drawTree} from './tree-model.js?v=0.9.9';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.9';
+import {treeProfile} from './tree-profiles.js?v=0.9.10';
+import {foliageKind} from './appearance.js?v=0.9.10';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.10';
+import {drawTree} from './tree-model.js?v=0.9.10';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.10';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.9';
+import { plantInfo, stateAt } from './model.js?v=0.9.10';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,6 +13,26 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+for(const type of ['muscariUrn','freesiaTube']){
+ const pos=[],uv=[],idx=[],rows=24,cols=60,urn=type==='muscariUrn';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,an=j/cols*Math.PI*2,rad=urn?.14+.72*Math.pow(Math.max(0,Math.sin(t*Math.PI*.91)),.64):.085+.28*Math.pow(t,1.5),rim=Math.pow(t,13),lobe=.5+.5*Math.cos(an*6);
+  const rr=rad+(urn?.055:0)*lobe*rim,y=t*(urn?1.65:1.12)+(urn?.065:0)*lobe*rim;
+  pos.push(Math.sin(an)*rr,y,Math.cos(an)*rr);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+1,k+cols+1,k+1,k+cols+2,k+cols+1);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
+for(const type of ['hyacinthStrap','muscariLeaf','hyacinthReflex','freesiaLobe']){
+ const pos=[],uv=[],idx=[],rows=32,cols=12,leaf=type==='hyacinthStrap'||type==='muscariLeaf',hy=type==='hyacinthStrap',freesia=type==='freesiaLobe';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t)),width=leaf?(hy?.057:.024)*Math.pow(Math.max(0,Math.sin(Math.PI*(t*.92+.08))),.25):Math.pow(sin,freesia?.56:.70)*(freesia?.55:.28);
+  const y=leaf?t:freesia?t:.80*Math.sin(t*2.4),z=leaf?(hy?.21:.60)*t*t+.045*u*u*sin:freesia?.18*u*u*sin+.12*t*t:.72*t;
+  pos.push(u*width,y,z);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 {
  // A four-petalled silhouette for the thousands of subpixel flowers in a crambe spray.
  // Representative full flowers retain their sepals, filaments and anthers nearby.
@@ -483,6 +503,11 @@ function windShader(shader,kind){
     masks.rhododendronThroat='1.0-smoothstep(0.27,0.73,vUv.y)';
     masks.kalmiaBand='smoothstep(0.65,0.76,vUv.y)*(1.0-smoothstep(0.91,0.99,vUv.y))*smoothstep(-0.28,0.19,sin(vUv.x*31.416)+0.6*sin(vUv.x*319.0)*cos(vUv.y*303.0))';
     masks.leucothoeMarble='smoothstep(-0.46,0.0,sin(vUv.x*13.0+sin(vUv.y*8.0)*1.6)*cos(vUv.y*14.0)+0.32*sin(vUv.x*117.0)*cos(vUv.y*131.0))';
+    if(kind==='petal-muscari-mouth')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float mouth=smoothstep(.89,.95,vUv.y);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.88,.87,.79),mouth*.85);\n#include <emissivemap_fragment>`);
+    if(kind.startsWith('petal-freesia-')){
+      const tone=new THREE.Color('#'+kind.split('-')[2]),rgb=`vec3(${tone.r.toFixed(5)},${tone.g.toFixed(5)},${tone.b.toFixed(5)})`;
+      shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float throat=(1.0-smoothstep(.12,.62,vUv.y))*(1.0-smoothstep(.20,.78,fold));diffuseColor.rgb=mix(diffuseColor.rgb,${rgb},throat*.85);${kind.endsWith('-veins')?'float freesiaVeins=pow(max(0.0,cos(atan(vUv.x-.5,vUv.y+.10)*28.0)),30.0)*(1.0-smoothstep(.18,.58,vUv.y));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.42,.09,.065),freesiaVeins*.80);':''}\n#include <emissivemap_fragment>`);
+    }
     if(kind.startsWith('petal-iris-')){
       const iris=kind.slice(11),fall=iris.endsWith('-fall'),name=iris.replace(/-(fall|standard)$/,'');
       const wash=name==='frozen'?'vec3(0.46,0.59,0.74)':name==='hodgkin'?'vec3(0.26,0.42,0.53)':'vec3(0.32,0.42,0.60)';
