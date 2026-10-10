@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.6';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.7';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -17,6 +17,37 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='dahliaHead'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),single=layers<=2||palette.openDisc,disc=r*(single?.23:.055),sector=rand()*TAU;
+  for(let j=0;j<8;j++)f.add('leaf','bract','#70804e',0,-r*.06,0,r*.27,r*.34,r,1.9,j*TAU/8,0);
+  f.add(bud,'receptacle',palette.disc||'#69412d',0,0,0,r*.26,r*.18,r*.26);
+  for(let layer=0;layer<layers;layer++){
+   const t=layer/Math.max(1,layers-1),count=single?petals:Math.max(7,Math.round(petals*(1-t*.50))),length=r*(single?1-layer*.12:1-t*.73),rr=single?disc*.65:r*.04;
+   for(let j=0;j<count;j++){
+    const an=j*TAU/count+layer*.47,variation=palette.informal?(rand()-.5)*.25:(rand()-.5)*.06;
+    const whiteSector=palette.sector&&((an-sector+TAU)%TAU)<(palette.sector==='variable'?1.9:1.1);
+    const colorHere=whiteSector?palette.sectorColor||'#f0e6e3':shade(rand,color,.028),outside=palette.outside;
+    let surface=(whiteSector?'petal':kind)+'-dahlia';
+    if(outside)surface+='-outside-'+outside.replace('#','');
+    f.add(palette.split?'dahliaSplitRay':palette.informal?'dahliaTwistedRay':palette.round?'dahliaRoundRay':'dahliaRay',surface,colorHere,
+     Math.sin(an)*rr,r*(single?layer*.07:t*.20),Math.cos(an)*rr,length*(palette.narrow?.70:single?1.10:1.05),length,length,
+     (single?1.48-layer*.12:1.80-t*1.45)+variation,an,variation*.35);
+   }
+  }
+  // Single and semi-double heads show tubular disc florets, not a featureless ball.
+  if(!single){
+   f.add(bud,'rayBud',color,0,r*.27,0,r*.08,r*.13,r*.08);
+   for(let j=0;j<7;j++)f.add('dahliaRay','petal-dahlia',color,0,r*.24,0,r*.12,r*.19,r*.19,.34,j*TAU/7,0);
+  }else{
+   f.add(bud,'disc',palette.disc||'#5a3837',0,r*.055,0,disc,disc*.47,disc);
+   for(let j=0;j<84;j++){
+    const t=(j+.5)/84,an=j*2.399,rr=disc*Math.sqrt(t),yy=r*.065+disc*.43*Math.sqrt(1-t),at=[Math.sin(an)*rr,yy,Math.cos(an)*rr],open=t>.37;
+    const fl=flowerFrame(f,at,.38*Math.sqrt(t),an),len=r*.065;
+    fl.add('tube','discFloret',open?'#d8b452':palette.disc||'#5a3837',0,0,0,len*.22,len,len*.22);
+    if(open)for(let k=0;k<5;k++)fl.add('narrow','anther','#d6b14b',0,len*.65,0,len*.28,len*.43,len,.95,k*TAU/5,0);
+   }
+  }return;
+ }
  if(shape==='fringeFlower'||shape==='laurelFlower'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),fringe=shape==='fringeFlower';
   for(let j=0;j<4;j++){
@@ -615,10 +646,53 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
 }
 
+function drawDahlias(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,tree=a.architecture==='treeDahlia',compact=a.architecture==='compactDahlia',green=s.leafColor,kind=foliageKind(info),stem=a.stemColor||'#77885a',growth=s.shootScale||1;
+ const leaf=(at,angle,size,n=5)=>{
+  const length=size*.76,end=[at[0]+Math.sin(angle)*length,at[1]+length*.20,at[2]+Math.cos(angle)*length],shape=a.leafletShape||'dahliaLeaf';
+  b.branch(at,end,Math.min(.0014,size*.012),stem,'petiole');
+  for(let j=0;j<n-1;j++){
+   const pair=Math.floor(j/2),t=.24+pair*.30,side=j%2?1:-1,root=at.map((v,k)=>v+(end[k]-v)*t),an=angle+side*1.12,tip=[root[0]+Math.sin(an)*size*.12,root[1]+size*.035,root[2]+Math.cos(an)*size*.12];
+   b.branch(root,tip,size*.006,stem,'petiolule');
+   if(tree&&n>5){for(const sign of [-1,1])b.add(shape,kind,kit.shade(rand,green,.035),...tip,size*.34,size*.38,size*.38,1.40,an+sign*.8,0);}
+   b.add(shape,kind,kit.shade(rand,green,.045),...tip,size*(tree?.43:.63),size*.64,size*.64,1.30+rand()*.17,an,0);
+  }
+  b.add(shape,kind,green,...end,size*.76,size*.82,size*.82,1.18+rand()*.20,angle,0);
+ };
+ const heads=[],count=tree?3:compact?4:3;
+ for(let i=0;i<count;i++){
+  const an=i*2.399,rad=w*(tree?.11:compact?.24:.23)*Math.sqrt(i/count),top=h*(i===0?1:.74+rand()*.19),tip=[Math.sin(an)*rad,top*.88,Math.cos(an)*rad],base=[tip[0]*.18,0,tip[2]*.18],nodes=tree?9:6;
+  b.branch(base,tip,Math.min(tree?.018:.007,h*.016),stem,'stem');
+  for(let j=0;j<nodes;j++){
+   const t=.14+j*.68/(nodes-1),at=tip.map((v,k)=>k===1?v*t:base[k]+(v-base[k])*t),size=Math.min(tree?.32:.17,w*(compact?.25:.23))*(1-t*.30)*Math.min(1,growth*1.6);
+   b.add(kit.bud,'node',stem,...at,h*(tree?.006:.007),h*.004,h*(tree?.006:.007));
+   for(const side of [0,1])leaf(at,an+j*Math.PI/2+side*Math.PI,size,tree?9:j>=nodes-2?1:j===nodes-3?3:5);
+   if(j===nodes-3||tree&&j===nodes-2){
+    for(const side of [-1,1]){
+     const angle=an+side*1.15,end=[at[0]+Math.sin(angle)*w*(tree?.28:.26),top*(tree?.88:.78+rand()*.12),at[2]+Math.cos(angle)*w*(tree?.28:.26)];
+     b.branch(at,end,Math.min(.005,h*.007),stem,'stem');
+     for(const side2 of [0,1])leaf(at.map((v,k)=>v+(end[k]-v)*.55),angle+side2*Math.PI,Math.min(.14,w*.22),3);
+     heads.push({at:end,angle});
+    }
+   }
+  }
+  heads.push({at:[tip[0],top,tip[2]],from:tip,angle:an});
+ }
+ for(let i=0;i<heads.length;i++){
+  const {at,from,angle}=heads[i],r=Math.min(a.flowerRadius||(compact?.042:.065),h*.30),root=from||[at[0]*.94,at[1]-h*.10,at[2]*.94];
+  if(!s.bloom)continue;
+  const flower=i%4!==1;
+  b.branch(root,at,Math.min(.003,h*.004),stem,'peduncle');
+  if(!flower){b.add(kit.bud,'bud','#7e8b58',...at,r*.20,r*.22,r*.20);for(let j=0;j<8;j++)b.add('narrow','bract','#6b7947',at[0],at[1]-r*.16,at[2],r*.18,r*.31,r,.60,j*TAU/8,0);continue;}
+  detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'dahliaHead',petals:a.petals||16,layers:a.flowerLayers||5,pattern:a.flowerPattern,patternColor:a.flowerPatternColor,palette:a.flowerPalette,tilt:tree?1.85:1.0+rand()*.35,yaw:angle},{...kit,rand});
+ }
+}
+
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
  const a=info.appearance||{},h=s.height,w=s.spread,green=s.leafColor||info.leafColor||'#587e45',stemColor=a.stemColor||green;
  const leafKind=foliageKind(info),shape=a.leafMargin==='crenate'?'crenate':a.leafShape||'leaf',leafyViolet=a.architecture==='leafyViolet',basal=!leafyViolet&&(a.arrangement==='basal'||['rosette','clump','mound','creeping'].includes(a.habit)),creeping=a.habit==='creeping';
+ if(['compactDahlia','tallDahlia','treeDahlia'].includes(a.architecture)){drawDahlias(b,{info,s,detail,rand},kit);return;}
  if(a.architecture?.startsWith('celosia')){drawCelosias(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='beeBalm'||a.architecture==='tieredMonarda'){drawMonardas(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='airyGaillardia'||a.architecture==='compactGaillardia'){drawGaillardias(b,{info,s,detail,rand},kit);return;}

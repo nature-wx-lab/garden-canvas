@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.6';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.7';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 export const TRAIT_VALUES={heart:'心形',round:'円形',kidney:'腎形',triangular:'三角形',lobed:'切れ込みのある葉',compound:'複葉',serrated:'鋸歯のある葉',narrow:'細葉',blade:'線形・剣形',needle:'針形',leaf:'卵形・楕円形',obovate:'倒卵形',spoon:'へら形',arrow:'矢じり形',margin:'覆輪',center:'中斑',spots:'斑点',silverVeins:'銀葉・緑の葉脈',stripes:'縞斑',evergreen:'常緑',semiEvergreen:'半常緑（寒さで変化）',deciduous:'落葉（幹・枝は残る）',winterDormant:'冬に地上部休眠',summerDormant:'夏に地上部休眠',bell:'鐘形',trumpet:'漏斗・ラッパ形',tube:'筒形',urn:'壺形',cup:'杯形',flat:'平開',star:'星形',cross:'十字形',pea:'蝶形',lipped:'唇形',spurred:'距のある花',spoonRay:'スプーン状の花弁',pompon:'ポンポン咲き',smooth:'平滑',peeling:'剥離する樹皮',furrowed:'縦に割れる樹皮',scaly:'鱗片状',lenticels:'皮目',clump:'株立ち',mound:'こんもり',creeping:'地面に広がる',rosette:'ロゼット',upright:'直立',arching:'弓状',spreading:'横に広がる',weeping:'枝垂れ',columnar:'細い直立形',pyramidal:'円錐形',vase:'箒状',rounded:'丸い樹冠',multistem:'根元から株立ち',oval:'卵形の樹冠',layered:'段状の横枝',irregular:'不規則な枝'};
@@ -82,3 +82,5 @@ Object.assign(TRAIT_VALUES,{rhododendronLeaf:'厚みがあり枝先に集まる�
 
 Object.assign(TRAIT_VALUES,{blueberryLeaf:'全縁で先がとがる楕円形の葉',blueberryUrn:'口が狭い下向きの壺形花'});
 Object.assign(TRAIT_VALUES,{birchLeaf:'重鋸歯と細い側脈を持つ卵形葉',birchPaper:'白い樹皮と横長の皮目・薄い剥離',laceMaple:'7裂片がさらに細かく切れ込む掌状葉',fringeLeaf:'対生する厚みのある卵形・楕円葉',fringeFlower:'4本の細い花冠裂片と2本の雄しべ',laurelLeaf:'縁が波打つ光沢のある細長い全縁葉',laurelFlower:'葉腋に集まる4枚の花被と雄しべ'});
+
+Object.assign(TRAIT_VALUES,{frostDormantTuber:'霜後に地上部が枯れ、塊根から春に再萌芽',dahliaHead:'舟形の舌状花が重なる頭花、一重系は中央に筒状花',dahliaLeaf:'粗い鋸歯のある小葉',dahliaCutLeaf:'深く切れ込む小葉'});
