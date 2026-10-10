@@ -1,6 +1,96 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.64';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.65';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function oliveLeafPoint(type,t,u){
+ const sharp=type==='oliveSharp',russian=type==='russianOliveLance',profile=Math.pow(Math.sin(Math.PI*t),sharp?.90:.73)*(russian?1.10-.18*t:1.04-.08*t);
+ return [u*profile*.5,t,Math.sin(Math.PI*t)*(.033+.065*u*u)+.012*Math.sin(t*9)*u*t];
+}
+export function oliveFlowerGeometry(russian=false){
+ const pos=[],uv=[],ix=[],sides=12,rings=6;
+ for(let j=0;j<=rings;j++)for(let k=0;k<=sides;k++){
+  const t=j/rings,an=k*TAU/sides,r=russian?.16+.19*t*t:.27+.25*t*t;
+  pos.push(Math.sin(an)*r,t,Math.cos(an)*r);uv.push(k/sides,t*.4);
+  if(j<rings&&k<sides){const q=j*(sides+1)+k;ix.push(q,q+1,q+sides+1,q+1,q+sides+2,q+sides+1);}
+ }
+ for(let l=0;l<4;l++){
+  const start=pos.length/3,an=l*TAU/4,rows=8,cols=4;
+  for(let i=0;i<=rows;i++)for(let k=0;k<=cols;k++){
+   const t=i/rows,u=k/cols*2-1,r=(russian?.35:.52)+(russian?.65:.48)*t,width=(russian?.32:.40)*Math.pow(Math.sin(Math.PI*t),russian?1:.6),x=u*width;
+   pos.push(Math.sin(an)*r+Math.cos(an)*x,1+(russian?.24:.2)*t+.06*Math.sin(Math.PI*t)*u*u,Math.cos(an)*r-Math.sin(an)*x);uv.push(k/cols,.4+.6*t);
+   if(i<rows&&k<cols){const q=start+i*(cols+1)+k;ix.push(q,q+1,q+cols+1,q+1,q+cols+2,q+cols+1);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.oliveFlower={lobes:4,organ:russian?'calyx':'corolla'};return g;
+}
+export function oliveFruitGeometry(type){
+ const p=[],uv=[],ix=[],rows=16,cols=16;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,an=j*TAU/cols,y=1-2*t,bulge=type==='lucca'?.72+.40*t:type==='mission'?.97-.35*t:type==='nevadillo'?.95+.1*t:1,r=Math.pow(Math.sin(Math.PI*t),type==='mission'?.83:.65)*bulge;
+  p.push(Math.sin(an)*r+(type==='nevadillo'?.16*Math.sin(Math.PI*t)*t:0),y,Math.cos(an)*r);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const q=i*(cols+1)+j;ix.push(q,q+1,q+cols+1,q+1,q+cols+2,q+cols+1);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.oliveFruit=type;return g;
+}
+function drawOlives(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,typ=a.shootProfile,russian=typ==='russian',upright=a.habit==='upright'||a.habit==='columnar',column=a.habit==='columnar',nodes=[],wood=[],fruitSites=[];
+ const trunk=[],baseRadius=Math.max(.010,h*.017);
+ for(let i=0;i<=5;i++)trunk.push([Math.sin(i*.83)*w*.018,h*.40*i/5,Math.sin(i*1.27)*w*.012]);
+ for(let i=1;i<trunk.length;i++)wood.push({from:trunk[i-1],to:trunk[i],r:baseRadius*(1-i*.10),old:true});
+ const shoot=(root,az,rise,reach,order)=>{
+  let prev=root;const n=order===0?8:order===1?7:5;
+  for(let j=0;j<n;j++){
+   const t=(j+1)/n,an=az+.16*Math.sin(t*5+az),sag=(russian||a.habit==='spreading')?.08:.02;
+   const at=[root[0]+Math.sin(an)*reach*t,root[1]+rise*t+h*.025*Math.sin(Math.PI*t)-h*sag*t*t*(order===0?1:.2),root[2]+Math.cos(an)*reach*t];
+   wood.push({from:prev,to:at,r:(order===0?.0052:order===1?.0014:.0006)*Math.max(.55,Math.min(2.6,h))*(1-t*.65),old:order===0&&j<4});prev=at;
+   if(order>0)nodes.push({at,an:az+j*(russian?2.4:Math.PI/2),t,order,roll:rand(),size:.7+rand()*.3});
+   if(order===0&&j>=2&&j<=6){const side=j%2?1:-1;shoot(at,an+side*(.70+rand()*.48),h*(upright?.10:.045)*(1-t*.35),w*(column?.050:.080)*(1-t*.35),1);}
+   if(order===1&&(j===2||j===4))shoot(at,an+(j===2?1:-1)*.86,h*.028,w*.038,2);
+   if(order===2&&(j===1||j===3))shoot(at,an+(j===1?1:-1)*1.12,h*.015,w*.025,3);
+  }
+ };
+ const count=Math.max(9,Math.round((13+Math.min(8,w*3))*detail));
+ for(let i=0;i<count;i++){
+  const an=i*2.399963+rand()*.25,t=(i+.5)/count,root=[Math.sin(t*4.15)*w*.018,h*(.24+t*.48),Math.sin(t*6.35)*w*.012];
+  // Irregular co-leaders and lateral branches, never a spherical cloud of detached leaves.
+  const edge=Math.sqrt((i+.45)/count),reach=upright?w*(column?.30:.35)*Math.pow(Math.sin(Math.PI*(.13+t*.80)),.7)*(.85+rand()*.15):w*.44*edge,tipY=upright?h*(.56+.40*t):h*(.47+.43*Math.sqrt(1-edge*edge)),rise=tipY-root[1]+h*((russian||a.habit==='spreading')?.08:.02);
+  b.branch(trunk[Math.min(5,Math.floor(t*4)+1)],root,baseRadius*.4,a.barkColor,'wood-olive-fork');shoot(root,an,rise,reach,0);
+ }
+ for(const q of wood)b.branch(q.from,q.to,q.r,q.old?a.barkColor:a.stemColor,q.old?(russian?'wood-russian-olive':h>3?'wood-olive-furrow':'wood-olive-smooth'):'stem-olive-scaly');
+ for(const n of nodes){
+  if(russian&&n.order===1&&n.t<.80&&n.roll<.10){const tip=[n.at[0]+Math.sin(n.an)*.020,n.at[1]+.009,n.at[2]+Math.cos(n.an)*.020];b.branch(n.at,tip,.0011,'#847864','thorn-russian-olive');}
+  if(s.leafDensity===0){b.add(kit.bud,'bud-russian-olive','#a79c83',...n.at,.0014,.0028,.0014);continue;}
+  for(const side of russian?[1]:[-1,1]){
+   const roll=(n.roll+(side===-1?.43:0))%1;if(roll>s.leafDensity)continue;
+   const an=n.an+(side===1?0:Math.PI),newLeaf=[4,5].includes(s.month)&&n.t>.70,L=a.leafLength*n.size*(russian?s.leafScale:newLeaf?.77:1),P=russian?.006:.003,at=[n.at[0]+Math.sin(an)*P,n.at[1]+P*.3,n.at[2]+Math.cos(an)*P],f=flowerFrame(b,at,.77+roll*.95,an);
+   b.branch(n.at,at,.00045,a.stemColor,'petiole-olive');
+   f.add(a.leafShape,`leaf-olive-${russian?'scaly':'glossy'}-underside-${a.leafUnderside.slice(1)}`,kit.shade(rand,newLeaf?'#829663':s.leafColor,.045),0,0,0,L*a.leafWidth/a.leafLength,L,L);
+  }
+  // Flowering sites belong to last year's axillary nodes, below the newest terminal leaves.
+  if(n.order!==1||n.t>.68||n.roll>.28)continue;
+  const length=a.inflorescenceLength,an=n.an,at=[n.at[0]+Math.sin(an)*length*.2,n.at[1]+length*.15,n.at[2]+Math.cos(an)*length*.2],fr=flowerFrame(b,at,russian?1.7:.75,an);
+  if(a.fruitMonths.includes(s.month)&&n.roll<.19)fruitSites.push({at,an,roll:n.roll});
+  const before=!s.bloom&&a.flowerMonths.includes(s.month+1);if(!s.bloom&&!before)continue;
+  b.branch(n.at,at,.0006,a.stemColor,'peduncle-olive');
+  const nf=russian?2:22;
+  for(let k=0;k<nf;k++){
+   const t=(k+.5)/nf,theta=k*2.399963,r=russian?.007:length*.22*(1-t*.55),end=[Math.sin(theta)*r,length*(russian?.20:.88)*t,Math.cos(theta)*r],f=flowerFrame(fr,end,russian?.15:1.15,theta),R=a.flowerRadius,F=a.flowerLength;
+   fr.branch([0,0,0],[0,end[1],0],.00035,a.stemColor,'rachis-olive');fr.branch([0,end[1]*.65,0],end,.00020,a.stemColor,'pedicel-olive');
+   if(before||k%9===0){f.add(kit.bud,'bud-olive-flower',a.flowerPalette.bud,0,F*.40,0,R*.5,F*.5,R*.5);continue;}
+   if(!russian)for(let l=0;l<4;l++){const theta=l*TAU/4;f.add(kit.bud,'sepal-olive','#a0ac7a',Math.sin(theta)*R*.22,0,Math.cos(theta)*R*.22,R*.18,F*.24,R*.18);}
+   f.add(russian?'russianOliveCalyx':'oliveCorolla',russian?'sepal-russian-olive-silver':'petal-olive',s.flowerColor,0,0,0,R,F,R);
+   for(let j=0;j<a.stamenCount;j++){const theta=j*TAU/a.stamenCount+(russian?Math.PI/4:0),r=R*(russian?.22:.24);f.add(kit.bud,'anther-olive','#cec076',Math.sin(theta)*r,F*.98,Math.cos(theta)*r,R*.15,F*.12,R*.11);}
+   f.branch([0,0,0],[0,F*(russian?1.06:.74),0],.00010,'#babd81','style-olive');f.add(kit.bud,'stigma-olive','#c0c690',0,F*(russian?1.08:.76),0,R*.10,F*.04,R*.10);
+  }
+ }
+ for(const q of fruitSites){
+  const scale=s.month===7?.42:s.month===8?.72:1,n=russian?2:q.roll<.07?2:1;
+  for(let k=0;k<n;k++){
+   const R=a.fruitRadius*scale,an=q.an+k*1.8,top=[q.at[0]+Math.sin(an)*.009,q.at[1]-.005,q.at[2]+Math.cos(an)*.009],center=[top[0],top[1]-R*.90,top[2]],ripe=russian?s.month>=9:typ==='mission'?s.month>=12:s.month>=11,turning=!russian&&s.month>=(typ==='mission'?11:10),green=russian?'#b0baa7':'#839646',color=ripe?a.fruitColor:turning?(q.roll<.09?'#856475':'#a2a553'):green;
+   b.branch(q.at,top,.00055,a.stemColor,'fruit-stalk-olive');b.add('oliveFruit-'+(russian?'russian':['mission','lucca','nevadillo'].includes(typ)?typ:'oval'),russian?'fruit-russian-olive-scaly':'fruit-glossy-olive',color,...center,R*.63,R,R*.63,0,an,.08);
+  }
+ }
+}
+
 export function syringaLeafPoint(type,t,u){
  const heart=type==='syringaCordate',elliptic=type==='syringaElliptic';
  const width=Math.pow(Math.sin(Math.PI*t),heart?.62:.76)*(heart?1.35-.55*t:elliptic?.95+.04*t:1.12-.30*t);
@@ -3330,6 +3420,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(['oliveBranches','russianOliveBranches'].includes(info.appearance?.architecture)){drawOlives(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='syringaPanicles'){drawSyringa(b,{info,s,detail,rand},kit);return;}
  if(['loropetalumShoots','fothergillaBranches'].includes(info.appearance?.architecture)){drawHamamelid(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='deutziaSprays'){drawDeutzia(b,{info,s,detail,rand},kit);return;}

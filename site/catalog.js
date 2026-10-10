@@ -1,12 +1,12 @@
-import { EXPANDED_CATALOG, BASE_POPULARITY } from './catalog-data.js?v=0.9.64';
-import {attachAppearance} from './appearance.js?v=0.9.64';
+import { EXPANDED_CATALOG, BASE_POPULARITY } from './catalog-data.js?v=0.9.65';
+import {attachAppearance} from './appearance.js?v=0.9.65';
 // Public botanical facts; monthly boundaries and procedural geometry are display conventions.
-export const CATALOG_VERSION='2026-10-11.2';
+export const CATALOG_VERSION='2026-10-11.3';
 const nc='https://plants.ces.ncsu.edu/plants/';
 const mo='https://plantfinder.mobot.org/PlantFinderDetails.aspx?taxonid=';
 const BASE_CATALOG={
  maple:{label:'イロハモミジ',latin:'Acer palmatum',form:'maple',group:'木',leaf:'deciduous',height:[4.57,7.62],spread:[3.05,7.62],bloom:[],flower:'#b77250',sun:['part'],moisture:['moist'],growth:'遅い〜中程度（種の情報。品種差あり）',season:'秋の葉色・冬の枝姿',care:'木漏れ日と適度な湿り、排水を好み、乾燥風や葉焼けに注意。剪定の頻度は未算定。',source:nc+'acer-palmatum/',publisher:'NC State Extension',bloomText:'花は春。鑑賞表示は葉と枝を中心に表現。'},
- olive:{label:'オリーブ',latin:'Olea europaea',form:'olive',group:'木',leaf:'evergreen',height:[6.10,9.14],spread:[4.57,7.62],bloom:[],flower:'#e5e0bc',sun:['sun'],moisture:['drained'],growth:'遅い（種の情報。品種差あり）',season:'通年の銀緑の葉',care:'日なたと排水のよい土を好みます。小さく維持できる寸法・剪定頻度は未検証です。耐寒性は品種・地域で確認してください。',source:nc+'olea-europaea/',publisher:'NC State Extension',bloomText:'資料では夏に小さな花。初期モデルでは花・実を省略。'},
+ olive:{"label":"オリーブ","latin":"Olea europaea","form":"botanical","group":"木","leaf":"evergreen","height":[6.1,9.14],"spread":[4.57,7.62],"bloom":[5,6],"flower":"#e9e7cd","sun":["sun"],"moisture":["drained"],"growth":"遅い（種の情報。品種差あり）","season":"通年の対生する銀緑の細葉。葉腋の小さな白花と秋の実。","care":"受粉や剪定、地域の適応性は出典の案内で確認してください。樹形は入力寸法で表す参考で、将来の年次成長は未予測。","source":"https://plants.ces.ncsu.edu/plants/olea-europaea/","publisher":"NC State Extension","bloomText":"国内の品種別花期を優先。未確認の品種は香川県の5月中旬〜6月上旬を種の参考として表示。地域や年による前後は未予測。","genre":"庭木","aliases":[],"colors":["white"],"visual":"reference","bloomKnown":true,"sourceChecked":"2026-10-11","life":"perennial","leafColor":"#56634d","bloomBasis":"品種別国内資料または種の資料の参考時期"},
  rose:{label:'バラ ザ・フェアリー',latin:"Rosa 'The Fairy'",form:'rose',group:'低木',leaf:'deciduous',height:[.76,.91],spread:[.61,.91],bloom:[5,6,7,8,9,10],flower:'#d98c9e',sun:['sun','part'],moisture:['moist'],growth:'中程度（年次量は未確認）',season:'小さなピンクの八重花',care:'サイズを整える剪定は冬の終わり〜早春。日なたでよく育ちます。時期は現地の芽吹きに合わせます。',source:nc+'rosa-the-fairy/',publisher:'NC State Extension',bloomText:'資料は5月〜霜まで。表示は5〜10月に整理。'},
  hydrangea:{label:'ノリウツギ ライムライト',latin:"Hydrangea paniculata 'Limelight'",form:'hydrangea',group:'低木',leaf:'deciduous',height:[1.83,2.44],spread:[1.83,2.44],bloom:[8,9,10],flower:'#dde6b2',sun:['sun','part'],moisture:['moist'],growth:'中程度（年次量は未確認）',season:'晩夏の淡緑の花からピンクへ',care:'当年枝に咲きます。剪定の目安は冬の終わり〜春。適度な土壌水分を保ち、強風には注意。',source:nc+'hydrangea-paniculata-limelight/',publisher:'NC State Extension',bloomText:'資料は晩夏に咲きピンクへ変化。表示は8〜10月。'},
  salvia:{label:'サルビア・ネモローサ',latin:'Salvia nemorosa',form:'spike',group:'宿根草',leaf:'herb',height:[.46,.91],spread:[.15,.61],bloom:[6,7,8,9],flower:'#6e54a2',sun:['sun','part'],moisture:['drained','moist'],growth:'年次の株幅データは未確認',season:'紫色の花穂',care:'花茎が褐色になったら株元の葉まで切り戻すと再開花することがあります。再開花時期の自動予測はしません。',source:nc+'salvia-nemorosa/',publisher:'NC State Extension',bloomText:'資料で6〜9月。品種指定なし。'},
