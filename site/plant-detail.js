@@ -1,6 +1,49 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.80';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.81';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function rivinaLeafPoint(kasuri,t,u){
+ const sn=Math.sin(Math.PI*t),width=Math.pow(sn,.71)*(1.22-.44*t),wave=(kasuri?.055:.034)*Math.sin(t*TAU*(kasuri?4.3:2.7)+u*.61)*u*u*sn;
+ return [u*width*.5*(1+(kasuri?.11:.02)*Math.sin(t*31+u)),t,.025*u*u*sn-.06*t*t+wave];
+}
+function drawRivina(b,{info,s,detail,rand},kit){
+ const a=info.appearance,kasuri=a.shootProfile==='kasuri',h=Math.max(s.height*.45,s.height-a.inflorescenceLength-.03),w=s.spread,leaves=[],racemes=[];
+ const shoot=(root,az,rise,reach,order)=>{
+  const path=t=>[root[0]+Math.sin(az)*reach*t*t,root[1]+rise*(1.15*t-.15*t*t),root[2]+Math.cos(az)*reach*t*t],nodes=order===0?9:order===1?7:4;
+  for(let j=1;j<=6;j++)b.branch(path((j-1)/6),path(j/6),(order===0?.0021:order===1?.0012:.00065)*(1-.63*j/6),order?a.stemColor:a.barkColor,'wood-rivina');
+  for(let j=1;j<=nodes;j++){
+   const at=path(.08+.88*j/nodes),theta=az+j*2.399963;leaves.push({at,az:theta,roll:rand(),size:.65+rand()*.35,young:j===nodes});
+   if(order<2&&j>1&&j<nodes&&j%2===1)shoot(at,theta,h*(order===0?.22:.095),w*(order===0?.18:.09),order+1);
+   if(order>0&&j===nodes-1)racemes.push({at,az:theta,roll:rand()});
+  }
+ };
+ const n=Math.round((kasuri?7:6)*detail);
+ for(let j=0;j<n;j++){const az=j*2.399963,r=w*.05*Math.sqrt((j+.5)/n);shoot([Math.sin(az)*r,0,Math.cos(az)*r],az,h*(.39+rand()*.36),w*(.14+rand()*.08),0);}
+ for(const n of leaves){
+  if(!s.leafDensity||n.roll>s.leafDensity)continue;
+  const L=a.leafLength*n.size*(n.young?.62:1),P=kasuri?.007:.018,f=flowerFrame(b,n.at,.92+n.roll*.71,n.az),kind=kasuri?'leaf-rivina-kasuri-'+s.leafPatternColor.slice(1):'leaf-rivina-ovate-underside-95aa81';
+  f.branch([0,0,0],[0,P,0],.00045,a.stemColor,'petiole-rivina');f.add(kasuri?'rivina-kasuri-leaf':'rivina-ovate-leaf',kind,kit.shade(rand,s.leafColor,.024),0,P,0,L*a.leafWidth/a.leafLength,L,L);
+ }
+ const ripe=a.fruitMonths.includes(s.month);
+ if(!s.bloom&&!ripe)return;
+ for(const n of racemes){
+  if(n.roll>.68)continue;
+  const f=flowerFrame(b,n.at,.35+n.roll*.42,n.az),length=a.inflorescenceLength*(.72+n.roll*.28),path=t=>[.007*t*t,length*t,0],number=kasuri?19:27;
+  for(let j=1;j<=5;j++)f.branch(path((j-1)/5),path(j/5),.00038,a.stemColor,'raceme-rivina');
+  for(let j=0;j<number;j++){
+   const t=.18+.80*j/(number-1),az=j*2.399963,root=path(t),fruit=ripe&&(!s.bloom||t<.60),bud=s.bloom&&t>.84,R=fruit?a.fruitRadius:a.flowerRadius,P=fruit?.006:.0035,end=[root[0]+Math.sin(az)*P,root[1]+(fruit?-.0015:.002),Math.cos(az)*P],ff=flowerFrame(f,end,fruit?1.9:1.18,az);
+   f.branch(root,end,.00020,a.stemColor,'pedicel-rivina');
+   if(bud){ff.add(kit.bud,'bud-rivina','#c1b5a7',0,0,0,R*.28,R*.48,R*.28);continue;}
+   for(let k=0;k<4;k++){
+    const theta=k*TAU/4,scale=fruit?R*1.2:R;
+    ff.add('rivina-ovate-leaf',fruit?'fruit-sepal-rivina':'tepal-rivina',fruit?'#946e76':k%2?'#e0c7d2':s.flowerColor,0,0,0,scale*.55,scale,scale,fruit?2.12:1.16,theta,0);
+    if(!fruit){const tip=[Math.sin(theta+Math.PI/4)*R*.34,R*.51,Math.cos(theta+Math.PI/4)*R*.34];ff.branch([0,0,0],tip,.00007,'#e9e1d8','filament-rivina');ff.add(kit.bud,'anther-rivina','#dfd9c9',...tip,.00015,.00021,.00015);}
+   }
+   if(fruit){
+    const fresh=s.bloom&&t>.42,colour=fresh?'#83a459':a.fruitColor;ff.add(kit.bud,'fruit-glossy-rivina',colour,0,R*.45,0,R,R*.94,R);ff.branch([0,R*1.34,0],[R*.15,R*1.47,0],.00010,'#a99775','fruit-beak-rivina');
+   }else{ff.add(kit.bud,'ovary-rivina','#a6b795',0,R*.18,0,R*.25,R*.20,R*.25);ff.add(kit.bud,'stigma-rivina','#e0dccc',0,R*.40,0,.00012,.00016,.00012);}
+  }
+ }
+}
 export function leadwortLeafPoint(type,t,u){
  const cera=type==='ceratostigma',ear=type==='auriculata',width=Math.pow(Math.sin(Math.PI*t),cera?.70:ear?.66:.72)*(ear?.63+.78*t:1.23-.43*t),baseEar=ear?.19*Math.exp(-Math.pow((t-.08)/.044,2)):0;
  return [u*(width*.5+baseEar),t,.027*u*u*Math.sin(Math.PI*t)-.047*t*t+.004*Math.cos(t*37-Math.abs(u)*9)*Math.sin(Math.PI*t)];
@@ -4445,6 +4488,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='rivinaRacemes'){drawRivina(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='leadwortBranches'){drawLeadwort(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='pittosporumBranches'){drawPittosporum(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='hypericumShoots'){drawHypericum(b,{info,s,detail,rand},kit);return;}
