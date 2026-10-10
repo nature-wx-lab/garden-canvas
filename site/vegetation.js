@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.43';
-import {foliageKind} from './appearance.js?v=0.9.43';
-import {detailedFlower,drawDetailedHerb,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint,silverMintLeafPoint,roseLeafPoint} from './plant-detail.js?v=0.9.43';
-import {drawTree} from './tree-model.js?v=0.9.43';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.43';
+import {treeProfile} from './tree-profiles.js?v=0.9.44';
+import {foliageKind} from './appearance.js?v=0.9.44';
+import {detailedFlower,drawDetailedHerb,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint,silverMintLeafPoint,roseLeafPoint} from './plant-detail.js?v=0.9.44';
+import {drawTree} from './tree-model.js?v=0.9.44';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.44';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.43';
+import { plantInfo, stateAt } from './model.js?v=0.9.44';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -14,14 +14,14 @@ const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const TAU=Math.PI*2;
 const shapes={};
-for(const type of ['roseLeaflet','roseRoundPetal','roseWavedPetal','rosePointedPetal','roseNotchedPetal','roseJewelPetal','roseChalicePetal','roseSepal']){
- const p=[],uv=[],ix=[],rows=type==='roseLeaflet'?54:24,cols=type==='roseLeaflet'?6:18;
+for(const type of ['roseLeaflet','roseRoundPetal','roseWavedPetal','rosePointedPetal','roseNotchedPetal','roseJewelPetal','roseChalicePetal','banksiaePetal','banksiaeSepal','roseSepal']){
+ const p=[],uv=[],ix=[],rows=type==='roseLeaflet'?54:type.startsWith('banksiae')?12:24,cols=type==='roseLeaflet'?6:type.startsWith('banksiae')?10:18;
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
   const t=i/rows,u=j/cols*2-1,sn=Math.max(0,Math.sin(t*Math.PI));let pos;
   if(type==='roseLeaflet')pos=roseLeafPoint(t,u);
-  else if(type==='roseSepal')pos=[u*.14*Math.pow(sn,.8)*(1+.14*Math.cos(t*43)),t,.16*t*t];
+  else if(type==='roseSepal'||type==='banksiaeSepal')pos=[u*(type==='banksiaeSepal'?.085:.14)*Math.pow(sn,.8)*(type==='banksiaeSepal'?1:1+.14*Math.cos(t*43)),t,.16*t*t];
   else{
-   const wave=type==='roseWavedPetal',pointed=type==='rosePointedPetal',notch=type==='roseNotchedPetal',jewel=type==='roseJewelPetal',rim=Math.pow(t,7),angle=u*(.79+.12*Math.sin(t*Math.PI)),rad=Math.pow(t,.72)*(1-.025*t);
+   const wave=type==='roseWavedPetal'||type==='banksiaePetal',pointed=type==='rosePointedPetal',notch=type==='roseNotchedPetal',jewel=type==='roseJewelPetal',rim=Math.pow(t,7),angle=u*(.79+.12*Math.sin(t*Math.PI)),rad=Math.pow(t,.72)*(1-.025*t);
    // A curved shell wraps around the flower axis. Neighboring petals overlap
    // across their full width rather than intersecting as radial flat plates.
    pos=[Math.sin(angle)*rad,.52*t*t-.21*u*u*t+(pointed?.11*Math.exp(-u*u*18):-.022*Math.exp(-u*u*24))*rim+(wave?.09:.035)*Math.sin(u*(wave?15:8)+t*3)*rim,Math.cos(angle)*rad];
