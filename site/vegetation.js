@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.33';
-import {foliageKind} from './appearance.js?v=0.9.33';
-import {detailedFlower,drawDetailedHerb,salviniaPoint} from './plant-detail.js?v=0.9.33';
-import {drawTree} from './tree-model.js?v=0.9.33';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.33';
+import {treeProfile} from './tree-profiles.js?v=0.9.34';
+import {foliageKind} from './appearance.js?v=0.9.34';
+import {detailedFlower,drawDetailedHerb,salviniaPoint} from './plant-detail.js?v=0.9.34';
+import {drawTree} from './tree-model.js?v=0.9.34';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.34';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.33';
+import { plantInfo, stateAt } from './model.js?v=0.9.34';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -14,6 +14,25 @@ const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const TAU=Math.PI*2;
 const shapes={};
+// Seven low herbs: leaf thickness, teeth, bifid petals and continuous corolla tubes.
+for(const type of ['onosmaBristly','buglossoidesLance','mertensiaFleshy','nierembergiaSpoon','stellariaPointed','dryasCrenate','strawberryLeaflet','stellariaPetal','lowHerbPetal','onosmaTube','mertensiaBell','gromwellSalver','nierembergiaCup']){
+ const p=[],uv=[],ix=[],rows=40,corolla=['onosmaTube','mertensiaBell','gromwellSalver','nierembergiaCup'].includes(type),cols=corolla?100:24;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sn=Math.max(0,Math.sin(Math.PI*t));
+  if(corolla){
+   const an=j/cols*TAU,onos=type==='onosmaTube',mert=type==='mertensiaBell',cup=type==='nierembergiaCup',fl=Math.max(0,(t-.55)/.45),lobe=.5+.5*Math.cos(an*5);
+   const rr=onos?.15+.50*Math.sin(t*Math.PI*.72):mert?.15+.34*t+.34*fl:cup?.06+.10*t+.84*Math.pow(fl,.58):.12+.85*Math.pow(fl,.66);
+   const radius=rr*(1-(onos?.025:mert?.13:cup?.10:.18)*(1-lobe)*fl),yy=t*(onos?2.8:mert?2.15:cup?1.5:1.55)-(cup?.55:!onos&&!mert?.6:.10)*fl;
+   p.push(Math.sin(an)*radius,yy+(cup?.018*Math.sin(an*20)*fl:0),Math.cos(an)*radius);uv.push(j/cols,t);
+  }else{
+   const ono=type==='onosmaBristly',bug=type==='buglossoidesLance',mert=type==='mertensiaFleshy',spoon=type==='nierembergiaSpoon',star=type==='stellariaPointed',dry=type==='dryasCrenate',straw=type==='strawberryLeaflet',petal=type==='lowHerbPetal',split=type==='stellariaPetal';
+   const width=(ono?.105:bug?.18:mert?.34:spoon?.22:star?.22:dry?.38:straw?.36:split?.25:.55)*Math.pow(sn,star?.9:dry?.44:straw?.55:.65)*(spoon?.13+t*.87:petal?.35+t*.65:1),teeth=dry?1-.12*Math.pow((1+Math.cos(t*TAU*7))/2,2):straw?1-.14*(1-((t*13)%1)):1;
+   p.push(u*width*teeth,split?t*(1-.56*Math.exp(-u*u*45)*Math.pow(t,6)):t,(petal||split?.11:-.085)*t*t+(mert?.067:dry?.08:petal?.19:.026)*u*u*sn+(dry||straw?.022*Math.sin(t*42-Math.abs(u)*8)*Math.abs(u)*sn:0));uv.push(j/cols,t);
+  }
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 for(const type of ['silverCarawayLeaf','seseliSegment','oenantheLeaflet','pimpinellaLeaflet','chervilLeaflet','heracleumLeaflet','apiaceaePetal']){
  const p=[],uv=[],ix=[],rows=40,cols=18,petal=type==='apiaceaePetal',fine=type==='seseliSegment',large=type==='heracleumLeaflet',cut=large||type==='chervilLeaflet';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
