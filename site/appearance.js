@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.22';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.23';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 export const TRAIT_VALUES={heart:'心形',round:'円形',kidney:'腎形',triangular:'三角形',lobed:'切れ込みのある葉',compound:'複葉',serrated:'鋸歯のある葉',narrow:'細葉',blade:'線形・剣形',needle:'針形',leaf:'卵形・楕円形',obovate:'倒卵形',spoon:'へら形',arrow:'矢じり形',margin:'覆輪',center:'中斑',spots:'斑点',silverVeins:'銀葉・緑の葉脈',stripes:'縞斑',evergreen:'常緑',semiEvergreen:'半常緑（寒さで変化）',deciduous:'落葉（幹・枝は残る）',winterDormant:'冬に地上部休眠',summerDormant:'夏に地上部休眠',bell:'鐘形',trumpet:'漏斗・ラッパ形',tube:'筒形',urn:'壺形',cup:'杯形',flat:'平開',star:'星形',cross:'十字形',pea:'蝶形',lipped:'唇形',spurred:'距のある花',spoonRay:'スプーン状の花弁',pompon:'ポンポン咲き',smooth:'平滑',peeling:'剥離する樹皮',furrowed:'縦に割れる樹皮',scaly:'鱗片状',lenticels:'皮目',clump:'株立ち',mound:'こんもり',creeping:'地面に広がる',rosette:'ロゼット',upright:'直立',arching:'弓状',spreading:'横に広がる',weeping:'枝垂れ',columnar:'細い直立形',pyramidal:'円錐形',vase:'箒状',rounded:'丸い樹冠',multistem:'根元から株立ち',oval:'卵形の樹冠',layered:'段状の横枝',irregular:'不規則な枝'};
@@ -108,3 +108,5 @@ Object.assign(TRAIT_VALUES,{foxFaceLeaf:"毛のある大きな浅裂葉",solanum
 Object.assign(TRAIT_VALUES,{multicauleSpoon:'少数の歯をもつ肉厚のへら形葉',shastaLeaf:'粗い鋸歯がある細長い照葉',scabiosaLobed:'茎では羽状に裂け、株元ではへら形の葉',delphiniumPalm:'5〜7裂する掌状の単葉',hollyhockPalm:'丸く浅く裂ける毛のある葉',oenotheraLeaf:'波打つ歯のある細長い葉',portulacaNeedle:'多肉質の円柱状の葉',gardenDaisy:'一列の舌状花と黄色い筒状花',scabiosaHead:'外側の小花が大きい頭花と突き出す雄しべ',delphiniumBee:'八重の花被と後ろに伸びる距',hollyhockCup:'杯状の花弁と一重花の雄しべの柱',oenotheraCup:'脈のある4枚の花弁・8本の雄しべ・十字の柱頭',portulacaDouble:'薄い花弁が重なる八重花',creamBristleHead:'長い毛に覆われるクリーム色の小さな穂',purpleFlash:'暗紫の葉に淡紫〜白の不規則な模様'});
 
 Object.assign(TRAIT_VALUES,{sunflowerLeaf:'粗い鋸歯と毛をもつ大きな卵形〜心形葉',sunflowerHead:'大きな花芯と黄色い舌状花・重なる総苞片',morningMottle:'緑の蝉葉に散らばる不規則な白斑'});
+
+Object.assign(TRAIT_VALUES,{primroseLeaf:'丸い鋸歯と深いしわのある倒卵形葉',gerberaLeaf:'羽状の切れ込みと波打つ縁の根生葉',brunneraHeart:'くぼんだ葉脈と毛のある大きな心形葉',tapienLeaf:'細い裂片に深く切れ込む対生葉',stolonPhloxLeaf:'匍匐茎に対生する全縁の広い葉',primroseFlower:'短い筒と丸い花弁・品種別の一重〜八重花',gerberaHead:'重なる舌状花と細かい筒状花の頭花',brunneraFlower:'白い目と短い筒をもつ5裂の小花',tapienFloret:'小さな5裂花が枝先に集まる花房',stolonPhloxFlower:'細い筒と平らに開く5裂の花冠',brunneraMargin:'不規則な白い葉の覆輪',brunneraSilver:'銀葉に濃緑の網状葉脈'});

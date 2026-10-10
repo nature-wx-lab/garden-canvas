@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.22';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.23';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -17,6 +17,35 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='primroseFlower'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),double=layers>1,pk=palette.lilac?'petal-primrose-lilac':palette.stripe?'petal-primrose-stripe':palette.edge?patternKind('petal','primroseEdge',palette.edge):'petal';
+  f.add('tube','calyx','#85915b',0,-r*.37,0,r*.20,r*.56,r*.20);
+  for(let l=0;l<layers;l++)for(let j=0;j<5;j++){
+   const an=j*TAU/5+l*.58,len=r*(1-l*.13),col=l>1&&palette.center?palette.center:color;
+   f.add('primrosePetal',pk,kit.shade(rand,col,.035),0,l*r*.035,0,len,len,len,(double?1.24:1.40)-l*.16,an,0);
+  }
+  if(layers<=2){
+   for(let j=0;j<5;j++){const an=j*TAU/5;f.add('petal','petal',palette.eye||'#d8b848',0,r*.018,0,r*.23,r*.26,r*.26,1.4,an,0);}
+   f.add(kit.bud,'throat','#858354',0,r*.065,0,r*.069,r*.016,r*.069);
+  }return;
+ }
+ if(shape==='gerberaHead'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),disc=r*(layers>2?.26:.24),rays=palette.species?23:32;
+  for(let layer=0;layer<2;layer++)for(let j=0;j<16;j++)f.add('narrow','involucre','#708351',0,-r*(.06+layer*.08),0,r*.35,r*.49,r,1.35+layer*.17,j*TAU/16+layer*.13,0);
+  for(let l=0;l<layers;l++)for(let j=0;j<rays;j++){
+   const an=j*TAU/rays+l*.33,len=r*(l<2?.81:.51-(l-2)*.09),col=l>1?palette.inner||color:color,pk=palette.edge?patternKind('petal','primroseEdge',palette.edge):'petal';
+   f.add('gerberaRay',pk,kit.shade(rand,col,.035),Math.sin(an)*disc*.72,l*r*.018,Math.cos(an)*disc*.72,len*(palette.species?.72:1),len,len,1.45-l*.06,an,0);
+  }
+  for(let j=0;j<180;j++){
+   const t=(j+.5)/180,an=j*2.399963,rr=disc*Math.sqrt(t);f.add(kit.bud,'discFloret',t>.80?(palette.disc==='#a2a371'?'#d4c899':'#cbb88c'):palette.disc,Math.sin(an)*rr,r*(.07+.065*Math.sqrt(1-t)),Math.cos(an)*rr,r*.018,r*.027,r*.018);
+  }return;
+ }
+ if(['brunneraFlower','tapienFloret','stolonPhloxFlower'].includes(shape)){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),br=shape==='brunneraFlower',tube=br?.45:shape==='tapienFloret'?1.5:1.65,pk=palette.edge?patternKind('petal','primroseEdge',palette.edge):'petal';
+  f.add('tube','petal',color,0,-r*tube*.48,0,r*.10,r*tube,r*.10);
+  for(let j=0;j<5;j++)f.add('smallSalverPetal',pk,color,0,0,0,r*(br?1.05:.81),r,r,1.48,j*TAU/5,0);
+  f.add(kit.bud,'flowerEye',br?'#dddcc3':shape==='tapienFloret'?'#dad6c3':'#b69a68',0,r*.025,0,r*.14,r*.02,r*.14);return;
+ }
  if(shape==='sunflowerHead'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),disc=r*.57;
   f.add(bud,'receptacle','#71864c',0,-r*.08,0,disc,r*.14,disc);
@@ -1185,6 +1214,8 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(['primroseRosette','gerberaRosette','brunneraSprays'].includes(info.appearance?.architecture)){drawBasalFlowerForms(b,{info,s,detail,rand},kit);return;}
+ if(['tapienMat','stolonPhlox'].includes(info.appearance?.architecture)){drawLowFlowerMats(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='sunspot'){drawSunspot(b,{info,s,rand},kit);return;}
  if(['uprightYellow','annualScabiosa','shastaAlaska','pacificDelphinium','summerHollyhock','pinkEveningPrimrose','creamFalls','doublePortulaca'].includes(info.appearance?.architecture)){drawGardenFlowerForms(b,{info,s,p,detail,rand},kit);return;}
  if(['foxFace','ornamentalKale','ornamentalPepper','crimsonClover','livingstoneDaisy','pinkSage','compactPinkCoreopsis'].includes(info.appearance?.architecture)){drawFruitAndLeafPlants(b,{info,s,p,detail,rand},kit);return;}
@@ -3097,5 +3128,53 @@ function drawGaillardias(b,{info,s,detail,rand},kit){
  }
  if(s.bloom||s.seedHeads)for(const {at,yaw,dry} of heads){
   detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius*(.87+rand()*.13),color:s.flowerColor,shape:'gaillardiaHead',petals:a.petals,pattern:a.flowerPattern,patternColor:a.flowerPatternColor,palette:{...a.flowerPalette,dry:dry||!s.bloom},tilt:.20+rand()*.5,yaw},{...kit,rand});
+ }
+}
+
+function drawBasalFlowerForms(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,prim=a.architecture==='primroseRosette',gerb=a.architecture==='gerberaRosette',br=!prim&&!gerb,green=s.leafColor,stem=a.stemColor;
+ if(s.groundDormant)return;
+ const kind=br&&a.leafPattern?foliageKind(info):prim||br?'leaf-rugose':foliageKind(info),leafSize=Math.min(a.leafLength,w*(br?.37:.52),h*(prim?1.0:gerb?.80:.49)),leafCount=Math.max(7,Math.round((prim?28:gerb?19:23)*detail*s.leafDensity));
+ for(let j=0;j<leafCount;j++){
+  const an=j*2.399,outer=j/leafCount,len=leafSize*(.62+.38*outer),base=[Math.sin(an)*w*.025,.004,Math.cos(an)*w*.025],tip=br?[Math.sin(an)*w*.17,h*(.20+.12*rand()),Math.cos(an)*w*.17]:base;
+  if(br)b.branch(base,tip,Math.min(.0016,w*.004),stem,'petiole');
+  b.add(a.leafShape,kind,kit.shade(rand,green,.07),...tip,len,len,len,br?.82+outer*.45:prim?.30+outer*1.01:.27+outer*.94,an,(rand()-.5)*.11);
+ }
+ if(!s.bloom)return;
+ const heads=Math.max(2,Math.round((prim?10:gerb?7:9)*detail*s.flowerDensity));
+ for(let j=0;j<heads;j++){
+  const an=j*2.399,rr=w*(prim?.20:gerb?.18:.22)*Math.sqrt((j+.5)/heads),tip=[Math.sin(an)*rr,h*(prim&&!a.flowerPalette?.umbel?.61+rand()*.15:.73+rand()*.22),Math.cos(an)*rr],root=[tip[0]*.1,.006,tip[2]*.1],r=Math.min(a.flowerRadius,h*(prim?.25:.30));
+  b.branch(root,tip,Math.min(gerb?.0028:br?.0007:.0013,h*.016),stem,'scape');
+  if(gerb)for(let k=0;k<22;k++){const t=.08+k*.039,aa=k*2.399,at=root.map((v,n)=>v+(tip[n]-v)*t);b.branch(at,[at[0]+Math.sin(aa)*.0018,at[1]+.001,at[2]+Math.cos(aa)*.0018],.00009,'#bdc4ac','scapeHair');}
+  const flower=(at,size,pitch,yaw,palette=a.flowerPalette)=>detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:size,color:prim&&palette.aged&&j%3===1?palette.aged:s.flowerColor,shape:a.flowerShape,layers:a.flowerLayers||1,palette:palette||{},tilt:pitch,yaw},{...kit,rand});
+  if(br){
+   for(let k=0;k<7;k++){
+    const angle=an+k*2.399,at=[tip[0]+Math.sin(angle)*w*.11,tip[1]+h*(.025+k*.018),tip[2]+Math.cos(angle)*w*.11],start=[tip[0]*.8,tip[1]*.80,tip[2]*.8];b.branch(start,at,.0004,stem,'pedicel');
+    for(let f=0;f<3;f++){const aa=angle+f*2.0,end=[at[0]+Math.sin(aa)*.011,at[1]+f*.009,at[2]+Math.cos(aa)*.011];b.branch(at,end,.00022,stem,'pedicel');flower(end,r,.50+rand()*.45,aa);}
+   }
+  }else if(prim&&a.flowerPalette?.umbel){
+   for(let k=0;k<4;k++){const angle=an+k*TAU/4,end=[tip[0]+Math.sin(angle)*r*1.25,tip[1]+r*.5,tip[2]+Math.cos(angle)*r*1.25];b.branch(tip,end,.0006,stem,'pedicel');flower(end,r,.55,angle);}
+  }else flower(tip,r,gerb?.30+rand()*.65:.25+rand()*.50,an);
+ }
+}
+
+function drawLowFlowerMats(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,tap=a.architecture==='tapienMat',n=Math.max(5,Math.round((tap?36:12)*detail)),green=s.leafColor,stem=a.stemColor,leaf=foliageKind(info),nodes=7;
+ for(let i=0;i<n;i++){
+  const an=i*2.399,length=w*(.28+rand()*.18),root=[0,.007,0];let from=root;
+  for(let k=1;k<=nodes;k++){
+   const t=k/nodes,aa=an+Math.sin(k*.73+i)*.12,at=[Math.sin(aa)*length*t,.008+h*(tap?.13:.045)*Math.sin(t*Math.PI),Math.cos(aa)*length*t];
+   b.branch(from,at,tap?.0007:.001,stem,'stolon');
+   if(k%2===0)b.branch(at,[at[0],0,at[2]],.00035,'#918266','nodeRoot');
+   for(const side of [0,Math.PI])if(rand()<s.leafDensity){const len=Math.min(a.leafLength,w*(tap?.10:.13))*(.68+rand()*.30);b.add(a.leafShape,leaf,kit.shade(rand,green,.05),...at,len,len,len,1.18,aa+Math.PI/2+side,0);}
+   if(s.bloom&&k%2===1&&rand()<s.flowerDensity){
+    const tip=[at[0]+Math.sin(aa)*w*.025,h*(.67+rand()*.29),at[2]+Math.cos(aa)*w*.025];b.branch(at,tip,.0007,stem,'flowerStem');
+    for(let l=1;l<=(tap?4:2);l++)for(const side of [0,Math.PI]){const t2=l*(tap?.16:.21),pt=at.map((v,d)=>v+(tip[d]-v)*t2),len=a.leafLength*(tap?.63:.40);b.add(a.leafShape,leaf,green,...pt,len,len,len,.90,aa+l+side,0);}
+    const count=tap?14:4,rad=tap?a.headRadius:a.flowerRadius*1.1;
+    for(let f=0;f<count;f++){const a2=f*2.399,rr=rad*Math.sqrt((f+.5)/count),end=[tip[0]+Math.sin(a2)*rr,tip[1]+rad*.3*(1-rr/rad),tip[2]+Math.cos(a2)*rr];b.branch(tip,end,.0002,stem,'pedicel');detailedFlower(b,{x:end[0],y:end[1],z:end[2],r:a.flowerRadius,color:s.flowerColor,shape:a.flowerShape,tilt:tap?.12:.25,yaw:a2},{...kit,rand});}
+   }
+   from=at;
+  }
  }
 }
