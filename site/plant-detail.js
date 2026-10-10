@@ -1,6 +1,59 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.72';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.73';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function callicarpaLeafPoint(type,t,u){
+ const small=type==='dichotoma',serrate=t>(small?.49:.06)&&t<.94,cycle=(t*(small?11:24))%1,tooth=serrate?1+(small?.15:.055)*(cycle<.70?cycle/.70:(1-cycle)/.30):1;
+ const width=Math.pow(Math.sin(Math.PI*t),.88)*(small?.64+.66*t:1.08-.28*t)*tooth,vein=.004*Math.cos(t*18*Math.PI-Math.abs(u)*3);
+ return [u*width*.5,t,(.035*u*u+vein*Math.abs(u))*Math.sin(Math.PI*t)-.055*t*t];
+}
+export function callicarpaFlowerGeometry(){
+ const g=osmanthusFlowerGeometry(false);g.userData={callicarpaFlower:{lobes:4}};return g;
+}
+function drawCallicarpa(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,small=type==='dichotoma',large=type==='large',nodes=[],wood=[],canes=Math.round(12*detail);
+ const shoot=(origin,az,rise,reach,order)=>{
+  const path=t=>[origin[0]+Math.sin(az)*reach*t,origin[1]+rise*(1.88*t-.88*t*t)-h*(small?.25:.14)*t*t*t,origin[2]+Math.cos(az)*reach*t],steps=12;
+  for(let n=1;n<=steps;n++)wood.push({from:path((n-1)/steps),to:path(n/steps),r:(order===0?.008:.0025)*(1-.74*n/steps)});
+  const count=order===0?10:7;
+  for(let n=1;n<=count;n++){
+   const t=.06+n*.90/count,at=path(t),roll=rand();nodes.push({at,above:path(Math.min(.98,t+.014)),az:az+n*Math.PI/2,roll,t,order,size:.60+rand()*.40});
+   if(order===0&&[2,4,6,8].includes(n))for(const side of [-1,1])shoot(at,az+side*(.65+rand()*.30),h*(.20+rand()*.19),w*(.18+rand()*.08),1);
+  }
+ };
+ for(let k=0;k<canes;k++){const az=k*2.399963+rand()*.3;shoot([Math.sin(az)*w*.025,0,Math.cos(az)*w*.025],az,h*(.50+rand()*.32),w*(.24+rand()*.15),0);}
+ for(const q of wood){
+  b.branch(q.from,q.to,q.r,a.barkColor,'wood-callicarpa');
+  if(q.r>.003){const at=q.to;for(let k=0;k<2;k++)b.add(kit.bud,'lenticel-callicarpa','#b8aa91',at[0]+Math.sin(k*3.1)*q.r*.75,at[1]-.004,at[2]+Math.cos(k*3.1)*q.r*.75,.0006,.0005,.0005);}
+ }
+ for(const n of nodes){
+  for(let side=0;side<2;side++){
+   const az=n.az+side*Math.PI,roll=(n.roll+side*.371)%1;
+   if(s.leafDensity>0&&roll<s.leafDensity){
+    const len=a.leafLength*n.size*s.leafScale,pet=.004,at=[n.at[0]+Math.sin(az)*pet,n.at[1]+pet*.3,n.at[2]+Math.cos(az)*pet],f=flowerFrame(b,at,.74+n.roll*.85,az),col=s.autumn?'#a7a35c':a.leafColor;
+    b.branch(n.at,at,.00035,a.stemColor,'petiole-callicarpa');f.add('callicarpa-'+type,`leaf-callicarpa-${type}-underside-99a279`,kit.shade(rand,col,.046),0,0,0,len*a.leafWidth/a.leafLength,len,len,0,(n.roll-.5)*.45,0);
+   }else if(s.leafDensity===0)b.add(kit.bud,'winter-bud-callicarpa','#99897c',n.at[0]+Math.sin(az)*.002,n.at[1]+.001,n.at[2]+Math.cos(az)*.002,.001,.0035,.001,.30,az,0);
+  }
+  const ripe=a.fruitMonths.includes(s.month),green=a.greenFruitMonths.includes(s.month),show=s.bloom||ripe||green;
+  if(!show||n.t<.25||n.t>.88||n.order===0&&n.roll>.45||s.month===11&&n.roll>.28)continue;
+  // Dichotoma peduncles arise slightly above the opposing petioles.
+  const at=small?n.above:n.at,az=n.az+1.45,cluster=flowerFrame(b,at,.65,az),stalk=small?.008:large?.017:.015,spread=large?.026:small?.010:.018;
+  cluster.branch([0,0,0],[0,stalk,0],.00035,a.stemColor,'peduncle-callicarpa');
+  const total=large?66:small?24:type==='pink'?22:12;
+  for(let j=0;j<total;j++){
+   const theta=j*2.399963,rad=spread*Math.sqrt((j+.5)/total),pt=[Math.sin(theta)*rad,stalk+.006*Math.cos(theta*1.72)+.004*(1-rad/spread),Math.cos(theta)*rad],branch=[pt[0]*.45,stalk,pt[2]*.45];
+   cluster.branch([0,stalk,0],branch,.00018,a.stemColor,'cyme-callicarpa');cluster.branch(branch,pt,.00014,a.stemColor,'pedicel-callicarpa');
+   if(s.bloom){
+    const f=flowerFrame(cluster,pt,.20+(j%3)*.23,theta),R=a.flowerRadius;f.branch([0,0,0],[0,.002,0],.00045,'#c9a5c0','corolla-tube-callicarpa');f.add('callicarpaFlower','petal-callicarpa',s.flowerColor,0,.002,0,R,R,R);
+    for(let k=0;k<4;k++){const an=k*TAU/4,end=[Math.sin(an)*.0011,.005,Math.cos(an)*.0011];f.branch([Math.sin(an)*.0005,.002,Math.cos(an)*.0005],end,.00008,'#c3aac0','filament-callicarpa');f.add(kit.bud,'anther-callicarpa','#dabf69',...end,.00035,.00030,.00025);}
+    f.branch([0,.002,0],[.0003,.0055,0],.00008,'#d3c5c5','style-callicarpa');
+   }else{
+    const R=a.fruitRadius*(green?.70:1),color=green?'#91a26d':type==='pink'&&s.month===10?'#d0b4c6':a.fruitColor;
+    cluster.add(kit.bud,'fruit-glossy-callicarpa',kit.shade(rand,color,.025),...pt,R,R*.92,R);cluster.add(kit.bud,'stigma-callicarpa','#ad9987',pt[0],pt[1]+R*.91,pt[2],R*.17,R*.06,R*.17);
+   }
+  }
+ }
+}
+
 export function gardeniaLeafPoint(type,t,u){
  const round=type==='maruba',width=Math.pow(Math.sin(Math.PI*t),round?.55:.78)*(round?.75+.45*t:1.10-.22*t),vein=.003*Math.cos(t*15*Math.PI-u*2)*Math.sin(Math.PI*t);
  return [u*width*.5,t,.038*Math.sin(Math.PI*t)*u*u-.042*t*t+vein*Math.abs(u)];
@@ -3976,6 +4029,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='callicarpaArches'){drawCallicarpa(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardeniaBranches'){drawGardenia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='sarcandraCanes'){drawSarcandra(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='nandinaCanes'){drawNandina(b,{info,s,detail,rand},kit);return;}

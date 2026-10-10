@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.72';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.73';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -197,3 +197,5 @@ Object.assign(TRAIT_VALUES,{nandinaCanes:"根元から立つ竹状の幹と繰�
 Object.assign(TRAIT_VALUES,{sarcandraCanes:"まばらに枝分かれする直立茎と対生の葉",sarcandraToothed:"光沢と鋭い鋸歯を持つ厚い長楕円形葉",sarcandraApetalous:"花弁も萼もなく、雌しべの背側に雄しべ1本を持つ小花"});
 
 Object.assign(TRAIT_VALUES,{gardeniaBranches:"株元から分かれ対生の葉を付けるクチナシの枝",gardeniaSix:"筒状の基部から6裂して開く白い花冠",gardeniaLayered:"厚い白い花弁が巻き重なる八重花","gardenia-maruba":"丸い先端と光沢をもつ小さな全縁葉","gardenia-radicans":"細長く光沢のある小さな全縁葉","gardenia-variegated":"クリーム色の不規則な外斑のある全縁葉","gardenia-double":"光沢と葉脈のくぼみのある長楕円形の全縁葉","gardenia-single":"対生または3輪生する光沢のある全縁葉"});
+
+Object.assign(TRAIT_VALUES,{callicarpaArches:"株元から伸びて弓なりにしなる細枝と対生葉",callicarpaFour:"小さな4裂花冠から突き出す4本の雄しべ","callicarpa-shijimurasaki":"白い散り斑と細かな鋸歯を持つ単葉","callicarpa-dichotoma":"上半分だけに粗い鋸歯を持つ小さな単葉","callicarpa-large":"大きく先が尖り全体に鋸歯を持つ単葉","callicarpa-pink":"桃色の果実を付ける株の楕円形の単葉"});
