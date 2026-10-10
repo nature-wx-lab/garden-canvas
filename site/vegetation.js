@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.30';
-import {foliageKind} from './appearance.js?v=0.9.30';
-import {detailedFlower,drawDetailedHerb,salviniaPoint} from './plant-detail.js?v=0.9.30';
-import {drawTree} from './tree-model.js?v=0.9.30';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.30';
+import {treeProfile} from './tree-profiles.js?v=0.9.31';
+import {foliageKind} from './appearance.js?v=0.9.31';
+import {detailedFlower,drawDetailedHerb,salviniaPoint} from './plant-detail.js?v=0.9.31';
+import {drawTree} from './tree-model.js?v=0.9.31';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.31';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.30';
+import { plantInfo, stateAt } from './model.js?v=0.9.31';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,6 +13,26 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+// Peltate Hydrocotyle leaves attach at the centre, not at a basal notch.
+for(const type of ['waterCoinShield','marsileaWedge','bacopaOvate','bacopaRound','bacopaSpoon','bacopaCorolla']){
+ const p=[],uv=[],ix=[],rows=28,cols=type==='waterCoinShield'||type==='bacopaCorolla'?120:24,coin=type==='waterCoinShield',fern=type==='marsileaWedge',corolla=type==='bacopaCorolla';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,an=j/cols*Math.PI*2;
+  if(coin){
+   const rr=t*.5*(.964+.036*Math.cos(an*11));p.push(Math.sin(an)*rr,Math.cos(an)*rr,-.038*t*t+.007*Math.cos(an*11)*t);uv.push(.5+Math.sin(an)*t*.5,.5+Math.cos(an)*t*.5);
+  }else if(fern){
+   const angle=u*.65,rr=t*(.81+.19*Math.cos(u*Math.PI/2));p.push(Math.sin(angle)*rr,Math.cos(angle)*rr,-.025*t*t+.045*u*u*t);uv.push(j/cols,t);
+  }else if(corolla){
+   const fl=Math.max(0,(t-.58)/.42),lobe=.77+.23*Math.cos(an*5),rr=.15+t*.11+Math.pow(fl,.72)*.72*lobe*(1+.09*Math.cos(an));
+   p.push(Math.sin(an)*rr,t<.58?t*1.10:.638+.15*Math.pow(fl,.5)+.055*fl*Math.cos(an*5),Math.cos(an)*rr);uv.push(j/cols,t);
+  }else{
+   const spoon=type==='bacopaSpoon',round=type==='bacopaRound',sn=Math.max(0,Math.sin(t*Math.PI)),width=(spoon?.19:round?.47:.38)*Math.pow(sn,.47)*(spoon?.15+.85*t:1);
+   p.push(u*width,t,-.045*u*u*sn-.06*t*t+.008*Math.pow(Math.cos(t*26-Math.abs(u)*8),2)*sn);uv.push(j/cols,t);
+  }
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 for(const type of ['salviniaFlat','salviniaFolded','salviniaHood','hyacinthOrbicular','frogbitOrbicular','hyacinthTepal']){
  const p=[],uv=[],ix=[],rows=32,cols=20,fern=type.startsWith('salvinia'),petal=type==='hyacinthTepal';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -879,6 +899,21 @@ function windShader(shader,kind){
       float halo=1.0-smoothstep(.72,1.20,eye);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.30,.19,.52),halo*.73);
       diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.92,.74,.13),1.0-smoothstep(.50,.65,eye));`:''}
       #include <emissivemap_fragment>`);
+    if(kind==='leaf-marsilea')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      float band=smoothstep(.34,.40,vUv.y)*(1.0-smoothstep(.63,.72,vUv.y));
+      float marsileaVeins=pow(max(0.0,cos(vUv.x*53.0+sin(vUv.y*19.0))),20.0);
+      diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.19,.22,.09),band*.47);diffuseColor.rgb*=1.0+.16*marsileaVeins;
+      #include <emissivemap_fragment>`);
+    if(kind==='leaf-bacopa-veins')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      float bacopaFold=abs(vUv.x-.5)*2.0;float bacopaMidrib=1.0-smoothstep(.018,.070,bacopaFold);
+      float side=pow(max(0.0,cos((vUv.y-bacopaFold*.28)*32.0)),22.0)*(1.0-smoothstep(.80,1.0,bacopaFold));
+      float mesh=pow(max(0.0,cos(vUv.x*39.0+sin(vUv.y*34.0))*cos(vUv.y*43.0)),10.0);
+      diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.73,.78,.46),max(max(bacopaMidrib,side)*.78,mesh*.30));
+      #include <emissivemap_fragment>`);
+    if(kind==='petal-bacopa')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      float vein=pow(max(0.0,cos(vUv.x*94.2478+sin(vUv.y*16.0)*.3)),25.0);diffuseColor.rgb*=1.0-.16*vein;
+      diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.74,.73,.68),(1.0-smoothstep(.56,.70,vUv.y))*.27);
+      #include <emissivemap_fragment>`);
     if(kind==='leaf-salvinia')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
       vec2 cells=fract(vUv*vec2(21.0,32.0))-.5;float papilla=1.0-smoothstep(.10,.28,length(cells));
       diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.68,.75,.45),papilla*.24);
@@ -977,7 +1012,7 @@ export function batch(group,height=1,flex=.06,phase=0){
     const key=geometry.uuid+kind;if(!entries.has(key))entries.set(key,{geometry,kind,items:[],colors:[],wind:[]});const e=entries.get(key);e.items.push(matrix.clone());colour.set(color);e.colors.push(colour.clone());e.wind.push(height,flex,phase,flutter);
   }
   function add(shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0){
-    dummy.position.set(x,y,z);dummy.scale.set(sx,sy,sz);dummy.rotation.set(rx,ry,rz,'YXZ');dummy.updateMatrix();push(typeof shape==='string'?shapes[shape]:shape,kind,dummy.matrix,color,kind==='leaf-salvinia'?0:kind.startsWith('leaf')||kind.startsWith('petal')||kind.startsWith('sepal')||kind.startsWith('bract-')||['maple','grass'].includes(kind)?1:0);
+    dummy.position.set(x,y,z);dummy.scale.set(sx,sy,sz);dummy.rotation.set(rx,ry,rz,'YXZ');dummy.updateMatrix();push(typeof shape==='string'?shapes[shape]:shape,kind,dummy.matrix,color,['leaf-salvinia','leaf-marsilea','leaf-coin-glossy'].includes(kind)?0:kind.startsWith('leaf')||kind.startsWith('petal')||kind.startsWith('sepal')||kind.startsWith('bract-')||['maple','grass'].includes(kind)?1:0);
   }
   function branch(a,b,r,color,kind='wood'){
     const va=new THREE.Vector3(...a),vb=new THREE.Vector3(...b),dir=vb.clone().sub(va),length=dir.length();if(length<.0001)return;
