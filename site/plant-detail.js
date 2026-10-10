@@ -1,6 +1,78 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.71';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.72';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function gardeniaLeafPoint(type,t,u){
+ const round=type==='maruba',width=Math.pow(Math.sin(Math.PI*t),round?.55:.78)*(round?.75+.45*t:1.10-.22*t),vein=.003*Math.cos(t*15*Math.PI-u*2)*Math.sin(Math.PI*t);
+ return [u*width*.5,t,.038*Math.sin(Math.PI*t)*u*u-.042*t*t+vein*Math.abs(u)];
+}
+export function gardeniaCorollaGeometry(type){
+ const pos=[],uv=[],ix=[],double=type==='double'||type==='radicans',rings=double?4:1;
+ for(let ring=0;ring<rings;ring++)for(let k=0;k<(ring===0?6:ring===1?7:ring===2?8:6);k++){
+  const n=ring===0?6:ring===1?7:ring===2?8:6,az=k*TAU/n+ring*.54,start=pos.length/3,rows=24,cols=8,scale=1-ring*.20;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,r=scale*(.08+t*.92),width=scale*(type==='maruba'?.46:double?.52:.36)*Math.pow(Math.sin(Math.PI*t),type==='maruba'?.57:.83),twist=.15*t;
+   const x=u*width+twist*r,y=ring*.12+.10*Math.sin(Math.PI*t)-.09*t*t+u*u*(double?.19:.065)+ring*.12*t*t+.015*Math.sin(u*11+t*13)*Math.sin(Math.PI*t);
+   pos.push(Math.sin(az)*r+Math.cos(az)*x,y,Math.cos(az)*r-Math.sin(az)*x);uv.push(j/cols,t);
+   if(i<rows&&j<cols){const m=start+i*(cols+1)+j;ix.push(m,m+cols+1,m+1,m+1,m+cols+1,m+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.gardeniaFlower={rings,lobes:6,joinedAtTube:true};return g;
+}
+export function gardeniaFruitGeometry(){
+ const p=[],uv=[],ix=[],rows=28,cols=72;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,theta=j/cols*TAU,r=Math.pow(Math.sin(Math.PI*t),.70)*(.43+.07*t)*(1+.22*Math.pow(Math.max(0,Math.cos(theta*6)),5));p.push(Math.cos(theta)*r,t,Math.sin(theta)*r);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+1,k+cols+1,k+1,k+cols+2,k+cols+1);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.gardeniaFruit={ridges:6};return g;
+}
+function drawGardenia(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,small=type==='radicans',tips=[],leaves=[],canes=small?7:5,leafL=Math.min(a.leafLength,w*.24),point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r];
+ for(let k=0;k<canes;k++){
+  const az=k*TAU/canes+rand()*.3,root=point(az,w*.025,0),fork=point(az,w*.13,h*(small?.19:.28));b.branch(root,fork,Math.min(.014,h*.017),a.barkColor,'wood-gardenia-base');
+  const count=Math.round((small?7:9)*detail);
+  for(let j=0;j<count;j++){
+   const theta=az+(rand()-.5)*2.6,top=h*(.34+rand()*.44),r=w*(.12+rand()*.24),end=point(theta,r,top),mid=fork.map((v,z)=>v+(end[z]-v)*.52);mid[1]+=.02;
+   b.branch(fork,mid,.0035,a.barkColor,'wood-gardenia-branch');b.branch(mid,end,.0024,a.stemColor,'stem-gardenia-shoot');
+   for(let branch=0;branch<3;branch++){
+    const yaw=theta+(branch-1)*.82,base=mid.map((v,z)=>v+(end[z]-v)*(.28+branch*.23)),length=Math.min(.13,h*.22),tip=[base[0]+Math.sin(yaw)*length*.60,base[1]+length*(.56+rand()*.25),base[2]+Math.cos(yaw)*length*.60];
+    b.branch(base,tip,.00135,a.stemColor,'stem-gardenia-terminal');
+    for(let node=1;node<=3;node++){
+     const t=.20+node*.23,at=base.map((v,z)=>v+(tip[z]-v)*t),whorl=j%7===0?3:2;
+     for(let l=0;l<whorl;l++)leaves.push({at,az:yaw+node*Math.PI/2+l*TAU/whorl,roll:rand(),young:node===3,size:.72+rand()*.35});
+    }
+    tips.push({at:tip,az:yaw,roll:rand()});
+   }
+  }
+ }
+ // Low lateral shoots keep the natural shrub clothed near its base.
+ for(let i=0;i<Math.round(18*detail);i++){
+  const az=i*2.399963,base=point(az,w*.035,h*.07),tip=point(az,w*(.22+rand()*.15),h*(.16+rand()*.18));b.branch(base,tip,.0019,a.stemColor,'stem-gardenia-low');
+  for(let node=1;node<=5;node++)for(let side=0;side<2;side++)leaves.push({at:base.map((v,k)=>v+(tip[k]-v)*(.16+node*.16)),az:az+node*Math.PI/2+side*Math.PI,roll:rand(),young:node===5,size:.73+rand()*.22});
+ }
+ for(const n of leaves){
+  const young=n.young&&[4,5].includes(s.month),L=leafL*n.size*(young?.76:1),frame=flowerFrame(b,n.at,.50+n.roll*1.04,n.az),paint=type==='variegated'?'variegated':'plain';
+  frame.branch([0,0,0],[0,.006,0],.0006,a.stemColor,'petiole-gardenia');
+  frame.add('gardenia-'+type,`leaf-gardenia-${paint}-underside-7d8f6b`,kit.shade(rand,young?'#789c53':a.leafColor,.035),0,.006,0,L*a.leafWidth/a.leafLength,L,L,0,(n.roll-.5)*.34,0);
+  if(n.young)frame.add('gardenia-radicans','stipule-gardenia','#8b9863',0,0,0,.003,.006,.006,0,Math.PI,0);
+ }
+ for(const [i,n] of tips.entries()){
+  const ripe=a.fruitMonths?.includes(s.month)&&i%4===0,green=a.greenFruitMonths?.includes(s.month)&&i%4===0,flower=s.bloom&&n.roll<.38&&!ripe,frame=flowerFrame(b,n.at,n.roll*.80,n.az),R=a.flowerRadius;
+  if(ripe||green){
+   const color=ripe?'#d89435':'#7b9251';frame.add('gardeniaFruit','fruit-gardenia-six-ridges',color,0,0,0,.017,.032,.017);
+   for(let k=0;k<6;k++){const az=k*TAU/6;frame.add('gardenia-radicans','sepal-gardenia-retained',ripe?'#9b7645':'#719454',Math.sin(az)*.003,.030,Math.cos(az)*.003,.0025,.012,.012,.45,az,0);}continue;
+  }
+  if(!flower)continue;
+  frame.branch([0,0,0],[0,R*.65,0],R*.14,'#e2ddbd','corolla-tube-gardenia');
+  for(let k=0;k<6;k++){const az=k*TAU/6;frame.add('gardenia-radicans','sepal-gardenia','#70854c',Math.sin(az)*R*.10,R*.15,Math.cos(az)*R*.10,R*.09,R*.46,R*.46,.43,az,0);}
+  const old=n.roll<.11,color=old?'#e7d4a2':'#f4f1df';frame.add('gardenia-corolla-'+type,'petal-gardenia',color,0,R*.65,0,R,R,R,0,n.roll*TAU,0);
+  if(!['double','radicans'].includes(type)){
+   frame.add(kit.bud,'style-gardenia','#e1c573',0,R*.79,0,R*.07,R*.22,R*.07);frame.add(kit.bud,'stigma-gardenia','#e7ce7c',0,R*1.06,0,R*.12,R*.12,R*.075);
+   for(let k=0;k<6;k++){const az=k*TAU/6;frame.add(kit.bud,'anther-gardenia','#c5a665',Math.sin(az)*R*.16,R*.70,Math.cos(az)*R*.16,R*.024,R*.13,R*.025,Math.sin(az)*.9,0,Math.cos(az)*.9);}
+  }
+ }
+}
+
 export function sarcandraLeafPoint(t,u){
  const cycle=(t*18)%1,tooth=t>.08&&t<.96?1+.10*(cycle<.72?cycle/.72:(1-cycle)/.28):1;
  const width=Math.pow(Math.sin(Math.PI*t),.77)*(.96+.13*t)*tooth;
@@ -3904,6 +3976,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='gardeniaBranches'){drawGardenia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='sarcandraCanes'){drawSarcandra(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='nandinaCanes'){drawNandina(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='euonymusBranches'){drawEuonymus(b,{info,s,detail,rand},kit);return;}
