@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.41';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.42';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -47,13 +47,14 @@ function flowerFrame(b,origin,pitch,yaw){
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
  if(shape==='gardenRose'){
-  const f=flowerFrame(b,[x,y,z],tilt,yaw),count=petals,high=palette.profile==='high',rosette=palette.profile==='rosette',flat=palette.profile==='flat'||rosette,wave=palette.wavy;
-  // Individual, overlapping petals spiral from reflexed outer petals to a raised centre.
-  for(let j=0;j<count;j++){
-   const t=j/Math.max(1,count-1),an=j*2.39996+Math.sin(j*4.7)*.12,rad=r*.075*(1-t),len=r*(1-(palette.exposedStamens?.63:.67)*t),pitch=(flat?1.43:high?1.12:1.0)*(1-t)+(high?.28:.58)*t,level=r*(high?.40:flat?.05:.22)*Math.pow(t,.8);
-   const col=palette.inner?new THREE.Color(color).lerp(new THREE.Color(palette.inner),t*.85):color;
-   const pk=palette.rim?'petal-rose-rim-'+(palette.rimWidth?'broad-':'')+palette.rim.slice(1):'petal-rose',qx=rosette&&t>.4?Math.sin(j%4*Math.PI/2)*r*.11:0,qz=rosette&&t>.4?Math.cos(j%4*Math.PI/2)*r*.11:0;
-   f.add(wave?'roseWavedPetal':(high||palette.pointed)&&t>.4?'rosePointedPetal':'roseRoundPetal',pk,shade(rand,col,.018),Math.sin(an)*rad+qx,level,Math.cos(an)*rad+qz,len*(.90+.10*(1-t)),len,len,palette.exposedStamens?1.32:pitch,an,(rand()-.5)*(rosette?.42:.09));
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),count=petals,high=palette.profile==='high',deep=palette.profile==='deepCup',rosette=palette.profile==='rosette',flat=palette.profile==='flat'||rosette,wave=palette.wavy;
+  const rings=Math.max(2,Math.ceil(count/(rosette?9:7))),per=Math.floor(count/rings);
+  for(let layer=0,j=0;layer<rings;layer++){
+   const n=per+(layer<count%rings?1:0),t=layer/(rings-1),len=r*(1-(palette.exposedStamens?.30:.83)*t),level=r*(high?.60:deep?.70:flat?.13:.40)*t;
+   for(let k=0;k<n;k++,j++){
+    const an=k*TAU/n+layer*2.39996+Math.sin(j*4.7)*.085,col=palette.inner?new THREE.Color(color).lerp(new THREE.Color(palette.inner),t*.85):color,pk=palette.rim?'petal-rose-rim-'+(palette.rimWidth?'broad-':'')+palette.rim.slice(1):'petal-rose',qx=rosette&&t>.4?Math.sin(j%4*Math.PI/2)*r*.065:0,qz=rosette&&t>.4?Math.cos(j%4*Math.PI/2)*r*.065:0;
+    f.add(palette.notched?'roseNotchedPetal':palette.jewel?'roseJewelPetal':wave||deep&&t>.3?'roseWavedPetal':(high||palette.pointed)&&t>.4?'rosePointedPetal':'roseRoundPetal',pk,shade(rand,col,.018),qx,level+r*(rand()-.5)*.055,qz,len*(.88+rand()*.18),len*(palette.exposedStamens?.32:deep?1.48:high?1.05:flat?.56:.93),len*(.93+rand()*.12),(rand()-.5)*(rosette||deep&&t>.3?.42:.18),an,(rand()-.5)*.27);
+   }
   }
   if(palette.buttonEye)for(let j=0;j<9;j++)f.add('roseRoundPetal','petal-button-eye',palette.inner||color,Math.sin(j*2.399)*r*.035,r*.25,Math.cos(j*2.399)*r*.035,r*.10,r*.12,r*.10,.1,j*2.399,0);
   if(palette.exposedStamens){
@@ -3840,8 +3841,10 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,pal=a.flowerPalette,h=s.height,w=s.spread,green=s.leafColor,stem=a.stemColor,climb=pal.climber,ramble=pal.rambling,canes=ramble?9:climb?7:7,nodes=climb?Math.max(9,Math.min(24,Math.ceil(h/.22))):7,leafLen=Math.min(a.leafLength,w*.17),heads=[],leaves=[],mix=(x,y,t)=>x.map((v,k)=>v+(y[k]-v)*t);
  const prickles=(from,to,seed)=>{
   if(pal.fewPrickles&&seed%3!==0)return;
-  const at=mix(from,to,.54),yaw=seed*2.399,reach=Math.min(.007,h*.006),tip=[at[0]+Math.sin(yaw)*reach,at[1]-reach*.48,at[2]+Math.cos(yaw)*reach];
-  b.branch(at,tip,reach*.30,'#8d6d53','prickle');
+  for(let q=0;q<(pal.manyPrickles?3:1);q++){
+   const at=mix(from,to,.30+q*.23),yaw=(seed+q)*2.399,reach=Math.min(.007,h*.006),tip=[at[0]+Math.sin(yaw)*reach,at[1]-reach*.48,at[2]+Math.cos(yaw)*reach];
+   b.branch(at,tip,reach*.30,'#8d6d53','prickle');
+  }
  };
  // Structural branching is built before foliage so winter retains the same canes.
  for(let i=0;i<canes;i++){
@@ -3865,6 +3868,12 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
    leaves.push({at,yaw:yaw+(j%2?1:-1)*(1.03+.07*(i%4)),size:.85+.12*(j%3)});prev=at;
   }
  }
+ if(pal.autumnLongShoots&&(s.month>=8||s.month<=2))for(const head of heads){
+  if(head.seed%3!==0)continue;
+  const base=head.at,end=[base[0]+Math.sin(head.yaw)*w*.09,base[1]+h*.23,base[2]+Math.cos(head.yaw)*w*.09];
+  b.branch(base,end,.0017,stem,'seasonalFlowerShoot');prickles(base,end,head.seed);
+  for(let j=1;j<=4;j++)leaves.push({at:mix(base,end,j/5),yaw:head.yaw+(j%2?1:-1),size:.85});head.at=end;
+ }
  for(let i=0;i<leaves.length;i++){
   const row=leaves[i];if(s.leafDensity===0||(i*.618%1)>s.leafDensity)continue;
   const len=leafLen*row.size*s.leafScale,f=flowerFrame(b,row.at,.68+(i%6)*.14,row.yaw),axis=len*1.65,lc=kit.shade(rand,green,.04),pairs=i%4===0?3:2;
@@ -3885,8 +3894,8 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
     const f=flowerFrame(b,at,.12,az),r=a.flowerRadius;f.add(kit.bud,'flowerBud',pal.rim||s.flowerColor,0,r*.10,0,r*.21,r*.38,r*.21);
     for(let q=0;q<5;q++)f.add('roseSepal','budSepal',green,0,-r*.1,0,r*.40,r*.58,r*.40,.28,q*TAU/5,0);
    }else{
-    const aged=pal.ageTo&&head.seed%3!==0,fc=aged?new THREE.Color(s.flowerColor).lerp(new THREE.Color(pal.ageTo),(head.seed%3)*.38):s.flowerColor;
-    detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius,color:fc,shape:'gardenRose',petals:a.petals,palette:aged?{...pal,inner:fc}:pal,tilt:.38+(head.seed%4)*.16,yaw:az},{...kit,rand});
+    const hot=[7,8].includes(s.month),aged=pal.ageTo&&head.seed%3!==0,baseColor=hot&&pal.summerColor?pal.summerColor:s.flowerColor,fc=aged?new THREE.Color(baseColor).lerp(new THREE.Color(pal.ageTo),(head.seed%3)*.38):baseColor,displayPalette={...pal,...(aged||hot&&pal.summerColor?{inner:fc}:{}),...(hot&&pal.summerRound?{notched:false}: {})};
+    detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius*(hot&&pal.summerRound?.78:1),color:fc,shape:'gardenRose',petals:a.petals,palette:displayPalette,tilt:.38+(head.seed%4)*.16,yaw:az},{...kit,rand});
    }
   }
  }
