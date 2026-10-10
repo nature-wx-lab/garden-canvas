@@ -1,6 +1,76 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.83';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.84';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function southernLeafPoint(type,t,u){
+ const mardi=type==='mardi',west=type==='westringia',sn=Math.sin(Math.PI*t),width=mardi?Math.pow(sn,.40)*(.42+.90*t):Math.pow(sn,type==='drummondii'?.44:west?.69:.90),teeth=mardi&&t>.75?.09*Math.max(0,Math.sin((t-.75)*TAU*14)):0;
+ return [u*(width*.5+teeth),t,(west?.075:.025)*u*u*sn-.035*t*t];
+}
+export function manukaPetalPoint(double,t,u){
+ const sn=Math.sin(t*Math.PI),rim=Math.pow(t,6),wave=double?.055*Math.sin(u*17+t*23)*rim:.007*Math.sin(u*8)*rim;
+ return [u*.57*Math.pow(sn,.37),t,.065*u*u*sn+.15*t*t+wave];
+}
+export function southernHeadGeometry(type,part){
+ const pos=[],uv=[],ix=[],acacia=type==='drummondii',iso=type==='isopogon',count=acacia?920:iso?84:115;
+ const tube=(path,r)=>{const start=pos.length/3,steps=7,sides=3;
+  for(let i=0;i<=steps;i++){const t=i/steps,p=new THREE.Vector3(...path(t)),dir=new THREE.Vector3(...path(Math.min(1,t+.002))).sub(new THREE.Vector3(...path(Math.max(0,t-.002)))).normalize(),side=new THREE.Vector3(0,1,0).cross(dir);if(side.lengthSq()<.001)side.set(1,0,0);else side.normalize();const normal=dir.clone().cross(side).normalize();
+   for(let j=0;j<=sides;j++){const az=j/sides*TAU,v=p.clone().addScaledVector(side,Math.sin(az)*r).addScaledVector(normal,Math.cos(az)*r);pos.push(v.x,v.y,v.z);uv.push(j/sides,t);if(i<steps&&j<sides){const q=start+i*(sides+1)+j;ix.push(q,q+1,q+sides+1,q+1,q+sides+2,q+sides+1);}}
+  }
+ };
+ for(let i=0;i<count;i++){
+  const az=i*2.399963,t=(i+.5)/count;
+  if(acacia){const radius=.002+.0055*Math.pow(Math.sin(Math.PI*t),.25),root=[Math.sin(az)*.0018,.030*t,Math.cos(az)*.0018],end=[Math.sin(az)*radius,root[1]+.0015*Math.cos(i*1.8),Math.cos(az)*radius];tube(k=>root.map((v,j)=>v+(end[j]-v)*k),.00011);}
+  else{
+   const rad=(iso?.008:.014)*Math.sqrt(t),y=iso?.006:.007,reach=iso?.022:.040,origin=[Math.sin(az)*rad,y,Math.cos(az)*rad];
+   const path=k=>{const rr=rad+reach*Math.sin(k*Math.PI*(part==='perianth'?.84:.34))*Math.sqrt(t),height=y+(iso?.030:.066)*k*(1-.30*t)-(part==='perianth'?(iso?.023:.034)*Math.pow(k,3):0);return [Math.sin(az)*rr,height,Math.cos(az)*rr];};
+   if(part==='tips'){const tip=path(1);tube(k=>[tip[0],tip[1]+k*.003,tip[2]],iso?.00065:.00095);}
+   else{tube(path,part==='perianth'?.0007:.00046);if(part==='perianth')for(let k=0;k<4;k++){const root=path(.90),angle=az+k*TAU/4;tube(v=>[root[0]+Math.sin(angle)*.002*Math.sin(v*Math.PI*1.7),root[1]+.003*v,root[2]+Math.cos(angle)*.002*Math.sin(v*Math.PI*1.7)],.00020);}}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.southernHead=type;g.userData.units=count;return g;
+}
+function drawSouthernShrubs(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,mardi=type==='mardi',iso=type==='isopogon',acacia=type==='drummondii',west=type==='westringia',manuka=type==='nanum'||type==='fancy',double=type==='fancy',h=Math.max(s.height*.5,s.height-(mardi?.10:iso?.05:.025)),w=s.spread,leaves=[],heads=[];
+ const shoot=(root,az,rise,reach,order)=>{
+  const path=t=>[root[0]+Math.sin(az)*reach*t,root[1]+rise*((acacia?1.25:1.08)*t-(acacia?.25:.08)*t*t),root[2]+Math.cos(az)*reach*t],nodes=mardi?12:iso?14:order>1?(west||manuka?28:22):16;
+  for(let j=1;j<=6;j++)b.branch(path((j-1)/6),path(j/6),(order===0?(mardi?.012:.006):order===1?.0020:.0007)*(1-.67*j/6),order?a.stemColor:a.barkColor,manuka&&order===0?'wood-southern-manuka':'wood-southern-twig');
+  for(let j=1;j<=nodes;j++){
+   const at=path(.08+.90*j/nodes),theta=az+j*(west?Math.PI/3:2.399963);leaves.push({at,az:theta,roll:rand(),size:.72+rand()*.28,order});
+   if(order<(mardi?2:3)&&j>2&&j<nodes-1&&j%(order===0?3:order===1?4:west||manuka?8:7)===0){const factor=order===0?.19:order===1?.075:.034,fan=west||manuka?.42+rand()*.76:1;shoot(at,theta,h*factor*fan,w*factor*(west?1.35:iso?1.1:1),order+1);}
+  }
+  heads.push({at:path(1),az,roll:rand(),order});
+ };
+ const n=Math.round((mardi?5:iso?7:west?16:manuka?12:8)*detail);
+ for(let j=0;j<n;j++){const az=j*2.399963,low=j%3===0;shoot([Math.sin(az)*w*.024,0,Math.cos(az)*w*.024],az,h*(low?.26+rand()*.16:.51+rand()*.22),w*(low?.30:.17+rand()*.06),0);}
+ const flower=(at,az,roll)=>{
+  const f=flowerFrame(b,at,manuka||west?1.36:acacia?.35+roll*10:.15,az),R=a.flowerRadius;
+  if(manuka){
+   f.add(kit.bud,'receptacle-manuka','#422f36',0,0,0,R*.29,R*.15,R*.29);
+   for(let k=0;k<(double?20:5);k++){const row=Math.floor(k/5),angle=k*TAU/5+row*.55,L=R*(1-.14*row);f.add(double?'manuka-double-petal':'manuka-single-petal','petal-manuka-'+type,s.flowerColor,0,R*.08+row*R*.06,0,L,L,L,1.13-row*.09,angle,0);}
+   f.add('teaStamensFilaments','filament-manuka','#d2b9a8',0,R*.07,0,R,R,R);f.add('teaStamensTips','anther-manuka','#d9c795',0,R*.07,0,R,R,R);
+   for(let k=0;k<5;k++)f.add('southern-leaf-nanum','calyx-manuka',a.stemColor,0,-R*.08,0,R*.33,R*.42,R,.65,k*TAU/5,0);
+  }else if(west){
+   f.add('woodlandMintTube','corolla-westringia',s.flowerColor,0,0,0,R*.48,R*.68,R*.48);
+   for(let j=0;j<5;j++){const az=j<2?(j===0?-.37:.37):Math.PI+(j-3)*.80,L=R*(j===3?1.0:.75);f.add('manuka-single-petal','lip-westringia',s.flowerColor,0,R*.66,0,L*.66,L,L,j<2?.94:1.34,az,0);}
+   for(let k=0;k<11;k++){const az=Math.PI+(k%3-1)*.24,rr=R*(.16+.055*k);f.add(kit.bud,'throat-spot-westringia','#916e53',Math.sin(az)*rr,R*.72,Math.cos(az)*rr,.00020,.00015,.00024);}
+   for(const side of [-1,1])f.add(kit.bud,'anther-westringia','#c1a277',side*R*.14,R*.69,0,.00032,.00024,.00020);
+  }else if(acacia){
+   f.branch([0,0,0],[0,.018,0],.00045,a.stemColor,'peduncle-acacia');f.add('southern-head-drummondii-style','stamens-acacia',s.flowerColor,0,.018,0,1,1,1);
+  }
+ };
+ for(const n of leaves){
+  const L=a.leafLength*n.size,f=flowerFrame(b,n.at,(mardi?.73:iso?.57:acacia?.52:.56)+n.roll*.68,n.az),kind='leaf-southern-'+type;
+  if(iso){
+   f.branch([0,0,0],[0,L*.32,0],.00052,s.leafColor,kind);
+   for(const side of [-1,1]){const base=[0,L*.25,0],tip=[side*L*.22,L*.69,0];f.branch(base,tip,.00048,s.leafColor,kind);for(const dir of [-1,1])f.branch(tip,[tip[0]+dir*L*.11,L*(.93+dir*.03),L*.04],.00042,s.leafColor,kind);}
+   f.branch([0,L*.25,0],[0,L,0],.00043,s.leafColor,kind);
+  }else if(acacia){
+   f.branch([0,0,0],[0,L,0],.00025,a.stemColor,'rachis-acacia');
+   for(let pair=0;pair<2;pair++)for(const side of [-1,1]){const root=[0,L*(.30+pair*.35),0],tip=[side*L*.29,root[1]+L*.16,0];f.branch(root,tip,.00018,s.leafColor,'pinna-acacia');for(let j=1;j<=3;j++)for(const flank of [-1,1]){const t=j/3;f.add('southern-leaf-drummondii',kind,s.leafColor,tip[0]*t,root[1]+(tip[1]-root[1])*t,0,L*.085,L*.23,L,.20,0,side*(flank===1?.65:2.18));}}
+  }else for(let k=0;k<(west?3:1);k++){const ff=west?flowerFrame(b,n.at,.56+n.roll*.68,n.az+k*TAU/3):f;ff.add('southern-leaf-'+type,kind+(west?'-margin-d8d5a5':mardi?'-underside-a1a58b':''),kit.shade(rand,s.leafColor,.026),0,0,0,L*a.leafWidth/a.leafLength,L,L);}
+  if(s.bloom&&(manuka||west||acacia)&&n.order>1&&n.roll<(west?.040*s.flowerDensity:acacia?.060:double?.032:.060))flower(n.at,n.az,n.roll);
+ }
+ if(s.bloom&&(mardi||iso)){let shown=0;for(const n of heads){if(n.order!==1||n.roll>.62||shown++>14)continue;const f=flowerFrame(b,n.at,.15+n.roll*.35,n.az);f.add('southern-head-'+type+'-perianth','perianth-southern-'+type,mardi?'#d7b294':s.flowerColor,0,0,0,1,1,1);f.add('southern-head-'+type+'-style','style-southern-'+type,mardi?'#dca931':s.flowerColor,0,0,0,1,1,1);f.add('southern-head-'+type+'-tips','pollen-presenter-southern-'+type,mardi?'#d9ad38':'#d5b744',0,0,0,1,1,1);}}
+}
 export function proteaceaeLeafPoint(type,t,u){
  const cord=type==='eximia',grev=type==='alpina',leuco=type==='amy'||type==='redDevil',sn=Math.sin(Math.PI*t),width=Math.pow(sn,grev?.37:leuco?.59:.50)*(cord?1.35-.58*t:grev?.76+.38*t:.68+.55*t),ear=cord?.32*Math.exp(-Math.pow((t-.075)/.080,2)):0;
  return [u*(width*.5+ear),t-(cord?.038*Math.exp(-Math.pow(u/.24,2))*Math.exp(-Math.pow(t/.11,2)):0),(grev?.045:.022)*u*u*sn-.050*t*t+.005*Math.sin(t*23+u)*u*u*sn];
@@ -4618,6 +4688,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='southernShrubs'){drawSouthernShrubs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='capeProteaceae'){drawCapeProteaceae(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='banksiaBranches'){drawBanksia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='rivinaRacemes'){drawRivina(b,{info,s,detail,rand},kit);return;}
