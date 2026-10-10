@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.36';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.37';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -30,6 +30,28 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='puschkiniaStar'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw);
+  for(let j=0;j<6;j++)f.add('puschkiniaTepal','petal-center-85aacc',color,0,0,0,r,r,r,1.09,j*TAU/6,0);
+  f.add('puschkiniaCorona','staminalCorona','#f0f0df',0,0,0,r,r,r);
+  for(let j=0;j<6;j++){const an=j*TAU/6,at=[Math.sin(an)*r*.17,r*.31,Math.cos(an)*r*.17];f.branch([at[0],r*.22,at[2]],at,r*.016,'#e4e3c1','filament');f.add(bud,'anther','#c1ba74',...at,r*.052,r*.035,r*.030,0,an,0);}
+  f.branch([0,0,0],[0,r*.30,0],r*.017,'#d4dabc','style');return;
+ }
+ if(shape==='bletillaOrchid'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw);
+  // One dorsal and two lower sepals; two lateral petals and a separate ventral lip.
+  for(const az of [0,2.30,-2.30])f.add('bletillaSepal','sepal',color,0,0,0,r,r,r,.04,0,az);
+  for(const az of [-1.18,1.18])f.add('bletillaPetal','petal',color,0,0,.0001,r,r,r,.04,0,az);
+  f.add('bletillaLip','petal-bletilla-lip',color,0,0,r*.10,r,r,r,0,0,Math.PI);
+  // Five raised, wavy longitudinal lamellae on the lip.
+  for(let j=-2;j<=2;j++)for(let k=0;k<18;k++){
+   const t=.12+k*.043,t2=t+.043,xx=j*r*.066,zz=t=>r*(.10+.23*t*t+.028*Math.sin(t*65+j));
+   f.branch([xx,-r*t,zz(t)],[xx,-r*t2,zz(t2)],r*.017,'#f0ecef','lipLamella');
+  }
+  f.add(bud,'column','#ece7ee',0,-r*.20,r*.15,r*.09,r*.28,r*.073,.05,0,0);
+  f.add(bud,'antherCap','#eae5db',0,-r*.42,r*.15,r*.09,r*.055,r*.09);
+  return;
+ }
  if(shape==='alceaRuffled'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),single=layers===1,frill=palette.frilled,pk=palette.ripple?'petal-alcea-ripple':'petal-alcea-veins';
   for(let j=0;j<7;j++)f.add('monocotNarrowTepal','epicalyx','#839471',0,-r*.12,0,r*.58,r*.41,r*.41,1.12,j*TAU/7,0);
@@ -1406,6 +1428,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(['puschkiniaScapes','bletillaShoots'].includes(info.appearance?.architecture)){drawSpringOrchidBulb(b,{info,s,p,detail,rand},kit);return;}
  if(['roseaSpire','rugosaSpire'].includes(info.appearance?.architecture)){drawAlceaSpires(b,{info,s,p,detail,rand},kit);return;}
  if(['libertiaFans','anthericumPanicle','tofieldiaRaceme','ornithogalumRaceme','rhodoxisClump','siculumUmbel','aristeaFans'].includes(info.appearance?.architecture)){drawMonocotProfiles(b,{info,s,detail,rand},kit);return;}
  if(['onosmaRosette','buglossoidesShoots','mertensiaMat','nierembergiaMat','stellariaCushion','dryasMat','goldenStrawberry'].includes(info.appearance?.architecture)){drawLowHerbs(b,{info,s,detail,rand},kit);return;}
@@ -3709,6 +3732,46 @@ function drawAquaticReeds(b,{info,s,detail,rand},kit){
  function spikeletLocal(builder,at,len,yaw,pitch,color){
   const f=flowerFrame(builder,at,pitch,yaw);f.branch([0,0,0],[0,len,0],.00015,color,'spikeletAxis');
   for(let j=0;j<8;j++)f.add('grassGlume','glume',color,(j%2?1:-1)*.0003,len*j/8,0,.0017,.0017,.0017,.27,j%2*Math.PI,0);
+ }
+}
+
+function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,orchid=a.architecture==='bletillaShoots',h=s.height,w=s.spread,green=s.leafColor,stem=a.stemColor,n=Math.max(2,Math.round((orchid?5:6)*detail)),scale=s.leafScale;
+ for(let i=0;i<n;i++){
+  const an=i*2.399,rr=w*(orchid?.20:.29)*Math.sqrt((i+.5)/n),x=Math.sin(an)*rr,z=Math.cos(an)*rr,top=h*(.80+rand()*.18)*(orchid?scale:1);
+  if(orchid){
+   const tip=[x+Math.sin(an)*w*.055,top*.58,z+Math.cos(an)*w*.055];b.branch([x,.005,z],tip,.0024,stem,'leafyStem');
+   for(let j=0;j<5;j++){
+    const t=.08+j*.115,len=Math.min(a.leafLength,h*.68)*(j===4?.82:1)*scale,yaw=an+j*Math.PI,at=[x+(tip[0]-x)*t/.58,top*t,z+(tip[2]-z)*t/.58];
+    b.add('bletillaPlicate','leaf',kit.shade(rand,green,.03),...at,a.leafWidth*scale,len,len,.35+j*.07,yaw,0);
+    b.branch([at[0],at[1]-.012,at[2]],[at[0],at[1]+.019,at[2]],.0030,green,'leafSheath');
+   }
+   if(!s.bloom)continue;
+   let prev=tip;const fl=5;
+   for(let j=0;j<fl;j++){
+    const t=j/(fl-1),turn=an+(j%2?-.9:.9),at=[tip[0]+Math.sin(an)*.015*t,top*(.62+t*.35),tip[2]+Math.cos(an)*.015*t];b.branch(prev,at,.0016*(1-t*.4),stem,'racemeAxis');prev=at;
+    const end=[at[0]+Math.sin(turn)*.019,at[1]+.009,at[2]+Math.cos(turn)*.019];b.branch(at,end,.0012,stem,'inferiorOvary');
+    if(j===fl-1){b.add(kit.bud,'flowerBud','#86759c',...end,.0035,.011,.0035,.30,turn,0);continue;}
+    detailedFlower(b,{x:end[0],y:end[1],z:end[2],shape:a.flowerShape,color:s.flowerColor,r:a.flowerRadius,tilt:.08,yaw:turn},{...kit,rand});
+   }
+  }else{
+   // Each bulb retains a pair of basal leaves, with two independent flowering scapes.
+   for(const side of [-1,1]){
+    const len=Math.min(a.leafLength,top*.95)*(.85+rand()*.15)*scale;
+    b.add('puschkiniaStrap','leaf',s.month>=5?'#9eab6d':green,x+side*.002,.003,z,a.leafWidth,len,len,.22,an+side*Math.PI/2,0);
+   }
+   if(!s.bloom)continue;
+   for(let axis=0;axis<2;axis++){
+    const az=an+axis*2.4,bx=x+Math.sin(az)*.009,bz=z+Math.cos(az)*.009,tall=top*(axis?.85:1);
+    b.branch([bx,.004,bz],[bx,tall,bz],.0009,stem,'floralScape');
+    for(let j=0;j<10;j++){
+     const t=j/10,turn=az+j*2.399,at=[bx,tall*(.42+t*.54),bz],end=[bx+Math.sin(turn)*.006,at[1]+.002,bz+Math.cos(turn)*.006];b.branch(at,end,.00032,stem,'pedicel');
+     if(j===9){b.add(kit.bud,'flowerBud','#c5d7d9',...end,.0021,.0035,.0021,.20,turn,0);continue;}
+     detailedFlower(b,{x:end[0],y:end[1],z:end[2],shape:a.flowerShape,color:s.flowerColor,r:a.flowerRadius,tilt:1.25+(rand()-.5)*.2,yaw:turn},{...kit,rand});
+    }
+   }
+  }
  }
 }
 
