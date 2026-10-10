@@ -10,6 +10,22 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Textured mints separate living winter foliage from dry Phlomis stems and keep unresolved flowers hidden',()=>{
+ const ids=['p-ac81f56321b6','p-b1e0749b1935','p-9ca4fb57fac1','p-66770d29e666','p-04d2ee5bc147','p-422c087e0692'];
+ for(const [i,id] of ids.entries()){
+  const a=CATALOG[id].appearance,ph=[1,2,3].includes(i);let wood;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,11200+i,2,2);p.height=ph?1.2:.6;p.spread=.7;const g=plantModel(p,view(month)),count=key=>g.children.filter(m=>m.userData.component.startsWith(key)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'texturedMints');assert.equal(count('leaf-textured')>0,!ph||month>=3&&month<=11);assert.equal(count('petal-phlomis')>0,ph&&a.flowerMonths.includes(month));assert.equal(count('fruit'),0);
+   if(ph&&[12,1,2].includes(month)){assert.ok(count('dry-stem-phlomis')>0);assert.ok(count('dry-calyx-phlomis')>0);assert.equal(count('stem-phlomis-square'),0);assert.equal(count('petiole-phlomis'),0);}
+   if(!ph){const skeleton=g.children.filter(m=>['wood-textured','stem-textured'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(!wood)wood=skeleton;else assert.deepEqual(skeleton,wood);assert.equal(count('petal'),0);assert.equal(CATALOG[id].bloomKnown,false);}
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}
+   assert.equal(count('anther-phlomis'),count('petal-phlomis')*4);dispose(g);
+  }
+ }
+ assert.notEqual(CATALOG[ids[4]].appearance.leafShape,CATALOG[ids[5]].appearance.leafShape);assert.ok(CATALOG[ids[0]].appearance.unconfirmed.some(x=>x.includes('一致しません')));
+});
+
 test('Buddleja keeps alternate weeping old-wood flowers separate from thick dwarf shoots and terminal panicles',()=>{
  const ids=['p-4665d29911db','p-520d608d699d','p-8a5dda06e482','p-9e8c6a3e8efb','p-77d3dc86a932','p-0fca645f4c09','p-be4cb665ec8d'];
  for(const [i,id] of ids.entries()){

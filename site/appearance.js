@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.96';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.97';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -229,3 +229,5 @@ Object.assign(TRAIT_VALUES,{rosemaryRevolute:'葉縁が裏へ巻き込む細い�
 Object.assign(TRAIT_VALUES,{jasminePinnate:'対生する奇数羽状複葉と先端の大きい小葉',honeysuckleOvate:'全縁の対生葉と品種により花房下で合着する葉',jasmineSalver:'細長い花筒の先が5裂して広がる白い花',honeysuckleLips:'上唇4裂・下唇1枚の長い花筒と5本の雄しべ'});
 
 Object.assign(TRAIT_VALUES,{buddlejaAlternate:'互生する細い全縁葉と灰白色の葉裏',buddlejaLance:'対生する尖った細葉・細かい鋸歯と白い葉裏',buddlejaTube:'橙色の喉部と先が4裂する小さい筒状花',axillaryHeads:'前年枝に沿って並ぶ小花群',spacedHeads:'球状の小花群が間隔をあけて連なる花穂'});
+
+Object.assign(TRAIT_VALUES,{ballotaRound:'白い毛と深いしわを持つ丸い対生葉',phlomisHeart:'粗いしわのある心形葉と上ほど小さい茎葉',phlomisArrow:'根元の三角状心形葉と鋸歯のある小さな茎葉',saltHastate:'先が尖る小さな三角形〜ほこ形の葉',saltOval:'銀緑色の小さく丸みのある葉',phlomisHood:'フード状の上唇・3裂する下唇と萼'});
