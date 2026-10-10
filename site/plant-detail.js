@@ -1,6 +1,81 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.59';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.60';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function abeliaLeafPoint(type,t,u){
+ const mos=type==='zabeliaOvate',teeth=mos?1:1-.065*(1-Math.abs(Math.sin(t*Math.PI*11))),width=Math.pow(Math.sin(Math.PI*t),mos?.83:.92)*(1.12-.30*t)*teeth;
+ return [u*width*.5,t,.036*Math.sin(t*Math.PI)+.06*u*u*Math.sin(t*Math.PI)+.006*Math.sin(t*35)*u*u];
+}
+function drawAbelia(b,{info,s,detail,rand},kit){
+ const a=info.appearance,typ=a.shootProfile,mos=typ==='mosanensis',compact=a.habit==='rounded',h=s.height,w=s.spread,nodes=[],tips=[],segs=[],count=Math.max(5,Math.round((compact?10:8)*detail));
+ // Generate all wood before seasonal organs so winter does not rearrange branches.
+ const shoot=(root,az,up,reach,order,index)=>{
+  let prev=root;const num=order===0?7:order===1?6:5;
+  for(let j=0;j<num;j++){
+   const t=(j+1)/num,ang=az+.17*Math.sin(t*5+index),at=[root[0]+Math.sin(ang)*reach*t,root[1]+up*(.80*t+.32*Math.sin(Math.PI*t)),root[2]+Math.cos(ang)*reach*t];
+   const radius=(order===0?.007:order===1?.0024:.0010)*Math.max(.5,Math.min(1.5,h))*(1-t*.55);
+   segs.push({from:prev,to:at,radius,old:order===0&&j<4,order});prev=at;
+   nodes.push({at,an:ang+j*Math.PI/2,t,order,roll:rand(),size:.8+.2*rand()});
+   if(order===0&&j<=4)for(const sign of [-1,1])shoot(at,ang+sign*(.60+rand()*.35),up*(1-t)*(.46+rand()*.15),w*.17*(.7+rand()*.4),1,index+j+sign);
+   if(order===1&&(j===2||j===4))shoot(at,ang+(j===2?1:-1)*(.68+rand()*.25),up*.20,w*.09*(.7+rand()*.5),2,index+j);
+   if(order>0&&j===num-1)tips.push({at,an:ang,index:tips.length,roll:rand()});
+  }
+ };
+ for(let i=0;i<count;i++){
+  const an=i*2.399963,edge=Math.sqrt(i/count),root=[Math.sin(an)*w*.065*edge,0,Math.cos(an)*w*.065*edge],height=h*(compact?1-.66*edge:.45+.52*rand());
+  shoot(root,an,height,w*(compact?.24:.30)*(1+.1*rand()),0,i);
+ }
+ for(const q of segs){
+  b.branch(q.from,q.to,q.radius,q.old?a.barkColor:a.stemColor,q.old?(mos?'wood-zabelia-sixGrooves':'wood-abelia-old'):'stem-abelia');
+  if(!q.old&&q.order===1){const mid=q.from.map((v,i)=>(v+q.to[i])*.5);b.branch(mid,[mid[0]+.001,mid[1]+.0008,mid[2]],.000045,'#b8b09e','hair-abelia-shoot');}
+ }
+ const leafyNodes=[];
+ for(const n of nodes){
+  leafyNodes.push(n);
+  if(n.order>0){let prev=n.at;for(let k=1;k<=1;k++){const az=n.an+.65,at=[n.at[0]+Math.sin(az)*a.leafLength*.27*k,n.at[1]+a.leafLength*.18*k,n.at[2]+Math.cos(az)*a.leafLength*.27*k];b.branch(prev,at,.0006,a.stemColor,'stem-abelia');prev=at;leafyNodes.push({...n,at,an:n.an+k*Math.PI/2,size:n.size*(1-.12*k)});}}
+ }
+ for(const n of leafyNodes){
+  if(n.order===0&&n.t<.36)continue;
+  const young=n.t>.8&&s.month>=3&&s.month<=9,whorl=!mos&&n.order===0&&n.t>.7?3:2;
+  for(let j=0;j<whorl;j++){
+   const az=n.an+j*TAU/whorl,len=a.leafLength*n.size*(n.order===0?1:.84)*(young?.75:1),roll=(n.roll+j*.381)%1;
+   if(s.leafDensity===0||roll>s.leafDensity)continue;
+   const petiole=len*(mos?.045:.07),at=[n.at[0]+Math.sin(az)*petiole,n.at[1]+petiole*.3,n.at[2]+Math.cos(az)*petiole];b.branch(n.at,at,.0004,a.stemColor,'petiole-abelia');
+   const f=flowerFrame(b,at,.72+roll*.60,az),color=typ==='bronze'&&young?a.springShootColor:s.leafColor,shade=kit.shade(rand,color,.045),kind=a.leafPattern?`leaf-abelia-margin-${s.leafPatternColor}-${typ==='lucky'?'narrow':'wide'}`:'leaf-abelia-glossy';
+   f.add(a.leafShape,kind,shade,0,0,0,len*a.leafWidth/a.leafLength,len,len);
+   if(mos)for(let k=0;k<5;k++){const t=(k+.4)/5,side=k%2?1:-1,q=abeliaLeafPoint(a.leafShape,t,side).map((v,i)=>v*len*(i===0?a.leafWidth/a.leafLength:1));f.branch(q,[q[0]+side*.00035,q[1],q[2]+.00025],.00004,'#c6c9b8','hair-zabelia-leaf');}
+  }
+  if(s.leafDensity===0)b.add(kit.bud,'bud-abelia-winter','#897263',...n.at,.0008,.0020,.0008,0,n.an,0);
+ }
+ const first=Math.min(...a.flowerMonths),after=s.month>Math.max(...a.flowerMonths)||mos&&s.month>=7,persistent=s.month>=first;
+ if(!s.bloom&&!persistent)return;
+ const flower=(at,az,pitch,seed)=>{
+  const f=flowerFrame(b,at,pitch,az),L=a.flowerLength,r=a.flowerRadius,sepals=mos?5:[2,3,5][seed%3],spent=after||!s.bloom||seed%7===0,col=typ==='magic'&&seed%3===0?'#d9bccb':s.flowerColor;
+  f.add(kit.bud,'ovary-abelia','#988577',0,-L*.12,0,r*.18,L*.22,r*.18);
+  for(let j=0;j<sepals;j++)f.add('petal','calyx-abelia',a.flowerPalette.sepal,0,0,0,L*.20,L*.48,L*.25,1.12,j*TAU/sepals,0);
+  if(spent)return;
+  if((seed*.618)%1>s.flowerDensity){f.add(kit.bud,'bud-abelia-flower',a.flowerPalette.bud,0,L*.46,0,r*.32,L*.57,r*.32);return;}
+  f.add(mos?'zabeliaTube':'abeliaTube','corolla-abelia',mos?a.flowerPalette.outside:col,0,0,0,r,L*.81,r);
+  for(let j=0;j<5;j++){
+   const an=j*TAU/5,lower=j<3,size=mos&&lower?1.12:1;
+   f.add('petal','petal-abelia',col,Math.sin(an)*r*.34,L*.80,Math.cos(an)*r*.34,r*.78*size,r*.78*size,r,1.26,an,0);
+  }
+  for(let j=0;j<4;j++){
+   const an=j*TAU/4,end=[Math.sin(an)*r*.19,L*(j<2?.92:.84),Math.cos(an)*r*.19];f.branch([0,L*.39,0],end,r*.018,'#e2d9c8','filament-abelia');f.add(kit.bud,'anther-abelia','#c6b9a0',...end,r*.045,r*.10,r*.045);
+  }
+  f.branch([0,L*.18,0],[r*.045,L*.98,0],r*.016,'#cbd0b4','style-abelia');f.add(kit.bud,'stigma-abelia','#c5c7ac',r*.045,L*.98,0,r*.040,r*.035,r*.040);
+  if(!mos)for(let j=0;j<7;j++){const an=j*TAU/7,q=[Math.sin(an)*r*.29,L*.69,Math.cos(an)*r*.29];f.branch(q,[q[0]*.9,L*.80,q[2]*.9],.000025,'#ece8e0','hair-abelia-throat');}
+ };
+ for(const tip of tips){
+  if(!mos&&tip.roll>.68||after&&tip.roll>.46)continue;
+  const n=mos?9:3,rad=mos?.017:.009;
+  for(let j=0;j<n;j++){
+   const az=tip.an+j*2.399963,reach=rad*Math.sqrt((j+1)/n),q=[tip.at[0]+Math.sin(az)*reach,tip.at[1]+rad*.4*(1-j/n),tip.at[2]+Math.cos(az)*reach];
+   b.branch(tip.at,q,.00045,a.stemColor,'pedicel-abelia');flower(q,az,mos?.4+j/n*1.0:.95+tip.roll*.7,tip.index*17+j);
+  }
+ }
+}
+
+
 export function calaminthaLeafPoint(type,t,u){
  const large=type==='calaminthaLarge',teeth=large?8:5,edge=1-(large?.075:.035)*(1-Math.abs(Math.sin(t*Math.PI*teeth)));
  const width=Math.pow(Math.sin(Math.PI*t),.65)*(.99-.17*t)*edge;
@@ -2925,6 +3000,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='abeliaCanes'){drawAbelia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='calaminthaCymes'){drawCalamintha(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='lysimachiaShoots'){drawLysimachia(b,{info,s,view:{month},detail,rand},kit);return;}
  if(info.appearance?.architecture==='delphiniumSpires'){drawDelphinium(b,{info,s,p,detail,rand},kit);return;}
