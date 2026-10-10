@@ -5,10 +5,30 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint} from '../site/plant-detail.js';
+import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint} from '../site/plant-detail.js';
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+
+test('Syringa keeps four-lobed tubular flowers, cultivar doubling and variegation, repeat bloom and winter buds',()=>{
+ assert.ok(syringaLeafPoint('syringaCordate',.08,1)[1]<0,'cordate leaf base extends below the petiole notch');
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='syringaPanicles');assert.equal(entries.length,9);
+ for(const [i,[id,info]] of entries.entries()){
+  let wood;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,7900+i,2,2),st=stateAt(p,view(month)),g=plantModel(p,view(month)),a=info.appearance;
+   const count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);
+   assert.ok(count('stem-syringa')>0);if(a.habit==='upright')assert.ok(g.children.find(m=>m.userData.component==='stem-syringa-angular').geometry.userData.angularSyringa);assert.equal(count('leaf-syringa')>0,st.leafDensity>0,id+': foliage');assert.equal(count('petal-syringa')>0,st.bloom,id+': bloom');
+   if(st.bloom){const flowers=count('petal-syringa')/a.flowerLayers;assert.equal(count('anther-syringa'),flowers*a.stamenCount);assert.equal(count('stigma-syringa-lobe'),flowers*a.pistilCount*2);const corolla=g.children.find(m=>m.userData.component.startsWith('petal-syringa'));assert.equal(corolla.geometry.userData.syringaCorolla.lobes,4);assert.equal(corolla.geometry.userData.syringaCorolla.tubular,true);}
+   if(st.leafDensity===0)assert.ok(count('bud-syringa-winter')>0);
+   const matrices=g.children.filter(m=>m.userData.component.startsWith('stem-syringa')||m.userData.component.startsWith('wood-')).map(m=>[m.userData.component,[...m.instanceMatrix.array]]);if(!wood)wood=matrices;else assert.deepEqual(matrices,wood,id+': stable wood');
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}dispose(g);
+  }
+ }
+ for(const id of ['p-ee18b2f1a3e4','p-c7b17c1fe324','p-314ef402c4fe']){assert.ok(seasonAt(CATALOG[id],5).bloom);assert.equal(seasonAt(CATALOG[id],6).bloom,false);assert.match(CATALOG[id].appearance.phenologyRegion,/暖地の4〜5月/);}
+ for(const id of ['p-98707c9b24f7','p-8eeaf3363daf','p-82503a4d019e']){assert.ok(seasonAt(CATALOG[id],10).bloom);assert.ok(seasonAt(CATALOG[id],8).flowerDensity<seasonAt(CATALOG[id],5).flowerDensity);}
+ assert.equal(CATALOG['p-1a7b8d8e3933'].appearance.leafPattern,'mottled');assert.equal(CATALOG['p-314ef402c4fe'].appearance.flowerPattern,'margin');assert.equal(CATALOG['p-c7b17c1fe324'].appearance.flowerLayers,3);assert.equal(CATALOG['p-82503a4d019e'].height[1],.9);
+});
 
 test('Loropetalum retains evergreen foliage, cultivar architecture, four ribbons and reduced autumn rebloom',()=>{
  const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='loropetalumShoots');assert.equal(entries.length,4);

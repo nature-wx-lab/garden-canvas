@@ -1,6 +1,81 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.63';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.64';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function syringaLeafPoint(type,t,u){
+ const heart=type==='syringaCordate',elliptic=type==='syringaElliptic';
+ const width=Math.pow(Math.sin(Math.PI*t),heart?.62:.76)*(heart?1.35-.55*t:elliptic?.95+.04*t:1.12-.30*t);
+ const base=heart?-.55*Math.sin(Math.PI*t)*Math.abs(u)*(1-t):0;
+ return [u*width*.5,t+base,Math.sin(Math.PI*t)*(.025+.06*u*u)+.007*Math.sin(t*31)*Math.abs(u)];
+}
+export function syringaCorollaGeometry(){
+ const p=[],uv=[],ix=[],rings=5,sides=10;
+ for(let j=0;j<=rings;j++)for(let k=0;k<=sides;k++){
+  const t=j/rings,an=k*TAU/sides,r=.12+.065*t*t;p.push(Math.sin(an)*r,t,Math.cos(an)*r);uv.push(k/sides,t*.20);
+  if(j<rings&&k<sides){const i=j*(sides+1)+k;ix.push(i,i+sides+1,i+1,i+1,i+sides+1,i+sides+2);}
+ }
+ for(let lobe=0;lobe<4;lobe++){
+  const an=lobe*TAU/4,start=p.length/3,rows=8,cols=4;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,width=.40*Math.pow(Math.sin(Math.PI*t),.56),r=.17+.81*t,x=u*width,y=1+.075*Math.sin(Math.PI*t)+.11*u*u*Math.sin(Math.PI*t)-.025*t;
+   p.push(Math.sin(an)*r+Math.cos(an)*x,y,Math.cos(an)*r-Math.sin(an)*x);uv.push(j/cols,.22+.78*t);
+   if(i<rows&&j<cols){const v=start+i*(cols+1)+j;ix.push(v,v+1,v+cols+1,v+1,v+cols+2,v+cols+1);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.syringaCorolla={lobes:4,tubular:true};return g;
+}
+function drawSyringa(b,{info,s,detail,rand},kit){
+ const a=info.appearance,typ=a.shootProfile,small=a.habit==='rounded',h=s.height,w=s.spread,nodes=[],wood=[],tips=[],count=Math.max(4,Math.round((small?11:6)*detail));
+ const shoot=(root,az,rise,reach,order)=>{
+  let prev=root;const num=order===0?8:order===1?6:5;
+  for(let j=0;j<num;j++){
+   const t=(j+1)/num,an=az+.12*Math.sin(t*7+az),at=[root[0]+Math.sin(an)*reach*t,root[1]+rise*(t+.06*Math.sin(Math.PI*t)),root[2]+Math.cos(an)*reach*t];
+   wood.push({from:prev,to:at,r:(order===0?.015:order===1?.004:.0013)*Math.max(.45,Math.min(1.7,h))*(1-t*.6),old:order===0&&j<4});prev=at;
+   nodes.push({at,an:an+j*Math.PI/2,order,t,roll:rand(),size:.73+.27*rand()});
+   if(order===0&&j>=1&&j<=6)for(const side of [-1,1])shoot(at,an+side*(.6+.42*rand()),h*(small?.13:.21)*(1-t),w*(small?.15:.12)*(1-t*.25),1);
+   if(order===1&&(j===2||j===4))for(const side of [-1,1])shoot(at,an+side*.75,h*.045,w*.065,2);
+   if(j===num-1)tips.push({at,an,roll:rand(),index:tips.length,order});
+  }
+ };
+ for(let i=0;i<count;i++){
+  const an=i*2.399963+(rand()-.5)*.35,edge=Math.sqrt((i+.35)/count),root=[Math.sin(an)*w*.065*edge,0,Math.cos(an)*w*.065*edge];
+  shoot(root,an,h*(small?.89*Math.sqrt(1-.82*edge*edge):.58+.33*rand()),w*(small?.33:.24)*edge,0);
+ }
+ for(const q of wood)b.branch(q.from,q.to,q.r,q.old?a.barkColor:a.stemColor,q.old?'wood-syringa-lenticels':small?'stem-syringa':'stem-syringa-angular');
+ for(const n of nodes){
+  if(n.order===0&&n.t<.30)continue;
+  if(s.leafDensity===0){for(const side of [-1,1])b.add(kit.bud,'bud-syringa-winter','#887c62',n.at[0]+Math.sin(n.an)*side*.002,n.at[1],n.at[2]+Math.cos(n.an)*side*.002,.0016,.0032,.0016,.35,n.an,0);continue;}
+  for(const side of [-1,1]){
+   const roll=(n.roll+(side===1?.39:0))%1;if(roll>s.leafDensity)continue;
+   const an=n.an+(side===1?Math.PI:0),L=a.leafLength*n.size*s.leafScale,P=L*(small?.10:.21),at=[n.at[0]+Math.sin(an)*P,n.at[1]+P*.25,n.at[2]+Math.cos(an)*P],f=flowerFrame(b,at,.77+roll*.66,an);
+   b.branch(n.at,at,.0007,a.stemColor,'petiole-syringa');
+   f.add(a.leafShape,typ==='aucuba'?`leaf-syringa-aucuba-${Math.floor(roll*4)}`:typ==='kim'?'leaf-syringa-hairy':'leaf-syringa',kit.shade(rand,s.leafColor,.07),0,0,0,L*a.leafWidth/a.leafLength,L,L);
+   if(typ==='kim')for(let k=0;k<3;k++){const p=syringaLeafPoint(a.leafShape,.30+k*.17,(roll-.5)*1.1).map((v,j)=>v*L*(j===0?a.leafWidth/a.leafLength:1));f.branch(p,[p[0]+.0003,p[1]+.0006,p[2]-.0002],.000035,'#b7c0a3','hair-syringa');}
+  }
+ }
+ const before=!s.bloom&&a.flowerMonths.includes(s.month+1);if(!s.bloom&&!before)return;
+ for(const tip of tips){
+  // Flowering shoots occur through the crown. The two terminal panicles share a woody fork.
+  if(tip.order===0||tip.roll>(small?.28:.24)*(s.bloom?s.flowerDensity:1))continue;
+  for(const pair of [-1,1]){
+   const L=a.inflorescenceLength*(.8+.20*((tip.roll*7)%1)),yaw=tip.an+pair*.65,base=[tip.at[0]+Math.sin(yaw)*L*.07,tip.at[1]+L*.04,tip.at[2]+Math.cos(yaw)*L*.07],frame=flowerFrame(b,base,.15+tip.roll*.25,yaw);
+   b.branch(tip.at,base,.0014,a.stemColor,'panicle-stem-syringa');frame.branch([0,0,0],[0,L*.87,0],.0012,'#8e9b72','rachis-syringa');
+   const flowers=small?42:64;
+   for(let k=0;k<flowers;k++){
+    const t=(k+.5)/flowers,an=k*2.399963,rad=L*.29*Math.pow(1-t,.65),at=[Math.sin(an)*rad,L*(.12+.74*t),Math.cos(an)*rad],fork=[0,L*t*.70,0];
+    frame.branch(fork,at,.0004,'#92a47b','pedicel-syringa');
+    const f=flowerFrame(frame,at,.40+Math.PI/3*(1-t),an),R=a.flowerRadius*(.88+.12*Math.sin(k*2.17)**2),length=a.flowerLength,closed=before||t>.78||k%11===0;
+    f.add(kit.bud,'calyx-syringa','#91a276',0,0,0,R*.23,length*.16,R*.23);
+    if(closed){f.add(kit.bud,'bud-syringa-flower',a.flowerPalette.bud,0,length*.25,0,R*.30,length*.38,R*.30);continue;}
+    for(let layer=0;layer<a.flowerLayers;layer++)f.add('syringaCorolla',typ==='lilawonder'?'petal-syringa-rim':'petal-syringa',s.flowerColor,0,layer===0?0:length*(.82+layer*.09),0,R*(1-layer*.20),length*(layer===0?1:.32),R*(1-layer*.20),0,layer*.67,0);
+    if(a.stamenCount){
+     for(const side of [-1,1])f.add(kit.bud,'anther-syringa','#c4b878',R*.10*side,length*.80,0,R*.06,length*.065,R*.055);
+     f.branch([0,0,0],[0,length*.69,0],.00007,'#c7c99c','style-syringa');for(const side of [-1,1])f.add(kit.bud,'stigma-syringa-lobe','#c6c996',R*.025*side,length*.70,0,R*.025,length*.025,R*.025);
+    }
+   }
+  }
+ }
+}
+
 export function hamamelidPoint(type,t,u){
  const ribbon=type==='loropetalumRibbon',loro=type==='loropetalumOvate',sym=type==='fothergillaSymmetric';
  if(ribbon){const angle=.8*Math.sin(t*5.5),width=.5*Math.pow(Math.sin(Math.PI*t),.20);return [u*width*Math.cos(angle)+.08*Math.sin(t*8)*t,t-.12*t*t,.15*Math.sin(t*4.7)+u*width*.15*Math.sin(angle)];}
@@ -3255,6 +3330,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='syringaPanicles'){drawSyringa(b,{info,s,detail,rand},kit);return;}
  if(['loropetalumShoots','fothergillaBranches'].includes(info.appearance?.architecture)){drawHamamelid(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='deutziaSprays'){drawDeutzia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='viburnumBranches'){drawViburnum(b,{info,s,detail,rand},kit);return;}
