@@ -1,4 +1,4 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.8';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.9';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
 
@@ -17,6 +17,31 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='irisFlower'||shape==='blackberryFlower'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),blackberry=shape==='blackberryFlower',beard=palette.bearded,flat=palette.flat,snake=palette.snake,pattern=palette.pattern||'gold';
+  f.branch([0,-r*.40,0],[0,0,0],r*.075,'#a2af76','perianthTube');
+  for(let j=0;j<(blackberry?6:3);j++){
+   const an=j*TAU/(blackberry?6:3),part=flowerFrame(f,[0,0,0],0,an);
+   part.add(beard?'irisBeardedFall':snake?'irisSnakeFall':flat||blackberry?'irisDietesFall':'irisFall','petal-iris-'+pattern+'-fall',shade(rand,color,.018),0,0,0,r*(blackberry?.56:1),r,r);
+   if(!blackberry){
+    const std=flowerFrame(f,[0,0,0],0,an+Math.PI/3);
+    std.add(flat?'irisDietesFall':beard?'irisBeardedStandard':'irisStandard','petal-iris-'+pattern+'-standard',color,0,r*.02,0,r*(flat?.52:snake?.55:1),r*(snake?.45:flat?.68:1),r*(flat?.68:1));
+    const styleColor=flat?'#b6a3d2':color;
+    part.add('irisStyle','petaloidStyle',styleColor,0,r*.10,0,r,r,r);
+    for(const side of [-1,1])part.add('petal','styleCrest',styleColor,side*r*.048,r*.34,r*.62,r*.17,r*.30,r*.30,.70,side*.70,0);
+    part.branch([0,0,r*.10],[0,r*.15,r*.45],r*.016,'#d5cfa5','filament');
+    part.add(bud,'anther','#ccbd76',0,r*.15,r*.42,r*.03,r*.045,r*.14);
+    if(beard)for(let k=0;k<42;k++){
+     const t=k/41,xx=Math.sin(k*2.399)*r*.07,at=[xx,r*(.22*Math.sin(t*.50*Math.PI)-.33*Math.pow(t*.50,3))+.004*r,r*(.19+t*.34)],end=[xx,at[1]+r*.075,at[2]];
+     part.branch(at,end,r*.009,'#d5b765','beard');part.add(bud,'beardTip','#e6e1cf',...end,r*.009,r*.014,r*.009);
+    }
+   }
+  }
+  if(blackberry)for(let j=0;j<3;j++){
+   const an=j*TAU/3,tip=[Math.sin(an)*r*.13,r*.30,Math.cos(an)*r*.13];f.branch([0,0,0],tip,r*.018,'#dbb36e','filament');f.add(bud,'anther','#caad4e',...tip,r*.039,r*.10,r*.035);
+  }
+  return;
+ }
  if(shape==='narcissusFlower'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),hoop=palette.corona==='hoop',split=palette.corona==='split',corona=palette.color||color;
   f.branch([0,-r*.40,0],[0,0,0],r*.10,'#a7b080','perianthTube');
@@ -662,6 +687,40 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
 }
 
+function drawIrises(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,mini=a.architecture==='miniIris',snake=a.architecture==='snakeIris',hio=a.architecture==='blackberryLily',beard=a.architecture==='beardedIris',quill=mini||snake,green=s.leafColor,kind=foliageKind(info),n=Math.max(3,Math.round((quill?6:4)*detail)),heads=[];
+ for(let i=0;i<n;i++){
+  const an=i*2.399,rr=Math.sqrt(i/n)*Math.min(w*.25,quill?.075:.14),x=Math.sin(an)*rr,z=Math.cos(an)*rr,top=h*(.77+rand()*.14),head=[x+Math.sin(an)*h*.03,top,z+Math.cos(an)*h*.03];
+  // Sword leaves overlap in two ranks within a fan, rather than radiating like grass.
+  const count=quill?3:7;
+  for(let j=0;j<count;j++){
+   const side=j%2?1:-1,rank=Math.floor(j/2),len=h*(mini?(s.bloom?.64:1.08):snake?1.25:hio?.52:beard?.69:.92)*(1-rank*.10)*(1+rand()*.07),width=quill?Math.min(.003,h*.023):Math.min(hio?.029:beard?.035:.026,h*.054),yaw=an+(side<0?Math.PI:0),tilt=.06+rank*.115+rand()*.045;
+   const color=kit.shade(rand,green,.025);
+   if(j/count<s.leafDensity)b.add(quill?'irisQuill':'irisSword',quill?kind:'leaf-iris-parallel',color,x+Math.sin(an)*side*rank*.003,.004,z+Math.cos(an)*side*rank*.003,width/(quill?.008:.068),len,len,tilt,yaw,0);
+  }
+  if(!s.bloom&&!s.seedHeads&&!s.flowerBuds)continue;
+  b.branch([x,0,z],head,Math.min(.004,h*.009),s.seedHeads?'#978367':'#81996c','scape');
+  const branches=hio?5:beard?2:1;
+  for(let j=0;j<branches;j++){
+   const yaw=an+j*2.399,reach=hio?h*(.075+j*.022):j?h*.07:0,at=[head[0]+Math.sin(yaw)*reach,head[1]-(j===0?0:h*.12)+j*h*.027,head[2]+Math.cos(yaw)*reach];
+   b.branch(j===0?head:[head[0],head[1]-h*.18,head[2]],at,Math.min(.0017,h*.006),s.seedHeads?'#9c8768':'#8c9e71','pedicel');
+   const spatheLength=hio?.018:h*.12;
+   b.add('narrow','spathe',s.seedHeads?'#b09a72':'#a2ac7e',...at,hio?.005:quill?.008:.013,spatheLength,spatheLength,.42,yaw,0);
+   heads.push({at,yaw,j});
+  }
+ }
+ for(const {at,yaw,j} of heads){
+  const r=a.flowerRadius;
+  if(hio&&s.seedHeads&&!s.bloom){
+   const f=flowerFrame(b,at,0,yaw);
+   for(let k=0;k<3;k++)f.add('irisFall','capsule','#b3a37d',0,0,0,r*.35,r*.55,r*.55,0,k*TAU/3,0);
+   for(let k=0;k<16;k++){const t=(k+.5)/16,an=k*2.399,rr=.009*Math.sqrt(1-Math.pow(t*2-1,2));f.add(kit.bud,'seed','#252724',Math.sin(an)*rr,t*.024,Math.cos(an)*rr,.0038,.0041,.0038);}continue;
+  }
+  if(!s.bloom||hio&&j%3===2){b.add(kit.bud,'flowerBud','#a7aa72',...at,r*.15,r*.48,r*.15,.25,yaw,0);continue;}
+  detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:a.flowerShape,palette:a.flowerPalette,tilt:snake?1.0:hio?.25:0,yaw},{...kit,rand});
+ }
+}
+
 function drawNarcissus(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,palette=a.flowerPalette||{},hoop=palette.corona==='hoop',green=s.leafColor,kind=foliageKind(info),bulbs=Math.max(3,Math.round(5*detail));
  for(let i=0;i<bulbs;i++){
@@ -733,6 +792,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
  const a=info.appearance||{},h=s.height,w=s.spread,green=s.leafColor||info.leafColor||'#587e45',stemColor=a.stemColor||green;
  const leafKind=foliageKind(info),shape=a.leafMargin==='crenate'?'crenate':a.leafShape||'leaf',leafyViolet=a.architecture==='leafyViolet',basal=!leafyViolet&&(a.arrangement==='basal'||['rosette','clump','mound','creeping'].includes(a.habit)),creeping=a.habit==='creeping';
  if(a.architecture==='narcissus'){drawNarcissus(b,{info,s,detail,rand},kit);return;}
+ if(['miniIris','beardedIris','snakeIris','dietes','blackberryLily'].includes(a.architecture)){drawIrises(b,{info,s,detail,rand},kit);return;}
  if(['compactDahlia','tallDahlia','treeDahlia'].includes(a.architecture)){drawDahlias(b,{info,s,detail,rand},kit);return;}
  if(a.architecture?.startsWith('celosia')){drawCelosias(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='beeBalm'||a.architecture==='tieredMonarda'){drawMonardas(b,{info,s,detail,rand},kit);return;}

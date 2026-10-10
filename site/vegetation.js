@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.8';
-import {foliageKind} from './appearance.js?v=0.9.8';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.8';
-import {drawTree} from './tree-model.js?v=0.9.8';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.8';
+import {treeProfile} from './tree-profiles.js?v=0.9.9';
+import {foliageKind} from './appearance.js?v=0.9.9';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.9';
+import {drawTree} from './tree-model.js?v=0.9.9';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.9';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.8';
+import { plantInfo, stateAt } from './model.js?v=0.9.9';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -69,6 +69,24 @@ function curvedLeaf(type){
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));g.setIndex(indices);g.computeVertexNormals();g.userData[type]=true;return keep(g);
 }
 for(const type of ['birchLeaf','fringeLeaf','laurelLeaf'])shapes[type]=curvedLeaf(type);
+// Falls curve away from the flower centre; standards rise above it.
+// The style branches are separate petaloid organs, not extra petals.
+for(const type of ['irisFall','irisStandard','irisBeardedFall','irisBeardedStandard','irisStyle','irisDietesFall','irisSnakeFall','irisSword','irisQuill']){
+ const pos=[],uv=[],idx=[],rows=36,cols=16,leaf=type==='irisSword',quill=type==='irisQuill',standard=type.includes('Standard'),beard=type.includes('Bearded'),style=type==='irisStyle',flat=type==='irisDietesFall',snake=type==='irisSnakeFall';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t));
+  let width=leaf?.034*Math.pow(1-t,.38):quill?.004*(1-t*.50):style?.13*Math.pow(sin,.65):standard?(beard?.47:.14)*Math.pow(sin,.62):(.04+(beard?.49:flat?.40:snake?.22:.34)*Math.pow(sin,.6))*Math.pow(t,.28);
+  if(i===rows)width=0;
+  const ruffle=beard?.038*Math.sin(t*47+Math.abs(u)*8)*Math.pow(Math.abs(u),3)*sin:0;
+  let y=standard?t*(beard?1.25:1.20):style?.30*Math.sin(t*1.4):flat?.09*Math.sin(Math.PI*t):.22*Math.sin(t*Math.PI)-.33*Math.pow(t,3),z=standard?.21*Math.sin(t*3.8):t*(style?.74:snake?.72:1);
+  if(leaf){y=t;z=.09*t*t+Math.abs(u)*width*.7;}
+  else if(quill){y=t;z=.06*t*t+.004*(1-t*.50)*Math.sin(j/cols*Math.PI*2);}
+  else {y+=.055*u*u*sin+ruffle;z+=standard?.04*u*u*sin:0;}
+  pos.push(quill?.004*(1-t*.5)*Math.cos(j/cols*Math.PI*2):u*width,y,z);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 for(const type of ['narcissusLeaf','narcissusTepal','narcissusNarrowTepal','narcissusSplitCorona']){
  const pos=[],uv=[],idx=[],rows=32,cols=12,leaf=type==='narcissusLeaf',split=type==='narcissusSplitCorona',narrow=type==='narcissusNarrowTepal';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -448,6 +466,7 @@ function windShader(shader,kind){
       diffuseColor.rgb+=diffuseColor.rgb*(midrib*0.23+veins*0.055);
     `);
     if(kind.startsWith('leaf-hosta'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*70.0)');
+    if(kind==='leaf-iris-parallel')shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*95.0)');
     if(kind==='leaf-blueberry-wax')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.58,0.67,0.67),0.13+0.08*sin(vUv.x*199.0)*cos(vUv.y*173.0));\n#include <emissivemap_fragment>`);
     const surface=kind.replace(/-outside-[0-9a-f]{6}$/,'').replace(/-dahlia$/,'').replace(/-cranesbill-veins$/,'').replace(/-guide$/,'').replace('woolly-','').replace('glossy-','').replace('palm-',''),hex=surface.match(/-([0-9a-f]{6})$/)?.[1];
     const pattern=surface.replace(/^(leaf|petal|sepal)-/,'').replace(/^hosta-?/,'').replace(/-(?:gold|[0-9a-f]{6})$/,'');
@@ -464,6 +483,21 @@ function windShader(shader,kind){
     masks.rhododendronThroat='1.0-smoothstep(0.27,0.73,vUv.y)';
     masks.kalmiaBand='smoothstep(0.65,0.76,vUv.y)*(1.0-smoothstep(0.91,0.99,vUv.y))*smoothstep(-0.28,0.19,sin(vUv.x*31.416)+0.6*sin(vUv.x*319.0)*cos(vUv.y*303.0))';
     masks.leucothoeMarble='smoothstep(-0.46,0.0,sin(vUv.x*13.0+sin(vUv.y*8.0)*1.6)*cos(vUv.y*14.0)+0.32*sin(vUv.x*117.0)*cos(vUv.y*131.0))';
+    if(kind.startsWith('petal-iris-')){
+      const iris=kind.slice(11),fall=iris.endsWith('-fall'),name=iris.replace(/-(fall|standard)$/,'');
+      const wash=name==='frozen'?'vec3(0.46,0.59,0.74)':name==='hodgkin'?'vec3(0.26,0.42,0.53)':'vec3(0.32,0.42,0.60)';
+      let paint='';
+      if(name==='batik')paint='float streak=sin(vUv.x*53.0+sin(vUv.y*11.0)*1.3)+0.5*sin(vUv.x*113.0-vUv.y*7.0);float bands=smoothstep(-0.70,0.22,streak+0.85*sin(vUv.y*17.0+vUv.x*13.0));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.23,0.047,0.43),bands);';
+      else if(name==='tuberosa'&&fall)paint='float velvet=smoothstep(0.49,0.56,vUv.y);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.025,0.023,0.032),velvet);';
+      else if(name==='blackberry')paint='float flecks=smoothstep(0.64,0.88,sin(vUv.x*61.0+sin(vUv.y*27.0))*cos(vUv.y*49.0+sin(vUv.x*19.0)));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.43,0.047,0.021),flecks);';
+      else{
+       if(['painted','hodgkin','frozen'].includes(name))paint+=`float blue=smoothstep(${name==='hodgkin'?'0.10,0.80':'0.56,0.97'},vUv.y);diffuseColor.rgb=mix(diffuseColor.rgb,${wash},blue*${name==='frozen'?'0.28':'0.23'});`;
+       if(['painted','hodgkin'].includes(name))paint+='float lines=pow(max(0.0,cos(atan((vUv.x-.5)*.7,vUv.y+.02)*72.0+sin(vUv.y*20.0)*.35)),23.0);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.18,0.28,0.41),lines*smoothstep(.18,.92,vUv.y)*.50);';
+       if(fall&&['gold','painted','hodgkin','dietes'].includes(name))paint+='float signal=(1.0-smoothstep(.10,.25,abs(vUv.x-.5)))*smoothstep(.16,.30,vUv.y)*(1.0-smoothstep(.55,.71,vUv.y));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.73,.47,.065),signal*.90);';
+       if(fall&&['painted','hodgkin','dietes'].includes(name))paint+='float dots=smoothstep(.65,.87,sin(vUv.x*69.0+cos(vUv.y*43.0))*cos(vUv.y*71.0+sin(vUv.x*29.0)))*(1.0-smoothstep(.48,.81,vUv.y));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.13,.17,.22),dots*.90);';
+      }
+      shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',paint+'\n#include <emissivemap_fragment>');
+    }
     if(kind==='sepal-celosia-velvet')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb*=0.92+0.08*sin(vUv.x*499.0)*cos(vUv.y*401.0);\n#include <emissivemap_fragment>`);
     if(kind.startsWith('petal-balloon'))shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float balloonRib=pow(max(0.0,cos(vUv.x*31.4159)),40.0);float fineRib=pow(max(0.0,cos(vUv.x*219.91+sin(vUv.y*24.0)*0.7)),28.0)*smoothstep(0.15,0.75,vUv.y);diffuseColor.rgb*=0.70+0.30*vUv.y-0.20*balloonRib-0.07*fineRib;${kind.endsWith('splash')?'float splash=smoothstep(0.51,0.66,sin(vUv.x*42.0+sin(vUv.y*9.0)*0.4)*cos(vUv.x*27.0-vUv.y*1.4));diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.18,0.10,0.38),splash*0.85);':''}\n#include <emissivemap_fragment>`);
     if(kind==='petal-soapwort-veins')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb*=1.0-0.28*pow(max(0.0,cos(atan(vUv.x-0.5,vUv.y+0.02)*22.0)),20.0)*(1.0-smoothstep(0.15,0.65,vUv.y));\n#include <emissivemap_fragment>`);

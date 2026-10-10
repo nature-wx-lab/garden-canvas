@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.8';
+import {treeProfile} from './tree-profiles.js?v=0.9.9';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -55,6 +55,9 @@ export function seasonAt(info,month){
   // dates are a temperate display convention, not cultivar observations.
   density=[.4,.75,1,1,1,.25,0,0,0,0,0,.15][m];scale=month===12?.25:month===1?.45:month===2?.75:1;
   phase=density===0?'球根で夏秋の休眠（表示目安）':month===6?'花後の葉が黄変する時期（表示目安）':month===12||month<=2?'冬〜早春の葉出し（地域・植え時で変化）':'春の葉と花';
+ }else if(a.persistence==='winterLeafIris'){
+  density=[.8,1,1,1,1,.25,0,0,0,0,0,.35][m];scale=month===12?.4:month===1?.7:1;
+  phase=density===0?'地下の貯蔵器官で夏秋の休眠':month<=2||month===12?'冬の葉出し（表示上の目安）':'春の葉・初夏の黄変（表示上の目安）';
  }else if(a.persistence==='springBulb'){
   // Late-winter snowdrops retain their leaves through flowering, then die back.
   // Month boundaries are a temperate display convention; sources describe the cycle.
