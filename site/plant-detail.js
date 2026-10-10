@@ -1,6 +1,64 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.75';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.76';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function hardyHibiscusLeafPoint(type,t,u){
+ const broad=type==='broad',cycle=(t*25)%1,tooth=1+.038*(cycle<.65?cycle/.65:(1-cycle)/.35);
+ const width=broad?Math.pow(Math.sin(Math.PI*t),.70)*(1.13-.28*t):.21*Math.pow(Math.sin(Math.PI*t),.72)+.75*Math.exp(-Math.pow((t-.51)/.085,2))+.48*Math.exp(-Math.pow((t-.25)/.060,2));
+ return [u*width*tooth*.5,t,.035*u*u*Math.sin(Math.PI*t)-.047*t*t+.003*Math.cos(t*31-Math.abs(u)*5)*Math.sin(Math.PI*t)];
+}
+export function hardyHibiscusFlowerGeometry(type){
+ const pos=[],uv=[],ix=[],flare=type==='flare';
+ for(let k=0;k<5;k++){
+  const az=k*TAU/5,base=pos.length/3,rows=38,cols=24;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,r=.045+.955*t,width=(flare?.69:.88)*Math.pow(Math.sin(Math.PI*t),.36)*(.45+.75*t),x=u*width+.13*t;
+   const veins=.007*Math.cos(u*47+t*3)*Math.pow(Math.sin(Math.PI*t),.50),wrinkle=.012*Math.sin(u*25+t*21)*t*t;
+   const y=.29*Math.sin(t*Math.PI*.5)+.034*u*u+veins+wrinkle+k*.003;
+   pos.push(Math.sin(az)*r+Math.cos(az)*x,y,Math.cos(az)*r-Math.sin(az)*x);uv.push(j/cols,t);
+   if(i<rows&&j<cols){const q=base+i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.hardyHibiscusFlower={petals:5};return g;
+}
+function drawHardyHibiscus(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,pw=type==='strawberry',rhea=type==='rhea',spring=s.month===5,growth=spring?.19:s.month===6?.63:1,h=s.height*growth,w=s.spread*(spring?.24:s.month===6?.65:1),leaves=[],flowers=[],stems=Math.round((pw?15:rhea?12:9)*detail);
+ const shoot=(root,tip,az,order)=>{
+  const nodes=spring?4:order===0?16:8;
+  b.branch(root,tip,order===0?(spring?.003:.006):.0028,a.stemColor,'stem-hardy-hibiscus');
+  for(let j=1;j<=nodes;j++){
+   const t=.08+j*.88/nodes,at=root.map((v,k)=>v+(tip[k]-v)*t),angle=az+j*2.399963;leaves.push({at,az:angle,roll:rand(),size:.67+rand()*.36,upper:j>nodes-2});
+   if(!spring&&order===0&&j>=2&&j<=12&&j%2===0){
+    const reach=w*(pw?.19:rhea?.24:.15),end=[at[0]+Math.sin(angle)*reach,at[1]+h*(pw?.17:rhea?.17:.22),at[2]+Math.cos(angle)*reach];shoot(at,end,angle,1);
+   }
+   if(!spring&&(pw?t>.48:order===1&&t>.60))flowers.push({at,az:angle,roll:rand(),terminal:j===nodes});
+  }
+ };
+ for(let i=0;i<stems;i++){
+  const az=i*2.399963,r=w*.14*Math.sqrt((i+.5)/stems),root=[Math.sin(az)*r,0,Math.cos(az)*r],tip=[root[0]+Math.sin(az)*w*(pw?.18:rhea?.23:.11),h*(.62+rand()*.28),root[2]+Math.cos(az)*w*(pw?.18:rhea?.23:.11)];shoot(root,tip,az,0);
+ }
+ for(const n of leaves){
+  if(s.month===11&&n.roll>.20)continue;
+  const L=a.leafLength*n.size*(spring?.43:1)*(n.upper?.75:1),P=L*(pw?.28:.30),frame=flowerFrame(b,n.at,.84+n.roll*.47,n.az),kind=pw||spring?'broad':'palm';
+  frame.branch([0,0,0],[0,P,0],.0011,a.stemColor,'petiole-hardy-hibiscus');frame.add('hibiscus-'+kind,'leaf-hardy-hibiscus-underside-8e9b71',kit.shade(rand,s.month===11?'#aa9a51':s.leafColor,.042),0,P,0,L*a.leafWidth/a.leafLength,L,L);
+ }
+ if(!s.bloom)return;
+ for(const n of flowers){
+  const open=n.roll<(pw?.14:rhea?.19:.18)*s.flowerDensity,bud=!open&&n.roll<.45;
+  if(!open&&!bud)continue;
+  const P=.045,R=a.flowerRadius*(.90+n.roll*.22),frame=flowerFrame(b,n.at,open?.75+n.roll*.50:.20+n.roll*.2,n.az);
+  frame.branch([0,0,0],[0,P,0],.0021,a.stemColor,'peduncle-hardy-hibiscus');
+  for(let k=0;k<9;k++)frame.add('hibiscus-palm','epicalyx-hardy-hibiscus','#66844c',0,P,0,.003,.028,.028,.55,k*TAU/9,0);
+  for(let k=0;k<5;k++)frame.add('hibiscus-broad','sepal-hardy-hibiscus','#647d42',0,P,0,.016,.026,.026,.40,k*TAU/5,0);
+  if(bud){frame.add(kit.bud,'bud-hardy-hibiscus','#768e4e',0,P+.019,0,.010,.027,.010);continue;}
+  frame.add('hibiscus-flower-'+type,'petal-hardy-hibiscus-'+type,s.flowerColor,0,P,0,R,R,R,0,n.roll*2,0);
+  const column=R*.65;frame.branch([0,P,0],[0,P+column,0],R*.022,type==='flare'?'#dcc3ad':'#ecceb7','stamen-column-hardy-hibiscus');
+  for(let k=0;k<42;k++){
+   const az=k*2.399963,y=P+column*(.60+(k/42)*.25),rad=R*(.052+(k%3)*.019),end=[Math.sin(az)*rad,y+R*.015,Math.cos(az)*rad];frame.branch([0,y,0],end,R*.0034,'#f0d6b2','filament-hardy-hibiscus');frame.add(kit.bud,'anther-hardy-hibiscus','#e8cc7d',...end,R*.014,R*.010,R*.012);
+  }
+  for(let k=0;k<5;k++){const az=k*TAU/5,end=[Math.sin(az)*R*.045,P+column+R*.055,Math.cos(az)*R*.045];frame.branch([0,P+column*.92,0],end,R*.0045,'#d9c9a9','style-hardy-hibiscus');frame.add(kit.bud,'stigma-hardy-hibiscus','#e1caac',...end,R*.018,R*.012,R*.018);}
+ }
+}
+
 export function pomeShrubLeafPoint(type,t,u){
  const pyr=type==='harlequin',cycle=(t*18)%1,tooth=pyr&&t>.12&&t<.92?1+.036*(cycle<.7?cycle/.7:(1-cycle)/.3):1;
  const width=Math.pow(Math.sin(Math.PI*t),pyr?.53:.60)*(.88+.20*t)*tooth;
@@ -4160,6 +4218,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='hardyHibiscusCanes'){drawHardyHibiscus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='pomeShrubSprays'){drawPomeShrubs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='ardisiaShoots'){drawArdisia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='callicarpaArches'){drawCallicarpa(b,{info,s,detail,rand},kit);return;}
