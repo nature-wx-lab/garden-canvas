@@ -10,6 +10,21 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Vitex separates broad purple backed trifolia from narrow palmate agnus leaves and keeps winter wood',()=>{
+ const ids=['p-744a7597e4b9','p-ed4a5581e583','p-de35f78f1d54','p-86b45fa90962','p-760a6e10e2f8'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],a=info.appearance;let wood;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,10500+i,2,2);p.height=1.5;p.spread=1.2;const g=plantModel(p,view(month)),count=key=>g.children.filter(m=>m.userData.component.startsWith(key)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'vitexBranches');assert.equal(count('leaf-vitex')>0,month>=4&&month<=11);assert.equal(count('petal-vitex')>0,a.flowerMonths.includes(month));assert.equal(count('fruit'),0);
+   const skeleton=g.children.filter(m=>m.userData.component.startsWith('wood-vitex')).map(m=>[...m.instanceMatrix.array]);assert.ok(skeleton.length>0);if(!wood)wood=skeleton;else assert.deepEqual(skeleton,wood);
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));if(m.userData.component.startsWith('petal-vitex'))assert.deepEqual(m.geometry.userData.vitexFlower,{upperLobes:2,lowerLobes:3,stamens:4});if(m.userData.component.startsWith('leaf-vitex'))assert.equal(m.geometry.userData.vitexLeaf,i===0||i===2?'purpurea':'agnus');}
+   dispose(g);
+  }
+ }
+ assert.equal(CATALOG[ids[0]].latin,CATALOG[ids[2]].latin);assert.notEqual(CATALOG[ids[0]].appearance.leafShape,CATALOG[ids[1]].appearance.leafShape);assert.deepEqual(CATALOG[ids[3]].bloom,[7,8,9,10]);assert.deepEqual(CATALOG[ids[1]].appearance.emergenceMonths,[4,5]);assert.equal(CATALOG[ids[1]].height[1],8);assert.equal(CATALOG[ids[4]].flower,'#ecece6');assert.equal(CATALOG[ids[2]].appearance.winterClimateSensitive,true);
+});
+
 test('Berry shrubs retain distinct leaf arrangements, autumn colour patterns and documented fruit months',()=>{
  const ids=['p-372a7eeffc87','p-e09ff1197475','p-d301b8435e5d','p-9ac26f596002'];
  for(const [i,id] of ids.entries()){
