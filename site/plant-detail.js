@@ -1,7 +1,52 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.106';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.107';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.106';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.107';
 const TAU=Math.PI*2;
+export function meadowLeafPoint(type,t,u){
+ const sn=Math.sin(Math.PI*t),round=['largePearl','newPearl'].includes(type),cobra=type==='cobra',narrow=['greenRotala','nanjenshan'].includes(type);
+ const width=cobra?Math.pow(sn,.32)*(.35+.95*t):round?Math.pow(sn,.52):Math.pow(sn,narrow?.74:.65);
+ return[u*.5*width,t,cobra?.05*Math.sin(t*12)+.22*t*t:(type==='pearl'?.26:type==='nanjenshan'?.35:.11)*t*t+.04*u*u*sn];
+}
+export function meadowCulmGeometry(){
+ const pos=[],uv=[],ix=[],N=20,C=6;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){const t=i/N,angle=j/C*TAU,r=.5*(1-.60*t);pos.push(Math.cos(angle)*r,t,Math.sin(angle)*r);uv.push(j/C,t);if(i<N&&j<C){const n=i*(C+1)+j;ix.push(n,n+C+1,n+1,n+1,n+C+1,n+C+2);}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
+}
+function drawWaterMeadow(b,{info,s,p,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,depth=s.waterDepth,limit=depth>0?Math.max(.015,depth-.025):h,green=s.leafColor,kind='leaf-submerged-meadow-'+type+'-underside-'+a.leafUnderside.slice(1),frame=(at,pitch,az)=>flowerFrame(b,at,pitch,az);
+ function leaf(at,az,L,pitch=1.05){frame(at,pitch,az).add('meadow-'+type,kind,kit.shade(rand,green,.025),0,0,0,L*a.leafWidth/a.leafLength,L,L);}
+ if(type==='shortHair'||type==='hair'){
+  const n=Math.round((type==='shortHair'?1600:850)*detail*s.leafDensity);
+  for(let k=0;k<n;k++){
+   const az=k*2.399+rand()*.5,r=w*.45*Math.sqrt((k+.5)/n),at=[Math.sin(az)*r,.001,Math.cos(az)*r],L=Math.min(h,limit)*(.45+.53*rand())*s.leafScale,tilt=.08+rand()*.28,top=[at[0]+Math.sin(az)*L*tilt,at[1]+L,at[2]+Math.cos(az)*L*tilt],thick=type==='shortHair'?.00045:.00060;
+   const f=frame(at,tilt,az);f.add('meadow-culm','culm-water-'+type,kit.shade(rand,green,.045),0,0,0,thick,L,thick);
+   f.add('meadow-culm','sheath-water-'+type,k%3===0?'#9e735b':'#b0ad82',0,0,0,thick*1.6,L*.06,thick*1.6);
+   if(s.bloom&&depth<L*.6&&k%9===0){const length=.0034;f.add(kit.bud,'spikelet-water-'+type,'#ad9f70',0,L,0,.00075,length*.5,.00075);for(let j=0;j<7;j++){const aa=j*2.399;f.add('meadow-'+type,'floral-scale-water','#b3aa76',Math.sin(aa)*.0005,L-length*.4+j*length*.13,Math.cos(aa)*.0005,.0014,.002,.002,.25,aa,0);}}
+   if(k%4===0)b.branch([at[0],-.018,at[2]],[at[0]+.015*Math.sin(az+1),-.018,at[2]+.015*Math.cos(az+1)],.0003,'#ae9a76','rhizome-water-hair');
+  }
+  return;
+ }
+ if(type==='cobra'){
+  const n=Math.round(90*detail*s.leafDensity);
+  for(let k=0;k<n;k++){const az=k*2.399,rad=w*.40*Math.sqrt((k+.5)/n),base=[Math.sin(az)*rad,.003,Math.cos(az)*rad],run=[base[0]+Math.sin(az+.6)*.025,.003,base[2]+Math.cos(az+.6)*.025];b.branch(base,run,.0008,'#a1a17a','rhizome-cobra');
+   for(let j=0;j<4;j++){const aa=az+j*1.9,L=Math.min(h,depth>0?depth+.012:h)*(.6+rand()*.38);leaf([base[0],base[1]+.002,base[2]],aa,L,.12+rand()*.26);}
+   if(s.bloom&&depth<.02&&k%5===0){const at=[base[0],.022,base[2]],f=frame(at,0,az);b.branch(base,at,.0004,'#7c9d66','peduncle-cobra');for(let j=0;j<4;j++){const aa=j*TAU/4,loc=[Math.sin(aa)*.004,0,Math.cos(aa)*.004];f.branch([0,-.001,0],loc,.00018,'#9bb688','pedicel-cobra');for(let q=0;q<5;q++)f.add('forest-coptisSepal','petal-cobra','#e7eadb',...loc,.0012,.0012,.0012,0,q*TAU/5,0);f.add(kit.bud,'stylopodium-cobra','#b5b873',loc[0],.0006,loc[2],.00045,.0004,.00045);}}
+  }
+  return;
+ }
+ const mat=type==='newPearl',arching=type==='greenRotala',narrow=type==='nanjenshan',n=Math.round((mat?220:type==='largePearl'?32:30)*detail);
+ for(let k=0;k<n;k++){
+  const az=k*2.399+rand()*.5,runAz=mat?rand()*TAU:az,rad=w*(mat?.39:.27)*Math.sqrt((k+.5)/n),base=[Math.sin(az)*rad,.002,Math.cos(az)*rad],L=h*(.55+rand()*.42),vertical=mat?Math.min(h*.25,.014):Math.min(L,limit),reach=mat?w*.12:arching?w*.25:w*.12,nodes=mat?10:Math.max(10,Math.min(25,Math.round(L/.011)));
+  const path=t=>[base[0]+Math.sin(runAz)*reach*t*t,base[1]+vertical*(mat?Math.sin(Math.PI*t)*.4+1:arching?Math.sin(t*Math.PI*.64):t),base[2]+Math.cos(runAz)*reach*t*t];
+  let prev=base;for(let j=1;j<=nodes;j++){
+   const t=j/nodes,at=path(t);b.branch(prev,at,mat?.00035:.0006,a.stemColor,'stem-meadow-'+type);prev=at;
+   const whorl=narrow?4:type==='pearl'?(j%4===0?4:3):2;for(let q=0;q<whorl;q++)leaf(at,az+j*1.5708+q*TAU/whorl,a.leafLength*(.8+.2*Math.sin(Math.PI*t)),narrow?1.20:mat?1.22:1.05);
+   if(j%4===0){b.branch(at,[at[0]+.006,Math.max(.001,at[1]-.025),at[2]+.005],.00013,'#d1c6a4','root-meadow');}
+   if(!mat&&j%6===0&&j<nodes-3){const aa=az+1.2,tgt=[at[0]+Math.sin(aa)*w*.12,Math.min(limit,at[1]+vertical*.27),at[2]+Math.cos(aa)*w*.12];let last=at;for(let u=1;u<=5;u++){const loc=at.map((v,i)=>v+(tgt[i]-v)*u/5);b.branch(last,loc,.0004,a.stemColor,'branch-meadow-'+type);for(let q=0;q<whorl;q++)leaf(loc,aa+u*1.5+q*TAU/whorl,a.leafLength*.75,narrow?1.20:1.02);last=loc;}}
+  }
+ }
+}
+
 export function submergedLeafPoint(type,t,u){
  const sn=Math.sin(Math.PI*t),spoon=type==='glosso',round=type==='ovalis',egeria=type==='egeria';
  let width=spoon?Math.pow(sn,.55)*(.17+1.3*t):round?Math.pow(sn,.68):Math.pow(sn,egeria?.35:.82);
@@ -16,6 +61,7 @@ export function submergedFineGeometry(type){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
 }
 function drawSubmergedShoots(b,{info,s,p,detail,rand},kit){
+ if(['shortHair','hair','greenRotala','nanjenshan','pearl','largePearl','newPearl','cobra'].includes(info.appearance.shootProfile)){drawWaterMeadow(b,{info,s,p,detail,rand},kit);return;}
  const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,depth=s.waterDepth,water=depth>0,winter=[12,1,2].includes(s.month),fine=['cabomba','ceratophyllum'].includes(type),mat=type==='glosso',turion=winter&&fine;
  const green=s.leafColor,stem=a.stemColor,kind='leaf-submerged-'+type+'-underside-'+a.leafUnderside.slice(1),frame=(at,pitch,az)=>flowerFrame(b,at,pitch,az);
  function leaf(at,az,L,scale=1,pitch=1.0,color=green){const len=L*scale,f=frame(at,pitch,az),shape=fine?'water-fine-'+type:'water-'+type;f.add(shape,kind,kit.shade(rand,color,.025),0,0,0,fine?len:len*a.leafWidth/a.leafLength,len,len);}

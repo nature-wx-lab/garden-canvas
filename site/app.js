@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.106';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.106';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.106';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.106';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.106';
-import { createScene } from './scene.js?v=0.9.106';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.107';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.107';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.107';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.107';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.107';
+import { createScene } from './scene.js?v=0.9.107';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
@@ -38,7 +38,7 @@ function sourceCard(target,kind){const info=plantInfo(kind),box=$(target);box.re
   const months=el('div',undefined,'phenology');months.setAttribute('aria-label','12か月の開花参考');
   for(let month=1;month<=12;month++){const phase=seasonAt(info,month),cell=button(String(month),()=>{doc.view.month=month;if(preview)preview.view.month=month;calendarMonth=month;sync();message(`${info.label}・${month}月：${phase.label}`);});cell.dataset.phase=phase.bloom?'flower':phase.dormant?'dormant':phase.autumn?'autumn':phase.known?'outside':'unknown';cell.title=`${month}月：${phase.label}`;cell.setAttribute('aria-label',cell.title);months.append(cell);}box.append(months);
   box.append(el('p',info.form==='unmodeled'?'外観は未対応です。配置すると寸法の枠を表示します。':'資料で分かる特徴を描いた参考3Dです。未確認の細部・月には共通の近似が残ります。全品種の実物同等の再現は未完成です。','hint'));
-  for(const [url,title] of [[info.source,info.publisher],[info.growthSource,'RHS 成株到達の資料'],[tree?.source,'樹形・葉の資料']])if(url){const a=el('a',title+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';box.append(a,el('br'));}
+  for(const [url,title] of [[info.source,info.publisher||'植物情報の出典'],[info.growthSource,'RHS 成株到達の資料'],[tree?.source,'樹形・葉の資料']])if(url){const a=el('a',title+' ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';box.append(a,el('br'));}
   for(const source of appearance?.sources||[])if(![info.source,tree?.source].includes(source.url)){
    const a=el('a',`形態・季節の出典（${source.scope==='catalog-entry'?'収録植物':source.scope==='species'?'種の資料':'属の参考資料'}） ↗`);a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';box.append(a,el('br'));
   }

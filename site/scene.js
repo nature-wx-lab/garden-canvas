@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt } from './model.js?v=0.9.106';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.106';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt } from './model.js?v=0.9.107';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.107';
 
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
 function mat(color){if(!sceneMaterials.has(color))sceneMaterials.set(color,new THREE.MeshStandardMaterial({color,roughness:.92}));return sceneMaterials.get(color);}
@@ -9,8 +9,8 @@ const sphere=new THREE.SphereGeometry(1,8,6),box=new THREE.BoxGeometry(1,1,1);sh
 function grainTexture(type){
   const size=256,data=new Uint8Array(size*size*4),rand=random(type==='grass'?421:718);
   for(let y=0;y<size;y++)for(let x=0;x<size;x++){
-    const i=(y*size+x)*4,coarse=Math.sin(x/size*Math.PI*6)*Math.cos(y/size*Math.PI*4)*5,grain=(rand()-.5)*(type==='grass'?28:43);
-    const base=type==='grass'?[87,106,57]:[128,106,79];
+    const i=(y*size+x)*4,coarse=Math.sin(x/size*Math.PI*6)*Math.cos(y/size*Math.PI*4)*5,grain=(rand()-.5)*(type==='grass'?28:type==='silt'?16:43);
+    const base=type==='grass'?[87,106,57]:type==='silt'?[66,66,44]:[128,106,79];
     for(let k=0;k<3;k++)data[i+k]=Math.max(0,Math.min(255,base[k]+coarse+grain));data[i+3]=255;
   }
   const t=new THREE.DataTexture(data,size,size,THREE.RGBAFormat);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2.5,2.5);t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.needsUpdate=true;return t;
@@ -18,7 +18,8 @@ function grainTexture(type){
 const turfTexture=grainTexture('grass'),soilTexture=grainTexture('soil');
 const turf=new THREE.MeshStandardMaterial({map:turfTexture,bumpMap:turfTexture,bumpScale:.014,roughness:1});
 const soil=new THREE.MeshStandardMaterial({map:soilTexture,bumpMap:soilTexture,bumpScale:.023,roughness:1});
-sharedMaterials.add(turf);sharedMaterials.add(soil);
+const siltTexture=grainTexture('silt'),silt=new THREE.MeshStandardMaterial({map:siltTexture,bumpMap:siltTexture,bumpScale:.002,roughness:.92});
+sharedMaterials.add(turf);sharedMaterials.add(soil);sharedMaterials.add(silt);
 const waterNormals=new Uint8Array(128*128*4);
 for(let y=0;y<128;y++)for(let x=0;x<128;x++){const i=(y*128+x)*4,phase=x/128*Math.PI*12+y/128*Math.PI*8;waterNormals[i]=128+Math.round(15*Math.cos(phase));waterNormals[i+1]=128+Math.round(11*Math.sin(phase+y/128*Math.PI*4));waterNormals[i+2]=254;waterNormals[i+3]=255;}
 const rippleTexture=new THREE.DataTexture(waterNormals,128,128,THREE.RGBAFormat);rippleTexture.wrapS=rippleTexture.wrapT=THREE.RepeatWrapping;rippleTexture.magFilter=THREE.LinearFilter;rippleTexture.needsUpdate=true;
@@ -103,7 +104,7 @@ export function createScene(container,onPick){
     backdrop.material=pondClip(mat('#bbc0a8'));const shape=polygon(plan.outline,0,pondClip(turf));const earth=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false}),pondClip(mat('#807357')));earth.customDepthMaterial=pondClip(pondShadow);earth.rotation.x=-Math.PI/2;earth.position.y=-.186;earth.castShadow=true;earth.receiveShadow=true;root.add(earth);
     for(const [i,z] of plan.zones.entries()){
       let surface=z.kind==='water'?water:soil;
-      if(z.kind==='water'&&z.depth>0){surface=water.clone();surface.transparent=true;surface.opacity=.20;surface.depthWrite=false;surface.side=THREE.DoubleSide;pondClips.push(surface);polygon(z.points,-z.depth,pondClip(soil,'owner',i));}
+      if(z.kind==='water'&&z.depth>0){surface=water.clone();surface.transparent=true;surface.opacity=.20;surface.depthWrite=false;surface.side=THREE.DoubleSide;pondClips.push(surface);polygon(z.points,-z.depth,pondClip(silt,'owner',i));}
       if(plan.zones.some(zone=>zone.kind==='water'&&zone.depth>0)){const wallDepth=Math.max(...plan.zones.map(zone=>zone.kind==='water'?(zone.depth??0):0));const positions=[];for(let j=0;j<z.points.length;j++){const [ax,az]=z.points[j],[bx,bz]=z.points[(j+1)%z.points.length],a=[ax-plan.width/2,0,az-plan.depth/2],b=[bx-plan.width/2,0,bz-plan.depth/2],c=[b[0],-wallDepth,b[2]],d=[a[0],-wallDepth,a[2]];positions.push(...a,...b,...c,...a,...c,...d);}
        const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();const wallMaterial=pondClip(mat('#81765b'),'wall',i);wallMaterial.side=THREE.DoubleSide;const walls=new THREE.Mesh(geometry,wallMaterial);walls.receiveShadow=true;root.add(walls);
       }
