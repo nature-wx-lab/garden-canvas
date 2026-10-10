@@ -1,6 +1,66 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.56';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.57';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function delphiniumLeafPoint(type,t,angle){
+ const fine=type==='delphiniumFinePalm',lobes=fine?[-2.2,-1.1,0,1.1,2.2]:[-2.4,-1.6,-.8,0,.8,1.6,2.4];
+ const near=Math.min(...lobes.map(v=>Math.abs(v-angle))),core=Math.exp(-Math.pow(near/(fine?.16:.22),2));
+ const divisions=Math.max(Math.exp(-Math.pow((near-.18)/.05,2)),Math.exp(-Math.pow((near-.30)/.05,2)));
+ const lobe=Math.max(core,divisions*(fine?.67:0)),tooth=1-.09*Math.pow(Math.max(0,Math.cos(angle*43)),4);
+ const notch=1-.96*Math.exp(-Math.pow((Math.abs(angle)-Math.PI)/.20,2)),edge=(.72+.28*Math.cos(angle))*(fine?.13+.87*lobe:.26+.74*lobe)*tooth*notch;
+ const r=t*edge;return [Math.sin(angle)*r*1.12,Math.cos(angle)*r,.045*t*t+.012*Math.cos(angle*7)*t*t];
+}
+
+function drawDelphinium(b,{info,s,p,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,typ=a.shootProfile,fine=a.flowerPalette.open,h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.36)*s.leafScale;
+ const green=s.leafColor,palette=a.flowerPalette,color=a.flowerOptions?.[p.id%a.flowerOptions.length]||s.flowerColor,heads=typ==='pacific'?3:5;
+ const leaf=(base,an,len,pitch)=>{
+  const end=[base[0]+Math.sin(an)*len*.45,base[1]+len*.24,base[2]+Math.cos(an)*len*.45];b.branch(base,end,.0012,green,'petiole-delphinium');
+  b.add(a.leafShape,'leaf-delphinium',kit.shade(rand,green,.045),...end,len*a.leafWidth/a.leafLength,len,len,pitch,an,(rand()-.5)*.16);
+ };
+ const basal=Math.max(10,Math.round(23*detail));
+ for(let j=0;j<basal;j++)if(j===0||rand()<s.leafDensity){const an=j*2.399963;leaf([Math.sin(an)*w*.09,.012,Math.cos(an)*w*.09],an,L*(.6+.4*rand()),.48+rand()*.92);}
+ if(!s.bloom&&!s.flowerBuds)return;
+ const flower=(pt,an,r,young,progress)=>{
+  const f=flowerFrame(b,pt,Math.PI/2-.18,an),spurScale=fine?1.1:.82;
+  if(young){
+   f.add(kit.bud,'bud-delphinium',palette.bud,0,r*.05,0,r*.30,r*.40,r*.30,.4,0,0);
+   f.add('delphiniumSpur','spur-bud-delphinium',palette.bud,0,-r*.15,-r*.10,r*.8,r*.8*spurScale,r*.8);return;
+  }
+  const shadeColor=typ==='green'?new THREE.Color(color).lerp(new THREE.Color('#b9cba0'),Math.max(0,progress-.3)*.42):color;
+  const angles=[Math.PI,Math.PI-1.13,Math.PI+1.13,-.63,.63],kind=typ==='green'?'sepal-delphinium-greenedge':'sepal-delphinium';
+  for(let layer=0;layer<a.flowerLayers;layer++)for(let j=0;j<5;j++){
+   const size=r*(1-layer*.18),az=angles[j]+layer*.42;f.add('broadRuffledPetal',kind,kit.shade(rand,shadeColor,.025),0,layer*r*.035,0,size*(fine?.91:1.03),size,size,1.15-layer*.19,az,0);
+  }
+  f.add('delphiniumSpur','spur-delphinium',color,0,-r*.10,-r*.15,r,r*spurScale,r);
+  const hasBee=typ!=='green'||rand()>.35;
+  if(hasBee){
+   for(const sign of [-1,1]){
+    f.add('petal','petal-delphinium-upper',palette.bee,sign*r*.055,r*.12,-r*.015,r*.15,r*.25,r,.95,Math.PI+sign*.28,0);
+    f.add('broadRuffledPetal','petal-delphinium-bee',palette.bee,sign*r*.045,r*.13,r*.02,r*.22,r*.36,r,1.12,sign*.38,0);
+    for(let k=0;k<9;k++){const y=r*(.15+.13*k/9),x=sign*r*(.04+.055*k/9),z=r*(.07+.15*k/9);f.branch([x,y,z],[x+sign*r*.020,y+r*.035,z+r*.014],r*.0035,palette.bee,'beard-delphinium');}
+   }
+  }
+  for(let j=0;j<18;j++){const an=j*2.399;f.add(kit.bud,'anther-delphinium','#9d9379',Math.sin(an)*r*.075,r*.16,Math.cos(an)*r*.075,r*.017,r*.018,r*.022);}
+ };
+ for(let i=0;i<heads;i++){
+  const az=i*2.399963,root=[Math.sin(az)*w*.055,.008,Math.cos(az)*w*.055],reach=w*(i===0?.02:.18),height=h*(i===0?.96:.76+rand()*.16)*(s.flowerBuds?.65:1),top=[Math.sin(az)*reach,height,Math.cos(az)*reach];
+  const length=Math.min(a.inflorescenceLength,height*.56),start=height-length;let prev=root;
+  for(let k=1;k<=10;k++){
+   const t=k/10,at=[root[0]+(top[0]-root[0])*t,height*t,root[2]+(top[2]-root[2])*t];b.branch(prev,at,.0035*(1-t*.6),a.stemColor,'stem-delphinium');prev=at;
+   if(t<(fine?.67:.52))leaf(at,az+k*2.399963,L*(1-t*.62),.66+rand()*.82);
+  }
+  const n=Math.max(14,Math.round((fine?36:typ==='pacific'?62:74)*detail));
+  for(let j=0;j<n;j++){
+   const t=(j+.4)/n,an=j*2.399963+az,yy=start+length*t,axis=[root[0]+(top[0]-root[0])*yy/height,yy,root[2]+(top[2]-root[2])*yy/height];
+   const rr=a.flowerRadius*(.82+.18*(1-t)),ped=rr*(fine?1.2:.83)*(1-t*.35)*(.84+.32*rand()),end=[axis[0]+Math.sin(an)*ped,yy+rr*.13,axis[2]+Math.cos(an)*ped];
+   b.branch(axis,end,.00075,a.stemColor,'pedicel-delphinium');
+   if(j%3===0)b.add('narrow','bract-delphinium',green,...axis,rr*.18,rr*.80,rr,.60,an,0);
+   const young=s.flowerBuds||t>.80||t>.40&&rand()>s.flowerDensity;flower(end,an,rr,young,t);
+  }
+ }
+}
+
 export function saxifrageLeafPoint(type,t,angle){
  const sax=type==='saxifrageCordate',round=type==='bergeniaRound';
  const notch=1-.92*Math.exp(-Math.pow((Math.abs(angle)-Math.PI)/(sax?.19:round?.22:.10),2));
@@ -2753,6 +2813,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(info.appearance?.architecture==='delphiniumSpires'){drawDelphinium(b,{info,s,p,detail,rand},kit);return;}
  if(['saxifrageRosettes','bergeniaRhizomes'].includes(info.appearance?.architecture)){drawSaxifragaceae(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='agapanthusFans'){drawAgapanthus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='heucherellaCrowns'){drawHeucherella(b,{info,s,detail,rand},kit);return;}

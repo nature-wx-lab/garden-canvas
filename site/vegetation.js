@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.56';
-import {foliageKind} from './appearance.js?v=0.9.56';
-import {detailedFlower,drawDetailedHerb,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint,silverMintLeafPoint,roseLeafPoint,CONIFER_SHOOTS,coniferShootGeometry,cotinusLeafPoint,smokePanicleGeometry,myrtaceousLeafPoint,myrtaceousFlowerGeometry,daisyLeafPoint,daisyRayPoint,asterLeafPoint,asterFloretGeometry,scabiousLeafPoint,scabiousHeadGeometry,verbenaLeafPoint,verbenaCorollaGeometry,dianthusLeafPoint,dianthusPetalPoint,aquilegiaPoint,astilbeLeafPoint,astilbeFloretGeometry,iberisPoint,heucherellaLeafPoint,heucherellaCalyxGeometry,agapanthusPoint,saxifrageLeafPoint} from './plant-detail.js?v=0.9.56';
-import {drawTree} from './tree-model.js?v=0.9.56';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.56';
+import {treeProfile} from './tree-profiles.js?v=0.9.57';
+import {foliageKind} from './appearance.js?v=0.9.57';
+import {detailedFlower,drawDetailedHerb,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint,silverMintLeafPoint,roseLeafPoint,CONIFER_SHOOTS,coniferShootGeometry,cotinusLeafPoint,smokePanicleGeometry,myrtaceousLeafPoint,myrtaceousFlowerGeometry,daisyLeafPoint,daisyRayPoint,asterLeafPoint,asterFloretGeometry,scabiousLeafPoint,scabiousHeadGeometry,verbenaLeafPoint,verbenaCorollaGeometry,dianthusLeafPoint,dianthusPetalPoint,aquilegiaPoint,astilbeLeafPoint,astilbeFloretGeometry,iberisPoint,heucherellaLeafPoint,heucherellaCalyxGeometry,agapanthusPoint,saxifrageLeafPoint,delphiniumLeafPoint} from './plant-detail.js?v=0.9.57';
+import {drawTree} from './tree-model.js?v=0.9.57';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.57';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.56';
+import { plantInfo, stateAt } from './model.js?v=0.9.57';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -14,6 +14,22 @@ const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const TAU=Math.PI*2;
 const shapes={};
+for(const type of ['delphiniumFinePalm','delphiniumLobedPalm']){
+ const pos=[],uv=[],ix=[],rows=11,cols=168;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const point=delphiniumLeafPoint(type,i/rows,-Math.PI+j*TAU/cols);pos.push(...point);uv.push(point[0]*.70+.5,point[1]*.75+.22);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.delphiniumLeaf=type;shapes[type]=keep(g);
+}
+{
+ const pos=[],uv=[],ix=[],rows=20,cols=12;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,an=j*TAU/cols,r=.14*(1-t)**.7+.010;pos.push(Math.cos(an)*r,-1.15*t,Math.sin(an)*r-.32*Math.sin(Math.PI*t));uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.delphiniumSpur=true;shapes.delphiniumSpur=keep(g);
+}
 for(const type of ['saxifrageCordate','bergeniaRound','bergeniaObovate']){
  const pos=[],uv=[],ix=[],rows=10,cols=120;
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -1032,6 +1048,13 @@ function windShader(shader,kind){
       diffuseColor.rgb*=shade;
       diffuseColor.rgb+=diffuseColor.rgb*(midrib*0.23+veins*0.055);
     `);
+    if(kind==='sepal-delphinium-greenedge')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+      float dlEdge=smoothstep(.35,.47,abs(vUv.x-.5))*smoothstep(.45,.85,vUv.y);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.43,.53,.29),dlEdge*.33);
+      #include <emissivemap_fragment>`);
+    if(kind==='leaf-delphinium')shader.fragmentShader=shader.fragmentShader.replace('midrib*0.23+veins*0.055','0.0').replace('#include <emissivemap_fragment>',`
+      vec2 dp=vec2((vUv.x-.5)/.70,(vUv.y-.22)/.75);float da=atan(dp.x,dp.y),dr=length(dp);float dv=pow(max(0.0,cos(da*7.0)),34.0)*smoothstep(.04,.25,dr);
+      diffuseColor.rgb+=vec3(.030,.045,.024)*dv;
+      #include <emissivemap_fragment>`);
     if(kind.startsWith('leaf-saxifrage-')||kind.startsWith('leaf-bergenia-')){
       const sax=kind.startsWith('leaf-saxifrage-'),pink=kind.includes('goshoguruma'),pale=kind.endsWith('-pale'),plain=kind.endsWith('-green');
       const rays=[-2.25,-1.5,-.75,0,.75,1.5,2.25].map(an=>`{vec2 ray=vec2(${Math.sin(an).toFixed(5)},${Math.cos(an).toFixed(5)});float len=dot(sxP,ray);float side=abs(sxP.x*ray.y-sxP.y*ray.x);sxVein=max(sxVein,(1.0-smoothstep(.004,.013,side))*smoothstep(-.01,.03,len));sxBranch=max(sxBranch,pow(max(0.0,cos((len-side*.6)*68.0)),34.0)*(1.0-smoothstep(.02,.18,side)));}`).join('');
@@ -1457,7 +1480,7 @@ export function plantModel(p,view,detail=1){
   const dormant=s.dormant,clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
   if(form==='unmodeled'){
     const frame=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({color:'#aeb5a3',wireframe:true,transparent:true,opacity:.42}));frame.position.y=h/2;g.add(frame);g.userData.unmodeled=true;
-  }else if(['saxifrageRosettes','bergeniaRhizomes','agapanthusFans','heucherellaCrowns','iberisCorymbs','astilbePlumes','aquilegiaCymes','dianthusCymes','verbenaBranches','scabiousHabit','asteraceaeHabit','daisyBranches','myrtaceousTree','smokeTree','coniferSprays','gardenRoseCanes','saltbush','gardeniaShrub','limeFelt','pityrodia','dustyMiller','wireVine','hatsuyuki','blueberryCanes','rhododendronTruss','fineAzalea','terminalPieris','kalmiaCluster','tieredEnkianthus','archingLeucothoe','hydrangeaVine','porcelainVine','silverBush','berzelia','wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory','blueEyeShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
+  }else if(['delphiniumSpires','saxifrageRosettes','bergeniaRhizomes','agapanthusFans','heucherellaCrowns','iberisCorymbs','astilbePlumes','aquilegiaCymes','dianthusCymes','verbenaBranches','scabiousHabit','asteraceaeHabit','daisyBranches','myrtaceousTree','smokeTree','coniferSprays','gardenRoseCanes','saltbush','gardeniaShrub','limeFelt','pityrodia','dustyMiller','wireVine','hatsuyuki','blueberryCanes','rhododendronTruss','fineAzalea','terminalPieris','kalmiaCluster','tieredEnkianthus','archingLeucothoe','hydrangeaVine','porcelainVine','silverBush','berzelia','wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory','blueEyeShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(profile&&form!=='maple'){g.userData.architecture=drawTree(b,{profile,info,p,s,detail},{bud,flower:petalFlower,detailedFlower,shade:palette});
   }else if((form==='botanical'||['fivepetal','airy','spike','bell','globe'].includes(form))&&info.appearance?.leafShape){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(info.appearance?.architecture==='tessen'){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
@@ -1541,7 +1564,7 @@ export function plantModel(p,view,detail=1){
     if(radius>0&&bounds.max.y>0){const horizontal=w/(2*radius);g.scale.set(horizontal,h/bounds.max.y,horizontal);}
     if(dormant)for(const mesh of [...g.children])if(['garden-0.3-maple','garden-0.3-petiole'].includes(mesh.material?.customProgramCacheKey())){g.remove(mesh);mesh.geometry.dispose();mesh.dispose();}
   }
-  if((!profile||form==='maple')&&!['tapienMat','saxifrageRosettes','bergeniaRhizomes','agapanthusFans','heucherellaCrowns','iberisCorymbs','astilbePlumes','aquilegiaCymes','dianthusCymes','verbenaBranches','scabiousHabit','asteraceaeHabit','daisyBranches','myrtaceousTree','smokeTree','coniferSprays','gardenRoseCanes','sideritisSpikes','silverMintSpikes','marrubiumWhorls','leonotisTiers','keiskeaRacemes','isodonPanicles','chelonopsisAxils','triporaCymes','leucosceptrumSpikes','melittisAxils','puschkiniaScapes','bletillaShoots','roseaSpire','rugosaSpire','libertiaFans','anthericumPanicle','tofieldiaRaceme','ornithogalumRaceme','rhodoxisClump','siculumUmbel','aristeaFans','chloranthus','acaenaMat','woodPoppy','anemonopsis','nigella','yellowNigella','larkspur'].includes(info.appearance?.architecture)){
+  if((!profile||form==='maple')&&!['tapienMat','delphiniumSpires','saxifrageRosettes','bergeniaRhizomes','agapanthusFans','heucherellaCrowns','iberisCorymbs','astilbePlumes','aquilegiaCymes','dianthusCymes','verbenaBranches','scabiousHabit','asteraceaeHabit','daisyBranches','myrtaceousTree','smokeTree','coniferSprays','gardenRoseCanes','sideritisSpikes','silverMintSpikes','marrubiumWhorls','leonotisTiers','keiskeaRacemes','isodonPanicles','chelonopsisAxils','triporaCymes','leucosceptrumSpikes','melittisAxils','puschkiniaScapes','bletillaShoots','roseaSpire','rugosaSpire','libertiaFans','anthericumPanicle','tofieldiaRaceme','ornithogalumRaceme','rhodoxisClump','siculumUmbel','aristeaFans','chloranthus','acaenaMat','woodPoppy','anemonopsis','nigella','yellowNigella','larkspur'].includes(info.appearance?.architecture)){
     // Thin the same deterministic leaf set through budbreak and leaf-fall.
     for(const mesh of [...g.children]){
       const kind=mesh.material?.customProgramCacheKey?.();
@@ -1562,7 +1585,7 @@ export function plantModel(p,view,detail=1){
       }
     }
   }
-  if(s.shootScale<1&&!['agapanthusFans','saxifrageRosettes','bergeniaRhizomes'].includes(info.appearance?.architecture)&&!woody&&!['rose','hydrangea','clematis','climbingrose','mophead'].includes(form))g.scale.multiplyScalar(s.shootScale);
+  if(s.shootScale<1&&!['agapanthusFans','delphiniumSpires','saxifrageRosettes','bergeniaRhizomes'].includes(info.appearance?.architecture)&&!woody&&!['rose','hydrangea','clematis','climbingrose','mophead'].includes(form))g.scale.multiplyScalar(s.shootScale);
   return g;
 }
 const yClamp=y=>Math.max(.03,y);

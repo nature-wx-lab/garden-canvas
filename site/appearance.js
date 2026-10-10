@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.56';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.57';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -167,3 +167,5 @@ Object.assign(TRAIT_VALUES,{round5:'丸い5裂の掌状葉',round7:'浅く7裂�
 Object.assign(TRAIT_VALUES,{agapanthusStrap:'根元から2列に重なる帯状葉',agapanthusTrumpet:'6裂する筒状のラッパ形花',agapanthusDouble:'通常より花被片の多い白い花',agapanthusClosed:'花被片が重なり開ききらない袋咲き',distichous:'2列・扇状'});
 
 Object.assign(TRAIT_VALUES,{saxifrageCordate:'白い葉脈と毛のある腎形〜心形の丸葉',bergeniaRound:'細毛を帯びた大きな丸葉',bergeniaObovate:'厚く光沢があり、細かい鋸歯を持つ倒卵形の葉',saxifrageUnequal:'小さい上3枚と長い下2枚・上花弁に斑点',bergeniaCup:'短い筒から5枚が開く杯状の花'});
+
+Object.assign(TRAIT_VALUES,{delphiniumFinePalm:'細い裂片に深く裂ける掌状葉',delphiniumLobedPalm:'5〜7方向に裂け、縁にも切れ込みのある掌状葉',delphiniumProfile:'花弁状の萼・背面の距・中央の小さな花弁'});
