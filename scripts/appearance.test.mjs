@@ -10,6 +10,21 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Aromatic shrubs retain narrow evergreen foliage and separate rosemary lips from rayless Santolina heads',()=>{
+ const ids=['p-0fe0203ab3f7','p-5d2ca2f030c8','p-bc238e853e2c','p-7d77d4069d76','p-deb60399eed7'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],a=info.appearance,santo=i===1||i===2;let wood;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,10900+i,2,2);p.height=santo?.5:.8;p.spread=.8;const g=plantModel(p,view(month)),count=key=>g.children.filter(m=>m.userData.component.startsWith(key)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'aromaticShrubs');assert.ok(count('leaf-aromatic')>0);assert.equal(count('petal-')>0,a.flowerMonths.includes(month));assert.equal(count('fruit'),0);
+   const skeleton=g.children.filter(m=>m.userData.component.startsWith('wood-aromatic')||m.userData.component.startsWith('stem-aromatic')).map(m=>[...m.instanceMatrix.array]);assert.ok(skeleton.length>0);if(!wood)wood=skeleton;else assert.deepEqual(skeleton,wood);
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));if(m.userData.component.startsWith('leaf-aromatic'))assert.equal(m.geometry.userData.aromaticLeaf.rolled,!santo);if(m.userData.component.startsWith('petal-'))assert.deepEqual(m.geometry.userData.aromaticFlower,santo?{disk:true,ray:false,lobes:5}:{upper:2,lower:3,stamens:2});}
+   if(!santo&&a.flowerMonths.includes(month))assert.equal(count('anther-aromatic-rosemary'),count('petal-aromatic-rosemary')*2);if(santo)assert.equal(count('petal-aromatic-rosemary'),0);dispose(g);
+  }
+ }
+ assert.notEqual(seasonAt(CATALOG[ids[3]],4).leafPatternColor,seasonAt(CATALOG[ids[3]],11).leafPatternColor);assert.equal(CATALOG[ids[4]].appearance.habit,'arching');assert.equal(CATALOG[ids[3]].appearance.habit,'upright');assert.equal(CATALOG[ids[3]].bloom.length,12);assert.equal(CATALOG[ids[0]].bloom.includes(7),false);assert.deepEqual(CATALOG[ids[1]].bloom,[5,6]);
+});
+
 test('Illicium retains leathery terminal foliage while Ceanothus distinguishes evergreen and deciduous flower clusters',()=>{
  const ids=['p-eda8f9d140ea','p-1ba3d11aeea9','p-061bef845661','p-f6927dcd6137','p-21c164c9964f','p-1113e2b37cd4','p-9e9076a39559'];
  for(const [i,id] of ids.entries()){
