@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.95';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.96';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -227,3 +227,5 @@ Object.assign(TRAIT_VALUES,{illiciumLance:'枝先に集まる光沢のある全�
 Object.assign(TRAIT_VALUES,{rosemaryRevolute:'葉縁が裏へ巻き込む細い対生葉と白い葉裏',santolinaSegments:'銀白色の短毛と丸く細かな裂片のある互生葉',rosemaryBilabiate:'上唇2裂・下唇3裂、蜜標と2本の長い雄しべ',santolinaDiscoid:'長い花茎に多数の筒状花が集まる黄色い半球形の頭花'});
 
 Object.assign(TRAIT_VALUES,{jasminePinnate:'対生する奇数羽状複葉と先端の大きい小葉',honeysuckleOvate:'全縁の対生葉と品種により花房下で合着する葉',jasmineSalver:'細長い花筒の先が5裂して広がる白い花',honeysuckleLips:'上唇4裂・下唇1枚の長い花筒と5本の雄しべ'});
+
+Object.assign(TRAIT_VALUES,{buddlejaAlternate:'互生する細い全縁葉と灰白色の葉裏',buddlejaLance:'対生する尖った細葉・細かい鋸歯と白い葉裏',buddlejaTube:'橙色の喉部と先が4裂する小さい筒状花',axillaryHeads:'前年枝に沿って並ぶ小花群',spacedHeads:'球状の小花群が間隔をあけて連なる花穂'});

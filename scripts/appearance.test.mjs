@@ -10,6 +10,21 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Buddleja keeps alternate weeping old-wood flowers separate from thick dwarf shoots and terminal panicles',()=>{
+ const ids=['p-4665d29911db','p-520d608d699d','p-8a5dda06e482','p-9e8c6a3e8efb','p-77d3dc86a932','p-0fca645f4c09','p-be4cb665ec8d'];
+ for(const [i,id] of ids.entries()){
+  const a=CATALOG[id].appearance;let wood;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,11100+i,2,2);p.height=i===2?.6:1.4;p.spread=i===2?.85:1.5;const g=plantModel(p,view(month)),count=key=>g.children.filter(m=>m.userData.component.startsWith(key)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'buddleja');assert.equal(count('leaf-buddleja')>0,[0,4,5].includes(i)||month>=4&&month<=11);assert.equal(count('petal-buddleja')>0,a.flowerMonths.includes(month));assert.equal(count('fruit'),0);
+   const skeleton=g.children.filter(m=>['wood-buddleja','stem-buddleja-square'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);assert.ok(skeleton.length);if(!wood)wood=skeleton;else assert.deepEqual(skeleton,wood);
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));if(m.userData.component==='petal-buddleja')assert.equal(m.geometry.userData.buddlejaCorollaLobes,4);if(m.userData.component.startsWith('leaf-buddleja'))assert.equal(m.geometry.userData.buddlejaLeaf,i===1?'alternate':'opposite');}
+   assert.equal(count('anther-buddleja'),count('petal-buddleja')*4);if(a.flowerMonths.includes(month)){assert.equal(count('axis-buddleja-old-wood-head')>0,i===1);assert.equal(count('axis-buddleja-yellow-head')>0,i===6);assert.equal(count('axis-buddleja-panicle')>0,![1,6].includes(i));}dispose(g);
+  }
+ }
+ assert.deepEqual(CATALOG[ids[2]].spread,[.6,.9]);assert.equal(CATALOG[ids[1]].appearance.arrangement,'alternate');assert.equal(CATALOG[ids[1]].height[1],9);
+});
+
 test('Fragrant vines separate pinnate jasmine leaves, connate honeysuckle bracts, white stars and long lipped flowers',()=>{
  const ids=['p-cd09a7b69b2f','p-cc6fa8116623','p-204d8189861f','p-5d7ef71e36bf','p-a30327f3c2d0','p-3bee04976257'];
  for(const [i,id] of ids.entries()){

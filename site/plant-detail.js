@@ -1,7 +1,78 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.95';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.96';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.95';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.96';
 const TAU=Math.PI*2;
+export function buddlejaLeafPoint(type,t,u){
+ const sn=Math.sin(Math.PI*t),alt=type==='alternate',edge=alt?1:1-.024*(.5+.5*Math.cos(t*TAU*21));return [u*.5*Math.pow(sn,.78)*(1.20-.50*t)*edge,t,.09*u*u*sn+.017*Math.sin(t*54-Math.abs(u)*2.5)*sn*Math.abs(u)-.12*t*t];
+}
+export function buddlejaFlowerGeometry(){
+ const pos=[],uv=[],ix=[],surface=(rows,cols,point)=>{const base=pos.length/3;for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){const p=point(i/rows,j/cols);pos.push(...p.slice(0,3));uv.push(...p.slice(3));if(i<rows&&j<cols){const q=base+i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}}};
+ surface(8,16,(t,u)=>{const az=u*TAU,r=.085+.045*t*t;return [Math.sin(az)*r,t*.75,Math.cos(az)*r,u,-1];});
+ for(let k=0;k<4;k++)surface(7,6,(t,u)=>{const az=k*TAU/4,x=(u*2-1)*.21*Math.pow(Math.sin(Math.PI*t),.62),r=.10+.38*t,y=.75+.10*Math.sin(Math.PI*t)-.045*t;return [Math.sin(az)*r+Math.cos(az)*x,y,Math.cos(az)*r-Math.sin(az)*x,u,t];});
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.buddlejaCorollaLobes=4;return g;
+}
+function drawBuddleja(b,{info,s,detail,rand},kit){
+ const a=info.appearance,alt=a.shootProfile==='alternifolia',pug=a.shootProfile==='pugsterWhite',yellow=a.shootProfile==='yellowMagic',h=s.height,w=s.spread,wood=[],leaves=[],heads=[];
+ const shoot=(root,az,rise,reach,order,index)=>{
+  const N=alt?(order===0?30:18):order===0?15:9,bend=alt?(order===0?.32:.16):order===0?.12:.04,path=t=>[root[0]+Math.sin(az)*reach*t+Math.cos(az)*w*.009*Math.sin(t*6+index),root[1]+rise*t+h*(alt?.32:.045)*Math.sin(t*Math.PI)-h*bend*t*t,root[2]+Math.cos(az)*reach*t+Math.sin(az)*w*.011*Math.sin(t*5+index)];
+  for(let j=1;j<=N;j++){
+   const t=j/N,at=path(t),roll=rand();wood.push({from:path((j-1)/N),to:at,r:Math.max(.0005,h*(order===0?(pug?.016:.007):pug?.006:.002)*(1-t*.65)),old:order===0});
+   if(j>=2)leaves.push({at,az:az+j*(alt?2.399963:Math.PI/2),roll,size:order===0?1:.75,alternate:alt});
+   if(order===0&&j>=4&&j%(alt?8:4)===0)for(const side of [-1,1])shoot(at,az+side*(.67+rand()*.12),h*(alt?.035:.17+rand()*.05),w*(alt?.20:.15),1,j+index);
+   if(alt&&j>=3&&j%2===1)heads.push({at,az,tilt:1.05+roll*.45,roll,size:.7+roll*.3,old:true});
+  }
+  if(!alt)heads.push({at:path(1),az,tilt:order===0?.5:.3+rand()*.55,roll:rand(),size:order===0?1:.73,old:false});
+ };
+ const hubs=Array.from({length:3},(_,k)=>{const az=k*TAU/3,tip=[Math.sin(az)*w*.055,h*(.16+k*.04),Math.cos(az)*w*.055];if(alt)wood.push({from:[0,0,0],to:tip,r:h*.013,old:true});return tip;});
+ const count=Math.round((alt?15:pug?9:11)*detail);
+ for(let k=0;k<count;k++){
+  const az=k*2.399963,t=(k+.5)/count,rise=h*(alt?.56+.25*t:pug?.46+.28*t:.68+.24*t),reach=w*(alt?.33+.17*(1-t):.16+.16*(1-t));shoot(alt?hubs[k%3]:[Math.sin(az)*w*.025,0,Math.cos(az)*w*.025],az,rise,reach,0,k);
+ }
+ if(alt){
+  const oldLeaves=leaves.splice(0);
+  for(const n of oldLeaves){
+   const len=.10+n.roll*.045,tip=[n.at[0]+Math.sin(n.az)*len*.45,n.at[1]+len*.72,n.at[2]+Math.cos(n.az)*len*.45];wood.push({from:n.at,to:tip,r:.00055,old:false});
+   for(let k=0;k<4;k++){const t=(k+1)/4;leaves.push({...n,at:n.at.map((v,j)=>v+(tip[j]-v)*t),az:n.az+k*2.399963,size:.66+k*.08});}
+  }
+ }
+ for(const q of wood)b.branch(q.from,q.to,q.r,q.old?a.barkColor:a.stemColor,q.old?'wood-buddleja':'stem-buddleja-square');
+ for(const n of leaves){
+  if(n.roll>s.leafDensity)continue;
+  for(let k=0;k<(alt?1:2);k++){
+   const f=flowerFrame(b,n.at,.88+n.roll*.64,n.az+k*Math.PI),L=a.leafLength*n.size*s.leafScale,pet=alt?.004:.007;f.branch([0,0,0],[0,pet,0],.00055,a.stemColor,'petiole-buddleja');f.add('buddleja-leaf-'+(alt?'alternate':'opposite'),'leaf-buddleja-underside-'+a.leafUnderside.slice(1),kit.shade(rand,s.leafColor,.035),0,pet,0,L*a.leafWidth/a.leafLength,L,L,.08,0,(n.roll-.5)*.18);
+  }
+ }
+ if(!s.bloom)return;
+ const floret=(f,at,tilt,az,age,bud=false)=>{
+  const ff=flowerFrame({add:(...x)=>f.add(...x),branch:(...x)=>f.branch(...x)},at,tilt,az),R=a.flowerLength;
+  if(bud){ff.add(kit.bud,'bud-buddleja',alt?'#b6a2b7':yellow?'#b8bd95':'#a6ad91',0,R*.34,0,R*.13,R*.40,R*.13);return;}
+  const color=new THREE.Color(s.flowerColor).lerp(new THREE.Color(a.flowerFadeTo),age*.6).getStyle();ff.add('buddleja-flower','petal-buddleja',color,0,0,0,R,R,R);ff.add(kit.bud,'throat-buddleja',a.flowerEyeColor,0,R*.715,0,R*.105,R*.05,R*.105);
+  for(let j=0;j<4;j++){const az2=j*TAU/4;ff.add(kit.bud,'anther-buddleja','#c3a66d',Math.sin(az2)*R*.055,R*.65,Math.cos(az2)*R*.055,R*.025,R*.055,R*.025);}
+ };
+ for(const head of heads){
+  if(head.roll>s.flowerDensity*(alt?.90:.60))continue;
+  const f=flowerFrame(b,head.at,head.tilt,head.az),L=a.inflorescenceLength*head.size;
+  if(alt||yellow){
+   const count=alt?1:4;
+   for(let q=0;q<count;q++){
+    const yy=alt?.006:q*L*.23,shift=alt?0:(q%2?1:-1)*.009,center=[shift,yy,0],R=(alt?.014:.019)*(1-q*.08);f.branch([0,0,0],center,.0006,a.stemColor,alt?'axis-buddleja-old-wood-head':'axis-buddleja-yellow-head');
+    for(let k=0;k<80;k++){
+     const v=1-2*(k+.5)/80,az=k*2.399963,rr=R*Math.sqrt(1-v*v),at=[center[0]+Math.sin(az)*rr,center[1]+v*R*(alt?1.15:1),Math.cos(az)*rr];floret(f,at,Math.acos(v),az,(k%7)/6,k>74&&!alt);
+    }
+   }
+  }else{
+   const rows=pug?16:20,curve=t=>[0,L*t,L*.23*t*t];
+   for(let j=0;j<rows;j++){
+    const t=(j+.5)/rows,at=curve(t),radius=(pug?.034:.024)*(1-t)**.63*head.size+.002;f.branch(curve(j/rows),curve((j+1)/rows),.00065*(1-t*.6),a.stemColor,'axis-buddleja-panicle');
+    const n=Math.max(3,Math.round((pug?22:17)*(1-t)**.6));
+    for(let k=0;k<n;k++){
+     const az=k*TAU/n+j*2.399963,pt=[Math.sin(az)*radius,at[1]+(k%3)*.001,at[2]+Math.cos(az)*radius];f.branch(at,pt,.00022,a.stemColor,'pedicel-buddleja');floret(f,pt,1.18-t*.50,az,1-t,t>.79);
+    }
+   }
+  }
+ }
+}
+
 export function fragrantVineLeafPoint(type,t,u){
  const sn=Math.sin(Math.PI*t),jasmine=type==='jasmine';return [u*.5*Math.pow(sn,jasmine?.80:.58)*(jasmine?1.14-.45*t:1.06-.17*t),t,.043*u*u*sn-.08*t*t+.014*Math.sin(t*28-Math.abs(u)*2)*Math.abs(u)*sn];
 }
@@ -5579,6 +5650,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='buddleja'){drawBuddleja(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='fragrantVines'){drawFragrantVines(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='aromaticShrubs'){drawAromaticShrubs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='illiciumCeanothus'){drawIlliciumCeanothus(b,{info,s,detail,rand},kit);return;}
