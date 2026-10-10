@@ -1,7 +1,122 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.100';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.101';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.100';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.101';
 const TAU=Math.PI*2;
+export function tubularHerbLeafPoint(type,t,u){
+ const sn=Math.sin(Math.PI*t),narrow=type==='penstemonLinear'||type==='penstemonNarrow',reh=type==='rehmanniaCrenate',ley=type==='leycesteriaOvate';
+ const edge=narrow?1:.93+(reh?.15:.04)*Math.pow(.5+.5*Math.sin(t*Math.PI*(reh?21:41)),3),profile=Math.pow(sn,narrow?.64:ley?.66:.60)*(ley?1.4-.80*t:reh?1.12-.25*t:1.12-.28*t);
+ return [u*.5*profile*edge,t,.054*u*u*sn+.020*Math.sin(t*19)*Math.abs(u)*sn-(ley?.11:.07)*t*t];
+}
+export function tubularHerbFlowerGeometry(type,part='corolla'){
+ const pos=[],uv=[],ix=[],reh=type==='rehmannia',phy=type==='phygelius',ley=type==='leycesteria',digital=type==='digitalis';
+ const add=(rows,cols,point,tex)=>{const base=pos.length/3;for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){const t=i/rows,u=j/cols;pos.push(...point(t,u));uv.push(...(tex?tex(t,u):[u,t]));if(i<rows&&j<cols){const k=base+i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}}};
+ if(part==='calyx'){
+  for(let k=0;k<5;k++)add(12,6,(t,v)=>{const az=k*TAU/5,u=v*2-1,r=.07+.12*t,w=.065*Math.pow(Math.sin(Math.PI*t),.65);return [Math.sin(az)*r+Math.cos(az)*u*w,t*.28,Math.cos(az)*r-Math.sin(az)*u*w];});
+ }else{
+  const end=phy?.85:ley?.70:.72;
+  const radius=t=>phy?.083+.041*t:ley?.07+.18*t*t:.06+(reh?.25:digital?.19:.23)*Math.sin(t*Math.PI*.64);
+  add(26,40,(t,u)=>{const az=u*TAU,r=radius(t),bend=phy?.17*t*t:reh?.11*Math.sin(t*Math.PI):0;return [Math.sin(az)*r,t*end+(phy?Math.cos(az)*.025*t:0),Math.cos(az)*r*(reh?1.12:1)+bend];},(t,u)=>[u,t*end]);
+  for(let k=0;k<5;k++){
+   const upper=k<2,az=ley||phy?k*TAU/5:upper?Math.PI+(k?-.42:.42):(k-3)*1.02,span=ley?.62:phy?.45:upper?.46:.55,extension=phy?.15:ley?.30:upper?.19:.28,r0=radius(1);
+   add(15,12,(t,v)=>{const u=v*2-1,ang=az+u*span*Math.sqrt(Math.max(.015,Math.sin(Math.PI*t))),r=r0+(ley?.11:phy?.12:reh?.23:.15)*t,y=end+extension*t-(ley?.08:phy?.05:.09)*t*t;return [Math.sin(ang)*r,y+(phy?Math.cos(ang)*.025:0),Math.cos(ang)*r*(reh?1.12:1)+(phy?.17:0)];},(t,u)=>[((az+TAU)%TAU/TAU+(u-.5)*span/Math.PI+1)%1,end+(1-end)*t]);
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.tubularFloral={type,part};return g;
+}
+function tubularFloret(b,at,az,pitch,a,s,type,kit,scale=1){
+ const phy=type==='phygelius',reh=type==='rehmannia',ley=type==='leycesteria',digital=['husker','mystica'].includes(type),shape=ley?'leycesteria':phy?'phygelius':reh?'rehmannia':digital?'digitalis':'penstemon',L=a.flowerLength*scale,f=flowerFrame(b,at,pitch,az);
+ f.add('tubular-'+shape+'-calyx','calyx-tubular-'+type,ley?'#7b344d':phy?'#875b68':a.stemColor,0,-L*.025,0,L,L,L);
+ f.add('tubular-'+shape+'-corolla','petal-tubular-'+type,s.flowerColor,0,0,0,L,L,L);
+ const count=ley?5:4;
+ for(let k=0;k<count;k++){
+  const angle=ley?k*TAU/5:k*Math.PI/3+Math.PI/2,r=ley?.08:.10,len=ley?.83:phy?1.02:.76+(k%2)*.09,tip=[Math.sin(angle)*r*L,len*L,Math.cos(angle)*r*L];
+  f.branch([Math.sin(angle)*r*L,.38*L,Math.cos(angle)*r*L],tip,L*.010,phy?'#a05c7b':'#cdc0ab','stamen-tubular-'+type);
+  f.add(kit.bud,'anther-tubular-'+type,'#b8a580',...tip,L*.030,L*.020,L*.025);
+ }
+ if(!phy&&!reh&&!ley){
+  f.branch([0,.38*L,.10*L],[0,.87*L,.14*L],L*.013,'#ded3b9','staminode-penstemon');
+  if(digital)for(let j=0;j<8;j++)f.branch([0,(.71+j*.02)*L,.14*L],[((j%2)*2-1)*.045*L,(.71+j*.02)*L,.17*L],L*.006,'#e6cf9d','hair-penstemon-staminode');
+ }
+}
+function drawTubularHerbs(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,digital=type==='husker'||type==='mystica',reh=type==='rehmannia',phy=type==='phygelius',electric=type==='electric',h=s.height,w=s.spread,m=s.month,winter=m===12||m<=2;
+ const foliage=[],flowers=[],buds=[],rosette=digital||reh,kind='leaf-tubular-'+type+'-underside-'+a.leafUnderside.slice(1),growth=rosette?[.02,.02,.15,.50,.85,1,1,.85,.65,.40,.10,.02][m-1]:[.30,.30,.43,.66,.91,1,1,1,.97,.80,.48,.30][m-1];
+ const addLeaf=(at,az,L,tilt,roll,basal=false)=>foliage.push({at,az,L,tilt,roll,basal});
+ const n=Math.max(4,Math.round((phy?11:reh?7:digital?10:electric?10:12)*detail));
+ const path=(root,az,reach,rise,t)=>[root[0]+Math.sin(az)*reach*t,root[1]+rise*(1.13*t-.13*t*t),root[2]+Math.cos(az)*reach*t];
+ const shoot=(root,az,reach,rise,idx,order=0)=>{
+  const nodes=rosette?9:10,at=t=>path(root,az,reach,rise,t);
+  for(let j=1;j<=nodes;j++){
+   const t=j/nodes,pt=at(t);b.branch(at((j-1)/nodes),pt,(order?.0008:phy?.002:.0015)*(1-t*.70),a.stemColor,'stem-tubular-'+type);
+   const ln=a.leafLength*(rosette?.70-.43*t:1-.46*t)*(order?.58:1),azLeaf=az+j*Math.PI*.5;
+   if(t<.73||!rosette){
+    for(let side=0;side<(reh?1:2);side++)addLeaf(pt,reh?az+j*2.399963:azLeaf+side*Math.PI,ln,rosette?1.05:phy?.85:.52,rand());
+   }
+   if(!winter&&t>.48&&t<.94){
+    if(reh){const aa=az+j*2.399963,tip=[pt[0]+Math.sin(aa)*.028,pt[1]+.016,pt[2]+Math.cos(aa)*.028];flowers.push({at:tip,from:pt,az:aa,pitch:1.68,scale:.82+rand()*.22});}
+    else if(phy){
+     for(let side=0;side<2;side++){
+      const aa=azLeaf+side*Math.PI,len=w*.13*(1.2-t),end=[pt[0]+Math.sin(aa)*len,pt[1]+.035,pt[2]+Math.cos(aa)*len];b.branch(pt,end,.00065,a.stemColor,'panicle-phygelius');
+      for(let f=0;f<3;f++){const off=(f-1)*.020,tip=[end[0]+Math.cos(aa)*off,end[1]+.011,end[2]-Math.sin(aa)*off];flowers.push({at:tip,from:end,az:aa+Math.PI,pitch:2.65,scale:.89+rand()*.17});}
+     }
+    }else{
+     for(let side=0;side<2;side++){
+      const aa=azLeaf+side*Math.PI,extend=(digital?.038:.030)*(1.1-t*.45),end=[pt[0]+Math.sin(aa)*extend,pt[1]+.020,pt[2]+Math.cos(aa)*extend];b.branch(pt,end,.0006,a.stemColor,'panicle-penstemon');
+      for(let f=0;f<(digital?3:electric?1:2);f++){const off=(f-1)*.012,tip=[end[0]+Math.cos(aa)*off,end[1]+f*.009,end[2]-Math.sin(aa)*off];flowers.push({at:tip,from:end,az:aa+(f-1)*.32,pitch:1.46+(f%2)*.12,scale:.86+rand()*.18});}
+     }
+    }
+   }
+   if(!rosette&&!phy&&!order&&idx%3===0&&j===4){shoot(pt,az+(idx%2?-.8:.8),w*.11,rise*.48,idx,1);}
+  }
+  buds.push({at:at(1),roll:rand()});
+ };
+ for(let k=0;k<n;k++){
+  const az=k*2.399963,r=w*(rosette?.27:.22)*Math.sqrt((k+.5)/n),root=[Math.sin(az)*r,.003,Math.cos(az)*r],rise=h*(.57+rand()*.35)*growth;
+  if(rosette)for(let j=0;j<11;j++)addLeaf(root,az+j*2.399963,a.leafLength*(.75+rand()*.30),1.18+rand()*.26,rand(),true);
+  if(!winter||!rosette)shoot(root,az,w*(phy?.08:rosette?.055:electric?.15:.09),rise,k);
+ }
+ for(const lf of foliage){
+  if(lf.roll>=s.leafDensity)continue;
+  const L=lf.L*s.leafScale*(winter&&!lf.basal?.80:1),pet=L*(reh?.23:digital?.12:.045),f=flowerFrame(b,lf.at,lf.tilt,lf.az),color=kit.shade(rand,s.leafColor,.038);
+  if(pet>0)f.branch([0,0,0],[0,pet,0],.00045,a.stemColor,'petiole-tubular-'+type);
+  f.add(a.leafShape,kind,color,0,pet,0,L*a.leafWidth/a.leafLength,L,L);
+ }
+ if(s.bloom){
+  for(const fl of flowers){b.branch(fl.from,fl.at,.00036,a.stemColor,'pedicel-tubular-'+type);tubularFloret(b,fl.at,fl.az,fl.pitch,a,s,type,kit,fl.scale);}
+  for(const pt of buds)b.add(kit.bud,'bud-tubular-'+type,phy?'#ae7d95':s.flowerColor,...pt.at,.0026,.007,.0026);
+ }
+}
+function drawLeycesteria(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,leaves=[],tips=[],n=Math.round(8*detail),kind='leaf-leycesteria-underside-'+a.leafUnderside.slice(1);
+ const shoot=(root,az,reach,rise,order)=>{
+  const path=t=>[root[0]+Math.sin(az)*reach*t,root[1]+rise*(1.50*t-.60*t*t*t),root[2]+Math.cos(az)*reach*t],N=order?6:11;
+  for(let j=1;j<=N;j++){
+   const pt=path(j/N);b.branch(path((j-1)/N),pt,(order?.003:.008)*(1-j/(N+2)),order||j>3?a.stemColor:a.barkColor,'wood-leycesteria');
+   if(j>1)for(let side=0;side<2;side++)leaves.push({at:pt,az:az+j*Math.PI*.5+side*Math.PI,roll:rand(),len:a.leafLength*(1.05-.20*j/N)});
+   if(!order&&[4,6,8].includes(j))shoot(pt,az+(j%2?-.65:.65),w*.17,rise*.30,1);
+  }
+  tips.push({at:path(1),az,roll:rand()});
+ };
+ for(let k=0;k<n;k++){const az=k*2.399963;shoot([Math.sin(az)*w*.04,0,Math.cos(az)*w*.04],az,w*(.22+rand()*.19),h*(.56+rand()*.39),0);}
+ for(const lf of leaves){
+  if(lf.roll>=s.leafDensity)continue;
+  const L=lf.len*s.leafScale,f=flowerFrame(b,lf.at,.96+lf.roll*.40,lf.az);f.branch([0,0,0],[0,.018,0],.0008,a.stemColor,'petiole-leycesteria');f.add(a.leafShape,kind,kit.shade(rand,s.leafColor,.04),0,.018,0,L*a.leafWidth/a.leafLength,L,L);
+ }
+ const fruit=a.fruitMonths.includes(s.month);if(!s.bloom&&!fruit)return;
+ for(const tip of tips){
+  const count=3+Math.floor(tip.roll*3),length=.10+tip.roll*.07,at=t=>[tip.at[0]+Math.sin(tip.az)*.025*t,tip.at[1]-length*t,tip.at[2]+Math.cos(tip.az)*.025*t];
+  for(let j=1;j<=count;j++){
+   const pt=at(j/count);b.branch(at((j-1)/count),pt,.0011,'#8b5670','raceme-leycesteria');
+   for(let k=0;k<6;k++){
+    const az=tip.az+k*TAU/6,rr=.007,end=[pt[0]+Math.sin(az)*rr,pt[1]-.004,pt[2]+Math.cos(az)*rr],f=flowerFrame(b,end,2.08,az);
+    f.add('leycesteriaOvate','bract-leycesteria',j===count?'#945168':'#82435a',0,0,0,.012,.026,.026);
+    if(s.bloom){tubularFloret(b,[end[0],end[1]-.014,end[2]],az,2.83,a,s,'leycesteria',kit,.80+tip.roll*.25);}
+    else{b.add(kit.bud,'fruit-leycesteria',s.month===9&&k%3?'#a64459':'#48313f',end[0],end[1]-.006,end[2],.0035,.004,.0035);}
+   }
+  }
+ }
+}
+
 export function smallHerbLeafPoint(type,t,u){
  const sn=Math.sin(Math.PI*t),needle=type==='lotusNeedle',rh=type==='rhodiolaNarrow';
  const width=.5*Math.pow(sn,needle?.24:rh?.37:.55)*(rh||type==='lotusSilky'?.68+.38*t:1.03-.18*t);
@@ -5966,6 +6081,8 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='tubularHerbShoots'){drawTubularHerbs(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='leycesteriaCanes'){drawLeycesteria(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='smallPeaHerbs'){drawSmallPeaHerbs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='rhodiolaCrown'){drawRhodiolaCrown(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='seasonalClimbers'){drawSeasonalClimbers(b,{info,s,detail,rand},kit);return;}
