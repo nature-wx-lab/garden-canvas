@@ -1,7 +1,96 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.87';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.88';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.87';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.88';
 const TAU=Math.PI*2;
+export function peonyLeafGeometry(type){
+ const tree=type==='tree',pos=[],uv=[],ix=[];
+ if(tree){
+  const outline=[[0,0]],lobes=3,span=1.29;
+  for(let k=0;k<lobes;k++)for(let j=0;j<=24;j++){
+   const t=j/24,az=-span+(k+t)*span*2/lobes,r=(k===1?.35:.31)+(k===1?.64:.53)*Math.pow(1-Math.abs(t*2-1),.65);outline.push([Math.sin(az)*r*.76,.13+Math.cos(az)*r*.86]);
+  }
+  outline.push([0,0]);const N=outline.length;pos.push(0,.13,0);uv.push(.5,.13);
+  for(let k=1;k<=4;k++)for(const [x,y] of outline){const f=k/4;pos.push(x*f,.13+(y-.13)*f,.07*x*x*f-.026*y*y*f);uv.push(x*f*.6+.5,.13+(y-.13)*f);}
+  for(let j=0;j<N-1;j++)ix.push(0,j+1,j+2);
+  for(let k=1;k<4;k++)for(let j=0;j<N-1;j++){const q=1+(k-1)*N+j;ix.push(q,q+N,q+1,q+1,q+N,q+N+1);}
+ }else{
+  const rows=32,cols=8;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,width=.5*Math.pow(Math.sin(Math.PI*t),.58)*(1.16-.24*t);pos.push(u*width,t,.055*u*u*Math.sin(Math.PI*t)-.046*t*t);uv.push(j/cols,t);
+   if(i<rows&&j<cols){const q=i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();
+ if(g.attributes.normal.getZ(Math.floor(g.attributes.normal.count/2))>0){for(let i=0;i<g.index.count;i+=3){const a=g.index.getX(i+1);g.index.setX(i+1,g.index.getX(i+2));g.index.setX(i+2,a);}g.computeVertexNormals();}
+ g.userData.peonyLeaf=type;return g;
+}
+export function peonyPetalGeometry(type,part){
+ const herbal=['japonica','aizu','honoo'].includes(type),layers=type==='hyakkasen'?[8,8,7,5]:type==='kifujin'?[11,13,13,12,11,9,8,5]:type==='highNoon'?[7,7,6]:type==='gauguin'?[8,7]:[type==='japonica'?7:6],pos=[],uv=[],ix=[],rows=22,cols=12;let petals=0;
+ for(let layer=0;layer<layers.length;layer++){
+  if((part==='outer')!==(layer===0))continue;
+  for(let k=0;k<layers[layer];k++){
+   petals++;const az=k*TAU/layers[layer]+layer*.67+.08*Math.sin(k*3.4+layer),base=pos.length/3,factor=1-layer/(layers.length+1)*.72;
+   for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+    const t=i/rows,u=j/cols*2-1,sn=Math.sin(Math.PI*t),r=(.12+(herbal?.84:.94)*Math.sin(t*(herbal?1.96:1.48)))*factor,width=(herbal?.67:type==='kifujin'?.64:.68)*Math.pow(sn,.36)*factor;
+    const ruffle=(herbal?.012:.040)*Math.sin(u*13+k*2.7+layer)*Math.pow(t,3),cup=herbal?.90:type==='kifujin'?.32+layer*.012:.38;
+    const y=.10+layer*(type==='kifujin'?.018:.038)+cup*t*t+.11*u*u*sn+ruffle+(type==='kifujin'?.035*Math.sin(k*2.7+layer)*t:0),x=u*width*(1+(herbal?.01:.05)*Math.sin(t*27+k));
+    pos.push(Math.sin(az)*r+Math.cos(az)*x,y,Math.cos(az)*r-Math.sin(az)*x);uv.push(j/cols,t);
+    if(i<rows&&j<cols){const q=base+i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}
+   }
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.peonyPetals={type,part,petals,layers:layers.length};return g;
+}
+function drawPeony(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,type=a.shootProfile,woody=a.lifeForm==='shrub',honoo=type==='honoo',h=s.height,w=s.spread,leaves=[],heads=[];
+ if(s.groundDormant)return;
+ const shoot=(root,az,rise,reach,order)=>{
+  const path=t=>[root[0]+Math.sin(az)*reach*t,root[1]+rise*t,root[2]+Math.cos(az)*reach*t];
+  for(let j=1;j<=6;j++)b.branch(path((j-1)/6),path(j/6),(woody?(order?.006:.016):.003)*(1-j*.08),woody&&order===0?a.barkColor:a.stemColor,woody?'wood-peony':'stem-peony');
+  if(!woody||order>0){
+   const N=woody?4:3;for(let j=0;j<N;j++)leaves.push({at:path(!woody&&!honoo?.36+j*.27:.26+j*(honoo?.18:.22)),az:az+j*2.399963,roll:rand(),young:j===N-1});
+   heads.push({at:path(1),az,roll:rand()});
+  }
+  if(woody&&order===0)for(let j=0;j<3;j++)shoot(path(.52+j*.19),az+(j-1)*.68,h*(.30+.10*rand()),w*(.095+.06*rand()),1);
+ };
+ const count=Math.max(2,Math.round((woody?4:5)*detail));
+ for(let k=0;k<count;k++){const az=k*2.399963,r=w*(woody?.055:.08);shoot([Math.sin(az)*r,0,Math.cos(az)*r],az,h*(woody?.53+rand()*.12:.85+rand()*.13),w*(woody?.13:.05),0);}
+ for(const n of leaves){
+  if(s.leafDensity===0||n.roll>s.leafDensity)continue;
+  const f=flowerFrame(b,n.at,1.04+n.roll*.53,n.az),L=a.leafLength*(.82+n.roll*.24)*s.leafScale,P=(woody?.08:.07)*s.leafScale,color=kit.shade(rand,s.leafColor,.035),kind='leaf-peony-'+(woody?'lobed':honoo?'hairy':'entire')+'-underside-'+a.leafUnderside.slice(1);
+  f.branch([0,0,0],[0,P,0],.0012,a.stemColor,'petiole-peony');
+  for(let k=0;k<3;k++){
+   const az=(k-1)*.80,start=[0,P*(k===1?1:.66),0],end=[Math.sin(az)*P*.75,start[1]+Math.cos(az)*P*.75,.004];f.branch(start,end,.0007,a.stemColor,'rachis-peony');
+   for(let j=0;j<3;j++)f.add('peony-leaf-'+(woody?'tree':'woodland'),kind,color,...end,L*a.leafWidth/a.leafLength,L,L,.04+j*.09,0,-az+(j-1)*.72);
+  }
+ }
+ const flower=(n)=>{
+  const f=flowerFrame(b,n.at,woody?.12+n.roll*.44:.06+n.roll*.14,n.az),R=a.flowerRadius*(.90+n.roll*.12),inner=type==='kifujin'&&n.roll>.46?'#ebd9de':s.flowerColor;
+  f.add('peony-'+type+'-outer','petal-peony-'+type+'-outer',s.flowerColor,0,0,0,R,R,R);
+  if(woody)f.add('peony-'+type+'-inner','petal-peony-'+type+'-inner',inner,0,0,0,R,R,R);
+  const sepals=woody?5:3;for(let j=0;j<sepals;j++)f.add('leaf','sepal-peony','#748953',0,0,0,R*.42,R*.46,R*.45,1.12,j*TAU/sepals,0);
+  const stamens=type==='kifujin'?24:woody?68:48;
+  for(let k=0;k<stamens;k++){
+   const az=k*2.399963,rr=R*(.20+.16*(k%4)/3),pt=[Math.sin(az)*rr,R*(.29+.18*(k%7)/6),Math.cos(az)*rr];f.branch([pt[0]*.65,R*.10,pt[2]*.65],pt,R*.008,type==='highNoon'||type==='gauguin'?'#b1796d':'#e4d09a','filament-peony');f.add(kit.bud,'anther-peony','#d6b750',...pt,R*.031,R*.015,R*.060,.35,az,0);
+  }
+  for(let j=0;j<(woody?4:3);j++){
+   const az=j*TAU/(woody?4:3),root=[Math.sin(az)*R*.08,R*.12,Math.cos(az)*R*.08];f.add(kit.bud,'carpel-peony',type==='highNoon'?'#d1c899':'#abb67c',...root,R*.052,R*.12,R*.053);
+   const N=honoo?14:5;let prev=[root[0],R*.24,root[2]];
+   for(let k=1;k<=N;k++){const t=k/N,angle=t*(honoo?TAU*1.13:1.1),r=R*(honoo?.09:.06),point=[root[0]+Math.sin(az)*Math.sin(angle)*r,R*.24+Math.sin(angle)*r,root[2]+Math.cos(az)*(1-Math.cos(angle))*r];f.branch(prev,point,R*.018,type==='highNoon'?'#c8ba8c':'#9e5d76','stigma-peony');prev=point;}
+  }
+ };
+ for(const n of heads){
+  if(s.bloom&&n.roll>.12)flower(n);
+  else if(!woody&&a.fruitMonths.includes(month)){
+   const f=flowerFrame(b,n.at,.12,n.az);
+   for(let j=0;j<3;j++){
+    const az=j*TAU/3;for(let side=-1;side<=1;side+=2)f.add('peony-follicle','follicle-peony','#b67b6d',Math.sin(az)*.006,.005,Math.cos(az)*.006,.014,.032,.017,.55,az,side*.50);
+    for(let k=0;k<5;k++){const t=k/4;f.add(kit.bud,'seed-peony',k%2?'#a84243':'#29252e',Math.sin(az)*(.006+.016*t),.014+.01*t,Math.cos(az)*(.006+.016*t),.003,.0035,.0028);}
+   }
+  }else if(woody&&s.leafDensity===0)b.add(kit.bud,'bud-peony','#966854',...n.at,.005,.013,.005,.14,n.az,0);
+ }
+}
+
 export function woodyPeaLeafPoint(type,t,u){
  const round=type==='daruma'||type==='yunnan',sn=Math.sin(Math.PI*t),half=.5*Math.pow(sn,round?.44:.83)*(round?.72+.5*t:1.13-.30*t),notch=type==='yunnan'?.035*Math.exp(-Math.pow(u/.22,2))*Math.pow(t,9):0;
  return [half*u,t-notch,.033*u*u*sn-.032*t*t];
@@ -4918,6 +5007,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='peonyShoots'){drawPeony(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='woodyPea'){drawWoodyPea(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='broadMaple'){drawBroadMaple(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='blueSpruce'){drawBlueSpruce(b,{info,s,detail,rand},kit);return;}
