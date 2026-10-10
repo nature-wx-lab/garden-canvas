@@ -1,7 +1,86 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.86';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.87';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.86';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.87';
 const TAU=Math.PI*2;
+export function woodyPeaLeafPoint(type,t,u){
+ const round=type==='daruma'||type==='yunnan',sn=Math.sin(Math.PI*t),half=.5*Math.pow(sn,round?.44:.83)*(round?.72+.5*t:1.13-.30*t),notch=type==='yunnan'?.035*Math.exp(-Math.pow(u/.22,2))*Math.pow(t,9):0;
+ return [half*u,t-notch,.033*u*u*sn-.032*t*t];
+}
+export function woodyPeaFlowerGeometry(type,part){
+ const pos=[],uv=[],ix=[],vine=['kuchibeni','nivea'].includes(type),rows=16,cols=12,count=part==='flag'?1:2;
+ for(let k=0;k<count;k++){
+  const base=pos.length/3,side=k===0?-1:1;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j/cols*2-1,sn=Math.sin(Math.PI*t);let x,y,z;
+   if(part==='flag'){
+    x=u*(vine?.87:.63)*Math.pow(sn,.37);y=.18+t*(vine?.88:1.00)-(vine?.055:.025)*Math.exp(-Math.pow(u/.19,2))*Math.pow(t,9);z=.05-.24*t+.13*u*u*sn+.008*Math.cos(u*18)*t*t;
+   }else if(part==='wing'){
+    x=side*(.12+sn*.19)+u*.19*Math.pow(sn,.50);y=.13-.16*t-.10*t*t;z=.07+t*.89+.07*u*u;
+   }else{
+    x=side*(.055+.085*sn)+u*.085*sn;y=.045-.25*sn+(type==='yunnan'?.20:.10)*t*t;z=.05+t*.97;
+   }
+   pos.push(x,y,z);uv.push(j/cols,t);if(i<rows&&j<cols){const q=base+i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.woodyPea={type,part,petals:count};return g;
+}
+function drawWoodyPea(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,vine=type==='kuchibeni'||type==='nivea',broom=type==='whiteBroom',yunnan=type==='yunnan',h=s.height,w=s.spread,leaves=[],heads=[],axils=[];
+ const branch=(root,az,rise,reach,order)=>{
+  const path=t=>[root[0]+Math.sin(az)*reach*(.7*t+.3*t*t),root[1]+rise*(broom?t:vine?1.55*t-.80*t*t:order===0?3.75*t-3.25*t*t:1.20*t-.82*t*t),root[2]+Math.cos(az)*reach*(.7*t+.3*t*t)],nodes=order===0?18:vine?6:10;
+  for(let j=1;j<=8;j++)b.branch(path((j-1)/8),path(j/8),Math.max(.00035,(order===0?(vine?.008:broom?.004:.0042):order===1?.0018:.0007)*(1-j*.085)),order||broom?a.stemColor:a.barkColor,broom?'wood-broom-green-ribbed':'wood-woody-pea-'+type);
+  for(let j=1;j<=nodes;j++){
+   const t=.08+j*.86/nodes,at=path(t),theta=az+j*2.399963,roll=rand();leaves.push({at,az:theta,roll,young:j>nodes-2,upper:t>.55||order>0});
+   if(broom&&j>2)axils.push({at,az:theta,roll});
+   if(order<2&&j>3&&j<nodes-1&&j%(order===0?3:5)===0)branch(at,az+(j%2?1:-1)*(.55+rand()*.6),h*(vine?.11:broom?.22:.10),w*(vine?.13:broom?.04:.10),order+1);
+  }
+  if(order>0&&!broom)heads.push({at:path(.72),az,roll:rand()});
+ };
+ if(vine){
+  // An explicitly trained, compact example; no unrequested support is added to the plan.
+  for(let k=0;k<3;k++){
+   const twist=t=>{const az=k*TAU/3+(type==='kuchibeni'?1:-1)*t*TAU*1.5;return [Math.sin(az)*w*.016,t*h*.72,Math.cos(az)*w*.016];};
+   for(let j=1;j<=36;j++)b.branch(twist((j-1)/36),twist(j/36),h*.008,a.barkColor,'wood-woody-pea-'+type);
+  }
+  for(let k=0;k<Math.round(12*detail);k++){const az=k*2.399963;branch([0,h*(.47+(k%3)*.075),0],az,h*.33,w*(.28+rand()*.07),0);}
+ }else for(let k=0;k<Math.round((broom?14:14)*detail);k++){
+  const az=k*2.399963;branch([Math.sin(az)*w*.025,0,Math.cos(az)*w*.025],az,h*(broom?.67+rand()*.20:.70+rand()*.17),w*(broom?.14+rand()*.10:.35+rand()*.07),0);
+ }
+ for(const n of leaves){
+  if(s.leafDensity===0||n.roll>s.leafDensity)continue;
+  const L=a.leafLength*(.75+n.roll*.30)*s.leafScale*(n.young?.77:1),f=flowerFrame(b,n.at,(vine?1.18:.90)+n.roll*.7,n.az),kind='leaf-woody-pea-'+type+'-underside-'+a.leafUnderside.slice(1),color=kit.shade(rand,s.leafColor,.043);
+  if(vine){
+   const count=(type==='kuchibeni'?13:9)+2*Math.floor(n.roll*3.99),rachis=(type==='kuchibeni'?.27:.21)*s.leafScale,curve=t=>[.014*Math.sin(t*2.8+n.az)*t,rachis*t,.050*t*t];
+   for(let j=1;j<=5;j++)f.branch(curve((j-1)/5),curve(j/5),.00055,a.stemColor,'petiole-woody-pea');
+   for(let j=0;j<count-1;j++){const t=.18+Math.floor(j/2)*.70/((count-1)/2),side=j%2?1:-1;f.add('woody-pea-leaf-'+type,kind,color,...curve(t),L*a.leafWidth/a.leafLength,L,L,.12+t*.35,0,side*(.94+.15*Math.sin(j*2.1+n.az)));}
+   f.add('woody-pea-leaf-'+type,kind,color,...curve(1),L*a.leafWidth/a.leafLength,L,L,.30,0,0);
+  }else{
+   const P=broom?.003:.014;f.branch([0,0,0],[0,P,0],.00035,a.stemColor,'petiole-woody-pea');
+   const count=broom&&n.upper?1:3;for(let j=0;j<count;j++)f.add('woody-pea-leaf-'+type,kind,color,0,P,0,L*a.leafWidth/a.leafLength,L,L,0,0,count===1?0:(j-1)*.70);
+  }
+ }
+ const floret=(parent,at,angle,scale=1)=>{
+  const f=flowerFrame(parent,at,.16,angle),R=a.flowerRadius*scale;
+  for(const part of ['flag','wing','keel'])f.add('woody-pea-'+type+'-'+part,'petal-woody-pea-'+type+'-'+part,part==='flag'?s.flowerColor:a.flowerPalette[part],0,0,0,R,R,R);
+  f.add(kit.bud,'calyx-woody-pea',yunnan?'#948b70':'#8b976b',0,0,-R*.10,R*.22,R*.20,R*.25);
+  if(vine)f.add(kit.bud,'guide-woody-pea','#c1bc6b',0,R*.43,-R*.06,R*.17,R*.18,R*.025);
+ };
+ if(s.bloom){
+  if(broom)for(const n of axils){if(n.roll>.67)continue;const f=flowerFrame(b,n.at,.1,n.az);for(let k=0;k<2;k++){const at=[k*.004,.002+k*.005,.003];f.branch([0,0,0],at,.0003,a.stemColor,'pedicel-woody-pea');floret(f,at,k*.6);}}
+  else for(const n of heads){
+   if(n.roll>(vine?.34:.67))continue;
+   const f=flowerFrame(b,n.at,vine?0:.5,n.az),length=a.inflorescenceLength*(.78+n.roll*.24),count=type==='kuchibeni'?52:type==='nivea'?42:yunnan?12:16;
+   let previous=[0,0,0];
+   for(let k=0;k<count;k++){
+    const t=(k+.3)/count,az=k*2.399963,axis=[vine?0:Math.sin(t*1.2)*length*.80,-length*t*(vine?1:.35),0],radius=(type==='kuchibeni'?.025:type==='nivea'?.020:.008)*Math.sqrt(1-t),at=[axis[0]+Math.sin(az)*radius,axis[1],Math.cos(az)*radius];
+    f.branch(previous,axis,.0004,a.stemColor,'raceme-woody-pea');f.branch(axis,at,.00025,a.stemColor,'pedicel-woody-pea');previous=axis;
+    if(vine&&t>.85)f.add(kit.bud,'bud-woody-pea',type==='kuchibeni'?'#ba94b1':'#d1d7b8',...at,.003*(1-t+.3),.006*(1-t+.3),.003*(1-t+.3),.4,az,0);
+    else floret(f,at,az,.82+.18*(1-t));
+   }
+  }
+ }
+}
+
 export function broadMapleGeometry(type){
  const full=type==='fullmoon',lobes=full?9:5,edge=[[0,0]],span=full?2.44:2.23,step=span*2/lobes;
  for(let l=0;l<lobes;l++)for(let j=0;j<=32;j++){
@@ -4839,6 +4918,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='woodyPea'){drawWoodyPea(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='broadMaple'){drawBroadMaple(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='blueSpruce'){drawBlueSpruce(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='rosaceousBranches'){drawRosaceousBranches(b,{info,s,detail,rand},kit);return;}

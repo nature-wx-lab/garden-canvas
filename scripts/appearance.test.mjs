@@ -10,6 +10,23 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Woody pea flowers keep individual compound leaves, flower calendars and stable bare winter canes',()=>{
+ const ids=['p-5aa37029bc73','p-1520f93a63e1','p-3f5e1a66e584','p-8d166423caf3','p-1c24b019b8b9','p-b7df4a46d4e9'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],a=info.appearance;let wood;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,10200+i,2,2);p.height=1;p.spread=1;const g=plantModel(p,view(month)),count=key=>g.children.filter(m=>m.userData.component.startsWith(key)).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'woodyPea');assert.equal(count('leaf-woody-pea')>0,month>=4&&month<=11);assert.equal(count('petal-woody-pea')>0,a.flowerMonths.includes(month));assert.equal(count('fruit'),0);
+   const skeleton=g.children.filter(m=>m.userData.component.startsWith('wood-')).map(m=>[...m.instanceMatrix.array]);assert.ok(skeleton.length>0);if(!wood)wood=skeleton;else assert.deepEqual(skeleton,wood);
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));if(m.userData.component.startsWith('petal-woody-pea')){const q=m.geometry.userData.woodyPea;assert.equal(q.type,a.shootProfile);assert.equal(q.petals,q.part==='flag'?1:2);}if(m.userData.component.startsWith('leaf-woody-pea'))assert.ok(m.geometry.attributes.normal.getZ(148)<-.5);}
+   dispose(g);
+  }
+ }
+ assert.equal(CATALOG[ids[0]].appearance.leaflets,17);assert.equal(CATALOG[ids[3]].appearance.leaflets,11);assert.ok(CATALOG[ids[0]].appearance.inflorescenceLength>CATALOG[ids[3]].appearance.inflorescenceLength*3);
+ assert.equal(seasonAt(CATALOG[ids[4]],9).bloom,false);assert.match(CATALOG[ids[4]].appearance.unconfirmed.join(''),/刈り込み/);assert.equal(seasonAt(CATALOG[ids[3]],10).bloom,true);assert.equal(CATALOG[ids[3]].height,null);
+ assert.equal(CATALOG[ids[1]].latin,'Cytisus');assert.equal(CATALOG[ids[5]].latin,'Campylotropis polyantha');assert.equal(seasonAt(CATALOG[ids[5]],7).bloom,false);
+});
+
 test('Broad maples keep opposite palmate leaves and blue spruce keeps single four sided needles in distinct crowns',()=>{
  const ids=['p-1f54ff988450','p-5acfbdbda60e','p-7458e679a316','p-01c9bb6c8fc5'];
  for(const [i,id] of ids.entries()){
