@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.14';
-import {foliageKind} from './appearance.js?v=0.9.14';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.14';
-import {drawTree} from './tree-model.js?v=0.9.14';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.14';
+import {treeProfile} from './tree-profiles.js?v=0.9.15';
+import {foliageKind} from './appearance.js?v=0.9.15';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.15';
+import {drawTree} from './tree-model.js?v=0.9.15';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.15';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.14';
+import { plantInfo, stateAt } from './model.js?v=0.9.15';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,6 +13,21 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+for(const type of ['feltOval','feltRound','wireRound','groundIvyLeaf','newLookLeaf','curlyLeucothoe','persianLeaf']){
+ const pos=[],uv=[],idx=[],rows=32,cols=12,ivy=type==='groundIvyLeaf',dust=type==='newLookLeaf',curly=type==='curlyLeucothoe',persian=type==='persianLeaf',round=type==='feltRound'||type==='wireRound';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t));
+  let width=(ivy?.69:dust?.62:curly?.40:persian?.26:round?.52:.44)*Math.pow(sin,ivy?.42:round?.49:dust?.62:.84);
+  if(ivy)width*=.92+.08*Math.cos(t*Math.PI*12);
+  if(dust)width*=.82+.18*Math.cos((t-.12)*Math.PI*9);
+  if(persian)width*=i%2?.985:1.015;
+  const relief=persian?.024*Math.cos(t*38-Math.abs(u)*8)*Math.abs(u)*sin:curly?.08*Math.sin(t*23)*u*u*sin:.013*Math.cos(t*24)*u*u*sin;
+  const y=curly?.72*Math.sin(t*2.2):t-(ivy?.23*Math.exp(-Math.pow((t-.14)/.14,2))*u*u:0),z=curly?.60*(1-Math.cos(t*2.2)):.16*t*t;
+  pos.push(u*width,y,z+.075*u*u*sin+relief);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 for(const type of ['helleboreSepal','helleboreBell','helleboreSword','helleboreFrill','clematisSepal','helleboreLeaf','helleboreFineLeaf','vesicariusLeaf']){
  const pos=[],uv=[],idx=[],rows=40,cols=18,leaf=type.endsWith('Leaf'),fine=type==='helleboreFineLeaf',bell=type==='helleboreBell',clematis=type==='clematisSepal',sword=type==='helleboreSword',frill=type==='helleboreFrill',vesicarius=type==='vesicariusLeaf';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
@@ -521,6 +536,7 @@ function windShader(shader,kind){
       diffuseColor.rgb+=diffuseColor.rgb*(midrib*0.23+veins*0.055);
     `);
     if(kind.startsWith('leaf-hosta'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*70.0)');
+    if(kind==='leaf-persian-metal')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float network=max(midrib,pow(max(0.0,cos((vUv.y-fold*.32)*38.0)),22.0)*smoothstep(.03,.11,fold));float edge=smoothstep(.88,.99,fold);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.036,.10,.047),max(network,edge));diffuseColor.rgb+=vec3(.030,.020,.040)*(1.0-network)*pow(max(0.0,sin(vUv.x*521.0)*cos(vUv.y*413.0)),8.0);if(!gl_FrontFacing)diffuseColor.rgb=vec3(.188,.053,.131);\n#include <emissivemap_fragment>`);
     if(kind==='leaf-iris-parallel')shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*95.0)');
     if(kind==='leaf-lilium-parallel')shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos((vUv.x-0.5)*31.4)');
     if(kind==='leaf-crocus-stripe')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.62,.67,.58),1.0-smoothstep(.09,.16,fold));\n#include <emissivemap_fragment>`);
@@ -741,7 +757,7 @@ export function plantModel(p,view,detail=1){
   const dormant=s.dormant,clipped=p.management?.method==='trim'&&s.last&&!s.unsupported;
   if(form==='unmodeled'){
     const frame=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({color:'#aeb5a3',wireframe:true,transparent:true,opacity:.42}));frame.position.y=h/2;g.add(frame);g.userData.unmodeled=true;
-  }else if(['blueberryCanes','rhododendronTruss','fineAzalea','terminalPieris','kalmiaCluster','tieredEnkianthus','archingLeucothoe','hydrangeaVine','porcelainVine','silverBush','berzelia','wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory','blueEyeShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
+  }else if(['saltbush','gardeniaShrub','limeFelt','pityrodia','dustyMiller','wireVine','hatsuyuki','blueberryCanes','rhododendronTruss','fineAzalea','terminalPieris','kalmiaCluster','tieredEnkianthus','archingLeucothoe','hydrangeaVine','porcelainVine','silverBush','berzelia','wireShrub','mirrorShrub','myrtleShrub','eremophila','mintBush','blueButterfly','bridalVeil','roseGlory','blueEyeShrub'].includes(info.appearance?.architecture)){g.userData.architecture=info.appearance.architecture;drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(profile&&form!=='maple'){g.userData.architecture=drawTree(b,{profile,info,p,s,detail},{bud,flower:petalFlower,detailedFlower,shade:palette});
   }else if((form==='botanical'||['fivepetal','airy','spike','bell','globe'].includes(form))&&info.appearance?.leafShape){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
   }else if(info.appearance?.architecture==='tessen'){drawDetailedHerb(b,{info,s,p,detail,rand},{bud,cone,shade:palette});
