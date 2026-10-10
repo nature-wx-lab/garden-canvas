@@ -1,6 +1,66 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.81';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.82';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function banksiaLeafPoint(type,t,u){
+ const coast=type==='coast',hairpin=type==='hairpin',heath=type==='heath',sn=Math.sin(Math.PI*t);
+ const taper=coast?Math.pow(sn,.43)*(.35+1.02*t):Math.pow(sn,.16),teeth=hairpin&&t>.25?.10*Math.max(0,Math.sin(t*TAU*23)):0;
+ const notch=heath?.027*Math.exp(-Math.pow(u/.32,2))*Math.pow(t,24):0;
+ return [u*(taper*.5+teeth),t-notch,(coast?.026:.0035)*u*u*sn-(coast?.06:.024)*t*t];
+}
+export function banksiaHeadGeometry(type){
+ const globe=type==='leptophylla',short=type==='telmatiaea',length=globe?.08:short?.045:type==='heath'?.22:type==='hairpin'?.15:.10;
+ const radial=globe?.045:short?.03:type==='hairpin'?.035:.030,number=globe?380:short?360:type==='heath'?620:480;
+ const parts=()=>({pos:[],uv:[],ix:[]}),perianth=parts(),style=parts();
+ const tube=(mesh,path,radius)=>{
+  const base=mesh.pos.length/3,steps=7,sides=4;
+  for(let k=0;k<=steps;k++){
+   const t=k/steps,p=new THREE.Vector3(...path(t)),prev=new THREE.Vector3(...path(Math.max(0,t-.002))),next=new THREE.Vector3(...path(Math.min(1,t+.002))),dir=next.sub(prev).normalize(),side=new THREE.Vector3(0,1,0).cross(dir);
+   if(side.lengthSq()<.001)side.set(1,0,0);else side.normalize();const normal=dir.clone().cross(side).normalize();
+   for(let j=0;j<=sides;j++){const theta=j/sides*TAU,v=p.clone().addScaledVector(side,Math.cos(theta)*radius).addScaledVector(normal,Math.sin(theta)*radius);mesh.pos.push(v.x,v.y,v.z);mesh.uv.push(j/sides,t);if(k<steps&&j<sides){const q=base+k*(sides+1)+j;mesh.ix.push(q,q+1,q+sides+1,q+1,q+sides+2,q+sides+1);}}
+  }
+ };
+ for(let j=0;j<number;j++){
+  const t=(j+.5)/number,az=j*2.399963,latitude=Math.acos(1-2*t),core=globe?.016*Math.sin(latitude):.007,rootY=globe?length*.5+.019*Math.cos(latitude):length*t,reach=globe?radial*.67:radial-core;
+  const point=(k,hook)=>{const rr=core+reach*Math.sin(k*Math.PI*(hook?.72:.50)),y=rootY+(globe?Math.cos(latitude)*reach*k:.008*k)+(hook?.008*Math.sin(k*Math.PI):.007*k);return [Math.sin(az)*rr,y,Math.cos(az)*rr];};
+  tube(perianth,k=>point(k,false),globe?.00048:.00054);tube(style,k=>point(k,true),.00032);
+ }
+ const geometry=mesh=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(mesh.pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(mesh.uv,2));g.setIndex(mesh.ix);g.computeVertexNormals();g.userData.banksiaHead=type;g.userData.flowerUnits=number;return g;};
+ return {perianth:geometry(perianth),style:geometry(style)};
+}
+function drawBanksia(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,coast=type==='coast',heath=type==='heath',lepto=type==='leptophylla',telma=type==='telmatiaea',h=Math.max(s.height*.45,s.height-(a.flowerMonths?a.inflorescenceLength:.03)),w=s.spread,leaves=[],heads=[];
+ const shoot=(root,az,rise,reach,order)=>{
+  const arch=lepto?.32:telma?.23:.08,path=t=>[root[0]+Math.sin(az)*reach*(.82*t+.18*t*t),root[1]+rise*((1+arch)*t-arch*t*t),root[2]+Math.cos(az)*reach*(.82*t+.18*t*t)],nodes=coast?(order>1?7:8):order>1?(heath?35:lepto?25:30):18;
+  for(let j=1;j<=6;j++)b.branch(path((j-1)/6),path(j/6),(coast?order===0?.025:order===1?.008:.0024:order===0?.007:order===1?.0023:.0009)*(1-.68*j/6),order?a.stemColor:a.barkColor,coast&&order===0?'wood-banksia-coast':'wood-banksia-twig');
+  for(let j=1;j<=nodes;j++){
+   const t=(coast?.33:.04)+(coast?.65:.94)*j/nodes,at=path(t),theta=az+j*2.399963;
+   if(order>0||!coast)for(let k=0;k<(coast?4:1);k++)leaves.push({at,az:theta+k*TAU/4,roll:rand(),size:.70+rand()*.30,young:j>nodes-2});
+   const branchNode=coast?j>1&&j<nodes&&j%2===0:j>2&&j<nodes&&j%(order===0?3:order===1?5:11)===0;
+   if(order<3&&branchNode){const factor=order===0?.20:order===1?.075:.034;shoot(path(.10+.80*j/nodes),theta,h*factor*(.72+rand()*.60),w*factor*(lepto?1.25:telma?1.10:.90),order+1);}
+  }
+  if(order>=2)heads.push({at:path(telma||lepto?.46:1),az,roll:rand(),order});
+ };
+ if(coast){
+  const trunk=t=>[w*.016*Math.sin(t*3),h*.91*t,w*.014*Math.sin(t*5)];
+  for(let j=1;j<=12;j++)b.branch(trunk((j-1)/12),trunk(j/12),Math.max(.018,h*.023)*(1-.85*j/12),a.barkColor,'wood-banksia-coast');
+  for(let j=0;j<9;j++){const level=.22+j*.072,az=j*2.399963;shoot(trunk(level),az,h*(.17+rand()*.11),w*(.35-level*.21),1);}
+ }else{
+  const number=Math.round((heath?7:lepto?8:6)*detail);
+  for(let j=0;j<number;j++){const az=j*2.399963,low=j%3===0;shoot([Math.sin(az)*w*.026,0,Math.cos(az)*w*.026],az,h*(low?.29+rand()*.13:.51+rand()*.22),w*(low?.28:.17+rand()*.06),0);}
+ }
+ for(const n of leaves){
+  const L=a.leafLength*n.size,petiole=coast?.005:.0015,f=flowerFrame(b,n.at,(coast?.85:heath?.43:.52)+n.roll*(coast?.70:.60),n.az),colour=kit.shade(rand,s.leafColor,.030);
+  if(coast)f.branch([0,0,0],[0,petiole,0],.00065,a.stemColor,'petiole-banksia');
+  f.add('banksia-leaf-'+type,'leaf-banksia-'+type+'-underside-'+(coast?'d4d7c7':'b5bc9f'),colour,0,petiole,0,L*a.leafWidth/a.leafLength,L,L);
+ }
+ if(!s.bloom)return;
+ let drawn=0;
+ for(const n of heads){
+  if(n.order!==2||n.roll>(heath?.22:lepto?.24:.27)||drawn>=Math.max(7,Math.round(16*detail)))continue;drawn++;
+  const f=flowerFrame(b,n.at,telma||lepto?.65:.08+n.roll*.35,n.az);f.branch([0,-.012,0],[0,0,0],.003,a.stemColor,'peduncle-banksia');
+  f.add('banksia-head-'+type,'perianth-banksia-'+type,s.flowerColor,0,0,0,1,1,1);f.add('banksia-style-'+type,'style-banksia-'+type,heath?'#b7652f':telma?'#9b7b49':lepto?'#d9b749':'#bc903a',0,0,0,1,1,1);
+ }
+}
 export function rivinaLeafPoint(kasuri,t,u){
  const sn=Math.sin(Math.PI*t),width=Math.pow(sn,.71)*(1.22-.44*t),wave=(kasuri?.055:.034)*Math.sin(t*TAU*(kasuri?4.3:2.7)+u*.61)*u*u*sn;
  return [u*width*.5*(1+(kasuri?.11:.02)*Math.sin(t*31+u)),t,.025*u*u*sn-.06*t*t+wave];
@@ -4488,6 +4548,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='banksiaBranches'){drawBanksia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='rivinaRacemes'){drawRivina(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='leadwortBranches'){drawLeadwort(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='pittosporumBranches'){drawPittosporum(b,{info,s,detail,rand},kit);return;}
