@@ -1,7 +1,88 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.94';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.95';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.94';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.95';
 const TAU=Math.PI*2;
+export function fragrantVineLeafPoint(type,t,u){
+ const sn=Math.sin(Math.PI*t),jasmine=type==='jasmine';return [u*.5*Math.pow(sn,jasmine?.80:.58)*(jasmine?1.14-.45*t:1.06-.17*t),t,.043*u*u*sn-.08*t*t+.014*Math.sin(t*28-Math.abs(u)*2)*Math.abs(u)*sn];
+}
+export function fragrantVineFlowerGeometry(type){
+ const pos=[],uv=[],ix=[],surface=(rows,cols,point)=>{const base=pos.length/3;for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){const p=point(i/rows,j/cols);pos.push(...p.slice(0,3));uv.push(...p.slice(3));if(i<rows&&j<cols){const k=base+i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}}};
+ if(type==='connate')surface(30,12,(t,u)=>{const x=t*2-1,z=(u*2-1)*(.13*Math.sqrt(Math.max(0,1-x*x))+.39*Math.pow(Math.sin(Math.PI*Math.abs(x)),.7));return [x,.035*(u*2-1)**2,z,u,t];});
+ else if(type==='jasmine'){
+  surface(12,32,(t,u)=>{const az=u*TAU,r=.065+.045*t**2;return [Math.sin(az)*r,t,Math.cos(az)*r,u,-t-1];});
+  for(let k=0;k<5;k++)surface(16,10,(t,u)=>{const az=k*TAU/5,x=(u*2-1)*.17*Math.pow(Math.sin(Math.PI*t),.57),r=.085+.48*t,y=1+.08*Math.sin(Math.PI*t)-.09*t*t;return [Math.sin(az)*r+Math.cos(az)*x,y,Math.cos(az)*r-Math.sin(az)*x,u,t];});
+ }else{
+  surface(18,32,(t,u)=>{const az=u*TAU,r=.05+.057*t**3;return [Math.sin(az)*r,t*.67,Math.cos(az)*r-.11*t*t,u,-t-1];});
+  surface(22,32,(t,u)=>{const side=u*2-1,width=.106+.20*Math.pow(Math.sin(Math.PI*t*.83),.7),x=side*width,y=.67+.30*t+.015*t**8*Math.cos((u+.125)*Math.PI*8),z=-.11-Math.sqrt(Math.max(0,.106**2-(side*.106)**2))-.23*t+.12*t*t;return [x,y,z,u,t];});
+  surface(22,12,(t,u)=>{const side=u*2-1,width=.10*Math.pow(Math.sin(Math.PI*(.13+.87*t)),.7),r=.04+.47*t,y=.67+.14*Math.sin(Math.PI*t)-.20*t*t;return [side*width,y,r,u,t];});
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.fragrantVineFlower=type;return g;
+}
+function drawFragrantVines(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,jasmine=['polyanthum','milkyWay','fionaSunrise'].includes(type),fiona=type==='fionaSunrise',milky=type==='milkyWay',gold=type==='goldflame',h=s.height,w=s.spread,wood=[],nodes=[],heads=[];
+ const twig=(root,yaw,rise,reach,order)=>{
+  const N=order===0?13:8,path=t=>[root[0]+Math.sin(yaw)*reach*t+Math.cos(yaw)*w*.012*Math.sin(t*12),root[1]+rise*t-h*(order===0?.09:.055)*t*t+h*.045*Math.sin(t*Math.PI),root[2]+Math.cos(yaw)*reach*t+Math.sin(yaw)*w*.012*Math.sin(t*12)];
+  for(let j=1;j<=N;j++){
+   const t=j/N,at=path(t),roll=rand();wood.push({from:path((j-1)/N),to:at,r:Math.max(.0004,h*(order===0?.0022:.0007)*(1-t*.55)),old:order===0});
+   if(j>=2)nodes.push({at,az:yaw+j*Math.PI/2,roll,young:j>=N-1,order,j});
+   if(order===0&&j>=4&&j%3===1)twig(at,yaw+(j%2?1:-1)*1.10,h*(.025+rand()*.05),w*(.12+rand()*.035),1);
+   if(order===1&&(j===5||j===8))heads.push({at,az:yaw+j*.25,roll,size:.82+rand()*.18});
+  }
+  heads.push({at:path(1),az:yaw,roll:rand(),size:.88+rand()*.12});
+ };
+ const canes=Math.round((jasmine?10:9)*detail);
+ for(let k=0;k<canes;k++){
+  const side=k%2?1:-1,t=(k+.5)/canes,extent=w*(.13+.18*Math.sin(t*Math.PI)),root=[side*extent*.10,0,(t-.5)*w*.08],phase=k*.8,tipY=h*(.6+.29*t);
+  let prev=root;
+  for(let j=1;j<=16;j++){
+   const t=j/16,at=[root[0]+side*extent*t+Math.sin(t*19+phase)*w*.016*t,tipY*t,root[2]+Math.cos(t*19+phase)*w*.023*t];wood.push({from:prev,to:at,r:h*.0034*(1-t*.63),old:true});prev=at;
+   if(j>=3)nodes.push({at,az:phase+j*Math.PI/2,roll:rand(),young:false,order:0,j});
+   if(j===5||j===9||j===13)twig(at,side*(Math.PI/2)+phase*.14,h*(j===13?-.025:.06),w*(.14+rand()*.055),0);
+  }
+  twig(prev,phase,h*.02,w*.09,1);
+ }
+ for(const q of wood)b.branch(q.from,q.to,q.r,q.old?a.barkColor:a.stemColor,q.old?'wood-fragrant-vine':'stem-fragrant-vine');
+ for(const n of nodes){
+  if(n.roll>s.leafDensity)continue;
+  for(const side of [-1,1]){
+   const f=flowerFrame(b,n.at,.85+n.roll*.45,n.az+side*Math.PI/2),L=a.leafLength*s.leafScale,leafColor=milky&&n.young&&s.seasonName==='spring'?a.springShootColor:gold&&n.young&&s.seasonName==='spring'?'#987487':s.leafColor;
+   const leaf=(origin,yaw,size=1,terminal=false)=>{
+    const kind='leaf-fragrant-'+(jasmine?'jasmine':'honeysuckle')+(milky?'-margin-'+(n.young&&s.seasonName==='spring'?'e5c7b8':a.patternColor.slice(1)):'')+'-underside-'+a.leafUnderside.slice(1);
+    f.add('fragrant-leaf-'+(jasmine?'jasmine':'honeysuckle'),kind,kit.shade(rand,leafColor,.035),...origin,L*a.leafWidth/a.leafLength*size,L*size,L*size,.13,.08,terminal?.03:-yaw);
+   };
+   if(jasmine){
+    const pairs=fiona?(n.j%2?3:4):(n.j%3===0?2:3),axisLength=fiona?.075:.065;f.branch([0,0,0],[0,axisLength,0],.00045,a.stemColor,'rachis-fragrant-jasmine');
+    for(let j=0;j<pairs;j++)for(const dir of [-1,1]){
+     const yy=.012+j*(axisLength-.019)/pairs,end=[dir*.004,yy+.002,0];f.branch([0,yy,0],end,.0003,a.stemColor,'petiolule-fragrant-jasmine');leaf(end,dir*1.0,.72+j*.05);
+    }
+    leaf([0,axisLength,0],0,1.1,true);
+   }else{f.branch([0,0,0],[0,.005,0],.00065,a.stemColor,'petiole-fragrant-honeysuckle');leaf([0,.005,0],0,.85+n.roll*.15,true);}
+  }
+ }
+ if(!s.bloom)return;
+ for(const head of heads){
+  if(head.roll>s.flowerDensity*(jasmine?.55:.40))continue;
+  const f=flowerFrame(b,head.at,.2+head.roll*.4,head.az),R=a.flowerLength,cluster=jasmine?(fiona?.028:.040):(type==='grahamThomas'?.041:.027);
+  f.branch([0,0,0],[0,.026,0],.00065,a.stemColor,'peduncle-fragrant-vine');
+  if(gold&&s.leafDensity>0)f.add('fragrant-connate','leaf-fragrant-connate-underside-'+a.leafUnderside.slice(1),s.leafColor,0,.005,0,.044,.044,.044,0,0,0);
+  const rings=jasmine?1:2,n=jasmine?(fiona?7:12):6;
+  for(let ring=0;ring<rings;ring++)for(let k=0;k<n;k++){
+   const az=k*TAU/n+ring*.43,rr=cluster*(jasmine?Math.sqrt((k+.5)/n):1-ring*.32),pt=[Math.sin(az)*rr,.025+ring*.017+(jasmine?.018*(k%3):0),Math.cos(az)*rr],root=[0,.026,0];f.branch(root,pt,.00035,a.stemColor,'pedicel-fragrant-vine');const ff=flowerFrame({add:(...args)=>f.add(...args),branch:(...args)=>f.branch(...args)},pt,jasmine?.25+(k%4)*.20:.62+ring*.1,az),bud=k%5===4;
+   if(bud){ff.add(kit.bud,'bud-fragrant-vine',a.budColor,0,R*.37,0,R*.095,R*.42,R*.095,0,0,.08);continue;}
+   const age=((k*3+ring*2)%7)/6,inside=new THREE.Color(s.flowerColor).lerp(new THREE.Color(a.flowerFadeTo),age).getStyle(),outside=jasmine?a.flowerOutsideColor:type==='grahamThomas'?inside:a.flowerOutsideColor;
+   ff.add(kit.bud,'calyx-fragrant-vine',a.stemColor,0,0,0,R*.11,R*.055,R*.11);
+   ff.add('fragrant-flower-'+(jasmine?'jasmine':'honeysuckle'),'petal-fragrant-'+(jasmine?'jasmine':'honeysuckle')+'-outside-'+new THREE.Color(outside).getHexString(),inside,0,0,0,R,R,R);
+   if(jasmine){for(const side of [-1,1])ff.add(kit.bud,'anther-fragrant-jasmine','#d1c9a1',side*R*.038,R*.88,0,.0006,.0012,.0006);}
+   else{
+    for(let k=0;k<5;k++){
+     const az2=(k-2)*.46,root=[Math.sin(az2)*R*.06,R*.5,0],mid=[Math.sin(az2)*R*.13,R*.91,R*.20],tip=[Math.sin(az2)*R*.19,R*1.14,R*.37];ff.branch(root,mid,.00023,'#e3dcbc','filament-fragrant-honeysuckle');ff.branch(mid,tip,.00023,'#e3dcbc','filament-fragrant-honeysuckle');ff.add(kit.bud,'anther-fragrant-honeysuckle','#c5b782',...tip,.0006,.0012,.0007,0,0,.3);
+    }
+    ff.branch([0,R*.4,0],[0,R*.94,R*.15],.00022,'#d3d2a1','style-fragrant-honeysuckle');ff.branch([0,R*.94,R*.15],[0,R*1.2,R*.40],.00022,'#d3d2a1','style-fragrant-honeysuckle');ff.add(kit.bud,'stigma-fragrant-honeysuckle','#b8bd75',0,R*1.2,R*.40,.001,.00075,.001);
+   }
+  }
+ }
+}
+
 export function aromaticLeafGeometry(type){
  const pos=[],uv=[],ix=[];
  if(type==='rosemary'){
@@ -5498,6 +5579,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='fragrantVines'){drawFragrantVines(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='aromaticShrubs'){drawAromaticShrubs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='illiciumCeanothus'){drawIlliciumCeanothus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='blueShrubs'){drawBlueShrubs(b,{info,s,detail,rand},kit);return;}
