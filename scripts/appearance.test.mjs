@@ -10,6 +10,22 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Leadwort separates winter dormant groundcovers and woody shrubs with natural short day red flowering',()=>{
+ const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='leadwortBranches');assert.equal(entries.length,4);
+ for(const [i,[id,info]] of entries.entries()){
+  const a=info.appearance,cera=a.shootProfile.startsWith('ceratostigma');let skeleton,aprilHeight,juneHeight;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,9500+i,2,2);p.height=cera?.35:1.1;p.spread=cera?.5:1.4;const st=stateAt(p,view(month)),g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);
+   if(cera&&a.dormantMonths.includes(month)){assert.equal(g.children.length,0);assert.equal(g.userData.groundDormant,true);continue;}
+   assert.equal(g.userData.architecture,'leadwortBranches');assert.equal(count('leaf-leadwort')>0,st.leafDensity>0);assert.equal(count('petal-leadwort')>0,a.flowerMonths.includes(month));assert.equal(count('anther-leadwort'),count('petal-leadwort')*5);assert.equal(count('spike-leadwort')>0,a.shootProfile==='indica'&&a.flowerMonths.includes(month));assert.equal(count('calyx-gland-leadwort')>0,!cera&&a.flowerMonths.includes(month));assert.equal(count('fruit'),0);
+   if(!cera){const wood=g.children.filter(m=>m.userData.component==='wood-leadwort').map(m=>[...m.instanceMatrix.array]);if(!skeleton)skeleton=wood;else assert.deepEqual(wood,skeleton);assert.ok(count('wood-leadwort')>0);}
+   let maxY=0;for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));for(let j=0;j<m.count;j++)maxY=Math.max(maxY,m.instanceMatrix.array[j*16+13]);}if(month===4)aprilHeight=maxY;if(month===6)juneHeight=maxY;dispose(g);
+  }
+  if(cera)assert.ok(aprilHeight<juneHeight*.5);
+ }
+ assert.deepEqual(CATALOG['p-edc6f16766e3'].bloom,[9,10]);assert.equal(seasonAt(CATALOG['p-edc6f16766e3'],6).bloom,false);assert.equal(CATALOG['p-45e5c4dfe302'].appearance.persistence,'winterDormant');assert.equal(CATALOG['p-2024c389d8e9'].appearance.persistence,'deciduous');
+});
+
 test('Pittosporum distinguishes thick terminal Tobira foliage from black twigged variegated cultivars',()=>{
  const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='pittosporumBranches');assert.equal(entries.length,5);
  for(const [i,[id,info]] of entries.entries()){

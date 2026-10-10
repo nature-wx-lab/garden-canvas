@@ -1,6 +1,65 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.79';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.80';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function leadwortLeafPoint(type,t,u){
+ const cera=type==='ceratostigma',ear=type==='auriculata',width=Math.pow(Math.sin(Math.PI*t),cera?.70:ear?.66:.72)*(ear?.63+.78*t:1.23-.43*t),baseEar=ear?.19*Math.exp(-Math.pow((t-.08)/.044,2)):0;
+ return [u*(width*.5+baseEar),t,.027*u*u*Math.sin(Math.PI*t)-.047*t*t+.004*Math.cos(t*37-Math.abs(u)*9)*Math.sin(Math.PI*t)];
+}
+export function leadwortFlowerGeometry(cera){
+ const pos=[],uv=[],ix=[],length=cera?2.44:2.59,rows=16,cols=40;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,az=j/cols*TAU,r=.055+.065*Math.pow(t,5);pos.push(Math.sin(az)*r,t*length,Math.cos(az)*r);uv.push(j/cols,t*.10);
+  if(i<rows&&j<cols){const q=i*(cols+1)+j;ix.push(q,q+1,q+cols+1,q+1,q+cols+2,q+cols+1);}
+ }
+ for(let k=0;k<5;k++){
+  const az=k*TAU/5,base=pos.length/3,n=22,m=12;
+  for(let i=0;i<=n;i++)for(let j=0;j<=m;j++){
+   const t=i/n,u=j/m*2-1,notch=cera?.052*Math.exp(-Math.pow(u/.23,2))*Math.pow(t,10):0,r=.11+.89*t-notch,x=u*.53*Math.pow(Math.sin(Math.PI*t),.43),y=length+.06*Math.sin(t*Math.PI)-.035*t*t+.012*u*u;
+   pos.push(Math.sin(az)*r+Math.cos(az)*x,y,Math.cos(az)*r-Math.sin(az)*x);uv.push(j/m,.10+.90*t);
+   if(i<n&&j<m){const q=base+i*(m+1)+j;ix.push(q,q+m+1,q+1,q+1,q+m+1,q+m+2);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.leadwortLobes=5;return g;
+}
+function drawLeadwort(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,cera=type.startsWith('ceratostigma'),mat=type==='ceratostigmaMat',indica=type==='indica',h=s.height*(cera?s.shootScale:1),w=s.spread*(cera?Math.sqrt(s.shootScale):1),leaves=[],tips=[],leafType=cera?'ceratostigma':type;
+ const shoot=(root,az,rise,reach,order)=>{
+  const arch=cera?.10:indica?.26:.78,path=t=>[root[0]+Math.sin(az)*reach*t*t,root[1]+rise*((1+arch)*t-arch*t*t),root[2]+Math.cos(az)*reach*t*t],nodes=cera?(order?6:11):(order===0?14:order===1?10:7);
+  for(let j=1;j<=8;j++)b.branch(path((j-1)/8),path(j/8),(order?.0009:cera?.0016:.0040)*(1-.66*j/8),cera||order?a.stemColor:a.barkColor,cera?'stem-leadwort':'wood-leadwort');
+  for(let j=1;j<=nodes;j++){
+   const at=path(.08+.88*j/nodes),angle=az+(j%2?1:-1)*(1.08+rand()*.26);leaves.push({at,az:angle,roll:rand(),size:.70+rand()*.3,young:j===nodes});
+   if(cera?order===0&&j>2&&j<10&&j%2===0:order<2&&j>1&&j<nodes&&j%(order===0?2:3)===0)shoot(at,angle,h*(cera?.15:order===0?(indica?.16:.10):.06),w*(cera?.12:order===0?.16:.075),order+1);
+  }
+  tips.push({at:path(1),az,roll:rand()});
+ };
+ const number=Math.round((mat?19:cera?11:10)*detail);
+ for(let j=0;j<number;j++){
+  const az=j*2.399963,rad=w*(mat?.24:cera?.12:.025)*Math.sqrt((j+.5)/number),root=[Math.sin(az)*rad,0,Math.cos(az)*rad];shoot(root,az,h*(.40+rand()*.38),w*(mat?.15:cera?.15:indica?.19:.26),0);
+ }
+ for(const n of leaves){
+  if(!s.leafDensity||n.roll>s.leafDensity)continue;
+  const L=a.leafLength*n.size*(n.young?.66:1)*(cera?Math.sqrt(s.shootScale):1),f=flowerFrame(b,n.at,.83+n.roll*.70,n.az),P=L*.06,col=kit.shade(rand,s.leafColor,.03);
+  f.branch([0,0,0],[0,P,0],.00045,a.stemColor,'petiole-leadwort');f.add('leadwort-leaf-'+leafType,'leaf-leadwort-'+leafType+(cera?'':'-underside-a4b598'),col,0,P,0,L*a.leafWidth/a.leafLength,L,L);
+  if(cera&&n.young)for(let j=0;j<8;j++)for(const u of [-1,1]){
+   const t=.20+j*.087,point=leadwortLeafPoint(leafType,t,u),start=[point[0]*L*a.leafWidth/a.leafLength,P+point[1]*L,point[2]*L];f.branch(start,[start[0]+u*.00065,start[1]+.00035,start[2]],.000075,'#c0bda1','leaf-margin-hair-leadwort');
+  }
+ }
+ if(!s.bloom)return;
+ for(const n of tips){
+  if(n.roll>(cera?.66:indica?.34:.32))continue;
+  const head=flowerFrame(b,n.at,indica?.25:.35,n.az),number=indica?11:cera?6:9,spike=indica?Math.min(.21,h*.22):0;
+  if(indica)head.branch([0,0,0],[0,spike,0],.0009,'#9f615b','spike-leadwort');
+  for(let j=0;j<number;j++){
+   const az=j*2.399963,rad=indica?.009:(cera?.015:.029)*Math.sqrt((j+.5)/number),at=[Math.sin(az)*rad,indica?spike*j/number:.003+rand()*.008,Math.cos(az)*rad],f=flowerFrame(head,at,indica?.85:.18+.55*j/number,az),R=a.flowerRadius,L=a.flowerLength,calyxColor=cera?'#854954':indica?'#a96758':'#839052';
+   head.branch([0,indica?at[1]:0,0],at,.0004,a.stemColor,'pedicel-leadwort');f.branch([0,0,0],[0,L*.55,0],R*.20,calyxColor,'calyx-leadwort');
+   for(let k=0;k<20;k++){
+    const az=k*2.399963,y=L*(.08+.45*((k*.618034)%1)),r=R*.18,end=[Math.sin(az)*r*1.75,y+.001,Math.cos(az)*r*1.75];f.branch([Math.sin(az)*r,y,Math.cos(az)*r],end,.00010,cera?'#b58c85':'#cbbd90','calyx-hair-leadwort');if(!cera)f.add(kit.bud,'calyx-gland-leadwort','#bcb484',...end,.00019,.00019,.00019);
+   }
+   f.add(cera?'leadwort-cera-flower':'leadwort-plumbago-flower','petal-leadwort-'+(cera?'ceratostigma':indica?'indica':'auriculata'),s.flowerColor,0,0,0,R,R,R);
+   for(let k=0;k<5;k++){const az=k*TAU/5;f.add(kit.bud,'anther-leadwort',cera?'#c388a8':'#d1b698',Math.sin(az)*R*.065,L+.0002,Math.cos(az)*R*.065,.00026,.00032,.00026);}
+  }
+ }
+}
 export function pittosporumLeafPoint(type,t,u){
  const tobira=type==='tobira',round=type==='tandara',width=tobira?Math.pow(Math.sin(Math.PI*t),.46)*(.38+.94*t):Math.pow(Math.sin(Math.PI*t),round?.52:.70)*(1.13-.23*t);
  const wave=tobira?.018:round?.055:.080;
@@ -4386,6 +4445,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='leadwortBranches'){drawLeadwort(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='pittosporumBranches'){drawPittosporum(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='hypericumShoots'){drawHypericum(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='ruscusCladodes'){drawRuscus(b,{info,s,detail,rand},kit);return;}
