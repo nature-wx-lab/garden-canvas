@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.32';
-import {foliageKind} from './appearance.js?v=0.9.32';
-import {detailedFlower,drawDetailedHerb,salviniaPoint} from './plant-detail.js?v=0.9.32';
-import {drawTree} from './tree-model.js?v=0.9.32';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.32';
+import {treeProfile} from './tree-profiles.js?v=0.9.33';
+import {foliageKind} from './appearance.js?v=0.9.33';
+import {detailedFlower,drawDetailedHerb,salviniaPoint} from './plant-detail.js?v=0.9.33';
+import {drawTree} from './tree-model.js?v=0.9.33';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.33';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.32';
+import { plantInfo, stateAt } from './model.js?v=0.9.33';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -14,6 +14,15 @@ const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const TAU=Math.PI*2;
 const shapes={};
+for(const type of ['silverCarawayLeaf','seseliSegment','oenantheLeaflet','pimpinellaLeaflet','chervilLeaflet','heracleumLeaflet','apiaceaePetal']){
+ const p=[],uv=[],ix=[],rows=40,cols=18,petal=type==='apiaceaePetal',fine=type==='seseliSegment',large=type==='heracleumLeaflet',cut=large||type==='chervilLeaflet';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sn=Math.max(0,Math.sin(t*Math.PI)),width=(petal?.56:fine?.085:large?.40:.26)*Math.pow(sn,petal?.42:fine?.55:.65),lobes=cut?.42+.58*Math.pow((1+Math.cos(t*Math.PI*(large?6:8)))/2,.55):1,teeth=petal||fine?1:1-.10*Math.pow((1+Math.cos(t*Math.PI*30))/2,2);
+  p.push(u*width*lobes*teeth,petal?t*(1-.18*Math.exp(-u*u*34)*Math.pow(t,8)):t,petal?.16*t*t+.12*u*u*sn:-.08*t*t+.035*u*u*sn+.010*Math.sin(t*31-Math.abs(u)*8)*sn);
+  uv.push(j/cols,t);if(i<rows&&j<cols){const k=i*(cols+1)+j;ix.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 // Distinct laminae and continuous bell corollas for six Campanulaceae forms.
 for(const type of ['edraianthusLinear','phyteumaBasal','michauxiaRough','jasioneOblong','tracheliumSerrate','wahlenbergiaLeaf','michauxiaLobe','jasioneLobe','phyteumaLobe','edraianthusBell','wahlenbergiaBell']){
  const p=[],uv=[],ix=[],rows=32,cols=type.endsWith('Bell')?100:18;
@@ -953,7 +962,7 @@ function windShader(shader,kind){
       float streak=pow(max(0.0,cos(vUv.x*23.0+sin(vUv.y*8.0)*0.6)),12.0);
       diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.86,0.81,0.78),streak*0.65);
     `);
-    const masks={primroseEdge:'max(smoothstep(0.80,0.96,fold),smoothstep(0.94,0.99,vUv.y))',brunneraMargin:'smoothstep(0.70+0.12*sin(vUv.y*39.0),0.91,fold)',brunneraSilver:'max(max(midrib,pow(max(0.0,cos((vUv.y-fold*0.35)*39.0)),20.0)),0.34*pow(max(0.0,cos(vUv.x*91.0+sin(vUv.y*97.0)*1.4)*cos(vUv.y*117.0+sin(vUv.x*85.0))),12.0))',base:'1.0-smoothstep(0.18,0.52,vUv.y)',tip:'smoothstep(0.5,0.92,vUv.y)',blush:'(1.0-smoothstep(0.20,0.65,vUv.y))*(1.0-smoothstep(0.25,0.75,fold))',margin:'smoothstep(0.61+0.035*sin(vUv.y*53.0),0.79,fold)',center:'1.0-smoothstep(0.25+0.07*sin(vUv.y*36.0),0.47,fold)',stripes:'smoothstep(0.48,0.64,sin(vUv.x*39.0+sin(vUv.y*7.0)*0.65))',spots:'smoothstep(0.73,0.9,sin(vUv.x*79.0+cos(vUv.y*27.0))*sin(vUv.y*91.0+sin(vUv.x*47.0)))',silverVeins:'(1.0-midrib)*(1.0-smoothstep(0.16,0.33,abs(sin((vUv.y-fold*0.38)*32.0))))'};
+    const masks={flamingoMargin:'smoothstep(.58+.12*sin(vUv.y*31.0)+.04*cos(vUv.y*63.0),.80,fold)',primroseEdge:'max(smoothstep(0.80,0.96,fold),smoothstep(0.94,0.99,vUv.y))',brunneraMargin:'smoothstep(0.70+0.12*sin(vUv.y*39.0),0.91,fold)',brunneraSilver:'max(max(midrib,pow(max(0.0,cos((vUv.y-fold*0.35)*39.0)),20.0)),0.34*pow(max(0.0,cos(vUv.x*91.0+sin(vUv.y*97.0)*1.4)*cos(vUv.y*117.0+sin(vUv.x*85.0))),12.0))',base:'1.0-smoothstep(0.18,0.52,vUv.y)',tip:'smoothstep(0.5,0.92,vUv.y)',blush:'(1.0-smoothstep(0.20,0.65,vUv.y))*(1.0-smoothstep(0.25,0.75,fold))',margin:'smoothstep(0.61+0.035*sin(vUv.y*53.0),0.79,fold)',center:'1.0-smoothstep(0.25+0.07*sin(vUv.y*36.0),0.47,fold)',stripes:'smoothstep(0.48,0.64,sin(vUv.x*39.0+sin(vUv.y*7.0)*0.65))',spots:'smoothstep(0.73,0.9,sin(vUv.x*79.0+cos(vUv.y*27.0))*sin(vUv.y*91.0+sin(vUv.x*47.0)))',silverVeins:'(1.0-midrib)*(1.0-smoothstep(0.16,0.33,abs(sin((vUv.y-fold*0.38)*32.0))))'};
     masks.mottle='smoothstep(0.23,0.69,sin(vUv.x*11.0+sin(vUv.y*9.0))*cos(vUv.y*13.0+sin(vUv.x*10.0)))';
     masks.canaryVeins='1.0-smoothstep(0.018,0.041,min(abs(vUv.x-0.5),abs(abs(vUv.x-0.5)-0.14)))';
     masks.mosaic='smoothstep(-0.12,0.23,sin(vUv.x*14.0+sin(vUv.y*9.0)*1.7)*cos(vUv.y*12.0+sin(vUv.x*7.0)*1.4)+0.15*sin(vUv.y*49.0+vUv.x*31.0))';

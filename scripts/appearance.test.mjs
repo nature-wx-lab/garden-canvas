@@ -10,6 +10,30 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('six apiaceae entries retain compound leaves, taxon-specific umbels and seasonal variegation',()=>{
+ const ids=['p-aef5861c9934','p-8ae8436e0447','p-3d77c4cf31de','p-014321ba95e1','p-875d4066c833','p-6750381fd202'];
+ for(const id of ids)for(let month=1;month<=12;month++){
+  const g=plantModel(makePlant(id,4401,2,2),view(month));
+  for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
+  const has=k=>g.children.some(m=>m.userData.component===k);
+  if(month===1){assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf')),id);assert.ok(!has('umbelStem'));}
+  if(month===6){
+   assert.ok(has('umbelPedicel'));assert.ok(has('style'));
+   if(id===ids[0]){assert.ok(!has('umbelRay'));assert.ok(has('leafHair'));}
+   if(id===ids[1]||id===ids[5])assert.ok(has('stemRidge'));
+   if(id===ids[2]){assert.ok(has('stolon'));assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-flamingoMargin')));}
+   if(id===ids[3]){assert.ok(!has('involucre'));assert.ok(!has('involucel'));}
+   if(id===ids[4]||id===ids[5])assert.ok(has('stemHair'));
+  }
+  dispose(g);
+ }
+ assert.notEqual(seasonAt(CATALOG[ids[2]],3).leafPatternColor,seasonAt(CATALOG[ids[2]],7).leafPatternColor);
+ assert.equal(CATALOG[ids[0]].appearance.persistence,undefined);
+ assert.equal(seasonAt(CATALOG[ids[5]],9).bloom,true);assert.equal(seasonAt(CATALOG[ids[5]],10).bloom,false);
+ const parts=[];detailedFlower({add:(shape,kind,color,x,y,z,sx,sy)=>parts.push({shape,kind,sy}),branch:(from,to,r,color,kind)=>parts.push({kind})},{x:0,y:0,z:0,r:.002,shape:'apiaceaeFloret',palette:{outer:true},color:'#dddddd'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
+ assert.equal(parts.filter(x=>x.kind==='petal').length,5);assert.equal(parts.filter(x=>x.kind==='anther').length,5);assert.equal(parts.filter(x=>x.kind==='style').length,2);assert.equal(parts.filter(x=>x.kind==='petal'&&x.sy>.002).length,3);
+});
+
 test('six bell-family plants distinguish flower organs, inflorescences and winter rosettes',()=>{
  const ids=['p-20b373fb3c17','p-2268ce28505f','p-90cc6dd478a9','p-b514c491182e','p-1637451f56c4','p-f7156a3cf3ed'];
  for(const id of ids)for(let month=1;month<=12;month++){
