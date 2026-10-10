@@ -840,3 +840,22 @@ test('woodland species keep distinct leaves, floral organs and deciduous versus 
  const ar=plantModel(makePlant('p-c6993b2b58d9',3602,2,2),view(10));assert.ok(ar.children.some(m=>m.userData.component==='fruit'));assert.ok(!ar.children.some(m=>m.userData.component.startsWith('wood')));dispose(ar);
  const d=validateDocument(JSON.parse(JSON.stringify(annualGalleryDocument())));assert.ok(d);
 });
+
+test('20 spurges and gauras use distinct leaf and reproductive organs through all twelve months',()=>{
+ const entries=Object.entries(CATALOG).filter(([,p])=>['spurgeCanes','spurgeDome','snowSpurge','gauraWands'].includes(p.appearance?.architecture));assert.equal(entries.length,20);
+ for(const [id,info] of entries)for(let month=1;month<=12;month++){
+  const p=makePlant(id,3701,2,2),g=plantModel(p,view(month));
+  for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
+  if(month===1){if(['gauraWands','spurgeDome','snowSpurge'].includes(info.appearance.architecture))assert.equal(g.children.length,0,id);else assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf')),id);}
+  if(info.appearance.architecture==='spurgeCanes'&&month===5){assert.ok(g.children.some(m=>m.userData.component==='nectary'));assert.ok(!g.children.some(m=>m.userData.component==='petal'));}
+  dispose(g);
+ }
+ const parts=[],builder={add:(shape,kind)=>parts.push({shape,kind}),branch(){}};
+ detailedFlower(builder,{x:0,y:0,z:0,color:'#eeeeee',shape:'gauraButterfly'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
+ assert.equal(parts.filter(p=>p.shape==='gauraPetal').length,4);assert.equal(parts.filter(p=>p.kind==='anther').length,8);
+ parts.length=0;detailedFlower(builder,{x:0,y:0,z:0,color:'#baba55',shape:'spurgeCyathium'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
+ assert.equal(parts.filter(p=>p.kind==='bract').length,2);assert.equal(parts.filter(p=>p.kind==='nectary').length,4);assert.equal(parts.filter(p=>p.kind==='petal').length,0);
+ const snow=makePlant('p-5ae965788b29',3730,2,2);assert.equal(stateAt(snow,{...view(6),year:1}).present,false);
+ assert.notEqual(seasonAt(CATALOG['p-4c1fd39eace3'],1).leafPatternColor,seasonAt(CATALOG['p-4c1fd39eace3'],6).leafPatternColor);
+ assert.equal(seasonAt(CATALOG['p-f7fafcbd6c8a'],1).bloom,false);
+});

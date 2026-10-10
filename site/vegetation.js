@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.25';
-import {foliageKind} from './appearance.js?v=0.9.25';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.25';
-import {drawTree} from './tree-model.js?v=0.9.25';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.25';
+import {treeProfile} from './tree-profiles.js?v=0.9.26';
+import {foliageKind} from './appearance.js?v=0.9.26';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.26';
+import {drawTree} from './tree-model.js?v=0.9.26';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.26';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.25';
+import { plantInfo, stateAt } from './model.js?v=0.9.26';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,6 +13,20 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
+// Spurge bracts are paired leaves around the cyathium, not petals.
+for(const type of ['spurgeLinearLeaf','spurgeBroadLeaf','snowSpurgeLeaf','spurgeBract','snowSpurgeBract','gauraLeaf','gauraPetal']){
+ const pos=[],uv=[],idx=[],gaura=type==='gauraPetal',bract=type==='spurgeBract',small=type==='snowSpurgeBract',rows=small?8:bract?12:24,cols=small?6:10;
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,sn=Math.max(0,Math.sin(Math.PI*t));
+  let width=(bract?.68:gaura?.50:small?.38:type==='snowSpurgeLeaf'?.34:type==='spurgeBroadLeaf'?.21:type==='gauraLeaf'?.12:.135)*Math.pow(sn,bract?.34:gaura?.52:.60);
+  if(gaura||small)width*=.20+.85*t;
+  if(type==='gauraLeaf')width*=.97+.03*Math.cos(t*46);
+  const rib=.005*Math.pow(Math.sin((t-Math.abs(u)*.26)*34),2)*Math.sin(Math.abs(u)*Math.PI);
+  pos.push(u*width,t,(bract?.23:gaura?.04:.10)*t*t+(bract?.27:gaura?.11:.055)*u*u*sn+rib);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
 // Woodland leaves: petiole attachment, apical clefts and teeth are geometry.
 for(const type of ['diphylleiaShield','jeffersoniaKidney','ranzaniaLeaflet','kirengeshomaPalm','eomeconKidney']){
  const pos=[],uv=[],idx=[],rows=24,cols=160,shield=type==='diphylleiaShield',kidney=type==='jeffersoniaKidney'||type==='eomeconKidney',kir=type==='kirengeshomaPalm';
@@ -686,7 +700,7 @@ function windShader(shader,kind){
       float wax=smoothstep(-0.30,0.36,sin(vUv.x*43.0+sin(vUv.y*29.0))*cos(vUv.y*31.0)+0.3*sin(vUv.x*281.0)*cos(vUv.y*197.0));
       diffuseColor.rgb*=0.55+0.50*wax;
     `);
-  }else if(kind.startsWith('leaf')||kind.startsWith('petal')||kind.startsWith('sepal')||kind==='grass'){
+  }else if(kind.startsWith('leaf')||kind.startsWith('petal')||kind.startsWith('sepal')||kind.startsWith('bract-')||kind==='grass'){
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
       float fold=abs(vUv.x-0.5)*2.0;
       float midrib=1.0-smoothstep(0.012,0.025,abs(vUv.x-0.5));
@@ -792,7 +806,7 @@ function windShader(shader,kind){
     }
     if(kind==='leaf-blueberry-wax')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.58,0.67,0.67),0.13+0.08*sin(vUv.x*199.0)*cos(vUv.y*173.0));\n#include <emissivemap_fragment>`);
     const surface=kind.replace(/-outside-[0-9a-f]{6}$/,'').replace(/-dahlia$/,'').replace(/-cranesbill-veins$/,'').replace(/-guide$/,'').replace('woolly-','').replace('glossy-','').replace('palm-','').replace('grass-',''),hex=surface.match(/-([0-9a-f]{6})$/)?.[1];
-    const pattern=surface.replace(/^(leaf|petal|sepal)-/,'').replace(/^hosta-?/,'').replace(/-(?:gold|[0-9a-f]{6})$/,'');
+    const pattern=surface.replace(/^(leaf|petal|sepal|bract)-/,'').replace(/^hosta-?/,'').replace(/-(?:gold|[0-9a-f]{6})$/,'');
     const c=hex?new THREE.Color('#'+hex):null;
     const tint=c?`vec3(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`:kind.startsWith('petal')?'vec3(0.34,0.07,0.23)':kind.endsWith('-gold')?'vec3(0.70,0.69,0.32)':'vec3(0.79,0.83,0.72)';
     if(kind==='leaf-rugose'||kind.includes('brunnera'))shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
@@ -893,7 +907,7 @@ export function batch(group,height=1,flex=.06,phase=0){
     const key=geometry.uuid+kind;if(!entries.has(key))entries.set(key,{geometry,kind,items:[],colors:[],wind:[]});const e=entries.get(key);e.items.push(matrix.clone());colour.set(color);e.colors.push(colour.clone());e.wind.push(height,flex,phase,flutter);
   }
   function add(shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0){
-    dummy.position.set(x,y,z);dummy.scale.set(sx,sy,sz);dummy.rotation.set(rx,ry,rz,'YXZ');dummy.updateMatrix();push(typeof shape==='string'?shapes[shape]:shape,kind,dummy.matrix,color,kind.startsWith('leaf')||kind.startsWith('petal')||kind.startsWith('sepal')||['maple','grass'].includes(kind)?1:0);
+    dummy.position.set(x,y,z);dummy.scale.set(sx,sy,sz);dummy.rotation.set(rx,ry,rz,'YXZ');dummy.updateMatrix();push(typeof shape==='string'?shapes[shape]:shape,kind,dummy.matrix,color,kind.startsWith('leaf')||kind.startsWith('petal')||kind.startsWith('sepal')||kind.startsWith('bract-')||['maple','grass'].includes(kind)?1:0);
   }
   function branch(a,b,r,color,kind='wood'){
     const va=new THREE.Vector3(...a),vb=new THREE.Vector3(...b),dir=vb.clone().sub(va),length=dir.length();if(length<.0001)return;
