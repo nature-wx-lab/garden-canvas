@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.58';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.59';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -171,3 +171,5 @@ Object.assign(TRAIT_VALUES,{saxifrageCordate:'白い葉脈と毛のある腎形�
 Object.assign(TRAIT_VALUES,{delphiniumFinePalm:'細い裂片に深く裂ける掌状葉',delphiniumLobedPalm:'5〜7方向に裂け、縁にも切れ込みのある掌状葉',delphiniumProfile:'花弁状の萼・背面の距・中央の小さな花弁'});
 
 Object.assign(TRAIT_VALUES,{lysimachiaCoin:'対生する丸い全縁葉',lysimachiaOvate:'小さな卵形の対生葉',lysimachiaLance:'先が尖り葉脈のある長卵形葉',lysimachiaCup:'基部で合着する5裂の黄花冠と雄しべ5本'});
+
+Object.assign(TRAIT_VALUES,{calaminthaSmall:'浅い鋸歯と細毛のある小さな卵形葉',calaminthaLarge:'大きめの鋸歯と細毛のある卵形葉',calaminthaLips:'長い花筒・浅く割れた上唇・3裂の下唇・中に収まる雄しべ'});

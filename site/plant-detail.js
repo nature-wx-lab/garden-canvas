@@ -1,6 +1,59 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.58';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.59';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function calaminthaLeafPoint(type,t,u){
+ const large=type==='calaminthaLarge',teeth=large?8:5,edge=1-(large?.075:.035)*(1-Math.abs(Math.sin(t*Math.PI*teeth)));
+ const width=Math.pow(Math.sin(Math.PI*t),.65)*(.99-.17*t)*edge;
+ return [u*width*.5,t,.037*Math.sin(Math.PI*t)+.025*u*u*Math.sin(Math.PI*t)+.006*Math.cos(t*teeth*Math.PI*2)*u*u];
+}
+function drawCalamintha(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,typ=a.shootProfile,large=['grandiflora','variegata'].includes(typ),winter=[12,1,2].includes(s.month),rest=winter&&!s.bloom,low=rest&&a.persistence==='semiDormant',h=s.height,w=s.spread,L=a.leafLength*s.leafScale,green=s.leafColor;
+ const stem=(from,to,r,color,kind)=>{const dir=new THREE.Vector3(...to).sub(new THREE.Vector3(...from)),len=dir.length(),rot=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('squareStem',kind,color,...from,r,len,r,rot.x,rot.y,rot.z);};
+ const leaf=(at,an,len,young=false)=>{
+  const tip=[at[0]+Math.sin(an)*len*.15,at[1]+len*.045,at[2]+Math.cos(an)*len*.15];b.branch(at,tip,.0004,a.stemColor,'petiole-calamintha');
+  const f=flowerFrame(b,tip,.84+rand()*.62,an),kind=typ==='variegata'?`leaf-calamintha-marble-${Math.floor(rand()*3)}`:'leaf-calamintha-hairy';
+  f.add(a.leafShape,kind,kit.shade(rand,young?'#946f6c':green,.035),0,0,0,len*a.leafWidth/a.leafLength,len,len);
+  for(let k=0;k<9;k++){const t=(k+.4)/9,side=k%2?1:-1,q=calaminthaLeafPoint(a.leafShape,t,side).map((v,i)=>v*len*(i===0?a.leafWidth/a.leafLength:1));f.branch(q,[q[0]+side*.00030,q[1],q[2]+.00018],.000025,'#c9cdba','hair-calamintha');}
+ };
+ const flower=(at,an)=>{
+  const len=a.flowerLength,r=a.flowerRadius,f=flowerFrame(b,at,1.0+rand()*.48,an),color=s.flowerColor;
+  f.add('calaminthaTube','calyx-calamintha','#849d72',0,0,0,r*.62,len*.44,r*.62);
+  for(let j=0;j<5;j++){const ang=j*TAU/5,lower=j<2;f.add('narrow','calyxTooth-calamintha','#849d72',Math.sin(ang)*r*.14,len*.32,Math.cos(ang)*r*.14,r*.15,len*(lower?.21:.12),r,.20,ang,0);}
+  for(let j=0;j<8;j++){const an=j*TAU/8,q=[Math.sin(an)*r*.14,len*.39,Math.cos(an)*r*.14];f.branch(q,[q[0]*1.6,len*.47,q[2]*1.6],.000022,'#e1decf','calyxHair-calamintha');}
+  if(!s.bloom||rand()>s.flowerDensity){f.add(kit.bud,'bud-calamintha',color,0,len*.52,0,r*.23,len*.25,r*.20);return;}
+  f.add('calaminthaTube','corolla-calamintha',color,0,len*.25,0,r,len*.69,r);
+  for(const sign of [-1,1])f.add('petal','upperLip-calamintha',color,sign*r*.055,len*.92,-r*.14,r*.39,r*.51,r,-.63,sign*.10,0);
+  for(const j of [-1,0,1])f.add('broadRuffledPetal','petal-calamintha-spots',color,j*r*.20,len*.94,r*.12,r*(j===0?.65:.42),r*(j===0?.85:.53),r,1.0,j*.48,0);
+  for(let k=0;k<4;k++){
+   const sign=k%2?1:-1,end=[sign*r*(k<2?.10:.18),len*(k<2?.99:.88),-r*.07];f.branch([sign*r*.10,len*.68,-r*.05],end,r*.014,'#c8beca','filament-calamintha');f.add(kit.bud,'anther-calamintha','#d7cfdd',...end,r*.038,r*.025,r*.048);
+  }
+  f.branch([0,len*.7,0],[0,len*1.06,0],r*.010,'#c9bed1','style-calamintha');
+  for(const sign of [-1,1])f.branch([0,len*1.06,0],[sign*r*.055,len*(sign<0?1.14:1.10),r*.015],r*.007,'#c9bed1','stigma-calamintha');
+ };
+ if(low){
+  for(let i=0;i<11;i++){const an=i*2.399963,at=[Math.sin(an)*w*.17*Math.sqrt(i/11),.004,Math.cos(an)*w*.17*Math.sqrt(i/11)];for(let k=0;k<4;k++)leaf(at,an+k*Math.PI/2,Math.min(.009,a.leafLength*.3),true);}return;
+ }
+ const count=Math.max(5,Math.round((large?11:15)*detail)),scale=s.bloom?1:rest?.40:s.shootScale;
+ const shoot=(root,az,length,reach,order)=>{
+  let prev=root;const nodes=large?5:7;
+  for(let j=0;j<nodes;j++){
+   const t=(j+.45+rand()*.35)/nodes,ang=az+.20*Math.sin(t*5+az),at=[root[0]+Math.sin(ang)*reach*t,root[1]+length*t,root[2]+Math.cos(ang)*reach*t];stem(prev,at,(large?.0011:.0007)*(1-t*.50),a.stemColor,'stem-calamintha');prev=at;
+   for(const sign of [-1,1])if(j===0||rand()<s.leafDensity)leaf(at,ang+j*Math.PI/2+sign*Math.PI/2,L*(1-(large?.28:.48)*t)*(order?.90:1));
+   if(order===0&&j<(large?2:3)&&!rest)for(const sign of [-1,1])shoot(at,ang+sign*(.72+rand()*.22),length*(1-t)*(.58+.20*rand()),w*(large?.20:.16)*(1-t*.4),1);
+   if((s.bloom||s.flowerBuds)&&t>(large?.48:.30))for(const sign of [-1,1]){
+    const aa=ang+sign*Math.PI/2,reach=large?.012:typ==='pink'?.045:.022,tip=[at[0]+Math.sin(aa)*reach,at[1]+reach*.25,at[2]+Math.cos(aa)*reach];b.branch(at,tip,.00030,a.stemColor,'cyme-calamintha');
+    const n=typ==='pink'?2:large?2:4;for(let k=0;k<n;k++){
+     const an=aa+(k-(n-1)/2)*.5,end=[tip[0]+Math.sin(an)*a.flowerLength*.35,tip[1]+k*a.flowerLength*.18,tip[2]+Math.cos(an)*a.flowerLength*.35];b.branch(tip,end,.00023,a.stemColor,'pedicel-calamintha');flower(end,an);
+    }
+   }
+  }
+ };
+ for(let i=0;i<count;i++){
+  const an=i*2.399963,edge=Math.sqrt(i/count),rad=w*(large?.18:.13)*edge,root=[Math.sin(an)*rad,.006,Math.cos(an)*rad];shoot(root,an,h*(large?1-.50*edge:(typ==='blue'?.94-.34*edge:.65+.30*rand()))*scale,w*(large?.24:.19)*scale,0);
+ }
+}
+
 export function lysimachiaLeafPoint(type,t,u){
  const coin=type==='lysimachiaCoin',ovate=type==='lysimachiaOvate',breadth=Math.pow(Math.sin(Math.PI*t),coin?.50:ovate?.65:.86)*(ovate?1.18-.38*t:1);
  return [u*breadth*.5,t,.042*Math.sin(Math.PI*t)+.024*u*u*Math.sin(Math.PI*t)+.004*Math.sin(23*t)*Math.abs(u)];
@@ -2872,6 +2925,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='calaminthaCymes'){drawCalamintha(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='lysimachiaShoots'){drawLysimachia(b,{info,s,view:{month},detail,rand},kit);return;}
  if(info.appearance?.architecture==='delphiniumSpires'){drawDelphinium(b,{info,s,p,detail,rand},kit);return;}
  if(['saxifrageRosettes','bergeniaRhizomes'].includes(info.appearance?.architecture)){drawSaxifragaceae(b,{info,s,detail,rand},kit);return;}
