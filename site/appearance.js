@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.60';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.61';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -175,3 +175,5 @@ Object.assign(TRAIT_VALUES,{lysimachiaCoin:'対生する丸い全縁葉',lysimac
 Object.assign(TRAIT_VALUES,{calaminthaSmall:'浅い鋸歯と細毛のある小さな卵形葉',calaminthaLarge:'大きめの鋸歯と細毛のある卵形葉',calaminthaLips:'長い花筒・浅く割れた上唇・3裂の下唇・中に収まる雄しべ'});
 
 Object.assign(TRAIT_VALUES,{abeliaCanes:'株元から分かれ、外へ湾曲する細い木質枝',abeliaSerrate:'小さな鋸歯・光沢・尖った先をもつ卵形葉',zabeliaOvate:'ほぼ全縁で葉縁と脈上に毛がある細長い卵形葉',abeliaFunnel:'長い筒と5裂する口・4本の雄しべ・花後に残る萼'});
+
+Object.assign(TRAIT_VALUES,{viburnumBranches:'対生する枝葉と種に応じた直立・開張する木質枝',viburnumLaurel:'硬く光沢のある全縁の長卵形葉',viburnumCoarse:'角ばる鋸歯と目立つ側脈のある卵形葉',viburnumHairy:'葉裏に毛がある鋸歯の卵形葉',viburnumObovate:'小さく先側が広い倒卵形葉',viburnumLobed:'大きく3裂し鋸歯のある掌状葉',viburnumSterileBall:'雄しべ・雌しべのない装飾花のみの球状花序',viburnumLacecap:'中央の小さな両性花と周囲の白い装飾花',viburnumSparse:'疎らに垂れる小さな5裂花',viburnumCorymb:'5裂の花筒と5本の雄しべをもつ花の集まり'});

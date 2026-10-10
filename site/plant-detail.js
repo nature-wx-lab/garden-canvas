@@ -1,6 +1,91 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.60';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.61';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function viburnumLeafPoint(type,t,u){
+ const lobed=type==='viburnumLobed',coarse=type==='viburnumCoarse',small=type==='viburnumObovate',hairy=type==='viburnumHairy';
+ let width=Math.pow(Math.sin(Math.PI*t),small?.68:.76)*(small?.55+.75*t:1.16-.36*t);
+ if(lobed){
+  const outline=[[0,0],[.12,.56],[.32,.90],[.42,1],[.53,.52],[.60,.34],[.76,.44],[1,0]];
+  for(let i=1;i<outline.length;i++)if(t<=outline[i][0]){const [x,y]=outline[i-1],[xx,yy]=outline[i];width=y+(yy-y)*(t-x)/(xx-x);break;}
+ }
+ const teeth=type==='viburnumLaurel'?1:1-(coarse?.14:lobed?.10:small?.025:.075)*(1-Math.abs(Math.sin(t*Math.PI*(coarse?12:18))));
+ const relief=(coarse||hairy?.016:.004)*Math.cos(t*Math.PI*20)*Math.abs(u);
+ return [u*width*teeth*.5,t,Math.sin(t*Math.PI)*(.035+.08*u*u)+relief];
+}
+function drawViburnum(b,{info,s,detail,rand},kit){
+ const a=info.appearance,typ=a.shootProfile,h=s.height,w=s.spread,small=typ==='reifler',sparse=typ==='otoko',upright=a.habit==='upright',hairy=['carlesii','sterile'].includes(typ),ball=['snowball','sterile'].includes(typ),nodes=[],tips=[],wood=[];
+ const count=Math.max(4,Math.round((small?9:sparse?4:6)*detail));
+ // Complete the woody skeleton first; leaf fall and fruiting cannot consume its random sequence.
+ const shoot=(root,az,rise,reach,order)=>{
+  let prev=root;const num=order===0?7:order===1?6:4;
+  for(let j=0;j<num;j++){
+   const t=(j+1)/num,an=az+.10*Math.sin(t*6+az),at=[root[0]+Math.sin(an)*reach*t,root[1]+rise*(t+.10*Math.sin(Math.PI*t)),root[2]+Math.cos(an)*reach*t];
+   wood.push({from:prev,to:at,r:(order===0?.013:order===1?.004:.0014)*Math.max(.5,Math.min(1.7,h))*(1-t*.6),old:order===0&&j<5,order});prev=at;
+   nodes.push({at,an:an+j*Math.PI/2,order,t,roll:rand(),size:.78+rand()*.22});
+   if(order===0&&j<=5)for(const side of [-1,1]){
+    const rest=1-t;shoot(at,an+side*(.65+rand()*.7),h*(upright?.30:.22)*rest,w*(sparse?.21:.19)*(1-.5*t),1);
+   }
+   if(order===1&&(j===2||j===4))shoot(at,an+(j===2?1:-1)*(.65+rand()*.5),h*.07,w*.10,2);
+   if(order>0&&j===num-1)tips.push({at,an,index:tips.length,roll:rand()});
+  }
+ };
+ for(let i=0;i<count;i++){
+  const an=i*2.399963+(rand()-.5)*.4,edge=Math.sqrt((i+.5)/count),root=[Math.sin(an)*w*.065*edge,0,Math.cos(an)*w*.065*edge],rise=upright?.77+.20*rand():sparse?.56+.40*rand():.69+.27*rand();
+  shoot(root,an,h*rise,w*(upright?.23:.32)*edge,0);
+ }
+ for(const q of wood){
+  b.branch(q.from,q.to,q.r,q.old?a.barkColor:a.stemColor,q.old?'wood-viburnum-'+a.barkPattern:'stem-viburnum');
+  if(hairy&&!q.old){const at=q.to;b.branch(at,[at[0]+.001,at[1]+.0006,at[2]],.00005,'#c8c9b8','hair-viburnum-shoot');}
+ }
+ for(const n of nodes){
+  if(n.order===0&&n.t<.65)continue;
+  if(s.leafDensity===0){b.add(kit.bud,'bud-viburnum-winter','#88765b',...n.at,.0015,.003,.0015,0,n.an,0);continue;}
+  for(let j=0;j<2;j++){
+   const roll=(n.roll+j*.381)%1;if(roll>s.leafDensity)continue;
+   const an=n.an+j*Math.PI,len=a.leafLength*n.size*(n.order===2?.86:1)*s.leafScale,petiole=len*(typ==='snowball'||typ==='onondaga'?.24:small?.065:.12),at=[n.at[0]+Math.sin(an)*petiole,n.at[1]+petiole*.25,n.at[2]+Math.cos(an)*petiole];
+   b.branch(n.at,at,.00065,typ==='otoko'?'#9c6673':a.stemColor,'petiole-viburnum');
+   if(typ==='snowball')for(const side of [-1,1]){
+    b.add(kit.bud,'gland-viburnum','#9c9d62',at[0]+side*.0015,at[1]-.002,at[2],.0013,.00055,.0013);
+    b.add('narrow','stipule-viburnum','#729555',...n.at,.0008,.008,.001,1.1,an+side*.4,0);
+   }
+   const f=flowerFrame(b,at,.75+roll*.55,an),color=kit.shade(rand,s.leafColor,.055),kind=hairy?'leaf-viburnum-woolly':small||['french','tinus','muffin'].includes(typ)?'leaf-glossy-viburnum':'leaf-viburnum';
+   f.add(a.leafShape,kind,color,0,0,0,len*a.leafWidth/a.leafLength,len,len);
+   if(a.leafShape==='viburnumLobed')for(const side of [-1,1])f.branch([0,len*.08,len*.008],[side*len*.34,len*.43,len*.05],.00020,'#81916c','vein-viburnum');
+   if(hairy||typ==='otoko')for(let k=0;k<4;k++){
+    const t=(k+1)/6,side=k%2?1:-1,q=viburnumLeafPoint(a.leafShape,t,side*.8).map((v,i)=>v*len*(i===0?a.leafWidth/a.leafLength:1));
+    f.branch(q,[q[0]+.0006*side,q[1],q[2]-.0005],.000035,'#c6cbb9','hair-viburnum-leaf');
+   }
+  }
+ }
+ const before=!s.bloom&&a.flowerMonths.includes(s.month===12?1:s.month+1),fruit=a.fruitMonths.includes(s.month);
+ if(!s.bloom&&!before&&!fruit)return;
+ const floret=(at,pitch,yaw,r,sterile,seed)=>{
+  const f=flowerFrame(b,at,pitch,yaw),L=sterile?.0012:a.flowerLength,green=ball&&(before||seed%7===0),col=green?'#ced7aa':s.flowerColor;
+  if(before||!sterile&&(seed*.618)%1>s.flowerDensity){f.add(kit.bud,'bud-viburnum-flower',a.flowerPalette.bud,0,L*.4,0,r*.42,L*.7,r*.42);return;}
+  f.add('viburnumTube','corolla-viburnum',typ==='carlesii'?'#d4b4b7':col,0,0,0,r,L,r);
+  for(let j=0;j<5;j++){
+   const an=j*TAU/5;f.add('petal',sterile?'petal-viburnum-sterile':'petal-viburnum-fertile',col,Math.sin(an)*r*.16,L,Math.cos(an)*r*.16,r*.80,r*.92,r,1.42,an,0);
+   if(!sterile){const end=[Math.sin(an)*r*.30,L+r*.42,Math.cos(an)*r*.30];f.branch([0,L*.6,0],end,r*.016,'#d3d3b5','filament-viburnum');f.add(kit.bud,'anther-viburnum','#c0b477',...end,r*.065,r*.045,r*.060);}
+  }
+  if(!sterile)f.add(kit.bud,'stigma-viburnum','#bbca9a',0,L*.4,0,r*.13,r*.11,r*.13);
+ };
+ for(const tip of tips){
+  if(tip.roll>(sparse?.28:small?.42:ball?.30:.31))continue;
+  const fruitHead=fruit&&(!s.bloom||tip.index%3===0),R=a.headRadius,stem=sparse?.025:R*.48,center=[tip.at[0],tip.at[1]+stem,tip.at[2]];b.branch(tip.at,center,.0012,a.stemColor,'peduncle-viburnum');
+  const n=fruitHead?(sparse?7:19):ball?(typ==='sterile'?135:80):sparse?11:small?23:typ==='carlesii'?54:72;
+  for(let j=0;j<n;j++){
+   const az=j*2.399963,edge=Math.sqrt((j+.5)/n),sy=ball?1-2*(j+.5)/n:0,rad=ball?R*Math.sqrt(1-sy*sy):R*edge;
+   const at=[center[0]+Math.sin(az)*rad,center[1]+(ball?R*sy:sparse?-.022*edge:typ==='carlesii'?R*.65*Math.sqrt(1-edge*edge):R*.20*(1-edge*edge)),center[2]+Math.cos(az)*rad];
+   const fork=[center[0]+Math.sin(az)*rad*.45,center[1]+(sparse?-.006:R*.11),center[2]+Math.cos(az)*rad*.45];
+   b.branch(center,fork,.00065,sparse?'#b17076':a.stemColor,'rachis-viburnum');b.branch(fork,at,.00030,sparse?'#b17076':a.stemColor,'pedicel-viburnum');
+   if(fruitHead){const r=a.fruitRadius,col=typ==='carlesii'&&s.month===9?'#a54c4b':a.fruitColor;b.add(kit.bud,'fruit-glossy-viburnum',col,...at,r,r*(sparse?1.2:1),r*(sparse?.85:1));b.add(kit.bud,'scar-viburnum-fruit','#716b53',at[0],at[1]+r*.9,at[2],r*.20,r*.05,r*.20);continue;}
+   floret(at,ball?Math.acos(sy):sparse?Math.PI*.68:typ==='carlesii'?edge*.9:.12+edge*.30,az,a.flowerRadius,ball,tip.index*157+j);
+  }
+  if(typ==='onondaga'&&!fruitHead)for(let j=0;j<9;j++){
+   const az=j*TAU/9,at=[center[0]+Math.sin(az)*R*1.02,center[1],center[2]+Math.cos(az)*R*1.02];b.branch(center,at,.0007,a.stemColor,'pedicel-viburnum');floret(at,.5,az,.012,true,tip.index*9+j);
+  }
+ }
+}
 export function abeliaLeafPoint(type,t,u){
  const mos=type==='zabeliaOvate',teeth=mos?1:1-.065*(1-Math.abs(Math.sin(t*Math.PI*11))),width=Math.pow(Math.sin(Math.PI*t),mos?.83:.92)*(1.12-.30*t)*teeth;
  return [u*width*.5,t,.036*Math.sin(t*Math.PI)+.06*u*u*Math.sin(t*Math.PI)+.006*Math.sin(t*35)*u*u];
@@ -3000,6 +3085,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='viburnumBranches'){drawViburnum(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='abeliaCanes'){drawAbelia(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='calaminthaCymes'){drawCalamintha(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='lysimachiaShoots'){drawLysimachia(b,{info,s,view:{month},detail,rand},kit);return;}
