@@ -1,6 +1,101 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.44';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.45';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+
+// A shoot contains its actual small leaves. Instances distribute connected shoots,
+// rather than using oversized needles to stand in for a whole conifer crown.
+export const CONIFER_SHOOTS={
+ thujaSpray:{length:.18,leaf:.0028,width:.0015,flat:true},
+ hinokiSpray:{length:.18,leaf:.002,width:.0015,flat:true,blunt:true},
+ sawaraSpray:{length:.18,leaf:.003,width:.0013,flat:true},
+ cypressSpray:{length:.18,leaf:.0025,width:.0012},
+ juniperSpray:{length:.18,leaf:.003,width:.0011},
+ blueStarSpray:{length:.12,leaf:.008,width:.0013,awl:true,whorl:3},
+ squarrosaSpray:{length:.12,leaf:.005,width:.0011,awl:true,whorl:4},
+ yewFlatSpray:{length:.16,leaf:.024,width:.0028,yew:true,flat:true},
+ yewSpiralSpray:{length:.14,leaf:.020,width:.003,yew:true},
+ mopCord:{length:.26,leaf:.002,width:.001,cord:true}
+};
+export function coniferShootGeometry(type,young=false){
+ const c=CONIFER_SHOOTS[type],pos=[],uv=[],idx=[],up=new THREE.Vector3(0,1,0);let leafCount=0;
+ const surface=(origin,direction,len,width,leaf=true)=>{
+  const q=new THREE.Quaternion().setFromUnitVectors(up,new THREE.Vector3(...direction).normalize()),rows=leaf&&c.yew?3:leaf&&c.awl?2:1,cols=2,start=pos.length/3;
+  if(!leaf){
+   for(let k=0;k<=1;k++)for(let j=0;j<5;j++){
+    const an=j*TAU/4,at=new THREE.Vector3(Math.sin(an)*width*.5,k*len,Math.cos(an)*width*.5).applyQuaternion(q).add(new THREE.Vector3(...origin));pos.push(...at.toArray());uv.push(j/4,k);
+    if(!k&&j<4){const n=start+j;idx.push(n,n+5,n+1,n+1,n+5,n+6);}
+   }
+   return;
+  }
+  if(leaf&&!c.yew){
+   // Four vertices preserve a real leaf outline without tessellating a sub-mm face.
+   // The middle pair is essential: rounded scales cannot be sampled only at their tips.
+   const middle=c.blunt?.64:.31,vertices=[[0,0,0],[-width*.5,len*middle,0],[0,len,width*.15],[width*.5,len*middle,0]];
+   for(const [i,v] of vertices.entries()){const at=new THREE.Vector3(...v).applyQuaternion(q).add(new THREE.Vector3(...origin));pos.push(...at.toArray());uv.push(i===1?0:i===3?1:.5,i===0?0:i===2?1:middle);}
+   idx.push(start,start+1,start+2,start,start+2,start+3);return;
+  }
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+   const t=i/rows,u=j-1,envelope=leaf?(c.yew?Math.pow(Math.sin(Math.PI*t),.27):c.blunt?Math.pow(Math.sin(Math.PI*t),.45):1-t):1;
+   const v=new THREE.Vector3(u*width*.5*envelope,t*len,leaf?width*.19*(1-u*u)*Math.sin(Math.PI*t):0).applyQuaternion(q).add(new THREE.Vector3(...origin));
+   pos.push(v.x,v.y,v.z);uv.push(j/cols,t);
+   if(i<rows&&j<cols){const k=start+i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+  }
+ };
+ const shoot=(root,dir,len)=>{
+  const v=new THREE.Vector3(...dir).normalize(),q=new THREE.Quaternion().setFromUnitVectors(up,v),nodes=Math.ceil(len/(c.yew?.005:c.awl?.0035:c.leaf*.54));
+  if(!young)surface(root,dir,len,c.cord?.0026:c.yew?.0015:.0018,false);
+  for(let n=0;n<nodes;n++){
+   const t=n/nodes,isYoung=t>.76;if(isYoung!==young)continue;
+   const at=new THREE.Vector3(...root).addScaledVector(v,len*t),count=c.yew?(c.flat?2:1):c.awl?c.whorl:2;
+   for(let j=0;j<count;j++){
+    const an=c.yew?(c.flat?j*Math.PI+Math.PI/2:n*2.39996):j*TAU/count+(c.awl?n%2*Math.PI/count:n%2*Math.PI/2),spread=c.yew?.94:c.awl?.65:.20;
+    const direction=new THREE.Vector3(Math.sin(an)*spread,c.yew?.32:c.awl?.76:.98,Math.cos(an)*spread*(c.flat?.24:1)).normalize().applyQuaternion(q),size=c.leaf*(.73+.27*Math.sin(t*Math.PI));
+    surface(at.toArray(),direction.toArray(),size,c.width);leafCount++;
+   }
+  }
+ };
+ shoot([0,0,0],[0,1,c.cord?.22:0],c.length);
+ for(let n=0;n<(c.yew?4:c.cord?6:7);n++)for(const side of [-1,1]){
+  const t=.10+n*(c.yew?.20:.115),dir=[side*(c.flat?.62:.45),.78,c.flat?.02:Math.sin(n*2.2)*.44],len=c.length*(1-t)*(c.yew?.72:c.cord?.35:.56),root=[0,c.length*t,c.cord?c.length*t*.22:0],v=new THREE.Vector3(...dir).normalize();
+  shoot(root,dir,len);
+  for(let j=0;j<(c.yew?0:c.awl?2:3);j++)for(const sign of [-1,1]){
+   const u=.22+j*.24,at=new THREE.Vector3(...root).addScaledVector(v,len*u).toArray(),branch=[dir[0]+sign*.55,dir[1]*.62,dir[2]+(c.flat?0:sign*.18)];
+   shoot(at,branch,len*(1-u)*.50);
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData.coniferShoot=type;g.userData.young=young;g.userData.leafCount=leafCount;return g;
+}
+
+function drawConiferSprays(b,{info,s,detail,rand},kit){
+ const a=info.appearance,c=CONIFER_SHOOTS[a.shootProfile],h=s.height,w=s.spread,mound=['rounded','mound'].includes(a.habit),cord=c.cord,yew=c.yew,flat=c.flat,wood=a.barkColor,woodKind='wood-'+a.barkPattern;
+ const lerp=(x,y,t)=>x.map((v,k)=>v+(y[k]-v)*t),shoots=[];
+ const curved=(points,r)=>{for(let k=1;k<points.length;k++)b.branch(points[k-1],points[k],r*(1-k/(points.length+2)),wood,woodKind);};
+ const count=Math.round((cord?50:mound?66:92)*Math.max(.35,detail)),r0=Math.max(.006,Math.min(.055,h*.010)),top=mound?h*.055:h*.98;
+ curved([[0,0,0],[w*.008,top*.35,0],[-w*.006,top*.70,w*.008],[0,top,0]],r0);
+ for(let i=0;i<count;i++){
+  const t=(i+.6)/count,az=i*2.39996+(rand()-.5)*.28,level=mound?.16+t*.68:.025+t*.88,extent=w*(mound?.40:.38)*(mound?Math.sqrt(1-Math.pow(t,1.35)):Math.pow(1-t,.85)),base=[0,h*(mound?.035:level),0];
+  const end=[Math.sin(az)*extent,h*(mound?level:level+(a.habit==='columnar'?.15:.075)*(1-t)),Math.cos(az)*extent],bend=lerp(base,end,.55);bend[1]+=h*(cord?.10:.025);
+  curved([base,bend,end],r0*(mound?.53:.45)*(1-t*.72));
+  for(let k=0;k<5;k++)for(const side of [-1,1]){
+   const u=.20+k*.19,at=lerp(base,end,u),sideAz=az+side*(.70+rand()*.15),reach=extent*(.28-.10*u),out=[at[0]+Math.sin(sideAz)*reach,at[1]+h*(cord?.025:yew?.045:.065)*(1-t),at[2]+Math.cos(sideAz)*reach];
+   curved([at,lerp(at,out,.6),out],Math.min(.0045,r0*.17)*(1-t*.45));
+   const subdivisions=cord?3:2;
+   for(let j=0;j<subdivisions;j++){
+    const f=(j+1)/subdivisions,root=lerp(at,out,f),yaw=sideAz+(rand()-.5)*.85,pitch=cord?1.60+f*.52:a.habit==='columnar'?.18+rand()*.48:flat?.70+rand()*.48:yew?.34+rand()*.7:.12+rand()*.67;
+    shoots.push({root,yaw,pitch,roll:(rand()-.5)*(flat?1.5:.8),young:j===subdivisions-1,variation:rand(),size:(.86+rand()*.23)*(mound?1:.55+.45*Math.pow(1-t,.25))});
+   }
+  }
+ }
+ // A short living leader gives a cone its fine apex. Mounded cultivars have none.
+ if(!mound)shoots.push({root:[0,h-c.length*.86,0],yaw:0,pitch:0,roll:0,young:true,variation:.5,size:.86});
+ for(const q of shoots){
+  const isFlush=a.flushMonths?.includes(s.month),base=s.leafColor,kind=a.leafPattern?patternKind('leaf',a.leafPattern,s.leafPatternColor):flat&&!yew?'leaf-conifer-'+a.shootProfile:foliageKind(info),color=kit.shade(()=>q.variation,base,.040);
+  const winter=s.seasonName==='winter',tipColor=a.winterTipColor&&winter?a.winterTipColor:isFlush&&a.springShootColor?a.springShootColor:base;
+  const size=q.size*Math.min(1,h/(c.length*3),w/(c.length*3));
+  b.add(a.shootProfile,kind,color,...q.root,size,size,size,q.pitch,q.yaw,q.roll);
+  b.add(a.shootProfile+'Young',isFlush&&a.springShootColor?'leaf':kind,kit.shade(()=>q.variation,tipColor,.026),...q.root,size,size,size,q.pitch,q.yaw,q.roll);
+ }
+}
 
 export function roseLeafPoint(t,u){
  const tooth=t*27%1,serration=1+.065*(tooth<.72?tooth/.72:(1-tooth)/.28),width=.33*Math.pow(Math.max(0,Math.sin(Math.PI*t)),.76)*serration;
@@ -1527,6 +1622,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(info.appearance?.architecture==='coniferSprays'){drawConiferSprays(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenRoseCanes'){drawGardenRose(b,{info,s,p,detail,rand},kit);return;}
  if(['sideritisSpikes','silverMintSpikes','marrubiumWhorls','leonotisTiers'].includes(info.appearance?.architecture)){drawSilverMints(b,{info,s,p,detail,rand},kit);return;}
  if(['keiskeaRacemes','isodonPanicles','chelonopsisAxils','triporaCymes','leucosceptrumSpikes','melittisAxils'].includes(info.appearance?.architecture)){drawWoodlandMints(b,{info,s,p,detail,rand},kit);return;}
