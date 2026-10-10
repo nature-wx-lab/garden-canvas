@@ -1,6 +1,107 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.49';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.50';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+// Head florets are fused at their bases; each outer floret has an enlarged lip.
+export function scabiousLeafPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),entire=['caucasicaBasal','succisella','teasel','meltonBasal'].includes(type),fine=['ochroleuca','anthemifolia'].includes(type),basal=type.endsWith('Basal');
+ let width=.5*Math.pow(sn,basal?.65:.78)*(basal?.42+.72*t:1);
+ if(!entire)width*=basal?.66+.34*Math.pow(.5+.5*Math.cos((t-.10)*TAU*3),.6):.12+.88*Math.pow(.5+.5*Math.cos((t-.07)*TAU*(fine?6:3.8)),fine?1.3:.68);
+ else if(type==='teasel')width*=.93+.07*Math.cos(t*TAU*12);
+ return [u*width,t,.045*u*u*sn+.05*t*t+(type==='teasel'?.025*Math.sin(t*TAU*10)*sn:0)];
+}
+
+export function scabiousHeadGeometry(type,part){
+ const pos=[],uv=[],idx=[],sphere=type==='succisella',large=type==='caucasica'||type==='anthemifolia',knautia=type==='knautia',ceph=type==='cephalaria',n=sphere?100:large?66:82,lobes=knautia||ceph||sphere?4:5;
+ const quad=(a,b,c,d)=>{const o=pos.length/3;for(const v of [a,b,c,d])pos.push(...v);uv.push(0,0,1,0,0,1,1,1);idx.push(o,o+2,o+1,o+1,o+2,o+3);};
+ for(let j=0;j<n;j++){
+  const t=(j+.5)/n,az=j*2.399963,rho=sphere?Math.sqrt(1-(1-2*t)**2):Math.sqrt(t)*(large?.43:.61),outer=!sphere&&t>.76,yy=sphere?1-2*t:(large?.05:.36)*Math.sqrt(1-t),base=new THREE.Vector3(Math.sin(az)*rho,yy,Math.cos(az)*rho);
+  const axis=sphere?base.clone().normalize():new THREE.Vector3(Math.sin(az)*(outer?.75:.14),1,Math.cos(az)*(outer?.75:.14)).normalize(),q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),length=sphere?.18:large&&outer?.22:.15,fr=sphere?.047:large&&outer?.095:.049;
+  const world=v=>new THREE.Vector3(...v).applyQuaternion(q).add(base).toArray();
+  if(part==='petals'){
+   for(let k=0;k<6;k++){const aa=k*TAU/6,bb=(k+1)*TAU/6;quad(world([Math.sin(aa)*fr*.36,0,Math.cos(aa)*fr*.36]),world([Math.sin(bb)*fr*.36,0,Math.cos(bb)*fr*.36]),world([Math.sin(aa)*fr,length,Math.cos(aa)*fr]),world([Math.sin(bb)*fr,length,Math.cos(bb)*fr]));}
+   for(let k=0;k<lobes;k++){
+    const angle=az+k*TAU/lobes,lip=outer?(.5+.5*Math.cos(k*TAU/lobes))**2:0,L=fr*(large?1.6+4.2*lip:1.4+2.2*lip),width=fr*(large?1.7:1.35),o=pos.length/3,rows=12,cols=10;
+    for(let row=0;row<=rows;row++)for(let col=0;col<=cols;col++){
+     const s=row/rows,u=col/cols*2-1,edge=Math.pow(Math.max(0,Math.sin(Math.PI*s)),.36),rr=fr*.58+L*s,xx=u*width*edge*(1-.12*Math.cos(s*TAU*3)),wave=(large?.025:.010)*Math.sin(s*23+u*9)*Math.abs(u)**3*edge;
+     pos.push(...world([Math.sin(angle)*rr+Math.cos(angle)*xx,length+.15*L*s+.20*L*s*s+wave,Math.cos(angle)*rr-Math.sin(angle)*xx]));uv.push(col/cols,s);
+     if(row<rows&&col<cols){const b=o+row*(cols+1)+col;idx.push(b,b+cols+1,b+1,b+1,b+cols+1,b+cols+2);}
+    }
+   }
+  }else for(let k=0;k<4;k++){
+   const aa=az+k*TAU/4,tip=[Math.sin(aa)*fr*.9,length+(k%2?.23:.19),Math.cos(aa)*fr*.9],w=part==='anthers'?.020:.0035;
+   if(part==='anthers'){quad(world([tip[0]-w,tip[1],tip[2]-w*.6]),world([tip[0]+w,tip[1],tip[2]-w*.6]),world([tip[0]-w,tip[1]+w*.6,tip[2]+w*.6]),world([tip[0]+w,tip[1]+w*.6,tip[2]+w*.6]));}
+   else quad(world([-w,length*.4,0]),world([w,length*.4,0]),world([tip[0]-w,tip[1],tip[2]]),world([tip[0]+w,tip[1],tip[2]]));
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData.scabiousHead=type;g.userData.part=part;return g;
+}
+
+function scabiousHead(b,at,r,a,color,kit,tone=.5,yaw=0,seed=false){
+ const {rand}=kit,bud='scabBud',type=a.shootProfile,f=flowerFrame(b,at,(rand()-.5)*.24,yaw),bract=a.leafPattern?patternKind('bract',a.leafPattern,a.patternColor):'involucre';
+ if(type==='teasel'){
+  const co=seed?'#927950':'#8b9a66';f.add(bud,'teaselReceptacle',co,0,r*.65,0,r*.72,r*1.30,r*.72);
+  for(let j=0;j<230;j++){const t=(j+.5)/230,an=j*2.399963,rho=Math.sqrt(1-(1-2*t)**2)*r*.74,yy=r*(.65+(1-2*t)*1.30),base=[Math.sin(an)*rho,yy,Math.cos(an)*rho],end=[Math.sin(an)*(rho+r*.28),yy+r*.18,Math.cos(an)*(rho+r*.28)];f.branch(base,end,r*.013,co,'teaselSpine');
+   if(!seed&&(Math.abs(t-(.5-tone*.25))<.065||Math.abs(t-(.5+tone*.25))<.065)){
+    const fl=flowerFrame(f,end,Math.PI/2-(.5-t)*1.0,an);fl.add('trumpet','petal-teasel',color,0,0,0,r*.085,r*.20,r*.085);
+    for(let k=0;k<4;k++)fl.add('petal','petal-teasel',color,0,r*.18,0,r*.06,r*.10,r*.10,-1.20,k*TAU/4,0);
+   }
+  }
+  for(let k=0;k<8;k++){
+   const an=k*TAU/8,begin=[0,-r*.43,0],mid=[Math.sin(an)*r*1.55,-r*.45,Math.cos(an)*r*1.55],end=[Math.sin(an)*r*1.28,r*2.5,Math.cos(an)*r*1.28];f.branch(begin,mid,r*.025,co,'teaselBract');f.branch(mid,end,r*.018,co,'teaselBract');
+  }return;
+ }
+ if(seed&&type==='stellata'){
+  f.add(bud,'seedReceptacle','#7f8159',0,0,0,r*.83,r*.83,r*.83);
+  for(let j=0;j<38;j++){
+   const t=(j+.5)/38,an=j*2.399963,yy=1-2*t,rr=Math.sqrt(1-yy*yy),at=[Math.sin(an)*rr*r*.82,yy*r*.82,Math.cos(an)*rr*r*.82],cup=flowerFrame(f,at,Math.acos(yy),an);
+   cup.add('trumpet','seedCup','#d5c6a4',0,0,0,r*.26,r*.40,r*.26);
+   for(let k=0;k<10;k++){const aa=k*TAU/10;cup.branch([0,r*.02,0],[Math.sin(aa)*r*.26,r*.37,Math.cos(aa)*r*.26],r*.005,'#998761','seedRib');}
+   for(let k=0;k<5;k++){const aa=k*TAU/5;cup.branch([0,r*.16,0],[Math.sin(aa)*r*.14,r*.30,Math.cos(aa)*r*.14],r*.014,'#665c41','seedStar');}
+  }return;
+ }
+ const head=['amethyst','stellata','columbaria'].includes(type)?'columbaria':type==='ochroleuca'?'columbaria':type;
+ const co=a.flowerPalette?.whitePink?new THREE.Color('#e8e1d5').lerp(new THREE.Color('#d2a5ba'),tone*.21).getStyle():color,pk=a.flowerPalette?.edge&&tone>.38?patternKind('petal','primroseEdge',a.flowerPalette.edge):'petal-scabious';
+ f.add(head+'ScabPetals',pk,co,0,0,0,r,r,r);f.add(head+'ScabStamens','filament-scabious','#d6d2c8',0,0,0,r,r,r);f.add(head+'ScabAnthers','anther-scabious',type==='succisella'?'#c5b0cd':'#ece2d4',0,0,0,r,r,r);
+ if(type!=='succisella'){
+  f.add(bud,'receptacle-scabious',co,0,r*.03,0,r*.52,r*.23,r*.52);
+  for(let k=0;k<10;k++)f.add('scabLeaf-caucasicaBasal',bract,'#708350',0,-r*.12,0,r*.24,r*.80,r*.80,-1.85,k*TAU/10,0);
+  if(tone<.35)for(let j=0;j<24;j++){const t=(j+.5)/24,an=j*2.399963,rr=r*.23*Math.sqrt(t);f.add(bud,'floretBud-scabious',a.flowerPalette?.dark?'#603950':'#9ba36c',Math.sin(an)*rr,r*(.32+.04*(1-t)),Math.cos(an)*rr,r*.041,r*.058,r*.041);}
+ }
+}
+
+function drawScabious(b,{info,s,p,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,green=s.leafColor,lk=foliageKind(info),winter=[12,1,2].includes(s.month),teasel=type==='teasel',cauc=type==='caucasica',ceph=type==='cephalaria',succ=type==='succisella',low=['columbaria','ochroleuca'].includes(type),seed=!!s.seedHeads&&!s.biennialRosette,basalOnly=(winter&&!s.bloom&&!seed)||s.biennialRosette,L=Math.min(a.leafLength,w*.60)*s.leafScale;
+ const leaf=(at,an,len,basal=false,pitch=1.12)=>{
+  const shape=basal?a.basalLeafShape:a.leafShape,ratio=(basal?a.basalLeafWidth:a.leafWidth)/a.leafLength,f=flowerFrame(b,at,-pitch,an);f.add(shape,lk,kit.shade(rand,green,.04),0,0,0,len*ratio,len,len);
+  if(teasel){f.branch([0,0,.002],[0,len,.002],len*.003,'#adb897','leafMidrib');for(let j=0;j<9;j++){const t=.12+j*.09;f.branch([0,len*t,.003],[0,len*t+.003,.008],.00035,'#bdc5a6','leafSpine');}}
+ };
+ if(s.leafDensity>0)for(let i=0;i<Math.round((ceph?28:teasel?18:type==='knautia'?64:40)*detail*s.leafDensity);i++){
+  const an=i*2.39996,reach=w*(teasel?.08:.16)*Math.sqrt(rand());leaf([Math.sin(an)*reach,.007+rand()*.018,Math.cos(an)*reach],an,L*(.75+.25*rand()),true,.95+rand()*.5);
+ }
+ if(basalOnly)return;
+ const count=Math.round((teasel?1:ceph?9:succ?14:low?19:cauc?14:16)*detail),dry=seed&&!s.bloom,stem=dry?'#907c56':a.stemColor;
+ for(let i=0;i<count;i++){
+  const az=i*2.399963,reach=w*(teasel?.04:.05+.29*Math.sqrt(rand())),height=h*(teasel?.89:ceph?.49+.12*rand():succ?.41+.11*rand():low?.30+.16*rand():cauc?.29+.17*rand():.46+.14*rand());let prev=[Math.sin(az)*w*.035,.004,Math.cos(az)*w*.035];const nodes=teasel?9:6;
+  for(let j=1;j<=nodes;j++){
+   const t=j/nodes,at=[Math.sin(az)*reach*t,height*t,Math.cos(az)*reach*t];b.branch(prev,at,teasel?.005*(1-t*.7):ceph?.002:.0012,stem,teasel?'teaselStem':'stem-scabious');prev=at;
+   if(!dry&&s.leafDensity>0)for(const side of [0,1]){const an=az+j*Math.PI/2+side*Math.PI;leaf(at,an,L*(teasel?1-t*.55:.72-t*.35),false,.85+rand()*.35);}
+   if(teasel){
+    if(!dry)b.add('trumpet','leafCup',green,...at,.012,.009,.012);
+    for(let k=0;k<3;k++){const an=az+k*TAU/3;b.branch(at,[at[0]+Math.sin(an)*.007,at[1]+.008,at[2]+Math.cos(an)*.007],.0007,'#b2b695','stemSpine');}
+    if(j>=5&&j%2&&j<9)for(const side of [0,1]){const turn=az+j*Math.PI/2+side*Math.PI,tip=[at[0]+Math.sin(turn)*w*.35,at[1]+h*.16,at[2]+Math.cos(turn)*w*.35];b.branch(at,tip,.0026,stem,'teaselBranch');if(s.bloom||seed)scabiousHead(b,tip,a.flowerRadius*.76,a,s.flowerColor,{...kit,rand},rand(),turn,seed);}
+   }
+  }
+  const active=s.bloom||seed||a.budMonths?.includes(s.month);if(!active)continue;
+  for(let k=0;k<(teasel?1:cauc||low?2:3);k++){
+   const az2=az+(k-1)*.78,tip=[prev[0]+Math.sin(az2)*w*(ceph?.12:.08),prev[1]+h*(teasel?.03:cauc?.35+.12*rand():low?.36+.10*rand():ceph?.29+.12*rand():.20+.14*rand()),prev[2]+Math.cos(az2)*w*(ceph?.12:.08)];b.branch(prev,tip,teasel?.0024:.0008,stem,'peduncle-scabious');
+   if(!s.bloom&&!seed||(i+k)%9===0&&!teasel&&!seed){b.add('scabBud','flowerBud-scabious',succ?'#c3a4b5':'#8b9b67',...tip,a.flowerRadius*.37,a.flowerRadius*.18,a.flowerRadius*.37);continue;}
+   let color=s.flowerColor;if(a.flowerPalette?.milky&&[3,4,10,11].includes(s.month))color='#dfcbd4';if(succ)color=new THREE.Color('#d8c1d8').lerp(new THREE.Color('#e5e4e4'),rand()).getStyle();
+   scabiousHead(b,tip,a.flowerRadius*(.85+.15*rand()),a,color,{...kit,rand},rand(),az2,seed);
+  }
+ }
+}
+
 // Asteraceae use separate foliage silhouettes and inflorescence architectures.
 export function asterLeafPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),silver=['silverDust','jacobaea'].includes(type),thistle=['cottonThistle','artichoke','berkheya'].includes(type),mum=['crystalMum','frostyMum'].includes(type),fern=['cotula','leptinella','jurinea'].includes(type),spoon=['bellium','hieracium','raoulia'].includes(type);
@@ -2101,6 +2202,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+ if(info.appearance?.architecture==='scabiousHabit'){drawScabious(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='asteraceaeHabit'){drawAsteraceae(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='daisyBranches'){drawDaisyBranches(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='myrtaceousTree'){drawMyrtaceousTree(b,{info,s,p,detail,rand},kit);return;}

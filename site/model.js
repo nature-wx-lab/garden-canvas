@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.49';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.49';
-import { seasonAt } from './catalog-search.js?v=0.9.49';
+import {treeProfile} from './tree-profiles.js?v=0.9.50';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.50';
+import { seasonAt } from './catalog-search.js?v=0.9.50';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -46,7 +46,9 @@ export function taskEvents(p,year){
   const result=[];for(const t of p.tasks){const at=year*12+t.month-1;if(at<p.start||(['annual','biennial'].includes(plantInfo(p.kind).life)&&at>=p.start+(plantInfo(p.kind).life==='biennial'?24:12))||t.repeat==='first'&&at>=p.start+12)continue;result.push({...t,at,plantId:p.id,kind:p.kind});}return result;
 }
 export function stateAt(p,view){
-  const age=dateIndex(view)-p.start,info=plantInfo(p.kind),expired=['annual','biennial'].includes(info.life)&&age>=(info.life==='biennial'?24:12),present=age>=0&&!expired;
+  const age=dateIndex(view)-p.start,info=plantInfo(p.kind),expired=['annual','biennial'].includes(info.life)&&age>=(info.life==='biennial'?24:12);
+  const biennialLast=Math.max(...(info.appearance?.flowerMonths?.length?info.appearance.flowerMonths:[8])),biennialFlowerYear=Math.floor((p.start+12)/12)+(p.start%12>=biennialLast?1:0),biennialFlowerEnd=biennialFlowerYear*12+biennialLast;
+  const standingDead=expired&&info.life==='biennial'&&info.appearance?.standingAfterDeathMonths?.includes(view.month)&&dateIndex(view)>=biennialFlowerEnd&&dateIndex(view)<(biennialFlowerYear+1)*12+2,present=age>=0&&(!expired||!!standingDead);
   let height=p.height,spread=p.spread,leafHeight=p.leafHeight;
   let basis=p.scenario?'自分の成長シナリオ':'年次成長は未設定';
   if(p.scenario){const t=Math.max(0,Math.min(1,age/(p.scenario.year*12)));height+=(p.scenario.height-height)*t;spread+=(p.scenario.spread-spread)*t;leafHeight+=(p.scenario.leafHeight-leafHeight)*t;}
@@ -81,9 +83,13 @@ export function stateAt(p,view){
   if(info.life==='biennial'){
     season.biennialRosette=age<12;
     if(season.biennialRosette){season.bloom=false;season.flowerDensity=0;season.phase='二年草の初年ロゼット（苗齢未入力の目安）';season.label=season.phase;}
+    if(info.appearance?.seedHeadMonths){
+      season.seedHeads=season.seedHeads&&dateIndex(view)>=biennialFlowerEnd;
+      if(season.seedHeads)Object.assign(season,{groundDormant:false,bloom:false,leafDensity:0,leafScale:0,shootScale:1,phase:'花後の枯れ茎・種子頭（残した場合）',label:'花後の枯れ茎・種子頭（残した場合）'});
+    }
   }
   if(flowerOptions?.length)season.flowerColor=flowerOptions[(p.id-1)%flowerOptions.length];
-  return {present,expired,...season,age:Math.max(0,age)/12,height,spread,leafHeight,natural,trunkHeight,basis,last,unsupported,winter:[12,1,2].includes(view.month)};
+  return {present,expired,standingDead:!!standingDead,...season,age:Math.max(0,age)/12,height,spread,leafHeight,natural,trunkHeight,basis,last,unsupported,winter:[12,1,2].includes(view.month)};
 }
 export function budget(plan){const rows=new Map();let total=0,unknown=0,count=0;for(const p of plan.plants){if(p.role!=='new')continue;count++;const key=[p.kind,p.height,p.spread,p.price].join('|');if(!rows.has(key))rows.set(key,{kind:p.kind,height:p.height,spread:p.spread,price:p.price,count:0,total:0});const row=rows.get(key);row.count++;if(p.price===null)unknown++;else{total+=p.price;row.total+=p.price;}}return {total,unknown,count,rows:[...rows.values()]};}
 export function calendar(plan,year){return Array.from({length:12},(_,i)=>{const events=plan.plants.flatMap(p=>taskEvents(p,year)).filter(t=>t.month===i+1);let min=events.length?plan.prep:0,max=min,unknown=0;for(const e of events){if(e.min===null||e.max===null)unknown++;else{min+=e.min*e.count;max+=e.max*e.count;}}return {month:i+1,events,min,max,unknown,available:plan.hours[i]===null?null:plan.hours[i]*60};});}
@@ -96,7 +102,7 @@ function migrateV1(v){
 }
 export function validateDocument(input){
   const bad=()=>{throw new Error('対応していない庭データ、または範囲外の値です。元の庭は変更していません。');};
-  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10','2026-10-10.11','2026-10-10.12','2026-10-10.13','2026-10-10.14','2026-10-10.15','2026-10-10.16','2026-10-10.17','2026-10-10.18','2026-10-10.19','2026-10-10.20','2026-10-10.21','2026-10-10.22','2026-10-10.23','2026-10-10.24','2026-10-10.25','2026-10-10.26','2026-10-10.27','2026-10-10.28','2026-10-10.29','2026-10-10.30','2026-10-10.31','2026-10-10.32','2026-10-10.33','2026-10-10.34','2026-10-10.35','2026-10-10.36','2026-10-10.37','2026-10-10.38','2026-10-10.39','2026-10-10.40','2026-10-10.41','2026-10-10.42','2026-10-10.43','2026-10-10.44','2026-10-10.45','2026-10-10.46','2026-10-10.47','2026-10-10.48','2026-10-10.49','2026-10-10.50','2026-10-10.51','2026-10-10.52','2026-10-10.53','2026-10-10.54','2026-10-10.55','2026-10-10.56','2026-10-10.57','2026-10-10.58','2026-10-10.59','2026-10-10.60','2026-10-10.61','2026-10-10.62'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
+  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10','2026-10-10.11','2026-10-10.12','2026-10-10.13','2026-10-10.14','2026-10-10.15','2026-10-10.16','2026-10-10.17','2026-10-10.18','2026-10-10.19','2026-10-10.20','2026-10-10.21','2026-10-10.22','2026-10-10.23','2026-10-10.24','2026-10-10.25','2026-10-10.26','2026-10-10.27','2026-10-10.28','2026-10-10.29','2026-10-10.30','2026-10-10.31','2026-10-10.32','2026-10-10.33','2026-10-10.34','2026-10-10.35','2026-10-10.36','2026-10-10.37','2026-10-10.38','2026-10-10.39','2026-10-10.40','2026-10-10.41','2026-10-10.42','2026-10-10.43','2026-10-10.44','2026-10-10.45','2026-10-10.46','2026-10-10.47','2026-10-10.48','2026-10-10.49','2026-10-10.50','2026-10-10.51','2026-10-10.52','2026-10-10.53','2026-10-10.54','2026-10-10.55','2026-10-10.56','2026-10-10.57','2026-10-10.58','2026-10-10.59','2026-10-10.60','2026-10-10.61','2026-10-10.62','2026-10-10.63'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
   if(!keys(v,['version','modelVersion','catalogVersion','active','plans','view'])||v.version!==2||v.modelVersion!==MODEL_VERSION||v.catalogVersion!==CATALOG_VERSION||!['A','B'].includes(v.active)||!keys(v.plans,['A','B'])||!v.plans.A||!v.plans[v.active])bad();
   const view=v.view;
   if(!keys(view,['month','year','reference','footprints','camera'])||!integer(view.month,1,12)||!integer(view.year,0,10)||typeof view.reference!=='boolean'||typeof view.footprints!=='boolean')bad();

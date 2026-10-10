@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.49';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.50';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -148,3 +148,8 @@ Object.assign(TRAIT_VALUES,{myrtaceousTree:'樹種別の常緑の枝と葉',feij
 Object.assign(TRAIT_VALUES,{daisyBranches:'葉のつく枝から伸びる細い花茎',coreopsisFine:'細い対生葉',coreopsisBroad:'対生する披針形葉と一部の側裂片',coreopsisPinnate:'細く羽状に分かれる対生葉',coreopsisGrandiflora:'幅のある下葉と分裂する上部の葉',bidensCut:'粗い鋸歯を持ち3つに裂ける葉',brachyFine:'線形の裂片へ深く切れ込む小葉',brachyBroad:'やや幅広い尖った裂片を持つ小葉',brachyRound:'丸みのある裂片を持つ小葉',margueriteCut:'灰緑色の細かく分裂する葉',gazaniaSpoon:'厚く細長いへら形葉と淡い葉裏',osteoToothed:'枝先に集まる厚めの互生の鋸歯葉',daisyCultivarHead:'品種別の舌状花・花色の分布と中央の筒状花'});
 
 Object.assign(TRAIT_VALUES,{asterTaxonHead:"種類別の舌状花・筒状花・総苞をもつ頭花",asterEupatorium:"鋸歯のある3裂葉",asterSilverDust:"丸い裂片へ深く分かれ白毛を持つ銀葉",asterKoreanAster:"細長く鋸歯のある互生葉",asterCrystalMum:"幅広く浅い裂片と鋸歯を持つ菊葉",asterJacobaea:"不規則な切れ込みと白毛のある葉",asterPeacockAster:"細い茎に沿う小さな披針形葉",asterCarrotCone:"ややざらつく幅のある披針形葉",asterFrostyMum:"浅く裂けて丸い鋸歯を持つ菊葉",asterAmberboa:"下部に切れ込みのある淡緑の葉",asterArtichoke:"大きく深裂する銀緑の葉",asterEchibeckia:"ざらつく細長い葉",asterCraspedia:"基部に集まる毛のある細長い銀葉",asterCottonThistle:"白毛・棘と茎へ下がる翼を持つ葉",asterCotula:"細い裂片に羽状に分かれる銀葉",asterRaoulia:"密に重なる微細な灰白葉",asterGiantDaisy:"長い茎に付く鋸歯のある披針形葉",asterHieracium:"白く長い毛が生える小さな卵形葉",asterBerkheya:"大きな波状葉と縁の棘・白い葉裏",asterBerlandiera:"先端が広く基部へ切れ込む琴形葉",asterBellium:"小さいへら形葉",asterMiyakowasure:"浅い鋸歯のある細長い葉",asterSyneilesis:"傘状に開く大きな掌状深裂葉",asterJurinea:"株元に集まる切れ込んだ葉",asterLeptinella:"黒褐色の羽状葉と緑色の若い先端",asterMarshallia:"3本の葉脈のある互生の披針形葉"});
+
+Object.assign(TRAIT_VALUES,{scabiousTaxonHead:'種類別の小花・雄しべ・総苞からなる頭花'});
+for(const type of ['knautia','caucasica','anthemifolia','atropurpurea','ochroleuca','columbaria','amethyst','cephalaria','stellata'])TRAIT_VALUES['scabLeaf-'+type]='羽状に切れ込む対生の茎葉';
+for(const type of ['knautia','anthemifolia','atropurpurea','ochroleuca','columbaria','amethyst','cephalaria','stellata'])TRAIT_VALUES['scabLeaf-'+type+'Basal']='株元のへら形・琴形または切れ込みのある葉';
+Object.assign(TRAIT_VALUES,{'scabLeaf-caucasica':'株元と異なり切れ込みのある茎葉','scabLeaf-caucasicaBasal':'切れ込みのない灰緑色の根生葉','scabLeaf-meltonBasal':'細長い根生葉','scabLeaf-succisella':'細長い披針形の対生葉','scabLeaf-teasel':'対生し基部が杯状につながる棘のある葉'});
