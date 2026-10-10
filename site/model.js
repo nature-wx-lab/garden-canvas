@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.15';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.15';
-import { seasonAt } from './catalog-search.js?v=0.9.15';
+import {treeProfile} from './tree-profiles.js?v=0.9.16';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.16';
+import { seasonAt } from './catalog-search.js?v=0.9.16';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -84,7 +84,7 @@ function migrateV1(v){
 }
 export function validateDocument(input){
   const bad=()=>{throw new Error('対応していない庭データ、または範囲外の値です。元の庭は変更していません。');};
-  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10','2026-10-10.11','2026-10-10.12','2026-10-10.13','2026-10-10.14','2026-10-10.15','2026-10-10.16','2026-10-10.17','2026-10-10.18','2026-10-10.19','2026-10-10.20','2026-10-10.21','2026-10-10.22','2026-10-10.23','2026-10-10.24','2026-10-10.25','2026-10-10.26','2026-10-10.27','2026-10-10.28','2026-10-10.29'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
+  const v=input?.version===1?migrateV1(input):['2026-10-09.1','2026-10-10.1','2026-10-10.2','2026-10-10.3','2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.8','2026-10-10.9','2026-10-10.10','2026-10-10.11','2026-10-10.12','2026-10-10.13','2026-10-10.14','2026-10-10.15','2026-10-10.16','2026-10-10.17','2026-10-10.18','2026-10-10.19','2026-10-10.20','2026-10-10.21','2026-10-10.22','2026-10-10.23','2026-10-10.24','2026-10-10.25','2026-10-10.26','2026-10-10.27','2026-10-10.28','2026-10-10.29','2026-10-10.30'].includes(input?.catalogVersion)?{...input,catalogVersion:CATALOG_VERSION}:input;
   if(!keys(v,['version','modelVersion','catalogVersion','active','plans','view'])||v.version!==2||v.modelVersion!==MODEL_VERSION||v.catalogVersion!==CATALOG_VERSION||!['A','B'].includes(v.active)||!keys(v.plans,['A','B'])||!v.plans.A||!v.plans[v.active])bad();
   const view=v.view;
   if(!keys(view,['month','year','reference','footprints','camera'])||!integer(view.month,1,12)||!integer(view.year,0,10)||typeof view.reference!=='boolean'||typeof view.footprints!=='boolean')bad();
@@ -96,9 +96,9 @@ export function validateDocument(input){
     for(const o of plan.obstacles)if(!keys(o,['type','x','z','width','depth','height'])||!['house','path','fence'].includes(o.type)||!within(o.x,0,30)||!within(o.z,0,30)||!within(o.width,.1,30)||!within(o.depth,.1,30)||!within(o.height,.02,8)||!contained(obstaclePoints(o),plan.outline))bad();
     const ids=new Set();
     for(const p of plan.plants){
-      if(!keys(p,['id','kind','x','z','height','spread','leafHeight','start','role','price','locked','scenario','management','tasks'])||!integer(p.id,1,1000000)||ids.has(p.id)||typeof p.kind!=='string'||!(Object.hasOwn(CATALOG,p.kind)||Object.hasOwn(LEGACY,p.kind))||!within(p.height,.1,60)||!within(p.spread,.1,60)||!within(p.leafHeight,.05,p.height)||!within(p.x,0,plan.width)||!within(p.z,0,plan.depth)||!canPlant(plan,p.x,p.z)||!integer(p.start,0,131)||!['new','existing','reference'].includes(p.role)||p.price!==null&&!integer(p.price,0,10000000)||typeof p.locked!=='boolean'||!Array.isArray(p.tasks)||p.tasks.length>36)bad();ids.add(p.id);
+      if(!keys(p,['id','kind','x','z','height','spread','leafHeight','start','role','price','locked','scenario','management','tasks'])||!integer(p.id,1,1000000)||ids.has(p.id)||typeof p.kind!=='string'||!(Object.hasOwn(CATALOG,p.kind)||Object.hasOwn(LEGACY,p.kind))||!within(p.height,.01,60)||!within(p.spread,.1,60)||!within(p.leafHeight,.005,p.height)||!within(p.x,0,plan.width)||!within(p.z,0,plan.depth)||!canPlant(plan,p.x,p.z)||!integer(p.start,0,131)||!['new','existing','reference'].includes(p.role)||p.price!==null&&!integer(p.price,0,10000000)||typeof p.locked!=='boolean'||!Array.isArray(p.tasks)||p.tasks.length>36)bad();ids.add(p.id);
       const s=p.scenario;if(s!==null&&(!keys(s,['year','height','spread','leafHeight'])||!integer(s.year,1,10)||!within(s.height,p.height,60)||!within(s.spread,p.spread,60)||!within(s.leafHeight,p.leafHeight,s.height)))bad();
-      const m=p.management;if(m!==null&&(!keys(m,['height','spread','method','recovery'])||!within(m.height,.1,60)||!within(m.spread,.1,60)||!['thin','trim'].includes(m.method)||!integer(m.recovery,1,36)))bad();
+      const m=p.management;if(m!==null&&(!keys(m,['height','spread','method','recovery'])||!within(m.height,.01,60)||!within(m.spread,.1,60)||!['thin','trim'].includes(m.method)||!integer(m.recovery,1,36)))bad();
       const taskIds=new Set();for(const t of p.tasks){if(!keys(t,['id','type','month','repeat','count','min','max'])||!integer(t.id,1,1000)||taskIds.has(t.id)||!Object.hasOwn(TASKS,t.type)||!integer(t.month,1,12)||!['annual','first'].includes(t.repeat)||!integer(t.count,1,t.type==='water'?31:1)||!(t.min===null&&t.max===null||within(t.min,0,10000)&&within(t.max,t.min,10000)))bad();taskIds.add(t.id);}
     }
   }return clone(v);

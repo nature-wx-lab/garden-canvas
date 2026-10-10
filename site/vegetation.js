@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.15';
-import {foliageKind} from './appearance.js?v=0.9.15';
-import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.15';
-import {drawTree} from './tree-model.js?v=0.9.15';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.15';
+import {treeProfile} from './tree-profiles.js?v=0.9.16';
+import {foliageKind} from './appearance.js?v=0.9.16';
+import {detailedFlower,drawDetailedHerb} from './plant-detail.js?v=0.9.16';
+import {drawTree} from './tree-model.js?v=0.9.16';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.16';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.15';
+import { plantInfo, stateAt } from './model.js?v=0.9.16';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -13,17 +13,26 @@ export function random(seed){let s=(seed*2654435761)>>>0;return ()=>{s^=s<<13;s^
 const keep=g=>{sharedGeometry.add(g);return g;};
 const stem=keep(new THREE.CylinderGeometry(.62,1,1,7,2)),bud=keep(new THREE.SphereGeometry(1,8,6)),cone=keep(new THREE.ConeGeometry(1,1,9));
 const shapes={};
-for(const type of ['feltOval','feltRound','wireRound','groundIvyLeaf','newLookLeaf','curlyLeucothoe','persianLeaf']){
- const pos=[],uv=[],idx=[],rows=32,cols=12,ivy=type==='groundIvyLeaf',dust=type==='newLookLeaf',curly=type==='curlyLeucothoe',persian=type==='persianLeaf',round=type==='feltRound'||type==='wireRound';
+for(const type of ['feltOval','feltRound','wireRound','groundIvyLeaf','dichondraLeaf','newLookLeaf','curlyLeucothoe','persianLeaf']){
+ const pos=[],uv=[],idx=[],rows=32,cols=12,ivy=type==='groundIvyLeaf',kidney=type==='dichondraLeaf',dust=type==='newLookLeaf',curly=type==='curlyLeucothoe',persian=type==='persianLeaf',round=type==='feltRound'||type==='wireRound';
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
   const t=i/rows,u=j/cols*2-1,sin=Math.max(0,Math.sin(Math.PI*t));
-  let width=(ivy?.69:dust?.62:curly?.40:persian?.26:round?.52:.44)*Math.pow(sin,ivy?.42:round?.49:dust?.62:.84);
+  let width=(ivy?.69:kidney?.65:dust?.62:curly?.40:persian?.26:round?.52:.44)*Math.pow(sin,ivy||kidney?.42:round?.49:dust?.62:.84);
   if(ivy)width*=.92+.08*Math.cos(t*Math.PI*12);
   if(dust)width*=.82+.18*Math.cos((t-.12)*Math.PI*9);
   if(persian)width*=i%2?.985:1.015;
   const relief=persian?.024*Math.cos(t*38-Math.abs(u)*8)*Math.abs(u)*sin:curly?.08*Math.sin(t*23)*u*u*sin:.013*Math.cos(t*24)*u*u*sin;
-  const y=curly?.72*Math.sin(t*2.2):t-(ivy?.23*Math.exp(-Math.pow((t-.14)/.14,2))*u*u:0),z=curly?.60*(1-Math.cos(t*2.2)):.16*t*t;
+  const y=curly?.72*Math.sin(t*2.2):t-(ivy||kidney?.23*Math.exp(-Math.pow((t-.14)/.14,2))*u*u:0),z=curly?.60*(1-Math.cos(t*2.2)):.16*t*t;
   pos.push(u*width,y,z+.075*u*u*sin+relief);uv.push(j/cols,t);
+  if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
+}
+for(const type of ['grassRibbon','hakoneBlade']){
+ const pos=[],uv=[],idx=[],rows=36,cols=4,ribbon=type==='grassRibbon';
+ for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
+  const t=i/rows,u=j/cols*2-1,width=ribbon?.5*Math.pow(1-t,.55):.13*Math.pow(Math.sin(Math.PI*t),.70);
+  pos.push(u*width,ribbon?.84*Math.sin(t*2.65):t,ribbon?.52*(1-Math.cos(t*2.65))+.009*Math.abs(u):.25*t*t+.03*Math.abs(u)*Math.sin(Math.PI*t));uv.push(j/cols,t);
   if(i<rows&&j<cols){const k=i*(cols+1)+j;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
@@ -582,7 +591,7 @@ function windShader(shader,kind){
       shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',paint+'\n#include <emissivemap_fragment>');
     }
     if(kind==='leaf-blueberry-wax')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.58,0.67,0.67),0.13+0.08*sin(vUv.x*199.0)*cos(vUv.y*173.0));\n#include <emissivemap_fragment>`);
-    const surface=kind.replace(/-outside-[0-9a-f]{6}$/,'').replace(/-dahlia$/,'').replace(/-cranesbill-veins$/,'').replace(/-guide$/,'').replace('woolly-','').replace('glossy-','').replace('palm-',''),hex=surface.match(/-([0-9a-f]{6})$/)?.[1];
+    const surface=kind.replace(/-outside-[0-9a-f]{6}$/,'').replace(/-dahlia$/,'').replace(/-cranesbill-veins$/,'').replace(/-guide$/,'').replace('woolly-','').replace('glossy-','').replace('palm-','').replace('grass-',''),hex=surface.match(/-([0-9a-f]{6})$/)?.[1];
     const pattern=surface.replace(/^(leaf|petal|sepal)-/,'').replace(/^hosta-?/,'').replace(/-(?:gold|[0-9a-f]{6})$/,'');
     const c=hex?new THREE.Color('#'+hex):null;
     const tint=c?`vec3(${c.r.toFixed(5)},${c.g.toFixed(5)},${c.b.toFixed(5)})`:kind.startsWith('petal')?'vec3(0.34,0.07,0.23)':kind.endsWith('-gold')?'vec3(0.70,0.69,0.32)':'vec3(0.79,0.83,0.72)';
@@ -624,6 +633,7 @@ function windShader(shader,kind){
     if(masks[pattern])shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`diffuseColor.rgb=mix(diffuseColor.rgb,${tint},(${masks[pattern]})*${pattern==='mottle'?'0.34':'0.86'});\n#include <emissivemap_fragment>`);
     const outsideHex=kind.match(/-outside-([0-9a-f]{6})$/)?.[1];
     if(kind.includes('-dahlia'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos(vUv.x*61.0+sin(vUv.y*8.0)*0.45)');
+    if(kind.startsWith('leaf-grass'))shader.fragmentShader=shader.fragmentShader.replace('cos((vUv.y-fold*0.33)*75.0)','cos(vUv.x*69.0)');
     if(outsideHex){const out=new THREE.Color('#'+outsideHex);shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`if(${kind.includes('-dahlia')?'!':''}gl_FrontFacing)diffuseColor.rgb=mix(diffuseColor.rgb,vec3(${out.r.toFixed(5)},${out.g.toFixed(5)},${out.b.toFixed(5)}),0.92);\n#include <emissivemap_fragment>`);}
     if(kind==='petal-enkianthus-veins')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`float enkVeins=pow(max(0.0,cos(vUv.x*125.664+sin(vUv.y*8.0)*0.4)),28.0);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(0.48,0.11,0.22),0.55*enkVeins+0.23*smoothstep(0.72,0.99,vUv.y));\n#include <emissivemap_fragment>`);
     if(kind.startsWith('leaf-palm'))shader.fragmentShader=shader.fragmentShader.replace('float midrib=1.0-smoothstep(0.012,0.025,abs(vUv.x-0.5));',`vec2 palm=vec2(vUv.x-0.5,vUv.y-0.22);float radial=abs(sin(atan(palm.x,palm.y)*3.0))*length(palm);float midrib=1.0-smoothstep(0.002,0.008,radial);`);
@@ -680,7 +690,7 @@ export function batch(group,height=1,flex=.06,phase=0){
   return {add,branch,finish({castShadow=true}={}){for(const e of entries.values()){
     // Wind parameters belong to this mesh; shared shape buffers remain immutable.
     const geometry=e.geometry.clone();geometry.setAttribute('gardenWind',new THREE.InstancedBufferAttribute(new Float32Array(e.wind),4));
-    const mesh=new THREE.InstancedMesh(geometry,material(e.kind),e.items.length);mesh.userData.component=e.kind;e.items.forEach((m,i)=>{mesh.setMatrixAt(i,m);mesh.setColorAt(i,e.colors[i]);});mesh.customDepthMaterial=depth;mesh.castShadow=castShadow;mesh.receiveShadow=true;mesh.computeBoundingSphere();mesh.boundingSphere.radius+=Math.min(height,3)*flex*2+.03;group.add(mesh);
+    const mesh=new THREE.InstancedMesh(geometry,material(e.kind),e.items.length);mesh.userData.component=e.kind;e.items.forEach((m,i)=>{mesh.setMatrixAt(i,m);mesh.setColorAt(i,e.colors[i]);});mesh.customDepthMaterial=depth;mesh.castShadow=castShadow&&!e.kind.endsWith('-pampas-fiber');mesh.receiveShadow=!e.kind.endsWith('-pampas-fiber');mesh.computeBoundingSphere();mesh.boundingSphere.radius+=Math.min(height,3)*flex*2+.03;group.add(mesh);
   }}};
 }
 const palette=(rand,base,variation=.09)=>{const c=new THREE.Color(base);c.offsetHSL((rand()-.5)*.04,(rand()-.5)*.1,(rand()-.5)*variation);return c;};
