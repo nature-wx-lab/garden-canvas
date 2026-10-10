@@ -1,6 +1,65 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.57';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.58';
 import * as THREE from './vendor/three.module.js';
 const TAU=Math.PI*2;
+export function lysimachiaLeafPoint(type,t,u){
+ const coin=type==='lysimachiaCoin',ovate=type==='lysimachiaOvate',breadth=Math.pow(Math.sin(Math.PI*t),coin?.50:ovate?.65:.86)*(ovate?1.18-.38*t:1);
+ return [u*breadth*.5,t,.042*Math.sin(Math.PI*t)+.024*u*u*Math.sin(Math.PI*t)+.004*Math.sin(23*t)*Math.abs(u)];
+}
+function drawLysimachia(b,{info,s,view,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,typ=a.shootProfile,tall=['alexander','firecracker'].includes(typ),cold=[12,1,2,3].includes(view.month),rosette=typ==='firecracker'&&cold,h=s.height,w=s.spread,L=a.leafLength*s.leafScale,green=s.leafColor;
+ const young=[3,4].includes(view.month),leaf=(at,an,len,shape=a.leafShape,pitch=null)=>{
+  const end=[at[0]+Math.sin(an)*len*.13,at[1]+len*.065,at[2]+Math.cos(an)*len*.13];b.branch(at,end,.00065,a.stemColor,'petiole-lysimachia');
+  const age=Math.floor(rand()*3),kind=`leaf-lysimachia-${typ}-${young?'spring':'summer'}-${age}`,width=shape==='lysimachiaCoin'?len:len*a.leafWidth/a.leafLength;
+  b.add(shape,kind,kit.shade(rand,green,.04),...end,width,len,len,pitch??(.88+rand()*.78),an,(rand()-.5)*.13);
+  if(typ==='firecracker')for(let k=0;k<6;k++){const t=(k+.5)/6,q=at.map((v,i)=>v+(end[i]-v)*t);b.branch(q,[q[0]+.0008,q[1]+.0005,q[2]],.00007,'#c3b9a3','petioleHair-lysimachia');}
+ };
+ const flower=(pt,pitch,yaw)=>{
+  const r=a.flowerRadius,f=flowerFrame(b,pt,pitch,yaw);
+  if(!s.bloom||rand()>s.flowerDensity){f.add(kit.bud,'bud-lysimachia','#a4b270',0,0,0,r*.25,r*.35,r*.25);return;}
+  f.add('tube','corollaBase-lysimachia','#cdac40',0,-r*.15,0,r*.14,r*.27,r*.14);
+  for(let k=0;k<5;k++){
+   f.add('lysimachiaCorolla','petal-lysimachia',kit.shade(rand,s.flowerColor,.025),0,0,0,r,r,r,0,k*TAU/5,0);
+   f.add('narrow','sepal-lysimachia','#718858',0,-r*.12,0,r*.22,r*.58,r,1.18,k*TAU/5+.24,0);
+   const an=k*TAU/5,tip=[Math.sin(an)*r*.16,r*.33,Math.cos(an)*r*.16];f.branch([Math.sin(an)*r*.07,0,Math.cos(an)*r*.07],tip,r*.013,'#e5d477','filament-lysimachia');f.add(kit.bud,'anther-lysimachia','#cebd64',...tip,r*.066,r*.078,r*.044);
+  }
+  f.branch([0,0,0],[r*.025,r*.44,0],r*.017,'#bdba60','style-lysimachia');f.add(kit.bud,'stigma-lysimachia','#d1c777',r*.025,r*.44,0,r*.026,r*.027,r*.026);
+ };
+ if(rosette){
+  const crowns=Math.max(4,Math.round(9*detail));for(let i=0;i<crowns;i++){const an=i*2.399963,reach=w*.28*Math.sqrt(i/crowns),root=[Math.sin(an)*reach,.004,Math.cos(an)*reach];for(let k=0;k<14;k++)if(k===0||rand()<s.leafDensity)leaf(root,an+k*2.399963,.027*(.65+.35*rand()),'lysimachiaCoin',.75+rand()*.68);}return;
+ }
+ if(tall){
+  const n=Math.max(4,Math.round((typ==='alexander'?11:9)*detail));
+  for(let i=0;i<n;i++){
+   const an=i*2.399963,rr=Math.max(0,w*.40-L)*Math.sqrt(i/n),root=[Math.sin(an)*rr,.005,Math.cos(an)*rr],hh=h*(i===0?.96:.64+rand()*.30)*s.shootScale,bend=(rand()-.5)*w*.20,nodes=typ==='alexander'?13:10;let prev=root;
+   for(let j=0;j<nodes;j++){
+    const t=(j+.60+rand()*.38)/nodes,at=[root[0]+Math.sin(an)*bend*t*t,hh*t,root[2]+Math.cos(an)*bend*t*t];b.branch(prev,at,.0020*(1-t*.56),a.stemColor,'stem-lysimachia');prev=at;
+    const whorl=typ==='alexander'?3+j%2:2,az=an+j*Math.PI/2+(rand()-.5)*.35;
+    for(let k=0;k<whorl;k++){
+     const ang=az+k*TAU/whorl;if(rand()<s.leafDensity)leaf(at,ang,L*(.65+.35*(1-t)));
+     if((s.bloom||s.flowerBuds)&&t>(typ==='alexander'?.35:.47)){
+      const long=typ==='firecracker',reach=long?.035+rand()*.037:.009+rand()*.009,end=[at[0]+Math.sin(ang)*reach,at[1]+(long?.003:.012),at[2]+Math.cos(ang)*reach];b.branch(at,end,.0006,a.stemColor,'pedicel-lysimachia');flower(end,long?1.42+rand()*.45:.70+rand()*.65,ang);
+     }
+    }
+   }
+  }return;
+ }
+ const paths=Math.max(5,Math.round(16*detail)),nodes=Math.max(5,Math.min(18,Math.round(w/(typ==='aurea'?.035:.045)))),arms=[];
+ const trail=(root,an,reach,steps,lift)=>{
+  let prev=root;for(let j=0;j<steps;j++){
+   const t=(j+1)/steps,az=an+.26*Math.sin(t*4.5+an),at=[root[0]+Math.sin(az)*reach*t,.009+Math.sin(t*Math.PI/2)*lift,root[2]+Math.cos(az)*reach*t];b.branch(prev,at,.0011,a.stemColor,'runner-lysimachia');prev=at;
+   const len=L*(.62+.38*Math.sin(Math.PI*t*.88));for(const sign of [-1,1])if(j===steps-1||rand()<s.leafDensity)leaf(at,az+sign*Math.PI/2,len,'lysimachia'+(typ==='aurea'?'Coin':'Ovate'),1.0+rand()*.55);
+   if(j===Math.floor(steps*.5)&&steps>5)arms.push({root:at,an:az+(rand()<.5?-1:1)*1.0,reach:reach*.33});
+   if(typ==='aurea'&&(s.bloom||s.flowerBuds)&&j%3===0){const end=[at[0]+Math.sin(az)*.014,at[1]+.009,at[2]+Math.cos(az)*.014];b.branch(at,end,.0005,a.stemColor,'pedicel-lysimachia');flower(end,.15+rand()*.55,az);}
+   if(typ!=='aurea'&&j===steps-1&&(s.bloom||s.flowerBuds))for(let k=0;k<4;k++){
+    const aa=az+k*2.4,end=[at[0]+Math.sin(aa)*.014,at[1]+.008+k*.0015,at[2]+Math.cos(aa)*.014];b.branch(at,end,.0005,a.stemColor,'pedicel-lysimachia');flower(end,.12+rand()*.5,aa);
+   }
+  }
+ };
+ for(let i=0;i<paths;i++){const an=i*2.399963+(rand()-.5)*.3;trail([0,.008,0],an,Math.max(.02,w*.48-L*.45)*(.65+.35*rand()),nodes,Math.max(.004,h-L*.35-a.flowerRadius)*(.55+.4*rand()));}
+ for(const arm of arms)trail(arm.root,arm.an,arm.reach,4,Math.max(.004,h*.45));
+}
+
 export function delphiniumLeafPoint(type,t,angle){
  const fine=type==='delphiniumFinePalm',lobes=fine?[-2.2,-1.1,0,1.1,2.2]:[-2.4,-1.6,-.8,0,.8,1.6,2.4];
  const near=Math.min(...lobes.map(v=>Math.abs(v-angle))),core=Math.exp(-Math.pow(near/(fine?.16:.22),2));
@@ -2812,7 +2871,8 @@ function drawDahlias(b,{info,s,detail,rand},kit){
  }
 }
 
-export function drawDetailedHerb(b,{info,s,p,detail,rand},kit){
+export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='lysimachiaShoots'){drawLysimachia(b,{info,s,view:{month},detail,rand},kit);return;}
  if(info.appearance?.architecture==='delphiniumSpires'){drawDelphinium(b,{info,s,p,detail,rand},kit);return;}
  if(['saxifrageRosettes','bergeniaRhizomes'].includes(info.appearance?.architecture)){drawSaxifragaceae(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='agapanthusFans'){drawAgapanthus(b,{info,s,detail,rand},kit);return;}
