@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.108';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.109';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -253,3 +253,5 @@ Object.assign(TRAIT_VALUES,{cabombaFan:'対生する扇状の細裂葉',ceratoph
 Object.assign(TRAIT_VALUES,{hairCulm:'細い緑の稈と基部の葉鞘',greenRotalaLeaf:'赤くならない対生の細葉',nanjenshanWhorl:'細長い葉が3〜5枚輪生',pearlWhorl:'小さく弓なりの葉',largePearlRound:'十字対生する明るい丸葉',newPearlRound:'匍匐茎の小さな丸葉',cobraPhyllode:'横に連なる株から出る平たい細葉',hairSpikelet:'稈の先に付く小さな鱗片の穂',cobraUmbel:'小さな白い5弁花が集まる散形花序'});
 
 Object.assign(TRAIT_VALUES,{mossTriangular:'三角形に広がる茎葉体',mossIrregular:'不規則に枝分かれする細い茎葉体',myrioPectinate:'羽状に細裂した葉が輪生',goldJennyRound:'対生する黄金色の丸葉',indicaWaterLeaf:'水中の細葉と水上の丸葉',rotalaFlowerLeaf:'短い節間に重なる細長い葉',najasFineLeaf:'細かな鋸歯と褐色の中脈がある細葉',jennyCup:'葉腋に付く黄色い5裂の杯形花',indicaSpike:'穂に集まる小さなピンクの4弁花'});
+
+Object.assign(TRAIT_VALUES,{marginGardenPlants:'種類ごとの水辺・低木の形態',helvolaBlade:'基部に切れ込みがある小型の浮葉・暗い斑点',callaArrow:'長い葉柄と矢じり形の葉',lavateraLobed:'灰緑で浅く掌状に裂ける葉',hibbertiaFine:'細く平たい線形葉',helvolaFlower:'淡黄色の細長い多花弁と多数の雄しべ',callaSpathe:'白い仏炎苞と黄色い肉穂花序',lavateraBicolor:'濃い花脈・花底がある5弁と雄しべの柱',hibbertiaFive:'先がくぼむ黄色い5弁花',callaRhizome:'夏休み・冬の枯れ込みと春秋の葉出し'});

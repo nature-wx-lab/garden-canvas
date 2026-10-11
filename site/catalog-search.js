@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.108';
+import {treeProfile} from './tree-profiles.js?v=0.9.109';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -35,6 +35,9 @@ export function seasonAt(info,month){
   // are a temperate display convention, not a cultivar-specific emergence date.
   density=[0,0,0,.30,.75,1,1,1,1,1,.70,0][m];scale=month===4?.25:month===5?.65:1;
   phase=density===0?'霜後の地上部休眠（冬期の表示目安）':month<=5?'塊根からの春の芽出し（表示目安）':'霜が来るまでの葉と茎';
+ }else if(a.persistence==='callaRhizome'){
+  density=[0,0,.30,.75,1,1,.25,0,0,.30,.65,.20][m];scale=[0,0,.4,.75,1,1,1,0,0,.4,.7,.5][m];
+  phase=density===0?'葉のない時期（夏休み・寒さによる冬の枯れ込み）':month===3||month===10?'根茎からの葉出し（国内栽培例の表示目安）':month===7?'高温期の葉の枯れ込み（表示目安）':'春・秋の葉（保護条件で変化）';
  }else if(a.persistence==='summerFadingCrown'){
   density=[0,0,.35,.8,1,1,.6,.25,0,0,0,0][m];scale=month===3?.5:month===4?.8:1;
   phase=density===0?'根と地表の短い株元で休眠':month>=7?'花後の夏から葉が枯れる時期（表示目安）':'春の葉と初夏の花（表示目安）';
@@ -124,7 +127,7 @@ export function seasonAt(info,month){
  if(leaflessFlowering)phase='葉のない花茎の開花期';
  else if(groundDormant)phase=a.persistence==='frostDormantTuber'?'霜後の地上部休眠（冬期の表示目安）':info.life==='annual'?'一年草の生育期外（低温期の参考）':'地上部のない休眠期';
  const bloomIndex=flowerMonths.indexOf(month),flowerDensity=bloom?(a.monthlyFlowerDensity?.[m]??(a.architecture==='avalanche'&&month>=7?.24:flowerMonths.length>2&&(bloomIndex===0||bloomIndex===flowerMonths.length-1)?.65:1)):0;
- const shootScale=['submergedShoots','forestPlants','poppyShoots','rosetteSpires','tubularHerbShoots','leycesteriaCanes','smallPeaHerbs','rhodiolaCrown','seasonalClimbers','betonyGermander','texturedMints','iberisCorymbs','astilbePlumes','aquilegiaCymes','dianthusCymes','verbenaBranches','scabiousHabit','sideritisSpikes','silverMintSpikes','marrubiumWhorls','leonotisTiers','keiskeaRacemes','isodonPanicles','chelonopsisAxils','triporaCymes','leucosceptrumSpikes','melittisAxils','puschkiniaScapes','bletillaShoots','roseaSpire','rugosaSpire','nierembergiaMat','goldenStrawberry','moonCarrot','flamingoRunners','pimpinellaRose','hairyChervil','pinkHogweed','michauxiaAxis','jasioneHeads','tracheliumCorymb','helleboreProfile','shastaAlaska','primroseRosette','gerberaRosette','brunneraSprays','tapienMat','stolonPhlox'].includes(a.architecture)||a.architecture==='beeBalm'&&a.standingWinter&&a.seedHeadMonths?.includes(month)?1:a.persistence==='semiDormant'&&a.architecture!=='beeBalm'&&[12,1,2].includes(month)?.15:!woody&&!dormant&&scale<1?scale:1;
+ const shootScale=['marginGardenPlants','submergedShoots','forestPlants','poppyShoots','rosetteSpires','tubularHerbShoots','leycesteriaCanes','smallPeaHerbs','rhodiolaCrown','seasonalClimbers','betonyGermander','texturedMints','iberisCorymbs','astilbePlumes','aquilegiaCymes','dianthusCymes','verbenaBranches','scabiousHabit','sideritisSpikes','silverMintSpikes','marrubiumWhorls','leonotisTiers','keiskeaRacemes','isodonPanicles','chelonopsisAxils','triporaCymes','leucosceptrumSpikes','melittisAxils','puschkiniaScapes','bletillaShoots','roseaSpire','rugosaSpire','nierembergiaMat','goldenStrawberry','moonCarrot','flamingoRunners','pimpinellaRose','hairyChervil','pinkHogweed','michauxiaAxis','jasioneHeads','tracheliumCorymb','helleboreProfile','shastaAlaska','primroseRosette','gerberaRosette','brunneraSprays','tapienMat','stolonPhlox'].includes(a.architecture)||a.architecture==='beeBalm'&&a.standingWinter&&a.seedHeadMonths?.includes(month)?1:a.persistence==='semiDormant'&&a.architecture!=='beeBalm'&&[12,1,2].includes(month)?.15:!woody&&!dormant&&scale<1?scale:1;
  const headPhase=a.architecture==='berzelia'?bloom?'flower':[11,12,1,2].includes(month)?'bud':'dry':null;
  const retainedSummerLeaves=!!a.winterLeafLength&&[11,12,1,2,3].includes(month);
  if(retainedSummerLeaves)phase='春葉が落ち、小さな夏葉が冬を越す時期（地域差あり）';
