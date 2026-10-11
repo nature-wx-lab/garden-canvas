@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.116';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.117';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -269,3 +269,5 @@ Object.assign(TRAIT_VALUES,{pearlLeaf:'透明な細い筋と小さな先端を�
 Object.assign(TRAIT_VALUES,{pairedBody:'2枚が合着し中央に裂け目がある多肉質の葉体',wartedStem:'葉や刺のない凹凸のある多肉茎',fiveRibStem:'稜に突起が並ぶ角張った多肉茎',tongueFleshy:'先の丸い舌状の厚葉',summerSheathed:'夏は乾いた旧葉の皮を残し、秋に新葉が現れる',summerClosed:'夏は葉を閉じたロゼットを残す',mesembFlower:'多数の細い花弁状の仮雄しべと中央の雄しべ'});
 
 Object.assign(TRAIT_VALUES,{spinySucculentBlade:'幅広く湾曲する厚葉と、縁の鋸歯・先端の刺'});
+
+Object.assign(TRAIT_VALUES,{heartCaudex:'細いつるにつくハート形の葉',caudexBlade:'太い枝の先端に集まる厚葉',caudexFunnel:'先端が5裂する漏斗形の合弁花',caudexSummerRest:'夏に葉を落とし、露出塊根を残す参考',caudexWinterRest:'低温期に葉を落とし、幹と枝を残す参考'});

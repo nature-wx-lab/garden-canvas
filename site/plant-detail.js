@@ -1,7 +1,97 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.116';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.117';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.116';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.117';
 const TAU=Math.PI*2;
+// Independent reference shapes for exposed storage stems and summer-resting vines.
+export function caudexGeometry(type){
+ const p=[],uv=[],ix=[],N=type==='tortoise'?96:64,C=type==='tortoise'?144:64;
+ const seeds=Array.from({length:49},(_,k)=>{const y=(k+.5)/49,ph=k*2.399963,r=Math.sqrt(1-y*y);return [Math.cos(ph)*r,y,Math.sin(ph)*r];});
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,ph=j/C*TAU;let r,y=t;
+  if(type==='tortoise'){
+   const el=t*Math.PI/2,v=[Math.cos(ph)*Math.cos(el),Math.sin(el),Math.sin(ph)*Math.cos(el)];let a=-2,b=-2;
+   for(const s of seeds){const d=v[0]*s[0]+v[1]*s[1]+v[2]*s[2];if(d>a){b=a;a=d;}else if(d>b)b=d;}
+   const edge=Math.min(1,(a-b)/.017),ridge=.905+.095*Math.pow(edge,.25),rings=1-.009*Math.cos(Math.sqrt(Math.max(0,1-a))*160);
+   r=.5*Math.cos(el)*ridge*rings;y=Math.sin(el)*ridge;
+  }else if(type==='gracilius')r=(.30+.20*Math.sin(Math.PI*t)**.65)*(1-.76*t**5)*(1+.02*Math.sin(ph*5+t*2));
+  else if(type==='lamerei')r=(.46-.15*t)*Math.min(1,(1-t)*40+.12);
+  else r=(.46-.30*t+.04*Math.sin(Math.PI*t*1.2))*(1+.04*Math.cos(ph*5+t*3));
+  if(type!=='tortoise'&&i===N)r=0;
+  p.push(Math.cos(ph)*r,y,Math.sin(ph)*r);uv.push(j/C,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.caudexBody=type;return g;
+}
+export function caudexBranchGeometry(){
+ const p=[],uv=[],ix=[],N=40,C=24;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,ph=j/C*TAU,r=(1-t*.61)*(i===N?0:1),bend=.65*Math.sin(Math.PI*t);
+  p.push(Math.cos(ph)*r+bend,t,Math.sin(ph)*r);uv.push(j/C,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
+}
+export function caudexLeafGeometry(type){
+ const p=[],uv=[],ix=[],N=48,C=48,heart=type==='tortoise';
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=j/C*2-1;let x,y,z;
+  if(heart){const ph=j/C*TAU,ex=.5*Math.sin(ph)**3,ey=(5-(13*Math.cos(ph)-5*Math.cos(ph*2)-2*Math.cos(ph*3)-Math.cos(ph*4)))/22;x=t*ex;y=.35+t*(ey-.35);z=.045*(1-t*t)+.014*t*Math.sin(ph*5);}
+  else{const sn=Math.max(0,Math.sin(Math.PI*t)),broad=['obesum','arabicum'].includes(type);x=.5*u*sn**(broad?.57:.72)*(broad?.5+.7*t:1);y=t;z=.11*t*t-.07*Math.abs(u)*sn+.018*Math.sin(t*14)*u;}
+  p.push(x,y,z);uv.push(j/C,i/N);if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.caudexLeaf=type;return g;
+}
+export function caudexCorollaGeometry(){
+ const p=[],uv=[],ix=[],N=56,C=100;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,ph=j/C*TAU,flare=Math.max(0,(t-.52)/.48),r=.065+.09*t+.36*flare**1.1*(.81+.19*Math.cos(ph*5-.25)),y=t*.60+flare*flare*.035*Math.sin(ph*5);
+  p.push(Math.cos(ph)*r,y,Math.sin(ph)*r);uv.push(j/C,t);if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.caudexCorolla=true;return g;
+}
+function drawCaudexPlants(b,{info,s,rand},kit){
+ const a=info.appearance,t=a.shootProfile,h=s.height,w=s.spread,lam=t==='lamerei',gra=t==='gracilius',tortoise=t==='tortoise',arab=t==='arabicum',skin=a.barkColor,green=s.leafColor;
+ const H=h*(tortoise?.28:lam?.59:gra?.51:.49),W=Math.min(w*(tortoise?.55:lam?.20:gra?.61:arab?.57:.42),H*(tortoise?1.6:lam?.45:gra?1.55:arab?1.5:1.12));
+ b.add('caudex-body-'+t,'body-caudex-'+t,skin,0,0,0,W,H,W);
+ const tips=[];
+ if(lam)tips.push([0,H,0]);
+ else if(!tortoise){
+  const count=gra?3:arab?6:4;
+  for(let j=0;j<count;j++){
+   const az=j*2.399+.17*(rand()-.5),start=[Math.sin(az)*W*.10,H*(.53+.035*(j%3)),Math.cos(az)*W*.10],r=w*(gra?.23:arab?.27:.25)*(1+.16*(rand()-.5)),end=[Math.sin(az)*r,h*((gra?.64:.76)+(gra?.09:.10)*rand()),Math.cos(az)*r],radius=W*(gra?.11:.085);let prev=start;
+   const dx=end[0]-start[0],dy=end[1]-start[1],dz=end[2]-start[2],length=Math.hypot(dx,dy,dz);flowerFrame(b,start,Math.atan2(Math.hypot(dx,dz),dy),Math.atan2(dx,dz)).add('caudex-branch','stem-caudex-'+t,skin,0,0,0,radius,length,radius);
+   tips.push(end);
+   if(gra)for(let k=0;k<14;k++)for(let side of [-1,1]){const v=(k+.5)/14,an=k*2.399+side*.17,pt=[start[0]+(end[0]-start[0])*v+Math.sin(an)*radius*.7,start[1]+(end[1]-start[1])*v,start[2]+(end[2]-start[2])*v+Math.cos(an)*radius*.7];flowerFrame(b,pt,1.28,an).add('agave-thorn','spine-caudex-gracilius','#aa9985',0,0,0,.002,.008,.002);}
+  }
+ }
+ if(lam)for(let j=0;j<76;j++){
+  const v=(j+.5)/76,az=j*2.399,r=W*(.46-.15*v),pt=[Math.sin(az)*r,H*v,Math.cos(az)*r],f=flowerFrame(b,pt,Math.PI/2,az);
+  f.add(kit.bud,'areole-caudex-lamerei','#a69e81',0,0,0,.0035,.0025,.0035);
+  for(let k=-1;k<=1;k++)f.add('agave-thorn','spine-caudex-lamerei','#c2b69a',0,0,0,.003,h*.052,.0025,0,k*.55,k*.27);
+ }
+ if(tortoise){
+  if(s.leafDensity===0)return;
+  for(let j=0;j<3;j++){
+   const az=j*2.399+.2,r=w*(.3+j*.03),n=22,pts=[];let prev=[0,H*.96,0];
+   for(let k=1;k<=n;k++){const v=k/n,pt=[Math.sin(az)*r*v+Math.sin(v*9+j)*w*.065,H+h*.70*v*(.82+.09*j),Math.cos(az)*r*v+Math.cos(v*9+j)*w*.065];b.branch(prev,pt,.0013,'#7a8451','vine-caudex-tortoise');pts.push(pt);prev=pt;}
+   for(let k=2;k<n;k+=2){if(k/n>Math.max(.3,s.leafDensity))continue;const pt=pts[k],aa=az+(k%4?-.85:.95),L=Math.min(.06,w*.12)*(.82+.2*Math.sin(k*2)),origin=[pt[0]+Math.sin(aa)*.009,pt[1]-.004,pt[2]+Math.cos(aa)*.009];b.branch(pt,origin,.0005,'#7a8451','petiole-caudex-tortoise');flowerFrame(b,origin,1.05+.40*Math.sin(k*1.7+j),aa).add('caudex-leaf-tortoise','leaf-caudex-tortoise',green,0,0,0,L*.9,L,L);}
+  }
+  return;
+ }
+ // Wood is complete before foliage so dormancy never reseeds or removes the skeleton.
+ for(const [j,tip]of tips.entries()){
+  for(let k=0;k<Math.round((lam?22:gra?15:10)*s.leafDensity);k++){
+   const az=k*2.399+j*.61,L=Math.min(a.leafLength,w*(lam?.53:.32))*(.7+.3*Math.sin(k*1.7)**2)*Math.max(.45,s.leafScale),W=L*a.leafWidth/a.leafLength,pitch=.52+.78*((k%7)/6),origin=[tip[0],tip[1]-.025*(k%3),tip[2]],f=flowerFrame(b,origin,pitch,az);
+   f.add('caudex-leaf-'+t,'leaf-caudex-'+t,kit.shade(rand,green,.025),0,0,0,W,L,L);
+   f.branch([0,0,.0005],[0,L*.93,L*.087],.00028,'#a2ab78','vein-caudex-'+t);
+  }
+  if(s.bloom){
+   const ftop=[tip[0],tip[1]+(gra?h*.15:.035),tip[2]];b.branch(tip,ftop,gra?.002:.003,'#80905d','peduncle-caudex-'+t);
+   for(let q=0;q<(gra?3:4);q++){const az=j+q*2.399,R=gra?.021:.026,pt=[ftop[0]+Math.sin(az)*R,ftop[1]+.008*q,ftop[2]+Math.cos(az)*R];b.branch(ftop,pt,.0012,'#80905d','pedicel-caudex-'+t);flowerFrame(b,pt,.7+q*.18,az).add('caudex-corolla','petal-caudex-'+t,s.flowerColor,0,0,0,gra?.035:.060,gra?.050:.060,gra?.035:.060);}
+  }
+ }
+}
+
 // Shape proportions are approximations of the cited nursery specimens.
 const AGAVE_SHAPES={queen:{waist:.28,cup:.10,wave:.018},whale:{waist:.19,cup:.24,wave:.043},blackblue:{waist:.22,cup:.19,wave:.022},redcat:{waist:.30,cup:.17,wave:.035}};
 export function agaveBladePoint(t,angle,profile){
@@ -7094,6 +7184,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='caudexPlants'){drawCaudexPlants(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='agaveRosettes'){drawAgaveRosettes(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='stoneSucculents'){drawStoneSucculents(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='necklacePlants'){drawNecklacePlants(b,{info,s,detail,rand},kit);return;}

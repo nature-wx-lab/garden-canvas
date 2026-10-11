@@ -15,7 +15,7 @@ test('water-surface flowering disappears at the same depth boundary as the rende
 });
 test('released catalogue revisions preserve saved garden contents when models are enriched',()=>{
  const original=fixture();original.plans.A.plants.push(makePlant('p-281a043a4b8a',2,5,4));
- for(const revision of ['2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.53','2026-10-10.54','2026-10-10.55','2026-10-10.56','2026-10-10.57','2026-10-10.58',...Array.from({length:53},(_,i)=>`2026-10-11.${i+1}`)]){
+ for(const revision of ['2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.53','2026-10-10.54','2026-10-10.55','2026-10-10.56','2026-10-10.57','2026-10-10.58',...Array.from({length:54},(_,i)=>`2026-10-11.${i+1}`)]){
   const saved={...clone(original),catalogVersion:revision};assert.deepEqual(validateDocument(saved),original);
  }
 });
