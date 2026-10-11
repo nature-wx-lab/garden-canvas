@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.124';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.127';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -45,7 +45,7 @@ Object.assign(TRAIT_VALUES,{fescueNeedle:'折り畳まれた細い針状葉',mil
 export function foliageKind(info){
  const a=info.appearance||{},pattern=a.leafPattern;
  const base=info.form==='hosta'?'leaf-hosta':'leaf';
- if(!pattern&&/^#[0-9a-f]{6}$/i.test(a.leafUnderside||''))return 'leaf-glossy-underside-'+a.leafUnderside.slice(1).toLowerCase();
+ if(!pattern&&/^#[0-9a-f]{6}$/i.test(a.leafUnderside||''))return (a.leafTexture==='glossy'?'leaf-glossy':'leaf')+'-underside-'+a.leafUnderside.slice(1).toLowerCase();
  if(!pattern&&a.leafTexture==='woolly')return 'leaf-woolly';
  return pattern?patternKind(base,pattern,a.patternColor):base==='leaf-hosta'?base:a.leafTexture==='glossy'?'leaf-glossy':a.leafTexture==='scaly'?'leaf-scaly':'leaf';
 }
@@ -275,3 +275,5 @@ Object.assign(TRAIT_VALUES,{heartCaudex:'細いつるにつくハート形の葉
 Object.assign(TRAIT_VALUES,{retainedSucculentStem:'保護栽培で地上に残る多肉質の茎',cactusBowl:'多くの花被片を重ねる杯状の花',cactusFunnel:'多くの花被片を重ねる漏斗状の花'});
 
 Object.assign(TRAIT_VALUES,{haworthiaThickLeaf:'種類ごとに異なる厚葉と、窓・網目・突起・ノギ'});
+
+Object.assign(TRAIT_VALUES,{redMaple:'主な3裂と小さな下部2裂・粗い鋸歯を持つ単葉',redMapleCluster:'葉より先に枝に集まる小さな赤い花',maple:'深く掌状に裂けた鋸歯のある単葉',maplePendant:'新しい枝から下垂する小さな5弁花'});

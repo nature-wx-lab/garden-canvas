@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.124';
-import {foliageKind} from './appearance.js?v=0.9.124';
-import {detailedFlower,drawDetailedHerb,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint,silverMintLeafPoint,roseLeafPoint,CONIFER_SHOOTS,coniferShootGeometry,cotinusLeafPoint,smokePanicleGeometry,myrtaceousLeafPoint,myrtaceousFlowerGeometry,daisyLeafPoint,daisyRayPoint,asterLeafPoint,asterFloretGeometry,scabiousLeafPoint,scabiousHeadGeometry,verbenaLeafPoint,verbenaCorollaGeometry,dianthusLeafPoint,dianthusPetalPoint,aquilegiaPoint,astilbeLeafPoint,astilbeFloretGeometry,iberisPoint,heucherellaLeafPoint,heucherellaCalyxGeometry,agapanthusPoint,saxifrageLeafPoint,delphiniumLeafPoint,lysimachiaLeafPoint,calaminthaLeafPoint,abeliaLeafPoint,viburnumLeafPoint,deutziaPoint,hamamelidPoint,fothergillaHeadGeometry,syringaLeafPoint,syringaCorollaGeometry,oliveLeafPoint,oliveFlowerGeometry,oliveFruitGeometry,camelliaLeafPoint,camelliaCorollaGeometry,camelliaStamenGeometry,magnoliaLeafPoint,magnoliaTepalGeometry,osmanthusLeafPoint,osmanthusFlowerGeometry,euonymusLeafPoint,euonymusFlowerGeometry,euonymusWingGeometry,nandinaLeafPoint,nandinaFlowerGeometry,sarcandraLeafPoint,gardeniaLeafPoint,gardeniaCorollaGeometry,gardeniaFruitGeometry,callicarpaLeafPoint,callicarpaFlowerGeometry,ardisiaLeafPoint,ardisiaFlowerGeometry,pomeShrubLeafPoint,pomeShrubFlowerGeometry,hardyHibiscusLeafPoint,hardyHibiscusFlowerGeometry,ruscusCladodePoint,danaeBellGeometry,hypericumLeafPoint,hypericumFlowerGeometry,pittosporumLeafPoint,pittosporumFlowerGeometry,leadwortLeafPoint,leadwortFlowerGeometry,rivinaLeafPoint,banksiaLeafPoint,banksiaHeadGeometry,proteaceaeLeafPoint,proteaBractPoint,proteaFloretGeometry,southernLeafPoint,manukaPetalPoint,southernHeadGeometry,rosaceousLeafPoint,rosaceousFlowerGeometry,broadMapleGeometry,blueSpruceShootGeometry,woodyPeaLeafPoint,woodyPeaFlowerGeometry,peonyLeafGeometry,peonyPetalGeometry,berryShrubLeafPoint,berryShrubFlowerGeometry,vitexLeafPoint,vitexCorollaGeometry,hedgeLeafPoint,oleanderCorollaGeometry,blueShrubLeafPoint,blueShrubCorollaGeometry,icLeafPoint,icFloralGeometry,aromaticLeafGeometry,aromaticFlowerGeometry,fragrantVineLeafPoint,fragrantVineFlowerGeometry,buddlejaLeafPoint,buddlejaFlowerGeometry,texturedMintLeafPoint,phlomisGeometry,betonyLeafPoint,betonyFlowerGeometry,seasonalClimberLeafGeometry,seasonalClimberFlowerGeometry,smallHerbLeafPoint,smallHerbFlowerGeometry,tubularHerbLeafPoint,tubularHerbFlowerGeometry,rosetteSpireLeafPoint,rosetteSpireFloralGeometry,poppyLeafPoint,poppyPetalGeometry,namedTreeLeafPoint,namedTreePetalGeometry,forestLeafPoint,forestGeometry,submergedLeafPoint,submergedFineGeometry,meadowLeafPoint,meadowCulmGeometry,aquaticBranchLeafPoint,aquaticDividedGeometry,aquaticBranchPetalPoint,marginLeafGeometry,marginPetalPoint,callaSpatheGeometry,uncommonTreeLeafPoint,uncommonCompoundGeometry,lateHerbLeafPoint,lateGentianCorollaGeometry,mixedGardenLeafPoint,mixedGardenPetalPoint,fleshyLeafGeometry,pendensCorollaGeometry,necklaceGeometry,cageTubeGeometry,stoneSucculentGeometry,agaveBladeGeometry,agaveThornGeometry,caudexGeometry,caudexLeafGeometry,caudexCorollaGeometry,caudexBranchGeometry,ribbedSucculentGeometry,cactusTepalGeometry,HAWORTHIA_PROFILES,haworthiaLeafGeometry,SOFT_SUCCULENT_PROFILES,softSucculentGeometry} from './plant-detail.js?v=0.9.124';
-import {drawTree} from './tree-model.js?v=0.9.124';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.124';
+import {treeProfile} from './tree-profiles.js?v=0.9.127';
+import {foliageKind} from './appearance.js?v=0.9.127';
+import {detailedFlower,drawDetailedHerb,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint,silverMintLeafPoint,roseLeafPoint,CONIFER_SHOOTS,coniferShootGeometry,cotinusLeafPoint,smokePanicleGeometry,myrtaceousLeafPoint,myrtaceousFlowerGeometry,daisyLeafPoint,daisyRayPoint,asterLeafPoint,asterFloretGeometry,scabiousLeafPoint,scabiousHeadGeometry,verbenaLeafPoint,verbenaCorollaGeometry,dianthusLeafPoint,dianthusPetalPoint,aquilegiaPoint,astilbeLeafPoint,astilbeFloretGeometry,iberisPoint,heucherellaLeafPoint,heucherellaCalyxGeometry,agapanthusPoint,saxifrageLeafPoint,delphiniumLeafPoint,lysimachiaLeafPoint,calaminthaLeafPoint,abeliaLeafPoint,viburnumLeafPoint,deutziaPoint,hamamelidPoint,fothergillaHeadGeometry,syringaLeafPoint,syringaCorollaGeometry,oliveLeafPoint,oliveFlowerGeometry,oliveFruitGeometry,camelliaLeafPoint,camelliaCorollaGeometry,camelliaStamenGeometry,magnoliaLeafPoint,magnoliaTepalGeometry,osmanthusLeafPoint,osmanthusFlowerGeometry,euonymusLeafPoint,euonymusFlowerGeometry,euonymusWingGeometry,nandinaLeafPoint,nandinaFlowerGeometry,sarcandraLeafPoint,gardeniaLeafPoint,gardeniaCorollaGeometry,gardeniaFruitGeometry,callicarpaLeafPoint,callicarpaFlowerGeometry,ardisiaLeafPoint,ardisiaFlowerGeometry,pomeShrubLeafPoint,pomeShrubFlowerGeometry,hardyHibiscusLeafPoint,hardyHibiscusFlowerGeometry,ruscusCladodePoint,danaeBellGeometry,hypericumLeafPoint,hypericumFlowerGeometry,pittosporumLeafPoint,pittosporumFlowerGeometry,leadwortLeafPoint,leadwortFlowerGeometry,rivinaLeafPoint,banksiaLeafPoint,banksiaHeadGeometry,proteaceaeLeafPoint,proteaBractPoint,proteaFloretGeometry,southernLeafPoint,manukaPetalPoint,southernHeadGeometry,rosaceousLeafPoint,rosaceousFlowerGeometry,broadMapleGeometry,blueSpruceShootGeometry,woodyPeaLeafPoint,woodyPeaFlowerGeometry,peonyLeafGeometry,peonyPetalGeometry,berryShrubLeafPoint,berryShrubFlowerGeometry,vitexLeafPoint,vitexCorollaGeometry,hedgeLeafPoint,oleanderCorollaGeometry,blueShrubLeafPoint,blueShrubCorollaGeometry,icLeafPoint,icFloralGeometry,aromaticLeafGeometry,aromaticFlowerGeometry,fragrantVineLeafPoint,fragrantVineFlowerGeometry,buddlejaLeafPoint,buddlejaFlowerGeometry,texturedMintLeafPoint,phlomisGeometry,betonyLeafPoint,betonyFlowerGeometry,seasonalClimberLeafGeometry,seasonalClimberFlowerGeometry,smallHerbLeafPoint,smallHerbFlowerGeometry,tubularHerbLeafPoint,tubularHerbFlowerGeometry,rosetteSpireLeafPoint,rosetteSpireFloralGeometry,poppyLeafPoint,poppyPetalGeometry,namedTreeLeafPoint,namedTreePetalGeometry,forestLeafPoint,forestGeometry,submergedLeafPoint,submergedFineGeometry,meadowLeafPoint,meadowCulmGeometry,aquaticBranchLeafPoint,aquaticDividedGeometry,aquaticBranchPetalPoint,marginLeafGeometry,marginPetalPoint,callaSpatheGeometry,uncommonTreeLeafPoint,uncommonCompoundGeometry,lateHerbLeafPoint,lateGentianCorollaGeometry,mixedGardenLeafPoint,mixedGardenPetalPoint,fleshyLeafGeometry,pendensCorollaGeometry,necklaceGeometry,cageTubeGeometry,stoneSucculentGeometry,agaveBladeGeometry,agaveThornGeometry,caudexGeometry,caudexLeafGeometry,caudexCorollaGeometry,caudexBranchGeometry,ribbedSucculentGeometry,cactusTepalGeometry,HAWORTHIA_PROFILES,haworthiaLeafGeometry,SOFT_SUCCULENT_PROFILES,softSucculentGeometry} from './plant-detail.js?v=0.9.127';
+import {drawTree} from './tree-model.js?v=0.9.127';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.127';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.124';
+import { plantInfo, stateAt } from './model.js?v=0.9.127';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -1464,6 +1464,12 @@ shapes.maple=mapleLeaf();shapes.mapleLow=mapleLeaf(8,[1]);
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData.fringePetal=true;shapes.fringePetal=keep(g);
 }
+{
+ const anchors=[[0,0],[-.23,.06],[-.45,.16],[-.34,.27],[-.62,.39],[-.72,.61],[-.38,.55],[-.29,.58],[-.35,.77],[-.14,.73],[0,1],[.15,.74],[.35,.79],[.28,.57],[.42,.55],[.70,.62],[.62,.39],[.35,.28],[.45,.16],[.24,.06]],edge=[];
+ for(let i=0;i<anchors.length;i++){const a=anchors[i],b=anchors[(i+1)%anchors.length];edge.push(a);for(let j=1;j<4;j++){const t=j/4,dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy),tooth=j%2?.010:0;edge.push([a[0]+dx*t-dy/len*tooth,a[1]+dy*t+dx/len*tooth]);}}
+ shapes.redMaple=outlineLeaf(edge);shapes.redMaple.userData.principalLobes=3;shapes.redMaple.userData.basalLobes=2;
+}
+shapes.mapleSamara=outlineLeaf([[0,0],[-.09,.15],[-.20,.62],[-.12,.98],[.015,1],[.10,.81],[.13,.39],[.07,.08]]);
 const windGLSL=`
 attribute vec4 gardenWind;
 uniform float gardenTime;
@@ -2417,59 +2423,71 @@ function petalFlower(b,x,y,z,r,color,rand,layers=1,petals=null){
 }
 // Connected forks and opposite pairs of petioles replace floating leaf clouds.
 function mapleModel(b,p,s,view,detail,clipped,info){
-  const h=s.height,w=s.spread,rand=random(p.id*3001+11),trunk=info.appearance?.barkColor||'#888476',woodKind=info.appearance?.barkPattern?'wood-'+info.appearance.barkPattern:'wood';
-  const point=(a,r,y)=>[Math.sin(a)*r,y,Math.cos(a)*r];
-  const mix=(a,c,t)=>a.map((v,i)=>v+(c[i]-v)*t);
-  const curved=(points,r,color)=>{
-    for(let i=1;i<points.length;i++)b.branch(points[i-1],points[i],r*Math.pow(.66,i-1),color,woodKind);
+  const h=s.height,w=s.spread,a=info.appearance||{},wood=a.barkColor||'#88847c';
+  const mix=(a,c,t)=>a.map((v,i)=>v+(c[i]-v)*t),point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r];
+  // The irregular skeleton is seeded independently of month, leaf density and flowers.
+  // Every lateral starts on an actual polyline vertex, including the bent fine shoots.
+  const curve=(from,to,r,color,kind,bow=0)=>{
+    const out=[from];for(let j=1;j<=5;j++){const t=j/5,q=mix(from,to,t);q[0]+=Math.sin(t*Math.PI)*bow;q[2]-=Math.sin(t*Math.PI)*bow*.47;out.push(q);b.branch(out[j-1],q,r*(1-t*.48),color,kind);}return out;
   };
-  const foot=[0,0,0],fork=[w*.014,s.trunkHeight,-w*.009],trunkRadius=Math.max(.009,s.natural.height*.010);
-  curved([foot,[-w*.014,s.trunkHeight*.48,w*.006],fork],trunkRadius,trunk);
-  // A few surface roots anchor the stem without adding a skirt of trunk polygons.
-  for(let i=0;i<4;i++){const a=i*1.57+rand()*.3;curved([[0,.025,0],point(a,trunkRadius*2.3,.012),point(a,trunkRadius*3.5,0)],trunkRadius*.36,trunk);}
-  const orientation=rand()*Math.PI*2,crownH=Math.max(.12,h-s.trunkHeight);
-  const leafLength=Math.min(.072,Math.max(.042,w*.075));
-  const twigCount=Math.max(4,Math.min(30,Math.round((3+w*6.4)*Math.pow(detail,.85))));
-  const nodeCount=Math.max(3,Math.min(14,Math.round((3+w*2.4)*Math.pow(detail,.85))));
-  for(let leader=0;leader<3;leader++){
-    const rand=random(p.id*7907+leader*601+3),a=orientation+leader*Math.PI*2/3+(rand()-.5)*.3;
-    const tipY=h-leafLength*.25-crownH*(leader===0?0:leader===1?.13:.22);
-    const end=point(a,w*(leader===0?.10:.22),tipY);
-    const elbow=point(a,w*.08,s.trunkHeight+crownH*.46);
-    curved([fork,mix(fork,elbow,.5),elbow,mix(elbow,end,.55),end],trunkRadius*.67,trunk);
-    for(let pair=0;pair<3;pair++)for(const side of [-1,1]){
-      const rr=random(p.id*13007+leader*503+pair*73+(side+1)*19);
-      const t=.15+pair*.32+rr()*.10+leader*.018,origin=t<.46?mix(fork,elbow,t/.46):mix(elbow,end,(t-.46)/.54);
-      const angle=a+side*(.78+rr()*.35),extent=w*(.36-pair*.035)*(clipped?.90:1);
-      const target=point(angle,extent,Math.min(h-leafLength*.55,origin[1]+crownH*(.12+rr()*.045)));
-      const middle=mix(origin,target,.56);middle[1]+=.02*crownH;
-      curved([origin,mix(origin,middle,.5),middle,target],Math.max(.0025,trunkRadius*.31)*(1-pair*.16),trunk);
-      for(let j=0;j<twigCount;j++){
-        const tr=random(p.id*17011+leader*887+pair*211+(side+1)*53+j*17);
-        const at=.25+.72*(j+.5)/twigCount,attach=at<.56?mix(origin,middle,at/.56):mix(middle,target,(at-.56)/.44);
-        const yaw=angle+(j%2?1:-1)*(.65+tr()*.55),length=Math.min(w*.21,.12+w*.11)*(.65+tr()*.5);
-        const shoot=[attach[0]+Math.sin(yaw)*length,Math.min(h-leafLength*.5,attach[1]+crownH*(.015+tr()*.14)),attach[2]+Math.cos(yaw)*length];
-        const radius=Math.hypot(shoot[0],shoot[2]),maxRadius=Math.max(.02,w/2-leafLength*.9);
-        if(radius>maxRadius){shoot[0]*=maxRadius/radius;shoot[2]*=maxRadius/radius;}
-        const joint=mix(attach,shoot,.52);joint[1]+=.012;
-        curved([attach,joint,shoot],Math.min(.003,Math.max(.0007,w*.0015)),view.month<5?'#927458':'#7d7955');
-        for(let node=0;node<nodeCount;node++)for(const leafSide of [-1,1]){
-          const leafRand=random(p.id*19001+leader*971+pair*241+(side+1)*67+j*29+node*7+(leafSide+1));
-          const pos=mix(joint,shoot,(node+.25)/nodeCount),leafYaw=yaw+leafSide*(.9+leafRand()*.35),size=leafLength*(.80+leafRand()*.36);
-          const stemLength=size*(.4+leafRand()*.2),pitch=.88+leafRand()*1.15;
-          const petiole=[pos[0]+Math.sin(leafYaw)*stemLength,pos[1]+size*(leafRand()*.58-.20),pos[2]+Math.cos(leafYaw)*stemLength];
-          if(clipped&&Math.hypot(petiole[0],petiole[2])>w*.48)continue;
-          b.branch(pos,petiole,Math.max(.00035,size*.006),'#897b4e','petiole');
-          const roll=(leafRand()-.5)*.22;
-          const base=s.autumn?(leafRand()>.45?'#b95427':'#be7929'):view.month<5?'#81a047':'#638536';
-          b.add(detail<.7?'mapleLow':'maple','maple',palette(leafRand,base,.075),...petiole,size,size,size,pitch,leafYaw,roll);
+  const rng=random(p.id*3301+71),az=rng()*Math.PI*2,root=[0,0,0],fork=point(az,w*.022,s.trunkHeight),R=Math.max(.008,h*.012);
+  curve(root,fork,R,wood,'wood-smooth',-w*.012);
+  for(let k=0;k<5;k++)curve([0,.014,0],point(az+k*1.256,R*(2.4+rng()),.003),R*.28,wood,'wood-smooth');
+  const tips=[];
+  for(let leader=0;leader<4;leader++){
+    const r=random(p.id*7919+leader*151+31),yaw=az+leader*2.399+(.5-r())*.6;
+    const top=point(yaw,w*(.05+r()*.16),h*(leader===0?.965:.79+r()*.13));
+    const path=curve(fork,top,R*(leader===0?.72:.55),wood,'wood-smooth',w*(r()-.5)*.04);
+    for(let arm=0;arm<10;arm++){
+      const br=random(p.id*100003+leader*2003+arm*127+17),level=1+Math.floor(arm/2),origin=path[level];
+      const angle=yaw+(arm%2?1:-1)*(.42+br()*.5);
+      const y=Math.min(h*.97,origin[1]+h*(.04+br()*.08));
+      const reach=w*(.22+br()*.21)*(1-Math.max(0,y/h-.6)*1.1)*(clipped?.90:1);
+      const end=[origin[0]+Math.sin(angle)*reach, y, origin[2]+Math.cos(angle)*reach],lateral=curve(origin,end,R*(.14+br()*.10),wood,'wood-smooth',w*(br()-.5)*.025);
+      const shoots=Math.max(4,Math.round((5+Math.min(w*w,9))*Math.pow(detail,.65)));
+      for(let j=0;j<shoots;j++){
+        const tr=random(p.id*17011+leader*887+arm*211+j*29),attach=lateral[1+j%5];
+        const side=j%2?1:-1,dir=angle+side*(.5+tr()*.8),len=Math.min(.23,w*.15)*(.55+tr()*.75);
+        const end=[attach[0]+Math.sin(dir)*len,attach[1]+h*(tr()-.35)*.085,attach[2]+Math.cos(dir)*len];
+
+        const twig=curve(attach,end,Math.min(.0022,Math.max(.0008,w*.0011)),a.stemColor||'#78654f','twig-maple',len*(tr()-.5)*.15);
+        // Short, opposite laterals distribute small leaves through each branch spray.
+        for(let shoot=0;shoot<3;shoot++){
+          const source=twig[2+shoot],side=shoot%2?1:-1,dir2=dir+side*(.5+tr()*.55),fineLength=Math.min(.13,w*.065)*(.7+tr()*.55);
+          const end2=[source[0]+Math.sin(dir2)*fineLength,source[1]+h*(tr()-.38)*.042,source[2]+Math.cos(dir2)*fineLength];
+          const fine=curve(source,end2,.00055,a.stemColor||'#78654f','twig-maple');
+          tips.push({at:end2,angle:dir2,seed:p.id*19001+leader*971+arm*241+j*67+shoot*31});
+          for(let node=1;node<=4;node++){
+            const at=fine[node+1],lr=random(p.id*19001+leader*971+arm*241+j*67+shoot*31+node*7);
+            const angle=dir2+node*Math.PI/2,sz=(a.leafWidth||.06)/1.72*(.76+lr()*.30);
+            for(const side of [-1,1]){
+              const yaw=angle+(side<0?Math.PI:0),pitch=1.18+lr()*.68,P=sz*(.68+lr()*.22);
+              const atLeaf=[at[0]+Math.sin(yaw)*Math.sin(pitch)*P,at[1]+Math.cos(pitch)*P,at[2]+Math.cos(yaw)*Math.sin(pitch)*P];
+              b.branch(at,atLeaf,.00035,a.stemColor||'#78654f','petiole');
+              const tone=lr(),base=view.month===11?(tone>.30?'#b6492c':'#c69835'):s.leafColor||'#517838';
+              b.add(detail<.7?'mapleLow':'maple','maple',palette(lr,base,.07),...atLeaf,sz,sz,sz,pitch,yaw,(lr()-.5)*.22);
+            }
+          }
         }
       }
     }
-    // A light terminal spray keeps the central leader from ending in a bare spike.
-    for(let k=0;k<12;k++){
-      const aa=a+k*2.4,at=mix(elbow,end,.82+k*.014),size=leafLength*(.7+rand()*.2),petiole=[at[0]+Math.sin(aa)*size*.45,at[1],at[2]+Math.cos(aa)*size*.45];
-      b.branch(at,petiole,.00045,'#897b4e','petiole');b.add(detail<.7?'mapleLow':'maple','maple',palette(rand,s.autumn?'#b8642c':'#719243',.07),...petiole,size,size,size,1.45+rand()*.2,aa,0);
+  }
+  // Reproductive details are millimetre-scale and never inflate the canopy envelope.
+  for(let i=0;i<tips.length;i++){
+    const {at,angle,seed}=tips[i],r=random(seed+37);
+    if(s.dormant)for(const side of [-1,1])b.add(bud,'bud-maple',a.budColor||'#7e4438',at[0]+side*.0017,at[1],at[2],.0013,.004,.0013,.3,angle,0);
+    if(i%6!==0)continue;
+    if(s.bloom){
+      const head=[at[0],at[1]-.028,at[2]];b.branch(at,head,.00035,'#945650','pedicel-maple');
+      for(let k=0;k<5;k++){
+        const az=angle+k*2.399,pt=[head[0]+Math.sin(az)*.012,head[1]-.007-r()*.008,head[2]+Math.cos(az)*.012];b.branch(head,pt,.00025,'#945650','pedicel-maple');
+        for(let j=0;j<5;j++){const yaw=j*Math.PI*2/5;b.add('petal','calyx-maple','#993c48',...pt,.0015,.0025,.0025,2.0,yaw,0);b.add('petal','petal-maple','#e1c6a9',pt[0],pt[1]-.0005,pt[2],.0007,.0013,.0013,2.0,yaw+.62,0);}
+        for(let j=0;j<8;j++){const az=j*Math.PI/4,q=[pt[0]+Math.sin(az)*.0015,pt[1]-.0038,pt[2]+Math.cos(az)*.0015];b.branch(pt,q,.00010,'#ded3ab','filament-maple');b.add(bud,'anther-maple','#c3ad61',...q,.00035,.00045,.00035);}
+      }
+    }
+    if(a.greenFruitMonths?.includes(view.month)){
+      const pt=[at[0],at[1]-.025,at[2]];b.branch(at,pt,.0004,'#a45d57','fruit-stalk-maple');
+      for(const side of [-1,1]){b.add(bud,'fruit-maple','#978d4a',pt[0]+side*.0016,pt[1],pt[2],.002,.0028,.0018);b.add('mapleSamara','wing-maple','#b28b64',...pt,.020,.020,.020,1.85,angle+side*1.1,0);}
     }
   }
 }
@@ -2561,7 +2579,7 @@ export function plantModel(p,view,detail=1){
   b.finish();
   if(form==='maple'){
     // Use the same full-leaf envelope in every season; remove deciduous parts afterwards.
-    g.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(g),radius=Math.max(Math.abs(bounds.min.x),Math.abs(bounds.max.x),Math.abs(bounds.min.z),Math.abs(bounds.max.z));
+    g.updateMatrixWorld(true);const bounds=new THREE.Box3();for(const mesh of g.children)if(['maple','petiole','wood-smooth','twig-maple'].includes(mesh.userData.component))bounds.union(new THREE.Box3().setFromObject(mesh));const radius=Math.max(Math.abs(bounds.min.x),Math.abs(bounds.max.x),Math.abs(bounds.min.z),Math.abs(bounds.max.z));
     if(radius>0&&bounds.max.y>0){const horizontal=w/(2*radius);g.scale.set(horizontal,h/bounds.max.y,horizontal);}
     if(dormant)for(const mesh of [...g.children])if(['garden-0.3-maple','garden-0.3-petiole'].includes(mesh.material?.customProgramCacheKey())){g.remove(mesh);mesh.geometry.dispose();mesh.dispose();}
   }
@@ -2572,7 +2590,7 @@ export function plantModel(p,view,detail=1){
       if(!mesh.isInstancedMesh||!(kind?.startsWith('garden-0.3-leaf')||['garden-0.3-maple','garden-0.3-petiole'].includes(kind)))continue;
       // Keep connected supporting stalks during partial leaf-out. Sampling them
       // independently from blades leaves floating foliage and severed shoots.
-      const density=kind==='garden-0.3-petiole'?(s.leafDensity>0?1:0):(s.leafDensity??1),r=random(p.id*3571+41),matrix=new THREE.Matrix4(),color=new THREE.Color();let kept=0;
+      const density=kind==='garden-0.3-petiole'&&form!=='maple'?(s.leafDensity>0?1:0):(s.leafDensity??1),r=random(p.id*3571+41),matrix=new THREE.Matrix4(),color=new THREE.Color();let kept=0;
       for(let i=0;i<mesh.count;i++)if(r()<density){mesh.getMatrixAt(i,matrix);mesh.getColorAt(i,color);if(kind!=='garden-0.3-petiole')matrix.scale(new THREE.Vector3(s.leafScale??1,s.leafScale??1,s.leafScale??1));mesh.setMatrixAt(kept,matrix);mesh.setColorAt(kept,color);kept++;}
       mesh.count=kept;if(!kept){g.remove(mesh);mesh.geometry.dispose();mesh.dispose();}else{
         // Each retained instance keeps an independent wind record after seasonal thinning.

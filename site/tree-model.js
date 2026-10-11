@@ -1,6 +1,6 @@
 // Branch topology is constructed before seasonal foliage, so winter reveals the same tree.
 // Dimensions belong to the plan; these branching parameters are visual interpretations.
-import {foliageKind} from './appearance.js?v=0.9.124';
+import {foliageKind} from './appearance.js?v=0.9.127';
 const TAU=Math.PI*2,clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function rng(seed){let n=seed>>>0;return()=>{n^=n<<13;n^=n>>>17;n^=n<<5;return(n>>>0)/4294967296;};}
 const mix=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t);
@@ -79,6 +79,10 @@ export function drawTree(b,{profile,info,p,s,detail},kit){
    for(let j=0;j<count;j++){
     const angle=site.angle+j*TAU/count,at=[origin[0]+Math.sin(angle)*.010,origin[1]+random()*.008,origin[2]+Math.cos(angle)*.010];
     b.branch(origin,at,.0004,'#824164','peduncle');
+    if(a.architecture==='redMaple'){
+     for(let k=0;k<5;k++)b.add('petal','calyx-red-maple','#a63743',...at,.0014,.0025,.0025,1.6,k*TAU/5,0);
+     for(let k=0;k<8;k++){const ph=k*TAU/8,tip=[at[0]+Math.sin(ph)*.003,at[1]+.007,at[2]+Math.cos(ph)*.003];b.branch(at,tip,.00015,'#b24b51','filament-red-maple');b.add(bud,'anther-red-maple','#c5ac77',...tip,.0006,.0011,.0006);}continue;
+    }
     kit.detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius||.007,color:s.flowerColor,shape:a.flowerShape,tilt:.20,yaw:angle},{bud,rand:random,shade});
    }
   }
@@ -110,7 +114,8 @@ export function drawTree(b,{profile,info,p,s,detail},kit){
       b.add(leaflet,leafKind,colour,...end,size*(a.leafletShape?.75:.40),size*.72,size*.72,1.3,angle,0);
      }
     }else{
-     const pos=[center[0]+Math.sin(angle)*size*.16,center[1]+size*.04,center[2]+Math.cos(angle)*size*.16];b.branch(center,pos,.00045,'#798254','petiole');
+     const petioleLength=a.architecture==='redMaple'?size*.60:size*.16;
+     const pos=[center[0]+Math.sin(angle)*petioleLength,center[1]+size*.04,center[2]+Math.cos(angle)*petioleLength];b.branch(center,pos,.00045,a.architecture==='redMaple'?a.stemColor:'#798254','petiole');
      const shape=leaf==='dendropanax'?(n%3===0?'dendropanaxLobed':'rhombic'):leaf==='maple'?'mapleLow':leaf;
      const length=size*(.75+r()*.4)*(s.leafScale??1);b.add(shape,leafKind,colour,...pos,length,length,length,1.32+r()*.28,angle,(r()-.5)*.3);
     }
