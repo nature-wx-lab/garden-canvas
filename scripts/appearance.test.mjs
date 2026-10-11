@@ -9,208 +9,42 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('outdoor agaves distinguish spoon, ovate and striped arching leaves without annual flowering',()=>{
+ const ids=['p-3e78134c154d','p-16f65ee29faf','p-e3c0c03bd370'],types=['truncata','frosty','kegon'],surfaces=[];
+ for(const [i,id]of ids.entries()){
+  let fixed;
+  for(let month=1;month<=12;month++){
+   const p=makePlant(id,13900+i,2,2);p.height=.7;p.leafHeight=.7;p.spread=1;
+   const s=stateAt(p,view(month)),g=plantModel(p,view(month)),leaves=g.children.find(m=>m.userData.component==='leaf-agave-'+types[i]);
+   assert.ok(leaves);assert.equal(s.groundDormant,false);assert.equal(s.bloom,false);assert.equal(CATALOG[id].bloomKnown,false);
+   if(fixed)assert.deepEqual([...leaves.instanceMatrix.array],fixed);else{fixed=[...leaves.instanceMatrix.array];surfaces.push([...leaves.geometry.attributes.position.array]);}
+   for(const part of ['margin','tooth','terminal-spine'])assert.ok(g.children.some(m=>m.userData.component===part+'-agave-'+types[i]));
+   assert.ok(!g.children.some(m=>m.userData.component?.startsWith('petal')));
+   for(const m of g.children){assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ assert.notDeepEqual(surfaces[0],surfaces[1]);assert.notDeepEqual(surfaces[1],surfaces[2]);assert.equal(CATALOG[ids[2]].appearance.leafPattern,'center');
+});
 
-test('Misebaya sheds its trailing shoots into small winter buds while other fleshy rosettes persist',()=>{
- const ids=['p-9796e75b19bd','p-ac38a421b566','p-c19802e4c7bb','p-c3892f91be65','p-6dbed2355a3a','p-71bfae3856cb'];
+test('Excluded Hakucho is absent from discovery while its prior saved placement stays readable',()=>{
+ const id='p-d01290e1aa86';assert.equal(Object.hasOwn(CATALOG,id),false);assert.equal(Object.hasOwn(APPEARANCE_DATA,id),false);
+ const doc=annualGalleryDocument();doc.plans.A.plants=[makePlant(id,1,2,2)];
+ assert.equal(validateDocument(doc).plans.A.plants[0].kind,id);
+ const g=plantModel(doc.plans.A.plants[0],view(6));assert.ok(g.children.length);dispose(g);
+});
+
+test('Hardy Misebaya keeps small winter buds while Sempervivum retains its rosette',()=>{
+ const ids=['p-c3892f91be65','p-6dbed2355a3a','p-71bfae3856cb'];
  for(const [i,id]of ids.entries())for(let month=1;month<=12;month++){
   const p=makePlant(id,13700+i,2,2);p.height=.2;p.leafHeight=.2;p.spread=.3;
-  const st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=key=>g.children.some(m=>m.userData.component===key);
-  assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-soft-')));
-  assert.equal(st.groundDormant,false,'winter buds must remain visible');
-  if(i>=4){
-   const winter=[12,1,2].includes(month);assert.equal(has('stem-misebaya'),!winter);
-   assert.equal(has('pedicel-misebaya'),[9,10,11].includes(month));
-   if(winter){
-    const leaf=g.children.find(m=>m.userData.component==='leaf-soft-misebaya');
-    for(let j=0;j<leaf.count;j++)assert.ok(Math.abs(leaf.instanceMatrix.array[j*16+13])<.012,'winter buds stay at ground level');
-   }
-  }else{assert.equal(st.bloom,false);assert.equal(CATALOG[id].bloomKnown,false);}
-  for(const m of g.children){assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}
-  dispose(g);
+  const st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component===k);
+  assert.equal(st.groundDormant,false);assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-soft-')));
+  if(i){const winter=[12,1,2].includes(month);assert.equal(has('stem-misebaya'),!winter);assert.equal(has('pedicel-misebaya'),[9,10,11].includes(month));
+   if(winter){const leaf=g.children.find(m=>m.userData.component==='leaf-soft-misebaya');for(let j=0;j<leaf.count;j++)assert.ok(Math.abs(leaf.instanceMatrix.array[j*16+13])<.012);}
+  }else{assert.equal(st.bloom,false);assert.equal(CATALOG[id].appearance.persistence,'evergreen');}
+  for(const m of g.children){assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}dispose(g);
  }
- assert.match(CATALOG[ids[4]].care,/7〜8月/,'conflicting nursery calendars remain disclosed');
- assert.notEqual(seasonAt(CATALOG[ids[0]],1).leafColor,seasonAt(CATALOG[ids[0]],7).leafColor);
- assert.equal(CATALOG[ids[3]].appearance.persistence,'evergreen','hardy Sempervivum retains its rosette in winter');
-});
-
-test('Soft succulent leaves retain winter foliage, real hairs and separate seasonal pigment from dormancy',()=>{
- const ids=['p-a4cae170da53','p-d06ed596d270','p-2c509b21941d','p-03c9b0902ca6','p-b63d46999a47','p-b6252420209a','p-d7b7adf2a95c','p-6f6dcac8b24d','p-e40c9fe04429'];
- const shapes=new Set();
- for(const [i,id]of ids.entries()){
-  let skeleton;
-  for(let month=1;month<=12;month++){
-   const p=makePlant(id,13600+i,2,2);p.height=.15;p.leafHeight=.15;p.spread=.22;
-   const st=stateAt(p,view(month)),g=plantModel(p,view(month)),leaf=g.children.find(m=>m.userData.component?.startsWith(i===0?'leaf-haw-':'leaf-soft-'));
-   assert.ok(leaf,id);shapes.add(leaf.geometry.userData.softSucculentLeaf||leaf.geometry.userData.haworthiaLeaf);
-   assert.equal(st.groundDormant,false);assert.equal(st.bloom,false);assert.equal(CATALOG[id].bloomKnown,false);
-   if(skeleton)assert.deepEqual([...leaf.instanceMatrix.array],skeleton,'rest must preserve live leaves');else skeleton=[...leaf.instanceMatrix.array];
-   if(i>=1&&i<=4)assert.ok(g.children.some(m=>m.userData.component?.startsWith('hair-soft-')),'silhouette hairs');
-   if(i===0)assert.ok(g.children.some(m=>m.userData.component==='tubercle-haw-glabrata'));
-   for(const m of g.children){assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}
-   dispose(g);
-  }
- }
- assert.equal(shapes.size,9);
- for(const i of [5,7,8])assert.notEqual(seasonAt(CATALOG[ids[i]],1).leafColor,seasonAt(CATALOG[ids[i]],7).leafColor);
- assert.match(CATALOG[ids[2]].care,/火祭り.*採用していません/);
-});
-
-test('Additional succulent crowns retain the living leaves and preserve distinct photographed surfaces',()=>{
- const ids=['p-39ddeda163a9','p-6f35f7093eb8','p-3ef7aab7a0b8','p-7a5e50c58e26','p-30f61d2b845b','p-83320719ab86','p-7f6a396174b4','p-30c1a7b5ebc4','p-77b810768e6c'];
- const types=new Set();
- for(const [i,id]of ids.entries()){
-  let living;
-  for(let month=1;month<=12;month++){
-   const p=makePlant(id,13500+i,2,2);p.height=i===8?.15:.07;p.leafHeight=p.height;p.spread=.15;
-   const st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component?.startsWith(k));
-   assert.equal(st.groundDormant,false);assert.equal(st.bloom,false);assert.equal(CATALOG[id].bloomKnown,false);assert.equal(has('petal'),false);
-   const leaves=g.children.find(m=>m.userData.component?.startsWith('leaf-haw-'));assert.ok(leaves);types.add(leaves.geometry.userData.haworthiaLeaf);
-   if(living)assert.deepEqual([...leaves.instanceMatrix.array],living,id+':summer rest must not remove live leaves');else living=[...leaves.instanceMatrix.array];
-   if(i===0){assert.equal(leaves.material.isMeshPhysicalMaterial,true);assert.ok(Object.hasOwn(leaves.material.defines,'PHYSICAL'));}
-   if([2,3,4].includes(i))assert.ok(has('papilla-haw-'));if([4,5,6].includes(i))assert.ok(has('cilium-haw-'));
-   if(i===1)assert.ok(leaves.count>80,'goldmine retains multiple distinct crowns');
-   for(const m of g.children){assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}
-   dispose(g);
-  }
- }
- assert.equal(types.size,9);
- assert.match(CATALOG[ids[8]].latin,/Gonialoe/,'Chiyoda must not inherit Haworthia identity');
-});
-
-test('Haworthia crowns keep thick leaves during summer rest and distinguish windows, lace and towers',()=>{
- const ids=['p-532bd18c9869','p-6f92bc09ead4','p-ce3ca1de6c0c','p-4e9d41670820','p-0256a7f6f5ab','p-586ecde97543','p-e23f22297e6d','p-2f7b81470c0c','p-a1d016766ecc','p-2f5767b2697e','p-4a2fa80505a2','p-ed0e5dc24e03'];
- const shapes=new Set();
- for(const [i,id]of ids.entries()){
-  let fixed;
-  for(let month=1;month<=12;month++){
-   const p=makePlant(id,13400+i,2,2);p.height=[4,6].includes(i)?.15:.07;p.leafHeight=p.height;p.spread=.15;
-   const st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component?.startsWith(k));
-   assert.equal(st.groundDormant,false,id);assert.equal(st.bloom,false);assert.equal(CATALOG[id].bloomKnown,false);assert.ok(has('leaf-haw-'));assert.equal(has('petal'),false);
-   const leaves=g.children.find(m=>m.userData.component?.startsWith('leaf-haw-'));shapes.add(leaves.geometry.userData.haworthiaLeaf);
-   if([1,9,10].includes(i)){assert.equal(leaves.material.isMeshPhysicalMaterial,true);assert.ok(Object.hasOwn(leaves.material.defines,'PHYSICAL'),'window material must retain physical shader support');assert.ok(leaves.material.transmission>0);}
-   if(fixed)assert.deepEqual([...leaves.instanceMatrix.array],fixed,id+':no invented seasonal disappearance');else fixed=[...leaves.instanceMatrix.array];
-   leaves.geometry.computeBoundingBox();assert.ok(leaves.geometry.boundingBox.max.z-leaves.geometry.boundingBox.min.z>.08);
-   if(i===2)assert.ok(has('cilium-haw-hagoromo'));if(i===4)assert.ok(has('tubercle-haw-claw'));if(i===5)assert.ok(has('tubercle-haw-castle'));
-   for(const m of g.children){assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}
-   dispose(g);
-  }
- }
- assert.equal(shapes.size,12);
-});
-
-test('Ribbed succulents preserve stems, distinguish glochids from spines and restrict flowers to cited seasons',()=>{
- const ids=['p-22ca2d5740dc','p-6070a1bf2859','p-beed1007b90b','p-1aa6f85a5655','p-61d8fc39c37d','p-64cc4204e43f','p-c7fd9202465c'];
- for(const [i,id]of ids.entries()){
-  let fixed;
-  for(let month=1;month<=12;month++){
-   const p=makePlant(id,13300+i,2,2);p.height=.4;p.leafHeight=.4;p.spread=.35;
-   const st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component?.startsWith(k));
-   assert.equal(st.groundDormant,false);assert.ok(g.children.length>0);
-   for(const m of g.children){assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);}
-   const body=g.children.filter(m=>/^(stem|body|pad|pup)-ribbed-/.test(m.userData.component)).map(m=>[m.userData.component,[...m.instanceMatrix.array]]);
-   if(fixed)assert.deepEqual(body,fixed,id+':living stems persist');else fixed=body;
-   assert.equal(has('petal-ribbed-'),CATALOG[id].bloom.includes(month));
-   if(i<2)assert.ok(has('leaf-agave-'));
-   if(i===4){assert.ok(has('pup-ribbed-'));assert.equal(has('leaf'),false);}
-   if(i===5){assert.ok(has('glochid-ribbed-'));assert.equal(has('spine'),false);assert.equal(has('leaf'),false);}
-   if(i===6){assert.ok(has('spine-ribbed-'));assert.equal(has('leaf'),false);}
-   dispose(g);
-  }
- }
- assert.deepEqual(CATALOG[ids[5]].bloom,[3,4,5]);assert.deepEqual(CATALOG[ids[6]].bloom,[3]);
- for(const i of [0,1,2,3,4])assert.equal(CATALOG[ids[i]].bloomKnown,false);
-});
-
-test('Exposed caudex bodies survive dormancy while leaf seasons and flowers remain distinct',()=>{
- const ids=['p-7f4a3328f4ff','p-05149b93e86b','p-7c2b4c88bc52','p-b1fcb17f3b02','p-e95b21d8876b'];
- for(const [i,id]of ids.entries()){
-  const p=makePlant(id,13200+i,2,2);p.height=.45;p.leafHeight=.45;p.spread=.45;let skeleton;
-  for(let month=1;month<=12;month++){
-   const st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component?.startsWith(k));
-   assert.equal(st.groundDormant,false,id+':caudex must remain');assert.ok(has('body-caudex-'));
-   const wood=g.children.filter(m=>/^(body|stem|spine|areole)-caudex-/.test(m.userData.component)).map(m=>[m.userData.component,[...m.instanceMatrix.array]]);
-   if(skeleton)assert.deepEqual(wood,skeleton,id+':season must preserve wood');else skeleton=wood;
-   assert.equal(has('leaf-caudex-'),i===0?![7,8].includes(month):![12,1,2].includes(month));
-   assert.equal(has('petal-caudex-'),CATALOG[id].bloom.includes(month));
-   if(i===0&&[7,8].includes(month))assert.equal(has('vine-caudex-'),false);
-   if(i===3)assert.ok(has('spine-caudex-lamerei'));
-   for(const m of g.children){assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}
-   dispose(g);
-  }
- }
- assert.deepEqual(CATALOG[ids[1]].bloom,[6,7,8,9]);assert.deepEqual(CATALOG[ids[4]].bloom,[3,4,5,6]);
- for(const i of [0,2,3])assert.equal(CATALOG[ids[i]].bloomKnown,false);
-});
-
-test('Agave rosettes retain thick leaves and distinct spines in every month without yearly flowers',()=>{
- const ids=['p-6af51004b1b6','p-1f7782c593ed','p-518e395b8d4d','p-97961baf6968'];
- const profiles=['queen','whale','blackblue','redcat'];
- for(const [i,id] of ids.entries())for(let month=1;month<=12;month++){
-  const p=makePlant(id,13100+i,2,2);p.height=.24;p.spread=.32;p.leafHeight=.24;
-  const st=stateAt(p,view(month)),g=plantModel(p,view(month)),parts=g.children.map(m=>m.userData.component);
-  assert.equal(st.groundDormant,false);assert.equal(st.bloom,false);assert.equal(CATALOG[id].bloomKnown,false);
-  for(const prefix of ['leaf','margin','tooth','terminal-spine'])assert.ok(parts.includes(prefix+'-agave-'+profiles[i]),id+':'+prefix);
-  assert.ok(!parts.some(x=>x?.startsWith('petal')));
-  for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));}
-  const blade=g.children.find(m=>m.userData.component==='leaf-agave-'+profiles[i]);
-  blade.geometry.computeBoundingBox();assert.ok(blade.geometry.boundingBox.max.z-blade.geometry.boundingBox.min.z>.1);
-  dispose(g);
- }
-});
-
-test('Stone succulents keep dry sheaths and closed summer rosettes without deleting living bodies',()=>{
- const ids=['p-bc1b538fa6b1','p-39d141d1292a','p-c03578a8f28c','p-112bf9fde9fb','p-3300e3ed2762','p-3d0056cf7d66','p-d031a330a202','p-71bd545cc678','p-c485fca6568c','p-32aec8eed822','p-cfcfc209fffc','p-eb2fbce0b89b'];
- for(const [i,id]of ids.entries())for(let month=1;month<=12;month++){
-  const p=makePlant(id,13000+i,2,2);p.height=[.10,.15,.13,.10,.045,.10,.05,.08,.10,.12,.15,.09][i];p.spread=i===6?.07:.18;p.leafHeight=p.height;
-  const st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component?.startsWith(k));
-  assert.equal(st.groundDormant,false);assert.ok(g.children.length>0,id+':'+month);
-  for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite),id);}
-  assert.equal(has('petal-stone-'),i===4&&[9,10,11].includes(month),id+':flowers');
-  if(i===4){assert.equal(has('sheath-stone-conophytum'),[6,7,8].includes(month));assert.equal(has('body-stone-conophytum'),![6,7,8].includes(month));}
-  if(i===6){assert.ok(has('body-stone-pseudolithos'));assert.equal(has('leaf'),false);}
-  if(i===7)assert.ok(has('hair-stone-filamentosa'));
-  if(i===10){assert.ok(has('stem-stone-huernia'));assert.equal(has('leaf'),false);}
-  if(i!==4)assert.equal(CATALOG[id].bloomKnown,false);
-  dispose(g);
- }
- const p=makePlant(ids[5],13005,2,2);p.height=.1;p.spread=.18;
- const open=plantModel(p,view(3)),closed=plantModel(p,view(7));
- const leaves=g=>g.children.find(x=>x.userData.component==='leaf-stone-dodrantale').instanceMatrix.array;
- assert.notDeepEqual([...leaves(open)],[...leaves(closed)]);dispose(open);dispose(closed);
-});
-
-test('Necklace succulents preserve exposed bulbs and winter spines while summer bulbs lose all shoots',()=>{
- const ids=['p-b40c5c308b1e','p-954a44d9641e','p-77f41da4b698','p-1544ec932280','p-2f116e381294','p-99a2d52ba0f4','p-20d1bc6f90b9','p-a3454e5e517d','p-de707764e66f'];
- for(const [i,id]of ids.entries())for(let month=1;month<=12;month++){
-  const p=makePlant(id,12900+i,2,2);p.height=[.12,.16,.13,.30,.30,.3,.22,.25,.55][i];p.spread=.4;p.leafHeight=p.height;
-  const st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component?.startsWith(k));
-  for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite),id);}
-  if(i===6&&[6,7,8].includes(month)){assert.equal(st.groundDormant,true);assert.equal(g.children.length,0);}
-  else {assert.ok(g.children.length>0,id+':'+month);assert.equal(st.groundDormant,false);}
-  if(i===4){assert.ok(has('bulb-necklace-drimia'));assert.equal(has('leaf-necklace-drimia'),![12,1,2].includes(month));}
-  if(i===8){assert.ok(has('spine-necklace-alluaudia'));assert.ok(has('trunk-necklace-alluaudia'));assert.equal(has('leaf-necklace-alluaudia'),![12,1,2].includes(month));}
-  if(i===5){assert.ok(has('stem-necklace-rhipsalis'));assert.ok(g.children.some(m=>m.geometry.userData.necklace==='rhipsalis'));}
-  assert.equal(has('petal-necklace-'),CATALOG[id].bloom.includes(month),id+':flowers '+month);
-  if(i===7&&month===7){assert.ok(has('lobe-necklace-ampliata'));assert.ok(g.children.some(m=>m.geometry.userData.cageTube));}
-  dispose(g);
- }
- for(const i of [1,2,3,5,6,8])assert.equal(CATALOG[ids[i]].bloomKnown,false);
-});
-
-test('Fleshy garden plants have volumetric leaves and domestic flower seasons without invented winter death',()=>{
- const ids=['p-3962ed0ab2f5','p-98f8489070ab','p-ff6411717892','p-bafa068723f4','p-38fd7ee460c0','p-3d5cf3b06f0a','p-cb08439656bd','p-4b32a12e87cb','p-407b0692549f','p-e202117503c1'];
- for(const [i,id]of ids.entries())for(let month=1;month<=12;month++){
-  const p=makePlant(id,12800+i,2,2);p.height=[.35,.15,.13,.14,.14,.12,.12,.18,.15,.20][i];p.spread=i===0?.4:.25;p.leafHeight=p.height;
-  const st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component?.startsWith(k));
-  assert.equal(st.groundDormant,false,id);assert.ok(has('leaf-fleshy-'),id);
-  assert.equal(has('petal-fleshy-'),CATALOG[id].bloom.includes(month),id+':'+month);
-  for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite),id);}
-  const leaf=g.children.find(m=>m.geometry.userData.fleshyLeaf);assert.ok(leaf,id);leaf.geometry.computeBoundingBox();assert.ok(leaf.geometry.boundingBox.max.z-leaf.geometry.boundingBox.min.z>.7,id+':leaf thickness');
-  if(i===8&&month===5){assert.ok(has('anther-fleshy-pendens'));assert.ok(g.children.some(m=>m.geometry.userData.pendensCorolla));}
-  dispose(g);
- }
- assert.deepEqual(CATALOG[ids[5]].bloom,[5,6,7]);assert.deepEqual(CATALOG[ids[8]].bloom,[4,5,6]);assert.equal(CATALOG[ids[0]].appearance.flowerTiming,'season');
- for(const i of [1,2,3,4,6,7,9])assert.equal(CATALOG[ids[i]].bloomKnown,false);
+ assert.match(CATALOG[ids[1]].care,/7〜8月/);
 });
 
 test('Mixed garden plants retain winter leaves, distinguish annual death and do not invent mature flowers',()=>{
@@ -2180,7 +2014,7 @@ test('every catalog entry has an explicit evidence record and no unsupported com
   if(a.leafletPairs!==undefined)assert.ok(Number.isInteger(a.leafletPairs)&&a.leafletPairs>=1&&a.leafletPairs<=12,id+':leafletPairs');
   if(a.budColor!==undefined)assert.match(a.budColor,/^#[0-9a-f]{6}$/i,id+':budColor');
   assert.ok(Object.keys(a).every(k=>allowed.has(k)),id);assert.ok(['attributes','unconfirmed','partial'].includes(a.status));
-  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['jcra.ncsu.edu','www.botanybrisbane.com','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.makino.or.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg','www.sapho.fr','www.kahaku.go.jp','www.mnc.toho-u.ac.jp','www.missouribotanicalgarden.org','americanpeonysociety.org','www.yuushien.com','www.pref.ishikawa.lg.jp','www.pref.kyoto.jp','www.tokyo-aff.or.jp','springmeadownursery.com','patents.google.com','iidukaflowerplants.com','www.maddingleybotanical.com.au','www.proteaflora.com.au','www.nda.gov.za','anpsa.org.au','florabase.dpaw.wa.gov.au','yamashita-plants.com','www.murakami-seed.com','apps.lucidcentral.org','www.jp-akatsuka.co.jp','www.bgtym.org','mpdb.nibn.go.jp','www.pharm.or.jp','www.kankyo.pref.hyogo.lg.jp','jabg.or.jp','www.jstage.jst.go.jp','www.satotsubakien.com','si.gardenexplorer.org','www.pref.kagawa.lg.jp','www.nippon-olive.co.jp','turukame-olive.com','www.city.mishima.shizuoka.jp','www.pma.com.au','hort.extension.wisc.edu','ryokka-c.jp','www.tokyo-shoyaku.com','www.itanse.shop','www.hanahiroba.com','plantnetwork.gardenplant.org','olddairynursery.com','www.phoenixperennials.com','ryokka-c.jp','www.tokyo-shoyaku.com','www.itanse.shop','www.hanahiroba.com','plantnetwork.gardenplant.org','genchan8783.ocnk.net','www.keisen.ac.jp','shop.little-antique.com','delphinium.co.nz','www.terranovanurseries.com','www.danzigeronline.com','www.syngentaflowers.com','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg','www.iplant.cn','www.e878.net','esveld.nl','nwipb.cas.cn','growwild.kew.org','frais.ocnk.net','anbg.gov.au','www.fws.gov','store.provenwinners.jp','www.kincho-engei.co.jp','x7772506.xaas3.jp','www.tanakanursery.com','www.anbg.gov.au','www.dcceew.gov.au','smoketree-miyabi.com','www.pepinieres-minier.fr','www.tokyo-aff.or.jp','woodyplants.cals.cornell.edu','www.missouribotanicalgarden.org','himenobaraen.jp','www.flowerpark.or.jp','starrosesandplants.com','patents.google.com','patents.justia.com','www.davidaustinroses.co.uk','www.davidaustinrosesaustralia.com','shinomiya-rose.com','ec.keiseirose.co.jp','www.keiseirose.co.jp','www.baranoie.com','www.jacksonandperkins.com','www.komatsugarden-online.com','www.mdpi.com','www.ema.europa.eu','www.biolveg.uma.es','academic.oup.com','sys01.lib.hkbu.edu.hk','plantdatabase.kpu.ca','botsoc.scot','www.infoflora.ch','darcyeverest.co.uk','resources.austplants.com.au','www.logan.qld.gov.au','plant-directory.ifas.ufl.edu','link.springer.com','onlinelibrary.wiley.com','www.naro.go.jp','tojaku.co.jp','japr.or.jp','www.tokyo-shoyaku.com','www.fp-k.org','www.town.taketoyo.lg.jp','www.akb.jp','ecgrowers.com','www.barrault-plantes-jardins.com','world-plants.com','naegibu.com','sakisansou.ocnk.net','harvest.cals.ncsu.edu','iwasaki.shop-pro.jp','efloras.org','www.pref.gifu.lg.jp','www.crug-farm.co.uk','nikko-bg.jp','mortonarb.org','fumakilla.jp','www.sakataseed.co.jp','www.lsuagcenter.com','keybase.rbg.vic.gov.au','extension.oregonstate.edu','linnet.geog.ubc.ca','www.suntory.co.jp','hakusan1.co.jp','www.knollgardens.co.uk','www.awaji.ac.jp','plantnet.rbgsyd.nsw.gov.au','www.nzplants.auckland.ac.nz','mastergardener.extension.wisc.edu','www.lullfitz.com.au','www.grahamrice.com','www.wakaizumi-farm.com', 'kanekyu.net', 'mag.nhk-book.co.jp', 'www.botanischetuinen.nl', 'yokoyama-nursery.jp','www.ashwoodnurseries.com','gobotany.nativeplanttrust.org','store.shopping.yahoo.co.jp','www.ugui-vc.jp','www.tba.or.jp','wiki.irises.org','www.dwarfirissociety.org','www.zahradnictvi-spomysl.cz','www.agsfan.com','sakata-netshop.com','satsukibonsai-4s.jp','www.kkr.mlit.go.jp','tbg.kahaku.go.jp','sernecportal.org','www.efloras.org','www.royalvanzanten.com','www.panamseed.com','www.fleuroselect.com','hakusan1.co.jp','plantsofhawaii.org','www.takii.co.jp','shop.takii.co.jp','bibliotecadelbotanico.org','w3.biosci.utexas.edu','www.gardentrials.com','pmc.ncbi.nlm.nih.gov','pza.sanbi.org','floraseries.landcareresearch.co.nz','staff.fukuoka-edu.ac.jp','flora.uniud.it','www3.gobiernodecanarias.org','www.nzflora.info','agrobiodiversity.uniag.sk','www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au','www.nparks.gov.sg','provenwinners.jp','pacificbulbsociety.org','keys.landcareresearch.co.nz','plantipp.eu','www.wairere.nz','hosho.ees.hokudai.ac.jp','www.hokudai.ac.jp','www.lab.toho-u.ac.jp','eprints.lib.hokudai.ac.jp','www.town.karuizawa.lg.jp','library.dbca.wa.gov.au','www.hinshu2.maff.go.jp','matsunaga-kadan.com','oniduka.base.shop','www.nipponbeer.jp','fermanagh.bsbi.org','www.npshistory.com','ozaki-flowerpark.co.jp','www.nzflora.info','nzflora.info','www.journals.uchicago.edu','www.floraiberica.es','efloras.org','extension.psu.edu','makinomigoro.jp','iucngisd.org','nature.ca','www.hinshu2.maff.go.jp','www.nies.go.jp','www.water.go.jp','www.akb.jp','tropica.com','rva.jp','idtools.org','www.adana.co.jp','www.h2-l.jp','www.aqua-breath.com','greenhobby-sale.com','florabase.dbca.wa.gov.au','www.pref.fukushima.lg.jp','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg'].includes(u.hostname));assert.ok(['catalog-entry','species','genus'].includes(source.scope));}
+  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['www.e878.net','jcra.ncsu.edu','www.botanybrisbane.com','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.makino.or.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg','www.sapho.fr','www.kahaku.go.jp','www.mnc.toho-u.ac.jp','www.missouribotanicalgarden.org','americanpeonysociety.org','www.yuushien.com','www.pref.ishikawa.lg.jp','www.pref.kyoto.jp','www.tokyo-aff.or.jp','springmeadownursery.com','patents.google.com','iidukaflowerplants.com','www.maddingleybotanical.com.au','www.proteaflora.com.au','www.nda.gov.za','anpsa.org.au','florabase.dpaw.wa.gov.au','yamashita-plants.com','www.murakami-seed.com','apps.lucidcentral.org','www.jp-akatsuka.co.jp','www.bgtym.org','mpdb.nibn.go.jp','www.pharm.or.jp','www.kankyo.pref.hyogo.lg.jp','jabg.or.jp','www.jstage.jst.go.jp','www.satotsubakien.com','si.gardenexplorer.org','www.pref.kagawa.lg.jp','www.nippon-olive.co.jp','turukame-olive.com','www.city.mishima.shizuoka.jp','www.pma.com.au','hort.extension.wisc.edu','ryokka-c.jp','www.tokyo-shoyaku.com','www.itanse.shop','www.hanahiroba.com','plantnetwork.gardenplant.org','olddairynursery.com','www.phoenixperennials.com','ryokka-c.jp','www.tokyo-shoyaku.com','www.itanse.shop','www.hanahiroba.com','plantnetwork.gardenplant.org','genchan8783.ocnk.net','www.keisen.ac.jp','shop.little-antique.com','delphinium.co.nz','www.terranovanurseries.com','www.danzigeronline.com','www.syngentaflowers.com','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg','www.iplant.cn','www.e878.net','esveld.nl','nwipb.cas.cn','growwild.kew.org','frais.ocnk.net','anbg.gov.au','www.fws.gov','store.provenwinners.jp','www.kincho-engei.co.jp','x7772506.xaas3.jp','www.tanakanursery.com','www.anbg.gov.au','www.dcceew.gov.au','smoketree-miyabi.com','www.pepinieres-minier.fr','www.tokyo-aff.or.jp','woodyplants.cals.cornell.edu','www.missouribotanicalgarden.org','himenobaraen.jp','www.flowerpark.or.jp','starrosesandplants.com','patents.google.com','patents.justia.com','www.davidaustinroses.co.uk','www.davidaustinrosesaustralia.com','shinomiya-rose.com','ec.keiseirose.co.jp','www.keiseirose.co.jp','www.baranoie.com','www.jacksonandperkins.com','www.komatsugarden-online.com','www.mdpi.com','www.ema.europa.eu','www.biolveg.uma.es','academic.oup.com','sys01.lib.hkbu.edu.hk','plantdatabase.kpu.ca','botsoc.scot','www.infoflora.ch','darcyeverest.co.uk','resources.austplants.com.au','www.logan.qld.gov.au','plant-directory.ifas.ufl.edu','link.springer.com','onlinelibrary.wiley.com','www.naro.go.jp','tojaku.co.jp','japr.or.jp','www.tokyo-shoyaku.com','www.fp-k.org','www.town.taketoyo.lg.jp','www.akb.jp','ecgrowers.com','www.barrault-plantes-jardins.com','world-plants.com','naegibu.com','sakisansou.ocnk.net','harvest.cals.ncsu.edu','iwasaki.shop-pro.jp','efloras.org','www.pref.gifu.lg.jp','www.crug-farm.co.uk','nikko-bg.jp','mortonarb.org','fumakilla.jp','www.sakataseed.co.jp','www.lsuagcenter.com','keybase.rbg.vic.gov.au','extension.oregonstate.edu','linnet.geog.ubc.ca','www.suntory.co.jp','hakusan1.co.jp','www.knollgardens.co.uk','www.awaji.ac.jp','plantnet.rbgsyd.nsw.gov.au','www.nzplants.auckland.ac.nz','mastergardener.extension.wisc.edu','www.lullfitz.com.au','www.grahamrice.com','www.wakaizumi-farm.com', 'kanekyu.net', 'mag.nhk-book.co.jp', 'www.botanischetuinen.nl', 'yokoyama-nursery.jp','www.ashwoodnurseries.com','gobotany.nativeplanttrust.org','store.shopping.yahoo.co.jp','www.ugui-vc.jp','www.tba.or.jp','wiki.irises.org','www.dwarfirissociety.org','www.zahradnictvi-spomysl.cz','www.agsfan.com','sakata-netshop.com','satsukibonsai-4s.jp','www.kkr.mlit.go.jp','tbg.kahaku.go.jp','sernecportal.org','www.efloras.org','www.royalvanzanten.com','www.panamseed.com','www.fleuroselect.com','hakusan1.co.jp','plantsofhawaii.org','www.takii.co.jp','shop.takii.co.jp','bibliotecadelbotanico.org','w3.biosci.utexas.edu','www.gardentrials.com','pmc.ncbi.nlm.nih.gov','pza.sanbi.org','floraseries.landcareresearch.co.nz','staff.fukuoka-edu.ac.jp','flora.uniud.it','www3.gobiernodecanarias.org','www.nzflora.info','agrobiodiversity.uniag.sk','www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au','www.nparks.gov.sg','provenwinners.jp','pacificbulbsociety.org','keys.landcareresearch.co.nz','plantipp.eu','www.wairere.nz','hosho.ees.hokudai.ac.jp','www.hokudai.ac.jp','www.lab.toho-u.ac.jp','eprints.lib.hokudai.ac.jp','www.town.karuizawa.lg.jp','library.dbca.wa.gov.au','www.hinshu2.maff.go.jp','matsunaga-kadan.com','oniduka.base.shop','www.nipponbeer.jp','fermanagh.bsbi.org','www.npshistory.com','ozaki-flowerpark.co.jp','www.nzflora.info','nzflora.info','www.journals.uchicago.edu','www.floraiberica.es','efloras.org','extension.psu.edu','makinomigoro.jp','iucngisd.org','nature.ca','www.hinshu2.maff.go.jp','www.nies.go.jp','www.water.go.jp','www.akb.jp','tropica.com','rva.jp','idtools.org','www.adana.co.jp','www.h2-l.jp','www.aqua-breath.com','greenhobby-sale.com','florabase.dbca.wa.gov.au','www.pref.fukushima.lg.jp','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg'].includes(u.hostname));assert.ok(['catalog-entry','species','genus'].includes(source.scope));}
   for(const [field,index] of Object.entries(a.basis)){assert.ok(Object.hasOwn(a,field));assert.ok(Number.isInteger(index)&&index>=0&&index<a.sources.length,id+':'+field);}
   for(const field of ['flowerMonths','emergenceMonths','dormantMonths','greenFruitMonths'])if(a[field])assert.ok(a[field].length>0&&a[field].every(m=>Number.isInteger(m)&&m>=1&&m<=12),id);
   for(let m=1;m<=12;m++){const s=seasonAt(CATALOG[id],m);assert.ok(s.leafDensity>=0&&s.leafDensity<=1);assert.ok(s.leafScale>=0&&s.leafScale<=1);if(s.groundDormant)assert.equal(s.bloom,false);}
@@ -2393,7 +2227,7 @@ test('source context does not confuse winter dieback, summer growth rest and ret
  const named=label=>{const p=Object.values(CATALOG).find(p=>p.label===label);assert.ok(p,label);return p;};
  const panicum=named('パニカム ノースウインド');assert.equal(seasonAt(panicum,7).groundDormant,false);assert.equal(panicum.appearance.standingWinter,true);
  for(const name of ['イベリス ゴールデンキャンディ','ラベンダー シルバーサンド'])assert.equal(seasonAt(named(name),1).groundDormant,false);
- assert.equal(seasonAt(named('ガステリア 美鈴の富士'),7).groundDormant,false);
+ assert.equal(seasonAt(named('センペルビウム・クラクフ'),7).groundDormant,false);
  const ephem=named('クリスマスローズ チベタヌス');assert.equal(seasonAt(ephem,4).bloom,true);for(const m of [1,7,10])assert.equal(seasonAt(ephem,m).groundDormant,true);
  const variable=named('マツバギク おひさま花火 リド マゼンタホワイトアイ');assert.equal(variable.appearance.winterClimateSensitive,true);assert.equal(seasonAt(variable,1).groundDormant,false);
  const summerTree={form:'shrub',leaf:'deciduous',bloom:[],appearance:{persistence:'summerDormant'}};

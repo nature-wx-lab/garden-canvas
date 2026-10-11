@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.122';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.123';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.122';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.123';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -343,10 +343,10 @@ function drawCaudexPlants(b,{info,s,rand},kit){
 }
 
 // Shape proportions are approximations of the cited nursery specimens.
-const AGAVE_SHAPES={kisshoukan:{waist:.23,cup:.15,wave:.009},whiteice:{waist:.19,cup:.22,wave:.022},queen:{waist:.28,cup:.10,wave:.018},whale:{waist:.19,cup:.24,wave:.043},blackblue:{waist:.22,cup:.19,wave:.022},redcat:{waist:.30,cup:.17,wave:.035}};
+const AGAVE_SHAPES={truncata:{waist:.16,cup:.17,wave:.012,outline:.44,bend:.08},frosty:{waist:.55,cup:.20,wave:.014,outline:.78,bend:.13},kegon:{waist:.73,cup:.09,wave:.022,outline:.94,bend:.31},kisshoukan:{waist:.23,cup:.15,wave:.009},whiteice:{waist:.19,cup:.22,wave:.022},queen:{waist:.28,cup:.10,wave:.018},whale:{waist:.19,cup:.24,wave:.043},blackblue:{waist:.22,cup:.19,wave:.022},redcat:{waist:.30,cup:.17,wave:.035}};
 export function agaveBladePoint(t,angle,profile){
- const a=AGAVE_SHAPES[profile],sn=Math.max(0,Math.sin(Math.PI*t)),outline=sn**.65*(a.waist+(1-a.waist)*Math.sin(Math.PI*t*.82)),edge=.5*outline*(1+a.wave*Math.sin(t*Math.PI*15));
- return [Math.cos(angle)*edge,t,Math.sin(angle)*.082*sn**.7+a.cup*sn*Math.cos(angle)**2-.13*t*t];
+ const a=AGAVE_SHAPES[profile],sn=Math.max(0,Math.sin(Math.PI*t)),outline=sn**(a.outline??.65)*(a.waist+(1-a.waist)*Math.sin(Math.PI*t*.82)),edge=.5*outline*(1+a.wave*Math.sin(t*Math.PI*15));
+ return [Math.cos(angle)*edge,t,Math.sin(angle)*.082*sn**.7+a.cup*sn*Math.cos(angle)**2-(a.bend??.13)*t*t];
 }
 export function agaveThornGeometry(){
  const p=[],uv=[],ix=[],N=24,C=12;
@@ -365,24 +365,24 @@ export function agaveBladeGeometry(profile){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();return g;
 }
 function drawAgaveRosettes(b,{info,s,rand},kit){
- const a=info.appearance,t=a.shootProfile,queen=t==='queen',whale=t==='whale',black=t==='blackblue',kiss=t==='kisshoukan',ice=t==='whiteice',n=kiss?19:ice?15:queen?18:whale?27:23,spine=kiss?'#654244':ice?'#cfc9b0':queen?'#774c3c':black?'#332c29':whale?'#d4cdb8':'#c6b28d';
+ const a=info.appearance,t=a.shootProfile,queen=t==='queen',whale=t==='whale',black=t==='blackblue',kiss=t==='kisshoukan',ice=t==='whiteice',garden={truncata:{n:32,width:.82,pitch:1.02,teeth:11,tooth:.035,tip:.15},frosty:{n:27,width:.90,pitch:1.12,teeth:12,tooth:.027,tip:.13},kegon:{n:22,width:.38,pitch:1.17,teeth:15,tooth:.028,tip:.075}}[t],n=garden?.n??(kiss?19:ice?15:queen?18:whale?27:23),spine=garden?'#69534b':kiss?'#654244':ice?'#cfc9b0':queen?'#774c3c':black?'#332c29':whale?'#d4cdb8':'#c6b28d';
  for(let k=0;k<n;k++){
-  const v=k/(n-1),az=k*2.399+.04*(rand()-.5),L=Math.min(s.spread*.57,s.height*1.55)*(1-v*.58),W=L*(kiss?.84:ice?.88:queen?.92:whale?.78:black?.65:.56),pitch=(kiss?1.03:queen?1.1:.92)*(1-v)+.08,origin=[0,s.height*.05+v*s.height*.21,0],f=flowerFrame(b,origin,pitch,az);
+  const v=k/(n-1),az=k*2.399+.04*(rand()-.5),L=Math.min(s.spread*.57,s.height*1.55)*(1-v*.58),W=L*(garden?.width??(kiss?.84:ice?.88:queen?.92:whale?.78:black?.65:.56)),pitch=(garden?.pitch??(kiss?1.03:queen?1.1:.92))*(1-v)+.08,origin=[0,s.height*.05+v*s.height*.21,0],f=flowerFrame(b,origin,pitch,az);
   f.add('agave-'+t,'leaf-agave-'+t,kit.shade(rand,s.leafColor,.03),0,0,0,W,L,L);
   for(let side of [-1,1]){
    let prev;
    for(let j=0;j<=40;j++){
     const q=.06+j/40*.88,p=agaveBladePoint(q,side<0?Math.PI:0,t),pt=[p[0]*W,p[1]*L,p[2]*L];
-    if(prev)f.branch(prev,pt,L*(whale?.008:.004),spine,'margin-agave-'+t);prev=pt;
+    if(prev)f.branch(prev,pt,L*(garden?.0015:whale?.008:.004),spine,'margin-agave-'+t);prev=pt;
    }
-   const teeth=kiss?10:queen?7:6;
+   const teeth=garden?.teeth??(kiss?10:queen?7:6);
    for(let j=0;j<teeth;j++){
-    const q=.15+j/(teeth-1)*.68,p=agaveBladePoint(q,side<0?Math.PI:0,t),start=[p[0]*W,p[1]*L,p[2]*L],size=L*(kiss?.041:ice?.094:queen?.052:whale?.14:black?.093:.13)*(1+.12*Math.sin(j*4.3+k));
+    const q=.15+j/(teeth-1)*.68,p=agaveBladePoint(q,side<0?Math.PI:0,t),start=[p[0]*W,p[1]*L,p[2]*L],size=L*(garden?.tooth??(kiss?.041:ice?.094:queen?.052:whale?.14:black?.093:.13))*(1+.12*Math.sin(j*4.3+k));
     f.add('agave-thorn','tooth-agave-'+t,spine,...start,size*.46,size,size*.38,0,0,-side*.78);
    }
   }
   const point=agaveBladePoint(1,0,t);
-  f.add('agave-thorn','terminal-spine-agave-'+t,ice?'#665446':spine,0,L,point[2]*L,L*.036,L*(queen?.10:.16),L*.031,-.17,0,.08);
+  f.add('agave-thorn','terminal-spine-agave-'+t,ice?'#665446':spine,0,L,point[2]*L,L*(garden?.020:.036),L*(garden?.tip??(queen?.10:.16)),L*(garden?.018:.031),-.17,0,.08);
  }
  // Flowering is age dependent and monocarpic; no yearly bloom is invented.
 }

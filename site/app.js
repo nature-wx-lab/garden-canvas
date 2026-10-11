@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.122';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.122';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.122';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.122';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.122';
-import { createScene } from './scene.js?v=0.9.122';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.123';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.123';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.123';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.123';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.123';
+import { createScene } from './scene.js?v=0.9.123';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
@@ -24,6 +24,7 @@ function sourceCard(target,kind){const info=plantInfo(kind),box=$(target);box.re
    for(const url of new Set([info.source,...info.appearance.sources.map(s=>s.url)])){const a=el('a','構成・栽培情報の出典 ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';box.append(el('br'),a);}return;
   }
   box.append(el('p',`資料の高さ：${info.height?info.height.join('〜')+'m':'未確認'} ／ 幅：${info.spread?info.spread.join('〜')+'m':'未確認'}`));
+  if(info.gardenUse){const g=info.gardenUse;box.append(el('strong','地植え越冬の目安：関東など霜の降りる平地'),el('p',g.basis+' '+g.conditions));const a=el('a','地植え・耐寒性の出典 ↗');a.href=g.source;a.target='_blank';a.rel='noopener noreferrer';box.append(a);}
   const tree=treeProfile(info);if(tree)box.append(el('p',HABITS[tree.habit]+' · '+(tree.leaf==='evergreen'?'常緑':'落葉'),'habit-note'));
   if(info.popularity?.length)box.append(el('p',info.popularity.map(r=>`${r.publisher} ${r.category} 人気順 ${r.rank}位（${r.checked}確認）`).join(' ／ '),'hint'));
   box.append(el('p',info.bloomText),el('p',info.care));
@@ -52,7 +53,8 @@ function chooseKind(kind){
  addKind=kind;setMode('add');message(info.form==='unmodeled'?'庭をクリックすると寸法枠を配置します。植物の外観は未対応です。':'庭をクリックして参考モデルを配置できます。');
 }
 function drawCatalog(){
-  const genre=$('catalog-filter').value,results=searchCatalog(CATALOG,{query:$('catalog-search').value,genre,color:$('catalog-color').value,status:$('catalog-status').value,popular:$('catalog-popular').checked,habit:$('catalog-habit').value}),page=catalogPage(results,catalogIndex);catalogIndex=page.index;
+  const genre=$('catalog-filter').value,results=searchCatalog(CATALOG,{query:$('catalog-search').value,genre,color:$('catalog-color').value,status:$('catalog-status').value,popular:$('catalog-popular').checked,habit:$('catalog-habit').value,dryGarden:$('catalog-dry-garden').checked}),page=catalogPage(results,catalogIndex);catalogIndex=page.index;
+  $('dry-garden-guide').hidden=!$('catalog-dry-garden').checked;
   $('catalog-count').textContent=`${page.total.toLocaleString('ja-JP')}件${page.total?' ・ '+(page.index*24+1)+'〜'+Math.min(page.total,(page.index+1)*24):''}`;
   $('catalog-page').textContent=`${page.index+1} / ${page.pages}`;$('catalog-prev').disabled=page.index===0;$('catalog-next').disabled=page.index===page.pages-1;$('rose-guide').hidden=genre!=='バラ';
   $('catalog').replaceChildren(...page.entries.map(([k,v])=>{const b=button('',()=>chooseKind(k));b.dataset.kind=k;b.dataset.form=v.form;const swatch=el('span',undefined,'swatch');swatch.dataset.color=(v.colors||['unknown'])[0];b.append(swatch,el('strong',v.label),el('small',`${v.genre} · ${v.appearance?.collection?(v.appearance.components?'中の植物を選ぶ':'混合種・構成未確認'):treeProfile(v)?HABITS[treeProfile(v).habit]:v.form==='unmodeled'?'寸法枠':'参考3D'}`));return b;}));
@@ -127,7 +129,7 @@ function bind(){
   options('catalog-habit',[['all','樹形すべて'],...Object.entries(HABITS)]);
   $('tree-gallery').addEventListener('click',()=>{if(mutate((p,d)=>Object.assign(d,treeGalleryDocument()),'樹形の見本を開きました。月を変えると年間の姿を比較できます。「戻す」で元の庭へ戻れます。')){selected=null;sync();engine?.view('home');if(matchMedia('(max-width:760px)').matches)$('viewport').scrollIntoView({block:'center'});}});
   $('annual-gallery').addEventListener('click',()=>{if(mutate((p,d)=>Object.assign(d,annualGalleryDocument()),'冬の休眠と常緑の違い、葉の模様と花の形を見比べる庭です。月を変えて確認できます。「戻す」で元の庭へ戻れます。')){selected=null;sync();engine?.view('home');if(matchMedia('(max-width:760px)').matches)$('viewport').scrollIntoView({block:'center'});}});
-  for(const id of ['catalog-filter','catalog-color','catalog-status','catalog-popular','catalog-habit'])$(id).addEventListener('change',()=>{catalogIndex=0;drawCatalog();});$('catalog-search').addEventListener('input',()=>{catalogIndex=0;drawCatalog();});
+  for(const id of ['catalog-filter','catalog-color','catalog-status','catalog-popular','catalog-habit','catalog-dry-garden'])$(id).addEventListener('change',()=>{catalogIndex=0;drawCatalog();});$('catalog-search').addEventListener('input',()=>{catalogIndex=0;drawCatalog();});
   $('catalog-prev').addEventListener('click',()=>{catalogIndex--;drawCatalog();});$('catalog-next').addEventListener('click',()=>{catalogIndex++;drawCatalog();});drawCatalog();sourceCard('catalog-info','salvia');
   $('orbit').addEventListener('click',()=>{resetMode();message('ドラッグで回転。植物をクリックすると選べます。');});for(const type of ['home','top','eye'])$(`view-${type}`).addEventListener('click',()=>{if(['outline','zone','circle'].includes(mode)){message('形の編集中は真上の視点を使います。');return;}engine?.view(type);});$('focus').addEventListener('click',()=>{engine?.view('focus');if(matchMedia('(max-width:760px)').matches)$('viewport').scrollIntoView({block:'center'});});$('zoom-in').addEventListener('click',()=>engine?.zoom(.8));$('zoom-out').addEventListener('click',()=>engine?.zoom(1.25));
   for(const key of ['month','year','reference','footprints'])$(key).addEventListener(['month','year'].includes(key)?'input':'change',()=>{const value=['month','year'].includes(key)?number(key):$(key).checked;doc.view[key]=value;if(preview)preview.view[key]=value;if(key==='month')calendarMonth=value;sync();if(key==='reference')engine?.view('home');});

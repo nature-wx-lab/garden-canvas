@@ -1,12 +1,12 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.122';
+import {treeProfile} from './tree-profiles.js?v=0.9.123';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
 export const normalizeSearch=text=>String(text).normalize('NFKC').toLowerCase().replace(/[\u30a1-\u30f6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60)).replace(/[\s・：:'‘’"“”()（）\-]/g,'');
-export function searchCatalog(catalog,{query='',genre='all',color='all',status='all',popular=false,habit='all'}={}){
+export function searchCatalog(catalog,{query='',genre='all',color='all',status='all',popular=false,habit='all',dryGarden=false}={}){
   const words=String(query).trim().split(/\s+/).filter(Boolean).map(normalizeSearch);
   return Object.entries(catalog).filter(([,p])=>
-    (!popular||p.popularity?.length>0)&&(habit==='all'||treeProfile(p)?.habit===habit)&&(genre==='all'||p.genre===genre)&&(color==='all'||(p.colors||['unknown']).includes(color))&&
+    (!dryGarden||p.gardenUse?.climate==='frost-lowland')&&(!popular||p.popularity?.length>0)&&(habit==='all'||treeProfile(p)?.habit===habit)&&(genre==='all'||p.genre===genre)&&(color==='all'||(p.colors||['unknown']).includes(color))&&
     (status==='all'||(status==='sourced'?!!p.source:!p.source))&&
     words.every(word=>normalizeSearch([p.label,p.latin,...(p.aliases||[])].join(' ')).includes(word)));
 }

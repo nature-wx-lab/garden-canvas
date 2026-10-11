@@ -1,7 +1,7 @@
-import { EXPANDED_CATALOG, BASE_POPULARITY } from './catalog-data.js?v=0.9.122';
-import {attachAppearance} from './appearance.js?v=0.9.122';
+import { EXPANDED_CATALOG, BASE_POPULARITY, RETIRED_GARDEN_PLANTS } from './catalog-data.js?v=0.9.123';
+import {attachAppearance} from './appearance.js?v=0.9.123';
 // Public botanical facts; monthly boundaries and procedural geometry are display conventions.
-export const CATALOG_VERSION='2026-10-11.60';
+export const CATALOG_VERSION='2026-10-11.61';
 const nc='https://plants.ces.ncsu.edu/plants/';
 const mo='https://plantfinder.mobot.org/PlantFinderDetails.aspx?taxonid=';
 const BASE_CATALOG={
@@ -18,8 +18,9 @@ const BASE_CATALOG={
 };
 const baseGenres={maple:'庭木',olive:'庭木',rose:'バラ',hydrangea:'庭木',salvia:'宿根草',echinacea:'宿根草',lavender:'宿根草',hosta:'カラーリーフ',grass:'カラーリーフ',sedum:'多肉'};
 for(const [key,p] of Object.entries(BASE_CATALOG))Object.assign(p,{genre:baseGenres[key],aliases:[],colors:[key==='rose'?'pink':'unknown'],visual:'reference',bloomKnown:!!p.bloom.length,sourceChecked:'2026-10-09'});
+BASE_CATALOG.sedum.gardenUse={climate:'frost-lowland',basis:'NC State Extensionが耐寒性区分3a〜10bの宿根草として記載。',conditions:'日なたと排水のよい土。湿りすぎる土と多肥を避けます。',source:'https://plants.ces.ncsu.edu/plants/hylotelephium-spectabile-autumn-joy/',checked:'2026-10-11'};
 export const CATALOG=attachAppearance({...BASE_CATALOG,...EXPANDED_CATALOG});
 for(const [id,items] of Object.entries(BASE_POPULARITY))if(CATALOG[id])CATALOG[id].popularity=items;
 // Preserve unidentified 0.1 shapes when opening an old file; never assign a species silently.
-export const LEGACY={deciduous:{label:'旧版の落葉樹（種類未指定）',form:'maple',leaf:'deciduous'},evergreen:{label:'旧版の常緑樹（種類未指定）',form:'olive',leaf:'evergreen'},flower:{label:'旧版の宿根草（種類未指定）',form:'daisy',leaf:'herb'},legacy_grass:{label:'旧版のグラス（種類未指定）',form:'grass',leaf:'grass'}};
-export const plantInfo=id=>(Object.hasOwn(CATALOG,id)?CATALOG[id]:null)||{...(Object.hasOwn(LEGACY,id)?LEGACY[id]:{}),height:null,spread:null,bloom:[],flower:'#c28cb0',sun:[],moisture:[],growth:'種類未指定',care:'カタログから実在植物を選び直せます。',source:null,season:'旧版の配置',bloomText:'植物の種類が未確認です。'};
+export const LEGACY={...Object.fromEntries(Object.entries(RETIRED_GARDEN_PLANTS).map(([id,label])=>[id,{label:label+'（地植え基準の対象外）',form:'unmodeled',leaf:'unknown'}])),deciduous:{label:'旧版の落葉樹（種類未指定）',form:'maple',leaf:'deciduous'},evergreen:{label:'旧版の常緑樹（種類未指定）',form:'olive',leaf:'evergreen'},flower:{label:'旧版の宿根草（種類未指定）',form:'daisy',leaf:'herb'},legacy_grass:{label:'旧版のグラス（種類未指定）',form:'grass',leaf:'grass'}};
+export const plantInfo=id=>(Object.hasOwn(CATALOG,id)?CATALOG[id]:null)||{...(Object.hasOwn(LEGACY,id)?LEGACY[id]:{}),height:null,spread:null,bloom:[],flower:'#c28cb0',sun:[],moisture:[],growth:'種類未指定',care:Object.hasOwn(RETIRED_GARDEN_PLANTS,id)?'関東など霜の降りる平地での地植え対象から外した植物です。旧ファイルの配置と寸法だけを保持しています。カタログから植え替える植物を選べます。':'カタログから実在植物を選び直せます。',source:null,season:'旧版の配置',bloomText:'植物の種類が未確認です。'};
