@@ -1,7 +1,95 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.109';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.110';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.109';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.110';
 const TAU=Math.PI*2;
+export function uncommonTreeLeafPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),serrated=['ume','wakaki','unryu'].includes(type),teeth=type==='unryu'?11:type==='ume'?28:32;
+ const edge=serrated?1-.055*(.5+.5*Math.sin(t*TAU*teeth)):1+.022*Math.sin(t*TAU*5),round=type==='unryu',rhod=type==='rhododendron';
+ const width=Math.pow(sn,round?.54:rhod?.66:.82)*(rhod?.50+.85*t:round?1.12-.36*t:1.10-.24*t)*edge;
+ return [u*.5*width,t,.025*sn+.07*u*u*sn+.012*Math.sin(t*15+u*4)*sn];
+}
+export function uncommonCompoundGeometry(type){
+ const pos=[],uv=[],ix=[],call=type==='calliandra',palm=type==='baobab';
+ const blade=(at,angle,L,W)=>{const start=pos.length/3,N=10,C=4;
+  for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){const t=i/N,u=j/C*2-1,xyz=uncommonTreeLeafPoint('compound',t,u),x=xyz[0]*W,y=xyz[1]*L;pos.push(at[0]+x*Math.cos(angle)+y*Math.sin(angle),at[1]-x*Math.sin(angle)+y*Math.cos(angle),at[2]+xyz[2]*L);uv.push(j/C,t);if(i<N&&j<C){const k=start+i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}}
+ };
+ const axis=(a,z,r)=>{const start=pos.length/3;for(const p of [a,z])for(let j=0;j<4;j++){const ph=j*TAU/3;pos.push(p[0]+Math.sin(ph)*r,p[1],p[2]+Math.cos(ph)*r);uv.push(j/3,p===a?0:1);}for(let j=0;j<3;j++)ix.push(start+j,start+j+4,start+j+1,start+j+1,start+j+4,start+j+5);};
+ if(palm){axis([0,0,0],[0,.27,0],.006);for(let j=0;j<7;j++){const an=(j-3)*.50,L=(j===3?.72:.51+.12*Math.cos(an)),at=[0,.27,0];blade(at,an,L,L*.40);}}
+ else{
+  axis([0,0,0],[0,call?.14:.96,0],.004);
+  const pinnae=call?1:9;
+  for(let j=0;j<pinnae;j++)for(const sign of [-1,1]){
+   const t=call?.14:.14+j*.083,ang=sign*(call?.63:1.0),len=call?.86:.50*(1-.75*j/pinnae),a=[0,t,0],d=[Math.sin(ang),Math.cos(ang),0],end=[d[0]*len,t+d[1]*len,0];axis(a,end,.0024);
+   const pairs=call?26:12;
+   for(let k=0;k<pairs;k++)for(const side of [-1,1]){const u=.06+.91*k/pairs,at=[d[0]*len*u,t+d[1]*len*u,0],L=(call?.092:.061)*(1-.35*u);blade(at,ang+side*1.05,L,L*(call?.34:.42));}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.uncommonCompound=type;return g;
+}
+// Branches are generated separately from foliage, so leaf fall never moves the wood.
+export function uncommonTreeSkeleton(type,seed,juvenile=false){
+ let z=seed>>>0;const rnd=()=>{z^=z<<13;z^=z>>>17;z^=z<<5;return(z>>>0)/4294967296;},segments=[],shoots=[],lerp=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t),pt=(an,r,y)=>[Math.sin(an)*r,y,Math.cos(an)*r];
+ const curve=(a,c,d,r,twist=0,taper=.88)=>{const phase=rnd()*TAU,path=t=>a.map((v,i)=>(1-t)**2*v+2*(1-t)*t*c[i]+t*t*d[i]+(i===1?0:twist*Math.sin(t*TAU*2.4+phase+i)*Math.sin(Math.PI*t)));let last=a;for(let k=1;k<=18;k++){const p=path(k/18);segments.push({a:last,b:p,r:r*(1-taper*k/18)});last=p;}return path;};
+ const ume=type==='ume',unryu=type==='unryu',baobab=type==='baobab',jaca=type==='jacaranda',call=type==='calliandra',waka=type==='wakaki',cam=type==='camphor';
+ const top=ume?.83:baobab?.50:unryu?.95:call?.72:.87,roots=call?5:waka?3:cam?3:1;
+ if(baobab&&juvenile){const path=curve([0,0,0],[.008,.45,0],[.02,.86,0],.025);shoots.push({path,angle:.4,terminal:true});return {segments,shoots};}
+ if(cam)curve([0,0,0],[.01,.12,0],[0,.25,0],.033,0,.28);
+ for(let root=0;root<roots;root++){
+  const az=root*2.399+.5,base=cam?[0,.25,0]:pt(az,roots>1?.025:0,0),end=pt(az,cam?.22:roots>1?.12:unryu?.06:.02,cam?.73+rnd()*.18:top),leader=curve(base,pt(az,cam?.065:unryu?.085:.01,top*.50),end,baobab?.16:ume?.034:call?.012:.025,unryu?.035:0);
+  const levels=ume?10:unryu?9:baobab?9:call?6:jaca?10:waka?7:10;
+  if(unryu)shoots.push({path:leader,angle:az,terminal:true});
+  else if(!ume&&!baobab)shoots.push({path:t=>leader(.78+t*.22),angle:az,terminal:true});
+  for(let n=0;n<levels;n++){
+   const t=ume?.88+n*.10/levels:baobab?.64+n*.33/levels:.24+n*.70/levels,from=leader(t),an=n*2.399+root*1.4+(rnd()-.5)*.30,R=ume?.28+rnd()*.17:baobab?.29+rnd()*.09:unryu?.16+rnd()*.21:call?.15+rnd()*.17:waka?.15+rnd()*.14:cam?.13+rnd()*.12:.19+rnd()*.13;
+   const dest=[from[0]+Math.sin(an)*R,ume?.13+rnd()*.23:baobab?.87+rnd()*.07:unryu?from[1]+.08:from[1]+(call?.12:jaca?.14:.07),from[2]+Math.cos(an)*R],mid=lerp(from,dest,.52);mid[1]+=ume?.34:baobab?.05:unryu?.03:call?.035:.025;
+   const path=curve(from,mid,dest,baobab?.033:ume?.006:unryu?.004:call?.0025:.0045,unryu?.035:0);
+   if(ume||unryu)shoots.push({path,angle:an,terminal:true});
+   const twigs=ume?3:baobab?7:unryu?3:call?4:cam?5:3;
+   for(let k=0;k<twigs;k++){
+    const u=.28+k*.69/twigs,start=path(u),yaw=an+(k%2?1:-1)*(.7+rnd()*.3),reach=ume?.065:baobab?.10:unryu?.10:.075,end=[start[0]+Math.sin(yaw)*reach,start[1]+(ume?-.12-rnd()*.12:baobab?.06:.045),start[2]+Math.cos(yaw)*reach],bend=lerp(start,end,.5);bend[1]+=ume?.02:.007;
+    const sp=curve(start,bend,end,baobab?.0045:.0012,unryu?.018:0);shoots.push({path:sp,angle:yaw,terminal:true});
+   }
+  }
+ }
+ return {segments,shoots};
+}
+function drawUncommonGardenTree(b,{info,s,p,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,juvenile=type==='baobab'&&h<1.5,sk=uncommonTreeSkeleton(type,p.id,juvenile),scale=q=>[q[0]*w,q[1]*h,q[2]*w],wood='wood-uncommon-'+type,compound=['jacaranda','calliandra'].includes(type)||type==='baobab'&&!juvenile;
+ for(const q of sk.segments)b.branch(scale(q.a),scale(q.b),Math.max(.00035,q.r*Math.min(h,w)),q.r<.003?a.stemColor:a.barkColor,wood);
+ const stride=Math.max(1,Math.round(1/Math.max(.3,detail)));
+ const leaf=(at,an,L,roll,t)=>{
+  const f=flowerFrame(b,at,compound?.92+roll*.34:1.00+roll*.55,an),pet=compound?.006:type==='unryu'?.0015:.012,color=type==='camphor'&&s.month===4&&t>.55?'#a38158':s.leafColor,kind='leaf-uncommon-'+type+'-underside-'+a.leafUnderside.slice(1);
+  f.branch([0,0,0],[0,pet,0],.00045,a.stemColor,'petiole-uncommon');f.add(compound?'uncommon-compound-'+type:'uncommon-leaf-'+type,kind,kit.shade(rand,color,.045),0,pet,0,compound?L:L*a.leafWidth/a.leafLength,L,L,0,0,(roll-.5)*.23);
+  if(!compound&&L>.03){
+   f.branch([0,pet,.001],[0,pet+L*.93,.001],.00018,'#89976b','vein-uncommon');
+   if(type==='camphor')for(const side of [-1,1]){let prev=[0,pet+L*.10,.0012];for(let j=1;j<=10;j++){const t=j/10,pt=[side*L*.18*Math.sin(Math.PI*t),pet+L*(.10+.82*t),.002];f.branch(prev,pt,.00014,'#93a377','vein-camphor');prev=pt;}}
+  }
+ };
+ const prunusFlower=(at,yaw,seed)=>{const f=flowerFrame(b,at,.6+seed*1.2,yaw),r=type==='ume'?.015:.013,petals=type==='ume'?24:5;
+  for(let k=0;k<petals;k++){const ring=type==='ume'?Math.floor(k/8):0,L=r*(1-ring*.17);f.add('namedTreePetal-'+(type==='wakaki'?'cherry':'round'),'petal-uncommon-'+type,s.flowerColor,0,ring*r*.11,0,L,L,L,-ring*.16,k*TAU/(type==='ume'?8:5)+ring*.31,0);}
+  for(let k=0;k<24;k++){const an=k*2.399,end=[Math.sin(an)*r*.25,r*(.30+.12*(k%4)),Math.cos(an)*r*.25];f.branch([0,0,0],end,.00012,'#d2c0a1','filament-uncommon');f.add(kit.bud,'anther-uncommon','#c8ab59',...end,.00065,.0005,.00065);}
+ };
+ for(let i=0;i<sk.shoots.length;i+=stride){
+  const sh=sk.shoots[i],nodes=juvenile?9:type==='ume'?12:type==='unryu'?10:type==='jacaranda'?3:type==='calliandra'?5:type==='baobab'?4:6;
+  const sites=[];for(let k=0;k<nodes;k++)sites.push({t:.08+k*.88/nodes,roll:rand(),shade:rand(),yaw:sh.angle+k*2.399});
+  for(const q of sites){const at=scale(sh.path(q.t));
+   if(q.roll<s.leafDensity){const L=a.leafLength*(.73+q.shade*.27)*s.leafScale;leaf(at,q.yaw,L,q.shade,q.t);}
+   if(type==='ume'&&s.bloom&&q.shade<s.flowerDensity){const end=[at[0]+Math.sin(q.yaw)*.004,at[1],at[2]+Math.cos(q.yaw)*.004];b.branch(at,end,.0005,a.stemColor,'pedicel-uncommon');prunusFlower(end,q.yaw,q.roll);}
+  }
+  const tip=scale(sh.path(1));
+  if(s.leafDensity===0)b.add(kit.bud,'bud-uncommon','#866651',...tip,.0018,.004,.0018,.3,sh.angle,0);
+  if(type==='wakaki'&&s.bloom&&i%2===0)for(let k=0;k<3;k++){const an=sh.angle+k*2.1,at=[tip[0]+Math.sin(an)*.018,tip[1]-.018-k*.003,tip[2]+Math.cos(an)*.018];b.branch(tip,at,.00065,'#85945c','pedicel-uncommon');prunusFlower(at,an,k/3);}
+  if(type==='jacaranda'&&s.bloom&&i%4===0){
+   const top=[tip[0],tip[1]+.19,tip[2]];b.branch(tip,top,.0017,'#756d59','peduncle-jacaranda');
+   for(let k=0;k<23;k++){const t=k/23,an=k*2.399,R=.065*(1-t),root=[tip[0],tip[1]+t*.18,tip[2]],at=[root[0]+Math.sin(an)*R,root[1]-.007,root[2]+Math.cos(an)*R];b.branch(root,at,.00065,'#77735c','pedicel-jacaranda');const f=flowerFrame(b,at,1.55+t*.35,an);if(k%6===0)f.add(kit.bud,'bud-jacaranda','#736094',0,.017,0,.004,.014,.004);else f.add('trumpet','petal-uncommon-jacaranda',s.flowerColor,0,0,0,.012,.030,.012);}
+  }
+  if(type==='calliandra'&&s.bloom&&i%3===0){
+   const flowerAt=[tip[0],tip[1]+.018,tip[2]];b.branch(tip,flowerAt,.0005,a.stemColor,'pedicel-calliandra');const f=flowerFrame(b,flowerAt,.20+rand()*.40,sh.angle);for(let k=0;k<150;k++){const yy=.07+.93*(k+.5)/150,an=k*2.399,R=.031*Math.sqrt(1-yy*yy),end=[Math.sin(an)*R,yy*.036,Math.cos(an)*R],mid=end.map(v=>v*.39);f.branch([0,0,0],mid,.00018,'#eee5d2','filament-calliandra-base');f.branch(mid,end,.00018,'#d78caf','filament-calliandra-pink');f.add(kit.bud,'anther-calliandra','#d7b072',...end,.00033,.00031,.00033);}
+  }
+  if(type==='camphor'&&s.bloom&&i%7===0){for(let k=0;k<17;k++){const t=k/17,an=k*2.399,R=.026*(1-t),at=[tip[0]+Math.sin(an)*R,tip[1]+t*.047,tip[2]+Math.cos(an)*R];b.branch(tip,at,.0003,'#a9af75','pedicel-camphor');const f=flowerFrame(b,at,.5,an);for(let j=0;j<6;j++)f.add('petal','petal-uncommon-camphor','#d5d19a',0,0,0,.0015,.0015,.0015,0,j*TAU/6,0);}}
+ }
+}
+
 export function marginLeafGeometry(type){
  const p=[],uv=[],ix=[],needle=type==='hibbertia',N=needle?30:96,R=needle?4:12;
  if(needle){for(let i=0;i<=N;i++)for(let j=0;j<=R;j++){const t=i/N,u=j/R*2-1;p.push(u*.5*Math.sin(Math.PI*t)**.35,t,.23*t*t);uv.push(j/R,t);if(i<N&&j<R){const k=i*(R+1)+j;ix.push(k,k+R+1,k+1,k+1,k+R+1,k+R+2);}}}
@@ -4948,6 +5036,8 @@ function drawSmokeTree(b,{info,s,detail,rand},kit){
 // A shoot contains its actual small leaves. Instances distribute connected shoots,
 // rather than using oversized needles to stand in for a whole conifer crown.
 export const CONIFER_SHOOTS={
+ snowCrestSpray:{length:.16,leaf:.0028,width:.0012},
+ whiteEmpireSpray:{length:.12,leaf:.0055,width:.0009,awl:true,whorl:4},
  thujaSpray:{length:.18,leaf:.0028,width:.0015,flat:true},
  hinokiSpray:{length:.18,leaf:.002,width:.0015,flat:true,blunt:true},
  sawaraSpray:{length:.18,leaf:.003,width:.0013,flat:true},
@@ -5025,7 +5115,7 @@ function drawConiferSprays(b,{info,s,detail,rand},kit){
    const subdivisions=cord?3:2;
    for(let j=0;j<subdivisions;j++){
     const f=(j+1)/subdivisions,root=lerp(at,out,f),yaw=sideAz+(rand()-.5)*.85,pitch=cord?1.60+f*.52:a.habit==='columnar'?.18+rand()*.48:flat?.70+rand()*.48:yew?.34+rand()*.7:.12+rand()*.67;
-    shoots.push({root,yaw,pitch,roll:(rand()-.5)*(flat?1.5:.8),young:j===subdivisions-1,variation:rand(),size:(.86+rand()*.23)*(mound?1:.55+.45*Math.pow(1-t,.25))});
+    shoots.push({root,yaw,pitch,branchIndex:i,roll:(rand()-.5)*(flat?1.5:.8),young:j===subdivisions-1,variation:rand(),size:(.86+rand()*.23)*(mound?1:.55+.45*Math.pow(1-t,.25))});
    }
   }
  }
@@ -5033,10 +5123,11 @@ function drawConiferSprays(b,{info,s,detail,rand},kit){
  if(!mound)shoots.push({root:[0,h-c.length*.86,0],yaw:0,pitch:0,roll:0,young:true,variation:.5,size:.86});
  for(const q of shoots){
   const isFlush=a.flushMonths?.includes(s.month),base=s.leafColor,kind=a.leafPattern?patternKind('leaf',a.leafPattern,s.leafPatternColor):flat&&!yew?'leaf-conifer-'+a.shootProfile:foliageKind(info),color=kit.shade(()=>q.variation,base,.040);
+  const cream=a.shootProfile==='snowCrestSpray'&&q.branchIndex%7===1,youngColor=a.shootProfile==='whiteEmpireSpray'?'#a3b9aa':null;
   const winter=s.seasonName==='winter',tipColor=a.winterTipColor&&winter?a.winterTipColor:isFlush&&a.springShootColor?a.springShootColor:base;
   const size=q.size*Math.min(1,h/(c.length*3),w/(c.length*3));
-  b.add(a.shootProfile,kind,color,...q.root,size,size,size,q.pitch,q.yaw,q.roll);
-  b.add(a.shootProfile+'Young',isFlush&&a.springShootColor?'leaf':kind,kit.shade(()=>q.variation,tipColor,.026),...q.root,size,size,size,q.pitch,q.yaw,q.roll);
+  b.add(a.shootProfile,kind,cream?'#e2e4c9':color,...q.root,size,size,size,q.pitch,q.yaw,q.roll);
+  b.add(a.shootProfile+'Young',isFlush&&a.springShootColor?'leaf':kind,kit.shade(()=>q.variation,cream?'#e2e4c9':youngColor||tipColor,.026),...q.root,size,size,size,q.pitch,q.yaw,q.roll);
  }
 }
 
@@ -6607,6 +6698,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='uncommonGardenTree'){drawUncommonGardenTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='marginGardenPlants'){drawMarginGarden(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='submergedShoots'){drawSubmergedShoots(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='forestPlants'){drawForestPlants(b,{info,s,p,detail,rand},kit);return;}
