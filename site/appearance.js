@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.112';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.113';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -261,3 +261,5 @@ Object.assign(TRAIT_VALUES,{uncommonGardenTree:'種類ごとの分枝と葉',sno
 Object.assign(TRAIT_VALUES,{lateGardenHerbs:'種類ごとの葉と花序',lateSnowDragon:'白い縦筋がある弓状の細い葉',lateSweetViolet:'浅い丸い鋸歯と心形の基部がある根生葉',lateTalinum:'厚みのあるへら形の斑入り葉',lateSennichi:'対生する先のとがった卵形の葉',lateVeronica:'対生する細長い鋸歯葉',lateGentian:'対生する3本の葉脈をもつ全縁葉',lateTalinumFlower:'5弁の桃色の小花と多数の黄色い雄しべ',lateSennichiHead:'赤紫の小さな苞が重なる細い頭花',lateVeronicaSpike:'下から開く4裂の小花と2本の雄しべ',lateGentianDouble:'淡紫青の筒状花冠が重なる八重花'});
 
 Object.assign(TRAIT_VALUES,{mixedCalylophus:'細い枝に並ぶ小さな線形葉',mixedAptenia:'厚みのある対生の卵形葉',mixedCyclamen:'心形の葉と銀色の模様',mixedAcalypha:'鋸歯と白緑の細かな斑がある互生葉',mixedDasylirion:'小さな鉤状の刺が縁にある硬い帯状葉',mixedEmpetrum:'縁が巻き込む小さな針状葉',mixedDacrycarpus:'左右に開く幼形針葉と小さな成葉',mixedApteniaFlower:'赤紫の細い花弁が多数並ぶ花',mixedCyclamenFlower:'花の基部から上へ反り返る5枚の花弁',mixedAcalyphaFlower:'赤い糸状部分が密集する尾状の花序',mixedGiliaFlower:'淡紫・白・暗紫・黄の喉をもつ5裂の花'});
+
+Object.assign(TRAIT_VALUES,{fleshyStacked:'十字対生で重なる三角形の厚葉',fleshyBean:'青白い粉を帯びる丸い小さな厚葉',fleshySpoon:'種類ごとに幅・厚みが異なるへら形〜楕円形の多肉葉',fleshyPendantBell:'下を向く筒状花と外へ反り返る5裂の先端'});
