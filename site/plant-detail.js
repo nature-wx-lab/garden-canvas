@@ -1,7 +1,73 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.110';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.111';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.110';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.111';
 const TAU=Math.PI*2;
+export function lateHerbLeafPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='snowDragon')return [u*.5*(1-t**5),1.75*t-1.18*t*t,.85*t*t];
+ const ver=type==='veronicaBlue'||type==='veronicaPink',vio=type==='sweetViolet',tal=type==='talinum',edge=ver?1-.055*(.5+.5*Math.sin(t*TAU*19)):1;
+ if(vio){const ph=(u+1)*Math.PI,rr=t,c=Math.cos(ph),x=Math.sin(ph)*.5, y=.43+.52*c+.48*Math.exp(-(((ph-Math.PI)/.22)**2));return [x*rr*(1-.024*Math.cos(ph*24)),.43+(y-.43)*rr,.07*rr*rr+.015*Math.cos(ph*7)*rr];}
+ return [u*.5*sn**(tal?.55:.8)*(tal?.48+.9*t:1)*edge,t,.06*sn*(u*u+.25)+.025*t*t];
+}
+export function lateGentianCorollaGeometry(){
+ const p=[],uv=[],ix=[],N=36,C=90;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,ph=j/C*TAU,lobe=.5+.5*Math.cos(ph*5),r=.16+.20*t+.25*t**5*(.55+.45*lobe),y=t*(.58+.42*lobe)+.014*Math.sin(ph*10)*t**6;
+  p.push(Math.sin(ph)*r,y,Math.cos(ph)*r);uv.push(j/C,t);if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
+}
+function drawLateGardenHerbs(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,green=s.leafColor,ver=type.startsWith('veronica'),vio=type==='sweetViolet',tal=type==='talinum',gen=type==='ashiroAqua',alt=type==='sennichi';if(s.groundDormant)return;
+ const blade=(at,az,L,pitch,young=false)=>{const f=flowerFrame(b,at,pitch,az),width=a.leafWidth/a.leafLength,kind='leaf-late-'+type+(a.leafPattern?'-'+a.leafPattern+'-'+a.patternColor.slice(1):'');f.add('late-leaf-'+type,kind,kit.shade(rand,green,.035),0,0,0,type==='snowDragon'?a.leafWidth*s.leafScale:L*width,L,L,0,0,(rand()-.5)*.16);
+  if(gen)for(const sign of [-1,0,1]){let prev=[0,0,.0004];for(let j=1;j<=10;j++){const t=j/10,q=[sign*L*width*.27*Math.sin(Math.PI*t),L*t,.002];f.branch(prev,q,.00012,'#7e9561','vein-late-gentian');prev=q;}}
+ };
+ if(type==='snowDragon'){
+  const n=Math.round(68*detail);for(let j=0;j<n;j++){const az=j*2.399,rr=w*.085*Math.sqrt((j+.5)/n),L=Math.min(.55,h*1.48)*(.60+rand()*.4);blade([Math.sin(az)*rr,0,Math.cos(az)*rr],az,L,.03+rand()*.34);}return;
+ }
+ if(vio){
+  const n=Math.round(33*detail*s.leafDensity),flowerSites=[];
+  for(let j=0;j<n;j++){const az=j*2.399,rr=w*.35*Math.sqrt((j+.4)/n),L=a.leafLength*(.64+rand()*.36),root=[Math.sin(az)*rr*.55,.004,Math.cos(az)*rr*.55],tip=[Math.sin(az)*rr,h*(.24+rand()*.3),Math.cos(az)*rr];b.branch(root,tip,.00085,green,'petiole-late-violet');blade(tip,az,L,.75+rand()*.45);if(j%3===0)flowerSites.push({root,az});}
+  for(let j=0;j<5;j++){const az=j*2.399,tip=[Math.sin(az)*w*.38,.005,Math.cos(az)*w*.38];b.branch([0,.005,0],tip,.00085,'#7e8058','stolon-late-violet');}
+  if(s.bloom)for(const q of flowerSites){const at=[q.root[0],h*(.76+rand()*.15),q.root[2]],neck=[at[0],at[1]+.004,at[2]-.006];b.branch(q.root,neck,.0007,green,'scape-late-violet');b.branch(neck,at,.0006,green,'scape-late-violet');detailedFlower(flowerFrame(b,at,1.12,q.az),{x:0,y:0,z:0,r:.010,color:s.flowerColor,shape:'violet',petals:5,guides:true},{...kit,rand});}return;
+ }
+ const count=Math.max(4,Math.round((tal?9:alt?18:gen?9:14)*detail)),shootScale=Math.max(.22,s.leafScale);
+ for(let j=0;j<count;j++){
+  const az=j*2.399+.15*rand(),rr=w*.22*Math.sqrt((j+.5)/count),top=h*(.68+rand()*.22)*shootScale,root=[Math.sin(az)*rr*.40,0,Math.cos(az)*rr*.40],tip=[Math.sin(az)*rr,top,Math.cos(az)*rr],stemAt=t=>root.map((v,k)=>v+(tip[k]-v)*t),nodes=tal?8:alt?7:gen?6:7;
+  b.branch(root,tip,tal?.002:gen?.0022:.0012,a.stemColor,'stem-late-'+type);
+  for(let k=0;k<nodes;k++){
+   const t=.07+k*(tal?.49:gen?.72:.61)/nodes,at=stemAt(t),L=a.leafLength*(.95-.42*t+rand()*.09)*s.leafScale;
+   if(rand()>s.leafDensity)continue;
+   for(let side=0;side<(tal?1:2);side++){const angle=az+k*(tal?2.399:Math.PI/2)+side*Math.PI,pet=tal?.003:.002,pt=[at[0]+Math.sin(angle)*pet,at[1]+.001,at[2]+Math.cos(angle)*pet];b.branch(at,pt,.00045,green,'petiole-late');blade(pt,angle,L,.74+rand()*.44);}
+  }
+  if(!s.bloom)continue;
+  if(ver){
+   const len=Math.min(.115,top*.43),base=top-len;
+   for(let k=0;k<100;k++){const t=k/100,an=k*2.399,at=[tip[0]+Math.sin(an)*.0035,base+len*t,tip[2]+Math.cos(an)*.0035],f=flowerFrame(b,at,1.18,an);if(t>.72){f.add(kit.bud,'bud-late-veronica','#92a475',0,0,0,.0015,.0026,.0015,.55,0,0);continue;}
+    const r=.0033*(1-t*.35);for(let pet=0;pet<4;pet++)f.add('petal','petal-late-veronica',s.flowerColor,0,0,0,r*(pet===2?.78:1),r,r,0,pet*TAU/4,0);
+    for(const side of [-1,1]){const end=[side*r*.5,r*1.15,r*.26];f.branch([0,0,0],end,.00010,'#c8b5d4','filament-late-veronica');f.add(kit.bud,'anther-late-veronica','#b6a1b9',...end,.00025,.0003,.00025);}
+   }
+  }else if(gen){
+   for(let k=0;k<4;k++){const an=az+k*2.399,R=k===0?0:.017,at=[tip[0]+Math.sin(an)*R,tip[1]-(k===0?0:.028),tip[2]+Math.cos(an)*R],f=flowerFrame(b,at,k===0?.08:.26,an),L=.037;
+    for(let sep=0;sep<5;sep++)f.add('narrow','sepal-late-gentian',green,0,0,0,.003,.024,.008,.30,sep*TAU/5,0);
+    if(k===3){f.add(kit.bud,'bud-late-gentian','#a3a6b0',0,.016,0,.005,.018,.005);continue;}
+    for(let layer=0;layer<3;layer++){const q=L*(1-layer*.21);f.add('late-gentian-corolla','petal-late-gentian',new THREE.Color(s.flowerColor).lerp(new THREE.Color('#c9c7e3'),layer*.11).getStyle(),0,layer*.008,0,q,q,q,0,layer*.54,0);}
+   }
+  }else if(tal){
+   for(let k=0;k<20;k++){const t=.59+.4*k/20,an=az+k*2.399,base=stemAt(t),reach=.015*(1-(t-.59)*1.4),at=[base[0]+Math.sin(an)*reach,base[1]+.004,base[2]+Math.cos(an)*reach];b.branch(base,at,.0006,'#927568','pedicel-late-talinum');
+    if(k%6!==1){b.add(kit.bud,'bud-late-talinum','#a65f79',...at,.0025,.0031,.0025);continue;}
+    const f=flowerFrame(b,at,.70,an),r=.005;for(let pet=0;pet<5;pet++)f.add('petal','petal-late-talinum',s.flowerColor,0,0,0,r,r,r,0,pet*TAU/5,0);
+    for(let st=0;st<15;st++){const aa=st*2.399,q=[Math.sin(aa)*.0015,.0022,Math.cos(aa)*.0015];f.branch([0,0,0],q,.00012,'#dcb567','filament-late-talinum');f.add(kit.bud,'anther-late-talinum','#dfbb55',...q,.00035,.00045,.00035);}
+   }
+  }else if(alt){
+   for(let k=0;k<7;k++){const t=.45+.5*k/7,an=az+k*2.399,base=stemAt(t),reach=w*.15*(1-t*.5),at=[base[0]+Math.sin(an)*reach,base[1]+h*.13,base[2]+Math.cos(an)*reach];b.branch(base,at,.00065,a.stemColor,'pedicel-late-sennichi');const f=flowerFrame(b,at,.4,an);f.add(kit.bud,'bract-late-sennichi-core',s.flowerColor,0,.0045,0,.0038,.006,.0038);
+    const mid=base.map((v,q)=>v+(at[q]-v)*.36);for(const side of [-1,1])blade(mid,an+side*.65,a.leafLength*.50,1.0);
+    for(let br=0;br<44;br++){const yy=br/44,theta=br*2.399,R=.0045*Math.sin(Math.PI*yy)**.6,pt=[Math.sin(theta)*R,.009*yy,Math.cos(theta)*R];f.add('petal','bract-late-sennichi',s.flowerColor,...pt,.0016,.0016,.0025,.45,theta,0);}
+   }
+  }
+ }
+}
+
 export function uncommonTreeLeafPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),serrated=['ume','wakaki','unryu'].includes(type),teeth=type==='unryu'?11:type==='ume'?28:32;
  const edge=serrated?1-.055*(.5+.5*Math.sin(t*TAU*teeth)):1+.022*Math.sin(t*TAU*5),round=type==='unryu',rhod=type==='rhododendron';
@@ -6698,6 +6764,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='lateGardenHerbs'){drawLateGardenHerbs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='uncommonGardenTree'){drawUncommonGardenTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='marginGardenPlants'){drawMarginGarden(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='submergedShoots'){drawSubmergedShoots(b,{info,s,p,detail,rand},kit);return;}

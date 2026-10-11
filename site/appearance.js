@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.110';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.111';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -257,3 +257,5 @@ Object.assign(TRAIT_VALUES,{mossTriangular:'三角形に広がる茎葉体',moss
 Object.assign(TRAIT_VALUES,{marginGardenPlants:'種類ごとの水辺・低木の形態',helvolaBlade:'基部に切れ込みがある小型の浮葉・暗い斑点',callaArrow:'長い葉柄と矢じり形の葉',lavateraLobed:'灰緑で浅く掌状に裂ける葉',hibbertiaFine:'細く平たい線形葉',helvolaFlower:'淡黄色の細長い多花弁と多数の雄しべ',callaSpathe:'白い仏炎苞と黄色い肉穂花序',lavateraBicolor:'濃い花脈・花底がある5弁と雄しべの柱',hibbertiaFive:'先がくぼむ黄色い5弁花',callaRhizome:'夏休み・冬の枯れ込みと春秋の葉出し'});
 
 Object.assign(TRAIT_VALUES,{uncommonGardenTree:'種類ごとの分枝と葉',snowCrestSpray:'細い鱗片葉・白い枝葉が混じる',whiteEmpireSpray:'白青緑の細い針状の若葉',uncommonCamphor:'3行脈と波打つ縁の革質葉',uncommonUme:'卵形で細かい鋸歯の葉',uncommonWakaki:'先がとがり鋸歯がある葉',uncommonUnryu:'曲がる枝に互生する小さな葉',uncommonJacaranda:'二回羽状の細かい複葉',uncommonCalliandra:'一対の羽片に多数の細かい小葉',uncommonBaobab:'幼葉と掌状複葉の参考',uncommonPlumFlower:'淡桃色の八重花',uncommonWakakiFlower:'若葉とともに咲く白い5弁花',uncommonJacarandaFlower:'分枝した花序に紫の筒状花',uncommonCalliandraFlower:'白い基部と桃色の先端を持つ多数の雄しべ'});
+
+Object.assign(TRAIT_VALUES,{lateGardenHerbs:'種類ごとの葉と花序',lateSnowDragon:'白い縦筋がある弓状の細い葉',lateSweetViolet:'浅い丸い鋸歯と心形の基部がある根生葉',lateTalinum:'厚みのあるへら形の斑入り葉',lateSennichi:'対生する先のとがった卵形の葉',lateVeronica:'対生する細長い鋸歯葉',lateGentian:'対生する3本の葉脈をもつ全縁葉',lateTalinumFlower:'5弁の桃色の小花と多数の黄色い雄しべ',lateSennichiHead:'赤紫の小さな苞が重なる細い頭花',lateVeronicaSpike:'下から開く4裂の小花と2本の雄しべ',lateGentianDouble:'淡紫青の筒状花冠が重なる八重花'});
