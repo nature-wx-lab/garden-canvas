@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.113';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.114';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -263,3 +263,5 @@ Object.assign(TRAIT_VALUES,{lateGardenHerbs:'種類ごとの葉と花序',lateSn
 Object.assign(TRAIT_VALUES,{mixedCalylophus:'細い枝に並ぶ小さな線形葉',mixedAptenia:'厚みのある対生の卵形葉',mixedCyclamen:'心形の葉と銀色の模様',mixedAcalypha:'鋸歯と白緑の細かな斑がある互生葉',mixedDasylirion:'小さな鉤状の刺が縁にある硬い帯状葉',mixedEmpetrum:'縁が巻き込む小さな針状葉',mixedDacrycarpus:'左右に開く幼形針葉と小さな成葉',mixedApteniaFlower:'赤紫の細い花弁が多数並ぶ花',mixedCyclamenFlower:'花の基部から上へ反り返る5枚の花弁',mixedAcalyphaFlower:'赤い糸状部分が密集する尾状の花序',mixedGiliaFlower:'淡紫・白・暗紫・黄の喉をもつ5裂の花'});
 
 Object.assign(TRAIT_VALUES,{fleshyStacked:'十字対生で重なる三角形の厚葉',fleshyBean:'青白い粉を帯びる丸い小さな厚葉',fleshySpoon:'種類ごとに幅・厚みが異なるへら形〜楕円形の多肉葉',fleshyPendantBell:'下を向く筒状花と外へ反り返る5裂の先端'});
+
+Object.assign(TRAIT_VALUES,{pearlLeaf:'透明な細い筋と小さな先端を持つ球形の厚葉',dolphinLeaf:'曲がった厚葉と背びれ状の突起',chainStem:'3稜の節がずれて鎖状につながる緑色の茎',curledNeedle:'細くねじれて巻く根生葉',minuteLeaf:'新しい先端の極小葉・早落して緑色の茎を残す',cageFlower:'基部が膨らむ筒と先端でつながる5裂片の籠状部'});

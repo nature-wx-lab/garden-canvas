@@ -1,7 +1,85 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.113';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.114';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.113';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.114';
 const TAU=Math.PI*2;
+export function necklaceGeometry(type){
+ const p=[],uv=[],ix=[],N=64,C=32;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,ph=j/C*TAU,sn=Math.max(0,Math.sin(Math.PI*t));let x,y,z;
+  if(type==='heart'){
+   const r=t,xx=Math.sin(ph)*.5,yy=.47+.48*Math.cos(ph)+.40*Math.exp(-(((ph-Math.PI)/.24)**2));x=r*xx;y=.48+r*(yy-.48);z=.055*(1-r*r)+.03*Math.sin(ph*3)*r;
+  }else if(type==='dolphin'){
+   const fin=Math.exp(-(((t-.53)/.055)**2));x=Math.cos(ph)*(.20*sn**.65+.18*fin*Math.max(0,Math.cos(ph)));y=t;z=.44*t*t+Math.sin(ph)*.16*sn**.6;
+  }else if(type==='rhipsalis'){
+   const ribs=.35+.65*Math.max(0,Math.cos(ph*3))**5,r=(.27+.18*Math.sin(Math.PI*t)**.5)*ribs;x=Math.cos(ph)*r;y=t;z=Math.sin(ph)*r;
+  }else{
+   x=Math.cos(ph)*.5*sn**.6;y=t;z=Math.sin(ph)*.5*sn**.6;
+  }
+  p.push(x,y,z);uv.push(j/C,t);if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));if(type==='heart')for(let k=0;k<ix.length;k+=3)[ix[k+1],ix[k+2]]=[ix[k+2],ix[k+1]];g.setIndex(ix);g.computeVertexNormals();g.userData.necklace=type;return g;
+}
+export function cageTubeGeometry(){
+ const p=[],uv=[],ix=[],N=48,C=48;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,ph=j/C*TAU,r=.072+.145*Math.exp(-(((t-.22)/.20)**2))+.035*t**4;
+  p.push(Math.sin(ph)*r,t*.76,Math.cos(ph)*r);uv.push(j/C,t);if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.cageTube=true;return g;
+}
+function drawNecklacePlants(b,{info,s,detail,rand},kit){
+ const a=info.appearance,t=a.shootProfile,h=s.height,w=s.spread,green=s.leafColor;
+ if(s.groundDormant)return;
+ const branch=(x,y,r=.001,color=a.stemColor,kind='stem-necklace-'+t)=>b.branch(x,y,r,color,kind);
+ const blade=(p,az,L,W,pitch=.8,type=t)=>flowerFrame(b,p,pitch,az).add('necklace-'+type,'leaf-necklace-'+t,kit.shade(rand,green,.035),0,0,0,W,L,t==='pearl'?L:t==='drum'?L*.16:t==='alluaudia'?L*.17:L);
+ if(t==='bulbine'){
+  for(let j=0;j<Math.round(19*s.leafDensity);j++){const az=j*2.399,H=h*(.65+rand()*.35)*Math.max(.4,s.leafScale),amp=.006+rand()*.007;let prev=[0,0,0];for(let k=1;k<=62;k++){const v=k/62,r=w*.32*v,ph=v*TAU*(2.8+rand()*.12)+j,pt=[Math.sin(az)*r+Math.sin(ph)*amp*v,H*v,Math.cos(az)*r+Math.cos(ph)*amp*v];branch(prev,pt,.0018*(1-v*.75),green,'leaf-necklace-bulbine');prev=pt;}}
+  return;
+ }
+ if(t==='drimia'){
+  b.add(kit.bud,'bulb-necklace-drimia','#a39275',0,.018,0,.028,.036,.028);
+  for(let j=0;j<9;j++){const an=j*TAU/9;branch([Math.sin(an)*.013,.045,Math.cos(an)*.013],[Math.sin(an)*.003,.057,Math.cos(an)*.003],.0007,'#bcaf91','skin-necklace-drimia');}
+  if(!s.leafDensity)return;
+  let tips=[];const split=(base,az,len,level)=>{const end=[base[0]+Math.sin(az)*len*.8,base[1]+len*.6,base[2]+Math.cos(az)*len*.8];branch(base,end,.0006,green);if(level<3)for(let side of [-1,1])split(end,az+side*(.65+rand()*.5),len*.7,level+1);else tips.push(end);};
+  for(let j=0;j<3;j++)split([0,.05,0],j*2.4,h*.36,0);
+  for(let j=0;j<2;j++){let p=[0,.035,0];for(let k=1;k<=18;k++){let v=k/18,q=[Math.sin(j*3)*w*.35*v,h*.7*v+.035,Math.cos(j*3)*w*.35*v];branch(p,q,.00065*(1-v*.8),green,'leaf-necklace-drimia');p=q;}}
+  if(s.bloom)for(const pt of tips.filter((_,i)=>i%2===0)){const f=flowerFrame(b,pt,.7,rand()*TAU);for(let k=0;k<6;k++)f.add('petal','petal-necklace-drimia','#e2dfcd',0,0,0,.002,.002,.004,0,k*TAU/6,0);f.add(kit.bud,'anther-necklace-drimia','#b4a76c',0,.001,0,.001,.001,.001);}
+  return;
+ }
+ if(t==='alluaudia'){
+  const n=h>1.5?4:1;
+  for(let j=0;j<n;j++){const az=j*2.399,H=h*(j?.65:1),R=Math.min(.05,h*.055),at=v=>[Math.sin(az)*w*(j?.3:0)*v,H*v,Math.cos(az)*w*(j?.3:0)*v];let prev=[0,0,0];for(let k=1;k<=28;k++){const pt=at(k/28);branch(prev,pt,R*(1-k/40),'#b6afa0','trunk-necklace-alluaudia');prev=pt;}
+   const nodes=Math.min(150,Math.round(H/.018));for(let k=1;k<nodes;k++){const v=k/nodes,an=k*2.399,pt=at(v),r=R*(1-v*.7),base=[pt[0]+Math.sin(an)*r,pt[1],pt[2]+Math.cos(an)*r],tip=[base[0]+Math.sin(an)*.022,base[1]+.014,base[2]+Math.cos(an)*.022];branch(base,tip,.0012,'#70675a','spine-necklace-alluaudia');if(rand()<s.leafDensity)for(let side of [-1,1])blade([base[0],base[1]-.007,base[2]],an+side*.6,.026,.018,1.03,'round');}
+  }return;
+ }
+ if(t==='heart')b.add(kit.bud,'tuber-necklace-heart','#9e947e',0,.018,0,.025,.026,.025);
+ const n=t==='drum'?6:t==='ampliata'?6:t==='rhipsalis'?18:t==='heart'?12:24;
+ for(let j=0;j<Math.round(n*detail);j++){
+  const az=j*2.399,r=w*(.28+rand()*.20),H=h*(.35+rand()*.50),bend=(rand()-.5)*1.1,at=v=>[Math.sin(az+bend*Math.sin(v*7))*r*v,H*Math.sin(v*Math.PI*(.78+j%4*.04))+.008,Math.cos(az+bend*Math.sin(v*7))*r*v];
+  let prev=at(0);const nodes=t==='pearl'?36:t==='dolphin'?22:t==='heart'?16:t==='rhipsalis'?16:10;
+  for(let k=1;k<=nodes;k++){
+   const v=k/nodes,pt=at(v);if(t==='rhipsalis'){
+    const dir=new THREE.Vector3(...pt).sub(new THREE.Vector3(...prev)),len=dir.length(),rot=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()));
+    branch(prev,pt,.0014,green,'core-necklace-rhipsalis');const q=new THREE.Quaternion().setFromEuler(rot).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),k*Math.PI/3));rot.setFromQuaternion(q);b.add('necklace-rhipsalis','stem-necklace-rhipsalis',green,...prev,.010,len,.010,rot.x,rot.y,rot.z);
+   }else branch(prev,pt,t==='drum'?.0022:t==='ampliata'?.002:.0008);prev=pt;
+   if(t==='rhipsalis')continue;
+   if(t==='ampliata'){
+    if(k===nodes)blade(pt,az,.003,.0015,.7,'round');
+    if(s.bloom&&[6,9].includes(k)&&j%2===0){const origin=[pt[0],pt[1]+.018,pt[2]],L=.060;branch(pt,origin,.0012);const f=flowerFrame(b,origin,.30,az);f.add('cage-tube','petal-necklace-ampliata',s.flowerColor,0,0,0,L,L,L);
+     for(let l=0;l<5;l++){const an=l*TAU/5;let p=[Math.sin(an)*L*.107,L*.76,Math.cos(an)*L*.107];for(let q=1;q<=15;q++){const v=q/15,R=L*(.107*(1-v)+.06*Math.sin(Math.PI*v)),x=[Math.sin(an)*R,L*(.76+v*.24),Math.cos(an)*R];f.branch(p,x,.0012,'#b3b983','lobe-necklace-ampliata');p=x;}}
+    }continue;
+   }
+   const aa=az+k*2.399;
+   if(t==='pearl')blade(pt,aa,.008,.008,1.2,'round');
+   else if(t==='dolphin')blade(pt,aa,.025,.023,1.35,'dolphin');
+   else if(t==='heart')for(let side of [0,1])blade(pt,aa+side*Math.PI,.019,.02,1.1,'heart');
+   else if(t==='drum')blade(pt,aa,.034,.033,.9,'round');
+   if(t==='pearl'&&s.bloom&&k===nodes-4&&j%3===0){const end=[pt[0],pt[1]+.03,pt[2]];branch(pt,end,.00065);b.add(kit.bud,'involucre-necklace-pearl','#849664',...end,.0035,.006,.0035);for(let l=0;l<20;l++){const an=l*2.399,R=.004*Math.sqrt((l+.5)/20),x=[end[0]+Math.sin(an)*R,end[1]+.006,end[2]+Math.cos(an)*R];b.add(kit.bud,'petal-necklace-pearl','#e2dfd6',...x,.00065,.002,.00065);branch(x,[x[0]+.001,x[1]+.006,x[2]],.00013,'#ddd6c8','style-necklace-pearl');}}
+   if(t==='drum'&&k%4===0){let p=pt;for(let q=1;q<24;q++){const v=q/23,an=v*TAU*2.1,x=[pt[0]+.028*v,pt[1]+.004*Math.sin(an),pt[2]+.004*Math.cos(an)];branch(p,x,.0004,green,'tendril-necklace-drum');p=x;}}
+  }
+ }
+}
+
 export function fleshyLeafGeometry(type){
  const p=[],uv=[],ix=[],N=48,C=32,bean=type==='blueBean',star=type==='starPrince',long=type==='fukuhime';
  for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
@@ -6917,6 +6995,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='necklacePlants'){drawNecklacePlants(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='fleshyGardenPlants'){drawFleshyGardenPlants(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='mixedGardenPlants'){drawMixedGardenPlants(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='lateGardenHerbs'){drawLateGardenHerbs(b,{info,s,detail,rand},kit);return;}
