@@ -1,7 +1,65 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.120';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.121';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.120';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.121';
 const TAU=Math.PI*2;
+// Closed fleshy leaves, with independent outlines and real silhouette hairs.
+export const SOFT_SUCCULENT_PROFILES={
+ silverMoon:{n:12,width:.24,thick:.095,shape:'lance',hair:.021,heads:3,nodes:6},
+ ginzo:{n:22,width:.46,thick:.17,shape:'lance',hair:.018,heads:9,nodes:9},
+ giantRabbit:{n:14,width:.43,thick:.12,shape:'oblong',hair:.012,heads:2,nodes:7},
+ teddy:{n:14,width:.63,thick:.18,shape:'oblong',hair:.021,heads:3,nodes:7},
+ aurora:{n:28,width:.40,thick:.18,shape:'bean',heads:6,nodes:18},
+ momotaro:{n:40,width:.64,thick:.17,shape:'claw',heads:1},
+ tatsuta:{n:23,width:.43,thick:.21,shape:'spoon',heads:3},
+ hialium:{n:20,width:.57,thick:.26,shape:'claw',heads:3}
+};
+export function softSucculentPoint(type,t,ph){
+ const a=SOFT_SUCCULENT_PROFILES[type],sn=Math.max(0,Math.sin(Math.PI*t)),side=Math.cos(ph),back=Math.sin(ph);
+ let outline=a.shape==='bean'?sn**.38*(.35+.65*t):a.shape==='claw'?Math.min(1,t*5)*(t<.57?.38+t:((1-t)/.43)**.8):a.shape==='spoon'?sn**.62*(.34+.80*t):a.shape==='oblong'?sn**.43*(.48+.52*t):sn**.78;
+ if(a.shape==='oblong')outline*=1+(type==='teddy'?.085:.035)*Math.sin(t*TAU*5.5)*Math.max(0,(t-.43)/.57);
+ return [.5*side*outline,t,back*a.thick*outline+(a.shape==='bean'?.035:.13)*t*t];
+}
+export function softSucculentGeometry(type){
+ const p=[],uv=[],ix=[],N=56,C=36;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  p.push(...softSucculentPoint(type,i/N,j/C*TAU));uv.push(j/C,i/N);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.softSucculentLeaf=type;return g;
+}
+function drawSoftSucculents(b,{info,s,rand},kit){
+ const type=info.appearance.shootProfile,a=SOFT_SUCCULENT_PROFILES[type],h=s.height,w=s.spread;
+ const blade=(at,az,pitch,L)=>{
+  const f=flowerFrame(b,at,pitch,az),W=L*a.width;
+  f.add('soft-'+type,'leaf-soft-'+type,kit.shade(rand,s.leafColor,.03),0,0,0,W,L,L);
+  if(a.hair){
+   const n=type==='silverMoon'?135:95;
+   for(let q=0;q<n;q++){
+    const t=.045+.92*rand(),ph=q*2.399,pt=softSucculentPoint(type,t,ph),root=[pt[0]*W,pt[1]*L,pt[2]*L],len=L*a.hair*(.55+rand()*.6),tip=[root[0]+Math.cos(ph)*len,root[1]+len*.34,root[2]+Math.sin(ph)*len];
+    const brown=type==='teddy'&&t>.58,clr=brown?'#98664c':type==='silverMoon'?'#e0e1d6':'#c4c6a1';
+    f.branch(root,tip,len*.033,clr,'hair-soft-'+type);
+   }
+  }
+ };
+ for(let j=0;j<a.heads;j++){
+  const az=j*2.399+.3,scale=j===0?1:.64+.12*rand(),R=j===0?0:w*(a.nodes?.29:.31),root=[Math.sin(az)*R*.35,.002,Math.cos(az)*R*.35],base=[Math.sin(az)*R,h*(a.nodes?.05:.10),Math.cos(az)*R];
+  if(a.nodes){
+   const top=[base[0]+Math.sin(az)*w*.08,h*.70*scale,base[2]+Math.cos(az)*w*.08];b.branch(root,top,Math.min(w*.012,h*.025),type==='silverMoon'?'#b0aca0':'#839374','stem-soft-'+type);
+   for(let k=0;k<a.nodes;k++){
+    const v=k/(a.nodes-1),at=root.map((x,q)=>x+(top[q]-x)*(.18+v*.8)),L=Math.min(w*(type==='aurora'?.19:type==='silverMoon'?.45:type==='ginzo'?.24:.56),h*(type==='aurora'?.36:type==='ginzo'?.30:.66))*(1-v*.48)*scale;
+    const opposite=!['silverMoon','aurora'].includes(type),count=opposite?2:1;
+    for(let side=0;side<count;side++)blade(at,az+k*(opposite?Math.PI/2:2.399)+side*Math.PI,.98-v*.72+(rand()-.5)*.09,L);
+   }
+  }else{
+   b.branch(root,base,Math.min(w*.012,h*.04),'#a3a58d','stem-soft-'+type);
+   for(let k=0;k<a.n;k++){
+    const v=k/(a.n-1),aa=az+k*2.399+(rand()-.5)*.07,L=Math.min(w*(a.heads===1?.53:.34),h*(type==='aurora'?.72:1.5))*(1-v*.66)*scale,r=L*.035;
+    blade([base[0]+Math.sin(aa)*r,base[1]+v*h*(type==='aurora'?.33:.12)*scale,base[2]+Math.cos(aa)*r],aa,(type==='aurora'?.99:1.16)-v*.98,L);
+   }
+  }
+ }
+}
+
 // Nursery photographs define each leaf profile; these are not measured meshes.
 export const HAWORTHIA_PROFILES={
  venosa:{n:9,width:.65,thick:.14,curve:.10,shape:'point',pattern:'net',pitch:1.08},
@@ -24,6 +82,7 @@ export const HAWORTHIA_PROFILES={
  tarkastad:{n:28,width:.40,thick:.08,curve:.07,shape:'point',pattern:'stripe',pitch:1.04,hair:.022,offsets:2},
  bosfontein:{n:35,width:.37,thick:.095,curve:.04,shape:'point',pattern:'fineNet',pitch:.84,hair:.045,offsets:4},
  starkiana:{n:18,width:.47,thick:.14,curve:.08,shape:'point',pattern:'plain',pitch:1.06,twist:.24},
+ glabrata:{n:17,width:.40,thick:.10,curve:.11,shape:'point',pattern:'sparseDots',pitch:1.04,offsets:2},
  chiyoda:{n:12,width:.53,thick:.11,curve:.06,shape:'point',pattern:'tiger',pitch:.88,rank:3,keel:true}
 };
 export function haworthiaLeafPoint(type,t,ph){
@@ -64,6 +123,10 @@ function drawHaworthia(b,{info,s,rand},kit){
      const t=type==='onigawara'?.10+j/13*.82:.57+j/13*.39,ph=TAU*(m+.28*(j%2))/11,q=haworthiaLeafPoint(type,t,ph),r=L*(type==='onigawara'?.009:type==='pygmaea'?.004:.0025),color=type==='onigawara'?'#4e5845':'#d4dbcf';
      f.add(kit.bud,'papilla-haw-'+type,color,q[0]*W,q[1]*L,q[2]*L,r,r*.90,r);
     }
+   }
+   if(type==='glabrata')for(let j=0;j<32;j++){
+    const t=.09+rand()*.78,ph=rand()*TAU,q=haworthiaLeafPoint(type,t,ph),r=L*.005;
+    f.add(kit.bud,'tubercle-haw-glabrata','#dfe5ca',q[0]*W,q[1]*L,q[2]*L,r,r*.65,r);
    }
    if(type==='claw'||type==='castle'){
     const rows=type==='claw'?10:12;
@@ -7341,6 +7404,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='softSucculents'){drawSoftSucculents(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='haworthiaCrowns'){drawHaworthia(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='ribbedSucculents'){drawRibbedSucculents(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='caudexPlants'){drawCaudexPlants(b,{info,s,rand},kit);return;}
