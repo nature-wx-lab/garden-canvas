@@ -51,6 +51,7 @@ test('old saved catalogs migrate without changing plant IDs, plans or the input 
  assert.equal(JSON.stringify(old),copy);assert.equal(next.catalogVersion,CATALOG_VERSION);assert.deepEqual(next.plans,old.plans);assert.deepEqual(next.view,old.view);
  assert.equal(validateDocument({...old,catalogVersion:'2026-10-10.2'}).catalogVersion,CATALOG_VERSION);
  assert.equal(validateDocument({...old,catalogVersion:'2026-10-12.2'}).catalogVersion,CATALOG_VERSION);
+ assert.equal(validateDocument({...old,catalogVersion:'2026-10-12.3'}).catalogVersion,CATALOG_VERSION);
  assert.throws(()=>validateDocument({...old,catalogVersion:'unknown-future'}));
  for(const genre of GENRES){const [id]=entries.find(([,p])=>p.genre===genre),doc=emptyDocument();doc.plans.A.plants=[makePlant(id,1,2,2)];assert.deepEqual(validateDocument(doc),doc);}
 });

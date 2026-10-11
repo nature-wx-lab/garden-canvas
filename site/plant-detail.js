@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.129';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.130';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.129';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.130';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5950,7 +5950,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
    const n=per+(layer<count%rings?1:0),t=layer/(rings-1),len=r*(1-(palette.exposedStamens?.30:.83)*t),level=r*(high?.60:deep?.70:flat?(palette.rosetteDepth??.13):.40)*t;
    for(let k=0;k<n;k++,j++){
     const an=k*TAU/n+layer*2.39996+Math.sin(j*4.7)*.085,col=palette.inner?new THREE.Color(color).lerp(new THREE.Color(palette.inner),t*.85):color,pk=(palette.rim?'petal-rose-rim-'+(palette.rimWidth?'broad-':'')+palette.rim.slice(1):'petal-rose')+(palette.outside?'-outside-'+palette.outside.slice(1):''),qx=rosette&&t>.4?Math.sin(j%4*Math.PI/2)*r*.065:0,qz=rosette&&t>.4?Math.cos(j%4*Math.PI/2)*r*.065:0;
-    f.add(palette.banksiae?'banksiaePetal':palette.heartPetals?'roseHeartPetal':chalice&&t<.6?'roseChalicePetal':palette.notched?'roseNotchedPetal':palette.jewel?'roseJewelPetal':wave||deep&&t>.3?'roseWavedPetal':(high||palette.pointed)&&t>.4?'rosePointedPetal':'roseRoundPetal',pk,shade(rand,col,.018),qx,level+r*(rand()-.5)*.055,qz,len*(.88+rand()*.18),len*(palette.exposedStamens?.32:chalice&&t<.6?1.05:deep?1.48:high?1.05:flat?(palette.petalLift??.56):.93),len*(.93+rand()*.12),(rand()-.5)*(rosette||deep&&t>.3?.42:.18),an,(rand()-.5)*.27);
+    f.add(palette.banksiae?'banksiaePetal':palette.heartPetals?'roseHeartPetal':chalice&&t<.6?'roseChalicePetal':palette.notched?'roseNotchedPetal':palette.jewel&&(!palette.jewelInner||t>.28)?(wave?'roseJewelWavedPetal':'roseJewelPetal'):wave||deep&&t>.3?'roseWavedPetal':(high||palette.pointed)&&t>.4?'rosePointedPetal':'roseRoundPetal',pk,shade(rand,col,.018),qx,level+r*(rand()-.5)*.055,qz,len*(.88+rand()*.18),len*(palette.exposedStamens?.32:chalice&&t<.6?1.05:deep?1.48:high?1.05:flat?(palette.petalLift??.56):.93),len*(.93+rand()*.12),(rand()-.5)*(rosette||deep&&t>.3?.42:.18),an,(rand()-.5)*.27);
    }
   }
   if(palette.buttonEye)for(let j=0;j<9;j++)f.add('roseRoundPetal','petal-button-eye',palette.inner||color,Math.sin(j*2.399)*r*.035,r*.25,Math.cos(j*2.399)*r*.035,r*.10,r*.12,r*.10,.1,j*2.399,0);
@@ -9847,7 +9847,7 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
  for(let i=0;i<canes;i++){
   const yaw=i*2.399+.2,reach=w*(climb?.38:.21+pal.lean*.37),top=h*(.60+.34*((i*3%7)/6)),root=[Math.sin(yaw)*w*.045,0,Math.cos(yaw)*w*.045];let prev=root;
   for(let j=1;j<=nodes;j++){
-   const t=j/nodes,rr=reach*Math.pow(t,pal.stiff?2.1:climb?1.55:1.16),rise=banks?Math.sin(t*Math.PI*.66):ramble?Math.sin(t*Math.PI*.61):pal.arching?Math.sin(t*Math.PI*.52):t,at=[root[0]+Math.sin(yaw)*rr,top*rise,root[2]+Math.cos(yaw)*rr];
+   const t=j/nodes,rr=reach*Math.pow(t,pal.stiff?2.1:climb?1.55:1.16),rise=banks?Math.sin(t*Math.PI*.66):ramble?Math.sin(t*Math.PI*.61):pal.arching?Math.sin(t*Math.PI*.52):t,turn=yaw+(pal.branched?.22*Math.sin(t*3.3+i)*t:0),at=[root[0]+Math.sin(turn)*rr,top*rise,root[2]+Math.cos(turn)*rr];
    b.branch(prev,at,Math.min(pal.caneRadius||(banks?.008:pal.stiff?.014:.010),h*.008)*(1-t*.64),j<4?(a.barkColor||'#88755e'):pal.youngStem&&j>=nodes-1&&s.leafDensity>0?pal.youngStem:stem,'wood-rose-cane');prickles(prev,at,i*13+j);
    b.add(kit.bud,'axillaryBud','#865d51',at[0],at[1],at[2],.0019,.004,.0018,.2,yaw+j,0);
    if(j>2){
@@ -9855,6 +9855,14 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
     b.branch(at,end,Math.min(.003,h*.0021),stem,'wood-rose-lateral');prickles(at,end,i*17+j,true);
     if(!banks&&(climb?(j%2===0||j===nodes):j>=nodes-1))heads.push({at:end,yaw:az,seed:i*nodes+j});
     for(let k=1;k<=4;k++)leaves.push({at:mix(at,end,k/5),yaw:az+(k%2?1:-1)*1.13,size:(k===4?.78:1),young:k===4});
+    if(pal.branched&&!climb&&j>=4)for(let q=0;q<pal.branched;q++){
+     // Small shoots break up the repeated ladder of leaves. Their continuous
+     // woody junctions persist after leaf fall; angles are reference geometry.
+     const base=mix(at,end,.38+q*.25),turn=az+(q%2?-1:1)*(1.05+.15*Math.sin(i+j)),len=w*(.10+.025*((i+j)%3)),rise=len*(.48-.32*pal.lean),tip=[base[0]+Math.sin(turn)*len,Math.min(h*.98,base[1]+rise),base[2]+Math.cos(turn)*len],mid=mix(base,tip,.55);
+     mid[1]+=len*.10;b.branch(base,mid,.0016,stem,'wood-rose-fork');b.branch(mid,tip,.0010,stem,'wood-rose-fork');prickles(base,tip,i*43+j*5+q,true);
+     for(let k=1;k<=4;k++)leaves.push({at:k<=2?mix(base,mid,k/3):mix(mid,tip,(k-2)/3),yaw:turn+(k%2?1:-1)*(1.10+.15*Math.sin(i+k)),size:.68+.1*(k%3),young:k===4});
+     if(j===nodes-2&&q===0)heads.push({at:tip,yaw:turn,seed:i*nodes*3+j*3+q});
+    }
     if(climb)for(let q=1;q<=2;q++){
      // Leaf-bearing side shoots follow the cane; the mature vine is not a bare
      // pole with an enlarged flower and a handful of leaves at its tip.
