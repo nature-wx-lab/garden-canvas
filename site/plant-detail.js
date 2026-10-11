@@ -1,7 +1,52 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.115';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.116';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.115';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.116';
 const TAU=Math.PI*2;
+// Shape proportions are approximations of the cited nursery specimens.
+const AGAVE_SHAPES={queen:{waist:.28,cup:.10,wave:.018},whale:{waist:.19,cup:.24,wave:.043},blackblue:{waist:.22,cup:.19,wave:.022},redcat:{waist:.30,cup:.17,wave:.035}};
+export function agaveBladePoint(t,angle,profile){
+ const a=AGAVE_SHAPES[profile],sn=Math.max(0,Math.sin(Math.PI*t)),outline=sn**.65*(a.waist+(1-a.waist)*Math.sin(Math.PI*t*.82)),edge=.5*outline*(1+a.wave*Math.sin(t*Math.PI*15));
+ return [Math.cos(angle)*edge,t,Math.sin(angle)*.082*sn**.7+a.cup*sn*Math.cos(angle)**2-.13*t*t];
+}
+export function agaveThornGeometry(){
+ const p=[],uv=[],ix=[],N=24,C=12;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,ph=j/C*TAU,r=.5*(1-t)**1.4;p.push(Math.cos(ph)*r,t,Math.sin(ph)*r+.34*t*t);uv.push(j/C,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
+}
+export function agaveBladeGeometry(profile){
+ const points=[],uv=[],indices=[],N=96,C=32;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  points.push(...agaveBladePoint(i/N,j/C*TAU,profile));uv.push(j/C,i/N);
+  if(i<N&&j<C){const k=i*(C+1)+j;indices.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();return g;
+}
+function drawAgaveRosettes(b,{info,s,rand},kit){
+ const a=info.appearance,t=a.shootProfile,queen=t==='queen',whale=t==='whale',black=t==='blackblue',n=queen?18:whale?27:23,spine=queen?'#774c3c':black?'#332c29':whale?'#d4cdb8':'#c6b28d';
+ for(let k=0;k<n;k++){
+  const v=k/(n-1),az=k*2.399+.04*(rand()-.5),L=Math.min(s.spread*.57,s.height*1.55)*(1-v*.58),W=L*(queen?.92:whale?.78:black?.65:.56),pitch=(queen?1.1:.92)*(1-v)+.08,origin=[0,s.height*.05+v*s.height*.21,0],f=flowerFrame(b,origin,pitch,az);
+  f.add('agave-'+t,'leaf-agave-'+t,kit.shade(rand,s.leafColor,.03),0,0,0,W,L,L);
+  for(let side of [-1,1]){
+   let prev;
+   for(let j=0;j<=40;j++){
+    const q=.06+j/40*.88,p=agaveBladePoint(q,side<0?Math.PI:0,t),pt=[p[0]*W,p[1]*L,p[2]*L];
+    if(prev)f.branch(prev,pt,L*(whale?.008:.004),spine,'margin-agave-'+t);prev=pt;
+   }
+   const teeth=queen?7:6;
+   for(let j=0;j<teeth;j++){
+    const q=.15+j/(teeth-1)*.68,p=agaveBladePoint(q,side<0?Math.PI:0,t),start=[p[0]*W,p[1]*L,p[2]*L],size=L*(queen?.052:whale?.14:black?.093:.13)*(1+.12*Math.sin(j*4.3+k));
+    f.add('agave-thorn','tooth-agave-'+t,spine,...start,size*.46,size,size*.38,0,0,-side*.78);
+   }
+  }
+  const point=agaveBladePoint(1,0,t);
+  f.add('agave-thorn','terminal-spine-agave-'+t,spine,0,L,point[2]*L,L*.036,L*(queen?.10:.16),L*.031,-.17,0,.08);
+ }
+ // Flowering is age dependent and monocarpic; no yearly bloom is invented.
+}
+
 export function stoneSucculentGeometry(type){
  const p=[],uv=[],ix=[],N=48,C=48;
  for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
@@ -7049,6 +7094,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='agaveRosettes'){drawAgaveRosettes(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='stoneSucculents'){drawStoneSucculents(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='necklacePlants'){drawNecklacePlants(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='fleshyGardenPlants'){drawFleshyGardenPlants(b,{info,s,detail,rand},kit);return;}
