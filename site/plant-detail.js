@@ -1,9 +1,14 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.121';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.122';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.121';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.122';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
+ kakurei:{n:18,width:.48,thick:.065,shape:'lance',heads:5,nodes:8},
+ ovilide:{n:13,width:.55,thick:.20,shape:'spoon',heads:2},
+ purpusorumWhite:{n:31,width:.89,thick:.09,shape:'diamond',heads:1},
+ krakow:{n:42,width:.40,thick:.045,shape:'lance',heads:5},
+ misebaya:{n:18,width:1.05,thick:.05,shape:'coin',heads:1},
  silverMoon:{n:12,width:.24,thick:.095,shape:'lance',hair:.021,heads:3,nodes:6},
  ginzo:{n:22,width:.46,thick:.17,shape:'lance',hair:.018,heads:9,nodes:9},
  giantRabbit:{n:14,width:.43,thick:.12,shape:'oblong',hair:.012,heads:2,nodes:7},
@@ -16,8 +21,10 @@ export const SOFT_SUCCULENT_PROFILES={
 export function softSucculentPoint(type,t,ph){
  const a=SOFT_SUCCULENT_PROFILES[type],sn=Math.max(0,Math.sin(Math.PI*t)),side=Math.cos(ph),back=Math.sin(ph);
  let outline=a.shape==='bean'?sn**.38*(.35+.65*t):a.shape==='claw'?Math.min(1,t*5)*(t<.57?.38+t:((1-t)/.43)**.8):a.shape==='spoon'?sn**.62*(.34+.80*t):a.shape==='oblong'?sn**.43*(.48+.52*t):sn**.78;
+ if(a.shape==='diamond')outline=t<.54?t/.54:((1-t)/.46)**.85;
+ if(a.shape==='coin')outline=sn**.46*(.50+.50*t)*(1+.045*Math.cos(t*TAU*5));
  if(a.shape==='oblong')outline*=1+(type==='teddy'?.085:.035)*Math.sin(t*TAU*5.5)*Math.max(0,(t-.43)/.57);
- return [.5*side*outline,t,back*a.thick*outline+(a.shape==='bean'?.035:.13)*t*t];
+ return [.5*side*outline,t,back*a.thick*outline+(a.shape==='bean'?.035:a.shape==='diamond'?.24:.13)*t*t+(a.shape==='diamond'?Math.abs(side)*outline*.09:0)];
 }
 export function softSucculentGeometry(type){
  const p=[],uv=[],ix=[],N=56,C=36;
@@ -41,12 +48,35 @@ function drawSoftSucculents(b,{info,s,rand},kit){
    }
   }
  };
+ if(type==='misebaya'){
+  const winter=[12,1,2].includes(s.month),grow=winter?0:s.month===3?.23:s.month===4?.60:1;
+  // The old trailing shoots die back; only compact buds remain at soil level.
+  if(winter){
+   for(let j=0;j<9;j++){
+    const an=j*2.399,rr=Math.min(w*.15,.04)*Math.sqrt(j/9),at=[Math.sin(an)*rr,.002,Math.cos(an)*rr];
+    for(let k=0;k<9;k++)blade(at,an+k*2.399,.85-k*.065,Math.min(.008,w*.03)*(1-k*.065));
+   }return;
+  }
+  for(let j=0;j<11;j++){
+   const an=j*2.399,reach=w*.46*(.66+.34*rand())*grow,peak=h*(.55+.2*rand())*grow;let prev=[0,.004,0];
+   for(let k=1;k<=8;k++){
+    const t=k/8,at=[Math.sin(an)*reach*t,.006+peak*Math.sin(t*Math.PI*.78),Math.cos(an)*reach*t];
+    b.branch(prev,at,Math.min(.002,w*.005)*grow,'#929b71','stem-misebaya');prev=at;
+    if(k<8)for(let q=0;q<3;q++)blade(at,an+q*TAU/3+k*.19,1.20,Math.min(.032,w*.11)*(.64+.36*Math.sin(t*Math.PI))*(.45+.55*grow));
+   }
+   if(s.bloom)for(let k=0;k<27;k++){
+    const aa=k*2.399,rr=Math.min(.025,w*.075)*Math.sqrt(k/27),at=[prev[0]+Math.sin(aa)*rr,prev[1]+.008+(.025-rr)*.50,prev[2]+Math.cos(aa)*rr],r=Math.min(.0035,w*.012);
+    b.branch(prev,at,r*.15,'#a48677','pedicel-misebaya');
+    detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'star',petals:5,stamenCount:10,center:'#b48297',tilt:.12,yaw:aa},{...kit,rand});
+   }
+  }return;
+ }
  for(let j=0;j<a.heads;j++){
   const az=j*2.399+.3,scale=j===0?1:.64+.12*rand(),R=j===0?0:w*(a.nodes?.29:.31),root=[Math.sin(az)*R*.35,.002,Math.cos(az)*R*.35],base=[Math.sin(az)*R,h*(a.nodes?.05:.10),Math.cos(az)*R];
   if(a.nodes){
    const top=[base[0]+Math.sin(az)*w*.08,h*.70*scale,base[2]+Math.cos(az)*w*.08];b.branch(root,top,Math.min(w*.012,h*.025),type==='silverMoon'?'#b0aca0':'#839374','stem-soft-'+type);
    for(let k=0;k<a.nodes;k++){
-    const v=k/(a.nodes-1),at=root.map((x,q)=>x+(top[q]-x)*(.18+v*.8)),L=Math.min(w*(type==='aurora'?.19:type==='silverMoon'?.45:type==='ginzo'?.24:.56),h*(type==='aurora'?.36:type==='ginzo'?.30:.66))*(1-v*.48)*scale;
+    const v=k/(a.nodes-1),at=root.map((x,q)=>x+(top[q]-x)*(.18+v*.8)),L=Math.min(w*(type==='kakurei'?.28:type==='aurora'?.19:type==='silverMoon'?.45:type==='ginzo'?.24:.56),h*(type==='kakurei'?.48:type==='aurora'?.36:type==='ginzo'?.30:.66))*(1-v*.48)*scale;
     const opposite=!['silverMoon','aurora'].includes(type),count=opposite?2:1;
     for(let side=0;side<count;side++)blade(at,az+k*(opposite?Math.PI/2:2.399)+side*Math.PI,.98-v*.72+(rand()-.5)*.09,L);
    }
@@ -54,7 +84,7 @@ function drawSoftSucculents(b,{info,s,rand},kit){
    b.branch(root,base,Math.min(w*.012,h*.04),'#a3a58d','stem-soft-'+type);
    for(let k=0;k<a.n;k++){
     const v=k/(a.n-1),aa=az+k*2.399+(rand()-.5)*.07,L=Math.min(w*(a.heads===1?.53:.34),h*(type==='aurora'?.72:1.5))*(1-v*.66)*scale,r=L*.035;
-    blade([base[0]+Math.sin(aa)*r,base[1]+v*h*(type==='aurora'?.33:.12)*scale,base[2]+Math.cos(aa)*r],aa,(type==='aurora'?.99:1.16)-v*.98,L);
+    blade([base[0]+Math.sin(aa)*r,base[1]+v*h*(type==='aurora'?.33:.12)*scale,base[2]+Math.cos(aa)*r],aa,(type==='aurora'?.99:type==='purpusorumWhite'?.94:1.16)-v*(type==='purpusorumWhite'?.75:.98),L);
    }
   }
  }
