@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.118';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.119';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -273,3 +273,5 @@ Object.assign(TRAIT_VALUES,{spinySucculentBlade:'幅広く湾曲する厚葉と�
 Object.assign(TRAIT_VALUES,{heartCaudex:'細いつるにつくハート形の葉',caudexBlade:'太い枝の先端に集まる厚葉',caudexFunnel:'先端が5裂する漏斗形の合弁花',caudexSummerRest:'夏に葉を落とし、露出塊根を残す参考',caudexWinterRest:'低温期に葉を落とし、幹と枝を残す参考'});
 
 Object.assign(TRAIT_VALUES,{retainedSucculentStem:'保護栽培で地上に残る多肉質の茎',cactusBowl:'多くの花被片を重ねる杯状の花',cactusFunnel:'多くの花被片を重ねる漏斗状の花'});
+
+Object.assign(TRAIT_VALUES,{haworthiaThickLeaf:'種類ごとに異なる厚葉と、窓・網目・突起・ノギ'});
