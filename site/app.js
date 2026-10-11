@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.123';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.123';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.123';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.123';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.123';
-import { createScene } from './scene.js?v=0.9.123';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.124';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.124';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.124';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.124';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, budget, calendar, observations, TASKS } from './model.js?v=0.9.124';
+import { createScene } from './scene.js?v=0.9.124';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
@@ -33,7 +33,7 @@ function sourceCard(target,kind){const info=plantInfo(kind),box=$(target);box.re
   if(appearance?.architecture==='submergedShoots')box.append(el('p',appearance.waterSurfaceModel?'水深2cm未満では水上の姿、それ以上では水中の姿を表示します。水中では花を表示しません。変化する水位に応じた新葉の展開速度、水温・結氷の影響は未再現です。':'水中葉の見本です。「庭をつくる」で池の水深を設定すると、水底から描きます。池の外や水深0mでは、形を見るための見本表示になります。水温・結氷・水質による生育変化は未再現です。','hint'));
   if(appearance?.phenologyRegion==='grower-cold')box.append(el('p','冬姿の参考：おぎはら植物園の寒冷地での記載。暖地の実測時期ではありません。','hint'));
   else if(appearance?.phenologyRegion)box.append(el('p',appearance.phenologyRegion,'hint'));
-  if(appearance?.winterClimateSensitive)box.append(el('p','冬姿は気候で変わります。暖地では葉が残り、強い寒さでは地上部が枯れる場合があるという資料に基づく参考表示です。','hint'));
+  if(appearance?.winterClimateSensitive&&!info.gardenUse)box.append(el('p','冬姿は気候で変わります。暖地では葉が残り、強い寒さでは地上部が枯れる場合があるという資料に基づく参考表示です。','hint'));
   if(appearance?.unconfirmed.length)box.append(el('p',`細部の資料未確認：${appearance.unconfirmed.map(k=>TRAIT_LABELS[k]||k).join('・')}`,'hint'));
   box.append(el('p',appearance?.lifeForm==='moss'?'コケ植物なので花は付けません。胞子のうの季節変化は未確認です。':appearance?.flowerTiming==='months'&&appearance.flowerMonths?.length?`開花月の記載あり：${appearance.flowerMonths.join('・')}月。出典の地域・栽培条件での目安です。`:!info.bloomKnown&&!appearance?.flowerMonths?.length?'開花月は資料未確認です。実や葉の観賞期を開花月として扱っていません。':'季節表記を月に区分した参考表示。芽出し・落葉の正確な月は、資料に記載がある植物だけ採用しています。','hint'));
   const months=el('div',undefined,'phenology');months.setAttribute('aria-label','12か月の開花参考');
