@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.111';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.112';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -259,3 +259,5 @@ Object.assign(TRAIT_VALUES,{marginGardenPlants:'種類ごとの水辺・低木�
 Object.assign(TRAIT_VALUES,{uncommonGardenTree:'種類ごとの分枝と葉',snowCrestSpray:'細い鱗片葉・白い枝葉が混じる',whiteEmpireSpray:'白青緑の細い針状の若葉',uncommonCamphor:'3行脈と波打つ縁の革質葉',uncommonUme:'卵形で細かい鋸歯の葉',uncommonWakaki:'先がとがり鋸歯がある葉',uncommonUnryu:'曲がる枝に互生する小さな葉',uncommonJacaranda:'二回羽状の細かい複葉',uncommonCalliandra:'一対の羽片に多数の細かい小葉',uncommonBaobab:'幼葉と掌状複葉の参考',uncommonPlumFlower:'淡桃色の八重花',uncommonWakakiFlower:'若葉とともに咲く白い5弁花',uncommonJacarandaFlower:'分枝した花序に紫の筒状花',uncommonCalliandraFlower:'白い基部と桃色の先端を持つ多数の雄しべ'});
 
 Object.assign(TRAIT_VALUES,{lateGardenHerbs:'種類ごとの葉と花序',lateSnowDragon:'白い縦筋がある弓状の細い葉',lateSweetViolet:'浅い丸い鋸歯と心形の基部がある根生葉',lateTalinum:'厚みのあるへら形の斑入り葉',lateSennichi:'対生する先のとがった卵形の葉',lateVeronica:'対生する細長い鋸歯葉',lateGentian:'対生する3本の葉脈をもつ全縁葉',lateTalinumFlower:'5弁の桃色の小花と多数の黄色い雄しべ',lateSennichiHead:'赤紫の小さな苞が重なる細い頭花',lateVeronicaSpike:'下から開く4裂の小花と2本の雄しべ',lateGentianDouble:'淡紫青の筒状花冠が重なる八重花'});
+
+Object.assign(TRAIT_VALUES,{mixedCalylophus:'細い枝に並ぶ小さな線形葉',mixedAptenia:'厚みのある対生の卵形葉',mixedCyclamen:'心形の葉と銀色の模様',mixedAcalypha:'鋸歯と白緑の細かな斑がある互生葉',mixedDasylirion:'小さな鉤状の刺が縁にある硬い帯状葉',mixedEmpetrum:'縁が巻き込む小さな針状葉',mixedDacrycarpus:'左右に開く幼形針葉と小さな成葉',mixedApteniaFlower:'赤紫の細い花弁が多数並ぶ花',mixedCyclamenFlower:'花の基部から上へ反り返る5枚の花弁',mixedAcalyphaFlower:'赤い糸状部分が密集する尾状の花序',mixedGiliaFlower:'淡紫・白・暗紫・黄の喉をもつ5裂の花'});

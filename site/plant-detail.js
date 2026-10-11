@@ -1,7 +1,103 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.111';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.112';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.111';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.112';
 const TAU=Math.PI*2;
+export function mixedGardenLeafPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='cordyline'||type==='dasylirion'){
+  const tooth=type==='dasylirion'?1+.18*Math.max(0,Math.sin(t*TAU*37))**8:1;
+  return [u*.5*(.35+.65*Math.sin(Math.PI*t*.8))*(1-t)**.55*tooth,t,.40*t*t+.035*u*u];
+ }
+ if(type==='empetrum'||type==='dacrycarpus')return [u*.5*sn**.38,t,.22*sn*(1-u*u)+.12*t*t];
+ if(type==='cyclamen'){
+  const ph=(u+1)*Math.PI,x=Math.sin(ph)*.5*(1-.035*Math.cos(ph*13)),y=.45+.52*Math.cos(ph)+.48*Math.exp(-(((ph-Math.PI)/.23)**2));
+  return [t*x,.45+t*(y-.45),.10*t*t+.025*Math.sin(ph*7)*t];
+ }
+ const apt=type==='aptenia',cat=type==='acalypha',edge=cat?1-.075*(.5+.5*Math.sin(t*TAU*11)):1;
+ return [u*.5*sn**(apt?.52:cat?.62:.82)*edge,t,(apt?.15:.05)*sn*(1-u*u)+.04*t*t];
+}
+export function mixedGardenPetalPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='cyclamen')return [u*.36*sn**.7,.26*t+1.15*t*t,.24*t-.46*t*t+.025*u*u*sn];
+ return [u*(type==='calylophus'?.58:.44)*sn**.48,.09*sn+.04*t*t,t*(1-(type==='calylophus'?.075:.025)*Math.exp(-((u/.22)**2))*t**8)];
+}
+function drawMixedGardenPlants(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,green=s.leafColor;
+ if(s.groundDormant)return;
+ const blade=(at,az,L,pitch,W=a.leafWidth/a.leafLength*L)=>flowerFrame(b,at,pitch,az).add('mixed-leaf-'+type,'leaf-mixed-'+type,kit.shade(rand,green,.035),0,0,0,W,L,L);
+ const branch=(p,q,r=.0007,color=a.stemColor)=>b.branch(p,q,r,color,'stem-mixed-'+type);
+ if(type==='cordyline'||type==='dasylirion'){
+  const das=type==='dasylirion',n=Math.round((das?105:64)*detail),trunk=Math.max(.025,h-(das?Math.min(.9,h*.9):Math.min(.85,h*.84))),R=das?.034:.018;
+  b.branch([0,0,0],[0,trunk,0],R*(h>1?1.7:1),das?'#75664f':'#807466','trunk-mixed-'+type);
+  for(let j=0;j<n;j++){
+   const az=j*2.399,rank=j/n,L=Math.min(a.leafLength,h*(das?1:1.02))*(.65+.35*rank),at=[Math.sin(az)*R*.7,trunk+(1-rank)*.035,Math.cos(az)*R*.7],pitch=das?-.13+rank*1.53:-.15+rank*1.47;
+   blade(at,az,L,pitch,Math.min(a.leafWidth,L*(das?.025:.043)));
+  }
+  // A mature Dasylirion inflorescence is not inferred from an arbitrary height.
+  return;
+ }
+ if(type==='cyclamen'){
+  for(let j=0;j<Math.round(28*detail);j++){
+   const az=j*2.399,R=w*.32*Math.sqrt((j+.5)/28),at=[Math.sin(az)*R,h*(.19+rand()*.24),Math.cos(az)*R],L=Math.min(a.leafLength,w*.27)*(.7+rand()*.3);
+   branch([0,.006,0],at,.001,'#82586b');blade(at,az,L,1.08,L*1.06);
+  }
+  if(s.bloom)for(let j=0;j<Math.round(11*detail);j++){
+   const az=j*2.399,R=w*.13*Math.sqrt((j+.5)/11),base=[Math.sin(az)*R,0,Math.cos(az)*R],top=[base[0],h*(.76+rand()*.12),base[2]],neck=[top[0]+.009*Math.sin(az),top[1]-.008,top[2]+.009*Math.cos(az)];
+   branch(base,top,.0009,'#84636e');branch(top,neck,.0008,'#84636e');const f=flowerFrame(b,neck,.14,az);
+   if(j%5===0){f.add(kit.bud,'bud-mixed-cyclamen','#ddcbd0',0,0,0,.0035,.008,.0035,.8,0,0);continue;}
+   f.add(kit.bud,'throat-mixed-cyclamen','#d8c9d2',0,0,0,.0035,.005,.0035);
+   for(let k=0;k<5;k++)f.add('mixed-petal-cyclamen','petal-mixed-cyclamen',s.flowerColor,0,-.002,0,.021,.021,.021,.06,k*TAU/5,0);
+  }return;
+ }
+ if(type==='dacrycarpus'){
+  const n=Math.round(37*detail),adult=h>3,rad=Math.max(.009,h*.015);b.branch([0,0,0],[0,h*.95,0],rad,'#77766d','trunk-mixed-dacrycarpus');
+  if(adult)for(let j=0;j<5;j++){const az=j*TAU/5;b.branch([0,h*.17,0],[Math.sin(az)*w*.13,0,Math.cos(az)*w*.13],rad*.55,'#727369','buttress-mixed-dacrycarpus');}
+  for(let j=0;j<n;j++){
+   const az=j*2.399,t=.12+.8*j/n,len=w*.45*(1-t*.7),base=[0,h*t,0],tip=[Math.sin(az)*len,h*t+h*(adult?.04:.09),Math.cos(az)*len];branch(base,tip,rad*.18,'#82775f');
+   for(let k=0;k<13;k++){
+    const v=.10+k*.065,root=base.map((x,i)=>x+(tip[i]-x)*v),aa=az+(k%2?1:-1)*.85,end=[root[0]+Math.sin(aa)*len*.43,root[1]-h*.11,root[2]+Math.cos(aa)*len*.43];branch(root,end,.00065,'#8f8267');
+    const nodes=adult?37:29,L=adult?.0018:.007;
+    for(let q=0;q<nodes;q++){const tt=q/nodes,pt=root.map((x,i)=>x+(end[i]-x)*tt);for(let side=0;side<2;side++)blade(pt,aa+side*Math.PI,L*(.7+rand()*.3),adult?.20:1.25,L*(adult?.42:.12));}
+   }
+  }return;
+ }
+ const emp=type==='empetrum',apt=type==='aptenia',cal=type==='calylophus',cat=type==='acalypha',gilia=type==='gilia',n=Math.round((emp?32:cal?38:apt?15:cat?15:16)*detail),growth=gilia?s.leafScale:1;
+ for(let j=0;j<n;j++){
+  const az=j*2.399+.2*rand(),reach=w*(emp?.38:apt?.42:cal?.36:cat?.35:.27)*(.35+.65*Math.sqrt((j+.5)/n)),height=h*(.52+rand()*.38)*growth,root=[Math.sin(az)*reach*.45,.005,Math.cos(az)*reach*.45],tip=[Math.sin(az)*reach,height,Math.cos(az)*reach],nodes=emp?65:cal?24:apt?8:cat?10:7,at=t=>[root[0]+(tip[0]-root[0])*t,height*(apt?Math.sin(t*Math.PI*.85):t),root[2]+(tip[2]-root[2])*t];
+  let prev=root;for(let k=1;k<=6;k++){const q=at(k/6);branch(prev,q,emp?.001:apt?.0025:.0008,emp?'#9c7555':a.stemColor);prev=q;}
+  for(let k=0;k<nodes;k++){
+   const t=.07+k*.85/nodes,p=at(t),ang=az+k*2.399,L=a.leafLength*(.7+rand()*.3)*growth;
+   if(rand()>s.leafDensity)continue;
+   if(gilia){
+    const f=flowerFrame(b,p,.84,ang);f.branch([0,0,0],[0,L,0],.0004,green,'rachis-mixed-gilia');
+    for(let q=0;q<6;q++)for(const side of [-1,1])f.add('narrow','leaf-mixed-gilia',green,0,L*(.1+q*.13),0,.0015,L*(.38-q*.042),.008,.22,side*1.0,side*.45);
+   }else for(let side=0;side<(apt?2:emp?3:1);side++)blade(p,ang+side*(apt?Math.PI:TAU/3),L,emp?.62:cal?1.05:.85);
+  }
+  if(emp||cal||cat){
+   for(let side=0;side<(emp?5:3);side++){
+    const base=at(.25+side*(emp?.12:.22)),angle=az+(side%2?1:-1)*1.05,len=(emp?.055:cal?.05:.07),end=[base[0]+Math.sin(angle)*len,base[1]+len*.5,base[2]+Math.cos(angle)*len];branch(base,end,emp?.00065:.00055);
+    const count=emp?22:cal?14:5;
+    for(let q=0;q<count;q++){const tt=q/count,pt=base.map((x,i)=>x+(end[i]-x)*tt);if(rand()>s.leafDensity)continue;for(let turn=0;turn<(emp?3:1);turn++)blade(pt,angle+q*2.399+turn*TAU/3,a.leafLength*(.72+rand()*.28),emp?.65:1.0);}
+   }
+  }
+  if(!s.bloom||emp)continue;
+  const sites=cal?2:gilia?3:cat?2:1;
+  for(let site=0;site<sites;site++){
+   const angle=az+site*2.1,base=at(.72+site*.12),r=cal?.020:gilia?.012:apt?.009:.008,pt=[base[0]+Math.sin(angle)*r*.6,base[1]+(cal?.035:gilia?.065:cat?.018:.013)*growth,base[2]+Math.cos(angle)*r*.6];branch(base,pt,.00065);const f=flowerFrame(b,pt,cal?.28:gilia?.42:cat?1.05:.5,angle);
+   if(cat){
+    const len=.065,rad=.005;f.branch([0,0,0],[0,len,0],.0018,'#9c354f','axis-mixed-acalypha');
+    for(let q=0;q<260;q++){const t=q/260,ang=q*2.399,R=rad*Math.sin(Math.PI*t)**.3,start=[Math.sin(ang)*R*.3,t*len,Math.cos(ang)*R*.3],end=[Math.sin(ang)*R,t*len+.0015,Math.cos(ang)*R];f.branch(start,end,.00030,kit.shade(rand,'#b93657',.06),'stigma-mixed-acalypha');}
+   }else if(apt){
+    for(let layer=0;layer<2;layer++)for(let k=0;k<21;k++)f.add('mixed-petal-aptenia','petal-mixed-aptenia',s.flowerColor,0,layer*.001,0,.0025,r,r*(1-layer*.28),.14,k*TAU/21+layer*.1,0);
+    f.add(kit.bud,'anther-mixed-aptenia','#d8b46b',0,.002,0,.002,.0015,.002);
+   }else{
+    for(let k=0;k<(cal?4:5);k++)f.add('mixed-petal-'+type,'petal-mixed-'+type,s.flowerColor,0,0,0,r,r,r,0,k*TAU/(cal?4:5),0);
+    for(let k=0;k<(cal?8:5);k++){const an=k*2.399,end=[Math.sin(an)*r*.18,r*.24,Math.cos(an)*r*.18];f.branch([0,0,0],end,.00017,cal?'#dac45e':'#dad5c6','filament-mixed-'+type);f.add(kit.bud,'anther-mixed-'+type,cal?'#dab74e':'#8e9eaf',...end,r*.045,r*.07,r*.045);}
+   }
+  }
+ }
+}
+
 export function lateHerbLeafPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='snowDragon')return [u*.5*(1-t**5),1.75*t-1.18*t*t,.85*t*t];
@@ -6764,6 +6860,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='mixedGardenPlants'){drawMixedGardenPlants(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='lateGardenHerbs'){drawLateGardenHerbs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='uncommonGardenTree'){drawUncommonGardenTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='marginGardenPlants'){drawMarginGarden(b,{info,s,p,detail,rand},kit);return;}

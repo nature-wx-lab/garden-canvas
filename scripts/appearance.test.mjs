@@ -10,6 +10,26 @@ import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 
+test('Mixed garden plants retain winter leaves, distinguish annual death and do not invent mature flowers',()=>{
+ const ids=['p-a6d500a45c89','p-973434a9b3ed','p-a7b7e65d48be','p-084816bc0df3','p-2b4ca751ecb2','p-93f0094509f2','p-342ddb60042c','p-b318019b9be1','p-155f5704dcf6'];
+ for(const [i,id]of ids.entries())for(let month=1;month<=12;month++){
+  const p=makePlant(id,12700+i,2,2);p.height=[.18,.08,.75,.18,.18,.85,.2,.85,.55][i];p.spread=[.45,.5,.85,.3,.45,1.2,.4,.65,.35][i];p.leafHeight=p.height;
+  const st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component?.startsWith(k));
+  for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite),id);}
+  if(st.groundDormant)assert.equal(g.children.length,0,id+':'+month);else assert.ok(has('leaf'),id+':'+month);
+  if([2,5,6,7].includes(i)){assert.equal(st.groundDormant,false);assert.equal(has('petal'),false);}
+  else if(i===4)assert.equal(has('stigma-mixed-acalypha'),[6,7,8,9,10,11,12].includes(month));
+  else assert.equal(has('petal'),CATALOG[id].bloom.includes(month),id+':flower '+month);
+  if(i===3){assert.equal(st.groundDormant,false);assert.match(st.phase,/涼しく管理/);}
+  if(i===8&&[7,8,9].includes(month)){assert.equal(g.children.length,0);assert.match(st.phase,/生育終了/);}
+  if(i===0&&month===1){assert.ok(has('stem'));assert.ok(has('leaf'));assert.ok(st.leafDensity<.4);}
+  dispose(g);
+ }
+ assert.notEqual(seasonAt(CATALOG[ids[6]],1).leafColor,seasonAt(CATALOG[ids[6]],6).leafColor);
+ assert.equal(CATALOG[ids[7]].height,null);assert.equal(CATALOG[ids[8]].life,'annual');
+ assert.deepEqual(CATALOG[ids[0]].bloom,[5,6,7,8,9,10,11]);assert.equal(seasonAt(CATALOG[ids[1]],8).bloom,false);
+});
+
 test('Late garden herbs distinguish protected winter, evergreen winter flowers, fine spikes and double gentian',()=>{
  const ids=['p-dae34d8d0eea','p-50d888e87b01','p-2eeacd6535bd','p-b48c90e6a1b0','p-dfecd69323d8','p-23df1beb411a','p-902ddd958778','p-f78c19ea3c7b'];
  for(const [i,id]of ids.entries())for(let month=1;month<=12;month++){
