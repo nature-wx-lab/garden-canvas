@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.119';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.120';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.119';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.120';
 const TAU=Math.PI*2;
 // Nursery photographs define each leaf profile; these are not measured meshes.
 export const HAWORTHIA_PROFILES={
@@ -15,13 +15,23 @@ export const HAWORTHIA_PROFILES={
  mirror:{n:28,width:.73,thick:.18,curve:.04,shape:'boat',pattern:'mirror',pitch:.75},
  truncata:{n:24,width:.92,thick:.38,curve:.01,shape:'round',pattern:'window',pitch:.89},
  obtusa:{n:34,width:.75,thick:.40,curve:.01,shape:'round',pattern:'window',pitch:.89},
- milky:{n:17,width:.78,thick:.16,curve:.08,shape:'boat',pattern:'variegated',pitch:.88}
+ milky:{n:17,width:.78,thick:.16,curve:.08,shape:'boat',pattern:'variegated',pitch:.88},
+ purple:{n:26,width:.82,thick:.32,curve:.02,shape:'round',pattern:'window',pitch:1.10},
+ goldmine:{n:19,width:.65,thick:.17,curve:.09,shape:'boat',pattern:'golden',pitch:1.08,offsets:6},
+ onigawara:{n:18,width:.85,thick:.18,curve:-.14,shape:'point',pattern:'darkWarts',pitch:1.18,tower:true,rank:3},
+ pygmaea:{n:13,width:.85,thick:.19,curve:.04,shape:'retuse',pattern:'frost',pitch:.98},
+ shirayuki:{n:12,width:.83,thick:.15,curve:.07,shape:'retuse',pattern:'silk',pitch:1.04,hair:.028},
+ tarkastad:{n:28,width:.40,thick:.08,curve:.07,shape:'point',pattern:'stripe',pitch:1.04,hair:.022,offsets:2},
+ bosfontein:{n:35,width:.37,thick:.095,curve:.04,shape:'point',pattern:'fineNet',pitch:.84,hair:.045,offsets:4},
+ starkiana:{n:18,width:.47,thick:.14,curve:.08,shape:'point',pattern:'plain',pitch:1.06,twist:.24},
+ chiyoda:{n:12,width:.53,thick:.11,curve:.06,shape:'point',pattern:'tiger',pitch:.88,rank:3,keel:true}
 };
 export function haworthiaLeafPoint(type,t,ph){
  const a=HAWORTHIA_PROFILES[type],sn=Math.max(0,Math.sin(Math.PI*t));
- const outline=a.shape==='round'?Math.sin(Math.PI*t)**.40*(.62+.38*t):a.shape==='boat'?sn**.70*(.55+.9*t):Math.min(1,t*7)*(1-t)**.90;
- const x=.5*Math.cos(ph)*outline,back=Math.sin(ph),z=back*a.thick*outline+a.curve*sn-(a.tower?.10:.04)*t*t;
- return [x,t,z];
+ const outline=a.shape==='round'?sn**.38*(.30+.70*t):a.shape==='boat'?Math.min(1,t*8)*(.32+.68*Math.min(1,t/.60))*(t<.60?1:((1-t)/.40)**.95):a.shape==='retuse'?Math.min(1,t*5)*(t<.58?.50+.50*t/.58:((1-t)/.42)**.90):Math.min(1,t*7)*(1-t)**.90;
+ const back=Math.sin(ph),side=Math.cos(ph),fold=a.shape==='retuse'?Math.max(0,(t-.58)/.42):0;
+ const x=.5*side*outline+(a.twist||0)*t*t,z=(a.keel?Math.sign(back)*Math.abs(back)**.50:back)*a.thick*outline+a.curve*sn-(a.tower?.10:.04)*t*t+fold*.12;
+ return [x,a.shape==='retuse'?t+fold*.12:t,z];
 }
 export function haworthiaLeafGeometry(type){
  const p=[],uv=[],ix=[],N=60,C=40;
@@ -33,20 +43,27 @@ export function haworthiaLeafGeometry(type){
 }
 function drawHaworthia(b,{info,s,rand},kit){
  const type=info.appearance.shootProfile,a=HAWORTHIA_PROFILES[type],h=s.height,w=s.spread;
- const crowns=a.tower?[{at:[0,0,0],scale:1},...Array.from({length:3},(_,j)=>({at:[Math.sin(j*2.4)*w*.28,0,Math.cos(j*2.4)*w*.28],scale:.48+.12*(j%2)}))]:[{at:[0,0,0],scale:1}];
+ const offsets=a.offsets||(a.tower?3:0),mainScale=offsets&&!a.tower?.62:1;
+ const crowns=[{at:[0,0,0],scale:mainScale},...Array.from({length:offsets},(_,j)=>({at:[Math.sin(j*2.399+.3)*w*(type==='onigawara'?.20:.29),0,Math.cos(j*2.399+.3)*w*(type==='onigawara'?.20:.29)],scale:.42+.06*(j%3)}))];
  for(const crown of crowns){
   const n=Math.round(a.n*(a.tower?crown.scale:1));
   for(let k=0;k<n;k++){
-   const v=k/(n-1),az=a.tower?k/5*TAU+(type==='claw'?k*.038:0):k*2.399,pitch=a.tower?a.pitch*(1-v*.25):a.pitch*(1-v*.74)+.09;
-   const L=a.tower?Math.min(w*.31,h*.35)*(1-v*.28)*crown.scale:a.shape==='round'?Math.min(w*.34,h*1.10)*(1-v*.24):a.shape==='boat'?Math.min(w*.40,h*1.30)*(1-v*.22):Math.min(w*.58,h*(type==='hagoromo'?1.23:1.65))*(1-v*.58),W=L*a.width;
-   const radius=a.shape==='round'?w*.22*(1-v):a.shape==='boat'?w*.16*(1-v):0,origin=[crown.at[0]+Math.sin(az)*radius,crown.at[1]+h*(a.tower?v*.68:a.shape==='round'?.02+v*.35:a.shape==='boat'?.02+v*.40:.025+v*.18)*crown.scale,crown.at[2]+Math.cos(az)*radius],f=flowerFrame(b,origin,pitch,az);
+   const v=k/(n-1),az=a.rank?k/a.rank*TAU:a.tower?k/5*TAU+(type==='claw'?k*.038:0):k*2.399,pitch=a.tower?a.pitch*(1-v*.25):a.rank?a.pitch*(1-v*.78):a.shape==='round'?.60*(1-v*.80):a.shape==='boat'?.90*(1-v*.75):a.pitch*(1-v*.74)+.09;
+   const L=(a.tower?Math.min(w*(type==='onigawara'?.42:.31),h*(type==='onigawara'?.70:.35))*(1-v*.28):a.rank?Math.min(w*.59,h*1.14)*(1-v*.40):a.shape==='round'?Math.min(w*.45,h*1.30)*(1-v*.55):a.shape==='boat'?Math.min(w*.57,h*1.7)*(1-v*.60):Math.min(w*.58,h*(type==='hagoromo'?1.23:1.65))*(1-v*.58))*crown.scale,W=L*a.width;
+   const radius=(a.shape==='round'?w*.11*(1-v):a.shape==='boat'?w*.05*(1-v):0)*crown.scale,origin=[crown.at[0]+Math.sin(az)*radius,crown.at[1]+h*(a.tower?v*(type==='onigawara'?.35:.68):a.rank?v*.27:.018+v*.12)*crown.scale,crown.at[2]+Math.cos(az)*radius],f=flowerFrame(b,origin,pitch,az);
    f.add('haw-'+type,'leaf-haw-'+type,kit.shade(rand,s.leafColor,.022),0,0,0,W,L,L);
-   if(['hagoromo','princess','castle','mirror','venosa','dragon'].includes(type)){
+   if(a.hair||['hagoromo','princess','castle','mirror','venosa','dragon'].includes(type)){
     for(const side of [-1,1])for(let j=1;j<18;j++){
-     const t=.10+j/18*.83,q=haworthiaLeafPoint(type,t,side<0?Math.PI:0),at=[q[0]*W,q[1]*L,q[2]*L],hair=L*(type==='hagoromo'?.17:type==='princess'?.042:type==='castle'?.020:.012),tip=[at[0]+side*hair*.50,at[1]+hair*.80,at[2]+hair*.20];
+     const t=.10+j/18*.83,q=haworthiaLeafPoint(type,t,side<0?Math.PI:0),at=[q[0]*W,q[1]*L,q[2]*L],hair=L*(a.hair||(type==='hagoromo'?.17:type==='princess'?.042:type==='castle'?.020:.012)),tip=[at[0]+side*hair*.50,at[1]+hair*.80,at[2]+hair*.20];
      f.branch(at,tip,hair*(type==='hagoromo'?.023:.042),'#d8ddc6','cilium-haw-'+type);
     }
     if(['hagoromo','princess','castle','mirror'].includes(type))f.branch([0,L,-L*.04],[L*.007,L*(type==='hagoromo'?1.12:1.04),-L*.025],L*.0015,'#dfe0c5','awn-haw-'+type);
+   }
+   if(['onigawara','pygmaea','shirayuki'].includes(type)){
+    for(let j=1;j<=12;j++)for(let m=0;m<11;m++){
+     const t=type==='onigawara'?.10+j/13*.82:.57+j/13*.39,ph=TAU*(m+.28*(j%2))/11,q=haworthiaLeafPoint(type,t,ph),r=L*(type==='onigawara'?.009:type==='pygmaea'?.004:.0025),color=type==='onigawara'?'#4e5845':'#d4dbcf';
+     f.add(kit.bud,'papilla-haw-'+type,color,q[0]*W,q[1]*L,q[2]*L,r,r*.90,r);
+    }
    }
    if(type==='claw'||type==='castle'){
     const rows=type==='claw'?10:12;
