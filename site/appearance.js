@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.114';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.115';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -265,3 +265,5 @@ Object.assign(TRAIT_VALUES,{mixedCalylophus:'細い枝に並ぶ小さな線形�
 Object.assign(TRAIT_VALUES,{fleshyStacked:'十字対生で重なる三角形の厚葉',fleshyBean:'青白い粉を帯びる丸い小さな厚葉',fleshySpoon:'種類ごとに幅・厚みが異なるへら形〜楕円形の多肉葉',fleshyPendantBell:'下を向く筒状花と外へ反り返る5裂の先端'});
 
 Object.assign(TRAIT_VALUES,{pearlLeaf:'透明な細い筋と小さな先端を持つ球形の厚葉',dolphinLeaf:'曲がった厚葉と背びれ状の突起',chainStem:'3稜の節がずれて鎖状につながる緑色の茎',curledNeedle:'細くねじれて巻く根生葉',minuteLeaf:'新しい先端の極小葉・早落して緑色の茎を残す',cageFlower:'基部が膨らむ筒と先端でつながる5裂片の籠状部'});
+
+Object.assign(TRAIT_VALUES,{pairedBody:'2枚が合着し中央に裂け目がある多肉質の葉体',wartedStem:'葉や刺のない凹凸のある多肉茎',fiveRibStem:'稜に突起が並ぶ角張った多肉茎',tongueFleshy:'先の丸い舌状の厚葉',summerSheathed:'夏は乾いた旧葉の皮を残し、秋に新葉が現れる',summerClosed:'夏は葉を閉じたロゼットを残す',mesembFlower:'多数の細い花弁状の仮雄しべと中央の雄しべ'});

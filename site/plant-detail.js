@@ -1,7 +1,61 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.114';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.115';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.114';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.115';
 const TAU=Math.PI*2;
+export function stoneSucculentGeometry(type){
+ const p=[],uv=[],ix=[],N=48,C=48;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,ph=j/C*TAU,sn=Math.max(0,Math.sin(Math.PI*t));let x,y,z;
+  if(type==='stone'||type==='conophytum'){
+   let bump=0;const xx=Math.cos(ph)*.5*sn**.48,zz=Math.sin(ph)*.5*sn**.48;if(type==='stone')for(let k=0;k<85;k++){const yy=(k+.5)/85,aa=k*2.399,rr=.5*Math.sin(Math.PI*yy)**.48,dx=xx-Math.cos(aa)*rr,dz=zz-Math.sin(aa)*rr,dy=t-yy;bump+=.06*Math.exp(-(dx*dx+dy*dy+dz*dz)/.0045);}const lump=1+bump;x=xx*lump;y=t;z=zz*lump;
+  }else if(type==='huernia'){
+   const rib=.33+.15*Math.cos(ph*5),tooth=.065*Math.max(0,Math.sin(t*TAU*13))**7*Math.max(0,Math.cos(ph*5))**10,r=(rib+tooth)*Math.min(1,(1-t)*15);x=Math.cos(ph)*r;y=t;z=Math.sin(ph)*r;
+  }else{
+   const gas=type==='gasteria',round=['dodrantale','closed'].includes(type),env=gas?Math.sin(Math.PI*(t*.91+.06))**.22*Math.min(1,Math.sqrt((1-t)/.13)):sn**(round?.35:.53),breadth=gas?1:.24+.90*t;
+   x=Math.cos(ph)*.5*env*breadth;y=t;z=Math.sin(ph)*.5*sn**.55+(type==='closed'?-2.1:gas?.65:1.3)*t*t;
+  }
+  p.push(x,y,z);uv.push(j/C,t);if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.stoneSucculent=type;return g;
+}
+function drawStoneSucculents(b,{info,s,detail,rand},kit){
+ const a=info.appearance,t=a.shootProfile,h=s.height,w=s.spread,green=s.leafColor;
+ if(s.groundDormant)return;
+ const blade=(pt,az,L,W,pitch,type='paddle',thick=.16)=>flowerFrame(b,pt,pitch,az).add('stone-'+type,'leaf-stone-'+t,kit.shade(rand,green,.035),0,0,0,W,L,L*thick);
+ if(t==='pseudolithos'){
+  b.add('stone-stone','body-stone-pseudolithos',green,0,0,0,w*.85,h,w*.85);return;
+ }
+ if(t==='huernia'){
+  for(let j=0;j<Math.round(12*detail);j++){const az=j*2.399,r=w*.27*Math.sqrt(j/12),H=h*(.45+rand()*.55);b.add('stone-huernia','stem-stone-huernia',kit.shade(rand,green,.10),Math.sin(az)*r,0,Math.cos(az)*r,.023,H,.023,.10+rand()*.28,az,0);}return;
+ }
+ if(t==='conophytum'){
+  const dry=[6,7,8].includes(s.month),n=Math.min(28,Math.max(4,Math.round((w/.035)**2*.4))),R=Math.min(.022,h*.5);
+  for(let j=0;j<n;j++){
+   const az=j*2.399,r=w*.34*Math.sqrt((j+.3)/n),y=.003+rand()*.004,origin=[Math.sin(az)*r,y,Math.cos(az)*r],f=flowerFrame(b,origin,0,az),color=dry?'#9d927a':green;
+   f.add('stone-conophytum',dry?'sheath-stone-conophytum':'body-stone-conophytum',color,0,0,0,R*1.65,R*1.2,R*.97);for(let side of [-1,1])f.add('stone-conophytum',dry?'sheath-stone-conophytum':'body-stone-conophytum',color,side*R*.32,R*.35,0,R*.97,R*1.18,R*.94,0,0,-side*.12);
+   f.add(kit.bud,'old-sheath-stone-conophytum','#998971',0,R*.10,0,R*.64,R*.2,R*.57);
+   if(s.bloom&&j%2===0){const top=[0,R*1.54,0];f.branch([0,R*.85,0],top,.0012,'#aec193','pedicel-stone-conophytum');for(let k=0;k<30;k++){const an=k*TAU/30,rr=.004+(k%2)*.001;f.add('mixed-petal-aptenia','petal-stone-conophytum',s.flowerColor,Math.sin(an)*rr,R*1.54,Math.cos(an)*rr,.0025,.012,.012,0,an,0);}f.add(kit.bud,'anther-stone-conophytum','#d1b454',0,R*1.55,0,.004,.002,.004);}
+  }return;
+ }
+ if(t==='filamentosa'){
+  const n=Math.max(5,Math.round((w/.035)**2*.32));
+  for(let j=0;j<Math.min(n,25);j++){
+   const az=j*2.399,R=w*.3*Math.sqrt((j+.3)/Math.min(n,25)),H=h*(.4+rand()*.6),base=[Math.sin(az)*R,0,Math.cos(az)*R];
+   b.branch(base,[base[0],H,base[2]],.002,'#9b956e','stem-stone-filamentosa');
+   for(let k=0;k<40;k++){const aa=k*2.399,pt=[base[0]+Math.sin(aa)*.004,H*(.05+k/44),base[2]+Math.cos(aa)*.004];blade(pt,aa,.009,.0065,.95,'paddle',.65);for(let q=0;q<3;q++){const an=aa+q*.8,start=[pt[0]+Math.sin(an)*.003,pt[1]+.002,pt[2]+Math.cos(an)*.003],tip=[pt[0]+Math.sin(an)*.008,pt[1]+.009+rand()*.003,pt[2]+Math.cos(an)*.008];b.branch(start,tip,.0001,'#d4d5c3','hair-stone-filamentosa');}}
+  }return;
+ }
+ const gas=['gasteria','satsumatsu'].includes(t),small=t==='monanthes',closed=t==='dodrantale'&&[6,7,8].includes(s.month),L=a.leafLength,n=Math.min(small?32:12,Math.max(gas?3:1,Math.round((w/(L*1.8))**2*.42)));
+ for(let j=0;j<n;j++){
+  const az=j*2.399,R=n===1?0:w*.28*Math.sqrt((j+.3)/n),base=[Math.sin(az)*R,h*(gas?.03:small?.1:.06+rand()*.09),Math.cos(az)*R];b.branch([base[0]*.7,0,base[2]*.7],base,small?.0015:.004,'#9d957d','stem-stone-'+t);
+  const count=gas?12:small?108:t==='gungekka'?28:44;
+  for(let k=0;k<count;k++){
+   const v=k/(count-1),aa=gas?az+k*Math.PI+(j%2)*.4:az+k*2.399,len=L*(.98-v*.73),pt=[base[0],base[1]+v*L*(gas?.24:.32),base[2]],pitch=closed?.15+.14*(1-v):gas?1.0-v*.77:1.13-v*.90;
+   blade(pt,aa,len,len*a.leafWidth/L,pitch,gas?'gasteria':t==='dodrantale'?closed?'closed':'dodrantale':'paddle',small?.42:gas?.24:t==='gungekka'?.30:.12);
+  }
+ }
+}
+
 export function necklaceGeometry(type){
  const p=[],uv=[],ix=[],N=64,C=32;
  for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
@@ -6995,6 +7049,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='stoneSucculents'){drawStoneSucculents(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='necklacePlants'){drawNecklacePlants(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='fleshyGardenPlants'){drawFleshyGardenPlants(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='mixedGardenPlants'){drawMixedGardenPlants(b,{info,s,detail,rand},kit);return;}
