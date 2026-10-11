@@ -1,7 +1,90 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.117';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.118';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.117';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.118';
 const TAU=Math.PI*2;
+// Stem silhouettes follow cited specimens; dimensions remain illustrative.
+export function ribbedSucculentPoint(type,t,ph,arm=false){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='bunny')return [.5*Math.cos(ph)*sn**.65,t,.11*Math.sin(ph)*sn**.65];
+ if(type==='obesablow'){
+  const r=(.43+.07*Math.cos(ph*8))*sn**.64;
+  return [r*Math.cos(ph),t,r*Math.sin(ph)];
+ }
+ const ghost=type==='yellowGhost'||type==='whiteGhost',cap=Math.min(1,Math.sqrt(Math.max(0,(1-t)*22))),base=Math.min(1,t*24),wave=ghost?1+.10*Math.cos(t*TAU*9):1;
+ const r=(ghost?.18+.32*Math.max(0,Math.cos(ph*3))**1.25:.41+.09*Math.cos(ph*6))*cap*base*wave;
+ return [(arm?1.55*(1-Math.exp(-5*t)):0)+r*Math.cos(ph),t,r*Math.sin(ph)];
+}
+export function ribbedSucculentGeometry(type,arm=false){
+ const p=[],uv=[],ix=[],N=108,C=96;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  p.push(...ribbedSucculentPoint(type,i/N,j/C*TAU,arm));uv.push(j/C,i/N);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.ribbedSucculent=type;return g;
+}
+export function cactusTepalGeometry(){
+ const p=[],uv=[],ix=[],N=24,C=12;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=j/C*2-1,w=.29*Math.sin(Math.PI*t)**.65;
+  p.push(u*w,.07+.42*t+.06*u*u,.08+.9*t);uv.push(j/C,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
+}
+function drawRibbedSucculents(b,{info,s,rand},kit){
+ const type=info.appearance.shootProfile,h=s.height,w=s.spread,green=s.leafColor;
+ function flower(at,r,pitch=0,yaw=0){
+  const f=flowerFrame(b,at,pitch,yaw);
+  f.add(kit.bud,'receptacle-ribbed-'+type,'#91a36c',0,-r*.12,0,r*.22,r*.32,r*.22);
+  for(let row=0;row<2;row++)for(let j=0;j<14;j++){const size=r*(1-row*.20);f.add('cactus-tepal','petal-ribbed-'+type,kit.shade(rand,s.flowerColor,.025),0,row*r*.07,0,size,size,size,-row*.23,j/14*TAU+row*.21,0);}
+  for(let j=0;j<28;j++){const az=j*2.399,R=r*(.07+.20*Math.sqrt(j/28)),a=[Math.cos(az)*R,0,Math.sin(az)*R],end=[a[0],r*(.25+.15*rand()),a[2]];f.branch(a,end,r*.011,'#ddcd8e','filament-ribbed-'+type);f.add(kit.bud,'anther-ribbed-'+type,'#d9b952',...end,r*.028,r*.021,r*.023);}
+  f.branch([0,0,0],[0,r*.49,0],r*.034,'#b0b969','style-ribbed-'+type);
+  for(let j=0;j<6;j++){const az=j/6*TAU;f.branch([0,r*.49,0],[Math.cos(az)*r*.1,r*.55,Math.sin(az)*r*.1],r*.020,'#b2bf74','stigma-ribbed-'+type);}
+ }
+ if(type==='bunny'){
+  const pads=[{x:0,y:0,z:0,L:.44,W:.29,p:.02,a:0},{x:-.06,y:.34,z:0,L:.37,W:.25,p:.22,a:-1.5},{x:.07,y:.32,z:0,L:.36,W:.24,p:.25,a:1.5},{x:-.13,y:.63,z:0,L:.26,W:.17,p:.20,a:-1.2},{x:.14,y:.60,z:.01,L:.28,W:.18,p:.35,a:1.1},{x:.02,y:.52,z:.07,L:.28,W:.20,p:.55,a:.2},{x:-.015,y:.25,z:-.03,L:.35,W:.23,p:.4,a:3.2}];
+  for(const pad of pads){
+   const L=pad.L*h,W=pad.W*w*2.3,f=flowerFrame(b,[pad.x*w*1.7,pad.y*h,pad.z*w],pad.p,pad.a);
+   f.add('ribbed-bunny','pad-ribbed-bunny',kit.shade(rand,green,.03),0,0,0,W,L,W);
+   for(let row=1;row<10;row++)for(let col=-3;col<=3;col++){
+    const v=row/10,u=(col+(row%2)*.5)/4;if(Math.abs(u)>.9)continue;const sn=Math.sin(Math.PI*v)**.65,x=.5*u*sn*W,z=.11*Math.sqrt(1-u*u)*sn*W;
+    for(const sign of [-1,1]){
+     const at=[x,v*L,sign*z];f.add(kit.bud,'areole-ribbed-bunny','#eeeadb',...at,L*.013,L*.016,L*.006);
+     for(let j=0;j<8;j++){const a=j/8*TAU;f.branch(at,[x+Math.cos(a)*L*.012,v*L+Math.sin(a)*L*.015,sign*(z+L*.019)],L*.0014,'#f2eedc','glochid-ribbed-bunny');}
+    }
+   }
+  }
+  if(s.bloom)flower([-.20*w,.88*h,0],Math.min(.038,h*.12),.6,-.9);
+  return;
+ }
+ if(type==='obesablow'){
+  const bodies=[{at:[0,0,0],H:h*.83,W:w*.64,old:true},...Array.from({length:4},(_,j)=>({at:[Math.sin(j*2.399)*w*.28,h*.04,Math.cos(j*2.399)*w*.27],H:h*(.32+(j%2)*.09),W:w*(.28+(j%2)*.055),old:false}))];
+  for(const d of bodies){
+   b.add('ribbed-obesablow',d.old?'body-ribbed-obesablow':'pup-ribbed-obesablow',green,...d.at,d.W,d.H,d.W);
+   for(let k=0;k<8;k++)for(let j=1;j<13;j++){const t=j/14,ph=k/8*TAU,pt=ribbedSucculentPoint(type,t,ph);b.add(kit.bud,'tubercle-ribbed-obesablow','#adad88',d.at[0]+pt[0]*d.W,d.at[1]+pt[1]*d.H,d.at[2]+pt[2]*d.W,d.W*.010,d.H*.008,d.W*.010);}
+  }
+  return;
+ }
+ const ghost=type!=='myrtillo',yellow=type==='yellowGhost',D=Math.min(w*(ghost?.28:.7),h*(ghost?.22:.29)),columns=[{at:[0,0,0],H:h*.96,D,az:0,arm:false}];
+ if(ghost)for(let j=0;j<(yellow?6:4);j++)columns.push({at:[0,h*(.18+j*.065),0],H:h*(.62-j*.032),D:D*(.83+(j%2)*.12),az:j*2.399,arm:true});
+ for(const c of columns){
+  const f=flowerFrame(b,c.at,0,c.az),shape='ribbed-'+type+(c.arm?'-arm':'');
+  f.add(shape,'stem-ribbed-'+type,kit.shade(rand,green,.018),0,0,0,c.D,c.H,c.D);
+  const count=ghost?3:6,rows=ghost?9:14;
+  for(let k=0;k<count;k++)for(let j=1;j<rows;j++){
+   const t=ghost?j/9:(j+.18*(k%2))/rows,ph=k/count*TAU,pt=ribbedSucculentPoint(type,t,ph,c.arm),at=[pt[0]*c.D,pt[1]*c.H,pt[2]*c.D],rad=[Math.cos(ph),0,Math.sin(ph)],tangent=[-Math.sin(ph),0,Math.cos(ph)];
+   f.add(kit.bud,'areole-ribbed-'+type,ghost?'#c3b8a2':'#a7a391',...at,c.D*.022,c.D*.027,c.D*.022);
+   for(let q=0;q<(ghost?2:7);q++){
+    const a=ghost?(q?0:Math.PI):q/7*TAU,L=c.D*(ghost?.10:.075),side=Math.cos(a),up=Math.sin(a),tip=at.map((v,axis)=>v+L*(rad[axis]*.85+tangent[axis]*side*.62+(axis===1?up*.62:0)));
+    f.branch(at,tip,L*.045,ghost?'#6c4b40':'#514943','spine-ribbed-'+type);
+   }
+   // The yellow stock photo has small leaves. Their calendar is unverified.
+   if(yellow&&j>=7&&k===1){const len=Math.min(.025,h*.05);f.add('caudex-leaf-arabicum','leaf-ribbed-yellowGhost','#66884c',...at,len*.55,len,len,.8,ph,0);}
+  }
+ }
+ if(type==='myrtillo'&&s.bloom)for(let j=0;j<2;j++){const az=j*2.1+.7;flower([Math.cos(az)*D*.5,h*(.73+j*.10),Math.sin(az)*D*.5],Math.min(.022,h*.048),1.05,Math.PI/2-az);}
+}
+
 // Independent reference shapes for exposed storage stems and summer-resting vines.
 export function caudexGeometry(type){
  const p=[],uv=[],ix=[],N=type==='tortoise'?96:64,C=type==='tortoise'?144:64;
@@ -93,7 +176,7 @@ function drawCaudexPlants(b,{info,s,rand},kit){
 }
 
 // Shape proportions are approximations of the cited nursery specimens.
-const AGAVE_SHAPES={queen:{waist:.28,cup:.10,wave:.018},whale:{waist:.19,cup:.24,wave:.043},blackblue:{waist:.22,cup:.19,wave:.022},redcat:{waist:.30,cup:.17,wave:.035}};
+const AGAVE_SHAPES={kisshoukan:{waist:.23,cup:.15,wave:.009},whiteice:{waist:.19,cup:.22,wave:.022},queen:{waist:.28,cup:.10,wave:.018},whale:{waist:.19,cup:.24,wave:.043},blackblue:{waist:.22,cup:.19,wave:.022},redcat:{waist:.30,cup:.17,wave:.035}};
 export function agaveBladePoint(t,angle,profile){
  const a=AGAVE_SHAPES[profile],sn=Math.max(0,Math.sin(Math.PI*t)),outline=sn**.65*(a.waist+(1-a.waist)*Math.sin(Math.PI*t*.82)),edge=.5*outline*(1+a.wave*Math.sin(t*Math.PI*15));
  return [Math.cos(angle)*edge,t,Math.sin(angle)*.082*sn**.7+a.cup*sn*Math.cos(angle)**2-.13*t*t];
@@ -115,9 +198,9 @@ export function agaveBladeGeometry(profile){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();return g;
 }
 function drawAgaveRosettes(b,{info,s,rand},kit){
- const a=info.appearance,t=a.shootProfile,queen=t==='queen',whale=t==='whale',black=t==='blackblue',n=queen?18:whale?27:23,spine=queen?'#774c3c':black?'#332c29':whale?'#d4cdb8':'#c6b28d';
+ const a=info.appearance,t=a.shootProfile,queen=t==='queen',whale=t==='whale',black=t==='blackblue',kiss=t==='kisshoukan',ice=t==='whiteice',n=kiss?19:ice?15:queen?18:whale?27:23,spine=kiss?'#654244':ice?'#cfc9b0':queen?'#774c3c':black?'#332c29':whale?'#d4cdb8':'#c6b28d';
  for(let k=0;k<n;k++){
-  const v=k/(n-1),az=k*2.399+.04*(rand()-.5),L=Math.min(s.spread*.57,s.height*1.55)*(1-v*.58),W=L*(queen?.92:whale?.78:black?.65:.56),pitch=(queen?1.1:.92)*(1-v)+.08,origin=[0,s.height*.05+v*s.height*.21,0],f=flowerFrame(b,origin,pitch,az);
+  const v=k/(n-1),az=k*2.399+.04*(rand()-.5),L=Math.min(s.spread*.57,s.height*1.55)*(1-v*.58),W=L*(kiss?.84:ice?.88:queen?.92:whale?.78:black?.65:.56),pitch=(kiss?1.03:queen?1.1:.92)*(1-v)+.08,origin=[0,s.height*.05+v*s.height*.21,0],f=flowerFrame(b,origin,pitch,az);
   f.add('agave-'+t,'leaf-agave-'+t,kit.shade(rand,s.leafColor,.03),0,0,0,W,L,L);
   for(let side of [-1,1]){
    let prev;
@@ -125,14 +208,14 @@ function drawAgaveRosettes(b,{info,s,rand},kit){
     const q=.06+j/40*.88,p=agaveBladePoint(q,side<0?Math.PI:0,t),pt=[p[0]*W,p[1]*L,p[2]*L];
     if(prev)f.branch(prev,pt,L*(whale?.008:.004),spine,'margin-agave-'+t);prev=pt;
    }
-   const teeth=queen?7:6;
+   const teeth=kiss?10:queen?7:6;
    for(let j=0;j<teeth;j++){
-    const q=.15+j/(teeth-1)*.68,p=agaveBladePoint(q,side<0?Math.PI:0,t),start=[p[0]*W,p[1]*L,p[2]*L],size=L*(queen?.052:whale?.14:black?.093:.13)*(1+.12*Math.sin(j*4.3+k));
+    const q=.15+j/(teeth-1)*.68,p=agaveBladePoint(q,side<0?Math.PI:0,t),start=[p[0]*W,p[1]*L,p[2]*L],size=L*(kiss?.041:ice?.094:queen?.052:whale?.14:black?.093:.13)*(1+.12*Math.sin(j*4.3+k));
     f.add('agave-thorn','tooth-agave-'+t,spine,...start,size*.46,size,size*.38,0,0,-side*.78);
    }
   }
   const point=agaveBladePoint(1,0,t);
-  f.add('agave-thorn','terminal-spine-agave-'+t,spine,0,L,point[2]*L,L*.036,L*(queen?.10:.16),L*.031,-.17,0,.08);
+  f.add('agave-thorn','terminal-spine-agave-'+t,ice?'#665446':spine,0,L,point[2]*L,L*.036,L*(queen?.10:.16),L*.031,-.17,0,.08);
  }
  // Flowering is age dependent and monocarpic; no yearly bloom is invented.
 }
@@ -7184,6 +7267,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='ribbedSucculents'){drawRibbedSucculents(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='caudexPlants'){drawCaudexPlants(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='agaveRosettes'){drawAgaveRosettes(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='stoneSucculents'){drawStoneSucculents(b,{info,s,detail,rand},kit);return;}
