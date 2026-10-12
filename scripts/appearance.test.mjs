@@ -9,6 +9,29 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('native roses separate thornless panicles, creeping glossy runners and woolly bracted evergreen flowers',()=>{
+ const ids=['p-61f79361a967','p-d2df3a326599','p-fe555efeaf68'];
+ for(const [index,id]of ids.entries()){
+  const p=makePlant(id,14600+index,2,2),a=CATALOG[id].appearance;let wood;
+  if(index!==1){p.height=1.2;p.leafHeight=1.2;p.spread=1.5;}
+  else{assert.equal(p.height,.25);assert.equal(p.spread,1);assert.equal(CATALOG[id].height,null);}
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),part=k=>g.children.filter(m=>m.userData.component===k),count=k=>part(k).reduce((n,m)=>n+m.count,0),woody=g.children.filter(m=>m.userData.component.startsWith('wood-rose')).map(m=>[...m.instanceMatrix.array]);
+   if(wood)assert.deepEqual(woody,wood);else wood=woody;
+   const leaves=g.children.filter(m=>m.geometry.userData[a.leafletShape]),flowers=count('receptacle');
+   assert.equal(leaves.length>0,index===2||![1,2,...(index===0?[12]:[])].includes(month));
+   assert.equal(flowers>0,a.flowerMonths.includes(month));
+   if(flowers){assert.equal(count('petal-rose'),flowers*5);assert.equal(count('anther'),flowers*48);}
+   if(index===0){assert.equal(count('prickle'),0);assert.equal(count('smallPrickle'),0);assert.equal(count('fruit-rose-ripe')>0,[11,12].includes(month));assert.equal(count('fruit-rose-green')>0,[9,10].includes(month));if(flowers)assert.ok(count('rosePanicleAxis')>0);if(leaves.length)assert.ok(count('roseLeafHair')>0);}
+   if(index===1){assert.ok(count('wood-rose-runner')>0);assert.equal(count('wood-rose-cane'),0);for(const m of part('wood-rose-runner'))for(let j=0;j<m.count;j++)assert.ok(m.instanceMatrix.array[j*16+13]<p.height*.10);assert.equal(count('roseLeafHair'),0);}
+   if(index===2){assert.ok(count('roseStemWool')>0);if(flowers){assert.equal(count('roseFloralBract'),flowers*6);assert.equal(count('calyxWool'),flowers*70);assert.equal(count('roseStigma'),flowers*17);}assert.equal(count('hipWool-rose')>0,month===9);assert.equal(count('fruit-rose-ripe')>0,month===9);}
+   if(leaves.length){assert.ok(count('stipuleFringe')>0);const leafCount=leaves.reduce((n,m)=>n+m.count,0),rachis=count('leafRachis');assert.ok(leafCount>=rachis*Math.min(...a.leafletCounts)&&leafCount<=rachis*Math.max(...a.leafletCounts));}
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ assert.equal(CATALOG[ids[2]].leaf,'evergreen');assert.equal(CATALOG[ids[2]].appearance.leafShape,'compound');
+ assert.ok(roseLeafPoint(.85,1,'roseObovateLeaflet')[0]>roseLeafPoint(.15,1,'roseObovateLeaflet')[0]);
+});
 test('wild roses distinguish single flowers, narrow inner petals, winter hips and evergreen trifoliate leaves',()=>{
  const ids=['p-9c857376b5f9','p-76b1b25ce199','p-a394ef31a61f'];
  for(const [index,id]of ids.entries()){
@@ -65,7 +88,7 @@ test('Shalimar Sheherazad and Daphne distinguish petal margins, spreading canes 
    const g=plantModel(p,view(month)),part=k=>g.children.find(m=>m.userData.component===k),woody=g.children.filter(m=>m.userData.component.startsWith('wood-rose')).map(m=>[...m.instanceMatrix.array]);
    assert.equal(g.userData.architecture,'gardenRoseCanes');assert.ok(woody.length);assert.ok(part('wood-rose-fork').count>0);if(wood)assert.deepEqual(woody,wood);else wood=woody;
    assert.equal(!!part('leaf-rose'),![1,2].includes(month));assert.equal(!!part('petal-rose'),month>=5&&month<=11);
-   assert.equal(!!part('seasonalFlowerShoot'),(index===0&&[1,2,9,10,11,12].includes(month))||(index===1&&[1,2,11,12].includes(month)));
+   assert.equal(!!part('seasonalFlowerShoot'),index===0&&[1,2,9,10,11,12].includes(month));
    if(month===5){
     const has=shape=>g.children.some(m=>m.geometry.userData[shape]);
     assert.equal(has('roseJewelWavedPetal'),index>0);assert.equal(has('roseJewelPetal'),index===0);assert.equal(has('roseRoundPetal'),index===0);assert.equal(has('roseWavedPetal'),index===2);

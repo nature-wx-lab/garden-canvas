@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.132';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.133';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.132';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.133';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5868,7 +5868,7 @@ function drawConiferSprays(b,{info,s,detail,rand},kit){
 }
 
 export function roseLeafPoint(t,u,profile='roseLeaflet'){
- const tooth=t*27%1,serration=1+.065*(tooth<.72?tooth/.72:(1-tooth)/.28),width=.33*Math.pow(Math.max(0,Math.sin(Math.PI*t)),.76)*serration;
+ const round=profile==='roseRoundLeaflet',obovate=profile==='roseObovateLeaflet',tooth=t*(round?19:27)%1,serration=1+.065*(tooth<.72?tooth/.72:(1-tooth)/.28),width=.33*Math.pow(Math.max(0,Math.sin(Math.PI*Math.pow(t,obovate?1.4:1))),round?.5:obovate?.42:.76)*serration;
  if(profile==='roseReflexedLeaflet'){
   // Nahéma bends along its distal midrib and rolls both margins outwards.
   // Keep the proximal blade attached to its petiolule instead of rotating it off the rachis.
@@ -5950,17 +5950,23 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
    const n=palette.anemoneForm?[5,12,12,12,10,10][layer]:per+(layer<count%rings?1:0),t=rings===1?0:layer/(rings-1),len=r*(1-(palette.anemoneForm?.62:palette.exposedStamens?.30:.83)*t),level=r*(high?.60:deep?.70:flat?(palette.rosetteDepth??.13):.40)*t;
    for(let k=0;k<n;k++,j++){
     const an=k*TAU/n+layer*2.39996+Math.sin(j*4.7)*.085,col=palette.inner?new THREE.Color(color).lerp(new THREE.Color(palette.inner),t*.85):color,pk=(palette.rim?'petal-rose-rim-'+(palette.rimWidth?'broad-':'')+palette.rim.slice(1):'petal-rose')+(palette.outside?'-outside-'+palette.outside.slice(1):''),qx=rosette&&t>.4?Math.sin(j%4*Math.PI/2)*r*.065:0,qz=rosette&&t>.4?Math.cos(j%4*Math.PI/2)*r*.065:0;
-    f.add(palette.anemoneForm?(layer===0?'roseSinglePetal':'roseStaminode'):count===5?'roseSinglePetal':palette.banksiae?'banksiaePetal':palette.heartPetals?'roseHeartPetal':chalice&&t<.6?'roseChalicePetal':palette.notched?'roseNotchedPetal':palette.jewel&&(!palette.jewelInner||t>.28)?(wave?'roseJewelWavedPetal':'roseJewelPetal'):wave||deep&&t>.3?'roseWavedPetal':(high||palette.pointed)&&t>.4?'rosePointedPetal':'roseRoundPetal',palette.eye?'petal-rose-eye-'+palette.eye.slice(1):pk,shade(rand,col,.018),qx,level+r*(rand()-.5)*.055,qz,len*(.88+rand()*.18)*(palette.petalWidth||1),len*(palette.exposedStamens?.32:chalice&&t<.6?1.05:deep?1.48:high?1.05:flat?(palette.petalLift??.56):.93),len*(.93+rand()*.12),(rand()-.5)*(rosette||deep&&t>.3?.42:.18),an,(rand()-.5)*.27);
+    f.add(palette.anemoneForm?(layer===0?'roseSinglePetal':'roseStaminode'):count===5?(palette.petalNotch?'roseCleftSinglePetal':'roseSinglePetal'):palette.banksiae?'banksiaePetal':palette.heartPetals?'roseHeartPetal':chalice&&t<.6?'roseChalicePetal':palette.notched?'roseNotchedPetal':palette.jewel&&(!palette.jewelInner||t>.28)?(wave?'roseJewelWavedPetal':'roseJewelPetal'):wave||deep&&t>.3?'roseWavedPetal':(high||palette.pointed)&&t>.4?'rosePointedPetal':'roseRoundPetal',palette.eye?'petal-rose-eye-'+palette.eye.slice(1):pk,shade(rand,col,.018),qx,level+r*(rand()-.5)*.055,qz,len*(.88+rand()*.18)*(palette.petalWidth||1),len*(palette.exposedStamens?(palette.petalLift??.32):chalice&&t<.6?1.05:deep?1.48:high?1.05:flat?(palette.petalLift??.56):.93),len*(.93+rand()*.12),(rand()-.5)*(rosette||deep&&t>.3?.42:.18),an,(rand()-.5)*.27);
    }
   }
   if(palette.buttonEye)for(let j=0;j<9;j++)f.add('roseRoundPetal','petal-button-eye',palette.inner||color,Math.sin(j*2.399)*r*.035,r*.25,Math.cos(j*2.399)*r*.035,r*.10,r*.12,r*.10,.1,j*2.399,0);
   if(palette.exposedStamens){
    f.add(bud,'receptacleCenter','#c9b25b',0,r*.04,0,r*.18,r*.045,r*.18);
    for(let j=0;j<48;j++){const az=j*2.399,rr=r*(.08+.15*Math.sqrt((j+.5)/48)),at=[Math.sin(az)*rr,r*(.15+.08*Math.sin(j)),Math.cos(az)*rr];f.branch([at[0]*.7,r*.04,at[2]*.7],at,r*.014,'#d2b455','filament');f.add(bud,'anther','#a88748',...at,r*.026,r*.024,r*.018);}
+   if(palette.styleColumn)f.add(bud,'roseStyleColumn','#9eab64',0,r*.15,0,r*.065,r*.12,r*.065);
+   if(palette.styleColor)for(let j=0;j<17;j++){const az=j*2.399,rr=r*.105*Math.sqrt((j+.5)/17);f.add(bud,'roseStigma',palette.styleColor,Math.sin(az)*rr,r*.12,Math.cos(az)*rr,r*.022,r*.04,r*.022);}
   }
   f.add(bud,'receptacle','#70834b',0,-r*.12,0,r*.16,r*.17,r*.16);
   for(let j=0;j<5;j++)f.add(palette.banksiae?'banksiaeSepal':'roseSepal','sepal','#6f8250',0,-r*.08,0,r*(palette.sepalWidth||.48),palette.sepalLength||r*.56,r*.48,1.75,j*TAU/5,0);
   if(palette.bristlyCalyx)for(let j=0;j<24;j++){const az=j*2.399,y=-r*.26+(j%6)*r*.043,at=[Math.sin(az)*r*.15,y,Math.cos(az)*r*.15];f.branch(at,[at[0]*1.7,y-r*.045,at[2]*1.7],r*.006,'#ac9979','calyxBristle');}
+  if(palette.woollyCalyx){
+   for(let j=0;j<6;j++){const an=j*TAU/6;f.add('roseFringedBract','roseFloralBract','#78835c',0,-r*.23,0,r*.52,r*.65,r*.52,1.15,an,0);}
+   for(let j=0;j<70;j++){const az=j*2.399,y=-r*.28+(j%7)*r*.025,at=[Math.sin(az)*r*.17,y,Math.cos(az)*r*.17];f.branch(at,[at[0]*1.2,y+r*.018,at[2]*1.2],r*.003,'#c8b994','calyxWool');}
+  }
   return;
  }
  if(['sideritisLips','menthaFloret','marrubiumLips','leonotisHood'].includes(shape)){
@@ -9831,24 +9837,46 @@ function drawAquaticReeds(b,{info,s,detail,rand},kit){
 }
 
 function drawGardenRose(b,{info,s,p,detail,rand},kit){
- const a=info.appearance,pal=a.flowerPalette,h=s.height,w=s.spread,green=s.leafColor,stem=a.stemColor,climb=pal.climber,ramble=pal.rambling,banks=pal.banksiae,canes=pal.canes||(ramble?9:7),nodes=climb?Math.max(9,Math.min(24,Math.ceil(h/.22))):7,leafLen=Math.min(a.leafLength,w*.17),heads=[],leaves=[],mix=(x,y,t)=>x.map((v,k)=>v+(y[k]-v)*t);
+ const a=info.appearance,pal=a.flowerPalette,h=s.height,w=s.spread,green=s.leafColor,stem=a.stemColor,climb=pal.climber,ramble=pal.rambling,banks=pal.banksiae,canes=pal.canes||(ramble?9:7),nodes=pal.caneNodes||(climb?Math.max(9,Math.min(24,Math.ceil(h/.22))):7),leafLen=Math.min(a.leafLength,w*.17),heads=[],leaves=[],mix=(x,y,t)=>x.map((v,k)=>v+(y[k]-v)*t);
  const prickles=(from,to,seed,lateral=false)=>{
   if(pal.thornless||!pal.pricklesPerMetre&&pal.fewPrickles&&seed%3!==0)return;
   const dist=Math.hypot(...to.map((v,i)=>v-from[i])),density=lateral?(pal.lateralPricklesPerMetre??pal.pricklesPerMetre):pal.pricklesPerMetre,n=density?Math.round(dist*density):pal.manyPrickles?3:1;
-  for(let q=0;q<n;q++){
-   const at=mix(from,to,(q+.5)/n),yaw=(seed+q)*2.399,reach=pal.prickleLength||Math.min(.007,h*.006),bend=[at[0]+Math.sin(yaw)*reach*.72,at[1],at[2]+Math.cos(yaw)*reach*.72],tip=[at[0]+Math.sin(yaw)*reach,at[1]-reach*.48,at[2]+Math.cos(yaw)*reach];
+  for(let q=0;q<n;q++)for(let pair=0;pair<(pal.pairedPrickles?2:1);pair++){
+   const at=mix(from,to,(q+.5)/n),yaw=(seed+q)*2.399+pair*Math.PI,reach=pal.prickleLength||Math.min(.007,h*.006),bend=[at[0]+Math.sin(yaw)*reach*.72,at[1],at[2]+Math.cos(yaw)*reach*.72],tip=[at[0]+Math.sin(yaw)*reach,at[1]-reach*.48,at[2]+Math.cos(yaw)*reach];
    b.branch(at,bend,reach*.27,pal.prickleColor||'#8d6d53','prickle');b.branch(bend,tip,reach*.09,pal.prickleColor||'#8d6d53','prickle');
   }
   for(let q=0,small=Math.round(dist*(pal.smallPricklesPerMetre||0));q<small;q++){
    const at=mix(from,to,(q+.5)/small),yaw=(seed+q)*2.399,reach=.0015,tip=[at[0]+Math.sin(yaw)*reach,at[1]-reach*.4,at[2]+Math.cos(yaw)*reach];
    b.branch(at,tip,.00032,'#9c6d59','smallPrickle');
   }
+  if(pal.woollyStem)for(let q=0;q<12;q++){
+   const at=mix(from,to,(q+.5)/12),yaw=(seed+q)*2.399,rad=lateral?.0015:pal.caneRadius*.7,base=[at[0]+Math.sin(yaw)*rad,at[1],at[2]+Math.cos(yaw)*rad];
+   b.branch(base,[base[0]+Math.sin(yaw)*.0009,base[1]+.0004,base[2]+Math.cos(yaw)*.0009],.00010,'#b3a58b','roseStemWool');
+  }
  };
  // Structural branching is built before foliage so winter retains the same canes.
- for(let i=0;i<canes;i++){
+ if(pal.groundRunner)for(let i=0;i<canes;i++){
+  // Unsupported creeping stems stay near the ground; short flowering shoots
+  // rise from them. Never reuse the upright fan used for climbing roses.
+  const yaw=i*2.399,root=[0,.01,0],segments=12,reach=w*(.34+.08*(i%3));let previous=root;
+  for(let j=1;j<=segments;j++){
+   const t=j/segments,az=yaw+.18*Math.sin(t*5+i),at=[Math.sin(az)*reach*t,h*(.035+.045*Math.sin(t*Math.PI)),Math.cos(az)*reach*t];
+   b.branch(previous,at,pal.caneRadius*(1-t*.65),j<4?a.barkColor:stem,'wood-rose-runner');prickles(previous,at,i*13+j);
+   leaves.push({at,yaw:az+(j%2?1:-1)*1.1,size:.95});
+   if(j>2&&j%2===0){
+    const turn=az+(j%4?1:-1)*1.18,tip=[at[0]+Math.sin(turn)*w*.08,h*(.48+.28*((i+j)%5)/4),at[2]+Math.cos(turn)*w*.08],mid=mix(at,tip,.58);
+    mid[0]+=Math.sin(turn+.4)*w*.025;mid[2]+=Math.cos(turn+.4)*w*.025;
+    b.branch(at,mid,.0014,stem,'wood-rose-upright');b.branch(mid,tip,.0009,stem,'wood-rose-upright');prickles(at,tip,i*37+j,true);
+    for(let k=1;k<=5;k++)leaves.push({at:mix(at,tip,k/6),yaw:turn+(k%2?1:-1)*1.07,size:.70+.04*k,young:k===5});
+    heads.push({at:tip,yaw:turn,seed:i*segments+j});
+   }
+   previous=at;
+  }
+ }
+ else for(let i=0;i<canes;i++){
   const yaw=i*2.399+.2,reach=w*(climb?.38:.21+pal.lean*.37),top=h*(.60+.34*((i*3%7)/6)),root=[Math.sin(yaw)*w*.045,0,Math.cos(yaw)*w*.045];let prev=root;
   for(let j=1;j<=nodes;j++){
-   const t=j/nodes,rr=reach*Math.pow(t,pal.stiff?2.1:climb?1.55:1.16),rise=banks?Math.sin(t*Math.PI*.66):ramble?Math.sin(t*Math.PI*.61):pal.arching?Math.sin(t*Math.PI*.52):t,turn=yaw+(pal.branched?.22*Math.sin(t*3.3+i)*t:0),at=[root[0]+Math.sin(turn)*rr,top*rise,root[2]+Math.cos(turn)*rr];
+   const t=j/nodes,rr=reach*Math.pow(t,pal.stiff?2.1:climb?1.55:1.16),rise=banks?Math.sin(t*Math.PI*.66):ramble?Math.sin(t*Math.PI*.61):pal.arching?Math.sin(t*Math.PI*(pal.archAngle||.52)):t,turn=yaw+(pal.branched?.22*Math.sin(t*3.3+i)*t:0),at=[root[0]+Math.sin(turn)*rr,top*rise,root[2]+Math.cos(turn)*rr];
    b.branch(prev,at,Math.min(pal.caneRadius||(banks?.008:pal.stiff?.014:.010),h*.008)*(1-t*.64),j<4?(a.barkColor||'#88755e'):pal.youngStem&&j>=nodes-1&&s.leafDensity>0?pal.youngStem:stem,'wood-rose-cane');prickles(prev,at,i*13+j);
    b.add(kit.bud,'axillaryBud','#865d51',at[0],at[1],at[2],.0019,.004,.0018,.2,yaw+j,0);
    if(j>2){
@@ -9887,6 +9915,7 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
   const len=leafLen*row.size*s.leafScale,f=flowerFrame(b,row.at,(pal.leafPitch??.68)+(i%6)*.14,row.yaw),axis=len*(pal.rachisScale||1.65),lc=kit.shade(rand,pal.youngLeaf&&row.young&&s.month<11?pal.youngLeaf:green,.04),counts=a.leafletCounts||[5,7],pairs=(counts[i%counts.length]-1)/2,width=a.leafWidth?a.leafWidth/(a.leafLength*.66):1,leaflet=a.leafletShape||'roseLeaflet';
   const blade=(frame,ll)=>{
    frame.add(leaflet,a.leafTexture==='glossy'?'leaf-glossy-rose':'leaf-rose',lc,0,0,0,ll*width,ll,ll);
+   if(pal.leafHair)for(let q=0;q<8;q++){const point=roseLeafPoint(.18+q*.085,(q%2?1:-1)*.6,leaflet).map((v,k)=>v*ll*(k===0?width:1));point[2]-=ll*.003;frame.branch(point,[point[0]+ll*.01,point[1]+ll*.004,point[2]-ll*.018],ll*.0013,'#a4ac91','roseLeafHair');}
    if(!pal.leafVeins)return;
    const point=(t,u)=>roseLeafPoint(t,u,leaflet).map((v,k)=>v*ll*(k===0?width:1)+(k===2?ll*.002:0)),vein=pal.veinColor||'#84966b';
    for(let q=0;q<6;q++)frame.branch(point(q/6,0),point((q+1)/6,0),ll*.004,vein,'roseMidrib');
@@ -9894,9 +9923,10 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
   };
   f.branch([0,0,0],[0,axis,0],.0007,stem,'leafRachis');
   if(!banks||row.young&&[3,4].includes(s.month))for(const side of [-1,1])f.add(banks?'banksiaeSepal':'roseSepal','stipule',green,0,len*.14,0,len*(banks?.065:.17),len*(banks?.15:.28),len,.10,side*.6,0);
+  if(pal.fringedStipules)for(const side of [-1,1])for(let q=0;q<8;q++){const at=[side*len*.026,len*(.16+q*.029),0];f.branch(at,[side*len*(.09+.028*Math.sin(q*.7)),at[1]+len*.012,0],len*.0025,green,'stipuleFringe');}
   if(banks)for(let q=0;q<8;q++){const at=[0,axis*(q+.5)/8,0],yaw=q*2.399;f.branch(at,[Math.sin(yaw)*.0012,at[1]+.0007,Math.cos(yaw)*.0012],.00015,'#a9b596','rachisHair');}
   for(let j=0;j<pairs;j++)for(const side of [-1,1]){
-   const t=pal.wildRose&&pairs===1?.65:.28+j*.28,at=[side*len*.10,axis*t,0],ll=len*(.64+j*.12),ff=flowerFrame(f,at,.05,0),roll=side*1.03;
+   const t=pal.wildRose&&pairs===1?.65:pairs>=4?.18+j*.62/(pairs-1):.28+j*.28,at=[side*len*.10,axis*t,0],ll=len*Math.min(.98,.64+j*.12),ff=flowerFrame(f,at,.05,0),roll=side*1.03;
    f.branch([0,axis*t,0],at,.00045,stem,'petiolule');
    if(pal.leafVeins){
     const q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),roll),point=v=>new THREE.Vector3(...v).applyQuaternion(q).toArray();
@@ -9905,16 +9935,21 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
   }
   if(pal.leafVeins)blade(flowerFrame(f,[0,axis,0],0,0),len);else f.add(leaflet,a.leafTexture==='glossy'?'leaf-glossy-rose':'leaf-rose',lc,0,axis,0,len*width,len,len);
  }
+ const flowerSite=(head,j,n)=>{
+  const az=head.yaw+j*2.399,rr=pal.panicle?j===0?0:.045+.025*(j%3):j===0?0:a.flowerRadius*(banks?3.8*Math.sqrt(j/n):pal.clusterSpread?pal.clusterSpread*Math.sqrt(j):1.8),rise=pal.panicle?.045+.075*(1-j/n):banks?.020+(j%3)*.004:j===0?.035:.02;
+  return {az,at:[head.at[0]+Math.sin(az)*rr,head.at[1]+rise,head.at[2]+Math.cos(az)*rr]};
+ };
  for(const head of heads){
   const ripe=!!a.fruitMonths?.includes(s.month),greenFruit=!!a.greenFruitMonths?.includes(s.month);
   if(pal.hips&&(ripe||greenFruit)&&head.seed%4!==0){
    // Fruit-bearing shoots are the same sites as the spring flowers. This is
    // a reference with flowers left to set seed, not a forecast of fruit set.
    for(let j=0;j<(pal.cluster||1);j++){
-    const az=head.yaw+j*2.399,rr=j===0?0:a.flowerRadius*1.8,tip=[head.at[0]+Math.sin(az)*rr,head.at[1]+.026-(j%3)*.005,head.at[2]+Math.cos(az)*rr],r=a.fruitRadius*(greenFruit?.76:1),long=pal.bristlyCalyx?1.5:1.06,f=flowerFrame(b,tip,.5,az);
+    const site=flowerSite(head,j,pal.cluster||1),az=site.az,tip=site.at,r=a.fruitRadius*(greenFruit?.76:1),long=pal.bristlyCalyx?1.5:1.06,f=flowerFrame(b,tip,.5,az);
     b.branch(head.at,tip,.0008,ripe?'#8c6754':stem,'fruitPedicel-rose');
     f.add(kit.bud,greenFruit?'fruit-rose-green':'fruit-rose-ripe',greenFruit?'#879358':a.fruitColor,0,r*long,0,r,r*long,r);
     f.add(kit.bud,'fruitStyleScar-rose','#6d4c38',0,r*long*2,0,r*.24,r*.06,r*.24);
+    if(pal.fruitHair)for(let k=0;k<90;k++){const y=-.95+1.9*(k+.5)/90,an=k*2.399,rr=r*Math.sqrt(1-y*y),at=[Math.sin(an)*rr,r*(1+y),Math.cos(an)*rr];f.branch(at,[at[0]*1.055,at[1]+r*.04,at[2]*1.055],r*.007,'#bfa987','hipWool-rose');}
     if(pal.bristlyCalyx){
      for(let k=0;k<55;k++){const y=-.9+1.8*(k+.5)/55,an=k*2.399,rr=r*Math.sqrt(1-y*y),at=[Math.sin(an)*rr,r*long*(1+y),Math.cos(an)*rr];f.branch(at,[at[0]*1.2,at[1]+r*.08,at[2]*1.2],r*.025,'#b3a070','hipBristle-rose');}
      for(let k=0;k<5;k++)f.add('roseSepal','hipSepal-rose',ripe?'#897b54':'#789156',0,r*long*2,0,r*.9,.023,r*.9,.8,k*TAU/5,0);
@@ -9924,8 +9959,9 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
   if(!s.bloom&&!s.flowerBuds)continue;
   const n=pal.cluster||1,eligible=(head.seed*.381966%1)<s.flowerDensity;
   for(let j=0;j<n;j++){
-   const open=eligible&&s.bloom&&!(j>0&&(j+head.seed)%5===0),az=head.yaw+j*2.399,rr=j===0?0:a.flowerRadius*(banks?3.8*Math.sqrt(j/n):pal.clusterSpread?pal.clusterSpread*Math.sqrt(j):1.8),at=[head.at[0]+Math.sin(az)*rr,head.at[1]+(banks?.020+(j%3)*.004:j===0?.035:.02),head.at[2]+Math.cos(az)*rr],tilt=pal.nodding&&open?1.32+((head.seed+j)%4)*.16:pal.upward?.04+(head.seed%3)*.035:.38+(head.seed%4)*.16;
-   b.branch(head.at,at,banks?.00065:.0015,stem,'peduncle');
+   const open=eligible&&s.bloom&&!(j>0&&(j+head.seed)%5===0),{az,at}=flowerSite(head,j,n),tilt=pal.nodding&&open?1.32+((head.seed+j)%4)*.16:pal.upward?.04+(head.seed%3)*.035:.38+(head.seed%4)*.16;
+   if(pal.panicle){const fork=[head.at[0],head.at[1]+(at[1]-head.at[1])*.55,head.at[2]];b.branch(head.at,fork,.0008,stem,'rosePanicleAxis');b.branch(fork,at,.0005,stem,'peduncle');}
+   else b.branch(head.at,at,banks?.00065:.0015,stem,'peduncle');
    // A nodding flower has a curved neck continuous with its receptacle.
    // Unopened buds stay upright; rotating the bloom alone leaves a broken stalk.
    if(pal.nodding&&open){
