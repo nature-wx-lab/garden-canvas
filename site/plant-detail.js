@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.142';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.143';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.142';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.143';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9940,7 +9940,7 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
   const row=leaves[i];if(s.leafDensity===0||(i*.618%1)>s.leafDensity)continue;
   const len=leafLen*row.size*s.leafScale,f=flowerFrame(b,row.at,(pal.trueBloom||pal.leafPitchVariation)?.25+variation(i,18)*1.15:(pal.leafPitch??.68)+(i%6)*.14,row.yaw),axis=len*(pal.rachisScale||1.65),lc=kit.shade(rand,pal.youngLeaf&&row.young&&s.month<11?pal.youngLeaf:green,.04),counts=a.leafletCounts||[5,7],pairs=(counts[i%counts.length]-1)/2,width=a.leafWidth?a.leafWidth/(a.leafLength*.66):1,leaflet=a.leafletShape||'roseLeaflet';
   const blade=(frame,ll)=>{
-   frame.add(leaflet,a.leafTexture==='glossy'?'leaf-glossy-rose':'leaf-rose',lc,0,0,0,ll*width,ll,ll);
+   frame.add(leaflet,pal.variegatedMargin?'leaf-rose-variegated-'+(i%3):a.leafTexture==='glossy'?'leaf-glossy-rose':'leaf-rose',lc,0,0,0,ll*width,ll,ll);
    if(pal.leafHair)for(let q=0;q<8;q++){const point=roseLeafPoint(.18+q*.085,(q%2?1:-1)*.6,leaflet).map((v,k)=>v*ll*(k===0?width:1));point[2]-=ll*.003;frame.branch(point,[point[0]+ll*.01,point[1]+ll*.004,point[2]-ll*.018],ll*.0013,'#a4ac91','roseLeafHair');}
    if(!pal.leafVeins)return;
    const point=(t,u)=>roseLeafPoint(t,u,leaflet).map((v,k)=>v*ll*(k===0?width:1)+(k===2?ll*.002:0)),vein=pal.veinColor||'#84966b';
@@ -9957,9 +9957,9 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
    if(pal.leafVeins){
     const q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),roll),point=v=>new THREE.Vector3(...v).applyQuaternion(q).toArray();
     blade({add(shape,kind,col,x,y,z,sx,sy,sz){ff.add(shape,kind,col,x,y,z,sx,sy,sz,0,0,roll);},branch(from,to,r,col,kind){ff.branch(point(from),point(to),r,col,kind);}},ll);
-   }else ff.add(leaflet,a.leafTexture==='glossy'?'leaf-glossy-rose':'leaf-rose',lc,0,0,0,ll*width,ll,ll,0,0,roll);
+   }else ff.add(leaflet,pal.variegatedMargin?'leaf-rose-variegated-'+(i%3):a.leafTexture==='glossy'?'leaf-glossy-rose':'leaf-rose',lc,0,0,0,ll*width,ll,ll,0,0,roll);
   }
-  if(pal.leafVeins)blade(flowerFrame(f,[0,axis,0],0,0),len);else f.add(leaflet,a.leafTexture==='glossy'?'leaf-glossy-rose':'leaf-rose',lc,0,axis,0,len*width,len,len);
+  if(pal.leafVeins)blade(flowerFrame(f,[0,axis,0],0,0),len);else f.add(leaflet,pal.variegatedMargin?'leaf-rose-variegated-'+(i%3):a.leafTexture==='glossy'?'leaf-glossy-rose':'leaf-rose',lc,0,axis,0,len*width,len,len);
  }
  const flowerSite=(head,j,n)=>{
   const az=head.yaw+j*2.399,rr=pal.panicle?j===0?0:.045+.025*(j%3):j===0?0:a.flowerRadius*(banks?3.8*Math.sqrt(j/n):pal.clusterSpread?pal.clusterSpread*Math.sqrt(j):1.8),rise=pal.panicle?.045+.075*(1-j/n):banks?.020+(j%3)*.004:j===0?.035:.02;
