@@ -9,6 +9,23 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Ajuga distinguishes evergreen mats, crisped leaves and deciduous upright incisa',()=>{
+ const ids=['p-1bb6ceda6036','p-59924ecd7632','p-56ca401deeea','p-78771ece7be3','p-6f8f9952a57e','p-5cc14f55dddb','p-b257603a2d63','p-262f86bafe9f','p-12858305bb32','p-7a702c77a8c4'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],a=info.appearance,p=makePlant(id,16600+i,2,2),inc=i===7;p.height=info.height[1];p.leafHeight=p.height;p.spread=i===6?.18:i===0||inc?.25:.4;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+   if(inc&&[12,1,2].includes(month)){assert.ok(g.userData.groundDormant);assert.equal(g.children.length,0);continue;}
+   assert.equal(g.scale.x,1);assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-ajuga-')));
+   const flowers=count('corolla-tube-ajuga');assert.equal(flowers>0,a.flowerMonths.includes(month));assert.equal(count('anther-ajuga'),flowers*4);assert.equal(count('petal-ajuga-lower'),flowers);assert.equal(count('petal-ajuga-side'),flowers*2);assert.equal(count('petal-ajuga-upper'),flowers*2);
+   if(inc)assert.equal(count('stolon-ajuga'),0);else if(i!==5)assert.ok(count('stolon-ajuga')>0);
+   if(!inc&&!a.flowerMonths.includes(month))assert.equal(count('stem-ajuga'),0);
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.instanceColor.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+ }
+ assert.equal(CATALOG[ids[4]].flower,'#bd80b4');assert.notEqual(seasonAt(CATALOG[ids[1]],1).leafPatternColor,seasonAt(CATALOG[ids[1]],7).leafPatternColor);assert.notEqual(seasonAt(CATALOG[ids[4]],1).leafColor,seasonAt(CATALOG[ids[4]],5).leafColor);assert.ok(CATALOG[ids[8]].appearance.leafLength>CATALOG[ids[0]].appearance.leafLength*4);
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.26';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
+});
 test('garden primula distinguishes candelabra tiers, low double flowers and winter rosettes',()=>{
  const ids=['p-4593c4544e69','p-ac32635a0f3a','p-3ce84a11e2f9','p-a1c9c8213529','p-f6e6f2c5da5b','p-05fc8913100a','p-65de091a0134','p-87ad92c5a84e'];
  for(const [i,id] of ids.entries()){
@@ -22,7 +39,7 @@ test('garden primula distinguishes candelabra tiers, low double flowers and wint
   }
  }
  assert.notEqual(seasonAt(CATALOG[ids[5]],1).leafColor,seasonAt(CATALOG[ids[5]],7).leafColor);assert.notEqual(seasonAt(CATALOG[ids[4]],5).flowerColor,seasonAt(CATALOG[ids[4]],6).flowerColor);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.25';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.25';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('persicaria distinguishes flower spikes, leaf sheaths, yellow foliage and winter crowns',()=>{
  const ids=['p-e489d67244c3','p-c897a3317e6a','p-ba3d2ac990fe','p-999c372869f5','p-48ff40cefd62'];
@@ -37,7 +54,7 @@ test('persicaria distinguishes flower spikes, leaf sheaths, yellow foliage and w
   }
  }
  assert.equal(CATALOG[ids[1]].appearance.patternColor,undefined);assert.notEqual(seasonAt(CATALOG[ids[4]],5).leafColor,seasonAt(CATALOG[ids[4]],11).leafColor);assert.ok(CATALOG[ids[0]].appearance.flowerPalette.spikeRadius>CATALOG[ids[2]].appearance.flowerPalette.spikeRadius);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.24';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.24';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('pelargonium and erodium distinguish asymmetric flowers, compound leaves and summer winter leaf loss',()=>{
  const ids=['p-bbe41a31f0c1','p-b1ddbd674edd','p-4ad7ed0a4c48','p-e6f28c279549','p-1e38521a6feb','p-59dfe61cf6b3'];
@@ -54,7 +71,7 @@ test('pelargonium and erodium distinguish asymmetric flowers, compound leaves an
   }
  }
  assert.equal(CATALOG[ids[1]].appearance.arrangement,'opposite');assert.equal(CATALOG[ids[1]].appearance.flowerShape,'storkbillFlower');assert.deepEqual(CATALOG[ids[2]].appearance.flowerMonths,[3,4,5,6,9,10,11]);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.23';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.23';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('named garden cranesbills distinguish trailing stems, upright sprays, petal forms and seasonal foliage',()=>{
  const ids=['p-21647eab0811','p-17d8d9870aad','p-281a043a4b8a','p-547de4bcc52c','p-8d23e50bf880','p-d1ac58a6c06d','p-5aa16a0e318b','p-92108ab33b67','p-9a250949ed67','p-07bc0496b607','p-dd1c6ed291f2','p-2dee0df4879d','p-daa3f0f791e9','p-219f3d3784fa','p-93be3adffec2','p-8a9cd4f2b04e','p-eed3bbe87f42','p-5618fa433e49'];
@@ -72,7 +89,7 @@ test('named garden cranesbills distinguish trailing stems, upright sprays, petal
   }
  }
  assert.deepEqual(CATALOG[ids[9]].appearance.flowerMonths,[7,8,9,10]);assert.equal(CATALOG[ids[11]].appearance.flowerPalette.habit,'mat');
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.22';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.22';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('pulmonaria crowns distinguish leaf patterns, expanding basal foliage and winter dieback',()=>{
  const ids=['p-e74ffb149866','p-916f6752cd2a','p-07c1c3c24353','p-41f398309645','p-34ada1b9e656','p-5bb59cb250d4','p-4a69a01e95d7','p-1b38dc1b7a99'];
@@ -91,7 +108,7 @@ test('pulmonaria crowns distinguish leaf patterns, expanding basal foliage and w
   assert.ok(summerLeaves>springLeaves,'large basal foliage develops after the spring bloom');
  }
  assert.equal(CATALOG[ids[6]].appearance.persistence,'winterDormant');assert.equal(CATALOG[ids[7]].appearance.flowerPalette.flowerColors.length,1,'Pink-a-Blue carries pink buds and blue open flowers');
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.21';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.21';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('named Halo and Celestial violets distinguish corolla colors, dimensions and annual planting seasons',()=>{
  const ids=['p-fa65e71e69b4','p-59a458b63070','p-7fa1c8b2a609','p-eff7a6f216d4','p-bf12b18923d8','p-3cbc49d0fa5c','p-e30d859d380e'];
@@ -110,7 +127,7 @@ test('named Halo and Celestial violets distinguish corolla colors, dimensions an
  const parts=[];detailedFlower({add:(shape,kind,color,x,y,z,sx,sy,sz)=>parts.push({kind,color,z,sz}),branch(){}},{x:0,y:0,z:0,r:.0175,color:'#aaa',shape:'perennialViolet',palette:CATALOG[ids[4]].appearance.flowerPalette},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
  assert.notEqual(parts.find(x=>x.kind.endsWith('-upper')).color,parts.find(x=>x.kind.endsWith('-lower')).color);assert.ok(Math.abs(parts.find(x=>x.kind==='violetSpur').z)<.004);
  assert.ok(CATALOG[ids[0]].appearance.unconfirmed.includes('persistence'));
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.20';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.20';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('patterned violets preserve basal foliage, winter dieback and stable cornuta flower forms',()=>{
  const ids=['p-0636c0502a5e','p-658c378d81db','p-e1364cda7852','p-69b79c892c0f'];
@@ -129,7 +146,7 @@ test('patterned violets preserve basal foliage, winter dieback and stable cornut
  }
  assert.equal(CATALOG[ids[2]].appearance.arrangement,'basal');assert.equal(CATALOG[ids[2]].appearance.leafLength,.09);assert.equal(CATALOG[ids[2]].appearance.leafWidth,.075);assert.equal(seasonAt(CATALOG[ids[1]],8).bloom,false);
  const upperLength=narrow=>{const parts=[];detailedFlower({add:(shape,kind,color,x,y,z,sx,sy)=>parts.push({kind,sy}),branch(){}},{x:0,y:0,z:0,r:.013,color:'#eee',shape:'perennialViolet',palette:{type:'albaMinor',narrow,longSpur:true}},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});return parts.find(x=>x.kind.endsWith('-upper')).sy;};assert.ok(upperLength(true)>upperLength(false));
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.19';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.19';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('perennial violets retain simple leaves, unequal petals, rear spurs and source-based seasonal differences',()=>{
  const ids=['p-c302de2ed934','p-47d4bd07bb6e','p-08d830cdaf3d','p-adfe8721a151'];
@@ -152,7 +169,7 @@ test('perennial violets retain simple leaves, unequal petals, rear spurs and sou
  assert.equal(CATALOG[ids[1]].appearance.flowerRadius,.02);assert.equal(CATALOG[ids[3]].appearance.flowerRadius,.01125);
  const parts=[];detailedFlower({add:(shape,kind,color,x,y,z,sx,sy)=>parts.push({shape,kind,x,y,z,sx,sy}),branch(){}},{x:0,y:0,z:0,r:.02,color:'#8060b0',shape:'perennialViolet',palette:{type:'corsica'}},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
  assert.equal(parts.filter(p=>p.kind.endsWith('-upper')).length,2);assert.equal(parts.filter(p=>p.kind.endsWith('-lateral')).length,2);assert.equal(parts.filter(p=>p.kind.endsWith('-lower')).length,1);assert.ok(parts.find(p=>p.kind==='violetSpur').z<0);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.18';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.18';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('last named roses preserve purple winter wood, red buds and source-measured corollas',()=>{
  const ids=['p-b64e78299376','p-297d1fe24b3d','p-5814c267516a','p-537fac8b97b4','p-e5ac6508af57'];
@@ -176,7 +193,7 @@ test('last named roses preserve purple winter wood, red buds and source-measured
   }
   if(i===0){assert.notDeepEqual(winterColor,summerColor);assert.ok(winterColor[2]>winterColor[1],'purple winter stems have more blue than green');}
  }
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.17';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.17';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('miniature roses preserve variegated leaflets, single white-eyed flowers and documented flowering months',()=>{
  const ids=['p-356f64ca69f5','p-a5ee9762f1f5','p-2dd143ea5a77','p-51ea42e91d3e'];
@@ -194,7 +211,7 @@ test('miniature roses preserve variegated leaflets, single white-eyed flowers an
   if(i<3&&i!==1)assert.notEqual(seasonAt(info,6).flowerColor,seasonAt(info,10).flowerColor);
  }
  assert.equal(CATALOG[ids[0]].variegated,true);assert.equal(CATALOG[ids[1]].appearance.petals,5);assert.match(seasonAt(CATALOG[ids[1]],10).timingBasis,/月の記載/);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.16';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.16';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('Japanese roses distinguish rounded crowns, short clustered laterals and layered colour-changing corollas',()=>{
  const ids=['p-f9801e19b0fb','p-515135dcd1ca','p-0643fe62f508','p-63d07e6fddc2'];
@@ -213,7 +230,7 @@ test('Japanese roses distinguish rounded crowns, short clustered laterals and la
   }
  }
  assert.equal(CATALOG[ids[3]].appearance.petals,35);assert.ok(CATALOG[ids[3]].appearance.flowerPalette.domed);assert.ok(CATALOG[ids[3]].appearance.flowerPalette.variableCluster);assert.ok(CATALOG[ids[0]].appearance.flowerPalette.shortLaterals<1);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.15';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.15';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('distinct shrub roses retain winter wood and model boat petals, green eyes and solitary autumn flowers',()=>{
  const ids=['p-ee83417e8f2c','p-873288a0ed7e','p-7f0c87f22d35','p-2214389b948d'];
@@ -230,7 +247,7 @@ test('distinct shrub roses retain winter wood and model boat petals, green eyes 
   }
   if(i===1)assert.equal(juneSites,octSites*3,'autumn flower sites become solitary');
  }
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.14';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.14';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('yellow climbers separate spring-only rambler flowers from repeat blooms and retain branched winter canes',()=>{
  const ids=['p-c758390bbd4d','p-e5328894fa54','p-8b4b74a713d5','p-ab48376b8bdc','p-12d2b43ca5f0'];
@@ -249,7 +266,7 @@ test('yellow climbers separate spring-only rambler flowers from repeat blooms an
  }
  const golden=CATALOG[ids[4]].appearance,butter=CATALOG[ids[0]].appearance;assert.equal(golden.flowerPalette.canes,5);assert.ok(golden.flowerPalette.branchStart>.4);assert.ok(golden.flowerPalette.caneRadius>butter.flowerPalette.caneRadius);assert.equal(golden.leafTexture,'glossy');
  assert.equal(CATALOG[ids[2]].spread[0],.7);assert.match(CATALOG[ids[2]].appearance.unconfirmed.join(' '),/不一致/);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.13';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.13';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('Delbard shrubs distinguish striped semidoubles, frilled rosettes, seasonal rims and woody winter forms',()=>{
  const ids=['p-b85fc5315d77','p-4e3688d75587','p-7d4969065233','p-5f1499105353','p-cbd4b2589eb3','p-4754d337df9d','p-4d84bb7e07fc'];
@@ -277,7 +294,7 @@ test('Delbard shrubs distinguish striped semidoubles, frilled rosettes, seasonal
  }
  assert.ok(CATALOG[ids[0]].appearance.flowerPalette.climber);assert.ok(CATALOG[ids[1]].appearance.flowerPalette.climber);
  assert.ok(CATALOG[ids[5]].appearance.flowerPalette.stiff);assert.ok(CATALOG[ids[0]].spread[0]>CATALOG[ids[5]].spread[0]);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.12';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.12';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('small polyantha cups and Green Ice keep woody winter scaffolds and distinct flowering states',()=>{
  const ids=['p-f912f33f9d91','p-905a2b6a7183','p-825e447ce777','p-20e468999663','p-8f895389c0b7','p-eb8b7e48de41'];
@@ -302,7 +319,7 @@ test('small polyantha cups and Green Ice keep woody winter scaffolds and distinc
  }
  assert.notEqual(seasonAt(CATALOG[ids[1]],6).flowerColor,seasonAt(CATALOG[ids[1]],10).flowerColor);
  assert.notEqual(seasonAt(CATALOG[ids[2]],7).flowerColor,seasonAt(CATALOG[ids[2]],10).flowerColor);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.11';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.11';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('True Bloom roses are deciduous woody shrubs with cultivar petals and non-calendar colour variation',()=>{
  const ids=['p-564840bc7b58','p-847950eb70ac','p-4033bf44e0ed','p-791b993009f3'];
@@ -318,7 +335,7 @@ test('True Bloom roses are deciduous woody shrubs with cultivar petals and non-c
    for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
   }
  }
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.10';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.10';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('Drift roses retain low woody branches through winter and distinguish open pink flowers from double cultivars',()=>{
  const ids=['p-f106674a0d8e','p-f806d1855448','p-9aab6c6bb56f','p-e2143e5cca19','p-1d07bb2a693f'];
@@ -344,7 +361,7 @@ test('Drift roses retain low woody branches through winter and distinguish open 
   }
   assert.ok(a.unconfirmed.some(x=>x.includes('初霜')));if(i!==0)assert.ok(a.unconfirmed.some(x=>x.includes('資料間')));
  }
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.9';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.9';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('Flower Carpet roses form low branched mounds with cultivar flowers and the official May-November calendar',()=>{
  const ids=['p-8944f3ad7d59','p-efe322591586','p-178346fec068','p-15750d223b31','p-b41bf36d94b3'];
@@ -365,7 +382,7 @@ test('Flower Carpet roses form low branched mounds with cultivar flowers and the
   }
  }
  assert.equal(CATALOG[ids[0]].appearance.flowerRadius,.0275);assert.equal(CATALOG[ids[2]].appearance.flowerRadius,.0175);assert.equal(CATALOG[ids[4]].appearance.flowerRadius,.01375);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.8';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.8';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('Seika climber, Hatoya and Sensational Fantasy separate observed flowering, retained leaves and winter hips',()=>{
  const ids=['p-d91dcd802c61','p-be75c8dc1332','p-a5327faf93ff'];
@@ -388,7 +405,7 @@ test('Seika climber, Hatoya and Sensational Fantasy separate observed flowering,
  assert.equal(CATALOG[ids[0]].height,null);assert.equal(CATALOG[ids[0]].spread,null);
  assert.equal(CATALOG[ids[1]].leaf,'semi');assert.deepEqual(CATALOG[ids[1]].height,[3,5]);
  assert.equal(CATALOG[ids[1]].appearance.flowerRadius,.05);assert.deepEqual(CATALOG[ids[2]].appearance.fruitMonths,[7,8,9,10,11,12]);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.7';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.26');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.7';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.27');
 });
 test('native roses separate thornless panicles, creeping glossy runners and woolly bracted evergreen flowers',()=>{
  const ids=['p-61f79361a967','p-d2df3a326599','p-fe555efeaf68'];
@@ -2572,7 +2589,7 @@ test('every catalog entry has an explicit evidence record and no unsupported com
   if(a.winterStemColor!==undefined)assert.match(a.winterStemColor,/^#[0-9a-f]{6}$/i,id+':winterStemColor');
   if(a.budColor!==undefined)assert.match(a.budColor,/^#[0-9a-f]{6}$/i,id+':budColor');
   assert.ok(Object.keys(a).every(k=>allowed.has(k)),id);assert.ok(['attributes','unconfirmed','partial'].includes(a.status));
-  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['tajima-garden.jp','www.waltersgardens.com','www.floraweb.de','hanahana-shop.com','ec.keiseirose.co.jp','www.keihan-engei-gardeners.com','soeasy.tacoflower.jp','www.driftroses.com','toshiryokka.jp','cheztaku.blog.fc2.com','www.kanagawaparks.com','www.kawamotorosegarden.com','www.delbard-japon.com','www.rosen.de','keihan-engei.com','www.kobe-park.or.jp','nagakubokouen.jp','www.e878.net','jcra.ncsu.edu','www.botanybrisbane.com','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.makino.or.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg','www.sapho.fr','www.kahaku.go.jp','www.mnc.toho-u.ac.jp','www.missouribotanicalgarden.org','americanpeonysociety.org','www.yuushien.com','www.pref.ishikawa.lg.jp','www.pref.kyoto.jp','www.tokyo-aff.or.jp','springmeadownursery.com','patents.google.com','iidukaflowerplants.com','www.maddingleybotanical.com.au','www.proteaflora.com.au','www.nda.gov.za','anpsa.org.au','florabase.dpaw.wa.gov.au','yamashita-plants.com','www.murakami-seed.com','apps.lucidcentral.org','www.jp-akatsuka.co.jp','www.bgtym.org','mpdb.nibn.go.jp','www.pharm.or.jp','www.kankyo.pref.hyogo.lg.jp','jabg.or.jp','www.jstage.jst.go.jp','www.satotsubakien.com','si.gardenexplorer.org','www.pref.kagawa.lg.jp','www.nippon-olive.co.jp','turukame-olive.com','www.city.mishima.shizuoka.jp','www.pma.com.au','hort.extension.wisc.edu','ryokka-c.jp','www.tokyo-shoyaku.com','www.itanse.shop','www.hanahiroba.com','plantnetwork.gardenplant.org','olddairynursery.com','www.phoenixperennials.com','ryokka-c.jp','www.tokyo-shoyaku.com','www.itanse.shop','www.hanahiroba.com','plantnetwork.gardenplant.org','genchan8783.ocnk.net','www.keisen.ac.jp','shop.little-antique.com','delphinium.co.nz','www.terranovanurseries.com','www.danzigeronline.com','www.syngentaflowers.com','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg','www.iplant.cn','www.e878.net','esveld.nl','nwipb.cas.cn','growwild.kew.org','frais.ocnk.net','anbg.gov.au','www.fws.gov','store.provenwinners.jp','www.kincho-engei.co.jp','x7772506.xaas3.jp','www.tanakanursery.com','www.anbg.gov.au','www.dcceew.gov.au','smoketree-miyabi.com','www.pepinieres-minier.fr','www.tokyo-aff.or.jp','woodyplants.cals.cornell.edu','www.missouribotanicalgarden.org','himenobaraen.jp','www.flowerpark.or.jp','starrosesandplants.com','patents.google.com','patents.justia.com','www.davidaustinroses.co.uk','www.davidaustinrosesaustralia.com','shinomiya-rose.com','ec.keiseirose.co.jp','www.keiseirose.co.jp','www.baranoie.com','www.jacksonandperkins.com','www.komatsugarden-online.com','www.mdpi.com','www.ema.europa.eu','www.biolveg.uma.es','academic.oup.com','sys01.lib.hkbu.edu.hk','plantdatabase.kpu.ca','botsoc.scot','www.infoflora.ch','darcyeverest.co.uk','resources.austplants.com.au','www.logan.qld.gov.au','plant-directory.ifas.ufl.edu','link.springer.com','onlinelibrary.wiley.com','www.naro.go.jp','tojaku.co.jp','japr.or.jp','www.tokyo-shoyaku.com','www.fp-k.org','www.town.taketoyo.lg.jp','www.akb.jp','ecgrowers.com','www.barrault-plantes-jardins.com','world-plants.com','naegibu.com','sakisansou.ocnk.net','harvest.cals.ncsu.edu','iwasaki.shop-pro.jp','efloras.org','www.pref.gifu.lg.jp','www.crug-farm.co.uk','nikko-bg.jp','mortonarb.org','fumakilla.jp','www.sakataseed.co.jp','www.lsuagcenter.com','keybase.rbg.vic.gov.au','extension.oregonstate.edu','linnet.geog.ubc.ca','www.suntory.co.jp','hakusan1.co.jp','www.knollgardens.co.uk','www.awaji.ac.jp','plantnet.rbgsyd.nsw.gov.au','www.nzplants.auckland.ac.nz','mastergardener.extension.wisc.edu','www.lullfitz.com.au','www.grahamrice.com','www.wakaizumi-farm.com', 'kanekyu.net', 'mag.nhk-book.co.jp', 'www.botanischetuinen.nl', 'yokoyama-nursery.jp','www.ashwoodnurseries.com','gobotany.nativeplanttrust.org','store.shopping.yahoo.co.jp','www.ugui-vc.jp','www.tba.or.jp','wiki.irises.org','www.dwarfirissociety.org','www.zahradnictvi-spomysl.cz','www.agsfan.com','sakata-netshop.com','satsukibonsai-4s.jp','www.kkr.mlit.go.jp','tbg.kahaku.go.jp','sernecportal.org','www.efloras.org','www.royalvanzanten.com','www.panamseed.com','www.fleuroselect.com','hakusan1.co.jp','plantsofhawaii.org','www.takii.co.jp','shop.takii.co.jp','bibliotecadelbotanico.org','w3.biosci.utexas.edu','www.gardentrials.com','pmc.ncbi.nlm.nih.gov','pza.sanbi.org','floraseries.landcareresearch.co.nz','staff.fukuoka-edu.ac.jp','flora.uniud.it','www3.gobiernodecanarias.org','www.nzflora.info','agrobiodiversity.uniag.sk','www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au','www.nparks.gov.sg','provenwinners.jp','pacificbulbsociety.org','keys.landcareresearch.co.nz','plantipp.eu','www.wairere.nz','hosho.ees.hokudai.ac.jp','www.hokudai.ac.jp','www.lab.toho-u.ac.jp','eprints.lib.hokudai.ac.jp','www.town.karuizawa.lg.jp','library.dbca.wa.gov.au','www.hinshu2.maff.go.jp','matsunaga-kadan.com','oniduka.base.shop','www.nipponbeer.jp','fermanagh.bsbi.org','www.npshistory.com','ozaki-flowerpark.co.jp','www.nzflora.info','nzflora.info','www.journals.uchicago.edu','www.floraiberica.es','efloras.org','extension.psu.edu','makinomigoro.jp','iucngisd.org','nature.ca','www.hinshu2.maff.go.jp','www.nies.go.jp','www.water.go.jp','www.akb.jp','tropica.com','rva.jp','idtools.org','www.adana.co.jp','www.h2-l.jp','www.aqua-breath.com','greenhobby-sale.com','florabase.dbca.wa.gov.au','www.pref.fukushima.lg.jp','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg'].includes(u.hostname));assert.ok(['catalog-entry','species','genus'].includes(source.scope));}
+  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['plantdatabase.kpu.ca','ikilog.biodic.go.jp','tajima-garden.jp','www.waltersgardens.com','www.floraweb.de','hanahana-shop.com','ec.keiseirose.co.jp','www.keihan-engei-gardeners.com','soeasy.tacoflower.jp','www.driftroses.com','toshiryokka.jp','cheztaku.blog.fc2.com','www.kanagawaparks.com','www.kawamotorosegarden.com','www.delbard-japon.com','www.rosen.de','keihan-engei.com','www.kobe-park.or.jp','nagakubokouen.jp','www.e878.net','jcra.ncsu.edu','www.botanybrisbane.com','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.makino.or.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg','www.sapho.fr','www.kahaku.go.jp','www.mnc.toho-u.ac.jp','www.missouribotanicalgarden.org','americanpeonysociety.org','www.yuushien.com','www.pref.ishikawa.lg.jp','www.pref.kyoto.jp','www.tokyo-aff.or.jp','springmeadownursery.com','patents.google.com','iidukaflowerplants.com','www.maddingleybotanical.com.au','www.proteaflora.com.au','www.nda.gov.za','anpsa.org.au','florabase.dpaw.wa.gov.au','yamashita-plants.com','www.murakami-seed.com','apps.lucidcentral.org','www.jp-akatsuka.co.jp','www.bgtym.org','mpdb.nibn.go.jp','www.pharm.or.jp','www.kankyo.pref.hyogo.lg.jp','jabg.or.jp','www.jstage.jst.go.jp','www.satotsubakien.com','si.gardenexplorer.org','www.pref.kagawa.lg.jp','www.nippon-olive.co.jp','turukame-olive.com','www.city.mishima.shizuoka.jp','www.pma.com.au','hort.extension.wisc.edu','ryokka-c.jp','www.tokyo-shoyaku.com','www.itanse.shop','www.hanahiroba.com','plantnetwork.gardenplant.org','olddairynursery.com','www.phoenixperennials.com','ryokka-c.jp','www.tokyo-shoyaku.com','www.itanse.shop','www.hanahiroba.com','plantnetwork.gardenplant.org','genchan8783.ocnk.net','www.keisen.ac.jp','shop.little-antique.com','delphinium.co.nz','www.terranovanurseries.com','www.danzigeronline.com','www.syngentaflowers.com','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg','www.iplant.cn','www.e878.net','esveld.nl','nwipb.cas.cn','growwild.kew.org','frais.ocnk.net','anbg.gov.au','www.fws.gov','store.provenwinners.jp','www.kincho-engei.co.jp','x7772506.xaas3.jp','www.tanakanursery.com','www.anbg.gov.au','www.dcceew.gov.au','smoketree-miyabi.com','www.pepinieres-minier.fr','www.tokyo-aff.or.jp','woodyplants.cals.cornell.edu','www.missouribotanicalgarden.org','himenobaraen.jp','www.flowerpark.or.jp','starrosesandplants.com','patents.google.com','patents.justia.com','www.davidaustinroses.co.uk','www.davidaustinrosesaustralia.com','shinomiya-rose.com','ec.keiseirose.co.jp','www.keiseirose.co.jp','www.baranoie.com','www.jacksonandperkins.com','www.komatsugarden-online.com','www.mdpi.com','www.ema.europa.eu','www.biolveg.uma.es','academic.oup.com','sys01.lib.hkbu.edu.hk','plantdatabase.kpu.ca','botsoc.scot','www.infoflora.ch','darcyeverest.co.uk','resources.austplants.com.au','www.logan.qld.gov.au','plant-directory.ifas.ufl.edu','link.springer.com','onlinelibrary.wiley.com','www.naro.go.jp','tojaku.co.jp','japr.or.jp','www.tokyo-shoyaku.com','www.fp-k.org','www.town.taketoyo.lg.jp','www.akb.jp','ecgrowers.com','www.barrault-plantes-jardins.com','world-plants.com','naegibu.com','sakisansou.ocnk.net','harvest.cals.ncsu.edu','iwasaki.shop-pro.jp','efloras.org','www.pref.gifu.lg.jp','www.crug-farm.co.uk','nikko-bg.jp','mortonarb.org','fumakilla.jp','www.sakataseed.co.jp','www.lsuagcenter.com','keybase.rbg.vic.gov.au','extension.oregonstate.edu','linnet.geog.ubc.ca','www.suntory.co.jp','hakusan1.co.jp','www.knollgardens.co.uk','www.awaji.ac.jp','plantnet.rbgsyd.nsw.gov.au','www.nzplants.auckland.ac.nz','mastergardener.extension.wisc.edu','www.lullfitz.com.au','www.grahamrice.com','www.wakaizumi-farm.com', 'kanekyu.net', 'mag.nhk-book.co.jp', 'www.botanischetuinen.nl', 'yokoyama-nursery.jp','www.ashwoodnurseries.com','gobotany.nativeplanttrust.org','store.shopping.yahoo.co.jp','www.ugui-vc.jp','www.tba.or.jp','wiki.irises.org','www.dwarfirissociety.org','www.zahradnictvi-spomysl.cz','www.agsfan.com','sakata-netshop.com','satsukibonsai-4s.jp','www.kkr.mlit.go.jp','tbg.kahaku.go.jp','sernecportal.org','www.efloras.org','www.royalvanzanten.com','www.panamseed.com','www.fleuroselect.com','hakusan1.co.jp','plantsofhawaii.org','www.takii.co.jp','shop.takii.co.jp','bibliotecadelbotanico.org','w3.biosci.utexas.edu','www.gardentrials.com','pmc.ncbi.nlm.nih.gov','pza.sanbi.org','floraseries.landcareresearch.co.nz','staff.fukuoka-edu.ac.jp','flora.uniud.it','www3.gobiernodecanarias.org','www.nzflora.info','agrobiodiversity.uniag.sk','www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au','www.nparks.gov.sg','provenwinners.jp','pacificbulbsociety.org','keys.landcareresearch.co.nz','plantipp.eu','www.wairere.nz','hosho.ees.hokudai.ac.jp','www.hokudai.ac.jp','www.lab.toho-u.ac.jp','eprints.lib.hokudai.ac.jp','www.town.karuizawa.lg.jp','library.dbca.wa.gov.au','www.hinshu2.maff.go.jp','matsunaga-kadan.com','oniduka.base.shop','www.nipponbeer.jp','fermanagh.bsbi.org','www.npshistory.com','ozaki-flowerpark.co.jp','www.nzflora.info','nzflora.info','www.journals.uchicago.edu','www.floraiberica.es','efloras.org','extension.psu.edu','makinomigoro.jp','iucngisd.org','nature.ca','www.hinshu2.maff.go.jp','www.nies.go.jp','www.water.go.jp','www.akb.jp','tropica.com','rva.jp','idtools.org','www.adana.co.jp','www.h2-l.jp','www.aqua-breath.com','greenhobby-sale.com','florabase.dbca.wa.gov.au','www.pref.fukushima.lg.jp','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg'].includes(u.hostname));assert.ok(['catalog-entry','species','genus'].includes(source.scope));}
   for(const [field,index] of Object.entries(a.basis)){assert.ok(Object.hasOwn(a,field));assert.ok(Number.isInteger(index)&&index>=0&&index<a.sources.length,id+':'+field);}
   for(const field of ['flowerMonths','emergenceMonths','dormantMonths','greenFruitMonths'])if(a[field])assert.ok(a[field].length>0&&a[field].every(m=>Number.isInteger(m)&&m>=1&&m<=12),id);
   for(let m=1;m<=12;m++){const s=seasonAt(CATALOG[id],m);assert.ok(s.leafDensity>=0&&s.leafDensity<=1);assert.ok(s.leafScale>=0&&s.leafScale<=1);if(s.groundDormant)assert.equal(s.bloom,false);}

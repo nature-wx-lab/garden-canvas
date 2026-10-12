@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.152';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.153';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.152';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.153';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5919,6 +5919,16 @@ export function persicariaFloretGeometry(){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.persicariaTepals=5;return g;
 }
 
+export function ajugaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='ajugaLip')return [u*.54*Math.pow(sn,.52),t-.13*Math.exp(-u*u*35)*Math.pow(t,7),.025*u*u*sn+.13*t*t];
+ const inc=type==='ajugaIncised',crisp=type==='ajugaCrisped',small=type==='ajugaSmall';
+ const tooth=t*(inc?5:small?7:10)%1,edge=inc?.72+.28*Math.pow(tooth<.70?tooth/.70:(1-tooth)/.30,3):1+.055*Math.cos(t*TAU*(small?7:10));
+ const width=(inc?.41:crisp?.46:small?.23:.33)*Math.pow(Math.max(0,Math.sin(Math.PI*Math.pow(t,inc?.85:1.3))),inc?.70:.58)*edge;
+ const cup=crisp?.34:.06,rugose=(crisp?.033:.014)*Math.sin(t*48-Math.abs(u)*6)*Math.abs(u)*sn;
+ return [u*width*(crisp?1-.12*Math.abs(u):1),t-(crisp?.08:0)*Math.pow(t,5),cup*u*u*sn+rugose+(crisp?.14:.045)*t*t];
+}
+
 export function storkbillPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type.startsWith('storkbillPetal'))return [u*(type==='storkbillPetalNarrow'?.14:.50)*Math.pow(sn,.55),.025*u*u*sn+.02*Math.pow(t,4),t-.025*Math.exp(-u*u*25)*Math.pow(t,6)];
@@ -6288,6 +6298,22 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
    for(let v=-4;v<=4;v++){let from=[0,0,.00006];for(let k=1;k<=10;k++){const t=k/11,u=v*.17,width=.56*Math.pow(Math.sin(Math.PI*t),.38),at=[r*u*width*.95,r*t,r*(.12*t*t+.16*u*u*Math.sin(Math.PI*t))+.00005];petalFrame.branch(from,at,r*.0027,'#aabca2','petalVein');from=at;}}
    for(let v=0;v<11;v++){const aa=(v/10-.5)*1.2,at=[Math.sin(aa)*r*.27,r*.25,Math.cos(aa)*r*.52];frame.branch([0,r*.05,r*.15],at,r*.006,'#cad3a5','staminode');frame.add(bud,'staminodeGland','#d1bb64',...at,r*.025,r*.024,r*.025);}
   }return;
+ }
+ if(shape==='ajugaLips'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),inc=palette.type==='incisa',T=inc?.020:.009,L=inc?.005:.006;
+  f.add('tube','corolla-tube-ajuga',color,0,0,0,r*.85,T,r*.85);
+  f.add('tube','calyx-ajuga','#65744f',0,-.0003,0,r*1.05,inc?.007:.0045,r*1.05);
+  for(let j=0;j<5;j++)f.add('narrow','calyx-tooth-ajuga','#6d7c53',0,.003,0,.0015,.0023,.0015,.30,j*TAU/5,0);
+  f.add('ajugaLip','petal-ajuga-lower',color,0,T,0,L,L,L,1.56,0,0);
+  for(const sign of [-1,1]){
+   f.add('ajugaLip','petal-ajuga-side',color,sign*L*.35,T,0,L*.48,L*.48,L*.48,1.55,sign*1.07,0);
+   f.add('ajugaLip','petal-ajuga-upper',color,sign*L*.12,T,0,L*.25,L*(inc?.60:.28),L*.35,-.80,sign*.35,0);
+  }
+  for(let j=0;j<4;j++){
+   const tip=[(j-1.5)*r*.20,T+r*(j%2?1:.62),-r*.27];
+   f.branch([tip[0],T*.62,0],tip,.00014,'#ddd1ce','filament-ajuga');f.add(bud,'anther-ajuga','#d5c092',...tip,.00035,.00025,.00028);
+  }
+  return;
  }
  if(shape==='candelabraPrimula'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),T=.014;
@@ -7658,6 +7684,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['blueFescue','snowTussock','goldMillet','redMelica','crystalSedge','redHookSedge','goldMatRush','goldDwarfBamboo','sweetFlagFans','whitetopSedge'].includes(info.appearance?.architecture)){drawGrassAndSedgeProfiles(b,{info,s,detail,rand},kit);return;}
  if(['spurgeCanes','spurgeDome','snowSpurge','gauraWands'].includes(info.appearance?.architecture)){drawSpurgesAndGaura(b,{info,s,detail,rand},kit);return;}
  if(['diphylleiaUmbrella','jeffersoniaBasal','ranzaniaTrifoliate','deinantheCymes','kirengeshomaBells','pteridophyllumFern','hylomeconPinnate','eomeconBasal','araliaHerb','saururusRaceme','parnassiaScapes','cornusHerb'].includes(info.appearance?.architecture)){drawWoodlandSpecies(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(['primroseRosette','gerberaRosette','brunneraSprays'].includes(info.appearance?.architecture)){drawBasalFlowerForms(b,{info,s,detail,rand},kit);return;}
  if(['tapienMat','stolonPhlox'].includes(info.appearance?.architecture)){drawLowFlowerMats(b,{info,s,detail,rand},kit);return;}
@@ -9762,6 +9789,37 @@ function drawGaillardias(b,{info,s,detail,rand},kit){
  }
  if(s.bloom||s.seedHeads)for(const {at,yaw,dry} of heads){
   detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius*(.87+rand()*.13),color:s.flowerColor,shape:'gaillardiaHead',petals:a.petals,pattern:a.flowerPattern,patternColor:a.flowerPatternColor,palette:{...a.flowerPalette,dry:dry||!s.bloom},tilt:.20+rand()*.5,yaw},{...kit,rand});
+ }
+}
+
+function drawAjuga(b,{info,s,detail,rand},kit){
+ const a=info.appearance,pal=a.flowerPalette,type=pal.type,inc=type==='incisa',small=['chocolate','arctic'].includes(type),crisp=type==='crispa',h=s.height,w=s.spread,L=a.leafLength,green=s.leafColor,month=s.month;
+ const pattern=s.leafPatternColor,stem=inc?'#718756':'#7b6964',lk='leaf-ajuga-'+type+(pattern?'-'+new THREE.Color(pattern).getHexString():''),count=inc?7:Math.max(9,Math.min(72,Math.round(w*w/(L*L)*(small?.23:.55)))),winter=[12,1,2].includes(month);
+ const leaf=(root,az,len,pitch)=>{
+  const at=[root[0]+Math.sin(az)*len*.17,root[1]+len*.045,root[2]+Math.cos(az)*len*.17];
+  b.branch(root,at,.0006,stem,'petiole-ajuga');b.add(a.leafShape,lk,kit.shade(rand,green,.035),...at,len,len,len,pitch,az,(rand()-.5)*.19);
+ };
+ for(let i=0;i<count;i++){
+  const az=i*2.399+(rand()-.5)*.45,rr=w*(inc?.25:.40)*Math.sqrt((i+.5)/count)*(.85+rand()*.15),root=[Math.sin(az)*rr,.008+(i%3)*.003,Math.cos(az)*rr],scale=.84+rand()*.25;
+  if(!inc){
+   if(i>0&&!crisp){const parent=Math.max(0,i-13),prevAz=parent*2.399,prevR=i<13?0:w*.40*Math.sqrt((parent+.5)/count);b.branch([Math.sin(prevAz)*prevR,.008,Math.cos(prevAz)*prevR],root,.00085,stem,'stolon-ajuga');}
+   const leaves=Math.round((type==='arctic'?22:crisp?13:10)*s.leafDensity);
+   for(let j=0;j<leaves;j++){const inner=j>=leaves*.65,sz=L*scale*(inner?.6:.9)*(winter?.82:1);leaf([root[0],root[1]+(inner?L*.06:0),root[2]],az+j*2.399,sz,crisp?.65+rand()*.35:inner?.72+rand()*.25:1.14+rand()*.25);}
+   if(!s.bloom)continue;
+  }
+  const height=h*(inc?.94:crisp?.46:.95)*(.64+rand()*.36)*(inc?Math.min(1,.4+s.leafDensity*.6):1),levels=inc?7:8,top=[root[0]+Math.sin(az)*height*.035,root[1]+height,root[2]+Math.cos(az)*height*.035];
+  b.branch(root,[top[0],root[1]+height*levels/(levels+1)+.003,top[2]],inc?.0016:.001,stem,'stem-ajuga');
+  for(let j=0;j<levels;j++){
+   const t=(j+1)/(levels+1),at=[root[0]+(top[0]-root[0])*t,root[1]+height*t,root[2]+(top[2]-root[2])*t],yaw=az+j*Math.PI/2;
+   for(const sign of [0,1])leaf(at,yaw+sign*Math.PI,L*scale*(inc?1-t*.6:.37*(1-t*.62)),(inc?.68:1.0)+rand()*.44);
+   if(!s.bloom||inc&&j<3||!inc&&j<1)continue;
+   const n=inc?6:8;
+   for(let k=0;k<n;k++){
+    const turn=yaw+k*TAU/n,atf=[at[0]+Math.sin(turn)*.0025,at[1]+.001,at[2]+Math.cos(turn)*.0025];
+    if(j===levels-1&&k%3){b.add(kit.bud,'bud-ajuga',info.flower,...atf,.0018,.003,.0018,.4,turn,0);continue;}
+    detailedFlower(b,{x:atf[0],y:atf[1],z:atf[2],r:a.flowerRadius,color:s.flowerColor,shape:'ajugaLips',palette:pal,tilt:1.25+rand()*.14,yaw:turn},{...kit,rand});
+   }
+  }
  }
 }
 
