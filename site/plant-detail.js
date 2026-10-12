@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.137';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.138';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.137';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.138';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5950,7 +5950,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
    const n=palette.anemoneForm?[5,12,12,12,10,10][layer]:per+(layer<count%rings?1:0),t=rings===1?0:layer/(rings-1),len=r*(1-(palette.anemoneForm?.62:palette.openSemiDouble?.52:palette.exposedStamens?.30:.83)*t),level=r*(palette.openSemiDouble?.055:high?.60:deep?.70:flat?(palette.rosetteDepth??.13):.40)*t;
    for(let k=0;k<n;k++,j++){
     const an=k*TAU/n+layer*2.39996+Math.sin(j*4.7)*.085,col=palette.inner?new THREE.Color(color).lerp(new THREE.Color(palette.inner),t*.85):color,pk=(palette.splash?'petal-rose-splash-'+(j%5)+'-'+palette.splash.slice(1):palette.rim?'petal-rose-rim-'+(palette.rimWidth?'broad-':'')+palette.rim.slice(1):'petal-rose')+(palette.outside?'-outside-'+palette.outside.slice(1):''),qx=rosette&&t>.4?Math.sin(j%4*Math.PI/2)*r*.065:0,qz=rosette&&t>.4?Math.cos(j%4*Math.PI/2)*r*.065:0;
-    f.add(palette.anemoneForm?(layer===0?'roseSinglePetal':'roseStaminode'):single?(palette.petalNotch?'roseCleftSinglePetal':'roseSinglePetal'):palette.banksiae?'banksiaePetal':palette.heartPetals?'roseHeartPetal':chalice&&t<.6?'roseChalicePetal':palette.notched?'roseNotchedPetal':palette.jewel&&(!palette.jewelInner||t>.28)?(wave?'roseJewelWavedPetal':'roseJewelPetal'):palette.softPetals&&!(high&&t>.4)?'roseSoftPetal':wave||deep&&t>.3?'roseWavedPetal':(high||palette.pointed)&&t>.4?'rosePointedPetal':'roseRoundPetal',palette.eye?'petal-rose-eye-'+palette.eye.slice(1):pk,shade(rand,col,.018),qx,level+r*(rand()-.5)*.055,qz,len*(.88+rand()*.18)*(palette.petalWidth||1),len*(palette.exposedStamens?(palette.petalLift??.32):chalice&&t<.6?1.05:deep?1.48:high?1.05:flat?(palette.petalLift??.56):.93),len*(.93+rand()*.12),(rand()-.5)*(rosette||deep&&t>.3?.42:.18),an,(rand()-.5)*.27);
+    f.add(palette.anemoneForm?(layer===0?'roseSinglePetal':'roseStaminode'):single?(palette.petalNotch?'roseCleftSinglePetal':'roseSinglePetal'):palette.banksiae?'banksiaePetal':palette.globularCup&&!palette.exposedStamens?'roseGlobularPetal':palette.heartPetals?'roseHeartPetal':chalice&&t<.6?'roseChalicePetal':palette.notched?'roseNotchedPetal':palette.jewel&&(!palette.jewelInner||t>.28)?(wave?'roseJewelWavedPetal':'roseJewelPetal'):palette.softPetals&&!(high&&t>.4)?'roseSoftPetal':wave||deep&&t>.3?'roseWavedPetal':(high||palette.pointed)&&t>.4?'rosePointedPetal':'roseRoundPetal',palette.eye?'petal-rose-eye-'+palette.eye.slice(1):pk,shade(rand,col,.018),qx,level+r*(rand()-.5)*.055,qz,len*(.88+rand()*.18)*(palette.petalWidth||1),len*(palette.exposedStamens?(palette.petalLift??.32):palette.globularCup&&!palette.exposedStamens?.94:chalice&&t<.6?1.05:deep?1.48:high?1.05:flat?(palette.petalLift??.56):.93),len*(.93+rand()*.12),(rand()-.5)*(rosette||deep&&t>.3?.42:.18),an,(rand()-.5)*.27);
    }
   }
   if(palette.buttonEye)for(let j=0;j<9;j++)f.add('roseRoundPetal','petal-button-eye',palette.inner||color,Math.sin(j*2.399)*r*.035,r*.25,Math.cos(j*2.399)*r*.035,r*.10,r*.12,r*.10,.1,j*2.399,0);
@@ -9898,17 +9898,17 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
   }
  }
  else for(let i=0;i<canes;i++){
-  const natural=pal.naturalCanes,yaw=i*2.399+.2+(natural?(variation(i,1)-.5)*.9:0),reach=w*(climb?.38:.21+pal.lean*.37)*(natural?.65+variation(i,2)*.6:1),top=h*(natural?.54+variation(i,3)*.43:.60+.34*((i*3%7)/6)),root=[Math.sin(yaw)*w*.045,0,Math.cos(yaw)*w*.045];let prev=root;
+  const natural=pal.naturalCanes,yaw=i*2.399+.2+(natural?(variation(i,1)-.5)*.9:0),reach=w*(climb?.38:.21+pal.lean*.37)*(natural?.65+variation(i,2)*.6:1),top=h*(pal.smallRoseBush?.32+variation(i,3)*.63:natural?.54+variation(i,3)*.43:.60+.34*((i*3%7)/6)),root=[Math.sin(yaw)*w*.045,0,Math.cos(yaw)*w*.045];let prev=root;
   for(let j=1;j<=nodes;j++){
    const t=(j+(natural&&j<nodes?(variation(i,j+8)-.5)*.58:0))/nodes,rr=reach*Math.pow(t,pal.stiff?2.1:climb?1.55:1.16),rise=banks?Math.sin(t*Math.PI*.66):ramble?Math.sin(t*Math.PI*.61):pal.arching?Math.sin(t*Math.PI*(pal.archAngle||.52)):t,turn=yaw+(pal.branched?.22*Math.sin(t*3.3+i)*t:0)+(natural?.20*Math.sin(t*5+i)*t:0),at=[root[0]+Math.sin(turn)*rr,top*rise,root[2]+Math.cos(turn)*rr];
    b.branch(prev,at,Math.min(pal.caneRadius||(banks?.008:pal.stiff?.014:.010),h*.008)*(1-t*.64),j<4?(a.barkColor||'#88755e'):pal.youngStem&&j>=nodes-1&&s.leafDensity>0?pal.youngStem:stem,'wood-rose-cane');prickles(prev,at,i*13+j);
    b.add(kit.bud,'axillaryBud','#865d51',at[0],at[1],at[2],.0019,.004,.0018,.2,yaw+j,0);
-   if(j>2&&(!natural||j>=nodes-1||variation(i,j+30)>.17)){
+   if(j>=(pal.smallRoseBush?2:3)&&(!natural||j>=nodes-1||variation(i,j+30)>.17)){
     const az=(natural?turn:yaw)+(j%2?1:-1)*(natural?.82+variation(i,j+50)*.75:1.18),side=w*(ramble?.16:climb?.14:.12)*(natural?.55+variation(i,j+70)*.8:1),end=[at[0]+Math.sin(az)*side,Math.min(h*.97,at[1]+h*(ramble?.035-.12*t*t:climb?.08:.16)*(natural?.55+variation(i,j+90)*.7:1)),at[2]+Math.cos(az)*side];
     b.branch(at,end,Math.min(.003,h*.0021),stem,'wood-rose-lateral');prickles(at,end,i*17+j,true);
     if(!banks&&(climb?(j%2===0||j===nodes):j>=nodes-1))heads.push({at:end,yaw:az,seed:i*nodes+j});
     for(let k=1;k<=4;k++)leaves.push({at:mix(at,end,k/5),yaw:az+(k%2?1:-1)*1.13,size:(k===4?.78:1),young:k===4});
-    if(pal.branched&&!climb&&j>=4)for(let q=0;q<pal.branched;q++){
+    if(pal.branched&&!climb&&j>=(pal.smallRoseBush?2:4))for(let q=0;q<pal.branched;q++){
      // Small shoots break up the repeated ladder of leaves. Their continuous
      // woody junctions persist after leaf fall; angles are reference geometry.
      const base=mix(at,end,.38+q*.25),turn=az+(q%2?-1:1)*(1.05+.15*Math.sin(i+j)),len=w*(.10+.025*((i+j)%3)),rise=len*(.48-.32*pal.lean),tip=[base[0]+Math.sin(turn)*len,Math.min(h*.98,base[1]+rise),base[2]+Math.cos(turn)*len],mid=mix(base,tip,.55);
@@ -9936,7 +9936,7 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
  }
  for(let i=0;i<leaves.length;i++){
   const row=leaves[i];if(s.leafDensity===0||(i*.618%1)>s.leafDensity)continue;
-  const len=leafLen*row.size*s.leafScale,f=flowerFrame(b,row.at,pal.trueBloom?.25+variation(i,18)*1.15:(pal.leafPitch??.68)+(i%6)*.14,row.yaw),axis=len*(pal.rachisScale||1.65),lc=kit.shade(rand,pal.youngLeaf&&row.young&&s.month<11?pal.youngLeaf:green,.04),counts=a.leafletCounts||[5,7],pairs=(counts[i%counts.length]-1)/2,width=a.leafWidth?a.leafWidth/(a.leafLength*.66):1,leaflet=a.leafletShape||'roseLeaflet';
+  const len=leafLen*row.size*s.leafScale,f=flowerFrame(b,row.at,(pal.trueBloom||pal.leafPitchVariation)?.25+variation(i,18)*1.15:(pal.leafPitch??.68)+(i%6)*.14,row.yaw),axis=len*(pal.rachisScale||1.65),lc=kit.shade(rand,pal.youngLeaf&&row.young&&s.month<11?pal.youngLeaf:green,.04),counts=a.leafletCounts||[5,7],pairs=(counts[i%counts.length]-1)/2,width=a.leafWidth?a.leafWidth/(a.leafLength*.66):1,leaflet=a.leafletShape||'roseLeaflet';
   const blade=(frame,ll)=>{
    frame.add(leaflet,a.leafTexture==='glossy'?'leaf-glossy-rose':'leaf-rose',lc,0,0,0,ll*width,ll,ll);
    if(pal.leafHair)for(let q=0;q<8;q++){const point=roseLeafPoint(.18+q*.085,(q%2?1:-1)*.6,leaflet).map((v,k)=>v*ll*(k===0?width:1));point[2]-=ll*.003;frame.branch(point,[point[0]+ll*.01,point[1]+ll*.004,point[2]-ll*.018],ll*.0013,'#a4ac91','roseLeafHair');}
@@ -10005,11 +10005,12 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
     const f=flowerFrame(b,at,.12,az),r=a.flowerRadius;f.add(kit.bud,'flowerBud',pal.budColor||pal.rim||s.flowerColor,0,r*.10,0,r*.21,r*.38,r*.21);
     for(let q=0;q<5;q++)f.add(banks?'banksiaeSepal':'roseSepal','budSepal',green,0,-r*.1,0,r*.40,r*.58,r*.40,.28,q*TAU/5,0);
    }else{
-    const variant=pal.colourVariants?.[(head.seed+j)%pal.colourVariants.length],hot=[7,8].includes(s.month),aged=pal.ageTo&&head.seed%3!==0,baseColor=variant?.color||(hot&&pal.summerColor?pal.summerColor:s.flowerColor),fc=aged?new THREE.Color(baseColor).lerp(new THREE.Color(pal.ageTo),(head.seed%3)*.38):baseColor,displayPalette={...pal,...variant,...(aged||hot&&pal.summerColor?{inner:fc}:{}),...(hot&&pal.summerRound?{notched:false}: {})};
+    const variant=pal.coolPink&&[10,11].includes(s.month)&&(head.seed+j)%4===0?{color:'#e8c3d0',inner:'#edd6d5'}:pal.colourVariants?.[(head.seed+j)%pal.colourVariants.length],hot=[7,8].includes(s.month),aged=pal.ageTo&&head.seed%3!==0,baseColor=variant?.color||(hot&&pal.summerColor?pal.summerColor:s.flowerColor),fc=aged?new THREE.Color(baseColor).lerp(new THREE.Color(pal.ageTo),(head.seed%3)*.38):baseColor,displayPalette={...pal,...variant,...(aged||hot&&pal.summerColor?{inner:fc}:{}),...(hot&&pal.summerRound?{notched:false}: {})};
     if(pal.occasionalInner&&(head.seed+j)%3!==0||pal.innerMonths&&!pal.innerMonths.includes(s.month))displayPalette.inner=fc;
     // These stages are representative flowers at one calendar month, not a
     // measured clock for individual blooms or temperature-driven colour shifts.
     if(pal.openingCup)displayPalette.profile=(head.seed+j)%3===0?'deepCup':'cup';
+    if(pal.globularStages&&(head.seed+j)%4===0)Object.assign(displayPalette,{exposedStamens:true,openSemiDouble:true,softPetals:true,petalLift:.85});
     if(pal.openStages&&(head.seed+j)%3!==0)Object.assign(displayPalette,{exposedStamens:true,openSemiDouble:true,petalLift:.72});
     if(pal.openingJewel){displayPalette.jewel=(head.seed+j)%3===0;displayPalette.jewelInner=true;}
     detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius*(hot&&pal.summerRound?.78:1),color:fc,shape:'gardenRose',petals:a.petals,palette:displayPalette,tilt,yaw:az},{...kit,rand});

@@ -9,6 +9,31 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('small polyantha cups and Green Ice keep woody winter scaffolds and distinct flowering states',()=>{
+ const ids=['p-f912f33f9d91','p-905a2b6a7183','p-825e447ce777','p-20e468999663','p-8f895389c0b7','p-eb8b7e48de41'];
+ for(const [i,id] of ids.entries()){
+  const p=makePlant(id,15100+i,2,2),a=CATALOG[id].appearance;p.height=CATALOG[id].height[1];p.leafHeight=p.height;p.spread=i===5?.9:.6;let wood;
+  assert.equal(a.basis.petals,undefined,'unmeasured display petal counts have no official-count claim');
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),woody=g.children.filter(m=>m.userData.component.startsWith('wood-rose')).map(m=>[...m.instanceMatrix.array]),flower=count('receptacle');
+   assert.equal(g.userData.architecture,'gardenRoseCanes');assert.ok(count('wood-rose-cane')>0);assert.equal(g.userData.unmodeled,undefined);
+   if(wood)assert.deepEqual(woody,wood);else wood=woody;
+   assert.equal(count('leaf-rose')+count('leaf-glossy-rose')>0,month>=3);assert.equal(flower>0,month>=5&&month<=11);assert.equal(count('fruit-rose-ripe'),0);
+   if(flower){
+    assert.equal(g.children.filter(m=>m.userData.component.startsWith('petal-rose')).reduce((n,m)=>n+m.count,0),flower*a.petals);
+    assert.equal(g.children.some(m=>m.geometry.userData.roseGlobularPetal),i!==5);
+    if(i<4)assert.ok(count('anther')>0&&count('anther')<flower*48);else assert.equal(count('anther'),0);
+    if(i===5){const colors=g.children.filter(m=>m.userData.component==='petal-rose').flatMap(m=>[...m.instanceColor.array]);assert.ok(new Set(colors.map(v=>v.toFixed(2))).size>15,'white and green aging flowers must coexist');}
+   }
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+  assert.ok(a.unconfirmed.some(t=>t.includes('花弁数を品種の公式値とは扱いません')));
+  if(i>=4)assert.match(seasonAt(CATALOG[id],6).timingBasis,/目安/);
+ }
+ assert.notEqual(seasonAt(CATALOG[ids[1]],6).flowerColor,seasonAt(CATALOG[ids[1]],10).flowerColor);
+ assert.notEqual(seasonAt(CATALOG[ids[2]],7).flowerColor,seasonAt(CATALOG[ids[2]],10).flowerColor);
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.11';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.12');
+});
 test('True Bloom roses are deciduous woody shrubs with cultivar petals and non-calendar colour variation',()=>{
  const ids=['p-564840bc7b58','p-847950eb70ac','p-4033bf44e0ed','p-791b993009f3'];
  for(const [i,id]of ids.entries()){
@@ -23,7 +48,7 @@ test('True Bloom roses are deciduous woody shrubs with cultivar petals and non-c
    for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
   }
  }
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.10';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.11');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.10';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.12');
 });
 test('Drift roses retain low woody branches through winter and distinguish open pink flowers from double cultivars',()=>{
  const ids=['p-f106674a0d8e','p-f806d1855448','p-9aab6c6bb56f','p-e2143e5cca19','p-1d07bb2a693f'];
@@ -49,7 +74,7 @@ test('Drift roses retain low woody branches through winter and distinguish open 
   }
   assert.ok(a.unconfirmed.some(x=>x.includes('初霜')));if(i!==0)assert.ok(a.unconfirmed.some(x=>x.includes('資料間')));
  }
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.9';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.11');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.9';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.12');
 });
 test('Flower Carpet roses form low branched mounds with cultivar flowers and the official May-November calendar',()=>{
  const ids=['p-8944f3ad7d59','p-efe322591586','p-178346fec068','p-15750d223b31','p-b41bf36d94b3'];
@@ -70,7 +95,7 @@ test('Flower Carpet roses form low branched mounds with cultivar flowers and the
   }
  }
  assert.equal(CATALOG[ids[0]].appearance.flowerRadius,.0275);assert.equal(CATALOG[ids[2]].appearance.flowerRadius,.0175);assert.equal(CATALOG[ids[4]].appearance.flowerRadius,.01375);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.8';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.11');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.8';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.12');
 });
 test('Seika climber, Hatoya and Sensational Fantasy separate observed flowering, retained leaves and winter hips',()=>{
  const ids=['p-d91dcd802c61','p-be75c8dc1332','p-a5327faf93ff'];
@@ -93,7 +118,7 @@ test('Seika climber, Hatoya and Sensational Fantasy separate observed flowering,
  assert.equal(CATALOG[ids[0]].height,null);assert.equal(CATALOG[ids[0]].spread,null);
  assert.equal(CATALOG[ids[1]].leaf,'semi');assert.deepEqual(CATALOG[ids[1]].height,[3,5]);
  assert.equal(CATALOG[ids[1]].appearance.flowerRadius,.05);assert.deepEqual(CATALOG[ids[2]].appearance.fruitMonths,[7,8,9,10,11,12]);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.7';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.11');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.7';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.12');
 });
 test('native roses separate thornless panicles, creeping glossy runners and woolly bracted evergreen flowers',()=>{
  const ids=['p-61f79361a967','p-d2df3a326599','p-fe555efeaf68'];
