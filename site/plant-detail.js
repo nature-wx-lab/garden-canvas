@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.149';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.150';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.149';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.150';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5902,6 +5902,16 @@ export function alceaLeafPoint(type,t,an){
  return [Math.sin(an)*r*.55,(Math.cos(an)*r+.70)*.57,.065*r*r+(rug?.026:.012)*Math.sin(r*47-an*2)*Math.sin(an*7)*r];
 }
 
+export function storkbillPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type.startsWith('storkbillPetal'))return [u*(type==='storkbillPetalNarrow'?.14:.50)*Math.pow(sn,.55),.025*u*u*sn+.02*Math.pow(t,4),t-.025*Math.exp(-u*u*25)*Math.pow(t,6)];
+ if(type==='storkbillLeaflet'){
+  const w=.5*Math.pow(sn,.6)*(1+.12*Math.sin(t*38)+.065*Math.sin(t*73));return [u*w,t,.022*u*u*sn+.05*t*t];
+ }
+ const angle=u*2.70,palm=type==='storkbillPalm',shallow=type==='storkbillShallow',lobes=.5+.5*Math.cos(angle*5.5),r=t*(palm?.32+.68*Math.pow(lobes,.55):shallow?.83+.17*lobes:1)*(1+.028*Math.cos(angle*32));
+ return [Math.sin(angle)*r*.52,(Math.cos(angle)*r+.79)*.56,.026*r*r+.008*Math.sin(angle*5)*r*r];
+}
+
 export function gardenGeraniumPoint(type,t,u){
  if(type.startsWith('geraniumPetal')){
   const sn=Math.max(0,Math.sin(Math.PI*t)),split=type==='geraniumPetalSplit',reflex=type==='geraniumPetalReflex';
@@ -7016,6 +7026,25 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   for(let j=0;j<5;j++){const an=j*TAU/5;f.add('petal','petal',color,Math.sin(an)*r*.13,r*.20,Math.cos(an)*r*.13,r*1.20,r*.85,r,1.22,an,0);}
   return;
  }
+ if(shape==='storkbillFlower'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),type=palette.type,er=palette.erodium,narrow=type==='sidoides';
+  const angles=er?[-Math.PI/5,Math.PI/5,Math.PI*3/5,Math.PI,Math.PI*7/5]:[-.34,.34,1.55,Math.PI,TAU-1.55];
+  for(let j=0;j<5;j++){
+   f.add('violetLance','calyx-storkbill-hairy','#728052',0,-r*.10,0,r*.20,r*.68,r*.2,Math.PI*.5,j*TAU/5,0);
+   f.add(narrow?'storkbillPetalNarrow':'storkbillPetalRound','petal-storkbill-'+type+(j<2?'-upper':'-lower'),color,0,0,0,r*(er?1.1:1),r,r*(j<2?1.08:.86),0,angles[j],0);
+  }
+  // Erodium has five fertile stamens alternating with five short staminodes.
+  // Pelargonium counts vary; the cultivar data disclose the reference choice.
+  const fertile=er?5:7;
+  for(let j=0;j<(er?10:fertile);j++){
+   const sterile=er&&j%2===1,an=j*TAU/(er?10:fertile),tip=[Math.sin(an)*r*.12,r*(sterile?.12:.25),Math.cos(an)*r*.12];
+   f.branch([0,0,0],tip,r*.010,sterile?'#b7ac99':'#d9b5c8',sterile?'staminode-storkbill':'filament-storkbill');
+   if(!sterile)f.add(bud,'anther-storkbill',palette.anther,...tip,r*.035,r*.025,r*.04);
+  }
+  f.branch([0,0,0],[0,r*.33,0],r*.014,'#b6a790','style-storkbill');
+  if(!er)f.branch([0,-r*.1,-r*.15],[0,-r*.65,-r*.15],r*.030,'#6a8758','spur-storkbill');
+  return;
+ }
  if(shape==='gardenCranesbill'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),type=palette.type,reflex=['phaeum','joseph','springtime','blauw'].includes(type),petal=type==='bill'?'geraniumPetalSplit':reflex?'geraniumPetalReflex':'geraniumPetalRound';
   for(let j=0;j<5;j++){
@@ -7578,6 +7607,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='myrtaceousTree'){drawMyrtaceousTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='smokeTree'){drawSmokeTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='coniferSprays'){drawConiferSprays(b,{info,s,p,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='pelargoniumErodium'){drawStorkbills(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='pulmonariaCrowns'){drawPulmonaria(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='perennialVioletShoots'){drawPerennialViolets(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenRoseCanes'){drawGardenRose(b,{info,s,p,detail,rand},kit);return;}
@@ -9138,6 +9168,50 @@ function drawCranesbill(b,{info,s,detail,rand},kit){
    if(j<3||j%2===0)continue;
    const side=j%4===1?-1:1,sa=an+side*.88,tip=[at[0]+Math.sin(sa)*reach*.32,at[1]+h*.11,at[2]+Math.cos(sa)*reach*.32];b.branch(at,tip,.0007,green,'petiole');leaf(tip,sa,t);
    if(s.bloom&&rand()<s.flowerDensity)for(const offset of [-.7,.7])flower(tip,sa+offset);
+  }
+ }
+}
+
+function drawStorkbills(b,{info,s,detail,rand},kit){
+ const a=info.appearance,pal=a.flowerPalette,type=pal.type,h=s.height,w=s.spread,green=s.leafColor,er=pal.erodium,pearl=type==='pearl',trail=type==='australe',pinnate=['natasha','manescavi'].includes(type),winter=[12,1,2].includes(s.month);
+ const leaf=(at,az,scale=1)=>{
+  const L=a.leafLength*scale*(.78+rand()*.3),tip=[at[0]+Math.sin(az)*L*.50,at[1]+L*.35,at[2]+Math.cos(az)*L*.50];
+  b.branch(at,tip,.001,green,'petiole-storkbill-hairy');
+  if(pinnate){
+   const f=flowerFrame(b,tip,.8+rand()*.25,az),pairs=type==='natasha'?5:4;
+   f.branch([0,0,0],[0,L,0],.0006,green,'rachis-storkbill-hairy');
+   for(let j=0;j<pairs;j++)for(const sign of [-1,1]){
+    const t=(j+.5)/pairs,ll=L*(type==='natasha'?.29:.36)*(1-.50*t);
+    f.add(type==='natasha'?'storkbillPalm':'storkbillLeaflet','leaf-storkbill-'+type,kit.shade(rand,green,.025),sign*L*.035,L*t,0,ll,ll,ll,0,0,-sign*.83);
+   }
+   f.add('storkbillLeaflet','leaf-storkbill-'+type,green,0,L*.88,0,L*.15,L*.25,L*.15,.15,0,0);
+  }else b.add(pearl?'storkbillPalm':trail?'storkbillShallow':'storkbillHeart','leaf-storkbill-'+type,kit.shade(rand,green,.028),...tip,L,L,L,.85+rand()*.4,az,0);
+ };
+ const flowers=(at,az)=>{
+  if(!s.bloom)return;
+  const n=trail?7:er?3:3,r=a.flowerRadius;
+  for(let j=0;j<n;j++){
+   const yaw=az+j*2.399,tip=[at[0]+Math.sin(yaw)*r*(trail?3:1.6),at[1]+r*(1+(j%3)*.5),at[2]+Math.cos(yaw)*r*(trail?3:1.6)];
+   b.branch(at,tip,.0006,green,'pedicel-storkbill-hairy');
+   let color=info.flower;if(pearl)color=new THREE.Color(color).lerp(new THREE.Color('#b8b9d1'),rand()).getStyle();
+   detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r,color,shape:'storkbillFlower',palette:pal,tilt:.55+rand()*.65,yaw},{...kit,rand});
+  }
+ };
+ if(a.monthlyLeafDensity[s.month-1]>0){
+  const count=Math.round((pinnate?66:er?50:pearl?10:46)*detail*s.leafDensity);
+  for(let j=0;j<count;j++){const az=j*2.399,rr=w*(pinnate?.14:.22)*Math.pow((j+.5)/count,.9);leaf([Math.sin(az)*rr,.006+h*.05*(1-j/count),Math.cos(az)*rr],az,winter?.7:1);}
+  if(pinnate)for(let j=0;j<Math.round(12*s.leafDensity);j++)leaf([0,.012+h*.04,0],j*2.399,.45+j%3*.1);
+ }
+ if((er||type==='sidoides')&&!s.bloom)return;
+ const stems=Math.max(4,Math.round((pearl?10:trail?13:er?17:12)*detail));
+ for(let i=0;i<stems;i++){
+  const az=i*2.399,reach=w*(trail?.42:pearl?.26:.24)*(.45+rand()*.55),top=h*(pearl?.72:trail?.50:.78)*(.72+rand()*.25);let prev=[Math.sin(az)*w*.04,.005,Math.cos(az)*w*.04];
+  for(let j=1;j<=4;j++){
+   const t=j/4,tip=[Math.sin(az)*reach*t,.005+top*(trail?Math.sin(t*2):t),Math.cos(az)*reach*t];
+   b.branch(prev,tip,pearl?.0018:.0012,s.leafDensity===0?'#a18d70':type==='australe'?'#9f6870':green,'stem-storkbill');prev=tip;
+   if((trail||pearl)&&s.leafDensity>0&&rand()<s.leafDensity)for(const sign of trail?[-1,1]:[j%2?-1:1])leaf(tip,az+sign*1.2,(1-t*.6));
+   if(j<3||!s.bloom||rand()>s.flowerDensity)continue;
+   const yaw=az+(j%2?-.75:.75),to=[tip[0]+Math.sin(yaw)*w*.13,tip[1]+h*.13,tip[2]+Math.cos(yaw)*w*.13];b.branch(tip,to,.0008,green,'peduncle-storkbill-hairy');flowers(to,yaw);
   }
  }
 }
