@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.145';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.146';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.145';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.146';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -7095,11 +7095,11 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   return;
  }
  if(shape==='perennialViolet'){
-  const f=flowerFrame(b,[x,y,z],tilt,yaw),type=palette.type,corsica=type==='corsica',elatior=type==='elatior',rebecca=type==='rebecca',petal=rebecca?'violetPetalFrilled':'violetPetalRound';
-  const positions=corsica?[[-.33,.40,1.14,'upper'],[.33,.40,1.14,'upper'],[-1.35,.58,.87,'lateral'],[1.35,.58,.87,'lateral'],[Math.PI,.64,1.22,'lower']]:[[-.45,.77,1.08,'upper'],[.45,.77,1.08,'upper'],[-1.36,.88,.96,'lateral'],[1.36,.88,.96,'lateral'],[Math.PI,.97,1.14,'lower']];
-  for(const [angle,width,length,pos] of positions)f.add(petal,'petal-perennial-violet-'+type+'-'+pos,color,0,0,pos==='upper'?-r*.035:r*.03,r*width,r*length,r,0,0,angle);
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),type=palette.type,corsica=type==='corsica',elatior=type==='elatior',heart=type==='heartthrob',rabbit=type==='victoria'||type==='albaMinor'&&palette.narrow,petal=['rebecca','columbine'].includes(type)?'violetPetalFrilled':'violetPetalRound';
+  const positions=corsica?[[-.33,.40,1.14,'upper'],[.33,.40,1.14,'upper'],[-1.35,.58,.87,'lateral'],[1.35,.58,.87,'lateral'],[Math.PI,.64,1.22,'lower']]:rabbit?[[-.35,.58,1.28,'upper'],[.35,.58,1.28,'upper'],[-1.35,.63,.95,'lateral'],[1.35,.63,.95,'lateral'],[Math.PI,.85,1.18,'lower']]:[[-.45,.77,1.08,'upper'],[.45,.77,1.08,'upper'],[-1.36,.88,.96,'lateral'],[1.36,.88,.96,'lateral'],[Math.PI,.97,1.14,'lower']];
+  for(const [angle,width,length,pos] of positions)f.add(petal,'petal-perennial-violet-'+type+(type==='columbine'?'-'+(palette.paintSeed||0):'')+'-'+pos,color,0,0,pos==='upper'?-r*.035:r*.03,r*width,r*length,r,heart&&pos==='upper'?.25:0,0,angle);
   // The spur continues behind the lower petal; it is not another front petal.
-  const spur=elatior?.0035:r*.44;f.branch([0,-r*.08,-r*.025],[0,-r*.16,-spur*.7],r*.085,elatior?'#97a060':color,'violetSpur');f.add(bud,'violetSpur',elatior?'#a3ac72':color,0,-r*.16,-spur*.82,r*.09,r*.085,spur*.2);
+  const spur=elatior?.0035:heart?.01:palette.longSpur?r*.75:r*.44;f.branch([0,-r*.08,-r*.025],[0,-r*.16,-spur*.7],r*.085,elatior?'#97a060':color,'violetSpur');f.add(bud,'violetSpur',elatior?'#a3ac72':color,0,-r*.16,-spur*.82,r*.09,r*.085,spur*.2);
   for(let j=0;j<5;j++)f.add('narrow','sepal',palette.green||'#68834c',0,0,-r*.06,r*.13,r*.39,r*.23,0,0,j*TAU/5);
   f.add(bud,'violetEye',elatior?'#e9eadf':'#d8b84d',0,-r*.02,r*.035,r*.075,r*.047,r*.025);return;
  }
@@ -7543,7 +7543,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='myrtaceousTree'){drawMyrtaceousTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='smokeTree'){drawSmokeTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='coniferSprays'){drawConiferSprays(b,{info,s,p,detail,rand},kit);return;}
- if(info.appearance?.architecture==='perennialVioletShoots'){drawPerennialViolets(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='perennialVioletShoots'){drawPerennialViolets(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenRoseCanes'){drawGardenRose(b,{info,s,p,detail,rand},kit);return;}
  if(['sideritisSpikes','silverMintSpikes','marrubiumWhorls','leonotisTiers'].includes(info.appearance?.architecture)){drawSilverMints(b,{info,s,p,detail,rand},kit);return;}
  if(['keiskeaRacemes','isodonPanicles','chelonopsisAxils','triporaCymes','leucosceptrumSpikes','melittisAxils'].includes(info.appearance?.architecture)){drawWoodlandMints(b,{info,s,p,detail,rand},kit);return;}
@@ -9311,8 +9311,19 @@ function drawRacemes(b,{info,s,detail,rand},kit){
  }
 }
 
-function drawPerennialViolets(b,{info,s,detail,rand},kit){
+function drawPerennialViolets(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,type=a.flowerPalette.type,elatior=type==='elatior',corsica=type==='corsica',low=type==='labradorica',winter=[12,1,2].includes(s.month),h=s.height*(elatior&&winter?.17:corsica&&winter?.45:1),w=s.spread,green=s.leafColor,n=Math.max(4,Math.round((low?25:elatior?13:20)*detail)),density=s.leafDensity;
+ if(type==='heartthrob'){
+  const expanding=s.month===3?.38:s.month===4?.76:1,leaves=Math.max(2,Math.round(22*detail*density));
+  for(let i=0;i<leaves;i++){
+   const az=i*2.399,L=a.leafLength*expanding*(.78+rand()*.22),W=a.leafWidth*L/a.leafLength,rr=w*.27*Math.sqrt((i+.6)/leaves),root=[Math.sin(az)*.012,.003,Math.cos(az)*.012],at=[Math.sin(az)*rr,h*(.16+.35*rand())*expanding,Math.cos(az)*rr];
+   b.branch(root,at,.0014,green,'petiole-heartthrob');b.add('violetCordate','leaf-perennial-violet-heartthrob',green,...at,W,L,L,.55+rand()*.6,az,0);
+  }
+  if(s.bloom)for(let i=0;i<Math.max(1,Math.round(9*detail*s.flowerDensity));i++){
+   const az=i*2.399,rr=w*.18*Math.sqrt((i+.5)/9),fl=[Math.sin(az)*rr,.065*(.83+rand()*.17),Math.cos(az)*rr],neck=[fl[0],fl[1]+.005,fl[2]-.005];b.branch([0,.004,0],neck,.0012,'#78815f','violetPeduncle');b.branch(neck,fl,.001,'#78815f','violetPeduncle');detailedFlower(b,{x:fl[0],y:fl[1],z:fl[2],r:a.flowerRadius,color:info.flower,shape:'perennialViolet',palette:{type,green},tilt:-.25,yaw:az},{...kit,rand});
+  }
+  return;
+ }
  const L=a.leafLength*(winter?.7:1),W=a.leafWidth*(winter?.8:1),leafKind=elatior?'leaf-perennial-violet-hairy':'leaf-perennial-violet',stemKind=elatior?'stem-perennial-violet-hairy':'stem-perennial-violet';
  const leaf=(at,yaw,t,scale=1)=>{
   const shape=low?'violetCordate':elatior?'violetLance':corsica?(t<.38?'violetOvate':'violetLance'):'violetOvate',petiole=low?L*.38:elatior?L*.13:L*.24,end=[at[0]+Math.sin(yaw)*petiole,at[1]+L*.08,at[2]+Math.cos(yaw)*petiole];
@@ -9329,7 +9340,7 @@ function drawPerennialViolets(b,{info,s,detail,rand},kit){
   if(!s.bloom||i/n>=s.flowerDensity)continue;
   const start=elatior?[tip[0],top*.78,tip[2]]:tip,fl=[tip[0]+Math.sin(yaw)*L*.42,Math.max(top+L*.5,h*(low?.77:elatior?.78:.76)),tip[2]+Math.cos(yaw)*L*.42],neck=[fl[0]-Math.sin(yaw)*.004,fl[1]+.004,fl[2]-Math.cos(yaw)*.004];
   b.branch(start,neck,.00055,green,'violetPeduncle');b.branch(neck,fl,.00045,green,'violetPeduncle');
-  detailedFlower(b,{x:fl[0],y:fl[1],z:fl[2],r:a.flowerRadius,color:info.flower,shape:'perennialViolet',palette:{type,green},tilt:-.32,yaw:yaw+.35},{...kit,rand});
+  detailedFlower(b,{x:fl[0],y:fl[1],z:fl[2],r:a.flowerRadius,color:info.flower,shape:'perennialViolet',palette:{type,green,paintSeed:i%3,narrow:!!((p?.id||0)%2),longSpur:['victoria','albaMinor'].includes(type)},tilt:-.32,yaw:yaw+.35},{...kit,rand});
  }
 }
 
