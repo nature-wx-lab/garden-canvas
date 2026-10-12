@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.133';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.134';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.133';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.134';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9838,6 +9838,9 @@ function drawAquaticReeds(b,{info,s,detail,rand},kit){
 
 function drawGardenRose(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,pal=a.flowerPalette,h=s.height,w=s.spread,green=s.leafColor,stem=a.stemColor,climb=pal.climber,ramble=pal.rambling,banks=pal.banksiae,canes=pal.canes||(ramble?9:7),nodes=pal.caneNodes||(climb?Math.max(9,Math.min(24,Math.ceil(h/.22))):7),leafLen=Math.min(a.leafLength,w*.17),heads=[],leaves=[],mix=(x,y,t)=>x.map((v,k)=>v+(y[k]-v)*t);
+ // A separate positional seed keeps woody joints identical through the year.
+ // Unequal internodes and lateral angles avoid a repeated fan of ladders.
+ const variation=(i,j)=>{const v=Math.sin(p.id*.713+i*12.9898+j*78.233)*43758.5453;return v-Math.floor(v);};
  const prickles=(from,to,seed,lateral=false)=>{
   if(pal.thornless||!pal.pricklesPerMetre&&pal.fewPrickles&&seed%3!==0)return;
   const dist=Math.hypot(...to.map((v,i)=>v-from[i])),density=lateral?(pal.lateralPricklesPerMetre??pal.pricklesPerMetre):pal.pricklesPerMetre,n=density?Math.round(dist*density):pal.manyPrickles?3:1;
@@ -9874,13 +9877,13 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
   }
  }
  else for(let i=0;i<canes;i++){
-  const yaw=i*2.399+.2,reach=w*(climb?.38:.21+pal.lean*.37),top=h*(.60+.34*((i*3%7)/6)),root=[Math.sin(yaw)*w*.045,0,Math.cos(yaw)*w*.045];let prev=root;
+  const natural=pal.naturalCanes,yaw=i*2.399+.2+(natural?(variation(i,1)-.5)*.9:0),reach=w*(climb?.38:.21+pal.lean*.37)*(natural?.65+variation(i,2)*.6:1),top=h*(natural?.54+variation(i,3)*.43:.60+.34*((i*3%7)/6)),root=[Math.sin(yaw)*w*.045,0,Math.cos(yaw)*w*.045];let prev=root;
   for(let j=1;j<=nodes;j++){
-   const t=j/nodes,rr=reach*Math.pow(t,pal.stiff?2.1:climb?1.55:1.16),rise=banks?Math.sin(t*Math.PI*.66):ramble?Math.sin(t*Math.PI*.61):pal.arching?Math.sin(t*Math.PI*(pal.archAngle||.52)):t,turn=yaw+(pal.branched?.22*Math.sin(t*3.3+i)*t:0),at=[root[0]+Math.sin(turn)*rr,top*rise,root[2]+Math.cos(turn)*rr];
+   const t=(j+(natural&&j<nodes?(variation(i,j+8)-.5)*.58:0))/nodes,rr=reach*Math.pow(t,pal.stiff?2.1:climb?1.55:1.16),rise=banks?Math.sin(t*Math.PI*.66):ramble?Math.sin(t*Math.PI*.61):pal.arching?Math.sin(t*Math.PI*(pal.archAngle||.52)):t,turn=yaw+(pal.branched?.22*Math.sin(t*3.3+i)*t:0)+(natural?.20*Math.sin(t*5+i)*t:0),at=[root[0]+Math.sin(turn)*rr,top*rise,root[2]+Math.cos(turn)*rr];
    b.branch(prev,at,Math.min(pal.caneRadius||(banks?.008:pal.stiff?.014:.010),h*.008)*(1-t*.64),j<4?(a.barkColor||'#88755e'):pal.youngStem&&j>=nodes-1&&s.leafDensity>0?pal.youngStem:stem,'wood-rose-cane');prickles(prev,at,i*13+j);
    b.add(kit.bud,'axillaryBud','#865d51',at[0],at[1],at[2],.0019,.004,.0018,.2,yaw+j,0);
-   if(j>2){
-    const az=yaw+(j%2?1:-1)*1.18,side=w*(ramble?.16:climb?.14:.12),end=[at[0]+Math.sin(az)*side,Math.min(h*.97,at[1]+h*(ramble?.035-.12*t*t:climb?.08:.16)),at[2]+Math.cos(az)*side];
+   if(j>2&&(!natural||j>=nodes-1||variation(i,j+30)>.17)){
+    const az=(natural?turn:yaw)+(j%2?1:-1)*(natural?.82+variation(i,j+50)*.75:1.18),side=w*(ramble?.16:climb?.14:.12)*(natural?.55+variation(i,j+70)*.8:1),end=[at[0]+Math.sin(az)*side,Math.min(h*.97,at[1]+h*(ramble?.035-.12*t*t:climb?.08:.16)*(natural?.55+variation(i,j+90)*.7:1)),at[2]+Math.cos(az)*side];
     b.branch(at,end,Math.min(.003,h*.0021),stem,'wood-rose-lateral');prickles(at,end,i*17+j,true);
     if(!banks&&(climb?(j%2===0||j===nodes):j>=nodes-1))heads.push({at:end,yaw:az,seed:i*nodes+j});
     for(let k=1;k<=4;k++)leaves.push({at:mix(at,end,k/5),yaw:az+(k%2?1:-1)*1.13,size:(k===4?.78:1),young:k===4});
@@ -9947,8 +9950,13 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
    for(let j=0;j<(pal.cluster||1);j++){
     const site=flowerSite(head,j,pal.cluster||1),az=site.az,tip=site.at,r=a.fruitRadius*(greenFruit?.76:1),long=pal.bristlyCalyx?1.5:1.06,f=flowerFrame(b,tip,.5,az);
     b.branch(head.at,tip,.0008,ripe?'#8c6754':stem,'fruitPedicel-rose');
-    f.add(kit.bud,greenFruit?'fruit-rose-green':'fruit-rose-ripe',greenFruit?'#879358':a.fruitColor,0,r*long,0,r,r*long,r);
-    f.add(kit.bud,'fruitStyleScar-rose','#6d4c38',0,r*long*2,0,r*.24,r*.06,r*.24);
+    if(pal.openHip){
+     f.add('roseOpenHip',greenFruit?'fruit-rose-green':'fruit-rose-ripe',greenFruit?'#879358':a.fruitColor,0,0,0,r,r,r);
+     f.add(kit.bud,'fruitStyleScar-rose','#382b22',0,r*1.54,0,r*.35,r*.035,r*.35);
+    }else{
+     f.add(kit.bud,greenFruit?'fruit-rose-green':'fruit-rose-ripe',greenFruit?'#879358':a.fruitColor,0,r*long,0,r,r*long,r);
+     f.add(kit.bud,'fruitStyleScar-rose','#6d4c38',0,r*long*2,0,r*.24,r*.06,r*.24);
+    }
     if(pal.fruitHair)for(let k=0;k<90;k++){const y=-.95+1.9*(k+.5)/90,an=k*2.399,rr=r*Math.sqrt(1-y*y),at=[Math.sin(an)*rr,r*(1+y),Math.cos(an)*rr];f.branch(at,[at[0]*1.055,at[1]+r*.04,at[2]*1.055],r*.007,'#bfa987','hipWool-rose');}
     if(pal.bristlyCalyx){
      for(let k=0;k<55;k++){const y=-.9+1.8*(k+.5)/55,an=k*2.399,rr=r*Math.sqrt(1-y*y),at=[Math.sin(an)*rr,r*long*(1+y),Math.cos(an)*rr];f.branch(at,[at[0]*1.2,at[1]+r*.08,at[2]*1.2],r*.025,'#b3a070','hipBristle-rose');}

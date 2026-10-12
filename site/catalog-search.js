@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.133';
+import {treeProfile} from './tree-profiles.js?v=0.9.134';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -118,6 +118,7 @@ export function seasonAt(info,month){
  if(a.monthlyLeafDensity?.[m]!==undefined)density=a.monthlyLeafDensity[m];
  if(a.architecture==='gardenRoseCanes'&&a.monthlyLeafDensity)phase=density===0?'冬の落葉・枝を残す管理例':month===3?'3月の芽吹き（関東の管理例）':month>=11?'低温で葉が減る時期（残葉率は目安）':'葉のあるバラ（剪定・気温で変化）';
  if(a.flowerPalette?.wildRose)phase=density===0?'落葉した枝（境界月は表示目安）':a.persistence==='evergreen'?'常緑の葉（低温時の残葉率は未実測）':month<=4?'春の若葉（境界月は表示目安）':'葉のある時期（色・葉量は参考）';
+ if(a.architecture==='gardenRoseCanes'&&a.persistence==='semiEvergreen')phase=[11,12,1,2,3].includes(month)?'一部の葉が残る半常緑の枝（寒さで落葉量が変化）':'葉のある時期（新旧の葉の入れ替わりは目安）';
  if(a.flowerPalette?.hips&&(a.fruitMonths?.includes(month)||a.greenFruitMonths?.includes(month)))phase+='・'+(a.fruitMonths?.includes(month)?'実を残した枝（結実条件・残存月は参考）':'若い実（花後の参考）');
  if(a.architecture==='submergedShoots'&&!a.dormantMonths?.includes(month)&&!a.emergenceMonths?.includes(month))phase=['cabomba','ceratophyllum'].includes(a.shootProfile)&&[12,1,2].includes(month)?'水底の冬芽（低温期の参考）':'水中葉（保護された水中の参考条件）';
  if(a.waterSurfaceModel)phase='葉（水深で水上・水中の姿を切替）';
