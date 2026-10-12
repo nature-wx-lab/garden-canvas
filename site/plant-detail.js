@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.130';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.131';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.130';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.131';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9925,7 +9925,11 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
     for(let q=0;q<5;q++)f.add(banks?'banksiaeSepal':'roseSepal','budSepal',green,0,-r*.1,0,r*.40,r*.58,r*.40,.28,q*TAU/5,0);
    }else{
     const hot=[7,8].includes(s.month),aged=pal.ageTo&&head.seed%3!==0,baseColor=hot&&pal.summerColor?pal.summerColor:s.flowerColor,fc=aged?new THREE.Color(baseColor).lerp(new THREE.Color(pal.ageTo),(head.seed%3)*.38):baseColor,displayPalette={...pal,...(aged||hot&&pal.summerColor?{inner:fc}:{}),...(hot&&pal.summerRound?{notched:false}: {})};
-    if(pal.occasionalInner&&(head.seed+j)%3!==0)displayPalette.inner=fc;
+    if(pal.occasionalInner&&(head.seed+j)%3!==0||pal.innerMonths&&!pal.innerMonths.includes(s.month))displayPalette.inner=fc;
+    // These stages are representative flowers at one calendar month, not a
+    // measured clock for individual blooms or temperature-driven colour shifts.
+    if(pal.openingCup)displayPalette.profile=(head.seed+j)%3===0?'deepCup':'cup';
+    if(pal.openingJewel){displayPalette.jewel=(head.seed+j)%3===0;displayPalette.jewelInner=true;}
     detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius*(hot&&pal.summerRound?.78:1),color:fc,shape:'gardenRose',petals:a.petals,palette:displayPalette,tilt,yaw:az},{...kit,rand});
    }
   }

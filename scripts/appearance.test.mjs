@@ -9,6 +9,34 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Robin Chaleur and Bolero preserve woody winter structure and distinguish rose foliage and flower stages',()=>{
+ const ids=['p-089d820f451a','p-1cb152dd4a88','p-0402851d97d1'],prickles=[];
+ for(const [index,id]of ids.entries()){
+  const p=makePlant(id,14400+index,2,2);p.height=index===2?.8:1.25;p.leafHeight=p.height;p.spread=1.2;let wood,mayColors,octoberColors;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),part=k=>g.children.find(m=>m.userData.component===k),woody=g.children.filter(m=>m.userData.component.startsWith('wood-rose')).map(m=>[...m.instanceMatrix.array]);
+   assert.equal(g.userData.architecture,'gardenRoseCanes');assert.ok(part('wood-rose-fork').count>0);if(wood)assert.deepEqual(woody,wood);else wood=woody;
+   const leaves=g.children.filter(m=>m.geometry.userData.roseLeaflet),flowers=g.children.filter(m=>m.userData.component.startsWith('petal-rose'));
+   assert.equal(leaves.length>0,![1,2].includes(month));assert.equal(flowers.length>0,month>=5&&month<=11);
+   if(leaves.length)assert.ok(leaves.every(m=>(m.userData.component==='leaf-glossy-rose')===(index!==1)));
+   if(month===5){
+    prickles.push(part('prickle')?.count||0);assert.ok(part('roseMidrib').count>0);assert.ok(part('roseLateralVein').count>0);
+    assert.equal(g.children.some(m=>m.geometry.userData.roseJewelPetal),index===1);
+    assert.ok(g.children.some(m=>m.geometry.userData.roseRoundPetal));
+    if(index===2)mayColors=flowers.flatMap(m=>[...m.instanceColor.array]);
+   }
+   if(month===10&&index===2)octoberColors=flowers.flatMap(m=>[...m.instanceColor.array]);
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+  if(index===2){
+   const strongestPink=colors=>Math.max(...colors.filter((_,i)=>i%3===0).map((r,i)=>r-colors[i*3+1]));
+   assert.ok(strongestPink(mayColors)>strongestPink(octoberColors)+.04,'Bolero spring centre is pinker than its later white reference blooms');
+  }
+ }
+ assert.ok(prickles[1]<prickles[0]*.2,'Chaleur follows the registered very sparse prickles');
+ assert.equal(CATALOG[ids[2]].appearance.flowerRadius,.05);
+ assert.deepEqual(CATALOG[ids[2]].height,[.8,.8]);assert.equal(seasonAt(CATALOG[ids[2]],3).bloom,false);
+});
 test('Shalimar Sheherazad and Daphne distinguish petal margins, spreading canes and winter dormancy',()=>{
  const ids=['p-56bb46ec4b01','p-fb4fdbc98a31','p-c2292e1aebf8'],thornCounts=[],reaches=[];
  for(const [index,id]of ids.entries()){
