@@ -9,6 +9,27 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Flower Carpet roses form low branched mounds with cultivar flowers and the official May-November calendar',()=>{
+ const ids=['p-8944f3ad7d59','p-efe322591586','p-178346fec068','p-15750d223b31','p-b41bf36d94b3'];
+ for(const [i,id]of ids.entries()){
+  const p=makePlant(id,14800+i,2,2),a=CATALOG[id].appearance;p.height=.7;p.leafHeight=.7;p.spread=1;let wood;
+  assert.deepEqual(a.flowerMonths,[5,6,7,8,9,10,11]);assert.equal(CATALOG[id].leaf,'deciduous');assert.deepEqual(CATALOG[id].spread,[1,1]);
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),part=k=>g.children.filter(m=>m.userData.component===k),count=k=>part(k).reduce((n,m)=>n+m.count,0),woody=g.children.filter(m=>m.userData.component.startsWith('wood-rose')).map(m=>[...m.instanceMatrix.array]),leaf=count('leaf-glossy-rose'),flowers=count('receptacle');
+   assert.equal(g.userData.architecture,'gardenRoseCanes');assert.ok(count('wood-rose-mound')>0);assert.equal(count('wood-rose-cane'),0);assert.ok(count('wood-rose-mound-twig')>0);
+   if(wood)assert.deepEqual(woody,wood,'leaf fall must preserve the same woody network');else wood=woody;
+   assert.equal(flowers>0,month>=5&&month<=11);assert.equal(leaf>0,month>=3);assert.equal(leaf,count('leafRachis')*5);
+   if(month===6)assert.ok(leaf>2500,'a mature low mound must carry foliage throughout its branching network');
+   assert.equal(count('fruit-rose-ripe'),0,'unknown fruit calendar must not be invented');
+   if(flowers){assert.equal(g.children.filter(m=>m.userData.component.startsWith('petal-rose')).reduce((n,m)=>n+m.count,0),flowers*a.petals);assert.equal(count('anther'),flowers*48);if(i===0)assert.equal(g.children.filter(m=>m.userData.component.startsWith('petal-rose-splash-')).length,5);}
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}
+   for(const m of part('wood-rose-mound'))for(let k=0;k<m.count;k++)assert.ok(m.instanceMatrix.array[k*16+13]<p.height*.82);
+   dispose(g);
+  }
+ }
+ assert.equal(CATALOG[ids[0]].appearance.flowerRadius,.0275);assert.equal(CATALOG[ids[2]].appearance.flowerRadius,.0175);assert.equal(CATALOG[ids[4]].appearance.flowerRadius,.01375);
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.8';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.9');
+});
 test('Seika climber, Hatoya and Sensational Fantasy separate observed flowering, retained leaves and winter hips',()=>{
  const ids=['p-d91dcd802c61','p-be75c8dc1332','p-a5327faf93ff'];
  for(const [index,id]of ids.entries()){
@@ -30,7 +51,7 @@ test('Seika climber, Hatoya and Sensational Fantasy separate observed flowering,
  assert.equal(CATALOG[ids[0]].height,null);assert.equal(CATALOG[ids[0]].spread,null);
  assert.equal(CATALOG[ids[1]].leaf,'semi');assert.deepEqual(CATALOG[ids[1]].height,[3,5]);
  assert.equal(CATALOG[ids[1]].appearance.flowerRadius,.05);assert.deepEqual(CATALOG[ids[2]].appearance.fruitMonths,[7,8,9,10,11,12]);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.7';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.8');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.7';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.9');
 });
 test('native roses separate thornless panicles, creeping glossy runners and woolly bracted evergreen flowers',()=>{
  const ids=['p-61f79361a967','p-d2df3a326599','p-fe555efeaf68'];

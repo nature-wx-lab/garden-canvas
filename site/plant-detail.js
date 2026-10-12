@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.134';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.135';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.134';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.135';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5947,9 +5947,9 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   const f=flowerFrame(b,[x,y,z],tilt,yaw),count=petals,high=palette.profile==='high',chalice=palette.profile==='chalice',deep=palette.profile==='deepCup'||chalice,rosette=palette.profile==='rosette',flat=palette.profile==='flat'||rosette,wave=palette.wavy;
   const rings=palette.anemoneForm?6:count===5?1:Math.max(2,Math.ceil(count/(rosette?9:7))),per=Math.floor(count/rings);
   for(let layer=0,j=0;layer<rings;layer++){
-   const n=palette.anemoneForm?[5,12,12,12,10,10][layer]:per+(layer<count%rings?1:0),t=rings===1?0:layer/(rings-1),len=r*(1-(palette.anemoneForm?.62:palette.exposedStamens?.30:.83)*t),level=r*(high?.60:deep?.70:flat?(palette.rosetteDepth??.13):.40)*t;
+   const n=palette.anemoneForm?[5,12,12,12,10,10][layer]:per+(layer<count%rings?1:0),t=rings===1?0:layer/(rings-1),len=r*(1-(palette.anemoneForm?.62:palette.openSemiDouble?.52:palette.exposedStamens?.30:.83)*t),level=r*(palette.openSemiDouble?.055:high?.60:deep?.70:flat?(palette.rosetteDepth??.13):.40)*t;
    for(let k=0;k<n;k++,j++){
-    const an=k*TAU/n+layer*2.39996+Math.sin(j*4.7)*.085,col=palette.inner?new THREE.Color(color).lerp(new THREE.Color(palette.inner),t*.85):color,pk=(palette.rim?'petal-rose-rim-'+(palette.rimWidth?'broad-':'')+palette.rim.slice(1):'petal-rose')+(palette.outside?'-outside-'+palette.outside.slice(1):''),qx=rosette&&t>.4?Math.sin(j%4*Math.PI/2)*r*.065:0,qz=rosette&&t>.4?Math.cos(j%4*Math.PI/2)*r*.065:0;
+    const an=k*TAU/n+layer*2.39996+Math.sin(j*4.7)*.085,col=palette.inner?new THREE.Color(color).lerp(new THREE.Color(palette.inner),t*.85):color,pk=(palette.splash?'petal-rose-splash-'+(j%5)+'-'+palette.splash.slice(1):palette.rim?'petal-rose-rim-'+(palette.rimWidth?'broad-':'')+palette.rim.slice(1):'petal-rose')+(palette.outside?'-outside-'+palette.outside.slice(1):''),qx=rosette&&t>.4?Math.sin(j%4*Math.PI/2)*r*.065:0,qz=rosette&&t>.4?Math.cos(j%4*Math.PI/2)*r*.065:0;
     f.add(palette.anemoneForm?(layer===0?'roseSinglePetal':'roseStaminode'):count===5?(palette.petalNotch?'roseCleftSinglePetal':'roseSinglePetal'):palette.banksiae?'banksiaePetal':palette.heartPetals?'roseHeartPetal':chalice&&t<.6?'roseChalicePetal':palette.notched?'roseNotchedPetal':palette.jewel&&(!palette.jewelInner||t>.28)?(wave?'roseJewelWavedPetal':'roseJewelPetal'):wave||deep&&t>.3?'roseWavedPetal':(high||palette.pointed)&&t>.4?'rosePointedPetal':'roseRoundPetal',palette.eye?'petal-rose-eye-'+palette.eye.slice(1):pk,shade(rand,col,.018),qx,level+r*(rand()-.5)*.055,qz,len*(.88+rand()*.18)*(palette.petalWidth||1),len*(palette.exposedStamens?(palette.petalLift??.32):chalice&&t<.6?1.05:deep?1.48:high?1.05:flat?(palette.petalLift??.56):.93),len*(.93+rand()*.12),(rand()-.5)*(rosette||deep&&t>.3?.42:.18),an,(rand()-.5)*.27);
    }
   }
@@ -9858,7 +9858,28 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
   }
  };
  // Structural branching is built before foliage so winter retains the same canes.
- if(pal.groundRunner)for(let i=0;i<canes;i++){
+ if(pal.carpetMound)for(let i=0;i<canes;i++){
+  // An unsupported groundcover rose branches throughout a low, spreading
+  // crown. Curved canes carry lateral shoots and smaller leafy forks; the
+  // leaf mass is attached to wood rather than a floating spherical shell.
+  const yaw=i*2.399+(variation(i,2)-.5)*.8,reach=w*(.23+.14*variation(i,3)),top=h*(.47+.26*variation(i,4))*(pal.moundVertical||1),root=[Math.sin(yaw)*w*.035,.003,Math.cos(yaw)*w*.035],path=t=>{const turn=yaw+.23*Math.sin(t*3.6+i);return [root[0]+Math.sin(turn)*reach*t,top*Math.sin(t*Math.PI*.69),root[2]+Math.cos(turn)*reach*t];};let previous=root;
+  for(let j=1;j<=10;j++){
+   const t=j/10,at=path(t);b.branch(previous,at,pal.caneRadius*(1-t*.72),j<3?a.barkColor:stem,'wood-rose-mound');prickles(previous,at,i*23+j);previous=at;
+   leaves.push({at,yaw:yaw+j*2.399,size:.8+.2*variation(i,j+10)});
+   if(j<3)continue;
+   const az=yaw+(j%2?1:-1)*(.65+.7*variation(i,j+20)),length=w*(.09+.10*variation(i,j+30)),lift=h*(.10+.19*variation(i,j+40)),sag=length*(.23+.20*t),shoot=q=>[at[0]+Math.sin(az+.12*Math.sin(q*3))*length*q,at[1]+lift*q-sag*q*q,at[2]+Math.cos(az+.12*Math.sin(q*3))*length*q];let prior=at;
+   for(let k=1;k<=6;k++){
+    const q=k/6,tip=shoot(q);b.branch(prior,tip,.0018*(1-q*.65),k>4?pal.youngStem:stem,'wood-rose-mound-shoot');prior=tip;
+    leaves.push({at:tip,yaw:az+(k%2?1:-1)*(.95+.3*variation(i,j*11+k)),size:.84+.20*variation(i,j*13+k),young:k===6});
+    if(k===3||k===5){
+     const turn=az+(k===3?1:-1)*(1.10+.3*variation(i,j+k)),len=length*(.43+.30*variation(i,j+k+50)),twig=q=>[tip[0]+Math.sin(turn)*len*q,tip[1]+len*(.58*q-.48*q*q),tip[2]+Math.cos(turn)*len*q];let base=tip;
+     for(let z=1;z<=3;z++){const end=twig(z/3);b.branch(base,end,.0008*(1-z*.16),stem,'wood-rose-mound-twig');leaves.push({at:end,yaw:turn+(z%2?1:-1)*1.12,size:.72+.08*z,young:z===3});base=end;}
+    }
+   }
+   if(j===4||j===7||j===10)heads.push({at:shoot(1),yaw:az,seed:i*31+j});
+  }
+ }
+ else if(pal.groundRunner)for(let i=0;i<canes;i++){
   // Unsupported creeping stems stay near the ground; short flowering shoots
   // rise from them. Never reuse the upright fan used for climbing roses.
   const yaw=i*2.399,root=[0,.01,0],segments=12,reach=w*(.34+.08*(i%3));let previous=root;
