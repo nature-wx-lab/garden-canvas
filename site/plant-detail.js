@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.139';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.140';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.139';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.140';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9903,7 +9903,7 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
    const t=(j+(natural&&j<nodes?(variation(i,j+8)-.5)*.58:0))/nodes,rr=reach*Math.pow(t,pal.stiff?2.1:climb?1.55:1.16),rise=banks?Math.sin(t*Math.PI*.66):ramble?Math.sin(t*Math.PI*.61):pal.arching?Math.sin(t*Math.PI*(pal.archAngle||.52)):t,turn=yaw+(pal.branched?.22*Math.sin(t*3.3+i)*t:0)+(natural?.20*Math.sin(t*5+i)*t:0),at=[root[0]+Math.sin(turn)*rr,top*rise,root[2]+Math.cos(turn)*rr];
    b.branch(prev,at,Math.min(pal.caneRadius||(banks?.008:pal.stiff?.014:.010),h*.008)*(1-t*.64),j<4?(a.barkColor||'#88755e'):pal.youngStem&&j>=nodes-1&&s.leafDensity>0?pal.youngStem:stem,'wood-rose-cane');prickles(prev,at,i*13+j);
    b.add(kit.bud,'axillaryBud','#865d51',at[0],at[1],at[2],.0019,.004,.0018,.2,yaw+j,0);
-   if(j>=(pal.smallRoseBush?2:3)&&(!natural||j>=nodes-1||variation(i,j+30)>.17)){
+   if(j>=(pal.branchStart?Math.ceil(nodes*pal.branchStart):pal.smallRoseBush?2:3)&&(!natural||j>=nodes-1||variation(i,j+30)>.17)){
     const az=(natural?turn:yaw)+(j%2?1:-1)*(natural?.82+variation(i,j+50)*.75:1.18),side=w*(ramble?.16:climb?.14:.12)*(natural?.55+variation(i,j+70)*.8:1),end=[at[0]+Math.sin(az)*side,Math.min(h*.97,at[1]+h*(ramble?.035-.12*t*t:climb?.08:.16)*(natural?.55+variation(i,j+90)*.7:1)),at[2]+Math.cos(az)*side];
     b.branch(at,end,Math.min(.003,h*.0021),stem,'wood-rose-lateral');prickles(at,end,i*17+j,true);
     if(!banks&&(climb?(j%2===0||j===nodes):j>=nodes-1))heads.push({at:end,yaw:az,seed:i*nodes+j});
@@ -9920,8 +9920,9 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
      // Leaf-bearing side shoots follow the cane; the mature vine is not a bare
      // pole with an enlarged flower and a handful of leaves at its tip.
      const base=mix(at,end,q/3),turn=az+(q%2?1:-1)*(1.05+(i%3)*.16),len=Math.min(.40,w*.15)*(.72+((i+j+q)%5)*.07),tip=[base[0]+Math.sin(turn)*len,base[1]+len*(ramble?.15-.55*t:.48),base[2]+Math.cos(turn)*len];
-     b.branch(base,tip,Math.min(.0018,h*.0007),stem,'wood-rose-shoot');prickles(base,tip,i*23+j*3+q,true);
-     for(let k=1;k<=5;k++)leaves.push({at:mix(base,tip,k/6),yaw:turn+(k%2?1:-1)*1.28,size:.82+.06*(k%3),young:k===5});
+     const mid=mix(base,tip,.52);if(pal.organicLaterals){mid[0]+=Math.cos(turn)*len*.10;mid[1]+=len*.10;mid[2]-=Math.sin(turn)*len*.10;b.branch(base,mid,Math.min(.0018,h*.0007),stem,'wood-rose-shoot');b.branch(mid,tip,Math.min(.0012,h*.0005),stem,'wood-rose-shoot');}else b.branch(base,tip,Math.min(.0018,h*.0007),stem,'wood-rose-shoot');prickles(base,tip,i*23+j*3+q,true);
+     const count=pal.organicLaterals?3+Math.floor(variation(i,j*11+q)*4):5;
+     for(let k=1;k<=count;k++){const t=(k+(pal.organicLaterals?(variation(i,j*17+q*7+k)-.5)*.4:0))/(count+1);leaves.push({at:pal.organicLaterals?t<.52?mix(base,mid,t/.52):mix(mid,tip,(t-.52)/.48):mix(base,tip,t),yaw:turn+(k%2?1:-1)*(pal.organicLaterals?.8+variation(i,j*23+k)*.8:1.28),size:pal.organicLaterals?.65+variation(i,j*31+k)*.4:.82+.06*(k%3),young:k===count});}
      if(banks&&(j%2===0||j===nodes))heads.push({at:tip,yaw:turn,seed:i*nodes*2+j*2+q});
     }
    }
@@ -10010,6 +10011,7 @@ function drawGardenRose(b,{info,s,p,detail,rand},kit){
     // These stages are representative flowers at one calendar month, not a
     // measured clock for individual blooms or temperature-driven colour shifts.
     if(pal.rimMonths&&!pal.rimMonths.includes(s.month))delete displayPalette.rim;
+    if(pal.highToRosette)displayPalette.profile=(head.seed+j)%3===0?'high':'rosette';
     if(pal.cupToRosette)displayPalette.profile=(head.seed+j)%3===0?'cup':'rosette';
     if(pal.openingCup)displayPalette.profile=(head.seed+j)%3===0?'deepCup':'cup';
     if(pal.globularStages&&(head.seed+j)%4===0)Object.assign(displayPalette,{exposedStamens:true,openSemiDouble:true,softPetals:true,petalLift:.85});

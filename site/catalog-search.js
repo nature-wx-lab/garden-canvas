@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.139';
+import {treeProfile} from './tree-profiles.js?v=0.9.140';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -121,7 +121,7 @@ export function seasonAt(info,month){
  if(a.flowerPalette?.carpetMound)phase=density===0?'冬管理後の落葉した枝（暖地の残葉は未実測）':month<=4?'春の展葉（境界月・葉量は表示目安）':month>=11?'低温で葉が減る時期（残葉率は目安）':'葉のある低い株（葉量・剪定姿は参考）';
  if(a.flowerPalette?.driftMound)phase=density===0?'冬管理後の落葉した枝（自然落葉量は地域差あり）':month<=4?'春の展葉（時期と葉量は参考補間）':month===12?'初霜で開花が終わる時期（残花・残葉は地域差あり）':month===11?'晩秋の低い株（初霜で開花が変化）':'葉のある低い株（葉量・剪定姿は参考）';
  if(a.flowerPalette?.polyanthaReference)phase=density===0?'冬管理後の落葉枝（自然な残葉率は地域差あり）':month<=4?'春の展葉（境界月・葉量は参考）':month>=11?'晩秋から葉が減る時期（残葉量は目安）':'小型の木立バラ（花の色・数は参考）';
- if(a.flowerPalette?.delbardReference)phase=density===0?'冬管理後の落葉枝（自然な残葉量は地域差あり）':month<=4?'春の展葉（境界月・葉量は参考）':month>=11?'晩秋から葉が減る時期（残葉量は目安）':'品種別の枝と花（開花月の換算は参考）';
+ if(a.flowerPalette?.delbardReference||a.flowerPalette?.climbingReference)phase=density===0?'冬管理後の落葉枝（自然な残葉量は地域差あり）':month<=4?'春の展葉（境界月・葉量は参考）':month>=11?'晩秋から葉が減る時期（残葉量は目安）':'品種別の枝と花（開花月の換算は参考）';
  if(a.flowerPalette?.trueBloom)phase=density===0?'冬の落葉した木質枝（管理後の参考）':month<=4?'春の展葉（時期・葉量は参考補間）':month>=11?'晩秋から葉が減る時期（境界月は未実測）':'葉のあるバラ（花期の月換算は参考）';
  if(a.architecture==='gardenRoseCanes'&&a.persistence==='semiEvergreen')phase=[11,12,1,2,3].includes(month)?'一部の葉が残る半常緑の枝（寒さで落葉量が変化）':'葉のある時期（新旧の葉の入れ替わりは目安）';
  if(a.flowerPalette?.hips&&(a.fruitMonths?.includes(month)||a.greenFruitMonths?.includes(month)))phase+='・'+(a.fruitMonths?.includes(month)?'実を残した枝（結実条件・残存月は参考）':'若い実（花後の参考）');
