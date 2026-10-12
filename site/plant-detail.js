@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.147';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.148';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.147';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.148';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5902,6 +5902,16 @@ export function alceaLeafPoint(type,t,an){
  return [Math.sin(an)*r*.55,(Math.cos(an)*r+.70)*.57,.065*r*r+(rug?.026:.012)*Math.sin(r*47-an*2)*Math.sin(an*7)*r];
 }
 
+export function pulmonariaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='pulmonariaCorolla'){
+  const angle=(u+1)*Math.PI,lobe=.89+.11*Math.cos(angle*5),rim=Math.pow(Math.max(0,(t-.55)/.45),1.8),r=(.20+.8*rim)*lobe;
+  return [Math.cos(angle)*r,Math.sin(angle)*r,-1.35+t*1.35+.06*Math.cos(angle*5)*Math.pow(t,8)];
+ }
+ const w=.5*Math.pow(sn,.73)*(1+.008*Math.sin(t*17));
+ return [u*w,t-.12*t*t*t*t,.028*sn*u*u+.006*Math.sin(t*7+u*2)*sn*Math.abs(u)+.32*t*t];
+}
+
 export function perennialVioletPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),edge=1+.055*Math.sin(t*Math.PI*24),cordate=type==='violetCordate',petal=type.startsWith('violetPetal');
  if(petal){const frilled=type==='violetPetalFrilled';return [u*.50*Math.pow(sn,.52)*(frilled?1+.04*Math.cos(t*48):1),t-.035*Math.exp(-u*u*20)*Math.pow(t,7),.045*u*u*sn+(frilled?.025*Math.sin(u*15+t*5)*Math.pow(t,5):.012*Math.sin(u*5)*sn)];}
@@ -7544,6 +7554,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='myrtaceousTree'){drawMyrtaceousTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='smokeTree'){drawSmokeTree(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='coniferSprays'){drawConiferSprays(b,{info,s,p,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='pulmonariaCrowns'){drawPulmonaria(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='perennialVioletShoots'){drawPerennialViolets(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenRoseCanes'){drawGardenRose(b,{info,s,p,detail,rand},kit);return;}
  if(['sideritisSpikes','silverMintSpikes','marrubiumWhorls','leonotisTiers'].includes(info.appearance?.architecture)){drawSilverMints(b,{info,s,p,detail,rand},kit);return;}
@@ -9308,6 +9319,37 @@ function drawRacemes(b,{info,s,detail,rand},kit){
    const t=j/florets,yaw=an+j*2.399,yy=top*(small?.36+t*.57:.33+t*.63),reach=small?.013:Math.min(w*.20,.06),tip=[x+Math.sin(yaw)*reach,yy,z+Math.cos(yaw)*reach];
    b.branch([x,yy-.008,z],tip,small?.0006:.0015,green,'peduncle');
    detailedFlower(flowerFrame(b,tip,small?1.28:1.45,yaw),{x:0,y:0,z:0,r:small?.009:Math.min(.052,w*.21),color:s.flowerColor||info.flower,shape:a.flowerShape,petals:a.petals||5,layers:a.flowerLayers||1,pattern:a.flowerPattern,patternColor:a.flowerPatternColor},{...kit,rand});
+  }
+ }
+}
+
+function drawPulmonaria(b,{info,s,detail,rand},kit){
+ const a=info.appearance,profile=a.flowerPalette,type=profile.type,h=s.height,w=s.spread,winter=[12,1,2].includes(s.month),growth=winter?.30:s.month===3?.40:s.month===4?.55:s.month===5?.78:1,green=s.leafColor;
+ const pattern=profile.leafPattern==='seasonSpots'?(s.month<=5?'spots':'broadSpots'):profile.leafPattern;
+ const leaf=(at,az,L,W,mode,seed,tilt)=>b.add('pulmonariaLeaf','leaf-pulmonaria-'+mode+'-'+seed,green,...at,W,L,L,tilt,az,.09*Math.sin(az));
+ const n=Math.max(2,Math.round(28*detail*s.leafDensity));
+ for(let i=0;i<n;i++){
+  const az=i*2.399,L=a.leafLength*growth*(.78+.22*rand()),rr=w*.19*Math.sqrt((i+.5)/n)*growth,at=[Math.sin(az)*rr,.007+h*.10*growth,Math.cos(az)*rr];
+  b.branch([at[0]*.55,.004,at[2]*.55],at,.0012,green,'pulmonariaPetiole');leaf(at,az,L,a.leafWidth*L/a.leafLength,pattern,i%3,.62+rand()*.65);
+ }
+ if(!s.bloom)return;
+ const stems=Math.max(3,Math.round(12*detail*s.flowerDensity)),r=a.flowerRadius;
+ for(let i=0;i<stems;i++){
+  const az=i*2.399,rr=w*.25*Math.sqrt((i+.5)/stems),root=[Math.sin(az)*rr*.35,.005,Math.cos(az)*rr*.35],top=[Math.sin(az)*rr,h*(.63+rand()*.25),Math.cos(az)*rr];
+  let prior=root;
+  for(let k=1;k<=3;k++){
+   const t=k/3,at=[root[0]+(top[0]-root[0])*t,top[1]*t,root[2]+(top[2]-root[2])*t];b.branch(prior,at,.0015,green,'stem-pulmonaria-hairy');prior=at;
+   if(k<3)leaf(at,az+k*2.399,a.leafLength*.27,a.leafWidth*.45,profile.leafPattern==='seasonSpots'?'spots':pattern,k%3,.6);
+  }
+  for(let arm=0;arm<3;arm++){
+   const yaw=az+arm*2.1,tip=[top[0]+Math.sin(yaw)*.033,top[1]+.012,top[2]+Math.cos(yaw)*.033];b.branch(top,tip,.0009,green,'peduncle-pulmonaria-hairy');
+   for(let j=0;j<4;j++){
+    const yy=yaw+j*.55,at=[tip[0]+Math.sin(yy)*r*j*.65,tip[1]-.003*j,tip[2]+Math.cos(yy)*r*j*.65],frame=flowerFrame(b,at,-.75-j*.10,yy);
+    b.branch(tip,at,.00055,green,'peduncle-pulmonaria-hairy');
+    if(j===3){frame.add(kit.bud,'bud-pulmonaria-hairy',profile.budColor,0,0,-r*.4,r*.4,r*.5,r*.9);continue;}
+    frame.add('pulmonariaCorolla','petal-pulmonaria',profile.flowerColors[(i+arm+j)%profile.flowerColors.length],0,0,0,r,r,r);
+    for(let k=0;k<5;k++)frame.add('violetLance','calyx-pulmonaria-hairy','#657750',0,0,-r*1.32,r*.25,r*.90,r*.3,Math.PI*.45,k*TAU/5,0);
+   }
   }
  }
 }
