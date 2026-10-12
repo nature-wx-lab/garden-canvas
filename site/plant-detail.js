@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.148';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.149';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.148';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.149';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5902,6 +5902,16 @@ export function alceaLeafPoint(type,t,an){
  return [Math.sin(an)*r*.55,(Math.cos(an)*r+.70)*.57,.065*r*r+(rug?.026:.012)*Math.sin(r*47-an*2)*Math.sin(an*7)*r];
 }
 
+export function gardenGeraniumPoint(type,t,u){
+ if(type.startsWith('geraniumPetal')){
+  const sn=Math.max(0,Math.sin(Math.PI*t)),split=type==='geraniumPetalSplit',reflex=type==='geraniumPetalReflex';
+  return [u*.66*Math.pow(sn,.48),(.10*t*t+(reflex?-.34*Math.pow(t,3):.045*u*u*sn))+.014*Math.sin(u*17+t*3)*Math.pow(t,6),t-(split?.20:.035)*Math.exp(-u*u*35)*Math.pow(t,7)];
+ }
+ const angle=u*2.55,wide=type==='geraniumWide',round=type==='geraniumSmall',deep=type==='geraniumDissected',lobes=Math.pow(.5+.5*Math.cos(angle*6),.55),edge=(deep?.25:wide?.58:round?.60:.40)+(deep?.75:wide?.42:round?.35:.60)*lobes;
+ const serration=1+.025*Math.cos(angle*80)+.018*Math.sin(angle*43),r=t*edge*serration;
+ return [Math.sin(angle)*r*.51,(Math.cos(angle)*r+.74)*.57,.018*r*r+.012*Math.sin(angle*6)*r*r];
+}
+
 export function pulmonariaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='pulmonariaCorolla'){
@@ -7005,6 +7015,20 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   const f=flowerFrame(b,[x,y,z],tilt,yaw);f.add('trumpet','petal',color,0,-r*.6,0,r*.85,r*.9,r*.85);
   for(let j=0;j<5;j++){const an=j*TAU/5;f.add('petal','petal',color,Math.sin(an)*r*.13,r*.20,Math.cos(an)*r*.13,r*1.20,r*.85,r,1.22,an,0);}
   return;
+ }
+ if(shape==='gardenCranesbill'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),type=palette.type,reflex=['phaeum','joseph','springtime','blauw'].includes(type),petal=type==='bill'?'geraniumPetalSplit':reflex?'geraniumPetalReflex':'geraniumPetalRound';
+  for(let j=0;j<5;j++){
+   f.add('violetLance','calyx-geranium','#637b51',0,-r*.07,0,r*.38,r*.75,r*.25,Math.PI*.5,j*TAU/5+.4,0);
+   f.add(petal,'petal-geranium-'+type,color,0,0,0,r*(type==='bill'?.84:1),r,r,0,j*TAU/5,0);
+  }
+  if(type==='joseph'){
+   for(let j=0;j<18;j++)f.add('geraniumPetalReflex','petal-geranium-joseph-inner',j%4===0?'#a4b780':j%3===0?'#d0c8ad':color,0,r*.04,0,r*.35,r*.5,r*(.35+(.03*(j%5))),-.45,j*2.399,0);
+  }else for(let j=0;j<10;j++){
+   const an=j*TAU/10,extended=type==='karmina'||reflex,end=[Math.sin(an)*r*(extended?.25:.16),r*(extended?.60:.24),Math.cos(an)*r*(extended?.25:.16)];
+   f.branch([0,0,0],end,r*.010,'#d3b5cf','filament-geranium');f.add(bud,'anther',palette.anther||'#3e303b',...end,r*.040,r*.027,r*.05);
+  }
+  f.branch([0,0,0],[0,r*.27,0],r*.02,'#a3ad77','style-geranium');return;
  }
  if(shape==='cranesbill'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw);
@@ -9093,6 +9117,7 @@ function drawGlobeAmaranth(b,{info,s,detail,rand},kit){
 }
 
 function drawCranesbill(b,{info,s,detail,rand},kit){
+ if(info.appearance.flowerShape==='gardenCranesbill'){drawGardenCranesbill(b,{info,s,detail,rand},kit);return;}
  const a=info.appearance,h=s.height,w=s.spread,green=s.leafColor,small=a.leafShape==='geraniumRound',n=Math.round(26*detail),leafKind=patternKind('leaf-palm',a.leafPattern,a.patternColor),size=Math.min(small?.032:.078,w*.19,h*.28);
  const leaf=(at,an,t)=>{
   const length=size*(1-t*.35)*(.8+rand()*.35),end=[at[0]+Math.sin(an)*length*.55,at[1]+length*.60,at[2]+Math.cos(an)*length*.55];
@@ -9113,6 +9138,41 @@ function drawCranesbill(b,{info,s,detail,rand},kit){
    if(j<3||j%2===0)continue;
    const side=j%4===1?-1:1,sa=an+side*.88,tip=[at[0]+Math.sin(sa)*reach*.32,at[1]+h*.11,at[2]+Math.cos(sa)*reach*.32];b.branch(at,tip,.0007,green,'petiole');leaf(tip,sa,t);
    if(s.bloom&&rand()<s.flowerDensity)for(const offset of [-.7,.7])flower(tip,sa+offset);
+  }
+ }
+}
+
+function drawGardenCranesbill(b,{info,s,detail,rand},kit){
+ const a=info.appearance,palette=a.flowerPalette,type=palette.type,habit=palette.habit,h=s.height,w=s.spread,winter=[12,1,2].includes(s.month),rosette=habit==='rosette',erect=habit==='erect',small=type==='bill',mat=habit==='mat',green=type==='karmina'&&[11,12,1,2].includes(s.month)?'#927358':s.leafColor;
+ const leafShape=rosette?'geraniumWide':small||mat?'geraniumSmall':erect?'geraniumDissected':'geraniumGardenPalm',pattern=type==='springtime'?(s.month>=3&&s.month<=5?'springBlotch':'summerBlotch'):palette.leafPattern;
+ const leaf=(at,az,scale=1)=>{
+  const L=a.leafLength*scale*(.80+.25*rand()),tip=[at[0]+Math.sin(az)*L*.7,at[1]+L*.45,at[2]+Math.cos(az)*L*.7];
+  b.branch(at,tip,.001,green,'petiole-geranium');b.add(leafShape,'leaf-palm-geranium-'+pattern,kit.shade(rand,green,.035),...tip,L,L,L,1.10+rand()*.38,az,0);
+ };
+ const flower=(at,az)=>{
+  const r=a.flowerRadius,reflex=rosette,up=[at[0]+Math.sin(az)*r*1.3,at[1]+r*1.8,at[2]+Math.cos(az)*r*1.3],tip=[up[0]+Math.sin(az)*r*.65,up[1]-(reflex?r*.85:0),up[2]+Math.cos(az)*r*.65];
+  b.branch(at,up,.0008,green,'peduncle-geranium');b.branch(up,tip,.00065,green,'peduncle-geranium');
+  let color=info.flower;
+  if(type==='rise')color=new THREE.Color(color).lerp(new THREE.Color('#ba5caa'),rand()*.6).getStyle();
+  if(type==='bloomMe')color=[7,8].includes(s.month)?'#b980bd':[10,11].includes(s.month)?'#6452ac':color;
+  detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r,color,shape:'gardenCranesbill',palette,tilt:reflex?1.90+rand()*.25:(rand()-.5)*.8,yaw:az},{...kit,rand});
+ };
+ {
+  const n=Math.max(3,Math.round((rosette?30:small?12:26)*detail*s.leafDensity));
+  for(let i=0;i<n;i++){const az=i*2.399,rr=w*.26*Math.sqrt((i+.5)/n);leaf([Math.sin(az)*rr,.006,Math.cos(az)*rr],az,winter?.65:1);}
+  if((rosette||winter)&&!s.bloom)return;
+ }
+ const n=Math.max(3,Math.round((rosette?10:erect?13:small?16:18)*detail*s.leafDensity));
+ for(let i=0;i<n;i++){
+  const az=i*2.399,reach=w*(rosette?.18:erect?.22:mat?.44:.44)*(.45+.55*rand()),top=h*(rosette?.72:erect?.78:mat?.35:.58)*(.72+.28*rand()),nodes=rosette?5:6;
+  let prev=[Math.sin(az)*w*.035,.006,Math.cos(az)*w*.035];
+  for(let j=1;j<=nodes;j++){
+   const t=j/nodes,at=[Math.sin(az)*reach*t,(rosette||erect?top*t:top*Math.sin(t*2.3))+.006,Math.cos(az)*reach*t];b.branch(prev,at,.0015*(1-t*.45),green,'stem-geranium');prev=at;
+   if(!rosette||j<4)for(const side of [-1,1])leaf(at,az+side*1.25+j*.4,(1-t*.5)*(rosette?.7:1));
+   if(j<3)continue;
+   const side=j%2?-1:1,sa=az+side*.85,branch=[at[0]+Math.sin(sa)*w*.10,at[1]+h*.10,at[2]+Math.cos(sa)*w*.10];b.branch(at,branch,.00085,green,'stem-geranium');
+   if(!rosette)leaf(branch,sa,.55);
+   if(s.bloom&&rand()<s.flowerDensity)for(const offset of [-.5,.5])flower(branch,sa+offset);
   }
  }
 }
