@@ -9,6 +9,23 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('distinct shrub roses retain winter wood and model boat petals, green eyes and solitary autumn flowers',()=>{
+ const ids=['p-ee83417e8f2c','p-873288a0ed7e','p-7f0c87f22d35','p-2214389b948d'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],a=info.appearance,p=makePlant(id,15400+i,2,2);p.height=info.height[1];p.leafHeight=p.height;p.spread=i===3?.8:1.0;let wood,juneSites,octSites;
+  assert.equal(a.basis.petals,undefined);assert.equal(info.bloomKnown,false);assert.equal(a.status,'partial');assert.equal(a.basis.flowerRadius===0,i===2);
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),woody=g.children.filter(m=>m.userData.component.startsWith('wood-rose')).map(m=>[...m.instanceMatrix.array]),flowers=count('receptacle');
+   assert.equal(g.userData.architecture,'gardenRoseCanes');assert.ok(!g.userData.unmodeled);assert.ok(count('wood-rose-fork')>0);if(wood)assert.deepEqual(woody,wood);else wood=woody;
+   assert.equal(count('leaf-rose')>0,month>=3);assert.equal(flowers>0,month>=5&&month<=11);assert.equal(count('fruit-rose-ripe'),0);
+   if(flowers){assert.equal(g.children.filter(m=>m.userData.component.startsWith('petal-rose')).reduce((n,m)=>n+m.count,0),flowers*a.petals);assert.equal(count('roseGreenEye')>0,i===2);assert.equal(g.children.some(m=>m.geometry.userData.roseBoatPetal),i===2);if(i===3)assert.ok(g.children.some(m=>m.userData.component.startsWith('petal-rose-rim-')));}
+   if(month===6)juneSites=flowers+count('flowerBud');if(month===10)octSites=flowers+count('flowerBud');
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
+  }
+  if(i===1)assert.equal(juneSites,octSites*3,'autumn flower sites become solitary');
+ }
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.14';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.15');
+});
 test('yellow climbers separate spring-only rambler flowers from repeat blooms and retain branched winter canes',()=>{
  const ids=['p-c758390bbd4d','p-e5328894fa54','p-8b4b74a713d5','p-ab48376b8bdc','p-12d2b43ca5f0'];
  for(const [i,id] of ids.entries()){
@@ -26,7 +43,7 @@ test('yellow climbers separate spring-only rambler flowers from repeat blooms an
  }
  const golden=CATALOG[ids[4]].appearance,butter=CATALOG[ids[0]].appearance;assert.equal(golden.flowerPalette.canes,5);assert.ok(golden.flowerPalette.branchStart>.4);assert.ok(golden.flowerPalette.caneRadius>butter.flowerPalette.caneRadius);assert.equal(golden.leafTexture,'glossy');
  assert.equal(CATALOG[ids[2]].spread[0],.7);assert.match(CATALOG[ids[2]].appearance.unconfirmed.join(' '),/不一致/);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.13';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.14');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.13';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.15');
 });
 test('Delbard shrubs distinguish striped semidoubles, frilled rosettes, seasonal rims and woody winter forms',()=>{
  const ids=['p-b85fc5315d77','p-4e3688d75587','p-7d4969065233','p-5f1499105353','p-cbd4b2589eb3','p-4754d337df9d','p-4d84bb7e07fc'];
@@ -54,7 +71,7 @@ test('Delbard shrubs distinguish striped semidoubles, frilled rosettes, seasonal
  }
  assert.ok(CATALOG[ids[0]].appearance.flowerPalette.climber);assert.ok(CATALOG[ids[1]].appearance.flowerPalette.climber);
  assert.ok(CATALOG[ids[5]].appearance.flowerPalette.stiff);assert.ok(CATALOG[ids[0]].spread[0]>CATALOG[ids[5]].spread[0]);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.12';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.14');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.12';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.15');
 });
 test('small polyantha cups and Green Ice keep woody winter scaffolds and distinct flowering states',()=>{
  const ids=['p-f912f33f9d91','p-905a2b6a7183','p-825e447ce777','p-20e468999663','p-8f895389c0b7','p-eb8b7e48de41'];
@@ -79,7 +96,7 @@ test('small polyantha cups and Green Ice keep woody winter scaffolds and distinc
  }
  assert.notEqual(seasonAt(CATALOG[ids[1]],6).flowerColor,seasonAt(CATALOG[ids[1]],10).flowerColor);
  assert.notEqual(seasonAt(CATALOG[ids[2]],7).flowerColor,seasonAt(CATALOG[ids[2]],10).flowerColor);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.11';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.14');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.11';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.15');
 });
 test('True Bloom roses are deciduous woody shrubs with cultivar petals and non-calendar colour variation',()=>{
  const ids=['p-564840bc7b58','p-847950eb70ac','p-4033bf44e0ed','p-791b993009f3'];
@@ -95,7 +112,7 @@ test('True Bloom roses are deciduous woody shrubs with cultivar petals and non-c
    for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
   }
  }
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.10';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.14');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.10';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.15');
 });
 test('Drift roses retain low woody branches through winter and distinguish open pink flowers from double cultivars',()=>{
  const ids=['p-f106674a0d8e','p-f806d1855448','p-9aab6c6bb56f','p-e2143e5cca19','p-1d07bb2a693f'];
@@ -121,7 +138,7 @@ test('Drift roses retain low woody branches through winter and distinguish open 
   }
   assert.ok(a.unconfirmed.some(x=>x.includes('初霜')));if(i!==0)assert.ok(a.unconfirmed.some(x=>x.includes('資料間')));
  }
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.9';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.14');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.9';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.15');
 });
 test('Flower Carpet roses form low branched mounds with cultivar flowers and the official May-November calendar',()=>{
  const ids=['p-8944f3ad7d59','p-efe322591586','p-178346fec068','p-15750d223b31','p-b41bf36d94b3'];
@@ -142,7 +159,7 @@ test('Flower Carpet roses form low branched mounds with cultivar flowers and the
   }
  }
  assert.equal(CATALOG[ids[0]].appearance.flowerRadius,.0275);assert.equal(CATALOG[ids[2]].appearance.flowerRadius,.0175);assert.equal(CATALOG[ids[4]].appearance.flowerRadius,.01375);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.8';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.14');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.8';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.15');
 });
 test('Seika climber, Hatoya and Sensational Fantasy separate observed flowering, retained leaves and winter hips',()=>{
  const ids=['p-d91dcd802c61','p-be75c8dc1332','p-a5327faf93ff'];
@@ -165,7 +182,7 @@ test('Seika climber, Hatoya and Sensational Fantasy separate observed flowering,
  assert.equal(CATALOG[ids[0]].height,null);assert.equal(CATALOG[ids[0]].spread,null);
  assert.equal(CATALOG[ids[1]].leaf,'semi');assert.deepEqual(CATALOG[ids[1]].height,[3,5]);
  assert.equal(CATALOG[ids[1]].appearance.flowerRadius,.05);assert.deepEqual(CATALOG[ids[2]].appearance.fruitMonths,[7,8,9,10,11,12]);
- const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.7';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.14');
+ const old=annualGalleryDocument(ids[0]);old.catalogVersion='2026-10-12.7';assert.equal(validateDocument(old).catalogVersion,'2026-10-12.15');
 });
 test('native roses separate thornless panicles, creeping glossy runners and woolly bracted evergreen flowers',()=>{
  const ids=['p-61f79361a967','p-d2df3a326599','p-fe555efeaf68'];
