@@ -10,6 +10,22 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Pratensis cultivars combine basal rosettes, hooked flowers and retained winter stalks',()=>{
+ const ids=['p-ff64e719fa5a','p-b70506dcea20','p-d803709691f9','p-3569f46fcacc','p-5edd501fabd3','p-22001c9a8104'];
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.deepEqual(info.height,i===5?[.6,.8]:[.3,.5]);assert.deepEqual(info.spread,[.3,.4]);assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.habit,'clump');let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,21400+i,1,1),height:small?.12:i===5?.75:.45,spread:small?.20:.36,leafHeight:small?.05:.15},g=plantModel(p,view(month)),s=stateAt(p,view(month));assert.equal(g.userData.architecture,'pratensisRosettes');assert.equal(s.shootScale,1);assert.equal(g.scale.y,1);
+   const basal=g.children.find(m=>m.userData.component==='leaf-pratensis-basal');assert.ok(basal&&basal.geometry.userData.pratensisLeaf);if(month===1)winter=basal.count;if(month===6)summer=basal.count;
+   const cold=[12,1,2].includes(month);if(cold)assert.ok(!g.children.some(m=>m.userData.component==='leaf-pratensis-stem'));assert.equal(g.children.some(m=>m.userData.component==='tube-pratensis'),month>=5&&month<=11);assert.ok(!g.children.some(m=>/seed|fruit|stolon/.test(m.userData.component)));
+   if(month===6&&i===5){const hood=g.children.find(m=>m.userData.component==='hood-pratensis'),lip=g.children.find(m=>m.userData.component==='petal-pratensis-madeline');assert.notDeepEqual([...hood.instanceColor.array.slice(0,3)],[...lip.instanceColor.array.slice(0,3)]);}
+   const now=g.children.filter(m=>/^(stem|branch|axis)-pratensis$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.018);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.66);}dispose(g);
+  }
+  assert.ok(winter<summer*.5);
+ }
+ assert.equal(searchCatalog(CATALOG,{query:'トワイライトセレナーデ',color:'mixed'}).length,0);assert.equal(searchCatalog(CATALOG,{query:'メイドリーン',color:'mixed'}).length,1);
+});
 test('Small sages distinguish narrow green, hairy silver and seasonal copper leaves without invented creeping habit',()=>{
  const ids=['p-5faf36670c76','p-a69b7655fd1e','p-25b06ebb3b3e'];
  for(const [i,id] of ids.entries())for(const small of [false,true]){
