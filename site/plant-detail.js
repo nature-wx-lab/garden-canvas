@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.164';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.165';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.164';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.165';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4918,7 +4918,8 @@ function drawVinca(b,{info,s,detail,rand},kit){
   // Keep the same perennial skeleton in every month. Cold-region stem loss and
   // post-flowering shoot persistence are unknown, so neither pruning nor a
   // disappearance month is invented by the flower calendar.
-  const base=sites[Math.min(nodes-1,1+i%2)],top=h*(.60+.16*shape(60));let previous=base;
+  const shootNode=smallMat?Math.floor(nodes*(.18+.68*shape(160))):1+i%2;
+  const base=sites[Math.min(nodes-1,shootNode)],top=h*(.60+.16*shape(60));let previous=base;
   for(let q=1;q<=4;q++){
    const t=q/4,yaw=angle+q*Math.PI/2,at=[base[0]+Math.sin(angle)*L*.22*t*t,base[1]+(top-base[1])*t,base[2]+Math.cos(angle)*L*.22*t*t];
    b.branch(previous,at,.00095*(1-t*.35),stem,'shoot-vinca');previous=at;
