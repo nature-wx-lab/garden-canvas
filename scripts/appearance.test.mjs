@@ -10,6 +10,22 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Chocolate cosmos distinguish cultivar colours, lobed foliage and long peduncles without inventing winter flowers',()=>{
+ for(const [i,id] of ['p-6c18731257fe','p-880f71a3aca2'].entries()){
+  const info=CATALOG[id],p={...makePlant(id,18200+i,1,1),height:i?.35:.55,spread:i?.35:.42,leafHeight:i?.16:.22};let axes;
+  assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.shootProfile,i?'chocamocha':'cherry');assert.deepEqual(info.colors,i?['red','black']:['pink']);
+  if(!i){assert.equal(info.height,null);assert.equal(info.spread,null);assert.equal(info.latin,'');}else assert.equal(info.appearance.flowerRadius*2,.0325);
+  for(let month=1;month<=12;month++){
+   const s=stateAt(p,view(month)),g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'chocolateCosmos');assert.equal(s.shootScale,1);assert.equal(g.scale.y,1);assert.ok(count('peduncle-cosmos')>0);
+   assert.equal(count('leaf-cosmos-lobed')>0,![1,2,12].includes(month));assert.equal(count('leaf-cosmos-simple')+count('leaf-cosmos-lobed'),count('petiole-cosmos'));assert.equal(count('petiole-cosmos')%2,0);
+   assert.equal(count('disc-cosmos')>0,info.bloom.includes(month));assert.equal(count('disc-floret-cosmos'),count('disc-cosmos')*64);
+   const rays=count(i?'petal-cosmos-choca':'petal-cosmos-cherry');assert.ok(rays>=count('disc-cosmos')*7&&rays<=count('disc-cosmos')*8);assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+   const now=g.children.filter(m=>['stem-cosmos','shoot-cosmos','peduncle-cosmos'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(axes)assert.deepEqual(now,axes);else axes=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.012);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<=p.spread*.63);}dispose(g);
+  }
+ }
+});
 test('Silver Drop keeps paired silver juvenile leaves and does not infer adult dimensions or domestic flowering',()=>{
  const id='p-54d3bae798d4',info=CATALOG[id],p={...makePlant(id,18100,1,1),height:1.2,spread:.7,leafHeight:.9};let shape;
  assert.equal(info.appearance.status,'partial');assert.equal(info.height,null);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[]);

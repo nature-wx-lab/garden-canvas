@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.171';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.172';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.171';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.172';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5005,6 +5005,58 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
  }
 }
 
+export function chocolateCosmosPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='cosmosRay'){
+  const width=.40*Math.pow(sn,.42)*(1+.12*t),teeth=.040*(.5+.5*Math.cos(u*3*Math.PI))*Math.pow(t,15);
+  return [u*width,t-teeth,.11*u*u*sn+.12*t*t+.016*Math.cos(u*19)*sn];
+ }
+ const lobed=type==='cosmosPinnatifid',lobes=lobed?1-.79*Math.exp(-Math.pow((t-.32)/.055,2))-.71*Math.exp(-Math.pow((t-.51)/.057,2)):1;
+ return [u*.50*Math.pow(sn,.83)*lobes,t,.070*u*u*sn+.050*t*t+.008*Math.cos(t*36-Math.abs(u)*4)*Math.abs(u)*sn];
+}
+
+function drawChocolateCosmos(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,cherry=a.shootProfile==='cherry',w=s.spread,h=s.height,L=Math.min(a.leafLength,w*.23,h*.27),winter=s.leafDensity===0,stem=winter?a.winterStemColor:a.stemColor;
+ const n=Math.max(4,Math.min(20,Math.round((cherry?10:14)*detail*Math.pow(w/.4,.65)))),mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const shape=(i,k)=>.5+.5*Math.sin((i+1)*12.989+k*7.233);
+ const leaf=(at,az,len,lobed)=>{
+  const pet=len*.22,tip=[at[0]+Math.sin(az)*pet*.85,at[1]+pet*.45,at[2]+Math.cos(az)*pet*.85];b.branch(at,tip,.00052,a.stemColor,'petiole-cosmos');
+  b.add(lobed?'cosmosPinnatifid':'cosmosSimple',lobed?'leaf-cosmos-lobed':'leaf-cosmos-simple',kit.shade(rand,s.leafColor,.05),...tip,len*a.leafWidth/a.leafLength,len,len,.81+.28*shape(Math.round(at[1]*100),2),az,0);
+ };
+ const head=(end,az,i,k)=>{
+  if(!s.bloom)return;
+  const r=Math.min(a.flowerRadius,h*.11,w*.095),f=flowerFrame(b,end,.19+.68*shape(i,k+60),az),bud=k===2&&i%2===0||shape(i,k+70)>s.flowerDensity;
+  for(let j=0;j<8;j++)f.add('narrow','bract-cosmos',a.stemColor,0,-r*.12,0,r*.19,r*.43,r*.18,1.34,j*TAU/8,0);
+  if(bud){f.add(kit.bud,'bud-cosmos','#6f7761',0,r*.06,0,r*.26,r*.33,r*.26);return;}
+  const tint=cherry&&shape(i,k+80)>.55?a.flowerFadeTo:s.flowerColor,count=cherry&&i%4===0?7:8;
+  for(let j=0;j<count;j++){
+   const angle=j*TAU/count+(shape(i,j+90)-.5)*.08,len=r*(.92+.08*shape(i,j+100));
+   f.add('cosmosRay',cherry?'petal-cosmos-cherry':'petal-cosmos-choca',kit.shade(rand,tint,.025),Math.sin(angle)*r*.16,0,Math.cos(angle)*r*.16,len,len,len,Math.PI/2-.055,angle,0);
+  }
+  f.add(kit.bud,'disc-cosmos',cherry?'#593424':'#352222',0,r*.14,0,r*.29,r*.19,r*.29);
+  // Floret count and flowering ring are visual approximations, not cultivar
+  // measurements. A dark receptacle remains visible between yellow anthers.
+  for(let j=0;j<64;j++){
+   const q=Math.sqrt((j+.5)/64),angle=j*2.399963,rad=r*.29*q,point=[Math.sin(angle)*rad,r*(.18+.13*(1-q*q)),Math.cos(angle)*rad];
+   f.add(kit.bud,'disc-floret-cosmos',q>.50&&q<.85?'#926040':'#4f2929',...point,r*.026,r*.045,r*.026);
+   if(q>.50&&q<.85){f.add(kit.bud,'pollen-cosmos','#c9a657',point[0],point[1]+r*.04,point[2],r*.019,r*.016,r*.019);}
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=Math.max(.002,w*.34-L*.40)*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.55,.004,Math.cos(az)*rr*.55],joint=[Math.sin(az)*rr,h*(.24+.12*shape(i,1)),Math.cos(az)*rr];let old=root;
+  for(let j=1;j<=5;j++){
+   const at=mix(root,joint,j/5);b.branch(old,at,.00125*(1-j*.075),stem,'stem-cosmos');old=at;
+   if(shape(i,j+10)<s.leafDensity)for(const side of [0,1])leaf(at,az+j*Math.PI/2+side*Math.PI,L*(.97-j*.08),j<4);
+  }
+  for(let k=0;k<3;k++){
+   const aa=az+(k-1)*.70,base=k===0?joint:mix(root,joint,.65+.15*k),reach=w*(k===0?.035:.12),tip=[joint[0]+Math.sin(aa)*reach,h*(.63+.33*shape(i,k+30)),joint[2]+Math.cos(aa)*reach],neck=mix(base,tip,.21);b.branch(base,neck,.00088,stem,'shoot-cosmos');
+   if(shape(i,k+40)<s.leafDensity)for(const side of [0,1])leaf(neck,aa+side*Math.PI,L*.43,false);
+   let from=neck;for(let seg=1;seg<=5;seg++){const q=seg/5,p=mix(neck,tip,q);p[0]+=Math.sin(q*Math.PI)*w*.025;p[2]-=Math.sin(q*Math.PI)*w*.011;b.branch(from,p,.00064*(1-q*.27),stem,'peduncle-cosmos');from=p;}
+   head(tip,aa,i,k);
+  }
+ }
+}
+
 export function silverDropPoint(t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),width=.5*Math.pow(sn,.43)*(1-.12*t),baseNotch=.085*Math.pow(Math.abs(u),.65)*Math.exp(-t*6);
  return [u*width,t-baseNotch,.035*u*u*sn+.025*t*t];
@@ -8478,6 +8530,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='chocolateCosmos'){drawChocolateCosmos(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='silverDropJuvenile'){drawSilverDrop(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='autumnAnemone'){drawAutumnAnemone(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oxfordMat'){drawOxfordMat(b,{info,s,detail,rand,month},kit);return;}
