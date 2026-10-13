@@ -10,6 +10,15 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Cerastium replaces the generic form with persistent paired silver foliage and notched spring flowers',()=>{
+ const id='p-224faffe5aae',info=CATALOG[id],p={...makePlant(id,18900,1,1),height:.18,spread:.45,leafHeight:.09};assert.equal(info.visual,'reference');assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'opposite');assert.equal(info.spread,null);assert.deepEqual(info.height,[.10,.20]);assert.deepEqual(info.bloom,[4,5,6]);let axes;
+ for(let month=1;month<=12;month++){
+  const g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component===k),leaf=g.children.find(m=>m.userData.component==='leaf-cerastium');assert.equal(g.userData.architecture,'cerastiumMat');assert.equal(g.scale.y,1);assert.ok(leaf.count>800);assert.equal(has('petal-cerastium'),info.bloom.includes(month));assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+  const runners=g.children.find(m=>m.userData.component==='runner-cerastium');if(axes)assert.deepEqual([...runners.instanceMatrix.array],axes);else axes=[...runners.instanceMatrix.array];
+  for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.60);}dispose(g);
+ }
+ const small=plantModel({...p,height:.08,spread:.2,leafHeight:.04},view(5));for(const m of small.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.09);}dispose(small);
+});
 test('Shasta cultivars separate frilled flower forms, seedling variability and retained winter axes',()=>{
  const ids=['p-68e38fd38a3a','p-0f1da972c698','p-a1e39fa1c98a','p-8db1b3a3b1dd'],profiles=['aglaia','oldCourt','snow','king'];
  for(const [i,id] of ids.entries()){

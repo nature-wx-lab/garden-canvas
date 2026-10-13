@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.178';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.179';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.178';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.179';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5005,6 +5005,39 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
  }
 }
 
+export function cerastiumPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='cerastiumPetal')return [u*.43*Math.pow(sn,.43),t-.24*Math.exp(-u*u*30)*Math.pow(t,7),.065*u*u*sn+.05*t*t];
+ return [u*.5*Math.pow(sn,.8),t,.038*u*u*sn+.08*t*t];
+}
+function drawCerastiumMat(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.28,w*.16),n=Math.max(20,Math.min(110,Math.round(80*detail*Math.sqrt(w/.45)))),stem='#b9c1ad',noise=(i,j)=>.5+.5*Math.sin(i*14.7+j*5.3),leaves=(at,az,len=L)=>{
+  for(let k=0;k<2;k++)b.add('cerastiumLeaf','leaf-cerastium',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,1.05+noise(Math.round(at[0]*100),k)*.25,az+k*Math.PI,0);
+ };
+ const flower=(at,az,index)=>{
+  const r=Math.min(a.flowerRadius,h*.11,w*.08),f=flowerFrame(b,at,.07+noise(index,1)*.3,az);
+  for(let j=0;j<5;j++){const aa=j*TAU/5;f.add('cerastiumLeaf','sepal-cerastium','#9ea98d',0,-r*.08,0,r*.28,r*.54,r*.54,1.15,aa,0);f.add('cerastiumPetal','petal-cerastium','#f3f0e7',Math.sin(aa)*r*.09,0,Math.cos(aa)*r*.09,r*.92,r*.92,r*.92,Math.PI/2-.09,aa,0);}
+  f.add(kit.bud,'centre-cerastium','#c7c98f',0,r*.025,0,r*.15,r*.11,r*.15);
+  for(let j=0;j<10;j++){const aa=j*TAU/10;f.add(kit.bud,'anther-cerastium','#c9b43d',Math.sin(aa)*r*.19,r*.10,Math.cos(aa)*r*.19,r*.025,r*.030,r*.025);}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,reach=w*(.11+.33*Math.sqrt((i+.5)/n));let prev=[0,.004,0];
+  for(let j=1;j<=10;j++){
+   const t=j/10,turn=az+.15*Math.sin(t*4+i),at=[Math.sin(turn)*reach*t,h*(.06+.24*Math.sin(Math.PI*t*.82)),Math.cos(turn)*reach*t];b.branch(prev,at,Math.min(.001,h*.008),stem,'runner-cerastium');prev=at;leaves(at,turn+j*Math.PI/2,L*(.72+.28*noise(i,j)));
+   if(j%3===0){
+    const side=turn+(j%2?1:-1)*.75,tip=[at[0]+Math.sin(side)*L*1.1,at[1]+h*.13,at[2]+Math.cos(side)*L*1.1];let last=at;
+    for(let k=1;k<=4;k++){const p=at.map((v,d)=>v+(tip[d]-v)*k/4);b.branch(last,p,Math.min(.00055,h*.004),stem,'shortshoot-cerastium');leaves(p,side+k*Math.PI/2,L*(.72-k*.075));last=p;}
+   }
+   if(!s.bloom||j!==8||i%2)continue;
+   const fork=[at[0],h*(.61+.13*noise(i,5)),at[2]];b.branch(at,fork,Math.min(.0009,h*.005),stem,'flowerStem-cerastium');leaves(fork,turn,L*.44);
+   for(let k=0;k<3;k++){
+    const aa=turn+k*TAU/3,end=[fork[0]+Math.sin(aa)*L*(k?1.0:.2),fork[1]+h*(.12+.07*noise(i,k)),fork[2]+Math.cos(aa)*L*(k?1.0:.2)];b.branch(fork,end,Math.min(.0005,h*.004),stem,'pedicel-cerastium');
+    if((i+k)%9===0)b.add(kit.bud,'bud-cerastium','#adb79e',...end,L*.14,L*.23,L*.14);else flower(end,aa,i+k);
+   }
+  }
+ }
+}
+
 export function shastaRayPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),thread=type==='shastaThread',wave=type==='shastaCurl';
  const width=(thread?.030:.070)*Math.pow(sn,.33),twist=(thread?2.8:wave?1.7:.7)*t,curve=(thread?.18:wave?.11:.04)*Math.sin(t*7)*t;
@@ -8723,6 +8756,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='cerastiumMat'){drawCerastiumMat(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='bellisRosettes'){drawBellisRosettes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oleariaSmoky'){drawOleariaSmoky(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='mahoniaCanes'){drawMahoniaCanes(b,{info,s,detail,rand,month},kit);return;}
