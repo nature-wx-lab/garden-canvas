@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.231';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.232';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.231';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.232';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5020,6 +5020,45 @@ export function paniclePhloxPoint(type,t,u){
  if(type==='paniclePhloxLobe')return [u*.60*Math.pow(sn,.32),t-.065*Math.exp(-u*u*24)*Math.pow(t,8),.045*t*t+.045*u*u*sn];
  const width=.5*Math.pow(sn,.80)*(1-.14*t),curve=t-Math.abs(u)*(.29-.12*Math.abs(u));
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
+}
+
+
+// A single palmately veined blade, not separate compound leaflets.
+export function alchemillaPoint(type,t,u){
+ if(type==='alchemillaSepal'){const sn=Math.max(0,Math.sin(Math.PI*t));return [u*.47*sn**.7,t,.08*sn];}
+ const az=u*Math.PI*.94,lobes=.94+.06*Math.cos(az*10),teeth=1-.023*(.5+.5*Math.cos(az*90)),r=t*lobes*teeth;
+ return [Math.sin(az)*r,Math.cos(az)*r,.065*t*t+.042*Math.cos(az*10)*t-.008*Math.cos(az*20)*t];
+}
+function drawAlchemilla(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength*.5,w*.13,h*.21),n=Math.max(3,Math.min(12,Math.round(11*detail*Math.sqrt(w/.65)*Math.min(1,h/.3)))),R=a.flowerRadius*Math.min(1,h/.25),F=a.flowerLength*Math.min(1,h/.25);
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const leaf=(base,tip,aa,r,i,k)=>{if(noise(i,k)>s.leafDensity)return;b.branch(base,tip,Math.min(.0014,h*.0038),a.stemColor,'petiole-alchemilla');b.add('alchemillaLeaf','leaf-alchemilla',kit.shade(rand,s.leafColor,.035),...tip,r,r,r,1.18+.25*noise(i,k+3),aa,(noise(i,k+7)-.5)*.32);};
+ const cluster=(at,az,i,k)=>{if(!s.bloom)return;const count=12;
+  for(let j=0;j<count;j++){
+   const aa=az+j*2.4,rr=Math.min(.007,w*.020)*Math.sqrt((j+.3)/count),tip=[at[0]+Math.sin(aa)*rr,at[1]+h*.012+R*(1+noise(i,k+j)),at[2]+Math.cos(aa)*rr];b.branch(at,tip,Math.min(.00024,h*.0007),a.stemColor,'pedicel-alchemilla');
+   const f=flowerFrame(b,tip,.3+.8*noise(i,k+j+20),aa);f.add(kit.bud,'hypanthium-alchemilla',s.flowerColor,0,F*.2,0,F*.32,F*.62,F*.32);
+   for(let q=0;q<4;q++){
+    const ang=q*TAU/4;f.add('alchemillaSepal','sepal-alchemilla',s.flowerColor,0,F*.55,0,R,R,R,Math.PI/2-.14,ang,0);f.add('alchemillaSepal','epicalyx-alchemilla',s.flowerColor,0,F*.40,0,R*.85,R*.85,R*.85,Math.PI/2+.12,ang+Math.PI/4,0);
+    const x=Math.sin(ang)*R*.3,z=Math.cos(ang)*R*.3;f.branch([x,F*.55,z],[x,F*.95,z],R*.035,'#dae39a','filament-alchemilla');f.add(kit.bud,'anther-alchemilla','#e1dd88',x,F*.95,z,R*.09,R*.09,R*.07);
+   }
+  }
+ };
+ // Several raised, fan-shaped basal leaves form a dome around the flower stalks.
+ const leaves=Math.max(10,Math.round(60*detail*Math.sqrt(w/.65)));
+ for(let j=0;j<leaves;j++){
+  const aa=j*2.399963,rr=w*.32*Math.sqrt((j+.4)/leaves),r=L*(.72+.28*noise(j,5)),tip=[Math.sin(aa)*rr,h*(.18+.18*(1-rr/(w*.35)))+.012,Math.cos(aa)*rr],base=[tip[0]*.35,.005,tip[2]*.35];leaf(base,tip,aa,r,j,19);
+ }
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.19*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.005,Math.cos(az)*rr],top=[root[0]+Math.sin(az)*w*.08,h*(.66+.17*noise(i,3)),root[2]+Math.cos(az)*w*.08];let prev=root;
+  for(let j=1;j<=5;j++){
+   const q=j/5,at=mix(root,top,q);b.branch(prev,at,Math.min(.0014,h*.004)*(1-q*.55),a.stemColor,'stem-alchemilla');prev=at;
+   if(j<5){const aa=az+j*2.4,tip=[at[0]+Math.sin(aa)*L*.4,at[1]+L*.18,at[2]+Math.cos(aa)*L*.4];leaf(at,tip,aa,L*(.7-.35*q),i,j+61);}
+   if(j>=3)for(let arm=0;arm<3;arm++){
+    const aa=az+j*2.4+arm*TAU/3,len=Math.min(w*.13,h*.20)*( .8+.2*noise(i,j+arm+27)),end=[at[0]+Math.sin(aa)*len,at[1]+h*.075,at[2]+Math.cos(aa)*len];b.branch(at,end,Math.min(.00065,h*.0018),a.stemColor,'branch-alchemilla');
+    for(let q=0;q<3;q++){const a2=aa+(q-1)*.85,tip=[end[0]+Math.sin(a2)*len*.38,end[1]+h*.034, end[2]+Math.cos(a2)*len*.38];b.branch(end,tip,Math.min(.00038,h*.0012),a.stemColor,'cymule-alchemilla');cluster(tip,a2,i,j*80+arm*21+q*6);}
+   }
+  }cluster(top,az,i,400);
+ }
 }
 
 export function raggedRobinPoint(type,t,u){
@@ -10447,6 +10486,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='alchemillaCymes'){drawAlchemilla(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='doubleRaggedRobin'){drawRaggedRobin(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pinnatePolemonium'){drawPolemonium(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='carolinaPhloxHeads'){drawCarolinaPhlox(b,{info,s,detail,rand,month},kit);return;}
