@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Pineapple sages distinguish golden foliage and compact early flowers while preserving uncut branches',()=>{
+ const ids=['p-a14fbb86dd90','p-f5faaa27a891','p-ba1c3c8b7f93'];
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.colors,['red']);assert.deepEqual(info.height,i===2?[.5,.5]:[1.2,1.5]);assert.deepEqual(info.spread,i===2?null:[1.2,2]);let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,21600+i,1,1),height:small?.15:i===2?.5:1.3,spread:small?.22:i===2?.55:1.5,leafHeight:small?.09:.5},g=plantModel(p,view(month)),s=stateAt(p,view(month));assert.equal(g.userData.architecture,'pineappleSageBranches');assert.equal(s.shootScale,1);assert.equal(g.scale.y,1);
+   const leaves=g.children.find(m=>m.userData.component==='leaf-pineapple-'+info.appearance.shootProfile),count=leaves?.count||0;assert.equal(count%2,0);if(count){assert.ok(leaves.geometry.userData.pineappleLeaf);assert.equal(count,g.children.find(m=>m.userData.component==='petiole-pineapple').count);}if(month===1)winter=count;if(month===6)summer=count;
+   assert.equal(g.children.some(m=>m.userData.component==='tube-pineapple'),month>=(i===2?5:8)&&month<=11);if(i===1)assert.equal(s.leafColor,'#c6ce56');assert.ok(!g.children.some(m=>/fruit|seed|stolon/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(stem|branch|axis)-pineapple$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.13);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.7);}dispose(g);
+  }
+  assert.ok(winter<summer*.1);
+ }
+});
 test('Tall blue sages keep narrow paired leaves, distinct seasonal flowers and uncut winter stems',()=>{
  const ids=['p-46c0650cd43d','p-36d8a94c3834','p-f68df2de4c66'];
  for(const [i,id] of ids.entries())for(const small of [false,true]){
