@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.181';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.182';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.181';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.182';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5068,6 +5068,51 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
  }
 }
 
+// A divided silver leaf is one connected three-dimensional organ, not a flat fern outline.
+export function artemisiaLeafGeometry(){
+ const pos=[],uv=[],ix=[];
+ const lobe=(from,to,r)=>{
+  const delta=new THREE.Vector3(...to).sub(new THREE.Vector3(...from)),axis=delta.clone().normalize(),side=new THREE.Vector3(0,0,1).cross(axis).normalize(),normal=axis.clone().cross(side),base=pos.length/3,N=7,C=6;
+  for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+   const t=i/N,ph=j/C*TAU,width=r*Math.pow(Math.sin(Math.PI*t),.48),at=new THREE.Vector3(...from).addScaledVector(delta,t).addScaledVector(side,Math.cos(ph)*width).addScaledVector(normal,Math.sin(ph)*width*.43+.018*t*t);
+   pos.push(...at.toArray());uv.push(j/C,t);if(i<N&&j<C){const k=base+i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+  }
+ };
+ lobe([0,0,0],[0,1,.03],.012);
+ for(let j=0;j<7;j++)for(const sign of [-1,1]){
+  const t=.13+j*.102,reach=.26*Math.sin(Math.PI*(t+.10))*(1+.06*Math.sin(j*2.1)),from=[0,t,.03*t],to=[sign*reach,t+.21,.055+.025*Math.sin(j)];lobe(from,to,.020);
+  if(j<5)for(let k=1;k<=2;k++){
+   const q=k/3,start=from.map((x,d)=>x+(to[d]-x)*q),end=[start[0]+sign*reach*.38,start[1]+.14,start[2]+.018];lobe(start,end,.016);
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
+}
+function drawArtemisiaCushion(b,{info,s,p,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),growth=winter?.22:month===3?.48:month===4?.76:1,L=Math.min(a.leafLength,h*.20,w*.13)*(winter?.8:1),count=Math.max(25,Math.min(115,Math.round(w/.4*90*detail))),noise=(i,j)=>.5+.5*Math.sin(i*12.37+j*5.43+p.id*.7),stem='#b9c2b2';
+ const leaf=(at,az,pitch,len)=>b.add('artemisiaLeaf','leaf-artemisia-silver',kit.shade(rand,s.leafColor,.045),...at,len,len,len,pitch,az,0);
+ for(let i=0;i<count;i++){
+  const az=i*2.399963,rr=w*.42*Math.sqrt((i+.5)/count),crown=[Math.sin(az)*rr*.66,.003,Math.cos(az)*rr*.66],peak=h*(.31+.35*Math.sqrt(1-Math.pow(rr/(w*.46),2)))*growth;let prev=crown;
+  for(let j=1;j<=9;j++){
+   const t=j/9,turn=az+.18*Math.sin(t*3+i),at=[Math.sin(turn)*rr*(.66+.34*t),.003+peak*t,Math.cos(turn)*rr*(.66+.34*t)];
+   b.branch(prev,at,Math.min(.00075,h*.006),stem,'stem-artemisia');prev=at;
+   leaf(at,turn+j*2.399963,1.0+.22*noise(i,j),L*(.83+.17*noise(j,i)));
+   if(j===4||j===6){
+    const side=turn+(j===4?1:-1)*1.1,tip=[at[0]+Math.sin(side)*L*.9,at[1]+L*.8,at[2]+Math.cos(side)*L*.9];b.branch(at,tip,Math.min(.00045,h*.004),stem,'side-artemisia');
+    for(let k=0;k<4;k++)leaf(tip,side+k*2.399963,.65+k*.19,L*(.55+k*.08));
+   }
+  }
+  for(let k=0;k<5;k++)leaf(prev,az+k*2.399963,.4+k*.16,L*(.56+k*.075));
+  if(s.bloom&&i%7===0){
+   const top=[prev[0],h*(.85+.08*noise(i,1)),prev[2]],r=Math.min(a.flowerRadius,h*.015,w*.01);b.branch(prev,top,Math.min(.0006,h*.004),stem,'flowerStem-artemisia');
+   for(let j=0;j<9;j++){
+    const aa=az+j*2.399963,t=j/9,start=prev.map((v,d)=>v+(top[d]-v)*(.30+t*.55)),tip=[start[0]+Math.sin(aa)*L*.50,start[1]+L*.24,start[2]+Math.cos(aa)*L*.50];b.branch(start,tip,r*.12,stem,'pedicel-artemisia');
+    const f=flowerFrame(b,tip,.8+noise(i,j)*.5,aa);f.add(kit.bud,'involucre-artemisia','#a9b69d',0,0,0,r,r*.72,r);
+    for(let k=0;k<13;k++){const pa=k*2.399963,rad=r*.76*Math.sqrt(k/13);f.add(kit.bud,'floret-artemisia','#e8d78d',Math.sin(pa)*rad,r*.58,Math.cos(pa)*rad,r*.18,r*.25,r*.18);}
+   }
+  }
+ }
+}
+
 export function cerastiumPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='cerastiumPetal')return [u*.43*Math.pow(sn,.43),t-.24*Math.exp(-u*u*30)*Math.pow(t,7),.065*u*u*sn+.05*t*t];
@@ -8819,6 +8864,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='artemisiaCushion'){drawArtemisiaCushion(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='cerastiumMat'){drawCerastiumMat(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='bellisRosettes'){drawBellisRosettes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oleariaSmoky'){drawOleariaSmoky(b,{info,s,detail,rand},kit);return;}
