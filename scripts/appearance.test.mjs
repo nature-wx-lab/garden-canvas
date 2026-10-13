@@ -10,6 +10,14 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Angel Wings keeps broad simple felted leaves without inventing local dimensions or flowering',()=>{
+ const id='p-728d2139eeac',info=CATALOG[id];assert.equal(info.height,null);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.leafShape,'broadWavySimple');assert.equal(info.appearance.habit,'mound');let skeleton;
+ for(const size of [1,1/3])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,19700,1,1),height:.3*size,spread:.45*size,leafHeight:.28*size},g=plantModel(p,view(month));assert.equal(g.userData.architecture,'angelWings');assert.equal(g.scale.y,1);assert.ok(g.children.some(m=>m.userData.component==='leaf-angel-wings'));assert.ok(g.children.some(m=>m.userData.component==='petiole-angel-wings'));assert.ok(!g.children.some(m=>/flower|floret|petal|fruit|seed/.test(m.userData.component)));
+  const axes=g.children.filter(m=>m.userData.component==='stem-angel-wings').map(m=>[...m.instanceMatrix.array]);if(month===1)skeleton=axes;else assert.deepEqual(axes,skeleton);
+  for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.05);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.59);}dispose(g);
+ }
+});
 test('Papery Helichrysum cultivars retain silver shoots and clustered scaled heads across seasons',()=>{
  const ids=['p-6452a084218e','p-3270c92a3ceb'];
  for(const [i,id] of ids.entries()){

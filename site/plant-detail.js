@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.186';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.187';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.186';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.187';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5116,6 +5116,29 @@ function drawDichondraMat(b,{info,s,p,detail,rand,month},kit){
  }
 }
 
+export function angelWingGeometry(variant=0){
+ const pos=[],uv=[],ix=[],N=64,C=32;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,ph=j/C*TAU,side=Math.cos(ph),sn=Math.max(0,Math.sin(Math.PI*t)),edge=1+.022*Math.sin(t*31*Math.PI+variant),outline=Math.pow(sn,.47)*(.52+.65*t)*edge;
+  const x=side*.5*outline,z=.055*side*side*sn+.042*Math.sin(t*6*Math.PI+variant+side)*Math.pow(Math.abs(side),4)*sn+.065*t*t+.007*Math.sin(ph)*outline;
+  pos.push(x,t,z);uv.push(j/C,t);if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
+}
+function drawAngelWings(b,{info,s,p,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.70,w*.36),n=Math.max(1,Math.min(5,Math.round(w/.20))),noise=(i,j)=>.5+.5*Math.sin(i*17.5+j*8.3+p.id*.29);
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=n===1?0:w*.06,base=[Math.sin(az)*rr,.004,Math.cos(az)*rr];let prev=base;
+  for(let j=0;j<6;j++){
+   const t=j/5,yaw=az+j*2.399963,at=[base[0]+Math.sin(az)*h*.035*t,.006+h*.27*t,base[2]+Math.cos(az)*h*.035*t];b.branch(prev,at,Math.min(.0045,h*.019),'#d5d9c9','stem-angel-wings');prev=at;
+   const len=L*(1-.33*t)*(.94+.06*noise(i,j)),petiole=Math.min(.108,L*.40,h*.24),tip=[at[0]+Math.sin(yaw)*petiole*(1-.37*t),at[1]+petiole*(.40+.50*t),at[2]+Math.cos(yaw)*petiole*(1-.37*t)];
+   b.branch(at,tip,Math.min(.0055,h*.017),'#dce0d5','petiole-angel-wings');
+   b.add('angelWing'+((i+j)%3),'leaf-angel-wings',kit.shade(rand,s.leafColor,.025),...tip,len*a.leafWidth/a.leafLength,len,len,1.28-.86*t+.10*noise(i,j),yaw,(noise(j,i)-.5)*.16);
+  }
+  for(let j=0;j<2;j++)b.add('angelWing'+j,'leaf-angel-wings-young','#eaebe1',...prev,L*.16,L*.37,L*.27,.14+j*.23,az+j*2.4,0);
+ }
+}
+
 export function helichrysumLeafGeometry(broad=false,rounded=false){
  const pos=[],uv=[],ix=[],N=36,C=20;
  for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
@@ -8971,6 +8994,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='angelWings'){drawAngelWings(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='helichrysumFoliage'){drawHelichrysumFoliage(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='cushionBush'){drawCushionBush(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='artemisiaCushion'){drawArtemisiaCushion(b,{info,s,p,detail,rand,month},kit);return;}
