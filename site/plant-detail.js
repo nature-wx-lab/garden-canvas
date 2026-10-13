@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.191';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.192';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.191';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.192';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5449,6 +5449,10 @@ function drawMahoniaCanes(b,{info,s,detail,rand,month},kit){
 
 export function lavenderPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='lavenderMerlotLeaf'){
+  const angle=(u+1)*Math.PI,lobes=.86+.14*Math.cos(t*Math.PI*26),width=.5*Math.pow(sn,.50)*lobes;
+  return [Math.sin(angle)*width,t,-Math.cos(angle)*.006*Math.pow(sn,.45)+.035*Math.sin(t*5)*sn-.065*t*t];
+ }
  if(type==='lavenderSandLeaf'){
   const angle=(u+1)*Math.PI,body=Math.pow(sn,.43);
   return [Math.sin(angle)*.5*body,t,-Math.cos(angle)*.008*body-.025*t*t+.012*Math.sin(t*7)*sn];
@@ -5463,7 +5467,32 @@ export function lavenderPoint(type,t,u){
  return [u*.5*Math.pow(sn,.49),t,.035*t*t-.070*Math.pow(Math.abs(u),4)*sn];
 }
 
+function drawLavenderMerlot(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.27,w*.20),n=Math.max(4,Math.min(18,Math.round(12*detail*Math.sqrt(w/.6)))),spike=Math.min(a.inflorescenceLength,h*.23);
+ const mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),noise=(i,k)=>.5+.5*Math.sin((i+1)*17.93+k*6.123);
+ const pair=(at,az,len,index)=>{for(const side of [0,1])b.add('lavenderMerlotLeaf','leaf-lavender-merlot',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,.62+.56*noise(index,7),az+side*Math.PI,(noise(index,9)-.5)*.14);};
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*(.06+.20*Math.sqrt((i+.5)/n)),root=[Math.sin(az)*rr*.30,.004,Math.cos(az)*rr*.30],tip=[Math.sin(az)*rr,h*(.51+.13*noise(i,2)),Math.cos(az)*rr],joint=mix(root,tip,.16);b.branch(root,joint,Math.min(.003,h*.01),a.barkColor,'wood-merlot');let old=joint;
+  for(let j=1;j<=11;j++){
+   const at=mix(joint,tip,j/11);b.branch(old,at,Math.min(.0011,h*.003)*(1-j*.045),a.stemColor,'shoot-merlot');old=at;pair(at,az+j*Math.PI/2,L*(.74+.22*noise(i,j+15)),i*15+j);
+   if(![4,8].includes(j))continue;
+   const aa=az+(j===4?-1:1)*1.1,end=[at[0]+Math.sin(aa)*w*.11,at[1]+h*.14,at[2]+Math.cos(aa)*w*.11];let prev=at;
+   for(let q=1;q<=4;q++){const p=mix(at,end,q/4);b.branch(prev,p,.0006,a.stemColor,'side-merlot');prev=p;pair(p,aa+q*Math.PI/2,L*(.69-.18*q/4),i*45+j+q);}
+  }
+  if(i%3!==0)continue;
+  const end=[tip[0]*1.07,h*(.87+.06*noise(i,35))-spike,tip[2]*1.07];b.branch(tip,end,Math.min(.00125,h*.003),s.bloom?a.stemColor:'#8e846e','peduncle-merlot');b.branch(end,[end[0],end[1]+spike,end[2]],.0007,s.bloom?a.stemColor:'#8e846e','axis-merlot');
+  for(let j=0;j<9;j++)for(let k=0;k<6;k++){
+   const az2=k*TAU/6+j*.63,yy=spike*j/8,at=[end[0]+Math.sin(az2)*.004,end[1]+yy,end[2]+Math.cos(az2)*.004],f=flowerFrame(b,at,.75,az2),size=Math.min(.007,h*.024);
+   f.add('lavenderSandCalyx','calyx-merlot',s.bloom?'#7d7996':'#8b806a',0,0,0,size*.7,size,size*.7);
+   if(!s.bloom||j===8||noise(i,j*6+k+60)>.48)continue;
+   const len=Math.min(a.flowerLength,h*.041);f.add('lavenderTube','tube-merlot',s.flowerColor,0,size*.6,0,len*.57,len,len*.57);
+   for(let z=0;z<5;z++){const aa=z*TAU/5,sz=len*(z<2?.20:.26);f.add('lavenderLobe','petal-merlot',kit.shade(rand,s.flowerColor,.035),Math.sin(aa)*len*.19,size*.6+len,Math.cos(aa)*len*.19,sz,sz,sz,Math.PI/2-.2,aa,0);}
+  }
+ }
+}
+
 function drawLavenderMounds(b,{info,s,detail,rand,month},kit){
+ if(info.appearance.shootProfile==='merlot'){drawLavenderMerlot(b,{info,s,detail,rand,month},kit);return;}
  const a=info.appearance,grosso=a.shootProfile==='grosso',sand=a.shootProfile==='silverSand',h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.12,w*.13),spike=Math.min(a.inflorescenceLength,h*.18),winter=[12,1,2].includes(month);
  const mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),shape=(i,k)=>.5+.5*Math.sin((i+1)*14.989+k*7.233),n=Math.max(8,Math.min(68,Math.round((grosso?48:sand?24:42)*detail*Math.pow(w/.6,.55))));
  const pairs=(at,az,len)=>{for(const side of [0,1])b.add(sand?'lavenderSandLeaf':'lavenderLinear',sand?'leaf-lavender-silver-sand':'leaf-lavender',kit.shade(rand,s.leafColor,.045),...at,len*a.leafWidth/a.leafLength,len,len,.62+.27*shape(Math.round(at[1]*1000),2),az+side*Math.PI,0);};
