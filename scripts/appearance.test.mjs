@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Limelight and Blue Moon distinguish golden low foliage from green narrow leaves and dense cylindrical heads',()=>{
+ const ids=['p-7b8cb961a2d8','p-f8f380b8f606'];assert.deepEqual(CATALOG[ids[0]].height,[.15,.25]);assert.deepEqual(CATALOG[ids[0]].spread,[.3,.5]);assert.equal(CATALOG[ids[1]].spread,null);assert.deepEqual(CATALOG[ids[1]].height,[.4,.4]);assert.notEqual(CATALOG[ids[0]].leafColor,CATALOG[ids[1]].leafColor);
+ for(const [i,id]of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,23500+i,1,1),height:small?.10:i?.4:.2,spread:small?.16:i?.35:.4,leafHeight:small?.06:i?.24:.12},g=plantModel(p,view(month));assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);assert.equal(g.userData.architecture,i?'nervosaHeads':'limeCatmintMound');
+   const leaves=g.children.filter(m=>m.userData.component.startsWith(i?'leaf-nervosa':'leaf-lime-catmint')),count=leaves.reduce((n,m)=>n+m.count,0);assert.equal(count===0,!!i&&[12,1,2].includes(month));assert.equal(count%2,0);assert.ok(leaves.every(m=>m.geometry.userData[i?'nervosaLeaf':'catmintLeaf']));assert.equal(count,g.children.filter(m=>m.userData.component.startsWith(i?'petiole-tall-nepeta':'petiole-catmint')).reduce((n,m)=>n+m.count,0));if(month===1)winter=count;if(month===6)summer=count;
+   const flowers=g.children.find(m=>m.userData.component===(i?'tube-tall-nepeta':'tube-catmint'));assert.equal(!!flowers,month>=5&&month<=(i?8:11));assert.ok(!g.children.some(m=>/filament|anther|fruit|seed|stolon|spent/.test(m.userData.component)));assert.equal(g.children.some(m=>m.userData.component==='leaf-lime-catmint-winter'),!i&&[12,1,2].includes(month));if(i&&flowers){const br=g.children.find(m=>m.userData.component==='bract-nervosa');assert.ok(br.geometry.userData.nervosaBract);assert.ok(br.count>flowers.count);}
+   const now=g.children.filter(m=>/^(stem|branch|axis)-(catmint|tall-nepeta)$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.15);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75);}dispose(g);
+  }
+  assert.ok(winter<summer*.15);
+ }
+});
 test('Tall Nepeta nuda and tuberosa distinguish leaf surfaces, branching and retained winter bracts',()=>{
  const ids=['p-d01134b29939','p-99357da7e268'];assert.deepEqual(CATALOG[ids[0]].height,[.8,1.2]);assert.deepEqual(CATALOG[ids[0]].spread,[.3,.6]);assert.deepEqual(CATALOG[ids[1]].height,[.6,.8]);assert.deepEqual(CATALOG[ids[1]].spread,[.4,.6]);assert.equal(CATALOG[ids[0]].appearance.leafTexture,'matte');assert.equal(CATALOG[ids[1]].appearance.leafTexture,'woolly');
  for(const [i,id]of ids.entries())for(const small of [false,true]){
