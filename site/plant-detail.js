@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.157';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.158';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.157';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.158';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4877,7 +4877,7 @@ function drawClover(b,{info,s,detail,rand},kit){
 
 export function brunneraLeafPoint(t,u){
  const width=.62*Math.pow(Math.sin((.23+.77*t)*Math.PI),.58)*(1-.14*t),rib=.0035*Math.cos((t-Math.abs(u)*.24)*46)*Math.sin(Math.abs(u)*Math.PI);
- return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.095*t*t-.018*u*u*Math.sin(Math.PI*t)+rib+.008*Math.sin(t*16+u*7)*u*u];
+ return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
 function drawBrunnera(b,{info,s,detail,rand},kit){
@@ -4891,7 +4891,7 @@ function drawBrunnera(b,{info,s,detail,rand},kit){
    const t=j/(n-1),angle=az+j*2.399963+(rand()-.5)*.18,len=L*(.56+.42*t),reach=len*(.30+.25*t),rise=lh*(.64-.36*t)*Math.sqrt(s.leafScale),tip=[root[0]+Math.sin(angle)*reach,root[1]+rise,root[2]+Math.cos(angle)*reach];
    let from=root;
    for(let q=1;q<=4;q++){const z=q/4,to=[root[0]+(tip[0]-root[0])*z*z,root[1]+rise*(1-Math.pow(1-z,1.6)),root[2]+(tip[2]-root[2])*z*z];b.branch(from,to,.0015*(1-z*.32),stem,'petiole-brunnera');from=to;}
-   b.add('brunneraHeart',kind,kit.shade(rand,s.leafColor,.045),...tip,len*a.leafWidth/a.leafLength,len,len,1.03+t*.84+(rand()-.5)*.14,angle,(rand()-.5)*.14);
+   b.add('brunneraHeart',kind,kit.shade(rand,s.leafColor,.07),...tip,len*a.leafWidth/a.leafLength*(.92+rand()*.16),len,len,1.00+t*.84+(rand()-.5)*.30,angle,(rand()-.5)*.32);
   }
  }
  if(!s.bloom)return;

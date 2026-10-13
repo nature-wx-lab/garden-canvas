@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt } from './model.js?v=0.9.157';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.157';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt } from './model.js?v=0.9.158';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.158';
 
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
 function mat(color){if(!sceneMaterials.has(color))sceneMaterials.set(color,new THREE.MeshStandardMaterial({color,roughness:.92}));return sceneMaterials.get(color);}
@@ -48,8 +48,20 @@ export function createScene(container,onPick){
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.setSize(container.clientWidth,container.clientHeight,false);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
   renderer.domElement.setAttribute('aria-label','風に揺れる庭の3Dキャンバス');container.append(renderer.domElement);
   const controls=new OrbitControls(camera,renderer.domElement);controls.maxPolarAngle=Math.PI/2-.025;controls.minDistance=.12;controls.maxDistance=400;controls.enableDamping=false;
-  const hemisphere=new THREE.HemisphereLight('#e6efff','#77704b',1.7);scene.add(hemisphere);
+  const hemisphere=new THREE.HemisphereLight('#e6efff','#77704b',.95);scene.add(hemisphere);
   const sun=new THREE.DirectionalLight('#fff0d2',2.8);sun.position.set(-7,12,8);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0002;sun.shadow.normalBias=.013;sun.shadow.radius=2.5;sun.shadow.intensity=.72;sun.shadow.camera.near=.5;sun.shadow.camera.far=350;scene.add(sun);
+  const sunDirection=new THREE.Vector3(-7,12,8).normalize();scene.add(sun.target);
+  let tallest=1;
+  function fitShadow(){
+    if(!plan)return;
+    const distance=camera.position.distanceTo(controls.target),span=Math.max(2.5,Math.min(Math.max(plan.width,plan.depth,tallest)*1.8+8,distance*1.7)),reach=Math.max(32,tallest*2.5);
+    sun.target.position.copy(controls.target);sun.position.copy(controls.target).addScaledVector(sunDirection,reach);
+    Object.assign(sun.shadow.camera,{left:-span/2,right:span/2,top:span/2,bottom:-span/2,near:.5,far:reach*2+tallest});
+    // Bias is a small world-space offset, not several centimetres at close range.
+    sun.shadow.bias=-.00025/(sun.shadow.camera.far-sun.shadow.camera.near);
+    sun.shadow.normalBias=Math.max(.0003,span/sun.shadow.mapSize.x*.24);
+    sun.shadow.camera.updateProjectionMatrix();container.dataset.shadowSpan=span.toFixed(3);
+  }
   const sky=new THREE.Mesh(new THREE.SphereGeometry(500,20,12),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color('#adc5d0')},bottom:{value:new THREE.Color('#e3e0ce')}},vertexShader:'varying vec3 skyDirection; void main(){skyDirection=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:'varying vec3 skyDirection;uniform vec3 top;uniform vec3 bottom;void main(){float t=smoothstep(-0.05,0.65,normalize(skyDirection).y);gl_FragColor=vec4(mix(bottom,top,t),1.0);#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}'}));
   // Shader directives need their own lines.
   sky.material.fragmentShader=sky.material.fragmentShader.replace(';#include',';\n#include');scene.add(sky);
@@ -71,7 +83,7 @@ export function createScene(container,onPick){
   const visibilityObserver=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;dirty=true;lastTick=0;},{threshold:0});visibilityObserver.observe(container);
   document.addEventListener('visibilitychange',()=>{lastTick=0;dirty=true;});
   reduced.addEventListener('change',e=>{if(e.matches){setWind(0);container.dispatchEvent(new CustomEvent('wind-reduced'));}});
-  controls.addEventListener('change',()=>{camera.position.y=Math.max(.1,camera.position.y);dirty=true;});
+  controls.addEventListener('change',()=>{camera.position.y=Math.max(.1,camera.position.y);fitShadow();dirty=true;});
   function dispose(group){if(!group)return;group.traverse(o=>{if(o.geometry&&!sharedGeometry.has(o.geometry))o.geometry.dispose();if(o.isInstancedMesh)o.dispose();if(o.material&&!sharedMaterials.has(o.material)&&!Array.from(sceneMaterials.values()).includes(o.material))o.material.dispose();});scene.remove(group);}
   function line(points,color,group=root,opacity=1){const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color,transparent:opacity<1,opacity}));group.add(l);return l;}
   function pondClip(base,mode='ground',owner=-1){
@@ -122,11 +134,11 @@ export function createScene(container,onPick){
       const contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.rotation.x=-Math.PI/2;contact.position.set(g.position.x,.012,g.position.z);contact.scale.set(s.spread*.95,s.spread*.95,1);if(zoneAt(plan,p.x,p.z)?.kind!=='water')root.add(contact);
       if(view.footprints)circle(p.x,p.z,s.spread/2,'#9bb9b1');if(p.id===id){circle(p.x,p.z,s.spread/2+.06,'#d2b05f',.018);if(p.management){circle(p.x,p.z,p.management.spread/2,'#7bacad',p.management.height);for(const a of [0,Math.PI]){const x=p.x-plan.width/2+Math.cos(a)*p.management.spread/2,z=p.z-plan.depth/2;line([new THREE.Vector3(x,.04,z),new THREE.Vector3(x,p.management.height,z)],'#7bacad');}}}
     }
-    const size=Math.max(plan.width,plan.depth)+8;Object.assign(sun.shadow.camera,{left:-size/2,right:size/2,top:size/2,bottom:-size/2});sun.shadow.camera.updateProjectionMatrix();
+    tallest=Math.max(1,...plan.plants.map(p=>stateAt(p,view).height),...plan.obstacles.map(o=>o.height));fitShadow();
     container.dataset.plantCount=String(plants.children.length);dirty=true;
   }
   function setWind(value){windLevel=[0,1,1.7].includes(Number(value))?Number(value):0;wind.strength.value=windLevel;container.dataset.wind=String(windLevel);lastTick=0;dirty=true;}
-  function setLight(value){const evening=value==='evening';sun.position.set(...(evening?[-11,6,5]:[-7,12,8]));sun.color.set(evening?'#ffd7a0':'#fff0d2');sun.intensity=evening?2.3:2.8;hemisphere.intensity=evening?1.3:1.7;sky.material.uniforms.top.value.set(evening?'#bac3ce':'#adc5d0');sky.material.uniforms.bottom.value.set(evening?'#e7cdb0':'#e3e0ce');dirty=true;}
+  function setLight(value){const evening=value==='evening';sunDirection.set(...(evening?[-11,6,5]:[-7,12,8])).normalize();sun.color.set(evening?'#ffd7a0':'#fff0d2');sun.intensity=evening?2.3:2.8;hemisphere.intensity=evening?.72:.95;sky.material.uniforms.top.value.set(evening?'#bac3ce':'#adc5d0');sky.material.uniforms.bottom.value.set(evening?'#e7cdb0':'#e3e0ce');fitShadow();dirty=true;}
   function setView(type){
     if(!plan)return;
     if(type==='focus'&&selection){const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view);controls.target.set(p.x-plan.width/2,plantBaseAt(plan,p)+Math.min(s.height,pondDepthAt(plan,p.x,p.z)||s.height)*.52,p.z-plan.depth/2);const d=Math.max(.16,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);camera.position.copy(controls.target).add(new THREE.Vector3(d,d*.48,d));}
@@ -143,7 +155,7 @@ export function createScene(container,onPick){
     }
     camera.position.y=Math.max(.1,camera.position.y);camera.lookAt(controls.target);controls.update();dirty=true;
   }
-  new ResizeObserver(()=>{const aspect=container.clientWidth/container.clientHeight,ratio=Math.max(1,1.6/aspect)/Math.max(1,1.6/camera.aspect);camera.position.sub(controls.target).multiplyScalar(ratio).add(controls.target);renderer.setSize(container.clientWidth,container.clientHeight,false);camera.aspect=aspect;camera.updateProjectionMatrix();dirty=true;}).observe(container);
+  new ResizeObserver(()=>{const aspect=container.clientWidth/container.clientHeight,ratio=Math.max(1,1.6/aspect)/Math.max(1,1.6/camera.aspect);camera.position.sub(controls.target).multiplyScalar(ratio).add(controls.target);renderer.setSize(container.clientWidth,container.clientHeight,false);camera.aspect=aspect;camera.updateProjectionMatrix();fitShadow();dirty=true;}).observe(container);
   const ray=new THREE.Raycaster(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0),pointers=new Set();let start=null;
   renderer.domElement.addEventListener('pointerdown',e=>{pointers.add(e.pointerId);start=pointers.size===1?{id:e.pointerId,x:e.clientX,y:e.clientY}:null;});renderer.domElement.addEventListener('pointermove',e=>{if(start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)>=5)start=null;});renderer.domElement.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);start=null;});renderer.domElement.addEventListener('pointerup',e=>{pointers.delete(e.pointerId);if(start&&e.pointerId===start.id&&plan){const rect=renderer.domElement.getBoundingClientRect();ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);const point=ray.ray.intersectPlane(plane,new THREE.Vector3());let id=null;const hits=ray.intersectObjects(plants.children,true);if(hits.length){let obj=hits[0].object;while(obj&&!obj.userData.plantId)obj=obj.parent;id=obj?.userData.plantId??null;}if(point)onPick({x:Math.round((point.x+plan.width/2)*10)/10,z:Math.round((point.z+plan.depth/2)*10)/10,id});}start=null;});
   container.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();camera.position.sub(controls.target).applyAxisAngle(up,e.key==='ArrowLeft'?.12:-.12).add(controls.target);controls.update();dirty=true;}});
