@@ -10,6 +10,16 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Little Smokie retains silver shoots across seasons without substituting wild plant dimensions',()=>{
+ const id='p-2eda11ec18e0',info=CATALOG[id],a=info.appearance,p={...makePlant(id,18500,1,1),height:.35,spread:.4,leafHeight:.35};let axes;
+ assert.equal(a.status,'partial');assert.equal(a.arrangement,'alternate');assert.equal(info.spread,null);assert.deepEqual(info.height,[.25,.4]);assert.deepEqual(info.colors,['yellow']);assert.equal(a.flowerTiming,'season-reference');assert.ok(a.unconfirmed.some(s=>s.includes('不一致')));
+ for(let month=1;month<=12;month++){
+  const g=plantModel(p,view(month)),leaves=g.children.find(m=>m.userData.component==='leaf-olearia-smoky');assert.equal(g.userData.architecture,'oleariaSmoky');assert.ok(leaves.count>100);assert.equal(g.scale.y,1);assert.equal(g.children.some(m=>m.userData.component==='floret-olearia'),info.bloom.includes(month));assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+  const now=g.children.filter(m=>!/floret|involucre/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(axes)assert.deepEqual(now,axes);else axes=now;
+  for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<=p.spread*.61);}dispose(g);
+ }
+ for(const [height,spread] of [[.13,.18],[.4,.6]]){const g=plantModel({...p,height,spread,leafHeight:height},view(6));for(const m of g.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<height*1.12);assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}dispose(g);}
+});
 test('Mahonia keeps pinnate evergreen foliage, cultivar widths and domestic winter flowering',()=>{
  for(const [i,id] of ['p-061e42d790ae','p-673a8cfcde67','p-ce33a9d0e054'].entries()){
   const info=CATALOG[id],a=info.appearance,p={...makePlant(id,18400+i,1,1),height:i===1?1.4:.9,spread:i===1?1:.6,leafHeight:i===1?1.4:.9};let axes;

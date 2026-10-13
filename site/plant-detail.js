@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.175';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.176';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.175';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.176';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5005,6 +5005,38 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
  }
 }
 
+export function oleariaPoint(t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),outline=.5*Math.pow(sn,.52)*(.38+.80*t);
+ return [u*outline,t,.065*u*u*sn-.032*t*t-.023*Math.pow(Math.abs(u),6)*sn];
+}
+
+function drawOleariaSmoky(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.13,w*.12),n=Math.max(5,Math.min(29,Math.round(18*detail*Math.pow(w/.35,.4))));
+ const mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),noise=(i,k)=>.5+.5*Math.sin((i+1)*14.989+k*7.233),stem='#c0c8bc';
+ const leaf=(at,az,len,pitch=1.1)=>b.add('oleariaLeaf','leaf-olearia-smoky',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,pitch,az,(noise(Math.round(at[1]*10000),5)-.5)*.25);
+ const head=(at,az)=>{
+  const r=Math.min(.0025,h*.014,w*.02),f=flowerFrame(b,at,.8,az);f.add(kit.bud,'involucre-olearia','#bcc3a7',0,0,0,r,r*1.2,r);
+  for(let j=0;j<6;j++){const aa=j*TAU/6;f.add(kit.bud,'floret-olearia',s.flowerColor,Math.sin(aa)*r*.53,r*.95,Math.cos(aa)*r*.53,r*.30,r*.55,r*.30);}
+ };
+ const shoot=(base,tip,az,index,nodes,sideShoot)=>{
+  let prev=base;
+  for(let j=1;j<=nodes;j++){
+   const t=j/nodes,at=mix(base,tip,t);at[0]+=Math.sin(az+1.2)*L*.6*Math.sin(Math.PI*t);at[2]+=Math.cos(az+1.2)*L*.6*Math.sin(Math.PI*t);
+   b.branch(prev,at,Math.min(sideShoot?.00085:.0014,h*.009)*(1-t*.46),stem,sideShoot?'twig-olearia':'shoot-olearia');prev=at;
+   leaf(at,az+j*2.399963,L*(t>.84?.55:.82+.18*noise(index,j)),.75+.53*noise(index,j+20));
+   if(j>3&&j%2===0){const sa=az+j*2.399963,end=[at[0]+Math.sin(sa)*L*.65,at[1]+L*.55,at[2]+Math.cos(sa)*L*.65];b.branch(at,end,.00034,stem,'shortshoot-olearia');for(let k=0;k<3;k++)leaf(mix(at,end,(k+1)/3),sa+k*2.39,L*(.78-k*.14),.85+k*.10);}
+   if(s.bloom&&index%4===0&&j===nodes-3)head(at,az+j*2.399963);
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,ratio=(i+.5)/n,rr=w*(.08+.29*Math.sqrt(ratio)),root=[Math.sin(az)*rr*.07,.004,Math.cos(az)*rr*.07],tip=[Math.sin(az)*rr,h*(.45+.45*(1-ratio)+.06*noise(i,1)),Math.cos(az)*rr],joint=mix(root,tip,.14);
+  b.branch(root,joint,Math.min(.003,h*.015),'#a49f8d','wood-olearia');shoot(joint,tip,az,i,18,false);
+  for(const [j,side] of [[.28,-1],[.48,1],[.65,-1]]){
+   const base=mix(joint,tip,j),aa=az+side*(.55+.35*noise(i,4)),end=[base[0]+Math.sin(aa)*w*.15,base[1]+h*(.20+.10*noise(i,8)),base[2]+Math.cos(aa)*w*.15];shoot(base,end,aa,i+30+(side+1),10,true);
+  }
+ }
+}
+
 export function mahoniaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='mahoniaPetal')return [u*.48*Math.pow(sn,.48),t-.035*Math.exp(-u*u*40)*Math.pow(t,12),.18*u*u*sn+.10*t*t];
@@ -8641,6 +8673,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='oleariaSmoky'){drawOleariaSmoky(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='mahoniaCanes'){drawMahoniaCanes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lavenderMounds'){drawLavenderMounds(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='chocolateCosmos'){drawChocolateCosmos(b,{info,s,detail,rand,month},kit);return;}
