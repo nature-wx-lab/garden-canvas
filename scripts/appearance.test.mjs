@@ -10,6 +10,32 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Bergenia retains uncut flowering stems after petals fall and keeps thick curved leaves within the planted dimensions',()=>{
+ const ids=['p-8df7e24225e1','p-8b63abc96633','p-f9b0afaaa4ca','p-5710cb13f030'];
+ for(const [i,id] of ids.entries()){
+  const p={...makePlant(id,17600+i,1,1),height:i===3?.6:.4,spread:i===3?.7:.4,leafHeight:i===3?.45:.25},info=CATALOG[id];let stems;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);
+   assert.ok(count('scape-bergenia')>0);assert.ok(count('panicle-bergenia')>0);assert.ok(count('pedicel-bergenia')>0);
+   assert.equal(count('petal-bergenia')>0,info.bloom.includes(month));
+   assert.equal(count('anther-bergenia')>0,info.bloom.includes(month));assert.equal(count('ovary-bergenia')>0,info.bloom.includes(month));
+   assert.equal(p.management,null);assert.ok(!g.children.some(m=>/^(fruit|seed|capsule)-bergenia/.test(m.userData.component)));
+   const skeleton=g.children.filter(m=>['scape-bergenia','panicle-bergenia','pedicel-bergenia'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);
+   if(stems)assert.deepEqual(skeleton,stems,id+': flower calendar must not change stem attachment');else stems=skeleton;
+   if(!info.bloom.includes(month))assert.match(seasonAt(info,month).phase,/残存期間.*未確認/);
+   for(const m of g.children){
+    for(const array of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...array].every(Number.isFinite),id+':'+month);
+    m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.025,id+': leaf below soil');assert.ok(m.boundingBox.max.y<=p.height*1.15,id+': too tall');
+    assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<=p.spread*.65,id+': too wide');
+   }
+   const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-bergenia'));leaf.geometry.computeBoundingBox();
+   assert.ok(leaf.geometry.boundingBox.max.z-leaf.geometry.boundingBox.min.z>.08,'leaf has actual relief rather than a flat texture');
+   assert.ok(leaf.geometry.attributes.normal.array.some(n=>n<-.8),'closed leaf includes reverse-facing normals');dispose(g);
+  }
+ }
+ const small={...makePlant(ids[0],17650,1,1),height:.12,spread:.15,leafHeight:.08};
+ for(const month of [4,7]){const g=plantModel(small,view(month));assert.ok(g.children.length>0);for(const m of g.children)assert.ok([...m.instanceMatrix.array].every(Number.isFinite));dispose(g);}
+});
 test('Vinca species distinguish plain Jenny and minor leaves and keep late-winter flowers independent of leaf thinning',()=>{
  const ids=['p-1d614a325b28','p-fced6a67f784'];
  for(const [i,id] of ids.entries()){

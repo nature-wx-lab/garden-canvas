@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.165';
+import {treeProfile} from './tree-profiles.js?v=0.9.166';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -117,6 +117,9 @@ export function seasonAt(info,month){
  if(a.emergenceMonths?.includes(month)&&!a.dormantMonths?.includes(month)){density=.3;scale=.45;phase='資料の芽出し期';}
  if(a.monthlyLeafDensity?.[m]!==undefined)density=a.monthlyLeafDensity[m];
  if(a.architecture==='brunneraSprays'){scale=[0,0,.42,.62,.85,1,1,1,1,1,.85,0][m];phase=density===0?'冬の地上部なし（境界月は表示目安）':month<6?'小さな春葉と花茎（葉の大きさは参考補間）':'花後に広がる大きな葉（葉量は参考）';}
+ if(a.architecture==='bergeniaRhizomes'){
+  phase=bloom?'根茎から出る厚い葉と春の花（色と葉量は参考）':'葉と切り取らず残した花茎の参考表示（茎の残存期間・結実は未確認）';
+ }
  if(a.architecture==='vincaRunners'){
   scale=1;
   phase=[12,1,2].includes(month)?'冬の匍匐茎と残葉の参考表示（地域差・茎の残存・月別葉量は未確認）':'匍匐茎と対生葉・短い立ち上がり（花期以外の葉量と茎の残存は参考）';

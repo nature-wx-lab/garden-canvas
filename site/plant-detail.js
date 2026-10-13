@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.165';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.166';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.165';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.166';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4681,6 +4681,18 @@ function drawDelphinium(b,{info,s,p,detail,rand},kit){
 
 export function saxifrageLeafPoint(type,t,angle){
  const sax=type==='saxifrageCordate',round=type==='bergeniaRound';
+ if(!sax){
+  // Bergenia has a rounded blade with a central rib and lateral corrugation;
+  // the radiating folds of Saxifraga make its thicker leaves look like fans.
+  const edge=(round?.58:.54)+(round?.42:.46)*Math.cos(angle);
+  const notch=1-(round?.84:.64)*Math.exp(-Math.pow((Math.abs(angle)-Math.PI)/.20,2));
+  const scallop=1-.010*Math.pow(Math.max(0,Math.cos(angle*26)),4);
+  const x=Math.sin(angle)*edge*t*(round?1.17:.94)*notch*scallop,y=Math.cos(angle)*edge*t*notch*scallop;
+  const side=Math.abs(x),rib=Math.exp(-Math.pow(x/.050,2))*Math.sin(Math.PI*Math.max(0,y));
+  const corrugation=Math.sin((y-side*.62)*32)*Math.sin(Math.PI*Math.min(1,side/.62));
+  const z=.045*y-.14*y*y+.19*x*x+.022*rib+(round?.018:.010)*corrugation*t+.005*Math.sin(angle*9)*t*t;
+  return [x,y,z];
+ }
  const notch=1-.92*Math.exp(-Math.pow((Math.abs(angle)-Math.PI)/(sax?.19:round?.22:.10),2));
  const scallop=1-(sax?.085:.024)*Math.pow(Math.max(0,Math.cos(angle*(sax?9:26))),4);
  const edge=(.58+.42*Math.cos(angle))*notch*scallop;
@@ -4714,7 +4726,10 @@ function drawSaxifragaceae(b,{info,s,detail,rand},kit){
   const count=Math.max(4,Math.round((sax?7:8)*detail));
   for(let j=0;j<count;j++)if(j===0||rand()<s.leafDensity)leaf(at,j*2.399963+az,L*(.53+.47*j/count)*(sax&&i>3?.72:1),j/count);
  }
- if(!s.bloom&&!s.flowerBuds)return;
+ if(sax&&!s.bloom&&!s.flowerBuds)return;
+ // Faded stems need deadheading; the flower calendar is not a pruning action.
+ // Retention and colour here are a reference, not a measured persistence date.
+ const spent=!sax&&!s.bloom&&!s.flowerBuds,scapeColor=spent?'#84694f':stem;
  const heads=Math.max(2,Math.round((sax?5:typ==='snow'?7:5)*detail)),r=a.flowerRadius;
  const flower=(pt,pitch,yaw,young=false)=>{
   const f=flowerFrame(b,pt,pitch,yaw),calyx=sax?'#8a6571':typ==='snow'?'#8ba76e':'#9b5066';
@@ -4739,15 +4754,16 @@ function drawSaxifragaceae(b,{info,s,detail,rand},kit){
   for(const sign of [-1,1])f.branch([sign*r*.055,r*.07,0],[sign*r*.12,r*(sax?.31:.37),0],r*.014,'#b8b48b',sax?'style-saxifrage':'style-bergenia');
  };
  for(let i=0;i<heads;i++){
-  const root=crowns[i%crowns.length],az=i*2.399963,top=[root[0]+Math.sin(az)*w*.04,h*(.77+rand()*.18),root[2]+Math.cos(az)*w*.04];
-  b.branch(root,top,sax?.0010:.0035,stem,sax?'scape-saxifrage':'scape-bergenia');
+  const root=crowns[i%crowns.length],az=i*2.399963,top=[root[0]+Math.sin(az)*w*.04,h*(.77+(sax?rand():.5+.5*Math.sin((i+1)*21.77))*.18),root[2]+Math.cos(az)*w*.04];
+  b.branch(root,top,sax?.0010:.0035,scapeColor,sax?'scape-saxifrage':'scape-bergenia');
   const branches=sax?7:6;
   for(let j=0;j<branches;j++){
    const t=(j+.4)/branches,an=az+j*2.399963,reach=(sax?Math.min(.11,w*.25):Math.min(.08,w*.21))*(1-t*.65),base=[top[0],top[1]*(sax?.55+t*.40:.77+t*.18),top[2]],end=[base[0]+Math.sin(an)*reach,base[1]+h*.07,base[2]+Math.cos(an)*reach];
-   b.branch(base,end,sax?.00045:.0014,stem,sax?'panicle-saxifrage':'panicle-bergenia');
+   b.branch(base,end,sax?.00045:.0014,scapeColor,sax?'panicle-saxifrage':'panicle-bergenia');
    for(let k=0;k<(sax?3:5);k++){
     const aa=an+k*2.4,rr=r*(sax?1.3:1.9),pt=[end[0]+Math.sin(aa)*rr,end[1]+(k/5-.3)*rr,end[2]+Math.cos(aa)*rr];
-    b.branch(end,pt,sax?.00028:.0007,stem,sax?'pedicel-saxifrage':'pedicel-bergenia');flower(pt,sax?Math.PI/2+.15:.3+rand()*1.15,aa,s.flowerBuds||rand()>s.flowerDensity);
+    b.branch(end,pt,sax?.00028:.0007,scapeColor,sax?'pedicel-saxifrage':'pedicel-bergenia');
+    if(!spent)flower(pt,sax?Math.PI/2+.15:.3+rand()*1.15,aa,s.flowerBuds||rand()>s.flowerDensity);
    }
   }
  }
