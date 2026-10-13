@@ -10,6 +10,18 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Lambs ears retain thick paired leaves and uncut flower axes through autumn and winter',()=>{
+ for(const [i,id] of ['p-97f66d2db7b8','p-136a4145bb60'].entries()){
+  const info=CATALOG[id],p={...makePlant(id,19100+i,1,1),height:i?.65:.4,spread:.42,leafHeight:.13};let summer,winter;assert.equal(info.appearance.status,'partial');
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component===k),dry=month>Math.max(...info.bloom)||[1,2,12].includes(month),leaf=g.children.find(m=>m.userData.component==='leaf-betony-lamb-wool');assert.equal(g.userData.architecture,'betonyGermander');assert.equal(g.scale.y,1);assert.ok(g.children.filter(m=>m.userData.component==='leaf-betony-lamb-wool').reduce((n,m)=>n+m.count,0)>20);assert.equal(has('dryStem-lamb'),dry);assert.equal(has('petal-betony-bilabiate'),info.bloom.includes(month));assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+   const axes=g.children.find(m=>m.userData.component===(dry?'dryStem-lamb':'stem-betony-square'));if(month===6)summer=[...axes.instanceMatrix.array];if(month===12)winter=[...axes.instanceMatrix.array];
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>-.015);assert.ok(m.boundingBox.max.y<p.height*1.10);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.56);}dispose(g);
+  }
+  assert.deepEqual(summer,winter);
+ }
+ const g=plantModel({...makePlant('p-97f66d2db7b8',19102,1,1),height:.12,spread:.18,leafHeight:.055},view(6));for(const m of g.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.132);assert.ok(m.boundingBox.min.y>-.015);}dispose(g);
+});
 test('Santolina mounds keep connected low foliage and scale flower stalks with small garden plants',()=>{
  for(const [i,id] of ['p-50d888e87b01','p-5d2ca2f030c8','p-bc238e853e2c'].entries()){
   const info=CATALOG[id],p={...makePlant(id,19000+i,1,1),height:i===2?.6:.4,spread:i===2?.65:.5,leafHeight:i===2?.45:.30};let skeleton;
