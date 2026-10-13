@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.182';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.183';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.182';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.183';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5087,6 +5087,34 @@ export function artemisiaLeafGeometry(){
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
 }
+function drawCushionBush(b,{info,s,p,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,compact=a.shootProfile==='windzy',n=Math.max(10,Math.min(64,Math.round((compact?55:40)*detail*Math.sqrt(w/.32)))),noise=(i,j)=>.5+.5*Math.sin(i*16.71+j*7.3+p.id*.43),L=Math.min(a.leafLength,h*.034,w*.025),stem=a.stemColor;
+ const leaves=(at,az,tilt,key)=>{
+  const frame=flowerFrame(b,at,tilt,az);
+  // The small leaves sit close to the silvery shoot; these are not large free blades.
+  for(let k=0;k<3;k++){const aa=k*2.399963+key,atY=(k-1)*L*.5;frame.add(kit.bud,'leaf-cushion-scale',kit.shade(rand,s.leafColor,.025),Math.sin(aa)*L*.16,atY,Math.cos(aa)*L*.16,L*.115,L*.50,L*.07,.15,aa,Math.sin(aa)*.16);}
+ };
+ const axis=(from,to,steps,r,key,kind,onNode)=>{
+  let prev=from;const dx=to[0]-from[0],dz=to[2]-from[2],az=Math.atan2(dx,dz),tilt=Math.atan2(Math.hypot(dx,dz),to[1]-from[1]);
+  for(let j=1;j<=steps;j++){
+   const t=j/steps,wiggle=Math.sin(j*2.4+key)*Math.sin(t*Math.PI)*L*.50,at=from.map((v,d)=>v+(to[d]-v)*t+(d===0?Math.cos(az)*wiggle:d===2?-Math.sin(az)*wiggle:0));
+   b.branch(prev,at,r*(1-.35*t),kit.shade(rand,stem,.018),kind);leaves(at,az,tilt,key+j);if(onNode)onNode(at,j,az);prev=at;
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,reach=w*(.13+.23*Math.sqrt((i+.5)/n)),height=h*(.60+.30*noise(i,0))*(1-.18*reach/(w*.4)),root=[Math.sin(az)*w*.17,.004,Math.cos(az)*w*.17],top=[Math.sin(az)*reach,height,Math.cos(az)*reach];
+  axis(root,top,9,Math.min(.00125,h*.0065),i,'wood-cushion-silver',(at,j,dir)=>{
+   if(j<1||j>7)return;
+   const side=dir+(j%2?1:-1)*(.78+.46*noise(i,j)),extent=w*(.11+.04*noise(j,i))*(1-j*.06),tip=[at[0]+Math.sin(side)*extent,at[1]+h*(.09+.12*noise(i,j+20)),at[2]+Math.cos(side)*extent];
+   axis(at,tip,5,Math.min(.00085,h*.0045),i*10+j,'twig-cushion-silver',(q,k,dir2)=>{
+    if(k!==2&&k!==4)return;
+    const aa=dir2+(k===2?1:-1)*.92,end=[q[0]+Math.sin(aa)*w*.04,q[1]+h*(.07+.025*noise(i,j+k)),q[2]+Math.cos(aa)*w*.04];
+    axis(q,end,3,Math.min(.00048,h*.0028),i*100+j*10+k,'tip-cushion-silver');
+   });
+  });
+ }
+}
+
 function drawArtemisiaCushion(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),growth=winter?.22:month===3?.48:month===4?.76:1,L=Math.min(a.leafLength,h*.20,w*.13)*(winter?.8:1),count=Math.max(25,Math.min(115,Math.round(w/.4*90*detail))),noise=(i,j)=>.5+.5*Math.sin(i*12.37+j*5.43+p.id*.7),stem='#b9c2b2';
  const leaf=(at,az,pitch,len)=>b.add('artemisiaLeaf','leaf-artemisia-silver',kit.shade(rand,s.leafColor,.045),...at,len,len,len,pitch,az,0);
@@ -8864,6 +8892,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='cushionBush'){drawCushionBush(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='artemisiaCushion'){drawArtemisiaCushion(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='cerastiumMat'){drawCerastiumMat(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='bellisRosettes'){drawBellisRosettes(b,{info,s,detail,rand,month},kit);return;}

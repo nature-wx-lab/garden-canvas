@@ -10,6 +10,19 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Cushion bushes preserve silvery twig structure and unknown local flowering across all months',()=>{
+ const ids=['p-16b38d744af4','p-ea648c0c7c11'],counts=[];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],p={...makePlant(id,19300+i,1,1),height:.25,spread:.35,leafHeight:.25};assert.equal(info.appearance.status,'partial');assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);let skeleton;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),leaf=g.children.find(m=>m.userData.component==='leaf-cushion-scale');assert.equal(g.userData.architecture,'cushionBush');assert.equal(g.scale.y,1);assert.ok(leaf.count>500);assert.ok(!g.children.some(m=>/petal|flower|floret|fruit|seed/.test(m.userData.component)));
+   const axes=g.children.filter(m=>/^(wood|twig|tip)-cushion/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+   if(month===6)counts.push(g.children.find(m=>m.userData.component==='twig-cushion-silver').count);
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.56);}dispose(g);
+  }
+ }
+ assert.ok(counts[1]>counts[0]);const small=plantModel({...makePlant(ids[1],19302,1,1),height:.1,spread:.15,leafHeight:.1},view(1));for(const m of small.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.112);assert.ok(m.boundingBox.min.y>=-.015);}dispose(small);
+});
 test('Artemisia uses divided silver foliage and low winter rosettes without foreign cultivar assumptions',()=>{
  const id='p-c8bf8e134dc6',info=CATALOG[id],p={...makePlant(id,19200,1,1),height:.2,spread:.4,leafHeight:.14};let summer,winter;
  assert.equal(info.latin,'Artemisia schmidtiana');assert.equal(info.spread,null);assert.equal(info.visual,'reference');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.bloom,[7,8]);
