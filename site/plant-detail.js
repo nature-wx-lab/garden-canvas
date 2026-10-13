@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.225';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.226';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.225';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.226';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5604,6 +5604,10 @@ function drawPajamas(b,{info,s,detail,rand,month},kit){
 
 export function catmintPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='dreamsLeaf')return [u*.57*sn**.70*(1-.20*t)*(1+.065*(Math.abs((t*13%1)*2-1)*2-1)),t,.035*u*u*sn-.06*t*t];
+ if(type==='dreamsLip')return [u*(.04+.34*sn**.55)*(1+.13*Math.cos(u*Math.PI*3)),-.03-.21*t,.65+.37*t-.035*t*t+.022*Math.cos(u*Math.PI*5)*t**4];
+ if(type==='dreamsHood')return [u*(.03+.21*sn),.08+.10*sn,.67+.27*t-.055*Math.exp(-u*u*70)*t**4];
+ if(type==='dreamsTube'){const az=(u+1)*Math.PI,r=.065+.085*t;return [Math.cos(az)*r,Math.sin(az)*r+.04*t*t,.76*t];}
  if(type==='nudaLeaf'||type==='tuberosaLeaf'||type==='nervosaLeaf')return [u*.53*sn**.82*(1-.24*t)*(1+.042*Math.cos(t*TAU*12)),t,.035*u*u*sn-.065*t*t];
  if(type==='tuberosaBract'||type==='nervosaBract')return [u*.31*sn**.7,.025+.13*sn+.06*u*u*sn,.12+.75*t];
  if(type==='giantCatmintLeaf')return [u*.54*sn**.75*(1-.18*t)*(1+.07*(Math.abs((t*11%1)*2-1)*2-1)),t,.04*u*u*sn-.075*t*t+.006*Math.cos(t*48-Math.abs(u)*13)*sn*Math.abs(u)];
@@ -5618,7 +5622,7 @@ export function catmintPoint(type,t,u){
 }
 
 function drawCatmint(b,{info,s,detail,rand,month},kit){
- const a=info.appearance,h=s.height,w=s.spread,junior=a.shootProfile==='junior',giant=a.shootProfile==='sixHills',pink=a.shootProfile==='pinkCandy',dusk=a.shootProfile==='dusk',blue=a.shootProfile==='blue',white=a.shootProfile==='white',lime=a.shootProfile==='limelight',cold=!blue&&[12,1,2].includes(month),L=Math.min(a.leafLength,h*.25,w*.16),headScale=blue||white||lime?Math.min(1,h/(lime?.19:.22)):Math.min(1,h*(giant?.26:.34)/a.inflorescenceLength),F=a.flowerLength*headScale,n=Math.max(3,Math.min(28,Math.round((dusk?15:pink?20:giant?18:junior?22:24)*detail*Math.sqrt(w/(junior?.4:.65))*Math.min(1,h/(giant?.65:junior?.22:pink?.28:.36))))),stem=cold?a.winterStemColor:a.stemColor;
+ const a=info.appearance,h=s.height,w=s.spread,junior=a.shootProfile==='junior',giant=a.shootProfile==='sixHills',pink=a.shootProfile==='pinkCandy',dusk=a.shootProfile==='dusk',blue=a.shootProfile==='blue',white=a.shootProfile==='white',lime=a.shootProfile==='limelight',faassenii=a.shootProfile==='faassenii',cold=!blue&&!faassenii&&[12,1,2].includes(month),L=Math.min(a.leafLength,h*.25,w*.16),headScale=blue||white||lime||faassenii?Math.min(1,h/(lime?.19:.22)):Math.min(1,h*(giant?.26:.34)/a.inflorescenceLength),F=a.flowerLength*headScale,n=Math.max(3,Math.min(28,Math.round((dusk?15:pink?20:giant?18:junior?22:24)*detail*Math.sqrt(w/(junior?.4:.65))*Math.min(1,h/(giant?.65:junior?.22:pink?.28:.36))))),stem=cold?a.winterStemColor:a.stemColor;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const pair=(at,az,len,i,k,basal=false)=>{
   if(!basal&&noise(i,k)>s.leafDensity)return;
@@ -5637,12 +5641,12 @@ function drawCatmint(b,{info,s,detail,rand,month},kit){
     f.add('catmintCalyx','calyx-catmint',a.flowerPalette.calyx,0,0,0,fl,fl,fl);
     if(!s.bloom||t>.93||noise(i,j*37+k)>(dusk?.52:pink?.72:.83)){f.add('catmintBud','bud-catmint',a.flowerPalette.bud,0,0,0,fl,fl,fl);continue;}
     f.add('catmintTube','tube-catmint',s.flowerColor,0,0,0,fl,fl,fl);f.add('catmintHood','hood-catmint',s.flowerColor,0,0,0,fl,fl,fl);f.add('catmintLip',white?'petal-catmint-white':pink?'petal-catmint-pink':dusk?'petal-catmint-dusk':'petal-catmint',s.flowerColor,0,0,0,fl,fl,fl);
-    for(let q=0;q<(giant||pink||dusk||blue||white||lime?0:4);q++){const xx=(q-1.5)*.042*fl,z=fl*(q%2?.87:.82);f.branch([xx,.04*fl,.58*fl],[xx,.10*fl,z],fl*.0075,'#d4bde3','filament-catmint');f.branch([xx,.10*fl,z],[xx,.075*fl,z+.03*fl],fl*.014,'#8863b0','anther-catmint');}
+    for(let q=0;q<(giant||pink||dusk||blue||white||lime||faassenii?0:4);q++){const xx=(q-1.5)*.042*fl,z=fl*(q%2?.87:.82);f.branch([xx,.04*fl,.58*fl],[xx,.10*fl,z],fl*.0075,'#d4bde3','filament-catmint');f.branch([xx,.10*fl,z],[xx,.075*fl,z+.03*fl],fl*.014,'#8863b0','anther-catmint');}
    }
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*.65,tier=Math.sqrt((i+.5)/n),rr=w*(giant?.29:.34)*tier,root=[Math.sin(az)*rr*(blue||white||lime?.72:.31),.004,Math.cos(az)*rr*(blue||white||lime?.72:.31)],top=[Math.sin(az)*rr,h*(giant?.57+.13*Math.sqrt(1-tier*tier)+.07*noise(i,5):dusk?.48+.18*Math.sqrt(1-tier*tier)+.06*noise(i,5):.34+.22*Math.sqrt(1-tier*tier)+.12*noise(i,5)),Math.cos(az)*rr];let old=root;
+  const az=i*2.399963+(noise(i,1)-.5)*.65,tier=Math.sqrt((i+.5)/n),rr=w*(faassenii?.25:giant?.29:.34)*tier,root=[Math.sin(az)*rr*(blue||white||lime||faassenii?.72:.31),.004,Math.cos(az)*rr*(blue||white||lime||faassenii?.72:.31)],top=[Math.sin(az)*rr,h*(faassenii?.49+.11*Math.sqrt(1-tier*tier)+.08*noise(i,5):giant?.57+.13*Math.sqrt(1-tier*tier)+.07*noise(i,5):dusk?.48+.18*Math.sqrt(1-tier*tier)+.06*noise(i,5):.34+.22*Math.sqrt(1-tier*tier)+.12*noise(i,5)),Math.cos(az)*rr];let old=root;
   for(let j=1;j<=8;j++){
    const t=(j+(j<8?(noise(i,j+220)-.5)*.6:0))/8,at=mix(root,top,t);at[0]+=Math.sin(az+.7)*w*.02*Math.sin(t*Math.PI);b.branch(old,at,Math.min(.0015,h*.004)*(1-t*.46),stem,'stem-catmint');old=at;pair(at,az+j*Math.PI/2,L*(.68+.32*Math.sin(t*Math.PI))*(cold?.4:1),i,j+15);
    if(j!==2&&j!==4&&j!==6)continue;const aa=az+(j===4?1.1:-1.1),end=[at[0]+Math.sin(aa)*w*.12,at[1]+h*.16,at[2]+Math.cos(aa)*w*.12];let prev=at;
@@ -5655,41 +5659,41 @@ function drawCatmint(b,{info,s,detail,rand,month},kit){
 }
 
 function drawTallNepeta(b,{info,s,detail,rand,month},kit){
- const a=info.appearance,tuber=a.shootProfile==='tuberosa',moon=a.shootProfile==='blueMoon',h=s.height,w=s.spread,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.20,w*.17),F=a.flowerLength*Math.min(1,h/(moon?.28:.5)),stem=cold?a.winterStemColor:a.stemColor,n=Math.max(3,Math.min(24,Math.round((moon?18:tuber?16:14)*detail*Math.sqrt(w/.5)*Math.min(1,h/(moon?.32:.65)))));
+ const a=info.appearance,tuber=a.shootProfile==='tuberosa',moon=a.shootProfile==='blueMoon',dreams=a.shootProfile==='pinkDreams',h=s.height,w=s.spread,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.20,w*.17),F=a.flowerLength*Math.min(1,h/(dreams?.35:moon?.28:.5)),stem=cold?a.winterStemColor:a.stemColor,n=Math.max(3,Math.min(24,Math.round((dreams?14:moon?18:tuber?16:14)*detail*Math.sqrt(w/.5)*Math.min(1,h/(dreams?.45:moon?.32:.65)))));
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const pair=(at,az,len,i,k,basal=false)=>{
   if(!basal&&noise(i,k)>s.leafDensity)return;
   for(let q=0;q<2;q++){
-   const aa=az+q*Math.PI,pet=len*(tuber?.04:.10),end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0008,h*.003),stem,basal?'petiole-tall-nepeta-winter':'petiole-tall-nepeta');b.add(moon?'nervosaLeaf':tuber?'tuberosaLeaf':'nudaLeaf',basal?'leaf-tall-nepeta-winter':moon?'leaf-nervosa':tuber?'leaf-tuberosa':'leaf-nuda',basal?'#8b7565':kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,.98+.32*noise(i,k+q),aa,(noise(i,k+q+70)-.5)*.25);
+   const aa=az+q*Math.PI,pet=len*(dreams?.035:tuber?.04:.10),end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0008,h*.003),stem,basal?'petiole-tall-nepeta-winter':'petiole-tall-nepeta');b.add(dreams?'dreamsLeaf':moon?'nervosaLeaf':tuber?'tuberosaLeaf':'nudaLeaf',basal?'leaf-tall-nepeta-winter':dreams?'leaf-dreams':moon?'leaf-nervosa':tuber?'leaf-tuberosa':'leaf-nuda',basal?'#8b7565':kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,.98+.32*noise(i,k+q),aa,(noise(i,k+q+70)-.5)*.25);
   }
  };
  const spike=(base,az,len,i)=>{
-  let old=base;const levels=moon?11:tuber?19:16,spent=a.seedHeadMonths.includes(month);
+  let old=base;const levels=dreams?6:moon?11:tuber?19:16,spent=a.seedHeadMonths.includes(month);
   for(let j=0;j<=levels;j++){
    const t=((j+(j>0&&j<levels?(noise(i,j+90)-.5)*.35:0))/levels)**(tuber?.65:.90),at=[base[0]+Math.sin(az)*len*.10*t*t,base[1]+len*(t-.02*t*t),base[2]+Math.cos(az)*len*.10*t*t];if(j)b.branch(old,at,Math.min(.0011,h*.003)*(1-t*.5),stem,'axis-tall-nepeta');old=at;
    if(!s.bloom&&!a.budMonths.includes(month)&&!spent)continue;
-   const sites=moon?(j>levels-2?5:9):tuber?(j>levels-2?6:14):(j>levels-2?4:8);
+   const sites=dreams?(j>levels-2?4:7):moon?(j>levels-2?5:9):tuber?(j>levels-2?6:14):(j>levels-2?4:8);
    for(let k=0;k<sites;k++){
-    const aa=az+j*1.67+k*TAU/sites+(noise(i,j*23+k)-.5)*.35,r=F*(tuber||moon?.43:.16),pos=[at[0]+Math.sin(aa)*r,at[1]+F*(noise(i,j*17+k)-.5)*.35,at[2]+Math.cos(aa)*r],fl=F*(.85+.15*noise(i,j*11+k)),f=flowerFrame(b,pos,-.13+(noise(i,j*19+k)-.5)*.6,aa),calyx=spent?'#907667':tuber?(t>.82?'#b6a291':'#a77897'):a.flowerPalette.calyx;
+    const aa=az+j*1.67+k*TAU/sites+(noise(i,j*23+k)-.5)*.35,r=F*(tuber||moon?.43:.16),pos=[at[0]+Math.sin(aa)*r,at[1]+F*(noise(i,j*17+k)-.5)*.35,at[2]+Math.cos(aa)*r],fl=F*(.85+.15*noise(i,j*11+k)),f=flowerFrame(b,pos,(dreams?-.42:-.13)+(noise(i,j*19+k)-.5)*(dreams?.9:.6),aa),calyx=spent?'#907667':tuber?(t>.82?'#b6a291':'#a77897'):a.flowerPalette.calyx;
     if(tuber||moon){const br=moon?.85:1.6;f.add(moon?'nervosaBract':'tuberosaBract',moon?'bract-nervosa':spent?'bract-tuberosa-spent':'bract-tuberosa',calyx,0,-fl*.05,-fl*.15,fl*br,fl*br,fl*br);}
     f.add('catmintCalyx',spent?'calyx-tall-nepeta-spent':'calyx-tall-nepeta',calyx,0,0,0,fl,fl,fl);if(spent)continue;
     if(!s.bloom||t>.94||noise(i,j*37+k)>(tuber?.56:.8)){f.add('catmintBud','bud-tall-nepeta',a.flowerPalette.bud,0,0,0,fl,fl,fl);continue;}
-    const color=tuber&&t>.74?'#baa0d9':s.flowerColor;f.add('catmintTube','tube-tall-nepeta',color,0,0,0,fl,fl,fl);f.add('catmintHood','hood-tall-nepeta',color,0,0,0,fl,fl,fl);f.add('catmintLip',moon?'petal-nervosa':tuber?'petal-catmint':'petal-nuda',color,0,0,0,fl,fl,fl);
+    const color=tuber&&t>.74?'#baa0d9':s.flowerColor;f.add(dreams?'dreamsTube':'catmintTube','tube-tall-nepeta',color,0,0,0,fl,fl,fl);f.add(dreams?'dreamsHood':'catmintHood','hood-tall-nepeta',color,0,0,0,fl,fl,fl);f.add(dreams?'dreamsLip':'catmintLip',dreams?'petal-dreams':moon?'petal-nervosa':tuber?'petal-catmint':'petal-nuda',color,0,0,0,fl,fl,fl);
    }
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*.5,tier=Math.sqrt((i+.5)/n),rr=w*.23*tier,root=[Math.sin(az)*rr*.68,.004,Math.cos(az)*rr*.68],top=[Math.sin(az)*rr,h*(.48+.10*Math.sqrt(1-tier*tier)+.08*noise(i,3)),Math.cos(az)*rr];let old=root;
+  const az=i*2.399963+(noise(i,1)-.5)*.5,tier=Math.sqrt((i+.5)/n),rr=w*.23*tier,root=[Math.sin(az)*rr*.68,.004,Math.cos(az)*rr*.68],top=[Math.sin(az)*rr,h*(dreams?.36+.16*Math.sqrt(1-tier*tier)+.13*noise(i,3):.48+.10*Math.sqrt(1-tier*tier)+.08*noise(i,3)),Math.cos(az)*rr];let old=root;
   for(let j=1;j<=9;j++){
-   const t=j/9,at=mix(root,top,t);b.branch(old,at,Math.min(.002,h*.0032)*(1-t*.35),stem,'stem-tall-nepeta');old=at;pair(at,az+j*Math.PI/2,L*(.65+.35*Math.sin(t*Math.PI))*(cold?.35:1),i,j+20);
-   if(tuber||moon?(j!==6):(j!==5&&j!==7))continue;
+   const t=(j+(dreams&&j<9?(noise(i,j+220)-.5)*.65:0))/9,at=mix(root,top,t);b.branch(old,at,Math.min(.002,h*.0032)*(1-t*.35),stem,'stem-tall-nepeta');old=at;pair(at,az+j*Math.PI/2,L*(.65+.35*Math.sin(t*Math.PI))*(cold?.35:1),i,j+20);
+   if(dreams?j!==5:tuber||moon?(j!==6):(j!==5&&j!==7))continue;
    for(let k=0;k<2;k++){
     const aa=az+(k?1.3:-1.3),end=[at[0]+Math.sin(aa)*w*(tuber?.12:.17),at[1]+h*(tuber?.14:.18),at[2]+Math.cos(aa)*w*(tuber?.12:.17)];let prev=at;
     for(let q=1;q<=3;q++){const loc=mix(at,end,q/3);b.branch(prev,loc,Math.min(.001,h*.002)*(1-q*.12),stem,'branch-tall-nepeta');prev=loc;pair(loc,aa+q*Math.PI/2,L*(.53-q*.08)*(cold?.35:1),i,j*29+k*7+q);}
     spike(end,aa,Math.min(a.inflorescenceLength*.7,h*.23),i+j*19+k*59);
    }
   }
-  spike(top,az,Math.min(a.inflorescenceLength,h*.34)*(.87+.13*noise(i,65)),i);
+  spike(top,az,Math.min(a.inflorescenceLength,h*(dreams?.44:.34))*(dreams?.70+.30*noise(i,65):.87+.13*noise(i,65)),i);
   if(cold&&!moon&&i%3===0)for(let j=0;j<2;j++)pair([root[0],root[1]+j*.003,root[2]],az+j*Math.PI/2,Math.min(.014,h*.06)*(j?.7:1),i,300+j,true);
  }
 }
@@ -10274,8 +10278,8 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='oleariaSmoky'){drawOleariaSmoky(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='mahoniaCanes'){drawMahoniaCanes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pajamasCymes'){drawPajamas(b,{info,s,detail,rand,month},kit);return;}
- if(['tallNepetaSpires','nervosaHeads'].includes(info.appearance?.architecture)){drawTallNepeta(b,{info,s,detail,rand,month},kit);return;}
- if(['catmintMounds','giantCatmintShoots','pinkCatmintBranches','simpleCatmintBranches','limeCatmintMound'].includes(info.appearance?.architecture)){drawCatmint(b,{info,s,detail,rand,month},kit);return;}
+ if(['tallNepetaSpires','nervosaHeads','subsessilisWhorls'].includes(info.appearance?.architecture)){drawTallNepeta(b,{info,s,detail,rand,month},kit);return;}
+ if(['catmintMounds','giantCatmintShoots','pinkCatmintBranches','simpleCatmintBranches','limeCatmintMound','uprightFaassenii'].includes(info.appearance?.architecture)){drawCatmint(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='rupestrisBranches'){drawRupestris(b,{info,s,detail,rand,month},kit);return;}
  if(['rugosaHyssopSpikes','hybridHyssopSpikes'].includes(info.appearance?.architecture)){drawRugosaHyssop(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='roseSageBracts'){drawRoseSage(b,{info,s,detail,rand,month},kit);return;}
