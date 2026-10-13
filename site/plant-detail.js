@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.159';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.160';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.159';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.160';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4875,6 +4875,60 @@ function drawClover(b,{info,s,detail,rand},kit){
  }
 }
 
+// Slender curved blades and two separate lips; dimensions are drawing estimates.
+export function linariaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='linariaLeaf')return [u*.5*Math.pow(sn,.72)*(1-.32*t),t,.10*t*t+.034*u*u*sn-.012*Math.exp(-u*u*65)*sn];
+ if(type==='linariaSpur'){
+  const an=(u+1)*Math.PI,r=.075*Math.pow(1-t,1.15)+.002;
+  return [Math.sin(an)*r,-t*.58,Math.cos(an)*r+.10+.27*t*t];
+ }
+ const upper=type==='linariaUpperLip',lobes=upper?2:3;
+ const edge=1-.15*Math.pow(Math.max(0,Math.cos((u+1)*Math.PI*lobes)),6)*Math.pow(t,5);
+ return [u*.5*Math.pow(sn,.42),t*edge,(upper?-.10:.16)*u*u*sn+(upper?-.24:.24)*t*t];
+}
+
+function drawLinaria(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),stem=a.stemColor;
+ const L=Math.min(a.leafLength,w*.30),count=Math.max(4,Math.min(14,Math.round(7*detail*Math.pow(w/.3,.72))));
+ const leaf=(at,angle,len,pitch,basal=false)=>b.add('linariaLeaf',basal?'leaf-linaria-basal':'leaf-linaria',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,pitch,angle,(rand()-.5)*.10);
+ for(let i=0;i<count;i++){
+  const an=i*2.399963,rr=w*.32*Math.sqrt((i+.4)/count),root=[Math.sin(an)*rr,.003,Math.cos(an)*rr];
+  // Winter shoots are new basal growth, not shrunken flowering stems.
+  const basalCount=Math.max(3,Math.round(8*s.leafDensity));
+  for(let j=0;j<basalCount;j++){
+   const aa=an+j*2.399963,tip=[root[0]+Math.sin(aa)*.004,root[1]+.006+(j%3)*.003,root[2]+Math.cos(aa)*.004];
+   b.branch(root,tip,.00035,stem,'shoot-linaria-basal');leaf(tip,aa,L*(winter?.42:.55)*(1-j/(basalCount+2)*.25),.60+j*.11,true);
+  }
+  if(winter)continue;
+  const growth=month===3?.22:month===4?.60:1,top=h*(.79+rand()*.17)*growth,body=s.bloom?top*.65:top*.78;
+  const point=(t,y)=>[root[0]+Math.sin(an+.20*Math.sin(t*3+i))*w*.09*t,root[1]+y,root[2]+Math.cos(an+.20*Math.sin(t*3+i))*w*.09*t];
+  const nodes=Math.max(8,Math.round(22*growth));let from=root;
+  for(let j=1;j<=nodes;j++){
+   const t=j/nodes,at=point(t,body*t);b.branch(from,at,.00082*(1-t*.46),stem,'stem-linaria');from=at;
+   // Node spacing and spiral angles are illustrative, not a verified phyllotaxy.
+   for(let k=0;k<(j<5?2:1);k++)if(j<4||rand()<s.leafDensity){
+    const aa=an+j*2.399963+k*Math.PI,len=L*(.86-.48*t)*(.88+rand()*.20)*(.7+.3*growth);leaf(at,aa,len,.74+t*.35);
+   }
+  }
+  if(!s.bloom)continue;
+  const racemeLength=top-body,flowerCount=Math.max(36,Math.round(racemeLength/.0028)),racemePoint=t=>point(1+t*.24,body+racemeLength*t);
+  for(let k=1;k<=8;k++){const at=racemePoint(k/8);b.branch(from,at,.00047*(1-k/8*.50),stem,'raceme-linaria');from=at;}
+  for(let j=0;j<flowerCount;j++){
+   const t=(j+.3+rand()*.35)/flowerCount,aa=an+j*2.399963+(rand()-.5)*.3,at=racemePoint(t),reach=.0017+.0018*(1-t),tip=[at[0]+Math.sin(aa)*reach,at[1]-.0015+rand()*.002,at[2]+Math.cos(aa)*reach];
+   b.branch(at,tip,.00015,stem,'pedicel-linaria');
+   if(t>.84){
+    b.add(kit.bud,'bud-linaria',a.flowerPalette.bud,...tip,.00085*(1.25-t*.3),.0021,.00085,.12,aa,0);continue;
+   }
+   if((t<.16&&j%3!==0)||rand()>s.flowerDensity){
+    b.add('narrow','calyx-linaria-spent',stem,...tip,.0018,.0024,.0018,.75,aa,0);continue;
+   }
+   detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:a.flowerRadius*(.88+rand()*.16),color:s.flowerColor,shape:'linariaLips',palette:{...a.flowerPalette,length:a.flowerLength*.65},tilt:1.45+rand()*.42,yaw:aa},{...kit,rand});
+  }
+ }
+}
+
 // Crenate maculatum and longer, toothed galeobdolon leaves share a ribbed lamina.
 // Dimensions and relief amplitude are drawing approximations, not measurements.
 export function lamiumPoint(type,t,u){
@@ -6244,6 +6298,17 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='linariaLips'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length,lip=palette.lip||color;
+  f.add('woodlandMintTube','corolla-linaria',color,0,0,0,r*2.1,L*.56,r*2.1);
+  f.add('linariaSpur','spur-linaria',color,0,L*.10,r*.10,L,L,L);
+  f.add('linariaUpperLip','petal-linaria-upper',lip,0,L*.51,-r*.30,r*1.85,L*.34,L*.34,-.40,0,0);
+  f.add('linariaLowerLip','petal-linaria-lower',lip,0,L*.52,r*.27,r*2.40,L*.36,L*.36,.48,0,0);
+  f.add('linariaLowerLip','palate-linaria',palette.palate,0,L*.48,r*.45,r*1.5,L*.19,L*.16,-.25,0,0);
+  for(let j=0;j<5;j++){const aa=j*TAU/5;f.add('narrow','sepal-linaria','#839b87',Math.sin(aa)*r*.42,0,Math.cos(aa)*r*.42,r*.29,L*.22,L*.22,.26,aa,0);}
+  // Stamens, style and ovary are not resolved by the adopted sources.
+  return;
+ }
  if(shape==='lamiumLips'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),T=palette.length,yellow=palette.type==='galeobdolon',lip=yellow?'petal-lamium-yellow':'petal-lamium-purple';
   f.add('woodlandMintTube','corolla-lamium',color,0,0,0,r*2.6,T,r*2.6);
@@ -7994,6 +8059,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['diphylleiaUmbrella','jeffersoniaBasal','ranzaniaTrifoliate','deinantheCymes','kirengeshomaBells','pteridophyllumFern','hylomeconPinnate','eomeconBasal','araliaHerb','saururusRaceme','parnassiaScapes','cornusHerb'].includes(info.appearance?.architecture)){drawWoodlandSpecies(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='brunneraSprays'){drawBrunnera(b,{info,s,detail,rand},kit);return;}
  if(['primroseRosette','gerberaRosette'].includes(info.appearance?.architecture)){drawBasalFlowerForms(b,{info,s,detail,rand},kit);return;}

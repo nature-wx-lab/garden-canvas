@@ -10,6 +10,44 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Linaria keeps spurred bilabiate racemes and replaces winter flower stems with basal shoots',()=>{
+ const ids=['p-09ed8dd7efa0','p-09efc8a12a41','p-4b3b0014747e'];
+ const colours=['#9474ad','#d99aaa','#ece8d8'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],a=info.appearance,p=makePlant(id,17200+i,1,1);p.height=i?.6:.7;p.spread=.3;p.leafHeight=p.height*.65;
+  assert.equal(a.status,'partial');assert.equal(a.architecture,'linariaRacemes');assert.equal(info.flower,colours[i]);
+  assert.deepEqual(a.flowerMonths,info.bloom);assert.deepEqual(info.bloom,i===2?[5,6,7,8,9,10,11]:[5,6]);
+  assert.ok(a.unconfirmed.some(x=>x.includes('実測')));assert.ok(a.unconfirmed.some(x=>x.includes('冬')));assert.ok(a.unconfirmed.some(x=>x.includes('内部器官')));
+  assert.ok(a.leafWidth/a.leafLength<.15);assert.ok(a.flowerLength<=.015);
+  let winterLeaves=0,summerLeaves=0;
+  const checkBounds=g=>{
+   for(const mesh of g.children){
+    assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.normal.array].every(Number.isFinite));
+    mesh.computeBoundingBox();for(const axis of ['x','y','z']){assert.ok(Number.isFinite(mesh.boundingBox.min[axis]));assert.ok(Number.isFinite(mesh.boundingBox.max[axis]));}
+    assert.ok(mesh.boundingBox.min.y>=-.006);assert.ok(mesh.boundingBox.max.y<=p.height*1.10);
+    assert.ok(Math.max(Math.abs(mesh.boundingBox.min.x),Math.abs(mesh.boundingBox.max.x),Math.abs(mesh.boundingBox.min.z),Math.abs(mesh.boundingBox.max.z))<p.spread*.70);
+   }
+  };
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),winter=[12,1,2].includes(month),flowers=count('corolla-linaria');
+   assert.equal(g.userData.architecture,'linariaRacemes');assert.equal(g.scale.x,1);assert.equal(g.scale.y,1);assert.equal(seasonAt(info,month).shootScale,1);
+   assert.ok(count('shoot-linaria-basal')>0);assert.ok(count('leaf-linaria-basal')>0);assert.equal(count('stem-linaria')>0,!winter);
+   assert.equal(flowers>0,info.bloom.includes(month));assert.equal(count('raceme-linaria')>0,info.bloom.includes(month));
+   assert.equal(count('spur-linaria'),flowers);assert.equal(count('petal-linaria-upper'),flowers);assert.equal(count('petal-linaria-lower'),flowers);assert.equal(count('sepal-linaria'),flowers*5);
+   if(flowers){assert.ok(count('bud-linaria')>0);assert.ok(count('calyx-linaria-spent')>0);assert.ok(g.children.find(m=>m.userData.component==='spur-linaria').geometry.userData.linariaSpur);}
+   const leaves=count('leaf-linaria')+count('leaf-linaria-basal');if(month===1)winterLeaves=leaves;if(month===6)summerLeaves=leaves;
+   if(winter){assert.match(seasonAt(info,month).phase,/花茎なし.*仮表示.*未確認/);assert.equal(count('leaf-linaria'),0);for(const mesh of g.children){mesh.computeBoundingBox();assert.ok(mesh.boundingBox.max.y<p.height*.10);}}
+   checkBounds(g);dispose(g);
+  }
+  assert.ok(winterLeaves<summerLeaves);
+  let smallLeaves=0;
+  for(const width of [.15,.6]){
+   p.spread=width;const g=plantModel(p,view(6)),leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-linaria')).reduce((n,m)=>n+m.count,0);
+   if(width===.15)smallLeaves=leaves;else{assert.ok(leaves>smallLeaves);assert.ok(leaves<500);}
+   checkBounds(g);dispose(g);
+  }
+ }
+});
 test('Lamium keeps paired silver leaves on runners and axillary hooded flowers without winter double scaling',()=>{
  const ids=['p-c309c35b2f9c','p-7084ea19721c'];
  for(const [i,id] of ids.entries()){
