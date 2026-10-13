@@ -10,6 +10,31 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Nemorosa separates cultivar evidence, opposite leaves, bilabiate whorls and retained winter stems',()=>{
+ for(const [i,id] of ['salvia','p-e8a3ee532b78'].entries()){
+  const info=CATALOG[id],p={...makePlant(id,17700+i,1,1),height:.65,spread:.4,leafHeight:.28};let skeleton;
+  assert.equal(info.appearance.status,'partial');assert.equal(info.life,'perennial');assert.deepEqual(info.bloom,i?[5,6]:[6,7,8,9]);
+  assert.ok(info.appearance.unconfirmed.some(x=>x.includes('雄しべ')));assert.equal(info.appearance.architecture,'nemorosaWhorls');
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'nemorosaWhorls');assert.equal(g.scale.x,1);assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+   assert.ok(count('stem-nemorosa')>0);assert.ok(count('raceme-nemorosa')>0);assert.ok(count('calyx-nemorosa')>0);
+   assert.equal(count('petal-nemorosa-upper')>0,info.bloom.includes(month));assert.equal(count('petal-nemorosa-upper'),count('petal-nemorosa-lower'));assert.equal(count('tube-nemorosa'),count('petal-nemorosa-upper'));
+   assert.equal(count('leaf-nemorosa')%2,0);assert.equal(count('leaf-nemorosa'),count('petiole-nemorosa'));
+   if([1,2,12].includes(month)){assert.equal(count('leaf-nemorosa'),0);assert.equal(count('leaf-nemorosa-basal')>0,!!i);assert.match(stateAt(p,view(month)).phase,/残した枯れ茎/);}
+   assert.ok(!g.children.some(m=>/^(anther|stigma|seed|fruit)-nemorosa/.test(m.userData.component)));
+   const axes=g.children.filter(m=>['stem-nemorosa','raceme-nemorosa'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+   for(const m of g.children){
+    for(const a of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...a].every(Number.isFinite));
+    m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.01,id+':below soil');assert.ok(m.boundingBox.max.y<p.height*1.12,id+':height');assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<=p.spread*.6,id+':spread');
+   }dispose(g);
+  }
+  const small={...p,height:.12,spread:.15,leafHeight:.065},g=plantModel(small,view(i?5:6));for(const m of g.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.15);assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}dispose(g);
+ }
+ assert.notEqual(CATALOG.salvia.appearance.stemColor,CATALOG['p-e8a3ee532b78'].appearance.stemColor);
+ assert.deepEqual(CATALOG['p-e8a3ee532b78'].height,[.50,.75]);assert.deepEqual(CATALOG['p-e8a3ee532b78'].spread,[.30,.60]);
+ assert.match(seasonAt(CATALOG['p-f9b0afaaa4ca'],10).phase,/厚い葉と花/,'autumn Snow Time flowers must not be labelled spring flowers');
+});
 test('Bergenia retains uncut flowering stems after petals fall and keeps thick curved leaves within the planted dimensions',()=>{
  const ids=['p-8df7e24225e1','p-8b63abc96633','p-f9b0afaaa4ca','p-5710cb13f030'];
  for(const [i,id] of ids.entries()){

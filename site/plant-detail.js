@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.166';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.167';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.166';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.167';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5005,6 +5005,78 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
  }
 }
 
+// Ribbed opposite blades and a small bilabiate corolla, in local flower axes.
+// Measurements beyond the species leaf-length range remain visual estimates.
+export function nemorosaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='nemorosaLeaf'){
+  const width=.5*Math.pow(sn,.70)*(1-.24*t)*(1+.043*Math.cos(t*TAU*15));
+  return [u*width,t,.085*t*t+.050*u*u*sn+.014*Math.cos((t-Math.abs(u)*.24)*TAU*7)*Math.abs(u)*sn];
+ }
+ if(type==='nemorosaTube'||type==='nemorosaCalyx'){
+  const angle=(u+1)*Math.PI,calyx=type==='nemorosaCalyx',radius=calyx?.40+.19*t:.21+.17*t;
+  const rim=calyx?1+.11*Math.pow(Math.max(0,Math.cos(angle*5)),4)*Math.pow(t,8):1;
+  return [Math.sin(angle)*radius,t*rim,Math.cos(angle)*radius+.09*t*t];
+ }
+ if(type==='nemorosaHood'){
+  const angle=u*Math.PI*.52,wide=(.85+.15*Math.sin(t*Math.PI))*(1-.52*t*t);
+  return [Math.sin(angle)*wide*.50,t,-Math.cos(angle)*wide*.27+.47*t*t];
+ }
+ const edge=1-.10*Math.pow(Math.max(0,Math.cos((u+1)*Math.PI*3)),6)*Math.pow(t,5);
+ return [u*.50*Math.pow(sn,.40),t*edge,.08*u*u*sn-.18*t*t];
+}
+
+function drawNemorosa(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,w=s.spread,h=s.height,winter=[12,1,2].includes(month),caradonna=a.shootProfile==='caradonna';
+ const L=Math.min(a.leafLength,w*.28),n=Math.max(6,Math.min(28,Math.round(17*detail*Math.pow(w/.4,.78))));
+ const dry=winter||month>=10,stem=dry?a.winterStemColor:a.stemColor,flowerR=a.flowerRadius;
+ const blade=(at,yaw,len,pitch,basal=false)=>b.add('nemorosaLeaf',basal?'leaf-nemorosa-basal':'leaf-nemorosa',kit.shade(rand,s.leafColor,.040),...at,len*a.leafWidth/a.leafLength,len,len,pitch,yaw,(rand()-.5)*.12);
+ for(let i=0;i<n;i++){
+  const angle=i*2.399963,reach=Math.max(0,w*.44-L*.78)*Math.sqrt((i+.5)/n),root=[Math.sin(angle)*reach,.006,Math.cos(angle)*reach];
+  const shape=k=>.5+.5*Math.sin((i+1)*12.9898+k*7.233),top=h*(.77+.19*shape(2));
+  const axis=t=>[root[0]+Math.sin(angle)*w*.035*t*t,root[1]+(top-root[1])*t,root[2]+Math.cos(angle)*w*.035*t*t];
+  // A few basal leaves can remain in the grower's semi-evergreen Caradonna.
+  // The old flowering axes are not scaled into these small winter leaves.
+  const basal=Math.round((winter?caradonna?2:0:4)*detail);
+  for(let j=0;j<basal;j++)blade(root,angle+j*2.399963,L*(winter?.40:.80),.65+j*.17,true);
+  let from=root;
+  for(let j=1;j<=7;j++){
+   const t=j/7*.59,at=axis(t);b.branch(from,at,.0018*(1-t*.5),stem,'stem-nemorosa');from=at;
+   if(!winter&&shape(20+j)<s.leafDensity){
+    const yaw=angle+j*Math.PI/2,len=L*(1-.76*t/.59)*(.85+.18*shape(40+j)),petiole=.003+.009*(1-t/.59);
+    for(const side of [-1,1]){
+     const az=yaw+(side<0?Math.PI:0),tip=[at[0]+Math.sin(az)*petiole,at[1]+petiole*.20,at[2]+Math.cos(az)*petiole];
+     b.branch(at,tip,.00048,stem,'petiole-nemorosa');blade(tip,az,len,.93+.34*t);
+    }
+   }
+  }
+  const floralStart=.59,whorls=Math.max(14,Math.min(30,Math.round(top*.41/.012))),calyx=dry?'#836e58':caradonna?'#803e62':'#687456';
+  for(let j=0;j<whorls;j++){
+   const t=(j+.4)/whorls,at=axis(floralStart+(1-floralStart)*t);b.branch(from,at,.0010*(1-.48*t),stem,'raceme-nemorosa');from=at;
+   const yaw=angle+j*Math.PI/2;
+   for(const side of [-1,1]){
+    const az=yaw+(side<0?Math.PI:0);
+    b.add('narrow','bract-nemorosa',calyx,...at,flowerR*.9,flowerR*(1.2-.55*t),flowerR,.8,az,0);
+    for(let k=0;k<3;k++){
+     const an=az+(k-1)*.47,tip=[at[0]+Math.sin(an)*.0014,at[1]+(k-1)*.0008,at[2]+Math.cos(an)*.0014];
+     b.branch(at,tip,.00019,stem,'pedicel-nemorosa');
+     const f=flowerFrame(b,tip,1.03+.18*shape(j*7+k+70),an),r=flowerR*(.85+.15*(1-t)),tube=a.flowerLength*.56;
+     f.add('nemorosaCalyx','calyx-nemorosa',calyx,0,0,0,r,tube*.63,r);
+     // The uppermost whorls are buds, while lower whorls may already be spent.
+     // No seed set or reproductive-organ counts are inferred from these photos.
+     if(!s.bloom)continue;
+     if(t>.87){f.add(kit.bud,'bud-nemorosa',calyx,0,tube*.60,0,r*.22,tube*.43,r*.22);continue;}
+     if(t<.14&&j%2===0||shape(j*13+k+side+110)>s.flowerDensity)continue;
+     f.add('nemorosaTube','tube-nemorosa',s.flowerColor,0,0,0,r,tube,r);
+     f.add('nemorosaHood','petal-nemorosa-upper',s.flowerColor,0,tube,0,r,a.flowerLength*.40,r);
+     f.add('nemorosaLip','petal-nemorosa-lower',s.flowerColor,0,tube,0,r*1.45,a.flowerLength*.38,r,1.42,0,0);
+    }
+   }
+  }
+ }
+}
+
 // Slender curved blades and two separate lips; dimensions are drawing estimates.
 export function linariaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
@@ -8211,6 +8283,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='brunneraSprays'){drawBrunnera(b,{info,s,detail,rand},kit);return;}

@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.166';
+import {treeProfile} from './tree-profiles.js?v=0.9.167';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -118,7 +118,7 @@ export function seasonAt(info,month){
  if(a.monthlyLeafDensity?.[m]!==undefined)density=a.monthlyLeafDensity[m];
  if(a.architecture==='brunneraSprays'){scale=[0,0,.42,.62,.85,1,1,1,1,1,.85,0][m];phase=density===0?'冬の地上部なし（境界月は表示目安）':month<6?'小さな春葉と花茎（葉の大きさは参考補間）':'花後に広がる大きな葉（葉量は参考）';}
  if(a.architecture==='bergeniaRhizomes'){
-  phase=bloom?'根茎から出る厚い葉と春の花（色と葉量は参考）':'葉と切り取らず残した花茎の参考表示（茎の残存期間・結実は未確認）';
+  phase=bloom?'根茎から出る厚い葉と花（花期・色・葉量は参考）':'葉と切り取らず残した花茎の参考表示（茎の残存期間・結実は未確認）';
  }
  if(a.architecture==='vincaRunners'){
   scale=1;
@@ -128,6 +128,10 @@ export function seasonAt(info,month){
  if(a.architecture==='paniclePhlox'){
   scale=1;
   phase=[12,1,2].includes(month)?'冬の枯れ茎の参考表示（残存量・月境界・株元葉は未確認）':month<6?'対生葉と直立茎の展開（芽出し月・伸長量は参考）':'直立する株と枝分かれした花序（花期は国内資料・葉量は参考）';
+ }
+ if(a.architecture==='nemorosaWhorls'){
+  scale=1;
+  phase=[12,1,2].includes(month)?'冬の株元と切り取らず残した枯れ茎（残葉量・倒伏時期は参考）':bloom?'対生葉・輪状に集まる小花（花期は出典地域の参考）':'花前・花後の花茎と萼を残す参考表示（発生・残存月と再開花は未校正）';
  }
  if(a.architecture==='linariaRacemes'){
   scale=1;
@@ -166,7 +170,7 @@ export function seasonAt(info,month){
  if(leaflessFlowering)phase='葉のない花茎の開花期';
  else if(groundDormant)phase=a.persistence==='frostDormantTuber'?'霜後の地上部休眠（冬期の表示目安）':info.life==='annual'?'一年草の生育期外（低温期の参考）':'地上部のない休眠期';
  const bloomIndex=flowerMonths.indexOf(month),flowerDensity=bloom?(a.monthlyFlowerDensity?.[m]??(a.architecture==='avalanche'&&month>=7?.24:flowerMonths.length>2&&(bloomIndex===0||bloomIndex===flowerMonths.length-1)?.65:1)):0;
- const shootScale=['vincaRunners','paniclePhlox','linariaRacemes','lamiumRunners','cloverStolons','crimsonClover','tiarellaCrowns','heucheraCrowns','ajugaMats','persicariaShoots','pelargoniumErodium','cranesbill','pulmonariaCrowns','perennialVioletShoots','softSucculents','haworthiaCrowns','ribbedSucculents','caudexPlants','agaveRosettes','stoneSucculents','necklacePlants','fleshyGardenPlants','mixedGardenPlants','lateGardenHerbs','uncommonGardenTree','marginGardenPlants','submergedShoots','forestPlants','poppyShoots','rosetteSpires','tubularHerbShoots','leycesteriaCanes','smallPeaHerbs','rhodiolaCrown','seasonalClimbers','betonyGermander','texturedMints','iberisCorymbs','astilbePlumes','aquilegiaCymes','dianthusCymes','verbenaBranches','scabiousHabit','sideritisSpikes','silverMintSpikes','marrubiumWhorls','leonotisTiers','keiskeaRacemes','isodonPanicles','chelonopsisAxils','triporaCymes','leucosceptrumSpikes','melittisAxils','puschkiniaScapes','bletillaShoots','roseaSpire','rugosaSpire','nierembergiaMat','goldenStrawberry','moonCarrot','flamingoRunners','pimpinellaRose','hairyChervil','pinkHogweed','michauxiaAxis','jasioneHeads','tracheliumCorymb','helleboreProfile','shastaAlaska','primroseRosette','gerberaRosette','brunneraSprays','tapienMat','stolonPhlox'].includes(a.architecture)||a.architecture==='beeBalm'&&a.standingWinter&&a.seedHeadMonths?.includes(month)?1:a.persistence==='semiDormant'&&a.architecture!=='beeBalm'&&[12,1,2].includes(month)?.15:!woody&&!dormant&&scale<1?scale:1;
+ const shootScale=['vincaRunners','paniclePhlox','nemorosaWhorls','linariaRacemes','lamiumRunners','cloverStolons','crimsonClover','tiarellaCrowns','heucheraCrowns','ajugaMats','persicariaShoots','pelargoniumErodium','cranesbill','pulmonariaCrowns','perennialVioletShoots','softSucculents','haworthiaCrowns','ribbedSucculents','caudexPlants','agaveRosettes','stoneSucculents','necklacePlants','fleshyGardenPlants','mixedGardenPlants','lateGardenHerbs','uncommonGardenTree','marginGardenPlants','submergedShoots','forestPlants','poppyShoots','rosetteSpires','tubularHerbShoots','leycesteriaCanes','smallPeaHerbs','rhodiolaCrown','seasonalClimbers','betonyGermander','texturedMints','iberisCorymbs','astilbePlumes','aquilegiaCymes','dianthusCymes','verbenaBranches','scabiousHabit','sideritisSpikes','silverMintSpikes','marrubiumWhorls','leonotisTiers','keiskeaRacemes','isodonPanicles','chelonopsisAxils','triporaCymes','leucosceptrumSpikes','melittisAxils','puschkiniaScapes','bletillaShoots','roseaSpire','rugosaSpire','nierembergiaMat','goldenStrawberry','moonCarrot','flamingoRunners','pimpinellaRose','hairyChervil','pinkHogweed','michauxiaAxis','jasioneHeads','tracheliumCorymb','helleboreProfile','shastaAlaska','primroseRosette','gerberaRosette','brunneraSprays','tapienMat','stolonPhlox'].includes(a.architecture)||a.architecture==='beeBalm'&&a.standingWinter&&a.seedHeadMonths?.includes(month)?1:a.persistence==='semiDormant'&&a.architecture!=='beeBalm'&&[12,1,2].includes(month)?.15:!woody&&!dormant&&scale<1?scale:1;
  const headPhase=a.architecture==='berzelia'?bloom?'flower':[11,12,1,2].includes(month)?'bud':'dry':null;
  const retainedSummerLeaves=!!a.winterLeafLength&&[11,12,1,2,3].includes(month);
  if(retainedSummerLeaves)phase='春葉が落ち、小さな夏葉が冬を越す時期（地域差あり）';
