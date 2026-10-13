@@ -10,6 +10,18 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Papery Helichrysum cultivars retain silver shoots and clustered scaled heads across seasons',()=>{
+ const ids=['p-6452a084218e','p-3270c92a3ceb'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],p={...makePlant(id,19600+i,1,1),height:.2,spread:.28,leafHeight:.14};assert.equal(info.appearance.status,'partial');assert.deepEqual(info.spread,[.2,.3]);let skeleton;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component===k);assert.equal(g.userData.architecture,'helichrysumFoliage');assert.equal(g.scale.y,1);assert.ok(has('leaf-heli-amorginum'));assert.equal(has(i?'bract-heli-ruby':'bract-heli-yellow'),[3,4,5,6].includes(month));assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+   const axes=g.children.filter(m=>/^(stem|side|peduncle|pedicel)-heli$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.58);}dispose(g);
+  }
+ }
+ const small=plantModel({...makePlant(ids[1],19602,1,1),height:.08,spread:.14,leafHeight:.06},view(5));for(const m of small.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.09);assert.ok(m.boundingBox.min.y>=-.015);}dispose(small);
+});
 test('Dichondra types retain connected runners and distinguish flat silver from green kidney leaves',()=>{
  const ids=['p-2a0099e60c2c','p-ad983784e4e8','p-cc0ca92066be'];
  for(const [i,id] of ids.entries()){
