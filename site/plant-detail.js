@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.210';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.211';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.210';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.211';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5447,6 +5447,57 @@ function drawMahoniaCanes(b,{info,s,detail,rand,month},kit){
  }
 }
 
+export function rustySagePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='rustySageLeaf')return [u*.54*sn**.72*(.50+.50*t)*(1+.012*Math.cos(t*TAU*13)),t,.06*u*u*sn-.075*t*t+.002*Math.sin(t*47-Math.abs(u)*10)*sn];
+ if(type==='rustySageHood')return [u*.13*sn,.065+.105*sn-.075*t*t,.46+.57*t];
+ if(type==='rustySageLip')return [u*(.025+.16*sn),-.03-.36*t,.43+.44*Math.sin(t*Math.PI*.65)];
+ const az=(u+1)*Math.PI;
+ if(type==='rustySageBud'){const r=.015+.09*sn**.7;return [Math.cos(az)*r,Math.sin(az)*r,.24+.39*t];}
+ const calyx=type==='rustySageCalyx',r=calyx?.055+.25*t**1.15:.045+.043*t,lip=calyx?-.19*Math.cos(az*2)*t**5:0;
+ return [Math.cos(az)*r*(calyx?.82:1),Math.sin(az)*r,(calyx?.53:.49)*t+lip];
+}
+
+function drawRustySage(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.20,w*.18),F=Math.min(a.flowerLength,h*.11,w*.085),n=Math.max(4,Math.min(16,Math.round(9*detail*Math.sqrt(w/.5))));
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const pair=(at,az,len,i,k)=>{
+  if(noise(i,k)>s.leafDensity)return;
+  for(let q=0;q<2;q++){
+   const aa=az+q*Math.PI,pet=len*.12,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0008,h*.003),a.stemColor,'petiole-rusty-sage');b.add('rustySageLeaf','leaf-rusty-sage',kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,.71+.37*noise(i,k+q+64),aa,(noise(i,k+q+72)-.5)*.26);
+  }
+ };
+ const flowers=(at,az,i,k,top)=>{
+  for(let q=0;q<2;q++){
+   if(!s.bloom&&noise(i,k+q+201)>.65)continue;
+   const aa=az+Math.PI*q,fl=F*(.86+.14*noise(i,k+q+90)),r=fl*.18,pos=[at[0]+Math.sin(aa)*r,at[1],at[2]+Math.cos(aa)*r],f=flowerFrame(b,pos,-.08+.12*noise(i,k+q+81),aa),spent=!s.bloom||noise(i,k*17+q)<.29,bud=top&&noise(i,k*17+q)>.42,scale=spent?1.40:1;
+   b.branch(at,pos,fl*.024,cold?a.winterStemColor:a.flowerPalette.axis,'pedicel-rusty-sage');f.add('rustySageCalyx',spent?'calyx-rusty-sage-spent':'calyx-rusty-sage',spent?(cold?'#9e8382':a.flowerPalette.matureCalyx):a.flowerPalette.calyx,0,0,0,fl*scale,fl*scale,fl*(spent?1.19:1));
+   if(spent)continue;
+   if(bud){f.add('rustySageBud','bud-rusty-sage','#b89b8b',0,0,0,fl,fl,fl);continue;}
+   f.add('rustySageTube','tube-rusty-sage',s.flowerColor,0,0,0,fl,fl,fl);f.add('rustySageHood','hood-rusty-sage',s.flowerColor,0,0,0,fl,fl,fl);f.add('rustySageLip','petal-rusty-sage',s.flowerColor,0,0,0,fl,fl,fl);
+   for(let side=-1;side<=1;side+=2){f.branch([side*.03*fl,.045*fl,.49*fl],[side*.042*fl,.08*fl,.94*fl],fl*.009,'#c99e9d','filament-rusty-sage');f.branch([side*.042*fl,.08*fl,.94*fl],[side*.045*fl,.05*fl,.99*fl],fl*.016,'#ddc6a2','anther-rusty-sage');}
+   f.branch([0,.035*fl,.46*fl],[0,.025*fl,1.07*fl],fl*.006,'#b78693','style-rusty-sage');for(let side=-1;side<=1;side+=2)f.branch([0,.025*fl,1.07*fl],[side*.025*fl,-.02*fl,1.11*fl],fl*.005,'#92637b','stigma-rusty-sage');
+  }
+ };
+ const spike=(base,az,len,i)=>{
+  let old=base;
+  for(let j=1;j<=6;j++){
+   const t=j/6,at=[base[0]+Math.sin(az)*w*.045*t*t,base[1]+len*t,base[2]+Math.cos(az)*w*.045*t*t];b.branch(old,at,Math.min(.002,h*.004)*(1-t*.40),cold?a.winterStemColor:a.flowerPalette.axis,'axis-rusty-sage');old=at;if(j<=2)pair(at,az+j*Math.PI/2,L*(.36-j*.08),i,j+190);flowers(at,az+j*Math.PI/2,i,j*41,j===6);
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963+(noise(i,1)-.5)*.65,r=w*.26*Math.sqrt((i+.5)/n),root=[Math.sin(az)*r*.25,.008,Math.cos(az)*r*.25],top=[Math.sin(az)*r,h*(.44+.14*noise(i,5)),Math.cos(az)*r];let old=root;
+  for(let j=1;j<=9;j++){
+   const t=j/9,at=mix(root,top,t);at[0]+=Math.sin(az+.7)*w*.025*Math.sin(t*Math.PI);b.branch(old,at,Math.min(.004,h*.011)*(1-t*.60),j<3?a.barkColor:a.stemColor,j<3?'wood-rusty-sage':'stem-rusty-sage');old=at;if(j>1)pair(at,az+j*Math.PI/2,L*(.74+.23*Math.sin(t*Math.PI*.85)),i,j+15);
+   if(j!==4&&j!==6)continue;
+   const aa=az+(j===4?1.1:-1.15),end=[at[0]+Math.sin(aa)*w*.14,at[1]+h*.13,at[2]+Math.cos(aa)*w*.14];let prev=at;
+   for(let q=1;q<=6;q++){const loc=mix(at,end,q/6);b.branch(prev,loc,Math.min(.002,h*.006)*(1-q*.07),a.stemColor,'branch-rusty-sage');prev=loc;pair(loc,aa+q*Math.PI/2,L*(.74+.16*Math.sin(q/6*Math.PI)),i,j*37+q);}
+   if(i%2===0&&j===6)spike(end,aa,h*(.24+.04*noise(i,42)),i+65);
+  }
+  spike(top,az,h*(.27+.09*noise(i,24)),i);
+ }
+}
+
 export function discolorPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='discolorLeaf')return [u*.51*sn**.72*(.89+.11*t),t,.10*u*u*sn-.14*t*t+.002*Math.sin(t*46-Math.abs(u)*12)*sn];
@@ -9787,6 +9838,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='bellisRosettes'){drawBellisRosettes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oleariaSmoky'){drawOleariaSmoky(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='mahoniaCanes'){drawMahoniaCanes(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='rustySageCalyces'){drawRustySage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='discolorBranches'){drawDiscolorSage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='clevelandWhorls'){drawClevelandSage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='whiteSageShrub'){drawWhiteSage(b,{info,s,detail,rand,month},kit);return;}
