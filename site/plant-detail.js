@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.179';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.180';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.179';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.180';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1991,22 +1991,43 @@ function drawAromaticShrubs(b,{info,s,detail,rand},kit){
   }
   if(santo&&order===1)heads.push({at:path(1),az,roll:rand()});
  };
- const count=Math.round((santo?44:26)*detail);
- for(let i=0;i<count;i++){
-  const t=(i+.5)/count,az=i*2.399963+rand()*.2,root=[Math.sin(az)*w*.035,.015,Math.cos(az)*w*.035],reach=w*(santo?.36:mozart?.39:.28)*(.3+.7*Math.sqrt(1-t)),rise=h*(santo?.34+.33*Math.sqrt(t):mozart?.18+.49*t:.35+.58*t);
-  b.branch([0,0,0],root,h*.007,a.barkColor,'wood-aromatic-base');shoot(root,az,rise,reach,0);
+ if(santo){
+  // Connected low crowns and curved leafy shoots keep a mound instead of a fan.
+  const leafH=Math.min(h*.76,Math.max(h*.55,s.leafHeight||h*.72)),count=Math.round(Math.max(30,Math.min(110,w/.6*90))*detail),mix=(x,y,t)=>x.map((v,k)=>v+(y[k]-v)*t);
+  const leafy=(root,tip,az,nodes,sideShoot=false)=>{
+   const path=t=>{const pt=mix(root,tip,t);pt[1]+=h*.025*Math.sin(t*Math.PI);return pt;};
+   for(let j=1;j<=nodes;j++){
+    const t=j/nodes,at=path(t);wood.push({from:path((j-1)/nodes),to:at,r:Math.min(sideShoot?.0006:.0013,h*.007)*(1-t*.55),old:false});
+    for(let k=0;k<3;k++)leaves.push({at:path((j-.72+k*.24)/nodes),az:az+(j*3+k)*2.399963,roll:rand(),size:(sideShoot?.66:.82)+rand()*.18,young:j>nodes-3});
+    if(!sideShoot&&(j===4||j===8)){
+     const aa=az+(j===4?-1:1)*(.65+rand()*.45),reach=w*.085,end=[at[0]+Math.sin(aa)*reach,at[1]+h*.08,at[2]+Math.cos(aa)*reach];leafy(at,end,aa,8,true);
+    }
+   }
+  };
+  for(let i=0;i<count;i++){
+   const t=(i+.5)/count,az=i*2.399963+rand()*.3,r=w*.405*Math.sqrt(t),root=[Math.sin(az)*r*.82,h*.035,Math.cos(az)*r*.82],tip=[Math.sin(az)*r,leafH*(.32+.63*Math.sqrt(1-t)),Math.cos(az)*r],joint=mix(root,tip,.12);
+   const ca=(i%7)*TAU/7,crown=[Math.sin(ca)*w*.075,h*.018,Math.cos(ca)*w*.075],bend=mix(crown,root,.52);bend[1]+=h*.035;
+   if(i<7)wood.push({from:[0,h*.006,0],to:crown,r:Math.min(.0017,h*.007),old:true});
+   wood.push({from:crown,to:bend,r:Math.min(.0008,h*.004),old:true},{from:bend,to:root,r:Math.min(.00065,h*.003),old:true},{from:root,to:joint,r:Math.min(.00065,h*.003),old:true});leafy(root,tip,az,16);heads.push({at:tip,az,roll:rand()});
+  }
+ }else{
+  const count=Math.round(26*detail);
+  for(let i=0;i<count;i++){
+   const t=(i+.5)/count,az=i*2.399963+rand()*.2,root=[Math.sin(az)*w*.035,.015,Math.cos(az)*w*.035],reach=w*(mozart?.39:.28)*(.3+.7*Math.sqrt(1-t)),rise=h*(mozart?.18+.49*t:.35+.58*t);
+   b.branch([0,0,0],root,h*.007,a.barkColor,'wood-aromatic-base');shoot(root,az,rise,reach,0);
+  }
  }
  for(const q of wood)b.branch(q.from,q.to,Math.max(.0002,q.r),q.old?a.barkColor:a.stemColor,q.old?'wood-aromatic-'+type:santo?'stem-aromatic-silver':'stem-aromatic-square');
  for(const n of leaves){
   if(n.roll>s.leafDensity)continue;
-  const L=a.leafLength*n.size*s.leafScale,f=flowerFrame(b,n.at,santo?.55+n.roll*.55:.40+n.roll*.45,n.az),pattern=gold?(n.young?s.leafPatternColor:'#6e854b'):null,kind=santo?'leaf-aromatic-santolina':'leaf-aromatic-rosemary'+(gold?'-margin-'+pattern.slice(1):'')+'-underside-'+a.leafUnderside.slice(1);
+  const L=a.leafLength*n.size*s.leafScale*(santo?Math.min(1,h/.25,w/.3):1),f=flowerFrame(b,n.at,santo?.42+n.roll*.72:.40+n.roll*.45,n.az),pattern=gold?(n.young?s.leafPatternColor:'#6e854b'):null,kind=santo?'leaf-aromatic-santolina':'leaf-aromatic-rosemary'+(gold?'-margin-'+pattern.slice(1):'')+'-underside-'+a.leafUnderside.slice(1);
   f.add('aromatic-leaf-'+(santo?'santolina':'rosemary'),kind,kit.shade(rand,s.leafColor,.025),0,0,0,santo?L:L*a.leafWidth/a.leafLength,L,L,.08,0,(n.roll-.5)*.18);
  }
  if(!s.bloom)return;
  if(santo){
   for(const head of heads){
-   if(head.roll>s.flowerDensity*.42)continue;
-   const stalk=Math.min(.14,Math.max(.1,h*.22)),tip=[head.at[0]+Math.sin(head.az)*stalk*.15,head.at[1]+stalk,head.at[2]+Math.cos(head.az)*stalk*.15];b.branch(head.at,tip,.00065,a.stemColor,'peduncle-aromatic-santolina');const R=a.flowerRadius,f=flowerFrame(b,tip,.10,head.az);
+   if(head.roll>s.flowerDensity*.62)continue;
+   const stalk=Math.min(.15,h*.25),tip=[head.at[0]+Math.sin(head.az)*stalk*.15,head.at[1]+stalk,head.at[2]+Math.cos(head.az)*stalk*.15];b.branch(head.at,tip,Math.min(.00065,h*.006),a.stemColor,'peduncle-aromatic-santolina');const R=a.flowerRadius*Math.min(1,h/.25),f=flowerFrame(b,tip,.10,head.az);
    f.add(kit.bud,'involucre-aromatic-santolina','#a8a784',0,-R*.12,0,R,R*.38,R);
    for(let j=0;j<64;j++){
     const rr=R*Math.sqrt((j+.5)/64),az=j*2.399963,y=R*.70*Math.sqrt(Math.max(0,1-(rr/R)**2)),pt=[Math.sin(az)*rr,y,Math.cos(az)*rr],ff=flowerFrame({add:(...args)=>f.add(...args),branch:(...args)=>f.branch(...args)},pt,rr/R*.85,az),r=R*.11;
