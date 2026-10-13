@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.193';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.194';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.193';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.194';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5447,6 +5447,45 @@ function drawMahoniaCanes(b,{info,s,detail,rand,month},kit){
  }
 }
 
+export function indigoLeafPoint(t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),edge=.94+.06*Math.cos(t*TAU*17),width=.61*Math.pow(sn,.62)*(1-.39*t)*edge;
+ return [u*width,t,.045*u*u*sn+.025*Math.sin(t*5)*sn-.10*t*t+.009*Math.cos((t-Math.abs(u)*.3)*TAU*6)*Math.abs(u)*sn];
+}
+
+function drawIndigoSpires(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.25,w*.21),n=Math.max(4,Math.min(24,Math.round(15*detail*Math.sqrt(w/.8)))),winter=[12,1,2].includes(month);
+ const mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},stem=winter?a.winterStemColor:a.stemColor;
+ const pair=(at,az,len,i,k)=>{
+  if(noise(i,k)>s.leafDensity)return;
+  for(const side of [0,1]){const aa=az+side*Math.PI,pet=len*.14,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.35,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0007,h*.0018),stem,'petiole-indigo');b.add('indigoLeaf','leaf-indigo',kit.shade(rand,s.leafColor,.07),...end,len*a.leafWidth/a.leafLength,len,len,.88+.45*noise(i,k+side+31),aa,(noise(i,k+side+44)-.5)*.21);}
+ };
+ const spike=(base,az,len,i)=>{
+  const bend=w*(.045+.17*noise(i,12)),sway=w*.025*(noise(i,19)-.5),levels=Math.max(7,Math.min(19,Math.round(len/.021))),point=t=>[base[0]+Math.sin(az)*bend*t*t+Math.cos(az)*sway*Math.sin(t*Math.PI),base[1]+len*(t-.18*t*t*t),base[2]+Math.cos(az)*bend*t*t-Math.sin(az)*sway*Math.sin(t*Math.PI)];let old=base;
+  for(let j=0;j<=levels;j++){
+   const t=Math.pow((j===0?0:j===levels?levels:j+(noise(i,j+150)-.5)*.5)/levels,.80),at=point(t);if(j)b.branch(old,at,Math.min(.0012,h*.0025)*(1-t*.62),stem,'axis-indigo');old=at;
+   const count=t>.85?4:6,calyxLen=Math.min(.008,h*.021)*(1-.42*Math.pow(t,5));
+   for(let k=0;k<count;k++){
+    const aa=az+k*TAU/count+(j%2)*.42+(noise(i,j*30+k)-.5)*.22,rr=calyxLen*.65,pos=[at[0]+Math.sin(aa)*rr,at[1]+(noise(i,j*70+k)-.5)*calyxLen*.5,at[2]+Math.cos(aa)*rr],f=flowerFrame(b,pos,1.00+.30*noise(i,j*13+k),aa),open=s.bloom&&t<.89&&noise(i,j*43+k+91)<(.24+.52*Math.sin(t*Math.PI));
+    f.add('nemorosaCalyx','calyx-indigo',winter?'#958673':t>.89?'#82926c':'#504469',0,0,0,calyxLen*.7,calyxLen,calyxLen*.7);
+    if(!open)continue;const fl=Math.min(a.flowerLength,h*.06)*(1-.20*t);
+    f.add('nemorosaTube','tube-indigo',s.flowerColor,0,calyxLen*.55,0,fl*.56,fl*.64,fl*.56);
+    f.add('nemorosaHood','hood-indigo',kit.shade(rand,s.flowerColor,.04),0,calyxLen*.55+fl*.55,0,fl*.42,fl*.42,fl*.48);
+    f.add('nemorosaLip','lip-indigo',kit.shade(rand,s.flowerColor,.035),0,calyxLen*.55+fl*.56,fl*.06,fl*.85,fl*.53,fl*.8,1.04,0,0);
+   }
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963+(noise(i,1)-.5)*.42,rr=w*.30*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.26,.005,Math.cos(az)*rr*.26],topH=h*(.79+.19*noise(i,8)),spikeLen=Math.min(a.inflorescenceLength,topH*.44),top=[Math.sin(az)*rr,topH-spikeLen*.86,Math.cos(az)*rr],wood=mix(root,top,.08);b.branch(root,wood,Math.min(.004,h*.008),a.barkColor,'wood-indigo');let old=wood;
+  for(let j=1;j<=8;j++){
+   const at=mix(wood,top,j/8),aa=az+j*Math.PI/2;b.branch(old,at,Math.min(.0023,h*.004)*(1-j*.045),stem,'stem-indigo');old=at;pair(at,aa,L*(j<6?.78+.22*noise(i,j+50):.56-.1*(j-6)),i,j+16);
+   if(j!==4||i%2)continue;const yaw=aa+1.0,reach=w*.10,end=[at[0]+Math.sin(yaw)*reach,at[1]+h*(.17+.04*noise(i,35)),at[2]+Math.cos(yaw)*reach];let prev=at;
+   for(let q=1;q<=4;q++){const loc=mix(at,end,q/4);b.branch(prev,loc,Math.min(.0012,h*.003),stem,'branch-indigo');prev=loc;pair(loc,yaw+q*Math.PI/2,L*(.67-q*.065),i,q+120);}
+   spike(end,yaw,spikeLen*.70,i+100);
+  }
+  spike(top,az,spikeLen,i);
+ }
+}
+
 export function perovskiaLeafPoint(t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),lobe=.25+.75*Math.pow(.5+.5*Math.cos(t*Math.PI*14),.60),width=.5*Math.pow(sn,.65)*lobe;
  return [u*width,t,.025*u*u*sn+.018*Math.sin(t*7)*sn-.022*t*t];
@@ -9120,6 +9159,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='bellisRosettes'){drawBellisRosettes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oleariaSmoky'){drawOleariaSmoky(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='mahoniaCanes'){drawMahoniaCanes(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='indigoSpires'){drawIndigoSpires(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='perovskiaShoots'){drawPerovskia(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lavenderMounds'){drawLavenderMounds(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='chocolateCosmos'){drawChocolateCosmos(b,{info,s,detail,rand,month},kit);return;}

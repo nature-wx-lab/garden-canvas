@@ -10,6 +10,19 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Indigo Spires keeps opposite ovate leaves and long curved whorls with retained uncut winter stems',()=>{
+ const id='p-c0baa43951cb',info=CATALOG[id];assert.deepEqual(info.height,[.8,1]);assert.deepEqual(info.spread,[.6,1]);assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'opposite');assert.equal(info.appearance.compoundType,undefined);assert.equal(info.appearance.inflorescenceLength,.45);
+ for(const [i,dimensions] of [{height:.95,spread:.8,leafHeight:.55},{height:.2,spread:.25,leafHeight:.14}].entries()){
+  let skeleton;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,20400+i,1,1),...dimensions},g=plantModel(p,view(month));assert.equal(g.userData.architecture,'indigoSpires');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+   const leaves=g.children.find(m=>m.userData.component==='leaf-indigo');assert.equal(!!leaves,![12,1,2].includes(month));if(leaves){assert.equal(leaves.count%2,0);const petioles=g.children.find(m=>m.userData.component==='petiole-indigo');assert.equal(petioles.count,leaves.count);assert.ok(leaves.geometry.userData.indigoLeaf);}
+   assert.equal(g.children.some(m=>m.userData.component==='tube-indigo'),info.bloom.includes(month));assert.ok(g.children.some(m=>m.userData.component==='calyx-indigo'));assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(wood|stem|branch|axis)-indigo$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.65);}dispose(g);
+  }
+ }
+});
 test('Russian sage retains branched winter stems while opposite dissected leaves and summer panicles follow source conditions',()=>{
  const id='p-073feab328f6',info=CATALOG[id];assert.deepEqual(info.height,[.7,1]);assert.deepEqual(info.spread,[.6,.9]);assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'opposite');assert.equal(info.appearance.compoundType,undefined);
  for(const [i,dimensions] of [{height:.9,spread:.7,leafHeight:.55},{height:.2,spread:.25,leafHeight:.15}].entries()){
