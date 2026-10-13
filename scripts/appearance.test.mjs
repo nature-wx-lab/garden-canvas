@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Clary sages separate broad winter rosettes, branched panicles, colored bracts and hooked flowers',()=>{
+ const ids=['p-2de5173937c5','p-231b939bcdb3'];
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,i?[.5,.7]:[1,1.2]);assert.deepEqual(info.spread,i?[.4,.6]:[.6,.9]);let skeleton;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,21700+i,1,1),height:small?.13:i?.6:1.1,spread:small?.20:i?.5:.8,leafHeight:small?.08:.5},g=plantModel(p,view(month)),s=stateAt(p,view(month));assert.equal(g.userData.architecture,'claryPanicles');assert.equal(s.shootScale,1);assert.equal(g.scale.y,1);
+   const basal=g.children.find(m=>m.userData.component==='leaf-clary-basal');assert.ok(basal?.count>0);assert.ok(basal.geometry.userData.claryLeaf);const stemLeaf=g.children.find(m=>m.userData.component==='leaf-clary-stem');if([12,1,2].includes(month))assert.equal(stemLeaf,undefined);else assert.equal(stemLeaf.count%2,0);
+   assert.equal(g.children.some(m=>m.userData.component==='bract-clary'),[5,6].includes(month));assert.equal(g.children.some(m=>m.userData.component==='hood-clary'),[5,6].includes(month));assert.ok(!g.children.some(m=>/fruit|seed|stolon/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(stem|branch|axis)-clary$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.13);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.72);}dispose(g);
+  }
+ }
+ assert.notEqual(CATALOG[ids[0]].appearance.flowerPalette.bract,CATALOG[ids[1]].appearance.flowerPalette.bract);
+});
 test('Pineapple sages distinguish golden foliage and compact early flowers while preserving uncut branches',()=>{
  const ids=['p-a14fbb86dd90','p-f5faaa27a891','p-ba1c3c8b7f93'];
  for(const [i,id] of ids.entries())for(const small of [false,true]){
