@@ -10,6 +10,19 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Silver perennial snapdragons retain creeping axes while silver leaves thin in winter and lips follow source seasons',()=>{
+ const ids=['p-4cf4a98708c9','p-dda646008ff2'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id];assert.deepEqual(info.spread,[.3,.4]);assert.equal(info.appearance.status,'partial');let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,19900+i,1,1),height:.15,spread:.35,leafHeight:.1},g=plantModel(p,view(month));assert.equal(g.userData.architecture,'silverSnapdragons');assert.equal(g.scale.y,1);const leaves=g.children.filter(m=>m.userData.component==='leaf-silver-snapdragon').reduce((n,m)=>n+m.count,0);assert.ok(leaves>100);if(month===1)winter=leaves;if(month===5)summer=leaves;assert.equal(g.children.some(m=>m.userData.component==='palate'),month>=3&&month<=11);assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+   const axes=g.children.filter(m=>/^(stem|side|axis|pedicel)-silver-snapdragon$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.58);}dispose(g);
+  }
+  assert.ok(winter<summer);
+ }
+ const small=plantModel({...makePlant(ids[1],19902,1,1),height:.07,spread:.18,leafHeight:.05},view(5));for(const m of small.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.079);assert.ok(m.boundingBox.min.y>=-.015);}dispose(small);
+});
 test('Silver Falls keeps silver fan leaves on connected ground runners without copied sericea winter bronze',()=>{
  const id='p-42638fd17d88',info=CATALOG[id];assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.shootProfile,'silverFalls');assert.equal(info.appearance.persistence,'evergreen');let skeleton,leafCount;
  for(const small of [false,true])for(let month=1;month<=12;month++){

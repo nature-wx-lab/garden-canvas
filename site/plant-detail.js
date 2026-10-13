@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.188';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.189';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.188';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.189';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5116,6 +5116,26 @@ function drawDichondraMat(b,{info,s,p,detail,rand,month},kit){
  }
 }
 
+function drawSilverSnapdragons(b,{info,s,p,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.15,w*.085),n=Math.max(12,Math.min(45,Math.round(26*detail*w/.35))),noise=(i,j)=>.5+.5*Math.sin(i*16.1+j*7.7+p.id*.25),r=Math.min(a.flowerRadius,h*.060,w*.036);
+ const leaf=(at,yaw,pitch,len,key)=>{if(noise(key,15)>s.leafDensity)return;b.add('helichrysumRounded','leaf-silver-snapdragon',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,pitch,yaw,0);};
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,reach=w*(.10+.29*Math.sqrt((i+.5)/n)),rise=h*(.36+.18*noise(i,1));let prev=[Math.sin(az)*w*.03,.005,Math.cos(az)*w*.03];
+  for(let j=1;j<=10;j++){
+   const t=j/10,turn=az+.14*Math.sin(t*4+i),at=[Math.sin(turn)*reach*t,.006+rise*Math.pow(t,1.8),Math.cos(turn)*reach*t];b.branch(prev,at,Math.min(.0012,h*.007),a.stemColor,'stem-silver-snapdragon');prev=at;
+   for(let side=0;side<(j<8?2:1);side++)leaf(at,turn+j*Math.PI/2+side*Math.PI,.65+.30*noise(i,j),L*(.85+.15*noise(j,i)),i*30+j*2+side);
+   if(j===4||j===7){const yaw=turn+(j===4?1:-1)*1.05,tip=[at[0]+Math.sin(yaw)*L*1.6,at[1]+L*.70,at[2]+Math.cos(yaw)*L*1.6];b.branch(at,tip,Math.min(.0007,h*.004),a.stemColor,'side-silver-snapdragon');for(let k=0;k<4;k++){const t2=(k+1)/4,pt=at.map((v,d)=>v+(tip[d]-v)*t2);for(const side of [0,1])leaf(pt,yaw+k*Math.PI/2+side*Math.PI,.85,L*.72,i*90+j*8+k*2+side);}}
+  }
+  const spike=h*(.26+.06*noise(i,2)),top=[prev[0],prev[1]+spike,prev[2]];b.branch(prev,top,Math.min(.001,h*.006),a.stemColor,'axis-silver-snapdragon');
+  for(let j=0;j<6;j++){
+   const t=j/5,yaw=az+j*2.399963,base=[prev[0],prev[1]+spike*t,prev[2]],at=[base[0]+Math.sin(yaw)*r*.65,base[1],base[2]+Math.cos(yaw)*r*.65];b.branch(base,at,r*.055,a.stemColor,'pedicel-silver-snapdragon');
+   if(!s.bloom)continue;
+   if(j>3){b.add(kit.bud,'bud-silver-snapdragon',j===5?s.leafColor:a.flowerPalette.tube,...at,r*.36,r*.55,r*.36,.3,yaw,0);continue;}
+   detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:r*(1-t*.14),color:s.flowerColor,shape:'snapdragonLips',palette:a.flowerPalette,tilt:-.22,yaw},{...kit,rand});
+  }
+ }
+}
+
 export function angelWingGeometry(variant=0){
  const pos=[],uv=[],ix=[],N=64,C=32;
  for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
@@ -8994,6 +9014,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='silverSnapdragons'){drawSilverSnapdragons(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='angelWings'){drawAngelWings(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='helichrysumFoliage'){drawHelichrysumFoliage(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='cushionBush'){drawCushionBush(b,{info,s,p,detail,rand},kit);return;}
