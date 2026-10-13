@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.156';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.157';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.156';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.157';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4819,6 +4819,62 @@ export function heucherellaLeafPoint(type,t,angle){
  return [x,y,.14*t*t+fold+.018*Math.sin(angle*18)*t*t];
 }
 
+export function trifoliumLeafPoint(t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),width=.54*Math.pow(sn,.38)*(.54+.52*t)*(.983+.017*Math.cos(t*81));
+ return [u*width,t-.045*Math.exp(-u*u*45)*Math.pow(t,10),.018*t*t+.045*Math.abs(u)*sn+.004*Math.cos((t-Math.abs(u)*.30)*69)*sn];
+}
+
+function drawClover(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,annual=a.architecture==='crimsonClover',typ=a.shootProfile,h=s.height*(annual?s.leafScale:1),w=s.spread*(annual?Math.sqrt(s.leafScale):1),L=a.leafLength*(annual?.7+.3*Math.sqrt(s.leafScale):.82+.18*s.leafDensity),stem=a.stemColor;
+ const leaf=(node,angle,rise)=>{
+  const reach=L*(.45+rand()*.5),tip=[node[0]+Math.sin(angle)*reach,node[1]+rise,node[2]+Math.cos(angle)*reach];let from=node;
+  for(let q=1;q<=3;q++){const z=q/3,to=[node[0]+(tip[0]-node[0])*z*z,node[1]+rise*(1-Math.pow(1-z,1.4)),node[2]+(tip[2]-node[2])*z*z];b.branch(from,to,.00042,stem,'petiole-clover');from=to;}
+  for(const side of [-1,1])b.add('narrow','stipule-clover','#9eaf7d',...node,.0014,.005,.003,.4,angle+side*.5,0);
+  const four=!annual&&rand()<a.fourLeafShare,n=four?4:3,turns=four?[0,Math.PI/2,Math.PI,-Math.PI/2]:[-1.9,0,1.9],size=L*(.75+rand()*.25);
+  const colour=typ==='pink'&&s.seasonName!=='summer'&&rand()<.32?'#8fa486':s.leafColor;
+  for(let k=0;k<n;k++)b.add('trifoliumLeaf',`leaf-clover-${typ}`,kit.shade(rand,colour,.035),...tip,size*a.leafWidth/a.leafLength,size,size,annual?.85+rand()*.9:1.20+rand()*.38,angle+turns[k],(rand()-.5)*.16);
+ };
+ const head=(at,angle,index)=>{
+  const length=a.inflorescenceLength,count=annual?90:60,rad=annual?length*.115:length*.24;
+  b.add(kit.bud,'receptacle-clover',stem,...at,rad*.64,annual?length*.47:rad*.70,rad*.64);
+  for(let k=0;k<count;k++){
+   const t=(k+.5)/count,ny=1-2*t,az=k*2.399963+angle,rr=annual?rad*Math.pow(Math.sin(Math.PI*t),.43):rad*Math.sqrt(1-ny*ny),y=annual?length*(.5-t):rad*ny;
+   const p=[at[0]+Math.sin(az)*rr,at[1]+y,at[2]+Math.cos(az)*rr];
+   if(annual&&t<.07){b.add(kit.bud,'bud-clover',s.flowerColor,...p,.00075,.0018,.00075);continue;}
+   const tilt=annual?.35+t*.65:Math.acos(ny)*.83,colour=!annual&&ny<-.35&&index%3===0?'#c1b5a3':kit.shade(rand,s.flowerColor,.025);
+   detailedFlower(b,{x:p[0],y:p[1],z:p[2],r:a.flowerRadius,color:colour,shape:'cloverPea',tilt,yaw:az,palette:{hairy:annual}},{...kit,rand});
+  }
+ };
+ if(annual){
+  const n=Math.max(4,Math.round(8*detail*s.leafDensity));
+  for(let i=0;i<n;i++){
+   const an=i*2.399963,r=w*(.04+.24*Math.sqrt((i+.5)/n)),top=h*(.64+rand()*.24),nodes=7,root=[Math.sin(an)*r*.26,.004,Math.cos(an)*r*.26];let from=root;
+   leaf(root,an,L*.20);
+   for(let j=1;j<=nodes;j++){
+    const t=(j-.24+rand()*.24)/nodes,bend=an+Math.sin(t*2.7+i)*.30,to=[Math.sin(bend)*r*(.26+.74*t),top*t,Math.cos(bend)*r*(.26+.74*t)];
+    b.branch(from,to,.00125*(1-t*.5),stem,'stem-clover-hairy');leaf(to,an+j*2.399963,L*(.18+rand()*.2));from=to;
+    if(j===2||j===4){
+     const side=an+(j===2?1:-1)*(.70+rand()*.35),reach=w*(.12+rand()*.10),end=[to[0]+Math.sin(side)*reach,Math.min(h*.82,to[1]+h*(.25+rand()*.22)),to[2]+Math.cos(side)*reach];let branch=to;
+     for(let q=1;q<=4;q++){const z=q/4,next=[to[0]+(end[0]-to[0])*Math.pow(z,.68),to[1]+(end[1]-to[1])*z,to[2]+(end[2]-to[2])*Math.pow(z,.68)];b.branch(branch,next,.00085*(1-z*.4),stem,'stem-clover-hairy');leaf(next,side+q*2.399963,L*.25);branch=next;}
+     if(s.bloom&&rand()<s.flowerDensity){const at=[end[0],end[1]+h*.045,end[2]];b.branch(end,at,.0006,stem,'peduncle-clover');head(at,side,i+j);}
+    }
+   }
+   if(s.bloom&&rand()<s.flowerDensity){const at=[from[0],Math.min(s.height-a.inflorescenceLength*.51,from[1]+h*.1),from[2]];b.branch(from,at,.0008,stem,'peduncle-clover');head(at,an,i);}
+  }
+ }else{
+  const runners=Math.max(6,Math.round(12*detail)),nodes=Math.max(3,Math.round(9*s.leafDensity));
+  for(let i=0;i<runners;i++){
+   const an=i*2.399963,r=Math.max(L,w*.47-L*1.7)*(.78+rand()*.22);let from=[0,.002,0];
+   for(let j=1;j<=nodes;j++){
+    const t=j/nodes,aa=an+Math.sin(t*3.1+i)*.18,to=[Math.sin(aa)*r*t,.003+rand()*.003,Math.cos(aa)*r*t];b.branch(from,to,.0008,stem,'stolon-clover');from=to;
+    leaf(to,aa+j*2.399963,h*(.24+rand()*.38));
+    if(s.bloom&&j>3&&(i*nodes+j)%13===0&&rand()<s.flowerDensity){const at=[to[0]+L*Math.sin(aa),h*(.74+rand()*.12),to[2]+L*Math.cos(aa)];b.branch(to,at,.00055,stem,'peduncle-clover');head(at,aa,i);}
+   }
+  }
+ }
+}
+
 export function brunneraLeafPoint(t,u){
  const width=.62*Math.pow(Math.sin((.23+.77*t)*Math.PI),.58)*(1-.14*t),rib=.0035*Math.cos((t-Math.abs(u)*.24)*46)*Math.sin(Math.abs(u)*Math.PI);
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.095*t*t-.018*u*u*Math.sin(Math.PI*t)+rib+.008*Math.sin(t*16+u*7)*u*u];
@@ -6521,6 +6577,17 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   f.add(kit.bud,'flowerThroat','#62526e',0,-r*.12,0,r*.13,r*.02,r*.13);
   for(let j=0;j<4;j++){const aa=j*TAU/4;f.add(kit.bud,'anther-verbena','#d7c6ba',Math.sin(aa)*r*.07,-r*.05,Math.cos(aa)*r*.07,r*.025,r*.018,r*.025);}return;
  }
+ if(shape==='cloverPea'){
+  if(palette.hairy)r*=1.45;
+  const f=flowerFrame(b,[x,y,z],tilt,yaw);
+  f.add('petal','standard-clover',color,0,0,0,r*.48,r,r*.6,.12,0,0);
+  for(const side of [-1,1]){
+   f.add('petal','wing-clover',color,side*r*.06,0,0,r*.25,r*.77,r*.4,.75,side*.6,0);
+   f.add('petal','keel-clover',color,side*r*.025,0,r*.10,r*.16,r*.66,r*.3,.62,side*.11,0);
+  }
+  f.add('tube','calyx-clover',palette.hairy?'#8e9868':'#9baa83',0,-r*.14,0,r*.12,r*.34,r*.12);
+  for(let j=0;j<5;j++){const aa=j*TAU/5;f.add('narrow','sepal-clover',palette.hairy?'#a5ab7a':'#92a375',Math.sin(aa)*r*.1,0,Math.cos(aa)*r*.1,r*.075,r*(palette.hairy?.57:.25),r*.07,.22,aa,0);}return;
+ }
  if(shape==='brunneraCorolla'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),pk=palette.edge?'petal-brunnera-edge':'petal-brunnera';
   f.add('tube','tube-brunnera',color,0,-r*.23,0,r*.13,r*.46,r*.13);
@@ -7857,7 +7924,8 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['tapienMat','stolonPhlox'].includes(info.appearance?.architecture)){drawLowFlowerMats(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='sunspot'){drawSunspot(b,{info,s,rand},kit);return;}
  if(['uprightYellow','annualScabiosa','shastaAlaska','pacificDelphinium','summerHollyhock','pinkEveningPrimrose','creamFalls','doublePortulaca'].includes(info.appearance?.architecture)){drawGardenFlowerForms(b,{info,s,p,detail,rand},kit);return;}
- if(['foxFace','ornamentalKale','ornamentalPepper','crimsonClover','livingstoneDaisy','pinkSage','compactPinkCoreopsis'].includes(info.appearance?.architecture)){drawFruitAndLeafPlants(b,{info,s,p,detail,rand},kit);return;}
+ if(['cloverStolons','crimsonClover'].includes(info.appearance?.architecture)){drawClover(b,{info,s,p,detail,rand},kit);return;}
+ if(['foxFace','ornamentalKale','ornamentalPepper','livingstoneDaisy','pinkSage','compactPinkCoreopsis'].includes(info.appearance?.architecture)){drawFruitAndLeafPlants(b,{info,s,p,detail,rand},kit);return;}
  if(s.groundDormant)return;
  const a=info.appearance||{},h=s.height,w=s.spread,green=s.leafColor||info.leafColor||'#587e45',stemColor=a.stemColor||green;
  const leafKind=foliageKind(info),shape=a.leafMargin==='crenate'?'crenate':a.leafShape||'leaf',leafyViolet=a.architecture==='leafyViolet',basal=!leafyViolet&&(a.arrangement==='basal'||['rosette','clump','mound','creeping'].includes(a.habit)),creeping=a.habit==='creeping';
