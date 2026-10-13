@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.155';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.156';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.155';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.156';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4819,6 +4819,47 @@ export function heucherellaLeafPoint(type,t,angle){
  return [x,y,.14*t*t+fold+.018*Math.sin(angle*18)*t*t];
 }
 
+export function brunneraLeafPoint(t,u){
+ const width=.62*Math.pow(Math.sin((.23+.77*t)*Math.PI),.58)*(1-.14*t),rib=.0035*Math.cos((t-Math.abs(u)*.24)*46)*Math.sin(Math.abs(u)*Math.PI);
+ return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.095*t*t-.018*u*u*Math.sin(Math.PI*t)+rib+.008*Math.sin(t*16+u*7)*u*u];
+}
+
+function drawBrunnera(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,lh=Math.min(s.leafHeight||h,h*a.foliageHeightRatio),L=Math.min(a.leafLength,w*.37)*s.leafScale,typ=a.shootProfile;
+ const kind=`leaf-brunnera-${typ}`,stem=a.stemColor,crowns=[];
+ for(let c=0;c<5;c++){
+  const az=c*2.399963,rr=c===0?0:Math.max(0,w*.47-L*1.20)*(.55+rand()*.4),root=[Math.sin(az)*rr,.006,Math.cos(az)*rr];crowns.push(root);
+  const n=Math.max(4,Math.round(9*detail*s.leafDensity));
+  for(let j=0;j<n;j++){
+   const t=j/(n-1),angle=az+j*2.399963+(rand()-.5)*.18,len=L*(.56+.42*t),reach=len*(.30+.25*t),rise=lh*(.64-.36*t)*Math.sqrt(s.leafScale),tip=[root[0]+Math.sin(angle)*reach,root[1]+rise,root[2]+Math.cos(angle)*reach];
+   let from=root;
+   for(let q=1;q<=4;q++){const z=q/4,to=[root[0]+(tip[0]-root[0])*z*z,root[1]+rise*(1-Math.pow(1-z,1.6)),root[2]+(tip[2]-root[2])*z*z];b.branch(from,to,.0015*(1-z*.32),stem,'petiole-brunnera');from=to;}
+   b.add('brunneraHeart',kind,kit.shade(rand,s.leafColor,.045),...tip,len*a.leafWidth/a.leafLength,len,len,1.03+t*.84+(rand()-.5)*.14,angle,(rand()-.5)*.14);
+  }
+ }
+ if(!s.bloom)return;
+ const n=Math.max(3,Math.round(9*detail*s.flowerDensity));
+ for(let j=0;j<n;j++){
+  const root=crowns[j%crowns.length],an=j*2.399963,top=[root[0]+Math.sin(an)*w*.12,h*(.85+rand()*.13),root[2]+Math.cos(an)*w*.12];let from=root;
+  for(let q=1;q<=5;q++){
+   const t=q/5,to=root.map((v,d)=>v+(top[d]-v)*(d===1?t:Math.pow(t,1.4)));b.branch(from,to,.0011*(1-t*.50),stem,'scape-brunnera');
+   if(q<4){const len=L*(.18+q*.055);b.add('brunneraHeart',kind,s.leafColor,...to,len*.65,len,len,.65,an+q*2.399,0);}
+   from=to;
+  }
+  for(let k=0;k<5;k++){
+   const aa=an+k*2.399963,t=.58+k*.07,start=root.map((v,d)=>v+(top[d]-v)*t),len=w*(.10+rand()*.055),end=[start[0]+Math.sin(aa)*len,start[1]+h*.13,start[2]+Math.cos(aa)*len];
+   let branchStart=start;
+   for(let q=1;q<=3;q++){const z=q/3,branchEnd=[start[0]+(end[0]-start[0])*z,start[1]+(end[1]-start[1])*(1-Math.pow(1-z,1.5)),start[2]+(end[2]-start[2])*z];b.branch(branchStart,branchEnd,.0006*(1-z*.25),stem,'cyme-brunnera');branchStart=branchEnd;}
+   for(let f=0;f<7;f++){
+    const t2=f/7,phase=aa+t2*2.0,at=[end[0]+Math.sin(phase)*.018*(1+t2),end[1]+t2*.029,end[2]+Math.cos(phase)*.018*(1+t2)];b.branch(end,at,.00025,stem,'pedicel-brunnera');
+    if(f===6){b.add(kit.bud,'bud-brunnera',typ==='morse'?'#d5debc':'#9e9bbb',...at,.0012,.0014,.0012);continue;}
+    detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius*(.9+rand()*.16),color:s.flowerColor,shape:'brunneraCorolla',palette:a.flowerPalette,tilt:.30+rand()*.70,yaw:aa+f*.7},{...kit,rand});
+   }
+  }
+ }
+}
+
 export function heucheraLeafPoint(type,t,angle){
  const seven=type.endsWith('7'),lobes=seven?[-2.5,-1.67,-.83,0,.83,1.67,2.5]:[-2.2,-1.1,0,1.1,2.2],near=Math.min(...lobes.map(a=>Math.abs(angle-a)));
  const deep=type==='cut7'?.59:type==='shallow7'?.89:.79,lobe=Math.exp(-Math.pow(near/.38,2)),teeth=1-.035*Math.pow(Math.max(0,Math.cos(angle*(seven?57:43))),4);
@@ -6480,6 +6521,17 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   f.add(kit.bud,'flowerThroat','#62526e',0,-r*.12,0,r*.13,r*.02,r*.13);
   for(let j=0;j<4;j++){const aa=j*TAU/4;f.add(kit.bud,'anther-verbena','#d7c6ba',Math.sin(aa)*r*.07,-r*.05,Math.cos(aa)*r*.07,r*.025,r*.018,r*.025);}return;
  }
+ if(shape==='brunneraCorolla'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),pk=palette.edge?'petal-brunnera-edge':'petal-brunnera';
+  f.add('tube','tube-brunnera',color,0,-r*.23,0,r*.13,r*.46,r*.13);
+  for(let j=0;j<5;j++){
+   const aa=j*TAU/5;f.add('brunneraLobe',pk,color,Math.sin(aa)*r*.07,0,Math.cos(aa)*r*.07,r*.90,r*.91,r,1.50,aa,0);
+   f.add('smallSalverPetal','sepal-brunnera','#819260',0,-r*.42,0,r*.26,r*.32,r*.26,1.93,aa,0);
+   f.add(kit.bud,'throat-brunnera','#eeece0',Math.sin(aa)*r*.12,r*.017,Math.cos(aa)*r*.12,r*.11,r*.06,r*.07);
+   f.add(kit.bud,'anther-brunnera','#59545a',Math.sin(aa)*r*.07,-r*.15,Math.cos(aa)*r*.07,r*.025,r*.042,r*.025);
+  }
+  f.add(kit.bud,'stigma-brunnera','#a5ac7a',0,-r*.06,0,r*.027,r*.040,r*.027);return;
+ }
  if(['brunneraFlower','stolonPhloxFlower'].includes(shape)){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),br=shape==='brunneraFlower',tube=br?.45:shape==='tapienFloret'?1.5:1.65,pk=palette.edge?patternKind('petal','primroseEdge',palette.edge):'petal';
   f.add('tube','petal',color,0,-r*tube*.48,0,r*.10,r*tube,r*.10);
@@ -7800,7 +7852,8 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['diphylleiaUmbrella','jeffersoniaBasal','ranzaniaTrifoliate','deinantheCymes','kirengeshomaBells','pteridophyllumFern','hylomeconPinnate','eomeconBasal','araliaHerb','saururusRaceme','parnassiaScapes','cornusHerb'].includes(info.appearance?.architecture)){drawWoodlandSpecies(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
- if(['primroseRosette','gerberaRosette','brunneraSprays'].includes(info.appearance?.architecture)){drawBasalFlowerForms(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='brunneraSprays'){drawBrunnera(b,{info,s,detail,rand},kit);return;}
+ if(['primroseRosette','gerberaRosette'].includes(info.appearance?.architecture)){drawBasalFlowerForms(b,{info,s,detail,rand},kit);return;}
  if(['tapienMat','stolonPhlox'].includes(info.appearance?.architecture)){drawLowFlowerMats(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='sunspot'){drawSunspot(b,{info,s,rand},kit);return;}
  if(['uprightYellow','annualScabiosa','shastaAlaska','pacificDelphinium','summerHollyhock','pinkEveningPrimrose','creamFalls','doublePortulaca'].includes(info.appearance?.architecture)){drawGardenFlowerForms(b,{info,s,p,detail,rand},kit);return;}

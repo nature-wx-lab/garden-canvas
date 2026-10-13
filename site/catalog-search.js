@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.155';
+import {treeProfile} from './tree-profiles.js?v=0.9.156';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -116,6 +116,7 @@ export function seasonAt(info,month){
  else if(a.dormantMonths?.includes(month===1?12:month-1)){density=.35;scale=.55;phase='休眠後の葉の展開（表示目安）';}
  if(a.emergenceMonths?.includes(month)&&!a.dormantMonths?.includes(month)){density=.3;scale=.45;phase='資料の芽出し期';}
  if(a.monthlyLeafDensity?.[m]!==undefined)density=a.monthlyLeafDensity[m];
+ if(a.architecture==='brunneraSprays'){scale=[0,0,.42,.62,.85,1,1,1,1,1,.85,0][m];phase=density===0?'冬の地上部なし（境界月は表示目安）':month<6?'小さな春葉と花茎（葉の大きさは参考補間）':'花後に広がる大きな葉（葉量は参考）';}
  if(a.architecture==='gardenRoseCanes'&&a.monthlyLeafDensity)phase=density===0?'冬の落葉・枝を残す管理例':month===3?'3月の芽吹き（関東の管理例）':month>=11?'低温で葉が減る時期（残葉率は目安）':'葉のあるバラ（剪定・気温で変化）';
  if(a.flowerPalette?.wildRose)phase=density===0?'落葉した枝（境界月は表示目安）':a.persistence==='evergreen'?'常緑の葉（低温時の残葉率は未実測）':month<=4?'春の若葉（境界月は表示目安）':'葉のある時期（色・葉量は参考）';
  if(a.flowerPalette?.carpetMound)phase=density===0?'冬管理後の落葉した枝（暖地の残葉は未実測）':month<=4?'春の展葉（境界月・葉量は表示目安）':month>=11?'低温で葉が減る時期（残葉率は目安）':'葉のある低い株（葉量・剪定姿は参考）';
