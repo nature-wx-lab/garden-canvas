@@ -10,6 +10,21 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Moonlight, So Cool and Christine sages retain foliage patterns and cultivar-specific bloom colours',()=>{
+ const ids=['p-a2c155eac0a4','p-31fc17a4aa55','p-6202fe540a4a'];
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.4,.6]);assert.deepEqual(info.spread,[.3,.5]);assert.equal(info.leaf,'semi');let skeleton;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,21200+i,1,1),height:small?.13:.55,spread:small?.20:.45,leafHeight:small?.08:.35},g=plantModel(p,view(month));assert.equal(g.userData.architecture,'cherrySageBranches');assert.equal(stateAt(p,view(month)).shootScale,1);
+   const flowers=g.children.filter(m=>m.userData.component.startsWith('tube-cherry-'));assert.equal(flowers.length>0,month>=(i===2?6:5)&&month<=11);
+   if(i===0){const tag=[10,11].includes(month)?'leaf-cherry-moon-autumn':'leaf-cherry-moon';assert.ok(g.children.some(m=>m.userData.component===tag));if(month===11&&!small){const colours=g.children.find(m=>m.userData.component===tag).instanceColor.array;assert.ok([...colours].some((v,k)=>k%3===0&&v>colours[k+1]*1.5),'autumn includes reddish leaves');}if(month===7){const tube=flowers[0],lip=g.children.find(m=>m.userData.component==='petal-cherry-moonlight');assert.notDeepEqual([...tube.instanceColor.array.slice(0,3)],[...lip.instanceColor.array.slice(0,3)]);}}
+   if(i===2&&month===7&&!small){assert.ok(flowers.some(m=>m.userData.component==='tube-cherry-christine'));assert.ok(flowers.some(m=>m.userData.component==='tube-cherry-christineFaded'));}
+   const now=g.children.filter(m=>/^(wood|stem|branch|twig|axis)-cherry$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.13);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.64);}dispose(g);
+  }
+ }
+ assert.deepEqual(CATALOG[ids[0]].colors,['orange']);assert.deepEqual(CATALOG[ids[1]].colors,['blue']);assert.deepEqual(CATALOG[ids[2]].colors,['purple','pink']);
+});
 test('Patens sages show gaping large flowers, paired broad leaves and winter dormancy in four colour forms',()=>{
  const ids=['p-9bc739787fc7','p-5a3386ff68f9','p-da6c6c586e4c','p-2e265a3f22e9'];
  for(const [i,id] of ids.entries())for(const small of [false,true]){
