@@ -10,6 +10,21 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Guaranitica entries retain source-specific dimensions and winter states with blue tubular flowers',()=>{
+ const ids=['p-34eb3ce89d23','p-09c384d3510f'];
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'opposite');assert.deepEqual(info.height,i?[.7,1.5]:[.8,1.2]);assert.deepEqual(info.spread,i?null:[.5,1]);assert.deepEqual(info.colors,['blue','purple']);let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,22200+i,1,1),height:small?.15:i?1.3:1.0,spread:small?.22:.8,leafHeight:small?.09:.6},g=plantModel(p,view(month)),s=stateAt(p,view(month));assert.equal(s.shootScale,1);assert.equal(g.scale.y,1);
+   if(i&&[12,1,2].includes(month)){assert.equal(g.userData.groundDormant,true);assert.equal(g.children.length,0);dispose(g);continue;}
+   assert.equal(g.userData.architecture,'guaraniticaShoots');const leaves=g.children.find(m=>m.userData.component==='leaf-guaranitica');assert.ok(leaves?.count>0);assert.equal(leaves.count%2,0);assert.ok(leaves.geometry.userData.guaraniticaLeaf);assert.equal(leaves.count,g.children.find(m=>m.userData.component==='petiole-guaranitica').count);if(month===1)winter=leaves.count;if(month===7)summer=leaves.count;
+   const flower=g.children.find(m=>m.userData.component==='tube-guaranitica');assert.equal(!!flower,month>=6&&month<=(i?10:11));if(flower){assert.equal(g.children.find(m=>m.userData.component==='filament-guaranitica').count,flower.count*2);assert.ok(g.children.find(m=>m.userData.component==='calyx-guaranitica').count>flower.count);}assert.ok(!g.children.some(m=>/fruit|seed|stolon/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(stem|branch|axis)-guaranitica$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.13);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.72);}dispose(g);
+  }
+  if(!i)assert.ok(winter<summer*.20&&winter>0);
+ }
+});
 test('Rusty sage distinguishes recurved corollas from enlarged persistent calyces without inventing fruit',()=>{
  const side=rustySagePoint('rustySageCalyx',1,-1),upper=rustySagePoint('rustySageCalyx',1,-.5),lower=rustySagePoint('rustySageCalyx',1,.5);assert.ok(upper[2]>side[2]+.3);assert.ok(lower[2]>side[2]+.3);
  const id='p-8f3a711d5632',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.lifeForm,'subshrub');assert.equal(info.appearance.arrangement,'opposite');assert.deepEqual(info.height,[.6,.9]);assert.deepEqual(info.spread,[.3,.6]);
