@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.227';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.228';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.227';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.228';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5020,6 +5020,44 @@ export function paniclePhloxPoint(type,t,u){
  if(type==='paniclePhloxLobe')return [u*.60*Math.pow(sn,.32),t-.065*Math.exp(-u*u*24)*Math.pow(t,8),.045*t*t+.045*u*u*sn];
  const width=.5*Math.pow(sn,.80)*(1-.14*t),curve=t-Math.abs(u)*(.29-.12*Math.abs(u));
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
+}
+
+export function springPhloxPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='springPhloxLobe')return [u*.47*sn**.54,t-.020*Math.exp(-u*u*30)*t**8,.04*t*t+.055*u*u*sn+.015*Math.sin(u*7+t*4)*t*t];
+ return [u*.52*sn**.90*(1-.15*t),t,.085*t*t+.03*u*u*sn];
+}
+
+function drawSpringPhlox(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,pilosa=a.shootProfile==='pilosa',h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.25,w*.15),R=a.flowerRadius*Math.min(1,h/.20),F=a.flowerLength*Math.min(1,h/.20),n=Math.max(3,Math.min(22,Math.round((pilosa?15:19)*detail*Math.sqrt(w/.5)*Math.min(1,h/.23))));
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const pair=(at,az,len,i,k)=>{
+  if(noise(i,k)>s.leafDensity)return;
+  for(let side=0;side<2;side++){const aa=az+side*Math.PI,pet=len*.025,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0005,h*.003),a.stemColor,'petiole-spring-phlox');b.add('springPhloxLeaf',pilosa?'leaf-spring-phlox-hairy':'leaf-spring-phlox',kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,1.03+.25*noise(i,k+side),aa,(noise(i,k+side+72)-.5)*.2);}
+ };
+ const cyme=(base,az,i)=>{
+  if(!s.bloom&&!a.budMonths.includes(month))return;
+  const reach=Math.min(w*.10,h*.18),sites=pilosa?7:9;
+  for(let j=0;j<sites;j++){
+   const aa=az+j*2.399963,rr=reach*Math.sqrt((j+.35)/sites),mid=[base[0]+Math.sin(aa)*rr*.55,base[1]+h*.045,base[2]+Math.cos(aa)*rr*.55],end=[base[0]+Math.sin(aa)*rr,base[1]+h*(.075+.07*noise(i,j+80)),base[2]+Math.cos(aa)*rr];b.branch(base,mid,Math.min(.0007,h*.0025),a.stemColor,'cyme-spring-phlox');b.branch(mid,end,Math.min(.00035,h*.0017),a.stemColor,'pedicel-spring-phlox');
+   const f=flowerFrame(b,end,.05+noise(i,j+100)*.65,aa),radius=R*(.85+.15*noise(i,j+130)),fl=F*(.85+.15*noise(i,j+120));
+   if(!s.bloom||noise(i,j+60)>.88){f.add(kit.bud,'bud-spring-phlox',a.flowerPalette.bud,0,fl*.35,0,radius*.17,fl*.7,radius*.17);continue;}
+   const age=noise(i,j+150),color=pilosa?s.flowerColor:new THREE.Color(a.flowerPalette.young).lerp(new THREE.Color(age>.7?a.flowerPalette.old:a.flowerPalette.mature),age>.7?(age-.7)/.3:age/.7);
+   f.add('tube',pilosa?'tube-spring-phlox-hairy':'tube-spring-phlox',color,0,0,0,radius*.22,fl/1.09,radius*.22);f.add('woodlandMintTube','calyx-spring-phlox',a.flowerPalette.calyx,0,0,0,radius*.31,fl*.43,radius*.31);
+   for(let k=0;k<5;k++){const ba=k*TAU/5;f.add('springPhloxLobe',pilosa?'petal-spring-phlox-pilosa':'petal-spring-phlox-moody',color,0,fl,0,radius*(pilosa?.83:1),radius,radius,Math.PI/2,ba,0);f.add('narrow','sepal-spring-phlox',a.flowerPalette.calyx,Math.sin(ba)*radius*.08,fl*.34,Math.cos(ba)*radius*.08,radius*.10,fl*.24,fl*.24,.2,ba,0);}
+   f.add('tube','eye-spring-phlox',a.flowerPalette.eye,0,fl*.97,0,radius*(pilosa?.12:.26),fl*.026,radius*(pilosa?.12:.26));
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963+(noise(i,1)-.5)*.7,tier=Math.sqrt((i+.5)/n),rr=w*.34*tier,root=[Math.sin(az)*rr*.35,.007,Math.cos(az)*rr*.35],end=[Math.sin(az)*rr,.012,Math.cos(az)*rr];let old=root;
+  for(let j=1;j<=4;j++){
+   const at=mix(root,end,j/4);at[1]+=h*.028*Math.sin(j/4*Math.PI);b.branch(old,at,Math.min(.0012,h*.004),a.stemColor,'runner-spring-phlox');old=at;pair(at,az+j*Math.PI/2,L*.75,i,j+25);
+   if(j!==2&&j!==4)continue;
+   const aa=az+(j===2?-.4:.4),top=[at[0]+Math.sin(aa)*w*.045,at[1]+h*(.42+.21*Math.sqrt(1-tier*tier)+.11*noise(i,j+4)),at[2]+Math.cos(aa)*w*.045];let prev=at;
+   for(let q=1;q<=6;q++){const t=(q+(q<6?(noise(i,q+j*10)-.5)*.6:0))/6,loc=mix(at,top,t);loc[0]+=Math.sin(aa+1)*w*.022*Math.sin(t*Math.PI);b.branch(prev,loc,Math.min(.001,h*.0036)*(1-t*.48),a.stemColor,'stem-spring-phlox');prev=loc;pair(loc,aa+q*Math.PI/2,L*(.85-.30*t),i,j*29+q);}
+   cyme(top,aa,i*3+j);
+  }
+ }
 }
 
 function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
@@ -10306,6 +10344,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='springPhloxTrails'){drawSpringPhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='bronzeSnapdragons'){drawBronzeSnapdragons(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='silverSnapdragons'){drawSilverSnapdragons(b,{info,s,p,detail,rand},kit);return;}

@@ -10,6 +10,21 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Moody Blue and Pilosa have opposite narrow leaves, loose five-lobed cymes and explicit cold-grown winter dormancy',()=>{
+ const ids=['p-51c603bd1c65','p-a7c8251be5c6'];assert.deepEqual(CATALOG[ids[0]].height,[.2,.3]);assert.deepEqual(CATALOG[ids[1]].height,[.3,.4]);
+ for(const [i,id]of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.deepEqual(info.spread,[.4,.6]);assert.equal(info.appearance.arrangement,'opposite');assert.equal(info.appearance.status,'partial');assert.match(info.appearance.phenologyRegion,/寒冷地/);let skeleton;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,23800+i,1,1),height:small?.10:i?.35:.25,spread:small?.18:.5,leafHeight:small?.06:i?.21:.15},g=plantModel(p,view(month));
+   if([12,1,2].includes(month)){assert.equal(g.userData.groundDormant,true);assert.equal(g.children.length,0);assert.match(seasonAt(info,month).phase,/低温管理/);dispose(g);continue;}
+   assert.equal(g.userData.architecture,'springPhloxTrails');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+   const leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-spring-phlox')),count=leaves.reduce((n,m)=>n+m.count,0);assert.ok(count>0);assert.equal(count%2,0);assert.ok(leaves.every(m=>m.geometry.userData.springPhloxLeaf));assert.equal(count,g.children.find(m=>m.userData.component==='petiole-spring-phlox').count);
+   const flowers=g.children.find(m=>m.userData.component===(i?'tube-spring-phlox-hairy':'tube-spring-phlox'));assert.equal(!!flowers,month>=3&&month<=6);if(flowers){assert.equal(g.children.find(m=>m.userData.component==='petal-spring-phlox-'+(i?'pilosa':'moody')).count,flowers.count*5);assert.equal(g.children.find(m=>m.userData.component==='eye-spring-phlox').count,flowers.count);assert.equal(g.children.find(m=>m.userData.component==='sepal-spring-phlox').count,flowers.count*5);}assert.ok(!g.children.some(m=>/filament|anther|fruit|seed|rhizome|root/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(stem|runner)-spring-phlox$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.15);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75);}dispose(g);
+  }
+ }
+});
 test('Good Pink Manners replaces its generic form with four-row tubular flowers and keeps winter uncertainty',()=>{
  const id='p-2170af3d50b2',info=CATALOG[id];assert.deepEqual(info.height,[.55,.65]);assert.equal(info.spread,null);assert.equal(info.visual,'reference');assert.equal(info.form,'spike');assert.deepEqual(info.colors,['pink']);assert.equal(info.appearance.status,'partial');assert.ok(info.appearance.unconfirmed.includes('persistence'));
  for(const small of [false,true]){let skeleton;
