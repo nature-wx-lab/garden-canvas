@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.161';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.162';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.161';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.162';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4886,19 +4886,21 @@ export function paniclePhloxPoint(type,t,u){
 function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),growth=month===3?.25:month===4?.55:month===5?.83:1;
  const n=Math.max(3,Math.min(12,Math.round(6*detail*Math.pow(w/.4,.70)))),L=Math.min(a.leafLength,w*.28),stem=winter?a.winterStemColor:a.stemColor;
- const leafPair=(at,angle,len,upper=false)=>{
+ const leafPair=(at,angle,len,upper=false,pitch=.9)=>{
   for(const side of [0,Math.PI]){
    const aa=angle+side,petiole=upper?.0008:.003,tip=[at[0]+Math.sin(aa)*petiole,at[1]+.001,at[2]+Math.cos(aa)*petiole];
    b.branch(at,tip,.00055,stem,'petiole-panicle-phlox');
-   b.add('paniclePhloxLeaf','leaf-panicle-phlox',kit.shade(rand,s.leafColor,.035),...tip,len*a.leafWidth/a.leafLength,len,len,.88+rand()*.14,aa,0);
+   b.add('paniclePhloxLeaf','leaf-panicle-phlox',kit.shade(rand,s.leafColor,.035),...tip,len*a.leafWidth/a.leafLength,len,len,pitch+.045*Math.sin(aa*3.7),aa,0);
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963,rr=w*.20*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.003,Math.cos(az)*rr],top=h*(.79+rand()*.13),body=(winter?top*.86:s.bloom?top*.76:top*.90)*(winter?1:growth);
+  // Structural variation is fixed per stem, independent of seasonal leaf/flower density.
+  const shape=k=>.5+.5*Math.sin((i+1)*12.9898+k*7.233);
+  const az=i*2.399963,rr=w*.20*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.003,Math.cos(az)*rr],top=h*(.79+shape(0)*.13),body=(winter?top*.86:s.bloom?top*.76:top*.90)*(winter?1:growth);
   const point=t=>[root[0]+Math.sin(az)*w*.035*t*t,root[1]+body*t,root[2]+Math.cos(az)*w*.035*t*t];let from=root;
   for(let j=1;j<=8;j++){
-   const t=j/8,at=point(t);b.branch(from,at,.00165*(1-t*.35),stem,winter?'dry-stem-panicle-phlox':'stem-panicle-phlox');from=at;
-   if(!winter&&(j<3||rand()<s.leafDensity))leafPair(at,az+j*Math.PI/2,L*(.98-.46*t)*(.65+.35*growth),j>5);
+   const t=(j+(j===8?0:(shape(j)-.5)*.32))/8,at=point(t);b.branch(from,at,.00165*(1-t*.35),stem,winter?'dry-stem-panicle-phlox':'stem-panicle-phlox');from=at;
+   if(!winter&&(j<3||rand()<s.leafDensity))leafPair(at,az+j*Math.PI/2,L*(s.bloom&&j===8?.30:.98-.46*t)*(.65+.35*growth),j>5,1.22-.43*t);
   }
   // Retained dead stems are illustrative. They are not a pruning event or a
   // miniature living shoot; actual winter persistence is not quantified.
@@ -4908,15 +4910,15 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
    const age=(index%3+rand()*.7)/3,color=a.shootProfile==='blueParadise'?new THREE.Color(a.flowerPalette.young).lerp(new THREE.Color(a.flowerPalette.mature),age):s.flowerColor;
    detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius,color,shape:'paniclePhloxFlower',palette:{...a.flowerPalette,length:a.flowerLength,pattern:index%3},tilt,yaw:angle},{...kit,rand});
   };
+  let previous=axis;
   for(let level=0;level<5;level++){
-   const t=level/4,start=[axis[0],axis[1]+rise*t*.88,axis[2]],end=[axis[0],axis[1]+rise*(t*.88+.17),axis[2]];
-   if(level>0)b.branch([axis[0],axis[1]+rise*(level-1)/4*.88,axis[2]],start,.0010,stem,'axis-panicle-phlox');
+   const t=level/4+(level>0&&level<4?(shape(20+level)-.5)*.09:0),start=[axis[0],axis[1]+rise*t*.88,axis[2]],end=[axis[0],axis[1]+rise*(t*.88+.17),axis[2]];
+   if(level>0)b.branch(previous,start,.0010,stem,'axis-panicle-phlox');previous=start;
    for(const side of [0,Math.PI]){
-    const angle=az+level*Math.PI/2+side,rad=R*Math.sqrt(Math.max(.08,1-t*t*.95)),tip=[start[0]+Math.sin(angle)*rad,start[1]+rise*.14,start[2]+Math.cos(angle)*rad],bend=[start[0]+Math.sin(angle)*rad*.48,start[1]+rise*.075,start[2]+Math.cos(angle)*rad*.48];
+    const key=30+level*8+(side?4:0),angle=az+level*Math.PI/2+side,rad=R*Math.sqrt(Math.max(.08,1-t*t*.95))*(.84+.16*shape(key)),tip=[start[0]+Math.sin(angle)*rad,start[1]+rise*(.12+.04*shape(key+1)),start[2]+Math.cos(angle)*rad],bend=[start[0]+Math.sin(angle)*rad*.48,start[1]+rise*.075,start[2]+Math.cos(angle)*rad*.48];
     b.branch(start,bend,.00078,stem,'branch-panicle-phlox');b.branch(bend,tip,.00055,stem,'branch-panicle-phlox');
-    if(level===0&&side===0)leafPair(start,angle,L*.30,true);
     for(let j=0;j<3;j++){
-     const aa=angle+(j-1)*.74,reach=R*.29,at=[tip[0]+Math.sin(aa)*reach,tip[1]+rise*(.07+(j===1?.06:0)),tip[2]+Math.cos(aa)*reach];
+     const aa=angle+(j-1)*.74+(shape(key+j+70)-.5)*.18,reach=R*(.24+.06*shape(key+j+80)),at=[tip[0]+Math.sin(aa)*reach,tip[1]+rise*(.055+(j===1?.06:0)+.03*shape(key+j+90)),tip[2]+Math.cos(aa)*reach];
      b.branch(tip,at,.00028,stem,'pedicel-panicle-phlox');
      if(rand()>s.flowerDensity){b.add(kit.bud,'bud-panicle-phlox',a.flowerPalette.bud,...at,.0023,.006,.0023,.40,aa,0);continue;}
      floret(at,aa,.22+.83*(1-t)+rand()*.12,level*6+j+(side?3:0));

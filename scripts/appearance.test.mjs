@@ -29,6 +29,12 @@ test('Panicle Phlox separates three flower colours and keeps dormant dead stems 
    const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),winter=[12,1,2].includes(month),flowers=count('tube-panicle-phlox');
    assert.equal(g.userData.architecture,'paniclePhlox');assert.equal(g.scale.x,1);assert.equal(g.scale.y,1);assert.equal(seasonAt(info,month).shootScale,1);
    assert.equal(count('dry-stem-panicle-phlox')>0,winter);assert.equal(count('stem-panicle-phlox')>0,!winter);assert.equal(count('leaf-panicle-phlox')>0,!winter);assert.equal(count('leaf-panicle-phlox')%2,0);
+   // A flower-head base must not add a second pair over the top stem-node pair.
+   const leafBases=new Set();for(const mesh of g.children.filter(m=>m.userData.component==='leaf-panicle-phlox')){
+    const matrices=mesh.instanceMatrix.array;for(let k=0;k<mesh.count;k++){
+     const key=Array.from(matrices.slice(k*16+12,k*16+15)).map(v=>v.toFixed(7)).join(',');assert.ok(!leafBases.has(key),'duplicated leaf attachment');leafBases.add(key);
+    }
+   }
    assert.equal(flowers>0,[6,7,8].includes(month));assert.equal(count('branch-panicle-phlox')>0,flowers>0);assert.equal(count('sepal-panicle-phlox'),flowers*5);assert.equal(count('calyx-panicle-phlox'),flowers);assert.equal(count('eye-panicle-phlox'),flowers);
    const petals=g.children.filter(m=>m.userData.component.startsWith(i===0?'petal-phlox-picasso-':'petal-panicle-phlox'));assert.equal(petals.reduce((n,m)=>n+m.count,0),flowers*5);
    if(winter){assert.match(seasonAt(info,month).phase,/枯れ茎.*未確認/);assert.equal(g.children.length,1);g.children[0].computeBoundingBox();assert.ok(g.children[0].boundingBox.max.y>p.height*.5);assert.equal(p.management,null);}
