@@ -10,6 +10,47 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Vinca species distinguish plain Jenny and minor leaves and keep late-winter flowers independent of leaf thinning',()=>{
+ const ids=['p-1d614a325b28','p-fced6a67f784'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],a=info.appearance,p=makePlant(id,17500+i,1,1);p.height=i?.1:.25;p.spread=.40;p.leafHeight=p.height*.60;
+  assert.equal(a.status,'partial');assert.equal(a.architecture,'vincaRunners');assert.equal(info.variegated,false);assert.equal(a.leafPattern,undefined);assert.equal(a.persistence,'semiEvergreen');assert.equal(a.inflorescence,'solitary');
+  assert.deepEqual(info.bloom,i?[3,4,5,6,7,8]:[2,3,4,5]);assert.deepEqual(a.flowerMonths,info.bloom);
+  assert.ok(a.unconfirmed.some(x=>x.includes('実測')));assert.ok(a.unconfirmed.some(x=>x.includes('消失する月')));assert.ok(a.unconfirmed.some(x=>x.includes('内部器官')));
+  let skeleton,febFlowers=0,mayFlowers=0,winterLeaves=0,summerLeaves=0;
+  const bounds=g=>{
+   for(const mesh of g.children){
+    for(const values of [mesh.instanceMatrix.array,mesh.geometry.attributes.position.array,mesh.geometry.attributes.normal.array])assert.ok([...values].every(Number.isFinite));
+    mesh.computeBoundingBox();for(const axis of ['x','y','z']){assert.ok(Number.isFinite(mesh.boundingBox.min[axis]));assert.ok(Number.isFinite(mesh.boundingBox.max[axis]));}
+    assert.ok(mesh.boundingBox.min.y>=-.006);assert.ok(mesh.boundingBox.max.y<=p.height*1.25);
+    assert.ok(Math.max(Math.abs(mesh.boundingBox.min.x),Math.abs(mesh.boundingBox.max.x),Math.abs(mesh.boundingBox.min.z),Math.abs(mesh.boundingBox.max.z))<p.spread*.65);
+   }
+  };
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),flowers=count(i?'petal-vinca':'petal-vinca-jenny'),leaf=g.children.find(m=>m.userData.component==='leaf-vinca-plain-'+a.shootProfile);
+   assert.equal(g.userData.architecture,'vincaRunners');assert.equal(g.scale.x,1);assert.equal(g.scale.y,1);assert.equal(seasonAt(info,month).shootScale,1);assert.equal(p.management,null);
+   assert.ok(count('stolon-vinca')>0);assert.ok(count('root-vinca')>0);assert.ok(count('shoot-vinca')>0);assert.equal(flowers>0,info.bloom.includes(month));assert.equal(count('tube-vinca'),flowers);assert.equal(count('pedicel-vinca'),flowers);
+   assert.ok(leaf);assert.equal(leaf.count%2,0);assert.ok(leaf.geometry.userData[a.leafShape]);assert.equal(leaf.material.roughness,i?.52:.40);
+   assert.ok(!g.children.some(m=>m.userData.component.startsWith('leaf-vinca-')&&!m.userData.component.startsWith('leaf-vinca-plain-')));
+   assert.ok(!g.children.some(m=>/^(anther|stigma|style)-vinca/.test(m.userData.component)));
+   const stems=g.children.filter(m=>['stolon-vinca','shoot-vinca'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(!skeleton)skeleton=stems;else assert.deepEqual(stems,skeleton);
+   if(month===1)winterLeaves=leaf.count;if(month===7)summerLeaves=leaf.count;if(month===2)febFlowers=flowers;if(month===5)mayFlowers=flowers;
+   if(!i&&month===2)assert.match(seasonAt(info,month).phase,/晩冬.*参考換算.*未確認/);
+   if(month===1)assert.match(seasonAt(info,month).phase,/参考表示.*未確認/);
+   bounds(g);dispose(g);
+  }
+  assert.ok(winterLeaves<summerLeaves);if(!i){assert.ok(febFlowers>0);assert.equal(febFlowers,mayFlowers,'same flowering density must survive different winter leaf density');}
+  let smallLeaves=0;
+  for(const width of [.15,.6]){
+   p.spread=width;const g=plantModel(p,view(4)),leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-vinca-plain-')).reduce((n,m)=>n+m.count,0);
+   if(width===.15)smallLeaves=leaves;else{assert.ok(leaves>smallLeaves);assert.ok(leaves<400);}bounds(g);dispose(g);
+  }
+ }
+ assert.notEqual(CATALOG[ids[0]].appearance.leafShape,CATALOG[ids[1]].appearance.leafShape);assert.ok(CATALOG[ids[1]].appearance.leafLength<CATALOG[ids[0]].appearance.leafLength*.5);
+ assert.equal(CATALOG[ids[0]].appearance.flowerPattern,'vincaWhiteEye');assert.equal(CATALOG[ids[1]].appearance.flowerPattern,undefined);
+ assert.notEqual(vincaPoint('vincaJennyLeaf',.5,.8)[2],vincaPoint('vincaMinorLeaf',.5,.8)[2]);
+ for(const type of ['vincaJennyLeaf','vincaMinorLeaf'])assert.equal(vincaPoint(type,0,1)[1],0);
+});
 test('Vinca keeps rooted runners, opposite variegated leaves and axillary pinwheels without inventing winter pruning',()=>{
  const ids=['p-26ec29ba3a16','p-3b5edb11fe8a'];
  for(const [i,id] of ids.entries()){

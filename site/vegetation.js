@@ -1,10 +1,10 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.163';
-import {foliageKind} from './appearance.js?v=0.9.163';
-import {detailedFlower,drawDetailedHerb,trifoliumLeafPoint,vincaPoint,paniclePhloxPoint,linariaPoint,lamiumPoint,brunneraLeafPoint,heucheraLeafPoint,tiarellaLeafPoint,ajugaPoint,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint,silverMintLeafPoint,roseLeafPoint,perennialVioletPoint,pulmonariaPoint,gardenGeraniumPoint,storkbillPoint,persicariaLeafPoint,persicariaFloretGeometry,CONIFER_SHOOTS,coniferShootGeometry,cotinusLeafPoint,smokePanicleGeometry,myrtaceousLeafPoint,myrtaceousFlowerGeometry,daisyLeafPoint,daisyRayPoint,asterLeafPoint,asterFloretGeometry,scabiousLeafPoint,scabiousHeadGeometry,verbenaLeafPoint,verbenaCorollaGeometry,dianthusLeafPoint,dianthusPetalPoint,aquilegiaPoint,astilbeLeafPoint,astilbeFloretGeometry,iberisPoint,heucherellaLeafPoint,heucherellaCalyxGeometry,agapanthusPoint,saxifrageLeafPoint,delphiniumLeafPoint,lysimachiaLeafPoint,calaminthaLeafPoint,abeliaLeafPoint,viburnumLeafPoint,deutziaPoint,hamamelidPoint,fothergillaHeadGeometry,syringaLeafPoint,syringaCorollaGeometry,oliveLeafPoint,oliveFlowerGeometry,oliveFruitGeometry,camelliaLeafPoint,camelliaCorollaGeometry,camelliaStamenGeometry,magnoliaLeafPoint,magnoliaTepalGeometry,osmanthusLeafPoint,osmanthusFlowerGeometry,euonymusLeafPoint,euonymusFlowerGeometry,euonymusWingGeometry,nandinaLeafPoint,nandinaFlowerGeometry,sarcandraLeafPoint,gardeniaLeafPoint,gardeniaCorollaGeometry,gardeniaFruitGeometry,callicarpaLeafPoint,callicarpaFlowerGeometry,ardisiaLeafPoint,ardisiaFlowerGeometry,pomeShrubLeafPoint,pomeShrubFlowerGeometry,hardyHibiscusLeafPoint,hardyHibiscusFlowerGeometry,ruscusCladodePoint,danaeBellGeometry,hypericumLeafPoint,hypericumFlowerGeometry,pittosporumLeafPoint,pittosporumFlowerGeometry,leadwortLeafPoint,leadwortFlowerGeometry,rivinaLeafPoint,banksiaLeafPoint,banksiaHeadGeometry,proteaceaeLeafPoint,proteaBractPoint,proteaFloretGeometry,southernLeafPoint,manukaPetalPoint,southernHeadGeometry,rosaceousLeafPoint,rosaceousFlowerGeometry,broadMapleGeometry,blueSpruceShootGeometry,woodyPeaLeafPoint,woodyPeaFlowerGeometry,peonyLeafGeometry,peonyPetalGeometry,berryShrubLeafPoint,berryShrubFlowerGeometry,vitexLeafPoint,vitexCorollaGeometry,hedgeLeafPoint,oleanderCorollaGeometry,blueShrubLeafPoint,blueShrubCorollaGeometry,icLeafPoint,icFloralGeometry,aromaticLeafGeometry,aromaticFlowerGeometry,fragrantVineLeafPoint,fragrantVineFlowerGeometry,buddlejaLeafPoint,buddlejaFlowerGeometry,texturedMintLeafPoint,phlomisGeometry,betonyLeafPoint,betonyFlowerGeometry,seasonalClimberLeafGeometry,seasonalClimberFlowerGeometry,smallHerbLeafPoint,smallHerbFlowerGeometry,tubularHerbLeafPoint,tubularHerbFlowerGeometry,rosetteSpireLeafPoint,rosetteSpireFloralGeometry,poppyLeafPoint,poppyPetalGeometry,namedTreeLeafPoint,namedTreePetalGeometry,forestLeafPoint,forestGeometry,submergedLeafPoint,submergedFineGeometry,meadowLeafPoint,meadowCulmGeometry,aquaticBranchLeafPoint,aquaticDividedGeometry,aquaticBranchPetalPoint,marginLeafGeometry,marginPetalPoint,callaSpatheGeometry,uncommonTreeLeafPoint,uncommonCompoundGeometry,lateHerbLeafPoint,lateGentianCorollaGeometry,mixedGardenLeafPoint,mixedGardenPetalPoint,fleshyLeafGeometry,pendensCorollaGeometry,necklaceGeometry,cageTubeGeometry,stoneSucculentGeometry,agaveBladeGeometry,agaveThornGeometry,caudexGeometry,caudexLeafGeometry,caudexCorollaGeometry,caudexBranchGeometry,ribbedSucculentGeometry,cactusTepalGeometry,HAWORTHIA_PROFILES,haworthiaLeafGeometry,SOFT_SUCCULENT_PROFILES,softSucculentGeometry} from './plant-detail.js?v=0.9.163';
-import {drawTree} from './tree-model.js?v=0.9.163';
-import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.163';
+import {treeProfile} from './tree-profiles.js?v=0.9.164';
+import {foliageKind} from './appearance.js?v=0.9.164';
+import {detailedFlower,drawDetailedHerb,trifoliumLeafPoint,vincaPoint,paniclePhloxPoint,linariaPoint,lamiumPoint,brunneraLeafPoint,heucheraLeafPoint,tiarellaLeafPoint,ajugaPoint,salviniaPoint,alceaLeafPoint,woodlandMintLeafPoint,silverMintLeafPoint,roseLeafPoint,perennialVioletPoint,pulmonariaPoint,gardenGeraniumPoint,storkbillPoint,persicariaLeafPoint,persicariaFloretGeometry,CONIFER_SHOOTS,coniferShootGeometry,cotinusLeafPoint,smokePanicleGeometry,myrtaceousLeafPoint,myrtaceousFlowerGeometry,daisyLeafPoint,daisyRayPoint,asterLeafPoint,asterFloretGeometry,scabiousLeafPoint,scabiousHeadGeometry,verbenaLeafPoint,verbenaCorollaGeometry,dianthusLeafPoint,dianthusPetalPoint,aquilegiaPoint,astilbeLeafPoint,astilbeFloretGeometry,iberisPoint,heucherellaLeafPoint,heucherellaCalyxGeometry,agapanthusPoint,saxifrageLeafPoint,delphiniumLeafPoint,lysimachiaLeafPoint,calaminthaLeafPoint,abeliaLeafPoint,viburnumLeafPoint,deutziaPoint,hamamelidPoint,fothergillaHeadGeometry,syringaLeafPoint,syringaCorollaGeometry,oliveLeafPoint,oliveFlowerGeometry,oliveFruitGeometry,camelliaLeafPoint,camelliaCorollaGeometry,camelliaStamenGeometry,magnoliaLeafPoint,magnoliaTepalGeometry,osmanthusLeafPoint,osmanthusFlowerGeometry,euonymusLeafPoint,euonymusFlowerGeometry,euonymusWingGeometry,nandinaLeafPoint,nandinaFlowerGeometry,sarcandraLeafPoint,gardeniaLeafPoint,gardeniaCorollaGeometry,gardeniaFruitGeometry,callicarpaLeafPoint,callicarpaFlowerGeometry,ardisiaLeafPoint,ardisiaFlowerGeometry,pomeShrubLeafPoint,pomeShrubFlowerGeometry,hardyHibiscusLeafPoint,hardyHibiscusFlowerGeometry,ruscusCladodePoint,danaeBellGeometry,hypericumLeafPoint,hypericumFlowerGeometry,pittosporumLeafPoint,pittosporumFlowerGeometry,leadwortLeafPoint,leadwortFlowerGeometry,rivinaLeafPoint,banksiaLeafPoint,banksiaHeadGeometry,proteaceaeLeafPoint,proteaBractPoint,proteaFloretGeometry,southernLeafPoint,manukaPetalPoint,southernHeadGeometry,rosaceousLeafPoint,rosaceousFlowerGeometry,broadMapleGeometry,blueSpruceShootGeometry,woodyPeaLeafPoint,woodyPeaFlowerGeometry,peonyLeafGeometry,peonyPetalGeometry,berryShrubLeafPoint,berryShrubFlowerGeometry,vitexLeafPoint,vitexCorollaGeometry,hedgeLeafPoint,oleanderCorollaGeometry,blueShrubLeafPoint,blueShrubCorollaGeometry,icLeafPoint,icFloralGeometry,aromaticLeafGeometry,aromaticFlowerGeometry,fragrantVineLeafPoint,fragrantVineFlowerGeometry,buddlejaLeafPoint,buddlejaFlowerGeometry,texturedMintLeafPoint,phlomisGeometry,betonyLeafPoint,betonyFlowerGeometry,seasonalClimberLeafGeometry,seasonalClimberFlowerGeometry,smallHerbLeafPoint,smallHerbFlowerGeometry,tubularHerbLeafPoint,tubularHerbFlowerGeometry,rosetteSpireLeafPoint,rosetteSpireFloralGeometry,poppyLeafPoint,poppyPetalGeometry,namedTreeLeafPoint,namedTreePetalGeometry,forestLeafPoint,forestGeometry,submergedLeafPoint,submergedFineGeometry,meadowLeafPoint,meadowCulmGeometry,aquaticBranchLeafPoint,aquaticDividedGeometry,aquaticBranchPetalPoint,marginLeafGeometry,marginPetalPoint,callaSpatheGeometry,uncommonTreeLeafPoint,uncommonCompoundGeometry,lateHerbLeafPoint,lateGentianCorollaGeometry,mixedGardenLeafPoint,mixedGardenPetalPoint,fleshyLeafGeometry,pendensCorollaGeometry,necklaceGeometry,cageTubeGeometry,stoneSucculentGeometry,agaveBladeGeometry,agaveThornGeometry,caudexGeometry,caudexLeafGeometry,caudexCorollaGeometry,caudexBranchGeometry,ribbedSucculentGeometry,cactusTepalGeometry,HAWORTHIA_PROFILES,haworthiaLeafGeometry,SOFT_SUCCULENT_PROFILES,softSucculentGeometry} from './plant-detail.js?v=0.9.164';
+import {drawTree} from './tree-model.js?v=0.9.164';
+import { EXTENDED_FORMS, drawBotanical } from './botanical-models.js?v=0.9.164';
 import * as THREE from './vendor/three.module.js';
-import { plantInfo, stateAt } from './model.js?v=0.9.163';
+import { plantInfo, stateAt } from './model.js?v=0.9.164';
 
 // Geometry, colours and movement are illustrative. Plant dimensions come from the plan.
 export const sharedGeometry=new Set(),sharedMaterials=new Set();
@@ -753,8 +753,8 @@ for(const type of ['roseLeaflet','roseRugoseLeaflet','roseRoundLeaflet','roseObo
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData[type]=true;shapes[type]=keep(g);
 }
-for(const type of ['vincaLeaf','vincaTube','vincaCorolla']){
- const pos=[],uv=[],indices=[],rows=type==='vincaLeaf'?36:24,cols=type==='vincaLeaf'?20:100;
+for(const type of ['vincaLeaf','vincaJennyLeaf','vincaMinorLeaf','vincaTube','vincaCorolla']){
+ const pos=[],uv=[],indices=[],rows=type.endsWith('Leaf')?36:24,cols=type.endsWith('Leaf')?20:100;
  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){
   pos.push(...vincaPoint(type,i/rows,j/cols*2-1));uv.push(j/cols,i/rows);
   if(i<rows&&j<cols){const k=i*(cols+1)+j;if(type==='vincaTube')indices.push(k,k+1,k+cols+1,k+1,k+cols+2,k+cols+1);else indices.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}
@@ -1940,7 +1940,16 @@ diffuseColor.rgb*=.975+.025*sin(vUv.x*411.0)*sin(vUv.y*337.0);`);
        if(!gl_FrontFacing)diffuseColor.rgb=mix(diffuseColor.rgb,${rgb(green)},.48);
        #include <emissivemap_fragment>`);
     }
-    if(kind.startsWith('leaf-vinca-')){
+    if(kind.startsWith('leaf-vinca-plain-')){
+      shader.fragmentShader=shader.fragmentShader.replace('midrib*0.23+veins*0.055','0.0').replace('mix(0.77,1.08,fold)*mix(0.85,1.05,vUv.y)','1.0');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+       float vu=abs(vUv.x-.5)*2.0,vv=vUv.y;
+       float vincaRib=1.0-smoothstep(.014,.045,vu),vincaVein=pow(max(0.0,cos((vv-vu*(.28-.09*vu))*37.699)),24.0);
+       diffuseColor.rgb*=.95+.035*vincaRib+.025*vincaVein;
+       if(!gl_FrontFacing)diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.25,.34,.19),.25);
+       #include <emissivemap_fragment>`);
+    }
+    if(kind.startsWith('leaf-vinca-')&&!kind.startsWith('leaf-vinca-plain-')){
       const wojo=kind.includes('-wojo-'),variant=Number(kind.slice(-1)),cream=new THREE.Color(wojo?'#dfdaa0':'#e8e3bc');
       shader.fragmentShader=shader.fragmentShader.replace('midrib*0.23+veins*0.055','0.0').replace('mix(0.77,1.08,fold)*mix(0.85,1.05,vUv.y)','1.0');
       shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
@@ -1954,11 +1963,19 @@ diffuseColor.rgb*=.975+.025*sin(vUv.x*411.0)*sin(vUv.y*337.0);`);
        if(!gl_FrontFacing)diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.28,.37,.20),.32);
        #include <emissivemap_fragment>`);
     }
-    if(kind==='petal-vinca')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+    if(kind==='petal-vinca'||kind==='petal-vinca-jenny')shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
       float vincaThroat=1.0-smoothstep(.01,.20,vUv.y);
       diffuseColor.rgb*=1.0-.26*vincaThroat;
       diffuseColor.rgb*=1.0-.035*pow(max(0.0,cos(vUv.x*157.08+vUv.y*2.5)),18.0);
       #include <emissivemap_fragment>`);
+    if(kind==='petal-vinca-jenny'){
+      const white=new THREE.Color('#f0ece3');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
+       float jennyRay=.055*cos(vUv.x*31.4159)+.020*sin(vUv.x*94.2478);
+       float jennyEye=1.0-smoothstep(.31+jennyRay,.49+jennyRay,vUv.y),jennyRim=smoothstep(.92,.985,vUv.y);
+       diffuseColor.rgb=mix(diffuseColor.rgb,vec3(${white.r.toFixed(5)},${white.g.toFixed(5)},${white.b.toFixed(5)}),max(jennyEye*.97,jennyRim*.72));
+       #include <emissivemap_fragment>`);
+    }
     if(kind==='leaf-panicle-phlox'){
       shader.fragmentShader=shader.fragmentShader.replace('midrib*0.23+veins*0.055','0.0').replace('mix(0.77,1.08,fold)*mix(0.85,1.05,vUv.y)','1.0');
       shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`
@@ -2769,7 +2786,7 @@ const materialCache=new Map();
 function material(kind){
   if(materialCache.has(kind))return materialCache.get(kind);
   const windowLeaf=kind.startsWith('leaf-haw-')&&HAWORTHIA_PROFILES[kind.slice(9)]?.pattern==='window',Material=windowLeaf?THREE.MeshPhysicalMaterial:THREE.MeshStandardMaterial;
-  const m=new Material({color:'#ffffff',roughness:(kind.startsWith('leaf-heuchera-')||kind.startsWith('leaf-tiarella-'))?(kind.endsWith('-glossy')?.34:.72):kind.startsWith('leaf-vinca-')?.48:kind.startsWith('leaf-ajuga-')?.47:kind.startsWith('leaf-soft-')?(kind==='leaf-soft-aurora'?.32:.83):kind.startsWith('leaf-haw-')?(windowLeaf?.26:.64):kind.startsWith('fruit-glossy')?.32:((kind.startsWith('leaf-berry-')&&!kind.includes('dainagon'))||(/^leaf-ic-(snowFlurry|lanceolatum|halleysComet|henryi)/.test(kind))||kind.startsWith('leaf-hedge-oleander')||kind.startsWith('leaf-pittosporum-')||kind.startsWith('leaf-ruscus-')||kind.startsWith('leaf-glossy')||kind.startsWith('leaf-olive-glossy')||kind.startsWith('leaf-camellia-glossy')||kind.startsWith('leaf-osmanthus')||kind.startsWith('leaf-pome-harlequin')||kind.startsWith('leaf-ardisia')||kind.startsWith('leaf-gardenia')||kind.startsWith('leaf-sarcandra')||kind.startsWith('leaf-nandina-otafuku')||(kind.startsWith('leaf-euonymus-')&&!kind.startsWith('leaf-euonymus-compactus'))||kind.startsWith('leaf-magnolia-glossy')||kind.startsWith('leaf-magnolia-felt')||kind.startsWith('leaf-abelia')||kind==='leaf-bergenia-glossy'||(kind.startsWith('leaf-heucherella-')&&kind.endsWith('-glossy'))) ?.42:kind.startsWith('leaf')||kind==='maple'?.76:.88,side:THREE.DoubleSide});
+  const m=new Material({color:'#ffffff',roughness:(kind.startsWith('leaf-heuchera-')||kind.startsWith('leaf-tiarella-'))?(kind.endsWith('-glossy')?.34:.72):kind==='leaf-vinca-plain-jenny'?.40:kind==='leaf-vinca-plain-minor'?.52:kind.startsWith('leaf-vinca-')?.48:kind.startsWith('leaf-ajuga-')?.47:kind.startsWith('leaf-soft-')?(kind==='leaf-soft-aurora'?.32:.83):kind.startsWith('leaf-haw-')?(windowLeaf?.26:.64):kind.startsWith('fruit-glossy')?.32:((kind.startsWith('leaf-berry-')&&!kind.includes('dainagon'))||(/^leaf-ic-(snowFlurry|lanceolatum|halleysComet|henryi)/.test(kind))||kind.startsWith('leaf-hedge-oleander')||kind.startsWith('leaf-pittosporum-')||kind.startsWith('leaf-ruscus-')||kind.startsWith('leaf-glossy')||kind.startsWith('leaf-olive-glossy')||kind.startsWith('leaf-camellia-glossy')||kind.startsWith('leaf-osmanthus')||kind.startsWith('leaf-pome-harlequin')||kind.startsWith('leaf-ardisia')||kind.startsWith('leaf-gardenia')||kind.startsWith('leaf-sarcandra')||kind.startsWith('leaf-nandina-otafuku')||(kind.startsWith('leaf-euonymus-')&&!kind.startsWith('leaf-euonymus-compactus'))||kind.startsWith('leaf-magnolia-glossy')||kind.startsWith('leaf-magnolia-felt')||kind.startsWith('leaf-abelia')||kind==='leaf-bergenia-glossy'||(kind.startsWith('leaf-heucherella-')&&kind.endsWith('-glossy'))) ?.42:kind.startsWith('leaf')||kind==='maple'?.76:.88,side:THREE.DoubleSide});
   if(windowLeaf){m.transmission=.38;m.thickness=.008;m.ior=1.36;m.attenuationColor.set('#b8d9a5');m.attenuationDistance=.04;}
   m.defines={...m.defines,USE_UV:''};m.onBeforeCompile=s=>windShader(s,kind);m.customProgramCacheKey=()=>`garden-0.3-${kind}`;
   materialCache.set(kind,m);sharedMaterials.add(m);return m;

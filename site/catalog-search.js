@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.163';
+import {treeProfile} from './tree-profiles.js?v=0.9.164';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -120,6 +120,7 @@ export function seasonAt(info,month){
  if(a.architecture==='vincaRunners'){
   scale=1;
   phase=[12,1,2].includes(month)?'冬の匍匐茎と残葉の参考表示（地域差・茎の残存・月別葉量は未確認）':'匍匐茎と対生葉・短い立ち上がり（花期以外の葉量と茎の残存は参考）';
+  if(a.shootProfile==='jenny'&&bloom)phase='晩冬〜春の花と無斑葉（2〜5月は参考換算・開始月と月別葉量は未確認）';
  }
  if(a.architecture==='paniclePhlox'){
   scale=1;

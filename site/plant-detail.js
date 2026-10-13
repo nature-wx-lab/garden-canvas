@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.163';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.164';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.163';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.164';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4886,18 +4886,24 @@ export function vincaPoint(type,t,u){
   // A continuous salver has five swept lobes, instead of five round petals.
   return [Math.sin(turn)*r,.024*t*t+.015*Math.sin(angle*5)*Math.sin(Math.PI*t),Math.cos(turn)*r];
  }
- const sn=Math.max(0,Math.sin(Math.PI*t)),au=Math.abs(u),width=.56*Math.pow(Math.sin((.10+.90*t)*Math.PI),.78)*(1-.30*t),vein=t-au*(.29-.10*au);
+ const sn=Math.max(0,Math.sin(Math.PI*t)),au=Math.abs(u);
+ if(type==='vincaJennyLeaf'||type==='vincaMinorLeaf'){
+  const minor=type==='vincaMinorLeaf',width=.5*Math.pow(sn,minor?.70:.86)*(minor?1:1-.14*t),vein=t-au*(.28-.09*au);
+  return [u*width,t,(minor?.07:.10)*t*t+(minor?.048:.031)*u*u*sn-.008*Math.exp(-u*u*70)*sn+.003*Math.cos(vein*TAU*6)*au*sn];
+ }
+ const width=.56*Math.pow(Math.sin((.10+.90*t)*Math.PI),.78)*(1-.30*t),vein=t-au*(.29-.10*au);
  return [u*width,t-.10*Math.sin(au*Math.PI/2)*Math.pow(1-t,3),.09*t*t+.045*u*u*sn-.009*Math.exp(-u*u*70)*sn+.0035*Math.cos(vein*TAU*6)*au*sn];
 }
 
 function drawVinca(b,{info,s,detail,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.30),P=Math.min(a.petioleLength,w*.07),stem=a.stemColor;
- const runners=Math.max(4,Math.min(16,Math.round(7*detail*Math.pow(w/.35,.8)))),nodes=Math.max(3,Math.min(9,Math.round(w/.065)));
+ const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.30),P=Math.min(a.petioleLength,w*.07),stem=a.stemColor,plain=['jenny','minor'].includes(a.shootProfile);
+ // Small minor leaves cover the ground through more shoots, not enlarged blades.
+ const smallMat=a.shootProfile==='minor',runners=Math.max(4,Math.min(16,Math.round((smallMat?13:7)*detail*Math.pow(w/.35,.8)))),nodes=Math.max(3,Math.min(smallMat?8:9,Math.round(w/(smallMat?.048:.065))));
  const leafPair=(at,yaw,len,pitch,key)=>{
   for(const side of [0,Math.PI]){
    const aa=yaw+side,tip=[at[0]+Math.sin(aa)*P,at[1]+P*.35,at[2]+Math.cos(aa)*P];
    b.branch(at,tip,.00048,stem,'petiole-vinca');
-   b.add('vincaLeaf','leaf-vinca-'+a.shootProfile+'-'+key%3,kit.shade(rand,s.leafColor,.035),...tip,len*a.leafWidth/a.leafLength,len,len,pitch+.07*Math.sin(aa*3.3),aa,.045*Math.sin(aa*5.1));
+   b.add(a.leafShape,plain?'leaf-vinca-plain-'+a.shootProfile:'leaf-vinca-'+a.shootProfile+'-'+key%3,kit.shade(rand,s.leafColor,.035),...tip,len*a.leafWidth/a.leafLength,len,len,pitch+.07*Math.sin(aa*3.3),aa,.045*Math.sin(aa*5.1));
   }
  };
  for(let i=0;i<runners;i++){
@@ -4916,12 +4922,14 @@ function drawVinca(b,{info,s,detail,rand},kit){
   for(let q=1;q<=4;q++){
    const t=q/4,yaw=angle+q*Math.PI/2,at=[base[0]+Math.sin(angle)*L*.22*t*t,base[1]+(top-base[1])*t,base[2]+Math.cos(angle)*L*.22*t*t];
    b.branch(previous,at,.00095*(1-t*.35),stem,'shoot-vinca');previous=at;
-   const retained=shape(q+70)<s.leafDensity;
+   // Flowering axils keep their leaf pair; illustrative winter thinning must
+   // not independently erase the documented late-winter flowers of Jenny Pym.
+   const flowering=s.bloom&&q>=2&&q<=3&&shape(q+100)<=s.flowerDensity,retained=shape(q+70)<s.leafDensity||(plain&&flowering);
    if(retained)leafPair(at,yaw,L*(.80-.34*t),1.11+(shape(q+90)-.5)*.18,i+q);
-   if(!s.bloom||!retained||q<2||q>3||shape(q+100)>s.flowerDensity)continue;
+   if(!flowering||(!plain&&!retained))continue;
    const aa=yaw+(q===2?0:Math.PI),pedicel=Math.min(.026,w*.10),tip=[at[0]+Math.sin(aa)*pedicel*.62,at[1]+pedicel,at[2]+Math.cos(aa)*pedicel*.62];
    b.branch(at,tip,.00048,stem,'pedicel-vinca');
-   detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:a.flowerRadius,color:s.flowerColor,shape:'vincaPinwheel',palette:{length:a.flowerLength},tilt:.34+.40*shape(q+110),yaw:aa},{...kit,rand});
+   detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:a.flowerRadius,color:s.flowerColor,shape:'vincaPinwheel',palette:{length:a.flowerLength,type:a.shootProfile},tilt:.34+.40*shape(q+110),yaw:aa},{...kit,rand});
   }
  }
 }
@@ -6406,7 +6414,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  if(shape==='vincaPinwheel'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length;
   f.add('vincaTube','tube-vinca',color,0,0,0,r,L,r);
-  f.add('vincaCorolla','petal-vinca',color,0,L,0,r,r,r);
+  f.add('vincaCorolla',palette.type==='jenny'?'petal-vinca-jenny':'petal-vinca',color,0,L,0,r,r,r);
   // The adopted photos do not resolve reproductive organs or calyx details.
   return;
  }
