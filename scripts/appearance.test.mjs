@@ -10,6 +10,47 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Panicle Phlox separates three flower colours and keeps dormant dead stems without automatic pruning',()=>{
+ const ids=['p-289e28874872','p-5960a0205273','p-a80ce5615f08'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],a=info.appearance,p=makePlant(id,17300+i,1,1);p.height=[.5,.8,1][i];p.spread=.4;p.leafHeight=p.height*.65;
+  assert.equal(a.status,'partial');assert.equal(a.architecture,'paniclePhlox');assert.equal(a.arrangement,'opposite');assert.deepEqual(a.flowerMonths,[6,7,8]);assert.deepEqual(info.bloom,a.flowerMonths);
+  assert.equal(a.basis.flowerRadius===0,i>0);assert.ok(a.unconfirmed.some(x=>x.includes('内部器官')));assert.ok(a.unconfirmed.some(x=>x.includes('自然枯死月')));assert.ok(a.unconfirmed.some(x=>x.includes('自動剪定')));
+  if(i>0)assert.equal(a.flowerRadius*2,.04);
+  const check=g=>{
+   for(const mesh of g.children){
+    assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.normal.array].every(Number.isFinite));
+    mesh.computeBoundingBox();for(const axis of ['x','y','z']){assert.ok(Number.isFinite(mesh.boundingBox.min[axis]));assert.ok(Number.isFinite(mesh.boundingBox.max[axis]));}
+    assert.ok(mesh.boundingBox.min.y>=-.004);assert.ok(mesh.boundingBox.max.y<=p.height*1.10);
+    assert.ok(Math.max(Math.abs(mesh.boundingBox.min.x),Math.abs(mesh.boundingBox.max.x),Math.abs(mesh.boundingBox.min.z),Math.abs(mesh.boundingBox.max.z))<p.spread*.70);
+   }
+  };
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),winter=[12,1,2].includes(month),flowers=count('tube-panicle-phlox');
+   assert.equal(g.userData.architecture,'paniclePhlox');assert.equal(g.scale.x,1);assert.equal(g.scale.y,1);assert.equal(seasonAt(info,month).shootScale,1);
+   assert.equal(count('dry-stem-panicle-phlox')>0,winter);assert.equal(count('stem-panicle-phlox')>0,!winter);assert.equal(count('leaf-panicle-phlox')>0,!winter);assert.equal(count('leaf-panicle-phlox')%2,0);
+   assert.equal(flowers>0,[6,7,8].includes(month));assert.equal(count('branch-panicle-phlox')>0,flowers>0);assert.equal(count('sepal-panicle-phlox'),flowers*5);assert.equal(count('calyx-panicle-phlox'),flowers);assert.equal(count('eye-panicle-phlox'),flowers);
+   const petals=g.children.filter(m=>m.userData.component.startsWith(i===0?'petal-phlox-picasso-':'petal-panicle-phlox'));assert.equal(petals.reduce((n,m)=>n+m.count,0),flowers*5);
+   if(winter){assert.match(seasonAt(info,month).phase,/枯れ茎.*未確認/);assert.equal(g.children.length,1);g.children[0].computeBoundingBox();assert.ok(g.children[0].boundingBox.max.y>p.height*.5);assert.equal(p.management,null);}
+   if(flowers&&i===1&&month===7){
+    // The tube starts at the calyx and meets the petal plane, without projecting through it.
+    const tube=g.children.find(m=>m.userData.component==='tube-panicle-phlox'),calyx=g.children.find(m=>m.userData.component==='calyx-panicle-phlox');tube.geometry.computeBoundingBox();
+    const tm=tube.instanceMatrix.array,cm=calyx.instanceMatrix.array,pm=petals[0].instanceMatrix.array;
+    const point=y=>[tm[4]*y+tm[12],tm[5]*y+tm[13],tm[6]*y+tm[14]],base=point(tube.geometry.boundingBox.min.y),tip=point(tube.geometry.boundingBox.max.y);
+    assert.ok(Math.hypot(...base.map((v,k)=>v-cm[12+k]))<1e-6);assert.ok(Math.hypot(...tip.map((v,k)=>v-pm[12+k]))<1e-6);
+   }
+   if(flowers&&i===0)assert.equal(petals.length,3);
+   if(flowers&&i===2){const colors=petals[0].instanceColor.array,distinct=new Set();for(let k=0;k<colors.length;k+=3)distinct.add(Array.from(colors.slice(k,k+3)).map(c=>c.toFixed(3)).join(','));assert.ok(distinct.size>3);}
+   check(g);dispose(g);
+  }
+  let smallStems=0;
+  for(const width of [.15,.6]){
+   p.spread=width;const g=plantModel(p,view(7)),stems=g.children.filter(m=>m.userData.component==='stem-panicle-phlox').reduce((n,m)=>n+m.count,0);
+   if(width===.15)smallStems=stems;else{assert.ok(stems>smallStems);assert.ok(stems<=96);}check(g);dispose(g);
+  }
+ }
+ assert.deepEqual(CATALOG[ids[1]].colors,['pink']);assert.equal(CATALOG[ids[0]].appearance.flowerPattern,'phloxSplash');
+});
 test('Linaria keeps spurred bilabiate racemes and replaces winter flower stems with basal shoots',()=>{
  const ids=['p-09ed8dd7efa0','p-09efc8a12a41','p-4b3b0014747e'];
  const colours=['#9474ad','#d99aaa','#ece8d8'];

@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.160';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.161';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.160';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.161';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4875,6 +4875,58 @@ function drawClover(b,{info,s,detail,rand},kit){
  }
 }
 
+// Paniculata leaves have a midrib and lateral veins curving towards the margin.
+export function paniclePhloxPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='paniclePhloxLobe')return [u*.60*Math.pow(sn,.32),t-.065*Math.exp(-u*u*24)*Math.pow(t,8),.045*t*t+.045*u*u*sn];
+ const width=.5*Math.pow(sn,.80)*(1-.14*t),curve=t-Math.abs(u)*(.29-.12*Math.abs(u));
+ return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
+}
+
+function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),growth=month===3?.25:month===4?.55:month===5?.83:1;
+ const n=Math.max(3,Math.min(12,Math.round(6*detail*Math.pow(w/.4,.70)))),L=Math.min(a.leafLength,w*.28),stem=winter?a.winterStemColor:a.stemColor;
+ const leafPair=(at,angle,len,upper=false)=>{
+  for(const side of [0,Math.PI]){
+   const aa=angle+side,petiole=upper?.0008:.003,tip=[at[0]+Math.sin(aa)*petiole,at[1]+.001,at[2]+Math.cos(aa)*petiole];
+   b.branch(at,tip,.00055,stem,'petiole-panicle-phlox');
+   b.add('paniclePhloxLeaf','leaf-panicle-phlox',kit.shade(rand,s.leafColor,.035),...tip,len*a.leafWidth/a.leafLength,len,len,.88+rand()*.14,aa,0);
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.20*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.003,Math.cos(az)*rr],top=h*(.79+rand()*.13),body=(winter?top*.86:s.bloom?top*.76:top*.90)*(winter?1:growth);
+  const point=t=>[root[0]+Math.sin(az)*w*.035*t*t,root[1]+body*t,root[2]+Math.cos(az)*w*.035*t*t];let from=root;
+  for(let j=1;j<=8;j++){
+   const t=j/8,at=point(t);b.branch(from,at,.00165*(1-t*.35),stem,winter?'dry-stem-panicle-phlox':'stem-panicle-phlox');from=at;
+   if(!winter&&(j<3||rand()<s.leafDensity))leafPair(at,az+j*Math.PI/2,L*(.98-.46*t)*(.65+.35*growth),j>5);
+  }
+  // Retained dead stems are illustrative. They are not a pruning event or a
+  // miniature living shoot; actual winter persistence is not quantified.
+  if(winter||!s.bloom)continue;
+  const R=Math.min(a.headRadius,w*.18),rise=top-body,axis=from;
+  const floret=(at,angle,tilt,index)=>{
+   const age=(index%3+rand()*.7)/3,color=a.shootProfile==='blueParadise'?new THREE.Color(a.flowerPalette.young).lerp(new THREE.Color(a.flowerPalette.mature),age):s.flowerColor;
+   detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius,color,shape:'paniclePhloxFlower',palette:{...a.flowerPalette,length:a.flowerLength,pattern:index%3},tilt,yaw:angle},{...kit,rand});
+  };
+  for(let level=0;level<5;level++){
+   const t=level/4,start=[axis[0],axis[1]+rise*t*.88,axis[2]],end=[axis[0],axis[1]+rise*(t*.88+.17),axis[2]];
+   if(level>0)b.branch([axis[0],axis[1]+rise*(level-1)/4*.88,axis[2]],start,.0010,stem,'axis-panicle-phlox');
+   for(const side of [0,Math.PI]){
+    const angle=az+level*Math.PI/2+side,rad=R*Math.sqrt(Math.max(.08,1-t*t*.95)),tip=[start[0]+Math.sin(angle)*rad,start[1]+rise*.14,start[2]+Math.cos(angle)*rad],bend=[start[0]+Math.sin(angle)*rad*.48,start[1]+rise*.075,start[2]+Math.cos(angle)*rad*.48];
+    b.branch(start,bend,.00078,stem,'branch-panicle-phlox');b.branch(bend,tip,.00055,stem,'branch-panicle-phlox');
+    if(level===0&&side===0)leafPair(start,angle,L*.30,true);
+    for(let j=0;j<3;j++){
+     const aa=angle+(j-1)*.74,reach=R*.29,at=[tip[0]+Math.sin(aa)*reach,tip[1]+rise*(.07+(j===1?.06:0)),tip[2]+Math.cos(aa)*reach];
+     b.branch(tip,at,.00028,stem,'pedicel-panicle-phlox');
+     if(rand()>s.flowerDensity){b.add(kit.bud,'bud-panicle-phlox',a.flowerPalette.bud,...at,.0023,.006,.0023,.40,aa,0);continue;}
+     floret(at,aa,.22+.83*(1-t)+rand()*.12,level*6+j+(side?3:0));
+    }
+   }
+   if(level===4){b.branch(start,end,.00055,stem,'axis-panicle-phlox');floret(end,az,.12,i);}
+  }
+ }
+}
+
 // Slender curved blades and two separate lips; dimensions are drawing estimates.
 export function linariaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
@@ -6298,6 +6350,19 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='paniclePhloxFlower'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length,pk=palette.splash?'petal-phlox-picasso-'+palette.pattern:'petal-panicle-phlox';
+  f.add('tube','tube-panicle-phlox',palette.tube||color,0,0,0,r*.30,L/1.09,r*.30);
+  f.add('woodlandMintTube','calyx-panicle-phlox','#6f8657',0,0,0,r*.46,L*.44,r*.46);
+  for(let j=0;j<5;j++){
+   const aa=j*TAU/5;
+   f.add('paniclePhloxLobe',pk,color,0,L,0,r*.99,r,r,Math.PI/2,aa,0);
+   f.add('narrow','sepal-panicle-phlox','#6f8657',Math.sin(aa)*r*.115,L*.36,Math.cos(aa)*r*.115,r*.15,L*.24,L*.24,.20,aa,0);
+  }
+  f.add('tube','eye-panicle-phlox',palette.eye,0,L*.97,0,r*.35,L*.028,r*.35);
+  // Internal reproductive structures remain unconfirmed and are not fabricated.
+  return;
+ }
  if(shape==='linariaLips'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length,lip=palette.lip||color;
   f.add('woodlandMintTube','corolla-linaria',color,0,0,0,r*2.1,L*.56,r*2.1);
@@ -8059,6 +8124,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['diphylleiaUmbrella','jeffersoniaBasal','ranzaniaTrifoliate','deinantheCymes','kirengeshomaBells','pteridophyllumFern','hylomeconPinnate','eomeconBasal','araliaHerb','saururusRaceme','parnassiaScapes','cornusHerb'].includes(info.appearance?.architecture)){drawWoodlandSpecies(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='brunneraSprays'){drawBrunnera(b,{info,s,detail,rand},kit);return;}
