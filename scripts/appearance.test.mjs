@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Roseleaf sage separates enclosing bracts from tubular flowers and retains woody bases in winter',()=>{
+ const id='p-044efa5cdc1c',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.lifeForm,'subshrub');assert.deepEqual(info.height,[1,1.5]);assert.deepEqual(info.spread,[.8,1.2]);
+ for(const small of [false,true]){
+  let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,22500,1,1),height:small?.15:1.25,spread:small?.22:1,leafHeight:small?.09:.65},g=plantModel(p,view(month)),s=stateAt(p,view(month));assert.equal(g.userData.architecture,'roseSageBracts');assert.equal(s.shootScale,1);assert.equal(g.scale.y,1);
+   const leaves=g.children.find(m=>m.userData.component==='leaf-rose-sage');assert.ok(leaves?.count>0);assert.equal(leaves.count%2,0);assert.ok(leaves.geometry.userData.roseSageLeaf);assert.equal(leaves.count,g.children.find(m=>m.userData.component==='petiole-rose-sage').count);if(month===1)winter=leaves.count;if(month===9)summer=leaves.count;
+   const flower=g.children.find(m=>m.userData.component==='tube-rose-sage'),bracts=g.children.find(m=>m.userData.component==='bract-rose-sage-closed'),open=g.children.find(m=>m.userData.component==='bract-rose-sage-open');assert.equal(!!flower,month>=6&&month<=11);assert.equal(!!bracts,month>=5&&month<=11);assert.equal(!!open,!!flower);if(bracts){assert.equal(bracts.count%2,0);assert.ok(bracts.geometry.userData.roseSageBract);}if(flower)assert.equal(g.children.find(m=>m.userData.component==='filament-rose-sage').count,flower.count*2);assert.ok(g.children.some(m=>m.userData.component==='wood-rose-sage'));assert.ok(!g.children.some(m=>/fruit|seed|stolon/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(wood|stem|branch|axis)-rose-sage$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.15);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.76);}dispose(g);
+  }
+  assert.ok(winter<summer*.22&&winter>0);
+ }
+});
 test('Broadleaf sages distinguish lime calyces, triangular blades and preflowering buds without changing winter stems',()=>{
  const ids=['p-215cb2eef42f','p-8e3bc5b04802'],variants=['Limelight','Cacalia'];
  for(const [i,id] of ids.entries())for(const small of [false,true]){
