@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.170';
+import {treeProfile} from './tree-profiles.js?v=0.9.171';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -129,6 +129,7 @@ export function seasonAt(info,month){
   scale=1;
   phase=[12,1,2].includes(month)?'冬の枯れ茎の参考表示（残存量・月境界・株元葉は未確認）':month<6?'対生葉と直立茎の展開（芽出し月・伸長量は参考）':'直立する株と枝分かれした花序（花期は国内資料・葉量は参考）';
  }
+ if(a.architecture==='silverDropJuvenile'){scale=1;phase='銀青色の対生する幼葉の参考（成木葉への移行・寒害は未予測）';}
  if(a.architecture==='autumnAnemone'){
   scale=1;phase=[12,1,2].includes(month)?'地上部が枯れ、切らずに残した花茎の参考（残存・倒伏は未予測）':bloom?'葉の上に広がる秋の一重花（花数・色・葉量は参考）':'葉と花茎の参考（芽出し・花茎発生月は未校正）';
  }

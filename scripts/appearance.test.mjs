@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Silver Drop keeps paired silver juvenile leaves and does not infer adult dimensions or domestic flowering',()=>{
+ const id='p-54d3bae798d4',info=CATALOG[id],p={...makePlant(id,18100,1,1),height:1.2,spread:.7,leafHeight:.9};let shape;
+ assert.equal(info.appearance.status,'partial');assert.equal(info.height,null);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[]);
+ assert.equal(info.appearance.arrangement,'opposite');assert.ok(info.appearance.unconfirmed.some(x=>x.includes('成木')));assert.ok(info.appearance.unconfirmed.some(x=>x.includes('Unresolved')));
+ for(let month=1;month<=12;month++){
+  const g=plantModel(p,view(month)),leaves=g.children.find(m=>m.userData.component==='leaf-silver-drop');
+  assert.equal(g.userData.architecture,'silverDropJuvenile');assert.ok(leaves.count>20);assert.equal(leaves.count%2,0);assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).bloom,false);
+  const matrices=[...leaves.instanceMatrix.array];if(shape)assert.deepEqual(matrices,shape);else shape=matrices;
+  for(let i=0;i<leaves.count;i+=2)assert.deepEqual(matrices.slice(i*16+12,i*16+15),matrices.slice((i+1)*16+12,(i+1)*16+15),'opposite pair shares the attached stem node');
+  assert.ok(!g.children.some(m=>/flower|petal|fruit|bud/.test(m.userData.component)));
+  for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<=p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<=p.spread*.63);}dispose(g);
+ }
+ for(const [height,spread] of [[.2,.18],[3,1.5]]){const g=plantModel({...p,height,spread,leafHeight:height*.75},view(6));assert.equal(g.userData.architecture,'silverDropJuvenile');for(const m of g.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<=height*1.12);assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}dispose(g);}
+});
 test('Japanese anemones distinguish pink narrow-leaf and white single forms without inventing width or cultivar identity',()=>{
  for(const [i,id] of ['p-9fc86e59c35b','p-794e287b757d'].entries()){
   const info=CATALOG[id],p={...makePlant(id,18000+i,1,1),height:i?.8:.55,spread:i?.6:.45,leafHeight:i?.30:.22};let axes;
