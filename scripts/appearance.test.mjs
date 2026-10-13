@@ -10,6 +10,22 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Patens sages show gaping large flowers, paired broad leaves and winter dormancy in four colour forms',()=>{
+ const ids=['p-9bc739787fc7','p-5a3386ff68f9','p-da6c6c586e4c','p-2e265a3f22e9'];
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'opposite');assert.equal(info.appearance.flowerLength,.05);if(i<2)assert.deepEqual(info.colors,['blue']);let skeleton;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,21100+i,1,1),height:small?.13:.6,spread:small?.2:.5,leafHeight:small?.08:.4},s=stateAt(p,view(month)),g=plantModel(p,view(month));
+   if([12,1,2].includes(month)){assert.equal(s.groundDormant,true);assert.equal(g.children.length,0);dispose(g);continue;}
+   assert.equal(g.userData.architecture,'patensShoots');assert.equal(s.shootScale,1);const leaves=g.children.find(m=>m.userData.component==='leaf-patens');if(leaves)assert.equal(leaves.count%2,0);
+   const hoods=g.children.filter(m=>m.userData.component.startsWith('petal-patens-hood-')),lips=g.children.filter(m=>m.userData.component.startsWith('petal-patens-lip-'));assert.equal(hoods.length>0,month>=5&&month<=11);assert.equal(hoods.reduce((n,m)=>n+m.count,0),lips.reduce((n,m)=>n+m.count,0));
+   if(month===6){assert.ok(g.children.some(m=>m.userData.component==='bud-patens'));if(i===3&&!small){assert.ok(hoods.some(m=>m.userData.component.endsWith('-fresh')));assert.ok(hoods.some(m=>m.userData.component.endsWith('-open')));}}
+   const now=g.children.filter(m=>/^(stem|branch|axis)-patens$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.13);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.64);}dispose(g);
+  }
+ }
+ assert.equal(CATALOG[ids[3]].spread,null,'unconfirmed cultivar width stays unknown');
+});
 test('Pink Blush and pearl sages retain pale versus vivid flowers, downward lips and winter woody structure',()=>{
  const ids=['p-4baa7d671c4b','p-fc5045c35d84','p-2873281ddbc8'];
  for(const [i,id] of ids.entries())for(const small of [false,true]){
