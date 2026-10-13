@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Nazareth and Violin Music distinguish narrow silver leaves and compact violet flower branches through twelve months',()=>{
+ const ids=['p-440d8df09615','p-1d9f9cba7fba'];assert.deepEqual(CATALOG[ids[0]].height,[.2,.4]);assert.deepEqual(CATALOG[ids[0]].spread,[.2,.3]);assert.deepEqual(CATALOG[ids[1]].height,[.3,.3]);assert.equal(CATALOG[ids[1]].spread,null);
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'opposite');let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,22600+i,1,1),height:small?.12:i?.6:.3,spread:small?.18:i?.5:.25,leafHeight:small?.07:i?.36:.18},g=plantModel(p,view(month));assert.equal(g.userData.architecture,i?'cherrySageBranches':'officinalisMounds');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+   const tag=i?'cherry':'officinalis',leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-'+tag+'-')),count=leaves.reduce((n,m)=>n+m.count,0);assert.ok(count>0);assert.equal(count%2,0);assert.ok(leaves.every(m=>m.geometry.userData[i?'cherryHotLeaf':'officinalisNazarethLeaf']));assert.equal(count,g.children.find(m=>m.userData.component==='petiole-'+tag).count);if(month===1)winter=count;if(month===6)summer=count;
+   const flower=g.children.find(m=>m.userData.component===(i?'tube-cherry-violin':'tube-officinalis'));assert.equal(!!flower,(i?[4,5,6,7,9,10,11]:[5,6,7,8]).includes(month));assert.ok(g.children.some(m=>m.userData.component==='calyx-'+tag));assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+   const now=g.children.filter(m=>new RegExp('^(wood|stem|branch|twig|axis)-'+tag+'$').test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.15);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.70);}dispose(g);
+  }
+  assert.ok(winter<summer&&winter>0);
+ }
+});
 test('Roseleaf sage separates enclosing bracts from tubular flowers and retains woody bases in winter',()=>{
  const id='p-044efa5cdc1c',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.lifeForm,'subshrub');assert.deepEqual(info.height,[1,1.5]);assert.deepEqual(info.spread,[.8,1.2]);
  for(const small of [false,true]){

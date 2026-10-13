@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.215';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.216';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.215';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.216';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -6216,7 +6216,7 @@ export function cherrySagePoint(type,t,u){
 }
 
 function drawCherrySage(b,{info,s,detail,rand,month},kit){
- const a=info.appearance,h=s.height,w=s.spread,amethyst=a.shootProfile==='amethystLips',sierra=a.shootProfile==='sierra',night=a.shootProfile==='nightMoth',hot=a.shootProfile==='hotLips'||amethyst,moon=a.shootProfile==='moonlight',christine=a.shootProfile==='christine',plain=['pinkBlush','pearlPink','pearlWhite','moonlight','soCool','christine'].includes(a.shootProfile),micro=hot||plain,thin=night?.67:1,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.19,w*.12),n=Math.max(4,Math.min(28,Math.round((night?11:18)*detail*Math.sqrt(w/.8)))),stem=cold?a.winterStemColor:a.stemColor;
+ const a=info.appearance,h=s.height,w=s.spread,amethyst=a.shootProfile==='amethystLips',sierra=a.shootProfile==='sierra',night=a.shootProfile==='nightMoth',hot=a.shootProfile==='hotLips'||amethyst,moon=a.shootProfile==='moonlight',christine=a.shootProfile==='christine',violin=a.shootProfile==='violin',plain=['violin','pinkBlush','pearlPink','pearlWhite','moonlight','soCool','christine'].includes(a.shootProfile),micro=hot||plain,thin=night?.67:1,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.19,w*.12),n=Math.max(violin?2:4,Math.min(28,Math.round((violin?10:night?11:18)*detail*Math.sqrt(w/.8)*(violin?Math.min(1,h/.35):1)))),stem=cold?a.winterStemColor:a.stemColor;
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const pair=(at,az,len,i,k)=>{if(noise(i,k)>s.leafDensity)return;for(let side=0;side<2;side++){const aa=az+side*Math.PI,pet=len*.13,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0005,h*.002),stem,'petiole-cherry');b.add(micro?'cherryHotLeaf':sierra||night?'cherryJamensisLeaf':'cherryGreggiiLeaf',moon?([10,11].includes(month)?'leaf-cherry-moon-autumn':'leaf-cherry-moon'):micro?'leaf-cherry-hot':sierra||night?'leaf-cherry-jamensis':'leaf-cherry-greggii',kit.shade(rand,moon&&[10,11].includes(month)&&noise(i,k+side+19)>.48?'#af5559':s.leafColor,.06),...end,len*a.leafWidth/a.leafLength,len,len,.75+.65*noise(i,k+side+44),aa,(noise(i,k+side+32)-.5)*.25);}};
  const raceme=(base,az,len,i)=>{
@@ -6249,20 +6249,20 @@ function drawCherrySage(b,{info,s,detail,rand,month},kit){
  }
 }
 
-export function officinalisLeafPoint(t,u){
- const sn=Math.max(0,Math.sin(Math.PI*t)),width=.51*Math.pow(sn,.48)*(1-.08*t),ridge=.0045*Math.sin(t*78-Math.abs(u)*16)*Math.cos(u*21+t*12)*sn;
+export function officinalisLeafPoint(t,u,narrow=false){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),width=(narrow?.57:.51)*Math.pow(sn,narrow?.76:.48)*(1-(narrow?.22:.08)*t),ridge=.0045*Math.sin(t*78-Math.abs(u)*16)*Math.cos(u*21+t*12)*sn;
  return [u*width,t,.038*u*u*sn-.060*t*t+.032*Math.sin(t*4.3)*sn+ridge];
 }
 
 function drawOfficinalis(b,{info,s,detail,rand,month},kit){
- const a=info.appearance,h=s.height,w=s.spread,profile=a.shootProfile,cold=[11,12,1,2].includes(month),summer=[7,8,9].includes(month),flowers=profile==='common'||profile==='purple',L=Math.min(a.leafLength,h*.30,w*.20),n=Math.max(5,Math.min(22,Math.round(18*detail*Math.sqrt(w/.45))));
+ const a=info.appearance,h=s.height,w=s.spread,profile=a.shootProfile,cold=[11,12,1,2].includes(month),summer=[7,8,9].includes(month),flowers=profile==='common'||profile==='purple'||profile==='nazareth',L=Math.min(a.leafLength,h*.30,w*.20),n=Math.max(5,Math.min(22,Math.round(18*detail*Math.sqrt(w/.45))));
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const pair=(at,az,len,i,k,young=false)=>{
   if(noise(i,k)>s.leafDensity)return;
   for(let side=0;side<2;side++){
    const aa=az+side*Math.PI,pet=len*.10,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0007,h*.002),a.stemColor,'petiole-officinalis');
    const purple=profile==='purple'||profile==='tricolor',color=purple&&(young||cold)?(cold?'#80627d':'#8c7694'):s.leafColor,kind='leaf-officinalis-'+profile+(cold?'-cold':summer?'-summer':'')+(young?'-young':'')+'-'+(i%3);
-   b.add('officinalisLeaf',kind,kit.shade(rand,color,.045),...end,len*a.leafWidth/a.leafLength,len,len,(young?.65:1.13)+.30*noise(i,k+side+40),aa,(noise(i,k+side+30)-.5)*.26);
+   b.add(profile==='nazareth'?'officinalisNazarethLeaf':'officinalisLeaf',kind,kit.shade(rand,color,.045),...end,len*a.leafWidth/a.leafLength,len,len,(young?.65:1.13)+.30*noise(i,k+side+40),aa,(noise(i,k+side+30)-.5)*.26);
   }
  };
  const spike=(base,az,len,i)=>{
@@ -6271,7 +6271,7 @@ function drawOfficinalis(b,{info,s,detail,rand,month},kit){
    const t=j/count,at=[base[0]+Math.sin(az)*w*.035*t*t,base[1]+len*t,base[2]+Math.cos(az)*w*.035*t*t];b.branch(old,at,Math.min(.0014,h*.004)*(1-t*.4),a.stemColor,'axis-officinalis');old=at;
    for(let k=0;k<6;k++){
     const aa=az+k*TAU/6+j*.4,calLen=Math.min(.009,h*.028),pos=[at[0]+Math.sin(aa)*calLen*.5,at[1],at[2]+Math.cos(aa)*calLen*.5],f=flowerFrame(b,pos,1.04+.16*noise(i,j+k),aa);
-    f.add('nemorosaCalyx','calyx-officinalis',s.bloom?'#7e6580':cold?'#9a8a72':'#83916c',0,0,0,calLen*.9,calLen,calLen*.9);
+    f.add('nemorosaCalyx','calyx-officinalis',s.bloom?(profile==='nazareth'?'#91a18b':'#7e6580'):cold?'#9a8a72':'#83916c',0,0,0,calLen*.9,calLen,calLen*.9);
     if(!s.bloom||t>.93||noise(i,j*31+k)>.67)continue;const fl=Math.min(a.flowerLength,h*.078)*(1-.20*t);
     f.add('nemorosaTube','tube-officinalis',s.flowerColor,0,calLen*.50,0,fl*.58,fl*.65,fl*.58);
     f.add('nemorosaHood','hood-officinalis',s.flowerColor,0,calLen*.50+fl*.56,0,fl*.48,fl*.40,fl*.52);
