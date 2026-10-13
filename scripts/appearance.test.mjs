@@ -10,6 +10,22 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Bellis retains basal rosettes and leafless scapes with cultivar tips and winter leaves',()=>{
+ for(const [i,id] of ['p-345f79b7f557','p-66811393b67d'].entries()){
+  const info=CATALOG[id],p={...makePlant(id,18600+i,1,1),height:.15,spread:.25,leafHeight:.045};
+  assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'basal');assert.deepEqual(info.height,[.10,.15]);assert.deepEqual(info.spread,[.15,.30]);
+  let summerCount,winterCount;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),leaves=g.children.find(m=>m.userData.component==='leaf-bellis'),has=k=>g.children.some(m=>m.userData.component===k);
+   assert.equal(g.userData.architecture,'bellisRosettes');assert.equal(g.scale.y,1);assert.ok(leaves.count>20);leaves.computeBoundingBox();assert.ok(leaves.boundingBox.max.y<.075);
+   if(month===1)winterCount=leaves.count;if(month===5)summerCount=leaves.count;
+   assert.equal(has('scape-bellis'),info.bloom.includes(month));assert.equal(has(i?'petal-bellis-dream':'petal-bellis-white'),info.bloom.includes(month));assert.ok(!has(i?'petal-bellis-white':'petal-bellis-dream'));assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.6);}dispose(g);
+  }
+  assert.ok(winterCount<summerCount);
+  const small=plantModel({...p,height:.07,spread:.10,leafHeight:.025},view(4));for(const m of small.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.08);assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}dispose(small);
+ }
+});
 test('Little Smokie retains silver shoots across seasons without substituting wild plant dimensions',()=>{
  const id='p-2eda11ec18e0',info=CATALOG[id],a=info.appearance,p={...makePlant(id,18500,1,1),height:.35,spread:.4,leafHeight:.35};let axes;
  assert.equal(a.status,'partial');assert.equal(a.arrangement,'alternate');assert.equal(info.spread,null);assert.deepEqual(info.height,[.25,.4]);assert.deepEqual(info.colors,['yellow']);assert.equal(a.flowerTiming,'season-reference');assert.ok(a.unconfirmed.some(s=>s.includes('不一致')));

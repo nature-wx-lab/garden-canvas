@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.176';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.177';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.176';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.177';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5005,6 +5005,39 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
  }
 }
 
+export function bellisPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='bellisRay')return [u*.11*Math.pow(sn,.30),t-.025*Math.exp(-u*u*45)*Math.pow(t,12),.10*t*t+.09*u*u*sn];
+ const tooth=1+.035*Math.sin(t*TAU*6)*Math.max(0,(t-.30)/.70),width=.5*Math.pow(sn,.48)*(.14+.96*t)*tooth;
+ return [u*width,t,.055*u*u*sn+.19*t*t-.08*t*t*t];
+}
+function drawBellisRosettes(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,dream=a.shootProfile==='lavenderDream',h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.45,w*.25),crowns=Math.max(3,Math.min(11,Math.round(w/.045))),winter=[12,1,2].includes(month),n=Math.round((winter?9:16)*detail),centres=[];
+ for(let i=0;i<crowns;i++){
+  const az=i*2.399963,rr=i===0?0:w*.30*Math.sqrt(i/crowns),base=[Math.sin(az)*rr,.006,Math.cos(az)*rr];centres.push(base);
+  for(let j=0;j<n;j++){
+   const aa=az+j*2.399963,len=L*(.60+.40*(j+1)/n),colour=winter&&j%5===0?'#745b49':kit.shade(rand,s.leafColor,.04);
+   b.add('bellisLeaf','leaf-bellis',colour,...base,len*.43,len,len,.75+.75*j/n,aa,(rand()-.5)*.20);
+  }
+ }
+ if(!s.bloom)return;
+ const total=Math.max(4,Math.round(crowns*2.3*detail)),r=Math.min(a.flowerRadius,h*.13,w*.07);
+ for(let i=0;i<total;i++){
+  const base=centres[i%crowns],az=i*2.399963,lean=dream?.025:.065,tip=[base[0]+Math.sin(az)*h*lean,h*(.58+.34*rand()),base[2]+Math.cos(az)*h*lean],mid=[base[0]*.45+tip[0]*.55,tip[1]*.54,base[2]*.45+tip[2]*.55];
+  b.branch(base,mid,Math.min(dream?.0012:.0008,h*.008),a.stemColor,'scape-bellis');b.branch(mid,tip,Math.min(dream?.00095:.00065,h*.006),a.stemColor,'scape-bellis');
+  const f=flowerFrame(b,tip,.08+rand()*.35,az);
+  if(i%6===0){f.add(kit.bud,'bud-bellis',dream?'#b188b8':'#b7b499',0,0,0,r*.44,r*.65,r*.44);continue;}
+  f.add(kit.bud,'involucre-bellis','#527244',0,-r*.12,0,r*.48,r*.26,r*.48);
+  for(let j=0;j<36;j++){
+   const aa=j*TAU/36,len=r*(.65+.08*rand()),ring=j%2,tilt=Math.PI/2-(dream?.21:.10)-ring*.14;
+   f.add('bellisRay',dream?'petal-bellis-dream':'petal-bellis-white','#f3eee2',Math.sin(aa)*r*.31,ring*r*.025,Math.cos(aa)*r*.31,len,len,len,tilt,aa,0);
+  }
+  for(let j=0;j<64;j++){
+   const aa=j*2.399963,rr=r*.35*Math.sqrt((j+.5)/64);f.add(kit.bud,'disc-bellis',j%4===0?'#e9c348':'#d9aa23',Math.sin(aa)*rr,r*.04+r*.13*(1-(rr/(r*.36))**2),Math.cos(aa)*rr,r*.048,r*.060,r*.048);
+  }
+ }
+}
+
 export function oleariaPoint(t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),outline=.5*Math.pow(sn,.52)*(.38+.80*t);
  return [u*outline,t,.065*u*u*sn-.032*t*t-.023*Math.pow(Math.abs(u),6)*sn];
@@ -8673,6 +8706,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='bellisRosettes'){drawBellisRosettes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oleariaSmoky'){drawOleariaSmoky(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='mahoniaCanes'){drawMahoniaCanes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lavenderMounds'){drawLavenderMounds(b,{info,s,detail,rand,month},kit);return;}
