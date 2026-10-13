@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.230';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.231';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.230';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.231';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5020,6 +5020,38 @@ export function paniclePhloxPoint(type,t,u){
  if(type==='paniclePhloxLobe')return [u*.60*Math.pow(sn,.32),t-.065*Math.exp(-u*u*24)*Math.pow(t,8),.045*t*t+.045*u*u*sn];
  const width=.5*Math.pow(sn,.80)*(1-.14*t),curve=t-Math.abs(u)*(.29-.12*Math.abs(u));
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
+}
+
+export function raggedRobinPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='raggedRobinLeaf')return [u*.50*sn**.83*(1-.12*t),t,.075*t*t+.03*u*u*sn];
+ if(type==='raggedRobinPetal'){const fingers=(.5+.5*Math.cos((u+.75)*Math.PI*4))**3;return [u*(.035+.43*Math.sin(t*Math.PI/2)**.75),t*(.56+.44*fingers),.08*t*t+.025*Math.sin(u*12+t*8)*t];}
+ const az=(u+1)*Math.PI,r=(.12+.065*sn)*(1+.07*Math.cos(az*10));return [Math.sin(az)*r,t,Math.cos(az)*r];
+}
+function drawRaggedRobin(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,n=Math.max(3,Math.min(14,Math.round(9*detail*Math.sqrt(w/.25)*Math.min(1,h/.3)))),L=Math.min(a.leafLength,w*.34,h*.3),R=a.flowerRadius*Math.min(1,h/.25),F=a.flowerLength*Math.min(1,h/.25);
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const leaf=(at,aa,len,i,k)=>{if(noise(i,k)>s.leafDensity)return;b.add('raggedRobinLeaf','leaf-ragged-robin',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,.85+.28*noise(i,k+3),aa,(noise(i,k+7)-.5)*.2);};
+ const flower=(at,az,i,k)=>{
+  if(!s.bloom)return;const f=flowerFrame(b,at,.18+.7*noise(i,k+3),az),r=R*(.9+.1*noise(i,k+5));
+  f.add('raggedRobinCalyx','calyx-ragged-robin',a.flowerPalette.calyx,0,0,0,F,F,F);
+  if(noise(i,k+17)>.85){f.add(kit.bud,'bud-ragged-robin',a.flowerPalette.bud,0,F*.8,0,r*.18,F*.45,r*.18);return;}
+  for(let level=0;level<3;level++)for(let j=0;j<7;j++){
+   const aa=az+j*TAU/7+level*.63+(noise(i,k+j+level*10)-.5)*.18,len=r*(1-level*.19)*( .9+.1*noise(i,k+j+80));f.add('raggedRobinPetal','petal-ragged-robin',s.flowerColor,Math.sin(aa)*r*.10,F+level*r*.12,Math.cos(aa)*r*.10,len,len,len,Math.PI/2-.25-level*.24+(noise(i,k+j+30)-.5)*.20,aa,(noise(i,k+j+60)-.5)*.18);
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.20*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr],top=[root[0]+Math.sin(az)*w*.045,h*(.65+.17*noise(i,2)),root[2]+Math.cos(az)*w*.045];let prev=root;
+  for(let j=0;j<7;j++)leaf(root,az+j*2.4,L*(.72+.28*noise(i,j+4)),i,j+22);
+  for(let j=1;j<=6;j++){
+   const q=(j+(j<6?(noise(i,j+8)-.5)*.4:0))/6,at=mix(root,top,q);b.branch(prev,at,Math.min(.0011,h*.003)*(1-q*.45),a.stemColor,'stem-ragged-robin');prev=at;
+   for(let side=0;side<2;side++)leaf(at,az+j*Math.PI/2+side*Math.PI,L*(.55-.3*q),i,j+40);
+   if(j===4||j===5)for(let side=0;side<2;side++){
+    const aa=az+j*Math.PI/2+side*Math.PI,len=Math.min(w*.19,h*.14),end=[at[0]+Math.sin(aa)*len,at[1]+h*.10,at[2]+Math.cos(aa)*len];b.branch(at,end,Math.min(.0007,h*.0019),a.stemColor,'branch-ragged-robin');flower(end,aa,i,j*13+side*7);
+    const tip=[end[0]+Math.sin(aa+.7)*len*.34,end[1]+h*.065,end[2]+Math.cos(aa+.7)*len*.34];b.branch(end,tip,Math.min(.00035,h*.0013),a.stemColor,'pedicel-ragged-robin');flower(tip,aa+.7,i,j*25+side*7);
+   }
+  }flower(top,az,i,200);
+ }
 }
 
 export function polemoniumPoint(type,t,u){
@@ -10415,6 +10447,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='doubleRaggedRobin'){drawRaggedRobin(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pinnatePolemonium'){drawPolemonium(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='carolinaPhloxHeads'){drawCarolinaPhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='springPhloxTrails'){drawSpringPhlox(b,{info,s,detail,rand,month},kit);return;}
