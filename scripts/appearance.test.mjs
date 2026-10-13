@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Apache Sunset and Globetrotter separate fine grey foliage from broad leaves and tapered purple spikes',()=>{
+ const ids=['p-9ddc79809c90','p-dbbbc74d595c'];assert.deepEqual(CATALOG[ids[0]].height,[.4,.6]);assert.deepEqual(CATALOG[ids[1]].height,[.6,1]);assert.deepEqual(CATALOG[ids[1]].bloom,[6,7,8,9]);
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.spread,[.5,.8]);let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,22800+i,1,1),height:small?.13:i?.8:.5,spread:small?.2:.65,leafHeight:small?.08:i?.45:.3},g=plantModel(p,view(month));assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);assert.equal(g.userData.architecture,i?'hybridHyssopSpikes':'rupestrisBranches');
+   const tag=i?'rugosa-hyssop':'rupestris',leaves=g.children.find(m=>m.userData.component==='leaf-'+tag);const count=leaves?.count??0;assert.ok(count>0||[12,1,2].includes(month),'only winter may have no remaining leaves');assert.equal(count%2,0);if(leaves){assert.ok(leaves.geometry.userData[i?'globeHyssopLeaf':'rupestrisLeaf']);assert.equal(count,g.children.find(m=>m.userData.component==='petiole-'+tag).count);}if(month===1)winter=count;if(month===7)summer=count;
+   const flowers=g.children.find(m=>m.userData.component==='tube-'+tag);assert.equal(!!flowers,month>=(i?6:5)&&month<=(i?9:11));if(flowers){assert.equal(g.children.find(m=>m.userData.component==='filament-'+tag).count,flowers.count*4);assert.ok(g.children.find(m=>m.userData.component==='calyx-'+tag).count>flowers.count);}assert.ok(!g.children.some(m=>/fruit|seed|stolon/.test(m.userData.component)));
+   const now=g.children.filter(m=>new RegExp('^(stem|branch|axis)-'+tag+'$').test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.13);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.72);}dispose(g);
+  }
+  assert.ok(winter>0&&winter<summer*.20);
+ }
+});
 test('Rugosa hyssops have toothed broad leaves and dense small-flowered spikes with different winter persistence',()=>{
  const ids=['p-ee695bf8b522','p-d6fe3845b74d'];assert.equal(CATALOG[ids[0]].spread,null);assert.deepEqual(CATALOG[ids[1]].spread,[.5,.8]);assert.deepEqual(CATALOG[ids[1]].height,[.6,.8]);assert.notEqual(CATALOG[ids[0]].leafColor,CATALOG[ids[1]].leafColor);
  for(const [i,id] of ids.entries())for(const small of [false,true]){
