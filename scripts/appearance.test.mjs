@@ -10,6 +10,21 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Officinalis sages retain paired rugose leaves, cultivar-specific margins and uncut winter branches',()=>{
+ const ids=['p-0eb775c25ea5','p-c8f358defee5','p-53939297e35e','p-2cf86ddcb729'];
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.deepEqual(info.height,i?[.25,.4]:[.4,.6]);assert.deepEqual(info.spread,[.3,.5]);assert.equal(info.variegated,i===1||i===3);assert.equal(info.appearance.status,'partial');let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,20700+i,1,1),height:small?.12:i?.35:.5,spread:small?.20:.45,leafHeight:small?.08:.25},g=plantModel(p,view(month));assert.equal(g.userData.architecture,'officinalisMounds');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+   const leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-officinalis-')),count=leaves.reduce((n,m)=>n+m.count,0);assert.ok(count>40);assert.equal(count%2,0);assert.ok(leaves.every(m=>m.geometry.userData.officinalisLeaf));assert.equal(count,g.children.find(m=>m.userData.component==='petiole-officinalis').count);if(month===1)winter=count;if(month===5)summer=count;
+   assert.equal(g.children.some(m=>m.userData.component==='tube-officinalis'),(i===0||i===2)&&[5,6,7,8].includes(month));assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(wood|stem|branch|axis)-officinalis$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.15);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.66);}dispose(g);
+  }
+  assert.ok(winter<summer);
+ }
+ assert.deepEqual(CATALOG[ids[1]].colors,['unknown']);assert.deepEqual(CATALOG[ids[3]].colors,['unknown']);
+});
 test('Snow Hill uses compact domestic dimensions with white lips, green stems and small winter basal leaves',()=>{
  const id='p-4a97a7aeca72',info=CATALOG[id];assert.deepEqual(info.height,[.2,.3]);assert.deepEqual(info.spread,[.3,.6]);assert.deepEqual(info.bloom,[5,6]);assert.equal(info.appearance.status,'partial');assert.notEqual(info.appearance.stemColor,CATALOG['p-e8a3ee532b78'].appearance.stemColor);
  for(const [i,dimensions] of [{height:.28,spread:.45,leafHeight:.13},{height:.10,spread:.18,leafHeight:.065}].entries()){
