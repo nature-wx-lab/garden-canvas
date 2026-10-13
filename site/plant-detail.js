@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.190';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.191';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.190';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.191';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5449,6 +5449,14 @@ function drawMahoniaCanes(b,{info,s,detail,rand,month},kit){
 
 export function lavenderPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='lavenderSandLeaf'){
+  const angle=(u+1)*Math.PI,body=Math.pow(sn,.43);
+  return [Math.sin(angle)*.5*body,t,-Math.cos(angle)*.008*body-.025*t*t+.012*Math.sin(t*7)*sn];
+ }
+ if(type==='lavenderSandCalyx'){
+  const angle=(u+1)*Math.PI,r=(.38+.09*Math.sin(t*Math.PI))*(1+.06*Math.cos(angle*5));
+  return [Math.sin(angle)*r,t,-Math.cos(angle)*r];
+ }
  if(type==='lavenderTube'){const az=(u+1)*Math.PI,r=.23+.15*t*t;return [Math.cos(az)*r,t,Math.sin(az)*r];}
  if(type==='lavenderLobe')return [u*.45*Math.pow(sn,.44),t,.14*u*u*sn+.07*t*t];
  // A single, entire, narrow blade with rolled margins, not pinnate foliage.
@@ -5456,18 +5464,18 @@ export function lavenderPoint(type,t,u){
 }
 
 function drawLavenderMounds(b,{info,s,detail,rand,month},kit){
- const a=info.appearance,grosso=a.shootProfile==='grosso',h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.12,w*.13),spike=Math.min(a.inflorescenceLength,h*.18),winter=[12,1,2].includes(month);
- const mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),shape=(i,k)=>.5+.5*Math.sin((i+1)*14.989+k*7.233),n=Math.max(8,Math.min(68,Math.round((grosso?48:42)*detail*Math.pow(w/.6,.55))));
- const pairs=(at,az,len)=>{for(const side of [0,1])b.add('lavenderLinear','leaf-lavender',kit.shade(rand,s.leafColor,.045),...at,len*a.leafWidth/a.leafLength,len,len,.62+.27*shape(Math.round(at[1]*1000),2),az+side*Math.PI,0);};
+ const a=info.appearance,grosso=a.shootProfile==='grosso',sand=a.shootProfile==='silverSand',h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.12,w*.13),spike=Math.min(a.inflorescenceLength,h*.18),winter=[12,1,2].includes(month);
+ const mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),shape=(i,k)=>.5+.5*Math.sin((i+1)*14.989+k*7.233),n=Math.max(8,Math.min(68,Math.round((grosso?48:sand?24:42)*detail*Math.pow(w/.6,.55))));
+ const pairs=(at,az,len)=>{for(const side of [0,1])b.add(sand?'lavenderSandLeaf':'lavenderLinear',sand?'leaf-lavender-silver-sand':'leaf-lavender',kit.shade(rand,s.leafColor,.045),...at,len*a.leafWidth/a.leafLength,len,len,.62+.27*shape(Math.round(at[1]*1000),2),az+side*Math.PI,0);};
  const head=(base,tip,az,i,k)=>{
-  const angle=Math.atan2(Math.hypot(tip[0]-base[0],tip[2]-base[2]),tip[1]-base[1]),f=flowerFrame(b,tip,angle,az),levels=grosso?9:7,stem=s.bloom?a.stemColor:'#887e69';
+  const angle=Math.atan2(Math.hypot(tip[0]-base[0],tip[2]-base[2]),tip[1]-base[1]),f=flowerFrame(b,tip,angle,az),levels=grosso?9:sand?6:7,stem=s.bloom?a.stemColor:'#887e69';
   f.branch([0,0,0],[0,spike,0],.00051,stem,'spike-lavender');
   for(let j=0;j<levels;j++){
-   const t=j/(levels-1),yy=spike*t,ring=(grosso?.0042:.0032)*(1-.45*t),q=j<2?yy*.90:yy;
+   const t=j/(levels-1),yy=spike*t,ring=(grosso?.0042:.0032)*(1-.45*t),q=sand?spike*(j===0?0:j===1?.28:.49+(j-2)*.17):j<2?yy*.90:yy;
    for(let z=0;z<6;z++){
-    const yaw=z*TAU/6+j*.9,at=[Math.sin(yaw)*ring,q,Math.cos(yaw)*ring],calyx=s.bloom?(grosso?'#6e718d':'#5a5276'):'#887d67';
-    f.add(kit.bud,'calyx-lavender',calyx,...at,.0017,.0025,.0017,.6,yaw,0);
-    if(!s.bloom||shape(i,j*6+z+k*80+100)>s.flowerDensity||j===levels-1)continue;
+    const yaw=z*TAU/6+j*.9,at=[Math.sin(yaw)*ring,q,Math.cos(yaw)*ring],calyx=s.bloom?(grosso?'#6e718d':sand?'#949993':'#5a5276'):'#887d67';
+    f.add(sand?'lavenderSandCalyx':kit.bud,sand?'calyx-lavender-silver-sand':'calyx-lavender',calyx,...at,sand?.0032:.0017,sand?.004:.0025,sand?.0032:.0017,.6,yaw,0);
+    if(!s.bloom||shape(i,j*6+z+k*80+100)>s.flowerDensity*(sand?.46:1)||j===levels-1)continue;
     const len=Math.min(a.flowerLength,h*.025),fl=flowerFrame(f,at,1.15,yaw);fl.add('lavenderTube','tube-lavender',s.flowerColor,0,0,0,len*.65,len,len*.65);
     for(let l=0;l<5;l++){
      const theta=l*TAU/5,upper=l<2,sz=len*(upper?.24:.34);
@@ -5477,23 +5485,25 @@ function drawLavenderMounds(b,{info,s,detail,rand,month},kit){
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963,t=(i+.5)/n,rr=Math.max(.002,w*.40-L)*Math.sqrt(t),root=[Math.sin(az)*rr*.14,.005,Math.cos(az)*rr*.14],joint=[Math.sin(az)*rr*.73,h*(.24+.14*(1-t)),Math.cos(az)*rr*.73];
-  const woodEnd=mix(root,joint,.39);b.branch(root,woodEnd,Math.min(.0022,h*.006),'#867f6e','wood-lavender');let old=woodEnd;
+  const az=i*2.399963,t=(i+.5)/n,rr=Math.max(.002,w*.40-L)*Math.sqrt(t),root=[Math.sin(az)*rr*(sand?.45:.14),.005,Math.cos(az)*rr*(sand?.45:.14)],joint=[Math.sin(az)*rr*.73,h*(.24+.14*(1-t)),Math.cos(az)*rr*.73];
+  const woodEnd=mix(root,joint,sand?.20:.39);b.branch(root,woodEnd,Math.min(.0022,h*.006),'#867f6e','wood-lavender');let old=woodEnd;
   for(let j=1;j<=8;j++){
-   const at=mix(woodEnd,joint,j/8);b.branch(old,at,.0013*(1-j*.045),a.stemColor,'shoot-lavender');old=at;
+   const at=mix(woodEnd,joint,j/8);b.branch(old,at,(sand?.00065:.0013)*(1-j*.045),a.stemColor,'shoot-lavender');old=at;
    if(shape(i,j+10)<s.leafDensity)pairs(at,az+j*Math.PI/2,L*(.78+.22*shape(i,j+30)));
-   if(j<3||j%2)continue;
+   if(j<3||j%2||(sand&&j===6))continue;
    for(const side of [-1,1]){
     const aa=az+side*.86,end=[at[0]+Math.sin(aa)*w*.075,at[1]+h*.11,at[2]+Math.cos(aa)*w*.075];let from=at;
     for(let z=1;z<=5;z++){
-     const p=mix(at,end,z/5);b.branch(from,p,.0006,a.stemColor,'twig-lavender');from=p;if(shape(i,j*10+z+50)<s.leafDensity)pairs(p,aa+z*Math.PI/2,L*(.84-.24*z/5));
-     if(z%2)continue;
+     const p=mix(at,end,z/5);b.branch(from,p,sand?.00035:.0006,a.stemColor,'twig-lavender');from=p;if(shape(i,j*10+z+50)<s.leafDensity)pairs(p,aa+z*Math.PI/2,L*(.84-.24*z/5));
+     if(z%2||(sand&&z===2))continue;
      const sa=aa+(z===2?1:-1)*.86,tip=[p[0]+Math.sin(sa)*L*.90,p[1]+L*.7,p[2]+Math.cos(sa)*L*.90];let prev=p;
      for(let q=1;q<=3;q++){const point=mix(p,tip,q/3);b.branch(prev,point,.00031,a.stemColor,'shortshoot-lavender');prev=point;if(shape(i,j*30+z*5+q+120)<s.leafDensity)pairs(point,sa+q*Math.PI/2,L*(.70-.18*q/3));}
     }
    }
   }
+  if(sand&&i%3===2)continue;
   const tip=[Math.sin(az)*rr,h*(.77+.17*shape(i,75))-spike,Math.cos(az)*rr],neck=mix(joint,tip,.25),floral=winter||!s.bloom?'#8e8771':a.stemColor;
+  if(sand)pairs(mix(joint,tip,.25),az,L*.68);
   b.branch(joint,neck,.00095,floral,'peduncle-lavender');b.branch(neck,tip,.00073,floral,'peduncle-lavender');head(neck,tip,az,i,0);
   if(grosso&&i%3===0)for(const side of [-1,1]){
    const aa=az+side*.55,start=mix(neck,tip,.25),end=[tip[0]+Math.sin(aa)*w*.085,tip[1]-h*.08,tip[2]+Math.cos(aa)*w*.085];b.branch(start,end,.00055,floral,'fork-lavender');head(start,end,aa,i,side+2);

@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Silver Sand lavender keeps silver opposite leaves and sparse purple spikes without inventing size or winter dieback',()=>{
+ const id='p-5caf8a404f18',info=CATALOG[id];assert.equal(info.latin,'');assert.equal(info.height,null);assert.equal(info.spread,null);assert.deepEqual(info.colors,['purple']);assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.flowerTiming,'season-reference');
+ for(const [i,dimensions] of [{height:.4,spread:.35,leafHeight:.2},{height:.12,spread:.15,leafHeight:.07}].entries()){
+  let axes,leafCount;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,20100+i,1,1),...dimensions},g=plantModel(p,view(month));assert.equal(g.userData.architecture,'lavenderMounds');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+   const leaf=g.children.find(m=>m.userData.component==='leaf-lavender-silver-sand');assert.ok(leaf.count>100);assert.equal(leaf.count%2,0);if(leafCount)assert.equal(leaf.count,leafCount);else leafCount=leaf.count;
+   for(let j=0;j<leaf.count;j+=2)assert.deepEqual([...leaf.instanceMatrix.array.slice(j*16+12,j*16+15)],[...leaf.instanceMatrix.array.slice((j+1)*16+12,(j+1)*16+15)]);
+   assert.ok(g.children.some(m=>m.userData.component==='calyx-lavender-silver-sand'));assert.equal(g.children.some(m=>m.userData.component==='tube-lavender'),info.bloom.includes(month));assert.ok(!g.children.some(m=>/fruit|seed|fork-lavender/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(wood|shoot|peduncle|spike)-lavender$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(axes)assert.deepEqual(now,axes);else axes=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.63);}dispose(g);
+  }
+ }
+});
 test('Bronze perennial snapdragons retain spray branches and distinct dark foliage and bicolour throats',()=>{
  for(const [i,id] of ['p-14ae8a6a91d0','p-830abf9bd320'].entries()){
   const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.spread,i?[.2,.3]:[.3,.5]);let skeleton,winter,summer;
