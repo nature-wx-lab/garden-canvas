@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.202';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.203';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.202';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.203';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5447,6 +5447,62 @@ function drawMahoniaCanes(b,{info,s,detail,rand,month},kit){
  }
 }
 
+export function smallSagePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type.endsWith('Leaf')){
+  const coah=type==='coahLeaf',germ=type==='germanderLeaf',outline=coah?.50*Math.pow(sn,.60):germ?.51*Math.pow(sn,.52)*(.64+.36*t):.62*Math.pow(sn,.76)*(1-.39*t)*(1+.018*Math.cos(t*TAU*12));
+  return [u*outline,t,.038*u*u*sn-.07*t*t+.004*Math.sin(t*50-Math.abs(u)*12)*sn];
+ }
+ if(type==='smallSageLip'){
+  const width=(.025+.38*Math.min(1,t*2.7))*Math.pow(sn,.32),notch=.065*Math.exp(-u*u*32)*Math.pow(t,7);
+  return [u*width,-.24*t+.06*u*u*sn+notch,.49+.53*t-.045*u*u*sn];
+ }
+ const az=(u+1)*Math.PI;
+ if(type==='smallSageHood')return [Math.cos(az)*(.008+.070*Math.pow(sn,.65)),.05+.16*Math.sin(t*Math.PI*.85)+Math.sin(az)*.025*sn,.52+.45*t];
+ if(type==='smallSageBud'){const r=.008+.08*Math.pow(sn,.65);return [Math.cos(az)*r,Math.sin(az)*r*.6-.055*t,.22+.42*t];}
+ const calyx=type==='smallSageCalyx',r=calyx?.115-.03*t:.056+.042*t,teeth=calyx?.06*Math.pow(Math.max(0,Math.cos(az*5)),4)*Math.pow(t,7):0;
+ return [Math.cos(az)*r,Math.sin(az)*r,(calyx?.32:.57)*t+teeth];
+}
+
+function drawSmallSages(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,profile=a.shootProfile,coah=profile==='coahuilensis',germ=profile==='germander',cold=[12,1,2].includes(month),stem=cold?a.winterStemColor:a.stemColor,L=Math.min(a.leafLength,h*.22,w*.15),F=Math.min(a.flowerLength,h*.14,w*.12),n=Math.max(5,Math.min(30,Math.round((coah?15:germ?22:20)*detail*Math.sqrt(w/.35))));
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const pair=(at,az,len,i,k)=>{
+  if(noise(i,k)>s.leafDensity)return;
+  for(let side=0;side<2;side++){
+   const aa=az+side*Math.PI+(noise(i,k+side+52)-.5)*.12,pet=len*.10,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.30,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0004,h*.002),stem,'petiole-small-sage');
+   b.add(coah?'coahLeaf':germ?'germanderLeaf':'sinaloaLeaf','leaf-small-sage-'+profile,kit.shade(rand,s.leafColor,.065),...end,len*a.leafWidth/a.leafLength,len,len,.85+.60*noise(i,k+side+70),aa,(noise(i,k+side+35)-.5)*.35);
+  }
+ };
+ const raceme=(base,az,len,i)=>{
+  let old=base;const levels=3+Math.floor(noise(i,7)*3);
+  for(let j=1;j<=levels;j++){
+   const t=j/levels,at=[base[0]+Math.sin(az)*w*.045*t*t,base[1]+len*t,base[2]+Math.cos(az)*w*.045*t*t];b.branch(old,at,Math.min(.0008,h*.0028)*(1-t*.30),stem,'axis-small-sage');old=at;
+   pair(at,az+j*Math.PI/2,L*(.30-j*.032),i,j+76);
+   if(!s.bloom)continue;
+   for(let side=0;side<2;side++){
+    const aa=az+j*Math.PI/2+side*Math.PI,ped=F*.16,pos=[at[0]+Math.sin(aa)*ped,at[1]+ped*.30,at[2]+Math.cos(aa)*ped],f=flowerFrame(b,pos,-.13+.35*noise(i,j+side+42),aa),fl=F*(.80+.20*noise(i,j+side+44));
+    b.branch(at,pos,F*.015,stem,'pedicel-small-sage');f.add('smallSageCalyx','calyx-small-sage-'+profile,a.flowerPalette.calyx,0,0,0,fl,fl,fl);
+    if(j===levels||noise(i,j*23+side+5)>(coah?.47:.60)){f.add('smallSageBud','bud-small-sage',s.flowerColor,0,0,0,fl*.75,fl*.75,fl*.75);continue;}
+    f.add('smallSageTube','tube-small-sage',s.flowerColor,0,0,0,fl,fl,fl);f.add('smallSageHood','hood-small-sage',s.flowerColor,0,0,0,fl,fl,fl);f.add('smallSageLip','petal-small-sage-'+profile,s.flowerColor,0,0,0,fl*(germ?1.06:1),fl,fl);
+    f.branch([0,.08*fl,.90*fl],[0,.025*fl,1.035*fl],fl*.007,'#dadaca','stigma-small-sage');
+   }
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963+(noise(i,1)-.5)*1.2,rr=w*.31*Math.sqrt((i+.6)/n),root=[Math.sin(az)*rr*.24,.004,Math.cos(az)*rr*.24],top=[Math.sin(az)*rr,h*(.40+.30*noise(i,2)),Math.cos(az)*rr],wood=mix(root,top,.12);b.branch(root,wood,Math.min(.0022,h*.006),a.barkColor,'wood-small-sage');let old=wood;
+  const nodes=coah?8:10;
+  for(let j=1;j<=nodes;j++){
+   const t=j/nodes,at=mix(wood,top,t);at[0]+=w*.025*Math.sin(t*Math.PI)*Math.sin(az+.6);at[2]+=w*.025*Math.sin(t*Math.PI)*Math.cos(az+.6);b.branch(old,at,Math.min(coah?.0009:.0012,h*.004)*(1-t*.4),stem,'stem-small-sage');old=at;pair(at,az+j*Math.PI/2,L*(.88-.3*t),i,j+15);
+   if(j!==3&&j!==6)continue;
+   const yaw=az+j*Math.PI/2+(noise(i,j+8)-.5)*.8,reach=w*(.09+.04*noise(i,j+12)),end=[at[0]+Math.sin(yaw)*reach,at[1]+h*(.12+.08*noise(i,j+18)),at[2]+Math.cos(yaw)*reach];let prev=at;
+   for(let q=1;q<=6;q++){const loc=mix(at,end,q/6);b.branch(prev,loc,Math.min(.0007,h*.0028),stem,'branch-small-sage');prev=loc;pair(loc,yaw+q*Math.PI/2,L*(.90-q*.07),i,j*29+q);}
+   raceme(end,yaw,h*(.10+.04*noise(i,j+37)),i+j*57);
+  }
+  raceme(top,az,h*(.14+.06*noise(i,21)),i);
+ }
+}
+
 export function patensPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='patensLeaf'){
@@ -9346,6 +9402,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='bellisRosettes'){drawBellisRosettes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oleariaSmoky'){drawOleariaSmoky(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='mahoniaCanes'){drawMahoniaCanes(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='smallSageMounds'){drawSmallSages(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='patensShoots'){drawPatens(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='cherrySageBranches'){drawCherrySage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='officinalisMounds'){drawOfficinalis(b,{info,s,detail,rand,month},kit);return;}

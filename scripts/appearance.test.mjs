@@ -10,6 +10,22 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Small sages distinguish narrow green, hairy silver and seasonal copper leaves without invented creeping habit',()=>{
+ const ids=['p-5faf36670c76','p-a69b7655fd1e','p-25b06ebb3b3e'];
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.habit,'mound');assert.notEqual(info.appearance.leafShape,'compound');assert.deepEqual(info.height,i===2?[.2,.3]:[.2,.4]);assert.deepEqual(info.spread,i?[.2,.3]:[.3,.4]);let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,21300+i,1,1),height:small?.12:i===2?.25:.35,spread:small?.20:i?.3:.38,leafHeight:small?.08:.18},g=plantModel(p,view(month)),s=stateAt(p,view(month));assert.equal(g.userData.architecture,'smallSageMounds');assert.equal(s.shootScale,1);
+   const leaves=g.children.find(m=>m.userData.component==='leaf-small-sage-'+info.appearance.shootProfile),count=leaves?.count||0;assert.equal(count%2,0);if(count){assert.equal(count,g.children.find(m=>m.userData.component==='petiole-small-sage').count);assert.ok(leaves.geometry.userData[['coahLeaf','germanderLeaf','sinaloaLeaf'][i]]);}if(month===1)winter=count;if(month===6)summer=count;
+   assert.equal(g.children.some(m=>m.userData.component==='tube-small-sage'),month>=5&&month<=11);assert.ok(!g.children.some(m=>/seed|fruit|stolon/.test(m.userData.component)));
+   if(i===2&&month===7)assert.equal(s.leafColor,'#5b774e');if(i===2&&month===11)assert.equal(s.leafColor,'#87464b');
+   const now=g.children.filter(m=>/^(wood|stem|branch|axis)-small-sage$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.15);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.65);}dispose(g);
+  }
+  assert.ok(winter<summer*.2);
+ }
+ assert.deepEqual(CATALOG[ids[2]].colors,['blue']);assert.ok(searchCatalog(CATALOG,{query:'シナロア',color:'blue'}).some(([id])=>id===ids[2]));
+});
 test('Moonlight, So Cool and Christine sages retain foliage patterns and cultivar-specific bloom colours',()=>{
  const ids=['p-a2c155eac0a4','p-31fc17a4aa55','p-6202fe540a4a'];
  for(const [i,id] of ids.entries())for(const small of [false,true]){
