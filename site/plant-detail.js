@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.158';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.159';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.158';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.159';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4875,6 +4875,61 @@ function drawClover(b,{info,s,detail,rand},kit){
  }
 }
 
+// Crenate maculatum and longer, toothed galeobdolon leaves share a ribbed lamina.
+// Dimensions and relief amplitude are drawing approximations, not measurements.
+export function lamiumPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='lamiumHood'){
+  const angle=u*Math.PI*.55,round=Math.cos(t*Math.PI/2)*(.88+.12*Math.sin(t*Math.PI)),bend=t*t;
+  return [Math.sin(angle)*round,.94*Math.sin(t*Math.PI/2),-Math.cos(angle)*round*.58+.85*bend];
+ }
+ if(type==='lamiumLip')return [u*.50*Math.pow(sn,.42),t,.14*u*u*sn-.18*t*t];
+ const sterling=type==='lamiumSterlingLeaf',teeth=sterling?9:12,phase=t*teeth%1;
+ const edge=sterling?1+.047*Math.cos(t*TAU*teeth):1+.055*(phase<.78?phase/.78:(1-phase)/.22);
+ const width=.5*Math.pow(Math.max(0,Math.sin((.10+.90*t)*Math.PI)),sterling?.62:.80)*(1-.15*t)*edge;
+ const rib=.013*Math.cos((t-Math.abs(u)*.31)*TAU*6)*Math.abs(u)*sn;
+ return [u*width,t-.12*Math.pow(Math.abs(u),.7)*Math.exp(-t*6),.09*t*t+.085*Math.abs(u)*sn+rib+.009*Math.sin(t*19+u*5)*u*u*sn];
+}
+
+function drawLamium(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,sterling=a.shootProfile==='sterling',winter=s.winter,w=s.spread,h=s.height;
+ const L=Math.min(a.leafLength,w*.28)*s.leafScale,leafKind='leaf-lamium-'+a.shootProfile,stem=a.stemColor;
+ const runners=Math.max(4,Math.min(14,Math.round((sterling?7:6)*detail*Math.pow(w/.3,.8)))),nodes=Math.max(3,Math.min(7,Math.round(w/.065)));
+ const leafPair=(at,yaw,size,petiole,pitch=1.18,upper=false)=>{
+  for(const side of [-1,1]){
+   const angle=yaw+(side===1?0:Math.PI),end=[at[0]+Math.sin(angle)*petiole,at[1]+petiole*.30,at[2]+Math.cos(angle)*petiole];
+   b.branch(at,end,.00048,stem,'petiole-lamium');
+   b.add(a.leafShape,leafKind+(upper?'-upper':''),kit.shade(rand,s.leafColor,.05),...end,size*a.leafWidth/a.leafLength,size,size,pitch,angle,(rand()-.5)*.16);
+  }
+ };
+ for(let i=0;i<runners;i++){
+  const angle=i*2.399963,reach=Math.max(.02,w*.45-L*.75),lift=h*(winter?.055:.13),nodesAt=[];let from=[0,.006,0];
+  for(let n=1;n<=nodes;n++){
+   const t=n/nodes,yaw=angle+.18*Math.sin(t*4+i),at=[Math.sin(yaw)*reach*t,.006+lift*Math.sin(t*Math.PI),Math.cos(yaw)*reach*t];
+   b.branch(from,at,.0010*(1-t*.35),stem,'stolon-lamium');nodesAt.push(at);from=at;
+   // Opposite leaves are retained as a pair; seasonal thinning never detaches a blade.
+   if(rand()<s.leafDensity)leafPair(at,yaw+n*Math.PI/2,L*(.72+.24*t),a.petioleLength*s.leafScale);
+   if(n%2===0)for(const sign of [-1,1])b.branch(at,[at[0]+sign*.002,.001,at[2]+.003],.00022,'#9a886c','root-lamium');
+  }
+  if(!s.bloom)continue;
+  // Short rising shoots bear leaves and axillary false whorls, not terminal cups.
+  const base=nodesAt[Math.min(nodes-1,2+i%2)],top=h*(.73+rand()*.15);let last=base;
+  for(let q=1;q<=4;q++){
+   const t=q/4,at=[base[0]+Math.sin(angle)*h*.13*t,base[1]+(top-base[1])*t,base[2]+Math.cos(angle)*h*.13*t];
+   b.branch(last,at,.00085*(1-t*.32),stem,'stem-lamium');last=at;
+   const yaw=angle+q*Math.PI/2;leafPair(at,yaw,L*(.85-.47*t),a.petioleLength*(.65-.53*t),.95,true);
+   if(q<2)continue;
+   for(const side of [-1,1])for(let f=0;f<2;f++){
+    if(rand()>s.flowerDensity)continue;
+    const turn=yaw+(side===1?0:Math.PI)+(f-.5)*.60,tip=[at[0]+Math.sin(turn)*.004,at[1]+.001+f*.002,at[2]+Math.cos(turn)*.004];
+    b.branch(at,tip,.00025,stem,'pedicel-lamium');
+    detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:a.flowerRadius,color:s.flowerColor,shape:'lamiumLips',palette:{type:a.shootProfile,length:a.flowerLength},tilt:1.16+(rand()-.5)*.18,yaw:turn},{...kit,rand});
+   }
+  }
+ }
+}
+
 export function brunneraLeafPoint(t,u){
  const width=.62*Math.pow(Math.sin((.23+.77*t)*Math.PI),.58)*(1-.14*t),rib=.0035*Math.cos((t-Math.abs(u)*.24)*46)*Math.sin(Math.abs(u)*Math.PI);
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
@@ -6189,6 +6244,26 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='lamiumLips'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),T=palette.length,yellow=palette.type==='galeobdolon',lip=yellow?'petal-lamium-yellow':'petal-lamium-purple';
+  f.add('woodlandMintTube','corolla-lamium',color,0,0,0,r*2.6,T,r*2.6);
+  f.add('woodlandMintTube','calyx-lamium','#718255',0,-T*.06,0,r*2.9,T*.44,r*2.9);
+  for(let j=0;j<5;j++){
+   const an=j*TAU/5;
+   f.add('narrow','sepal-lamium','#75865a',Math.sin(an)*r*.76,T*.36,Math.cos(an)*r*.76,r*.45,T*.32,T*.32,.35,an,0);
+  }
+  f.add('lamiumHood',lip+'-hood',color,0,T,0,r,T*.66,r);
+  f.add('lamiumLip',lip+'-lower',color,0,T,r*.60,r*1.9,r*1.45,r*1.45,1.55,0,0);
+  for(const side of [-1,1])f.add('lamiumLip',lip+'-side',color,side*r*.50,T,r*.32,r*.78,r*.85,r*.85,1.40,side*.72,0);
+  for(let j=0;j<4;j++){
+   const side=j<2?-1:1,tip=[side*r*(j%2?.30:.52),T+T*(j%2?.40:.27),-r*.30];
+   f.branch([side*r*.18,T*.48,0],tip,r*.028,'#e5d7bd','filament-lamium');
+   f.add(bud,'anther-lamium',yellow?'#a78738':'#a8a0a0',...tip,r*.10,r*.075,r*.10);
+  }
+  const tip=[0,T*1.48,-r*.25];f.branch([0,T*.45,0],tip,r*.023,'#d6cda8','style-lamium');
+  for(const side of [-1,1])f.branch(tip,[side*r*.16,T*1.52,-r*.20],r*.025,'#d1c69e','stigma-lamium');
+  return;
+ }
  if(shape==='daisyCultivarHead'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),pompon=palette.profile==='pompon',brachy=palette.type.startsWith('brachy'),coreo=palette.type.startsWith('coreopsis'),rays=palette.rays||8,ratio=palette.diskRatio||.25,rayShape=coreo?(palette.notches<.1?'daisyShallowRay':'daisyNotchedRay'):'daisyRoundRay';
   f.add(bud,'receptacle','#728255',0,-r*.10,0,r*.29,r*.16,r*.29);
@@ -7919,6 +7994,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['diphylleiaUmbrella','jeffersoniaBasal','ranzaniaTrifoliate','deinantheCymes','kirengeshomaBells','pteridophyllumFern','hylomeconPinnate','eomeconBasal','araliaHerb','saururusRaceme','parnassiaScapes','cornusHerb'].includes(info.appearance?.architecture)){drawWoodlandSpecies(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='brunneraSprays'){drawBrunnera(b,{info,s,detail,rand},kit);return;}
  if(['primroseRosette','gerberaRosette'].includes(info.appearance?.architecture)){drawBasalFlowerForms(b,{info,s,detail,rand},kit);return;}
  if(['tapienMat','stolonPhlox'].includes(info.appearance?.architecture)){drawLowFlowerMats(b,{info,s,detail,rand},kit);return;}

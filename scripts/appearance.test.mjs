@@ -9,6 +9,42 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Lamium keeps paired silver leaves on runners and axillary hooded flowers without winter double scaling',()=>{
+ const ids=['p-c309c35b2f9c','p-7084ea19721c'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],a=info.appearance,p=makePlant(id,17100+i,1,1);p.height=.2;p.spread=.42;p.leafHeight=.12;
+  assert.equal(a.status,'partial');assert.equal(a.architecture,'lamiumRunners');assert.equal(a.arrangement,'opposite');assert.equal(info.variegated,true);
+  assert.deepEqual(a.flowerMonths,info.bloom);assert.ok(a.unconfirmed.some(x=>x.includes('実測')));assert.ok(a.unconfirmed.some(x=>x.includes('冬')));
+  assert.ok(a.leafLength>.02&&a.leafLength<.10);assert.ok(a.leafWidth>.01&&a.leafWidth<a.leafLength);assert.ok(a.petioleLength>=.002&&a.petioleLength<=.08);assert.ok(a.flowerRadius>0&&a.flowerRadius<.0127);assert.ok(a.flowerLength>0&&a.flowerLength<.0254);
+  let winterLeaves=0,summerLeaves=0;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+   const hood=count('petal-lamium-'+(i?'yellow':'purple')+'-hood'),leafMeshes=g.children.filter(m=>m.userData.component.startsWith('leaf-lamium-'));
+   assert.equal(g.userData.architecture,'lamiumRunners');assert.equal(g.scale.x,1);assert.equal(g.scale.y,1);assert.equal(seasonAt(info,month).shootScale,1);
+   assert.ok(count('stolon-lamium')>0);assert.ok(count('root-lamium')>0);assert.equal(count('stem-lamium')>0,info.bloom.includes(month));
+   assert.equal(hood>0,info.bloom.includes(month));assert.equal(count('sepal-lamium'),hood*5);assert.equal(count('anther-lamium'),hood*4);assert.equal(count('style-lamium'),hood);assert.equal(count('stigma-lamium'),hood*2);
+   assert.equal(count('petal-lamium-'+(i?'yellow':'purple')+'-lower'),hood);assert.equal(count('petal-lamium-'+(i?'yellow':'purple')+'-side'),hood*2);
+   assert.ok(leafMeshes.length);for(const mesh of leafMeshes)assert.equal(mesh.count%2,0);
+   const leaves=leafMeshes.reduce((n,m)=>n+m.count,0);if(month===1)winterLeaves=leaves;if(month===7)summerLeaves=leaves;
+   if([12,1,2].includes(month))assert.match(seasonAt(info,month).phase,/仮表示.*未確認/);
+   for(const mesh of g.children){
+    assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.normal.array].every(Number.isFinite));
+    mesh.computeBoundingBox();for(const axis of ['x','y','z']){assert.ok(Number.isFinite(mesh.boundingBox.min[axis]));assert.ok(Number.isFinite(mesh.boundingBox.max[axis]));}
+    assert.ok(mesh.boundingBox.min.y>=-.008);assert.ok(mesh.boundingBox.max.y<=p.height*1.3);
+    assert.ok(Math.max(Math.abs(mesh.boundingBox.min.x),Math.abs(mesh.boundingBox.max.x),Math.abs(mesh.boundingBox.min.z),Math.abs(mesh.boundingBox.max.z))<p.spread*.8);
+   }dispose(g);
+  }
+  assert.ok(winterLeaves<summerLeaves);
+  // Width changes add connected runner nodes without shrinking individual mature leaves.
+  let smallLeaves=0;
+  for(const width of [.15,.6]){
+   p.spread=width;const g=plantModel(p,view(7)),leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-lamium-')).reduce((n,m)=>n+m.count,0);
+   if(width===.15)smallLeaves=leaves;else{assert.ok(leaves>smallLeaves);assert.ok(leaves<220);}
+   for(const mesh of g.children){mesh.computeBoundingBox();assert.ok(Math.max(Math.abs(mesh.boundingBox.min.x),Math.abs(mesh.boundingBox.max.x),Math.abs(mesh.boundingBox.min.z),Math.abs(mesh.boundingBox.max.z))<width*.8);}dispose(g);
+  }
+ }
+ assert.notEqual(CATALOG[ids[0]].appearance.leafShape,CATALOG[ids[1]].appearance.leafShape);assert.notEqual(CATALOG[ids[0]].appearance.leafPattern,CATALOG[ids[1]].appearance.leafPattern);
+});
 test('Clover separates creeping perennial leaves from annual crimson racemes and prevents regrowth after death',()=>{
  const entries=Object.entries(CATALOG).filter(([,p])=>['cloverStolons','crimsonClover'].includes(p.appearance?.architecture));assert.equal(entries.length,9);
  for(const [i,[id,info]]of entries.entries()){
@@ -2658,8 +2694,9 @@ test('purple eryngo dies after flowering while protea eryngo retains neighbourin
 test('every catalog entry has an explicit evidence record and no unsupported completion claim',()=>{
  assert.deepEqual(Object.keys(APPEARANCE_DATA).sort(),Object.keys(CATALOG).sort());
  const allowed=new Set(['sources','basis','status','unconfirmed','arrangement','inflorescence','flowerShape','habit','leafShape','leafTexture','leafColor','barkColor','barkPattern','petals','persistence','flowerMonths','flowerTiming','emergenceMonths','dormantMonths','leafPattern','patternColor','flowerLayers','flowerPattern','scientificName','phenologyRegion','leafLength','leafWidth','leafRelief','seasonalColors','stemColor','leaflets','compoundType','standingWinter','flowerSeasons','leafMargin','architecture','winterClimateSensitive','lifeForm','flowerPatternColor','outerFlowerPattern','flowerRadius','seedHeadMonths','seedColor','flowerPalette','flowerGuides','foliageMonths','leaflessBloom','flowerOptions','leafletShape','flowerFadeTo','headRadius','inflorescenceLength','leafletCounts','leafUnderside','springShootColor','stamenCount','leafFlushAfterFlower','monthlyLeafColors','bracts','flowerOutsideColor','flowerEyeColor','monthlyPatternColors','budMonths','fruitMonths','greenFruitMonths','fruitRadius','fruitColor','winterLeafLength','monthlyFlowerDensity','collection','components','shootProfile','flushMonths','winterTipColor','basalLeafShape','basalLeafWidth','standingAfterDeathMonths','foliageHeightRatio','flowerAbundance','pistilCount','flowerLength','monthlyFlowerColors']);
- allowed.add('waterSurfaceModel');allowed.add('monthlyLeafDensity');allowed.add('leafletPairs');allowed.add('budColor');allowed.add('winterStemColor');allowed.add('fourLeafShare');
+ allowed.add('waterSurfaceModel');allowed.add('monthlyLeafDensity');allowed.add('leafletPairs');allowed.add('budColor');allowed.add('winterStemColor');allowed.add('fourLeafShare');allowed.add('petioleLength');
  for(const [id,a] of Object.entries(APPEARANCE_DATA)){
+  if(a.petioleLength!==undefined)assert.ok(Number.isFinite(a.petioleLength)&&a.petioleLength>=.002&&a.petioleLength<=.08,id+':petioleLength');
   if(a.monthlyLeafDensity!==undefined){assert.equal(a.monthlyLeafDensity.length,12,id);assert.ok(a.monthlyLeafDensity.every(x=>Number.isFinite(x)&&x>=0&&x<=1),id);}
   if(a.fourLeafShare!==undefined)assert.ok(Number.isFinite(a.fourLeafShare)&&a.fourLeafShare>=0&&a.fourLeafShare<=1,id);
   if(a.leafletPairs!==undefined)assert.ok(Number.isInteger(a.leafletPairs)&&a.leafletPairs>=1&&a.leafletPairs<=12,id+':leafletPairs');
