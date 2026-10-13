@@ -10,6 +10,21 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Mahonia keeps pinnate evergreen foliage, cultivar widths and domestic winter flowering',()=>{
+ for(const [i,id] of ['p-061e42d790ae','p-673a8cfcde67','p-ce33a9d0e054'].entries()){
+  const info=CATALOG[id],a=info.appearance,p={...makePlant(id,18400+i,1,1),height:i===1?1.4:.9,spread:i===1?1:.6,leafHeight:i===1?1.4:.9};let axes;
+  assert.equal(a.status,'partial');assert.equal(a.arrangement,'alternate');assert.equal(a.compoundType,'pinnate');assert.deepEqual(info.bloom,[11,12]);assert.deepEqual(info.colors,['yellow']);
+  if(i===1){assert.equal(info.spread,null);assert.equal(info.latin,'');assert.ok(a.leafWidth>CATALOG['p-061e42d790ae'].appearance.leafWidth);}else {assert.deepEqual(info.height,[.8,1]);assert.deepEqual(info.spread,[.3,.6]);}
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+   assert.equal(g.userData.architecture,'mahoniaCanes');assert.equal(g.scale.y,1);assert.ok(count('leaf-mahonia-terminal')>0);assert.equal(count('leaf-mahonia-lateral'),count('leaf-mahonia-terminal')*a.leafletPairs*2);
+   assert.equal(count('petal-mahonia')>0,[11,12].includes(month));assert.equal(count('sepal-mahonia'),count('centre-mahonia')*9);assert.equal(count('petal-mahonia'),count('centre-mahonia')*6);assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(wood|shoot|rachis|leaf)-mahonia/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(axes)assert.deepEqual(now,axes);else axes=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<=p.spread*.63);}dispose(g);
+  }
+ }
+ const p={...makePlant('p-061e42d790ae',18410,1,1),height:.2,spread:.2,leafHeight:.2},g=plantModel(p,view(11));for(const m of g.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.23);assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}dispose(g);
+});
 test('Lavender cultivars have opposite entire leaves, distinct spikes and domestic flowering without automatic pruning',()=>{
  for(const [i,id] of ['p-3c919c4a2d05','lavender'].entries()){
   const info=CATALOG[id],a=info.appearance,p={...makePlant(id,18300+i,1,1),height:i?.4:.8,spread:i?.4:.8,leafHeight:i?.22:.36};let axes;

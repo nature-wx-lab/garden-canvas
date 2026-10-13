@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.174';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.175';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.174';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.175';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5005,6 +5005,63 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
  }
 }
 
+export function mahoniaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='mahoniaPetal')return [u*.48*Math.pow(sn,.48),t-.035*Math.exp(-u*u*40)*Math.pow(t,12),.18*u*u*sn+.10*t*t];
+ const fine=type==='mahoniaSeiryu',teeth=1+(fine?.025:.055)*Math.pow(.5+.5*Math.sin(t*TAU*7),6),width=.5*Math.pow(sn,.80)*teeth;
+ return [u*width,t,.040*u*u*sn+.065*t*t+.004*Math.cos(t*TAU*7-Math.abs(u)*3)*sn];
+}
+
+function drawMahoniaCanes(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,seiryu=a.shootProfile==='seiryu',h=s.height,w=s.spread,leafLen=Math.min(a.leafLength,w*.33,h*.43),bladeLen=Math.min(seiryu?.085:.105,w*.17,h*.20),winter=[12,1,2].includes(month);
+ const mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),noise=(i,k)=>.5+.5*Math.sin((i+1)*14.989+k*7.233),n=Math.max(3,Math.min(12,Math.round(6*detail*Math.pow(w/.6,.4))));
+ const leaf=(base,az,pitch,index)=>{
+  const f=flowerFrame(b,base,pitch,az),L=leafLen*(.79+.21*noise(index,1)),shape=seiryu?'mahoniaSeiryu':'mahoniaConfusa',pairs=a.leafletPairs;
+  const point=t=>[0,L*t,L*.40*t*t];let previous=[0,0,0];
+  const green=winter&&seiryu&&noise(index,2)<.22?'#705650':s.leafColor;
+  for(let j=0;j<pairs;j++){
+   const t=.20+.70*j/(pairs-1),at=point(t);f.branch(previous,at,Math.min(.001,h*.003),a.stemColor,'rachis-mahonia');previous=at;
+   const len=bladeLen*(.59+.41*Math.sin((j+1)/(pairs+1)*Math.PI*.72));
+   for(const side of [-1,1])f.add(shape,'leaf-mahonia-lateral',kit.shade(rand,green,.035),...at,len*a.leafWidth/(seiryu?.085:.105),len,len,-.12+noise(index,j+4)*.15,side*.07,side*(.97+.16*noise(index,j+12)));
+  }
+  const end=point(1);f.branch(previous,end,Math.min(.00075,h*.002),a.stemColor,'rachis-mahonia');f.add(shape,'leaf-mahonia-terminal',kit.shade(rand,green,.035),...end,bladeLen*a.leafWidth/(seiryu?.085:.105),bladeLen,bladeLen,-.18,0,0);
+ };
+ const flowers=(base,az,index)=>{
+  if(!s.bloom)return;
+  const length=Math.min(a.inflorescenceLength,h*.16,w*.20),fl=Math.min(.0042,h*.017,w*.025),racemes=5;
+  for(let k=0;k<racemes;k++){
+   const yaw=az+k*TAU/racemes,tilt=.22+.43*noise(index,k+22),f=flowerFrame(b,base,tilt,yaw),L=length*(.80+.20*noise(index,k+32));f.branch([0,0,0],[0,L,0],Math.min(.0009,h*.003),a.stemColor,'raceme-mahonia');
+   for(let j=0;j<25;j++){
+    const t=(j+.6)/25,turn=j*2.399963,at=[0,L*t,0],end=[Math.sin(turn)*fl*.82,L*t+fl*.25,Math.cos(turn)*fl*.82];f.branch(at,end,fl*.09,a.stemColor,'pedicel-mahonia');
+    if(t>.83){f.add(kit.bud,'bud-mahonia','#bda55d',...end,fl*.39,fl*.46,fl*.39);continue;}
+    const flower=flowerFrame(f,end,.96,turn);
+    // Three sepal whorls and one inner petal whorl. Counts and sizes are render approximations.
+    for(let whorl=0;whorl<3;whorl++)for(let q=0;q<3;q++){
+     const aa=q*TAU/3+whorl*Math.PI/3,size=fl*(.57+whorl*.17);flower.add('mahoniaPetal','sepal-mahonia',s.flowerColor,0,whorl*fl*.09,0,size*.72,size,size,.68+whorl*.22,aa,0);
+    }
+    for(let q=0;q<6;q++)flower.add('mahoniaPetal','petal-mahonia','#eaca48',0,fl*.24,0,fl*.38,fl*.71,fl*.71,.38,q*TAU/6,0);
+    flower.add(kit.bud,'centre-mahonia','#b9a344',0,fl*.53,0,fl*.17,fl*.28,fl*.17);
+   }
+  }
+ };
+ const crown=(base,tip,az,index)=>{
+  let previous=base;
+  for(let j=1;j<=5;j++){
+   const t=j/5,at=mix(base,tip,t);b.branch(previous,at,Math.min(.0025,h*.007)*(1-t*.42),a.stemColor,'shoot-mahonia');previous=at;
+   leaf(at,az+j*2.399963,1.05+(1-t)*.95,index*10+j);
+  }
+  flowers(tip,az,index);
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.12*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.26,.006,Math.cos(az)*rr*.26],top=h*(.64+.17*noise(i,50)),fork=[Math.sin(az)*rr*.7,top*.56,Math.cos(az)*rr*.7],tip=[Math.sin(az)*rr,top,Math.cos(az)*rr];
+  b.branch(root,fork,Math.min(.009,h*.013),'#82765d','wood-mahonia');crown(fork,tip,az,i*3);
+  for(const side of [-1,1]){
+   const start=mix(root,fork,.68+(side+1)*.10),aa=az+side*1.18,end=[tip[0]+Math.sin(aa)*w*.08,top*(.78+.06*noise(i,side+60)),tip[2]+Math.cos(aa)*w*.08],joint=mix(start,end,.58);
+   b.branch(start,joint,Math.min(.0034,h*.006),'#8b8067','wood-mahonia');crown(joint,end,aa,i*3+(side===1?1:2));
+  }
+ }
+}
+
 export function lavenderPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='lavenderTube'){const az=(u+1)*Math.PI,r=.23+.15*t*t;return [Math.cos(az)*r,t,Math.sin(az)*r];}
@@ -8584,6 +8641,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='mahoniaCanes'){drawMahoniaCanes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lavenderMounds'){drawLavenderMounds(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='chocolateCosmos'){drawChocolateCosmos(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='silverDropJuvenile'){drawSilverDrop(b,{info,s,detail,rand},kit);return;}
