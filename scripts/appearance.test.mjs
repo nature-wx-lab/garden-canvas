@@ -10,6 +10,35 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Melinis has narrow blue-green blades, branched hairy panicles and retained cold-season axes',()=>{
+ const id='p-7669ee22c4ab',info=CATALOG[id],p={...makePlant(id,17800,1,1),height:.8,spread:.5,leafHeight:.35};let axes,winterGreen,summerGreen;
+ assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.4,.9]);assert.deepEqual(info.spread,[.3,.6]);assert.deepEqual(info.bloom,[5,6,7,8,9,10,11]);
+ assert.ok(info.appearance.unconfirmed.some(x=>x.includes('白い出始め')));assert.ok(info.appearance.unconfirmed.some(x=>x.includes('越冬保証')));
+ for(let month=1;month<=12;month++){
+  const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+  assert.equal(g.userData.architecture,'melinisTussock');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+  for(const kind of ['culm-melinis','rachis-melinis','branch-melinis','pedicel-melinis','spikelet-melinis','hair-melinis'])assert.ok(count(kind)>0);
+  assert.equal(count('hair-melinis'),count('spikelet-melinis')*5);assert.equal(count('spikelet-melinis'),count('pedicel-melinis'));
+  const now=g.children.filter(m=>['culm-melinis','rachis-melinis'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(axes)assert.deepEqual(now,axes);else axes=now;
+  const spikelets=g.children.find(m=>m.userData.component==='spikelet-melinis'),colors=new Set(Array.from({length:spikelets.count},(_,i)=>Array.from(spikelets.instanceColor.array.slice(i*3,i*3+3)).join(',')));
+  assert.equal(colors.size>1,info.bloom.includes(month),'new white and maturing red panicles coexist in the reference flowering scene');
+  if(month===1)winterGreen=count('leaf-melinis');if(month===7)summerGreen=count('leaf-melinis');
+  for(const m of g.children){
+   for(const a of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...a].every(Number.isFinite));
+   m.computeBoundingBox();
+   if(m.userData.component.startsWith('leaf-melinis')){
+    // A transformed local bounding box includes empty corners beneath a curved
+    // blade. Check its actual vertices before calling this a ground crossing.
+    const v=m.geometry.attributes.position.array,mat=m.instanceMatrix.array;let bottom=Infinity;
+    for(let i=0;i<m.count;i++)for(let j=0;j<v.length;j+=3)bottom=Math.min(bottom,mat[i*16+1]*v[j]+mat[i*16+5]*v[j+1]+mat[i*16+9]*v[j+2]+mat[i*16+13]);
+    assert.ok(bottom>=-.008);
+   }else assert.ok(m.boundingBox.min.y>=-.008);
+   assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<=p.spread*.63);
+  }dispose(g);
+ }
+ assert.ok(winterGreen<summerGreen*.15);
+ const small={...p,height:.12,spread:.15,leafHeight:.065},g=plantModel(small,view(7));for(const m of g.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.14);assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}dispose(g);
+});
 test('Nemorosa separates cultivar evidence, opposite leaves, bilabiate whorls and retained winter stems',()=>{
  for(const [i,id] of ['salvia','p-e8a3ee532b78'].entries()){
   const info=CATALOG[id],p={...makePlant(id,17700+i,1,1),height:.65,spread:.4,leafHeight:.28};let skeleton;
