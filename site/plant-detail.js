@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.229';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.230';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.229';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.230';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5020,6 +5020,48 @@ export function paniclePhloxPoint(type,t,u){
  if(type==='paniclePhloxLobe')return [u*.60*Math.pow(sn,.32),t-.065*Math.exp(-u*u*24)*Math.pow(t,8),.045*t*t+.045*u*u*sn];
  const width=.5*Math.pow(sn,.80)*(1-.14*t),curve=t-Math.abs(u)*(.29-.12*Math.abs(u));
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
+}
+
+export function polemoniumPoint(type,t,u){
+ if(type==='polemoniumLeaflet'){const sn=Math.max(0,Math.sin(Math.PI*t));return [u*.52*sn**.79*(1-.12*t),t,.07*t*t+.04*u*u*sn-.012*Math.exp(-u*u*50)*sn];}
+ const az=(u+1)*Math.PI,flair=Math.sin(t*Math.PI/2),lobes=1-.19*(1-Math.cos(5*az))*.5*t**4,r=(.13+.87*flair)*lobes;
+ return [Math.sin(az)*r,.025+.23*t-.025*Math.cos(5*az)*t**6,Math.cos(az)*r];
+}
+function drawPolemonium(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,apricot=a.shootProfile==='apricotDelight',n=Math.max(3,Math.min(12,Math.round(8*detail*Math.sqrt(w/.3)*Math.min(1,h/.30)))),whole=Math.min(a.leafLength,w*.38,h*.35),R=a.flowerRadius*Math.min(1,h/.25),F=a.flowerLength*Math.min(1,h/.25);
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const pinnate=(at,az,len,i,k)=>{
+  if(noise(i,k)>s.leafDensity)return;
+  const end=[at[0]+Math.sin(az)*len*.82,at[1]+len*.42,at[2]+Math.cos(az)*len*.82],pairs=7;let prev=at;
+  for(let j=1;j<=pairs+1;j++){
+   const q=j/(pairs+1),mid=mix(at,end,q);mid[1]+=len*.12*Math.sin(q*Math.PI);b.branch(prev,mid,Math.min(.0006,h*.002)*(1-q*.5),a.stemColor,'rachis-polemonium');prev=mid;
+   const ll=Math.min(.025,len*.24)*(.74+.26*Math.sin(q*Math.PI)),width=ll*.36;
+   if(j<=pairs)for(let side=0;side<2;side++){const aa=az+(side?1:-1)*(1.12-.15*q);b.add('polemoniumLeaflet','leaf-polemonium',kit.shade(rand,s.leafColor,.04),...mid,width,ll,ll,1.0+.20*noise(i,k+j+side),aa,(noise(i,j+80+side)-.5)*.2);}
+   else b.add('polemoniumLeaflet','leaf-polemonium',kit.shade(rand,s.leafColor,.04),...mid,width,ll,ll,.90,az,0);
+  }
+ };
+ const flower=(at,az,i,k)=>{
+  const f=flowerFrame(b,at,.75+.45*noise(i,k+10),az),r=R*(.85+.15*noise(i,k+20)),color=apricot?new THREE.Color(a.flowerPalette.young).lerp(new THREE.Color(a.flowerPalette.mature),noise(i,k+30)):s.flowerColor;
+  if(noise(i,k+40)>.88){f.add(kit.bud,'bud-polemonium',a.flowerPalette.bud,0,F*.35,0,r*.31,F,r*.31);return;}
+  f.add('polemoniumCorolla',apricot?'petal-polemonium-apricot':'petal-polemonium-purple',color,0,0,0,r,F/.45,r);
+  for(let j=0;j<5;j++){
+   const aa=j*TAU/5;f.add('narrow','sepal-polemonium',a.flowerPalette.calyx,0,0,0,r*.18,F*.7,F*.7,Math.PI/2-.3,aa,0);
+   const from=[Math.sin(aa)*r*.12,F*.25,Math.cos(aa)*r*.12],to=[Math.sin(aa)*r*.29,F*(1.35+.25*noise(i,k+j+70)),Math.cos(aa)*r*.29];f.branch(from,to,Math.min(.00025,r*.024),a.flowerPalette.filament,'filament-polemonium');f.add(kit.bud,'anther-polemonium',a.flowerPalette.anther,...to,r*.085,r*.12,r*.065,.5,aa,0);
+  }
+ };
+ const cluster=(at,az,i,key)=>{
+  if(!s.bloom)return;
+  for(let j=0;j<4;j++){const aa=az+j*2.40,rr=Math.min(w*.055,h*.06)*(j?1:.1),tip=[at[0]+Math.sin(aa)*rr,at[1]+h*(.018+.022*noise(i,key+j)),at[2]+Math.cos(aa)*rr];b.branch(at,tip,Math.min(.0004,h*.0017),a.stemColor,'pedicel-polemonium');flower(tip,aa,i,key+j*13);}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.18*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr],top=[root[0]+Math.sin(az)*w*.08,h*(.65+.17*noise(i,3)),root[2]+Math.cos(az)*w*.08];let prev=root;
+  pinnate(root,az,whole,i,91);pinnate(root,az+1.7,whole*.85,i,92);
+  for(let j=1;j<=7;j++){
+   const q=(j+(j<7?(noise(i,j+20)-.5)*.4:0))/7,at=mix(root,top,q);b.branch(prev,at,Math.min(.0014,h*.0035)*(1-q*.5),a.stemColor,'stem-polemonium');prev=at;
+   if(j===2||j===4||j===6)pinnate(at,az+j*2.4,whole*(.85-.45*q),i,j+110);
+   if(j===5||j===6){const aa=az+j*2.4,len=Math.min(w*(apricot?.17:.11),h*.12),tip=[at[0]+Math.sin(aa)*len,at[1]+h*.09,at[2]+Math.cos(aa)*len];b.branch(at,tip,Math.min(.0008,h*.0024),a.stemColor,'branch-polemonium');pinnate(at,aa,whole*.35,i,j+150);cluster(tip,aa,i,j*35);}
+  }cluster(top,az,i,300);
+ }
 }
 
 export function carolinaPhloxPoint(type,t,u){
@@ -10373,6 +10415,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='pinnatePolemonium'){drawPolemonium(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='carolinaPhloxHeads'){drawCarolinaPhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='springPhloxTrails'){drawSpringPhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
