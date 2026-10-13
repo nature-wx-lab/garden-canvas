@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.177';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.178';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -304,5 +304,6 @@ Object.assign(TRAIT_VALUES,{trifoliumLeaf:'丸〜倒卵形の小葉3枚（四つ
 
 Object.assign(TRAIT_VALUES,{mahoniaPinnate:'細長い小葉が左右と先端に並ぶ羽状複葉',mahoniaRaceme:'枝先から立つ黄色い小花の総状花序'});
 
+Object.assign(TRAIT_VALUES,{shastaFrilled:'細い舌状花が重なる品種別の八重・糸状の頭花'});
 Object.assign(TRAIT_VALUES,{bellisSpoon:'地際に集まる浅い鋸歯のへら形葉',bellisHead:'葉のない花茎の先に1つ付く小さな頭花'});
 Object.assign(TRAIT_VALUES,{oleariaSmokyLeaf:'白い毛を帯びた小さなへら形〜倒卵形の互生葉',oleariaAxillary:'葉の付け根にある小さな黄色い頭花の参考'});

@@ -10,6 +10,19 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Shasta cultivars separate frilled flower forms, seedling variability and retained winter axes',()=>{
+ const ids=['p-68e38fd38a3a','p-0f1da972c698','p-a1e39fa1c98a','p-8db1b3a3b1dd'],profiles=['aglaia','oldCourt','snow','king'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],p={...makePlant(id,18700+i,1,1),height:i===3?.28:.7,spread:i===3?.4:.5,leafHeight:i===3?.17:.45};assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'alternate');assert.equal(info.appearance.shootProfile,profiles[i]);
+  if(i===0||i===2)assert.equal(info.spread,null);if(i===3)assert.deepEqual(info.height,[.2,.3]);
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),winter=[12,1,2].includes(month),has=k=>g.children.some(m=>m.userData.component===k);assert.equal(g.userData.architecture,'shastaCultivars');assert.equal(g.scale.y,1);assert.equal(has('petal-shasta-'+profiles[i]),info.bloom.includes(month));assert.equal(has('dryStem-shasta'),winter);assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),id);m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,id);assert.ok(m.boundingBox.max.y<p.height*1.14,id);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.65,id);}dispose(g);
+  }
+ }
+ const small=plantModel({...makePlant(ids[3],18800,1,1),height:.12,spread:.2,leafHeight:.08},view(6));for(const m of small.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.14);}dispose(small);
+ const counts=[18701,18702,18703].map(id=>{const g=plantModel({...makePlant(ids[2],id,1,1),height:.7,spread:.5,leafHeight:.45},view(6));const count=g.children.find(m=>m.userData.component==='petal-shasta-snow').count;dispose(g);return count;});assert.equal(new Set(counts).size,3);
+});
 test('Bellis retains basal rosettes and leafless scapes with cultivar tips and winter leaves',()=>{
  for(const [i,id] of ['p-345f79b7f557','p-66811393b67d'].entries()){
   const info=CATALOG[id],p={...makePlant(id,18600+i,1,1),height:.15,spread:.25,leafHeight:.045};
