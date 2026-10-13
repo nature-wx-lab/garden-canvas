@@ -10,6 +10,28 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Oxford Blue is a leafy creeping mat with unequal four-lobed flowers and separate winter colour',()=>{
+ const id='p-63c3a78d31fa',info=CATALOG[id],a=info.appearance,p={...makePlant(id,17900,1,1),height:.1,spread:.4,leafHeight:.065};let axes,winter,summer;
+ assert.equal(a.status,'partial');assert.deepEqual(info.height,[.05,.1]);assert.deepEqual(info.spread,[.25,.45]);assert.deepEqual(info.bloom,[2,3,4,5]);
+ assert.equal(a.leafWidth,.014);assert.equal(a.petioleLength,.0073);assert.equal(a.flowerRadius,.0075);assert.ok(a.lowerPetalWidth<a.upperPetalWidth);
+ assert.ok(a.unconfirmed.some(x=>x.includes('Georgia Blue列のみ')));assert.ok(a.unconfirmed.some(x=>x.includes('二番花')));
+ for(let month=1;month<=12;month++){
+  const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+  assert.equal(g.userData.architecture,'oxfordMat');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+  assert.ok(count('runner-oxford')>0);assert.ok(count('leaf-oxford')>0);assert.equal(count('leaf-oxford'),count('petiole-oxford'));assert.equal(count('leaf-oxford')%2,0);
+  assert.equal(count('petal-oxford')>0,info.bloom.includes(month));assert.equal(count('petal-oxford'),count('throat-oxford')*4);
+  assert.equal(count('anther-oxford'),count('throat-oxford')*2);assert.equal(count('anther-oxford'),count('filament-oxford'));
+  const now=g.children.filter(m=>['runner-oxford','shoot-oxford'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(axes)assert.deepEqual(now,axes);else axes=now;
+  if(month===1)winter=stateAt(p,view(month)).leafColor;if(month===7)summer=stateAt(p,view(month)).leafColor;
+  for(const m of g.children){
+   for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));
+   m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.012,id+': below soil '+m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.20,id+': height');
+   assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<=p.spread*.60,id+': width');
+  }dispose(g);
+ }
+ assert.notEqual(winter,summer);
+ const small={...p,height:.05,spread:.15,leafHeight:.035},g=plantModel(small,view(4));for(const m of g.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.075);assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}dispose(g);
+});
 test('Melinis has narrow blue-green blades, branched hairy panicles and retained cold-season axes',()=>{
  const id='p-7669ee22c4ab',info=CATALOG[id],p={...makePlant(id,17800,1,1),height:.8,spread:.5,leafHeight:.35};let axes,winterGreen,summerGreen;
  assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.4,.9]);assert.deepEqual(info.spread,[.3,.6]);assert.deepEqual(info.bloom,[5,6,7,8,9,10,11]);
@@ -2956,8 +2978,9 @@ test('purple eryngo dies after flowering while protea eryngo retains neighbourin
 test('every catalog entry has an explicit evidence record and no unsupported completion claim',()=>{
  assert.deepEqual(Object.keys(APPEARANCE_DATA).sort(),Object.keys(CATALOG).sort());
  const allowed=new Set(['sources','basis','status','unconfirmed','arrangement','inflorescence','flowerShape','habit','leafShape','leafTexture','leafColor','barkColor','barkPattern','petals','persistence','flowerMonths','flowerTiming','emergenceMonths','dormantMonths','leafPattern','patternColor','flowerLayers','flowerPattern','scientificName','phenologyRegion','leafLength','leafWidth','leafRelief','seasonalColors','stemColor','leaflets','compoundType','standingWinter','flowerSeasons','leafMargin','architecture','winterClimateSensitive','lifeForm','flowerPatternColor','outerFlowerPattern','flowerRadius','seedHeadMonths','seedColor','flowerPalette','flowerGuides','foliageMonths','leaflessBloom','flowerOptions','leafletShape','flowerFadeTo','headRadius','inflorescenceLength','leafletCounts','leafUnderside','springShootColor','stamenCount','leafFlushAfterFlower','monthlyLeafColors','bracts','flowerOutsideColor','flowerEyeColor','monthlyPatternColors','budMonths','fruitMonths','greenFruitMonths','fruitRadius','fruitColor','winterLeafLength','monthlyFlowerDensity','collection','components','shootProfile','flushMonths','winterTipColor','basalLeafShape','basalLeafWidth','standingAfterDeathMonths','foliageHeightRatio','flowerAbundance','pistilCount','flowerLength','monthlyFlowerColors']);
- allowed.add('waterSurfaceModel');allowed.add('monthlyLeafDensity');allowed.add('leafletPairs');allowed.add('budColor');allowed.add('winterStemColor');allowed.add('fourLeafShare');allowed.add('petioleLength');
+ allowed.add('waterSurfaceModel');allowed.add('monthlyLeafDensity');allowed.add('leafletPairs');allowed.add('budColor');allowed.add('winterStemColor');allowed.add('fourLeafShare');allowed.add('petioleLength');allowed.add('upperPetalWidth');allowed.add('lowerPetalWidth');
  for(const [id,a] of Object.entries(APPEARANCE_DATA)){
+  for(const field of ['upperPetalWidth','lowerPetalWidth'])if(a[field]!==undefined)assert.ok(Number.isFinite(a[field])&&a[field]>=.001&&a[field]<=.1,id+':'+field);
   if(a.petioleLength!==undefined)assert.ok(Number.isFinite(a.petioleLength)&&a.petioleLength>=.002&&a.petioleLength<=.08,id+':petioleLength');
   if(a.monthlyLeafDensity!==undefined){assert.equal(a.monthlyLeafDensity.length,12,id);assert.ok(a.monthlyLeafDensity.every(x=>Number.isFinite(x)&&x>=0&&x<=1),id);}
   if(a.fourLeafShare!==undefined)assert.ok(Number.isFinite(a.fourLeafShare)&&a.fourLeafShare>=0&&a.fourLeafShare<=1,id);

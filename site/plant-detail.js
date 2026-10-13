@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.168';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.169';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.168';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.169';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5005,6 +5005,69 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
  }
 }
 
+// Oxford Blue is a low, rooting mat with loose small-flowered racemes.
+// CFIA measurements below belong to its Georgia Blue comparison column only.
+export function oxfordPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='oxfordLeaf'){
+  const teeth=1-.065*(.5+.5*Math.cos(t*TAU*8)),width=.50*Math.pow(sn,.78)*(1-.17*t)*teeth;
+  return [u*width,t,.08*u*u*sn+.065*t*t+.012*Math.cos((t-Math.abs(u)*.28)*TAU*6)*Math.abs(u)*sn];
+ }
+ const width=.5*Math.pow(sn,.50)*(1+.16*t),notch=.045*Math.pow(1-Math.abs(u),8)*Math.pow(t,12);
+ return [u*width,t-notch,.03*u*u*sn+.055*t*t];
+}
+
+function drawOxfordMat(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,w=s.spread,h=s.height,L=Math.min(a.leafLength,w*.12,h*.32),W=L*a.leafWidth/a.leafLength;
+ const n=Math.max(8,Math.min(28,Math.round(18*detail*Math.pow(w/.4,.65)))),stem=a.stemColor;
+ const leaf=(at,az,len,pitch)=>b.add('oxfordLeaf','leaf-oxford',kit.shade(rand,s.leafColor,.055),...at,W*len/L,len,len,pitch,az,0);
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,shape=k=>.5+.5*Math.sin((i+1)*12.9898+k*7.233),reach=Math.max(.01,w*.46-L)*(.65+.35*shape(1));
+  const axis=t=>{const an=az+.23*Math.sin(t*5+shape(2)*3);return [Math.sin(an)*reach*t,.008+h*.14*Math.sin(t*Math.PI),Math.cos(an)*reach*t];};
+  let old=axis(0);
+  for(let j=1;j<=10;j++){
+   const t=j/10,at=axis(t);b.branch(old,at,.0007*(1-t*.35),stem,'runner-oxford');old=at;
+   const yaw=az+j*Math.PI/2;
+   if(shape(j+20)<s.leafDensity)for(const side of [-1,1]){
+    const an=yaw+(side<0?Math.PI:0),pet=Math.min(a.petioleLength,L*.35),tip=[at[0]+Math.sin(an)*pet,at[1]+pet*.22,at[2]+Math.cos(an)*pet];
+    b.branch(at,tip,.00030,stem,'petiole-oxford');leaf(tip,an,L*(.74+.24*shape(j+40)),1.02);
+   }
+   if(j%2)continue;
+   const bend=az+(j%4?1:-1)*.7,top=h*(.45+.37*(1-t)*shape(j+50)),tip=[at[0]+Math.sin(bend)*w*.025,top,at[2]+Math.cos(bend)*w*.025];
+   let from=at;
+   for(let k=1;k<=3;k++){
+    const q=k/3,point=at.map((v,idx)=>v+(tip[idx]-v)*q);b.branch(from,point,.00048*(1-q*.30),stem,'shoot-oxford');from=point;
+    if(shape(j*10+k+60)<s.leafDensity)for(const side of [-1,1]){
+     const an=bend+k*Math.PI/2+(side<0?Math.PI:0),pet=a.petioleLength*(.9-.45*q),base=[point[0]+Math.sin(an)*pet,point[1]+pet*.18,point[2]+Math.cos(an)*pet];
+     b.branch(point,base,.00024,stem,'petiole-oxford');leaf(base,an,L*(.85-.35*q),.80+.28*q);
+    }
+   }
+   // Axes remain attached between views; natural persistence and collapse are
+   // uncalibrated. No cutback or automatic second flowering is simulated.
+   const floral=month>=6&&month<=10?'#766a55':stem;
+   for(let k=0;k<5;k++){
+    const q=k/4,an=bend+k*2.399963,base=[tip[0],tip[1]+h*.13*q,tip[2]],ped=h*(.085+.015*shape(j*7+k+100));
+    const pt=[base[0]+Math.sin(an)*ped,base[1]+h*.045,base[2]+Math.cos(an)*ped];
+    if(k)b.branch([tip[0],tip[1]+h*.13*(k-1)/4,tip[2]],base,.00028,floral,'raceme-oxford');
+    b.branch(base,pt,.00021,floral,'pedicel-oxford');
+    if(!s.bloom)continue;
+    const r=Math.min(a.flowerRadius,h*.10),f=flowerFrame(b,pt,.13+.40*shape(k+j+120),an);
+    for(let sep=0;sep<4;sep++)f.add('narrow','sepal-oxford',stem,0,-r*.08,0,r*.28,r*.53,r*.28,1.08,sep*TAU/4,0);
+    if(k===4||shape(j*9+k+140)>s.flowerDensity){f.add(kit.bud,'bud-oxford','#666098',0,r*.18,0,r*.25,r*.42,r*.25);continue;}
+    for(let pet=0;pet<4;pet++){
+     const angle=pet*TAU/4,length=r*(pet===2?.86:1),width=pet===2?a.lowerPetalWidth:a.upperPetalWidth;
+     f.add('oxfordPetal','petal-oxford',s.flowerColor,0,0,0,width*r/a.flowerRadius,length,length,Math.PI/2-.08,angle,0);
+    }
+    f.add(kit.bud,'throat-oxford','#d1d794',0,r*.045,0,r*.12,r*.07,r*.12);
+    for(const side of [-1,1]){
+     const end=[side*r*.37,r*.44,r*.12];f.branch([0,r*.03,0],end,r*.022,'#eee7de','filament-oxford');
+     f.add(kit.bud,'anther-oxford','#e4ddc4',...end,r*.095,r*.040,r*.060);
+    }
+   }
+  }
+ }
+}
+
 export function melinisPoint(t,u){
  const taper=Math.pow(Math.max(0,1-t),.55),fold=.003*Math.abs(u)*Math.sin(Math.PI*t);
  return [u*.5*taper,t-.25*t*t,.20*t*t+fold+.001*Math.sin(t*14)*u];
@@ -8330,6 +8393,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='oxfordMat'){drawOxfordMat(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='melinisTussock'){drawMelinis(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
