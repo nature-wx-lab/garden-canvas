@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Tall blue sages keep narrow paired leaves, distinct seasonal flowers and uncut winter stems',()=>{
+ const ids=['p-46c0650cd43d','p-36d8a94c3834','p-f68df2de4c66'];
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.habit,'upright');assert.deepEqual(info.height,i===2?[.6,1]:[.6,.8]);assert.deepEqual(info.spread,[[.3,.5],[.25,.4],[.4,.6]][i]);assert.deepEqual(info.colors,['blue']);let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,21500+i,1,1),height:small?.13:i===2?.9:.7,spread:small?.20:[.45,.35,.55][i],leafHeight:small?.08:.4},g=plantModel(p,view(month)),s=stateAt(p,view(month));assert.equal(g.userData.architecture,'tallBlueSpires');assert.equal(s.shootScale,1);assert.equal(g.scale.y,1);
+   const leaves=g.children.find(m=>m.userData.component==='leaf-tall-sage-'+info.appearance.shootProfile),count=leaves?.count||0;assert.equal(count%2,0);if(count){assert.equal(count,g.children.find(m=>m.userData.component==='petiole-tall-sage').count);assert.ok(leaves.geometry.userData[['bogLeaf','cobaltLeaf','azureaLeaf'][i]]);}if(month===1)winter=count;if(month===9)summer=count;
+   assert.equal(g.children.some(m=>m.userData.component==='tube-tall-sage'),month>=(i===2?8:6)&&month<=11);assert.ok(!g.children.some(m=>/seed|fruit|stolon/.test(m.userData.component)));if(i===2&&month===11)assert.equal(s.leafColor,'#827197');if(i===2&&[12,1,2].includes(month))assert.equal(count,0);
+   const now=g.children.filter(m=>/^(stem|branch|axis)-tall-sage$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.13);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.67);}dispose(g);
+  }
+  assert.ok(winter<summer*.2);
+ }
+});
 test('Pratensis cultivars combine basal rosettes, hooked flowers and retained winter stalks',()=>{
  const ids=['p-ff64e719fa5a','p-b70506dcea20','p-d803709691f9','p-3569f46fcacc','p-5edd501fabd3','p-22001c9a8104'];
  for(const [i,id] of ids.entries())for(const small of [false,true]){
