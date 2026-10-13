@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Pink Blush and pearl sages retain pale versus vivid flowers, downward lips and winter woody structure',()=>{
+ const ids=['p-4baa7d671c4b','p-fc5045c35d84','p-2873281ddbc8'];
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,i?[.4,.7]:[.3,.5]);assert.deepEqual(info.spread,i?[.4,.6]:[.3,.6]);assert.equal(info.leaf,'semi');let skeleton;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,21000+i,1,1),height:small?.13:i?.6:.45,spread:small?.2:.5,leafHeight:small?.08:.3},g=plantModel(p,view(month));assert.equal(g.userData.architecture,'cherrySageBranches');assert.equal(stateAt(p,view(month)).shootScale,1);
+   const petals=g.children.find(m=>m.userData.component==='petal-cherry-'+info.appearance.shootProfile),tube=g.children.find(m=>m.userData.component==='tube-cherry-'+info.appearance.shootProfile),style=g.children.find(m=>m.userData.component==='stigma-cherry');assert.equal(!!petals,month>=5&&month<=11);
+   if(petals){assert.ok(tube&&style);assert.equal(tube.count,petals.count);assert.equal(style.count,2*petals.count);assert.deepEqual([...tube.instanceColor.array.slice(0,3)],[...petals.instanceColor.array.slice(0,3)]);for(let k=0;k<petals.count;k++)assert.ok(petals.instanceMatrix.array[k*16+5]<0,'lower lip extends downward');}
+   const now=g.children.filter(m=>/^(wood|stem|branch|twig|axis)-cherry$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.13);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.64);}dispose(g);
+  }
+ }
+ assert.equal(CATALOG[ids[0]].flower,'#da399c');assert.equal(CATALOG[ids[1]].flower,'#e8c8e7');assert.equal(CATALOG[ids[2]].flower,'#f6f5ed');
+});
 test('Cherry sage cultivars retain distinct purple-white, salmon-cream and sparse dark flower profiles',()=>{
  const ids=['p-e64e34dcc8b1','p-d1c41ce2384d','p-b1a5190c3968'];
  for(const [i,id] of ids.entries())for(const small of [false,true]){
