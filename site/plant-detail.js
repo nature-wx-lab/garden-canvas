@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.187';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.188';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.187';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.188';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5087,16 +5087,16 @@ export function artemisiaLeafGeometry(){
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
 }
-export function dichondraBladeGeometry(silver=false){
+export function dichondraBladeGeometry(silver=false,falls=false){
  const pos=[],uv=[],ix=[],N=18,C=52;
  for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
-  const t=i/N,ph=(j/C-.5)*5.12,r=.52+.45*Math.cos(ph),x=t*Math.sin(ph)*r,y=t*Math.cos(ph)*r,z=(silver?.026:.060)*Math.sin(ph*5)*t*t+.05*t*t*Math.sin(ph)**2;
+  const t=i/N,ph=(j/C-.5)*5.12,r=.52+.45*Math.cos(ph),x=t*Math.sin(ph)*r,y=t*Math.cos(ph)*r,z=(falls?.07:silver?.026:.060)*Math.sin(ph*(falls?7:5))*t*t+.05*t*t*Math.sin(ph)**2;
   pos.push(x,y,z);uv.push(j/C,t);if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.dichondraLeaf=true;return g;
 }
 function drawDichondraMat(b,{info,s,p,detail,rand,month},kit){
- const a=info.appearance,h=s.height,w=s.spread,silver=a.shootProfile==='sericea',emerald=a.shootProfile==='emerald',L=Math.min(a.leafLength,h*.5,w*.11),n=Math.max(25,Math.min(110,Math.round((silver?80:70)*detail*w/.45))),noise=(i,j)=>.5+.5*Math.sin(i*17.61+j*8.1+p.id*.19),winter=[12,1,2,3].includes(month),stem=a.stemColor;
+ const a=info.appearance,h=s.height,w=s.spread,falls=a.shootProfile==='silverFalls',silver=falls||a.shootProfile==='sericea',emerald=a.shootProfile==='emerald',L=Math.min(a.leafLength,h*.5,w*.11),n=Math.max(25,Math.min(110,Math.round((falls?60:silver?80:70)*detail*w/.45))),noise=(i,j)=>.5+.5*Math.sin(i*17.61+j*8.1+p.id*.19),winter=[12,1,2,3].includes(month),stem=a.stemColor;
  for(let i=0;i<n;i++){
   const az=i*2.399963,reach=w*(.09+.32*Math.sqrt((i+.5)/n));let prev=[0,.003,0];
   for(let j=1;j<=24;j++){
@@ -5105,8 +5105,8 @@ function drawDichondraMat(b,{info,s,p,detail,rand,month},kit){
    if(j%2||noise(i,j)>s.leafDensity)continue;
    const yaw=turn+j*2.399963,length=L*(.64+.36*noise(j,i)),rise=h*(.12+.60*noise(i,j+13))*(1-.38*t),end=[at[0]+Math.sin(yaw)*L*.55,at[1]+rise,at[2]+Math.cos(yaw)*L*.55];
    b.branch(at,end,Math.min(.0003,h*.004),stem,'petiole-dichondra');
-   const bronze=silver&&winter&&noise(i,j+21)>.76,color=bronze?'#a4a393':s.leafColor;
-   b.add(silver?'dichondraSilverBlade':'dichondraGreenBlade',silver?'leaf-dichondra-silver':'leaf-dichondra-green',kit.shade(rand,color,.045),...end,length,length,length,1.25+noise(i,j+9)*.28,yaw,0);
+   const bronze=!falls&&silver&&winter&&noise(i,j+21)>.76,color=bronze?'#a4a393':s.leafColor;
+   b.add(falls?'dichondraFallsBlade':silver?'dichondraSilverBlade':'dichondraGreenBlade',silver?'leaf-dichondra-silver':'leaf-dichondra-green',kit.shade(rand,color,.045),...end,falls?length*a.leafWidth/a.leafLength/1.30:length,length,length,1.25+noise(i,j+9)*.28,yaw,0);
    // Only the repens-linked cultivar receives the species-reference flower; sericea flower anatomy remains unverified.
    if(emerald&&s.bloom&&j===12&&i%8===0){
     const flower=[at[0],at[1]+h*.21,at[2]],r=Math.min(.0025,h*.04);b.branch(at,flower,r*.10,stem,'pedicel-dichondra');const f=flowerFrame(b,flower,.25,yaw);

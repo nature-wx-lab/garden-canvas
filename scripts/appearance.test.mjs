@@ -10,6 +10,14 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Silver Falls keeps silver fan leaves on connected ground runners without copied sericea winter bronze',()=>{
+ const id='p-42638fd17d88',info=CATALOG[id];assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.shootProfile,'silverFalls');assert.equal(info.appearance.persistence,'evergreen');let skeleton,leafCount;
+ for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,19800,1,1),height:small?.025:.045,spread:small?.18:.5,leafHeight:small?.02:.04},g=plantModel(p,view(month));assert.equal(g.userData.architecture,'dichondraMat');assert.equal(g.scale.y,1);const leaves=g.children.find(m=>m.userData.component==='leaf-dichondra-silver');assert.ok(leaves.count>100);assert.ok(!g.children.some(m=>/flower|floret|petal|fruit|seed/.test(m.userData.component)));
+  const axes=g.children.filter(m=>m.userData.component==='runner-dichondra').map(m=>[...m.instanceMatrix.array]);if(month===1){skeleton=axes;leafCount=leaves.count;}else{assert.deepEqual(axes,skeleton);assert.equal(leaves.count,leafCount);}
+  for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.008);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.56);}dispose(g);
+ }
+});
 test('Angel Wings keeps broad simple felted leaves without inventing local dimensions or flowering',()=>{
  const id='p-728d2139eeac',info=CATALOG[id];assert.equal(info.height,null);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.leafShape,'broadWavySimple');assert.equal(info.appearance.habit,'mound');let skeleton;
  for(const size of [1,1/3])for(let month=1;month<=12;month++){
