@@ -10,6 +10,22 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Cats Pajamas shares small cordate leaves across two listings and flowers low on stems without four invented stamens',()=>{
+ const ids=['p-0eea0d920ba7','p-77726f49a98c'];assert.deepEqual(CATALOG[ids[0]].appearance,CATALOG[ids[1]].appearance);
+ for(const [i,id]of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.2,.3]);assert.deepEqual(info.spread,i?[.2,.4]:[.4,.5]);let skeleton,winter,summer,august,june;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,23000+i,1,1),height:small?.10:.25,spread:small?.16:i?.30:.45,leafHeight:small?.06:.15},g=plantModel(p,view(month));assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);assert.equal(g.userData.architecture,'pajamasCymes');
+   const leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-pajamas')),count=leaves.reduce((n,m)=>n+m.count,0);assert.ok(count>0);assert.equal(count%2,0);assert.ok(leaves.every(m=>m.geometry.userData.pajamasLeaf));assert.equal(count,g.children.filter(m=>m.userData.component.startsWith('petiole-pajamas')).reduce((n,m)=>n+m.count,0));if(month===1)winter=count;if(month===6)summer=count;
+   const flowers=g.children.find(m=>m.userData.component==='tube-pajamas');assert.equal(!!flowers,month>=5&&month<=11);if(flowers){const st=g.children.find(m=>m.userData.component==='filament-pajamas');assert.equal(st.count%2,0);assert.ok(st.count>0&&st.count<flowers.count*2);assert.equal(g.children.find(m=>m.userData.component==='style-pajamas').count,flowers.count);assert.equal(g.children.find(m=>m.userData.component==='stigma-pajamas').count,flowers.count*2);flowers.computeBoundingBox();assert.ok(flowers.boundingBox.min.y<hypLow(p.height));}if(month===6)june=flowers.count;if(month===8)august=flowers.count;
+   assert.equal(g.children.some(m=>m.userData.component==='leaf-pajamas-winter'),[12,1,2].includes(month));assert.ok(!g.children.some(m=>/fruit|seed|stolon/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(stem|branch)-pajamas$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.15);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.72);}dispose(g);
+  }
+  assert.ok(winter<summer*.15);assert.ok(august<june*.5&&august>0);
+ }
+ function hypLow(h){return h*.25;}
+});
 test('Walker catmints retain compact cultivar proportions, crenate leaves and basal winter buds with sterile flowers',()=>{
  const ids=['p-14d3cdbb072b','p-a038f7c571ba'];
  for(const [i,id]of ids.entries())for(const small of [false,true]){
