@@ -10,6 +10,18 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Bronze perennial snapdragons retain spray branches and distinct dark foliage and bicolour throats',()=>{
+ for(const [i,id] of ['p-14ae8a6a91d0','p-830abf9bd320'].entries()){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.spread,i?[.2,.3]:[.3,.5]);let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,20000+i,1,1),height:i?.25:.4,spread:i?.3:.45,leafHeight:i?.17:.28},g=plantModel(p,view(month));assert.equal(g.userData.architecture,'bronzeSnapdragons');assert.equal(g.scale.y,1);const leaves=g.children.filter(m=>m.userData.component==='leaf-bronze-snapdragon').reduce((n,m)=>n+m.count,0);assert.ok(leaves>100);if(month===1)winter=leaves;if(month===5)summer=leaves;assert.equal(g.children.some(m=>m.userData.component==='palate'),month>=3&&month<=11);assert.equal(g.children.some(m=>m.userData.component==='palate-spot'),i===1&&month>=3&&month<=11);assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+   const axes=g.children.filter(m=>/^(stem|side|axis|pedicel)-bronze-snapdragon$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.59);}dispose(g);
+  }
+  assert.ok(winter<summer);assert.notEqual(stateAt(makePlant(id,1,1,1),view(1)).leafColor,stateAt(makePlant(id,1,1,1),view(8)).leafColor);
+ }
+ const small=plantModel({...makePlant('p-830abf9bd320',20002,1,1),height:.1,spread:.16,leafHeight:.07},view(5));for(const m of small.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.112);assert.ok(m.boundingBox.min.y>=-.015);}dispose(small);
+});
 test('Silver perennial snapdragons retain creeping axes while silver leaves thin in winter and lips follow source seasons',()=>{
  const ids=['p-4cf4a98708c9','p-dda646008ff2'];
  for(const [i,id] of ids.entries()){

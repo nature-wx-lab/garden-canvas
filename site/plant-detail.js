@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.189';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.190';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.189';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.190';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5116,6 +5116,29 @@ function drawDichondraMat(b,{info,s,p,detail,rand,month},kit){
  }
 }
 
+function drawBronzeSnapdragons(b,{info,s,p,detail,rand,month},kit){
+ const a=info.appearance,dragon=a.shootProfile==='bronzeDragon',h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.18,w*.15),n=Math.max(9,Math.min(40,Math.round((dragon?30:24)*detail*w/.4))),noise=(i,j)=>.5+.5*Math.sin(i*18.1+j*6.3+p.id*.25),r=Math.min(a.flowerRadius,h*.055,w*.045),hot=[7,8,9].includes(month),palette=dragon?{tube:hot?'#f0eade':'#eedfea',lip:'#f3ede7',palate:hot?'#dca6bb':'#d27da8',palateSpot:'#e6c461'}:a.flowerPalette;
+ const leaf=(at,yaw,pitch,len,key)=>{if(noise(key,15)>s.leafDensity)return;b.add('helichrysumLinear','leaf-bronze-snapdragon',kit.shade(rand,s.leafColor,.04),...at,len*a.leafWidth/a.leafLength,len,len,pitch,yaw,0);};
+ const raceme=(base,length,yaw,key)=>{
+  const top=[base[0],base[1]+length,base[2]];b.branch(base,top,Math.min(.0013,h*.005),a.stemColor,'axis-bronze-snapdragon');
+  for(let j=0;j<9;j++){
+   const t=j/8,aa=yaw+j*2.399963,from=[base[0],base[1]+length*t,base[2]],at=[from[0]+Math.sin(aa)*r*.75,from[1],from[2]+Math.cos(aa)*r*.75];b.branch(from,at,r*.055,a.stemColor,'pedicel-bronze-snapdragon');
+   if(!s.bloom)continue;
+   if(j>5){b.add(kit.bud,'bud-bronze-snapdragon',j===8?'#8b9275':j===7?'#b3a591':palette.tube,...at,r*.34,r*.58,r*.34,.2,aa,0);continue;}
+   detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:r*(1-t*.18),color:s.flowerColor,shape:'snapdragonLips',palette,tilt:-.22,yaw:aa},{...kit,rand});
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,reach=w*(.07+(dragon?.29:.23)*Math.sqrt((i+.5)/n)),rise=h*(.48+.15*noise(i,1));let prev=[Math.sin(az)*reach*.45,.004,Math.cos(az)*reach*.45];
+  for(let j=1;j<=14;j++){
+   const t=j/14,turn=az+.10*Math.sin(t*4+i),at=[Math.sin(turn)*reach*(.45+.55*t),.005+rise*t,Math.cos(turn)*reach*(.45+.55*t)];b.branch(prev,at,Math.min(.0018,h*.006),a.stemColor,'stem-bronze-snapdragon');prev=at;
+   for(let side=0;side<(j<9?2:1);side++)leaf(at,turn+j*Math.PI/2+side*Math.PI,.90+.25*noise(i,j),L*(.83+.17*noise(j,i)),i*40+j*2+side);
+   if(j===7||j===10){const yaw=turn+(j===7?1:-1)*1.1,tip=[at[0]+Math.sin(yaw)*L*1.15,at[1]+h*.15,at[2]+Math.cos(yaw)*L*1.15];b.branch(at,tip,Math.min(.001,h*.004),a.stemColor,'side-bronze-snapdragon');for(let k=0;k<5;k++){const t2=(k+1)/5,pt=at.map((v,d)=>v+(tip[d]-v)*t2);for(const side of [0,1])leaf(pt,yaw+k*Math.PI/2+side*Math.PI,1.0,L*.67,i*90+j*10+k*2+side);}if(i%4===0&&j===10)raceme(tip,h*.15,yaw,i+80);}
+  }
+  raceme(prev,h*(.23+.07*noise(i,2)),az,i);
+ }
+}
+
 function drawSilverSnapdragons(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.15,w*.085),n=Math.max(12,Math.min(45,Math.round(26*detail*w/.35))),noise=(i,j)=>.5+.5*Math.sin(i*16.1+j*7.7+p.id*.25),r=Math.min(a.flowerRadius,h*.060,w*.036);
  const leaf=(at,yaw,pitch,len,key)=>{if(noise(key,15)>s.leafDensity)return;b.add('helichrysumRounded','leaf-silver-snapdragon',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,pitch,yaw,0);};
@@ -7815,6 +7838,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   for(const side of [-1,1])f.add('petal','petal',lip,side*r*.18,r*.64,r*.06,r*.94,r*.61,r,1.00,side*.51,0);
   for(let j=0;j<3;j++){const an=Math.PI+(j-1)*.65;f.add('petal','petal',lip,Math.sin(an)*r*.12,r*.50,-r*.20,r*.71,r*.58,r,1.76,an,0);}
   f.add(bud,'palate',palette.palate,0,r*.63,-r*.15,r*.34,r*.26,r*.23);
+  if(palette.palateSpot)f.add(bud,'palate-spot',palette.palateSpot,0,r*.86,-r*.15,r*.13,r*.045,r*.13);
   for(let j=0;j<5;j++)f.add('leaf','calyx','#73855b',0,-r*.66,0,r*.38,r*.28,r,.62,j*TAU/5,0);return;
  }
  if(shape==='calendulaHead'){
@@ -9014,6 +9038,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='bronzeSnapdragons'){drawBronzeSnapdragons(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='silverSnapdragons'){drawSilverSnapdragons(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='angelWings'){drawAngelWings(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='helichrysumFoliage'){drawHelichrysumFoliage(b,{info,s,p,detail,rand},kit);return;}
