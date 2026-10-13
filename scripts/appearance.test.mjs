@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Six Hills Giant shares tall leafy shoots while preserving listing-specific bloom months and unknown width',()=>{
+ const ids=['p-93be65945f4d','p-38412b54ce8d'];assert.equal(CATALOG[ids[1]].spread,null);assert.deepEqual(CATALOG[ids[0]].spread,[.6,.9]);assert.equal(CATALOG[ids[1]].bloomKnown,true);
+ for(const [i,id]of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,23100+i,1,1),height:small?.13:.8,spread:small?.2:.75,leafHeight:small?.08:.48},g=plantModel(p,view(month));assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);assert.equal(g.userData.architecture,'giantCatmintShoots');
+   const leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-catmint')),count=leaves.reduce((n,m)=>n+m.count,0);assert.ok(count>0);assert.equal(count%2,0);assert.ok(leaves.every(m=>m.geometry.userData.giantCatmintLeaf));assert.equal(count,g.children.filter(m=>m.userData.component.startsWith('petiole-catmint')).reduce((n,m)=>n+m.count,0));if(month===1)winter=count;if(month===6)summer=count;
+   const flowers=g.children.find(m=>m.userData.component==='tube-catmint');assert.equal(!!flowers,month>=(i?4:5)&&month<=(i?10:11));assert.ok(!g.children.some(m=>/filament|anther|fruit|seed|stolon/.test(m.userData.component)));assert.equal(g.children.some(m=>m.userData.component==='leaf-catmint-winter'),[12,1,2].includes(month));
+   const now=g.children.filter(m=>/^(stem|branch|axis)-catmint$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.15);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.72);}dispose(g);
+  }
+  assert.ok(winter<summer*.15);
+ }
+});
 test('Cats Pajamas shares small cordate leaves across two listings and flowers low on stems without four invented stamens',()=>{
  const ids=['p-0eea0d920ba7','p-77726f49a98c'];assert.deepEqual(CATALOG[ids[0]].appearance,CATALOG[ids[1]].appearance);
  for(const [i,id]of ids.entries())for(const small of [false,true]){
