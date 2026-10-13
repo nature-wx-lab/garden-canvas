@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Discolor sage keeps pale hairy calyces separate from dark pendant flowers and opposite leaves',()=>{
+ const id='p-eff905db9c7b',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.lifeForm,'herb');assert.equal(info.appearance.arrangement,'opposite');assert.deepEqual(info.height,[.4,.6]);assert.deepEqual(info.spread,[.3,.6]);assert.deepEqual(info.colors,['dark']);
+ for(const small of [false,true]){
+  let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,22000,1,1),height:small?.13:.5,spread:small?.20:.5,leafHeight:small?.08:.3},g=plantModel(p,view(month)),s=stateAt(p,view(month));assert.equal(g.userData.architecture,'discolorBranches');assert.equal(s.shootScale,1);assert.equal(g.scale.y,1);
+   const leaves=g.children.find(m=>m.userData.component==='leaf-discolor');assert.ok(leaves?.count>0);assert.equal(leaves.count%2,0);assert.ok(leaves.geometry.userData.discolorLeaf);assert.equal(leaves.count,g.children.find(m=>m.userData.component==='petiole-discolor').count);if(month===1)winter=leaves.count;if(month===7)summer=leaves.count;
+   const flower=g.children.find(m=>m.userData.component==='tube-discolor');assert.equal(!!flower,month>=6&&month<=11);if(flower){assert.equal(g.children.find(m=>m.userData.component==='filament-discolor').count,flower.count*2);assert.ok(g.children.find(m=>m.userData.component==='calyx-discolor').count>flower.count);}assert.ok(!g.children.some(m=>/fruit|seed|stolon/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(stem|branch|axis)-discolor$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.13);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.72);}dispose(g);
+  }
+  assert.ok(winter<summer&&winter>summer*.20);
+ }
+});
 test('Cleveland sage separates spaced flower rings and small opposite leaves without pruning winter stems',()=>{
  const id='p-ba2e1986e528',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.lifeForm,'subshrub');assert.equal(info.appearance.arrangement,'opposite');assert.deepEqual(info.height,[.6,.8]);assert.deepEqual(info.spread,[.3,.5]);
  for(const small of [false,true]){
