@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Cherry sage cultivars retain distinct purple-white, salmon-cream and sparse dark flower profiles',()=>{
+ const ids=['p-e64e34dcc8b1','p-d1c41ce2384d','p-b1a5190c3968'];
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.habit,'arching');assert.equal(info.appearance.compoundType,undefined);assert.deepEqual(info.spread,i?[.3,.5]:[.6,1.2]);let skeleton;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,20900+i,1,1),height:small?.13:[.55,.35,.45][i],spread:small?.20:i?.45:1,leafHeight:small?.08:.25},g=plantModel(p,view(month));assert.equal(g.userData.architecture,'cherrySageBranches');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+   const leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-cherry-'));assert.equal(leaves.reduce((n,m)=>n+m.count,0)%2,0);const blooming=month>=5&&month<=11;assert.equal(g.children.some(m=>m.userData.component.startsWith('tube-cherry-')),blooming);
+   if(blooming&&!small){if(i===0){for(const mode of ['purple','white','bicolor'])assert.ok(g.children.some(m=>m.userData.component==='tube-cherry-'+mode));}else{const type=i===1?'sierra':'night',tube=g.children.find(m=>m.userData.component==='tube-cherry-'+type),lip=g.children.find(m=>m.userData.component==='petal-cherry-'+type);assert.ok(tube&&lip);assert.equal(tube.count,lip.count);if(i===1)assert.notDeepEqual([...tube.instanceColor.array.slice(0,3)],[...lip.instanceColor.array.slice(0,3)]);else assert.deepEqual([...tube.instanceColor.array.slice(0,3)],[...lip.instanceColor.array.slice(0,3)]);}}
+   const now=g.children.filter(m=>/^(wood|stem|branch|twig|axis)-cherry$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.13);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.64);}dispose(g);
+  }
+ }
+ assert.deepEqual(searchCatalog(CATALOG,{query:'アメジストリップス',color:'mixed'}).map(([id])=>id),[ids[0]]);assert.deepEqual(searchCatalog(CATALOG,{query:'サーモンイエロー',color:'mixed'}).map(([id])=>id),[ids[1]]);
+});
 test('Cherry sages use sparse paired flowers with variable Hot Lips colours and retain winter branches',()=>{
  const ids=['p-d4496b4a1f5a','p-17d8d5a068fc'];assert.deepEqual(CATALOG[ids[0]].colors,['red','white','mixed']);assert.deepEqual(searchCatalog(CATALOG,{query:'ホットリップス',color:'mixed'}).map(([id])=>id),[ids[0]]);
  for(const [i,id] of ids.entries())for(const small of [false,true]){

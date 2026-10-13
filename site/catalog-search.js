@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.198';
+import {treeProfile} from './tree-profiles.js?v=0.9.199';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -138,7 +138,7 @@ export function seasonAt(info,month){
  if(a.architecture==='bellisRosettes'){scale=1;phase=[12,1,2].includes(month)?'地際のロゼット葉で越冬（残葉・紅葉の量は参考）':'ロゼット葉から伸びる葉のない花茎（夏越し・連続開花は地域と環境に依存）';}
  if(a.architecture==='oleariaSmoky'){scale=1;phase='白い枝と銀葉（夏越し・屋外越冬は環境に依存、葉量は未予測）';}
  if(a.architecture==='mahoniaCanes'){scale=1;phase=bloom?'枝先に集まる黄色い花房（国内資料の11〜12月を参考表示）':'常緑の羽状複葉（低温での着色・葉量は参考、結実は未再現）';}
- if(a.architecture==='cherrySageBranches'){scale=1;phase=a.shootProfile==='hotLips'?'枝先の赤・白・二色の花の混在例（温度による配色・剪定・地域差は未予測）':'小さな対生葉と枝先の赤い花（剪定・地域差・冬の残葉量は参考）';}
+ if(a.architecture==='cherrySageBranches'){scale=1;phase=['hotLips','amethystLips'].includes(a.shootProfile)?'枝先の単色・白・二色の花の混在例（温度による配色・剪定・地域差は未予測）':'小さな対生葉と枝先の品種別の花（剪定・地域差・冬の残葉量は参考）';}
  if(a.architecture==='officinalisMounds'){scale=1;phase='しわのある対生葉と品種別の斑・若葉・寒期の色（葉量・着色時期・剪定は未予測）';}
  if(a.architecture==='leucanthaCanes'){scale=1;phase=[12,1,2].includes(month)?'低温期の枯れ込みの参考（保護・暖地の残葉量は未予測）':'細い対生葉とビロード状の萼（短日・気温・摘芯による変化は未予測）';}
  if(a.architecture==='indigoSpires'){scale=1;phase=[12,1,2].includes(month)?'寒冷地の落葉と切らずに残した茎の参考（残存量は未検証）':'大きな対生葉と長く曲がる青紫の花穂（地域差・伸長・剪定は未予測）';}
