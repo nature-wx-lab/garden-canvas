@@ -30,7 +30,7 @@ test('Lavender cultivars have opposite entire leaves, distinct spikes and domest
 test('Chocolate cosmos distinguish cultivar colours, lobed foliage and long peduncles without inventing winter flowers',()=>{
  for(const [i,id] of ['p-6c18731257fe','p-880f71a3aca2'].entries()){
   const info=CATALOG[id],p={...makePlant(id,18200+i,1,1),height:i?.35:.55,spread:i?.35:.42,leafHeight:i?.16:.22};let axes;
-  assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.shootProfile,i?'chocamocha':'cherry');assert.deepEqual(info.colors,i?['red','black']:['pink']);
+  assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.shootProfile,i?'chocamocha':'cherry');assert.deepEqual(info.colors,i?['red','dark']:['pink']);
   if(!i){assert.equal(info.height,null);assert.equal(info.spread,null);assert.equal(info.latin,'');}else assert.equal(info.appearance.flowerRadius*2,.0325);
   for(let month=1;month<=12;month++){
    const s=stateAt(p,view(month)),g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
