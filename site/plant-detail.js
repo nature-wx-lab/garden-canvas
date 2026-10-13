@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.154';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.155';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.154';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.155';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4823,8 +4823,8 @@ export function heucheraLeafPoint(type,t,angle){
  const seven=type.endsWith('7'),lobes=seven?[-2.5,-1.67,-.83,0,.83,1.67,2.5]:[-2.2,-1.1,0,1.1,2.2],near=Math.min(...lobes.map(a=>Math.abs(angle-a)));
  const deep=type==='cut7'?.59:type==='shallow7'?.89:.79,lobe=Math.exp(-Math.pow(near/.38,2)),teeth=1-.035*Math.pow(Math.max(0,Math.cos(angle*(seven?57:43))),4);
  const notch=1-.97*Math.exp(-Math.pow((Math.abs(angle)-Math.PI)/.16,2)),edge=(.70+.30*Math.cos(angle))*(deep+(1-deep)*lobe)*teeth*notch;
- const r=t*edge,ruffle=type==='frill7'?.115:type==='ruffle7'?.072:type==='cut7'?.045:.015;
- return [Math.sin(angle)*r,Math.cos(angle)*r,.075*t*t+.012*Math.cos(near*9)*t*t+.025*Math.sin(angle*2+.4)*t*t+ruffle*Math.sin(angle*(type==='frill7'?23:15))*Math.pow(t,3)];
+ const r=t*edge,ruffle=type==='frill7'?.036:type==='ruffle7'?.025:type==='cut7'?.012:.008;
+ return [Math.sin(angle)*r,Math.cos(angle)*r,.085*r*r+.010*Math.cos(near*9)*r*r+.025*Math.sin(angle*2+.4)*r*r+ruffle*(Math.sin(angle*(type==='frill7'?17:11))+.25*Math.sin(angle*31+.7))*Math.pow(t,5)*edge];
 }
 
 function drawHeuchera(b,{info,s,detail,rand},kit){
@@ -4840,7 +4840,7 @@ function drawHeuchera(b,{info,s,detail,rand},kit){
    b.branch(root,bend,.0015,stem,'petiole-heuchera');b.branch(bend,tip,.0011,stem,'petiole-heuchera');
    let col=s.leafColor;
    if(j<3&&['caramel','paprika','topaz','champagne','georgiaPlum'].includes(typ))col=new THREE.Color(col).lerp(new THREE.Color({caramel:'#cb9557',paprika:'#d17e50',topaz:'#c8b090',champagne:'#caa0a3',georgiaPlum:'#bc8d9c'}[typ]),.45);
-   b.add('heuchera-'+a.leafShape,kind,kit.shade(rand,col,.04),...tip,size*a.leafWidth/a.leafLength,size,size,.65+t*1.50,angle,(rand()-.5)*.16);
+   b.add('heuchera-'+a.leafShape,kind,kit.shade(rand,col,.04),...tip,size*a.leafWidth/a.leafLength,size,size,1.02+t*1.10,angle,(rand()-.5)*.16);
   }
  }
  if(!s.bloom)return;
@@ -4866,6 +4866,66 @@ function drawHeuchera(b,{info,s,detail,rand},kit){
     }
     for(const side of [-1,1])f.branch([0,r*.3,0],[side*r*.13,r*1.20,0],.00006,'#e0d9cd','style-heuchera');
    }
+  }
+ }
+}
+
+export function tiarellaLeafPoint(type,t,angle){
+ const lobes=[-2.2,-1.1,0,1.1,2.2],near=Math.min(...lobes.map(a=>Math.abs(angle-a))),round=type==='round5',fine=type==='fine5',narrow=type==='narrow5';
+ const depth=round?.79:fine?.29:narrow?.37:type==='lace5'?.40:.48,width=round?.43:fine?.25:narrow?.28:.35;
+ const secondary=round?1:1-.13*Math.pow(Math.max(0,Math.cos(angle*19)),4),teeth=1-.035*Math.pow(Math.max(0,Math.cos(angle*47)),4);
+ const edge=(.68+.32*Math.cos(angle))*(depth+(1-depth)*Math.exp(-Math.pow(near/width,2)))*secondary*teeth*(1-.97*Math.exp(-Math.pow((Math.abs(angle)-Math.PI)/.16,2)));
+ const r=t*edge;return [Math.sin(angle)*r,Math.cos(angle)*r,.07*r*r+.018*Math.sin(angle*2+.5)*r*r+.012*Math.sin(angle*17)*Math.pow(t,5)*edge];
+}
+
+function drawTiarella(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,typ=a.shootProfile,trail=a.habit==='trailing',h=s.height,w=s.spread,lh=Math.min(s.leafHeight||h,h*a.foliageHeightRatio),L=Math.min(a.leafLength,w*.28)*s.leafScale,stem=a.stemColor;
+ const kind=`leaf-tiarella-${a.leafShape}-${s.leafPatternColor.slice(1)}-center-${a.leafUnderside.slice(1)}-${a.leafTexture}`,crowns=[];
+ const leaf=(root,angle,size,rise)=>{
+  const reach=size*.45,tip=[root[0]+Math.sin(angle)*reach,root[1]+rise,root[2]+Math.cos(angle)*reach],bend=[root[0]+Math.sin(angle)*reach*.45,root[1]+rise*.72,root[2]+Math.cos(angle)*reach*.45];
+  b.branch(root,bend,.0011,stem,'petiole-tiarella');b.branch(bend,tip,.0008,stem,'petiole-tiarella');
+  b.add('tiarella-'+a.leafShape,kind,kit.shade(rand,s.leafColor,.045),...tip,size*a.leafWidth/a.leafLength,size,size,1.02+rand()*.85,angle,(rand()-.5)*.2);
+ };
+ if(trail){
+  const arms=Math.max(5,Math.round(9*detail));
+  for(let i=0;i<arms;i++){
+   const angle=i*2.399963,reach=Math.max(0,w*.5-L*.70);let prev=[0,.012,0];
+   for(let j=1;j<=7;j++){
+    const t=j/7,az=angle+.18*Math.sin(t*4+i),at=[Math.sin(az)*reach*t,.015+lh*.08*Math.sin(t*Math.PI),Math.cos(az)*reach*t];
+    b.branch(prev,at,.0015,stem,'runner-tiarella');prev=at;if(j%2===1)crowns.push(at);
+    for(let k=0;k<3;k++)if(rand()<s.leafDensity)leaf(at,az+k*2.399963,L*(.62+.28*rand()),lh*(.20+.20*rand()));
+   }
+  }
+ }else{
+  for(let i=0;i<5;i++){
+   const az=i*2.399963,rr=i===0?0:Math.max(0,w*.5-L*1.1)*(.65+rand()*.3),root=[Math.sin(az)*rr,.012,Math.cos(az)*rr];crowns.push(root);
+   const n=Math.max(10,Math.round(14*detail));
+   for(let j=0;j<n;j++)if(j<2||rand()<s.leafDensity){const t=j/(n-1);leaf(root,az+j*2.399963,L*(.61+.39*t),lh*(.68-.51*t));}
+  }
+ }
+ if(!s.bloom)return;
+ const n=Math.max(3,Math.round((typ==='oregon'?5:trail?10:16)*detail)),r=a.flowerRadius;
+ for(let i=0;i<n;i++){
+  const root=crowns[(i*7)%crowns.length],az=i*2.399963,top=[root[0]+Math.sin(az)*w*.04,h*(.83+rand()*.16),root[2]+Math.cos(az)*w*.04],len=Math.min(a.inflorescenceLength,h*.56),bottom=[root[0],Math.max(root[1]+.01,top[1]-len),root[2]];
+  b.branch(root,bottom,.0011,stem,'scape-tiarella');b.branch(bottom,top,.0007,stem,'raceme-tiarella');
+  const count=Math.max(20,Math.round((trail?40:65)*detail));
+  for(let j=0;j<count;j++){
+   const t=(j+.5)/count,an=j*2.399963,at=bottom.map((v,k)=>v+(top[k]-v)*t),rad=.005+(1-t)*.011,pt=[at[0]+Math.sin(an)*rad,at[1]+.002,at[2]+Math.cos(an)*rad];
+   b.branch(at,pt,.00019,stem,'pedicel-tiarella');
+   if(t>.83||rand()>s.flowerDensity){b.add(kit.bud,'bud-tiarella',a.flowerPalette.calyx,...pt,r*.29,r*.42,r*.29);continue;}
+   const f=flowerFrame(b,pt,.90+rand()*.35,an);
+   f.add(kit.bud,'receptacle-tiarella','#c4c6ac',0,0,0,r*.20,r*.19,r*.20);
+   for(let q=0;q<5;q++){
+    const aa=q*TAU/5;
+    f.add('iberisEntire','sepal-tiarella',a.flowerPalette.calyx,0,0,0,r*.32,r*.58,r,1.42,aa,0);
+    f.add('iberisEntire','petal-tiarella',s.flowerColor,0,r*.10,0,r*.20,r,r,1.31,aa+.63,0);
+   }
+   for(let q=0;q<10;q++){
+    const aa=q*TAU/10,tip=[Math.sin(aa)*r*.74,r*(q%2?.97:1.12),Math.cos(aa)*r*.74];
+    f.branch([0,r*.12,0],tip,.000055,'#e9e5dc','filament-tiarella');f.add(kit.bud,'anther-tiarella','#d5be9b',...tip,r*.07,r*.055,r*.055);
+   }
+   for(const side of [-1,1])f.branch([side*r*.05,r*.1,0],[side*r*.17,r*.84,0],.000065,'#dedcca','style-tiarella');
   }
  }
 }
@@ -7704,6 +7764,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='delphiniumSpires'){drawDelphinium(b,{info,s,p,detail,rand},kit);return;}
  if(['saxifrageRosettes','bergeniaRhizomes'].includes(info.appearance?.architecture)){drawSaxifragaceae(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='agapanthusFans'){drawAgapanthus(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='tiarellaCrowns'){drawTiarella(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='heucheraCrowns'){drawHeuchera(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='heucherellaCrowns'){drawHeucherella(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='iberisCorymbs'){drawIberis(b,{info,s,detail,rand},kit);return;}

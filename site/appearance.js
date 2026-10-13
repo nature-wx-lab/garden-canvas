@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.154';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.155';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -290,3 +290,5 @@ Object.assign(TRAIT_VALUES,{japonicaLeaf:'株元に広がる、しわと鋸歯�
 Object.assign(TRAIT_VALUES,{ajugaSmall:'小さなへら形の対生葉',ajugaObovate:'丸い鋸歯としわのある広い倒卵形葉',ajugaCrisped:'強く縮れ、縁が内側に巻く光沢葉',ajugaIncised:'粗く深い切れ込みと尖った歯のある対生葉',ajugaLips:'短い2裂の上唇と大きな3裂の下唇・4本の雄しべ'});
 
 Object.assign(TRAIT_VALUES,{shallow7:'浅い7裂と丸い鋸歯のある葉',cut7:'切れ込みの深い7裂葉',ruffle7:'波打つ縁を持つ7裂葉',frill7:'細かく縮れる7裂葉',heucheraBell:'5裂する小さな萼筒と花弁・5本の雄しべ・2本の花柱'});
+
+Object.assign(TRAIT_VALUES,{narrow5:'細長い裂片に分かれる5裂葉',lace5:'深い切れ込みと鋸歯のある葉',fine5:'細い裂片を持つ深裂葉',tiarellaRaceme:'細い5花弁と10本の雄しべが目立つ総状花序'});
