@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.169';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.170';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.169';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.170';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5005,6 +5005,60 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
  }
 }
 
+export function autumnAnemonePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='autumnAnemoneTepal'){
+  const width=.62*Math.pow(sn,.46)*(1+.16*t),ripple=.025*Math.cos(u*13+t*4)*Math.pow(t,4);
+  return [u*width,t,.12*u*u*sn+.13*t*t+ripple];
+ }
+ const narrow=type==='momoiroLeaf',lobes=1-(narrow?.14:.28)*Math.exp(-Math.pow((t-.55)/.09,2));
+ const teeth=1-.065*(.5+.5*Math.cos(t*TAU*11)),width=.5*Math.pow(sn,narrow?.78:.48)*lobes*teeth;
+ return [u*width,t,.075*u*u*sn+.055*t*t+.016*Math.cos((t-Math.abs(u)*.24)*TAU*6)*Math.abs(u)*sn];
+}
+
+function drawAutumnAnemone(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,momo=a.shootProfile==='momoiro',w=s.spread,h=s.height,L=Math.min(a.leafLength,w*.23,h*.30),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
+ const n=Math.max(4,Math.min(20,Math.round((momo?12:8)*detail*Math.pow(w/.45,.7))));
+ const compound=(root,az,length,pitch)=>{
+  const pet=length*.85,at=[root[0]+Math.sin(az)*pet*.66,root[1]+pet*.75,root[2]+Math.cos(az)*pet*.66];b.branch(root,at,.0009,a.stemColor,'petiole-anemone');
+  for(const side of [-1,0,1]){
+   const an=az+side*.87,smaller=side?.82:1,base=[at[0]+Math.sin(an)*length*.10,at[1]+length*.025,at[2]+Math.cos(an)*length*.10];
+   b.branch(at,base,.0005,a.stemColor,'petiolule-anemone');
+   b.add(momo?'momoiroLeaf':'whiteAnemoneLeaf',momo?'leaf-anemone-narrow':'leaf-anemone-broad',kit.shade(rand,s.leafColor,.045),...base,length*smaller*a.leafWidth/a.leafLength,length*smaller,length*smaller,pitch,an,0);
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,shape=k=>.5+.5*Math.sin((i+1)*16.989+k*7.233),rr=Math.max(.003,w*.37-L*.9)*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr];
+  // Root and flowering-stem identities stay fixed when month or leaf amount
+  // changes. Monthly emergence and the fall of old stems remain uncalibrated.
+  if(s.leafDensity>0)for(let j=0;j<4;j++)if(shape(j+11)<s.leafDensity)compound(root,az+j*1.8,L*(.65+.35*shape(j+20)),.81+.22*shape(j+25));
+  const top=h*(.77+.19*shape(1)),base=[root[0]+Math.sin(az)*w*.02,h*(.31+.25*shape(4)),root[2]+Math.cos(az)*w*.02];
+  b.branch(root,base,.00165,stem,'stem-anemone');
+  if(s.leafDensity>0&&shape(31)<s.leafDensity)for(let k=0;k<3;k++)compound(base,az+k*TAU/3,L*.57,1.0);
+  const tips=[];
+  for(let k=0;k<3;k++){
+   const an=az+k*TAU/3,reach=Math.min(w*.14,h*.10)*(k===0?.30:1),end=[base[0]+Math.sin(an)*reach,top*(k===0?1:.88+.05*shape(k+42)),base[2]+Math.cos(an)*reach];
+   const joint=base.map((v,d)=>v+(end[d]-v)*.58);b.branch(base,joint,.0011,stem,'fork-anemone');b.branch(joint,end,.00076,stem,'pedicel-anemone');tips.push({end,an,bud:k===2&&i%2===0});
+   if(k===0&&momo){const extra=[joint[0]+Math.sin(an+1.1)*w*.06,joint[1]+h*.22,joint[2]+Math.cos(an+1.1)*w*.06];b.branch(joint,extra,.00065,stem,'pedicel-anemone');tips.push({end:extra,an:an+1.1,bud:i%3===0});}
+  }
+  for(const [k,{end,an,bud} ] of tips.entries()){
+   if(!s.bloom)continue;
+   const r=Math.min(a.flowerRadius,h*.095,w*.10),f=flowerFrame(b,end,.37+.67*shape(k+60),an);
+   if(bud||shape(k+70)>s.flowerDensity){f.add(kit.bud,'bud-anemone',momo?'#98687b':'#a8ab89',0,r*.13,0,r*.26,r*.34,r*.26);continue;}
+   const count=momo?5:5+(i+k)%2;
+   for(let j=0;j<count;j++){
+    const angle=j*TAU/count,small=momo&&j<2,tint=momo?(small?'#bd79a0':s.flowerColor):s.flowerColor,sz=small?.87:1;
+    f.add('autumnAnemoneTepal',momo?'sepal-anemone-pink':'sepal-anemone-white',tint,Math.sin(angle)*r*.14,0,Math.cos(angle)*r*.14,r*sz,r*sz,r*sz,Math.PI/2+.03,angle,0);
+   }
+   f.add(kit.bud,'receptacle-anemone','#a8ba55',0,r*.15,0,r*.25,r*.19,r*.25);
+   for(let j=0;j<42;j++){
+    const angle=j*2.399963,rad=r*(.29+.15*shape(j+90)),from=[Math.sin(angle)*r*.20,r*.05,Math.cos(angle)*r*.20],pt=[Math.sin(angle)*rad,r*(.19+.10*shape(j+140)),Math.cos(angle)*rad];
+    f.branch(from,pt,r*.014,'#e4ce6c','filament-anemone');f.add(kit.bud,'anther-anemone','#d9af3c',...pt,r*.043,r*.027,r*.028);
+   }
+  }
+ }
+}
+
 // Oxford Blue is a low, rooting mat with loose small-flowered racemes.
 // CFIA measurements below belong to its Georgia Blue comparison column only.
 export function oxfordPoint(type,t,u){
@@ -8393,6 +8447,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='autumnAnemone'){drawAutumnAnemone(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oxfordMat'){drawOxfordMat(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='melinisTussock'){drawMelinis(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}

@@ -10,6 +10,24 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Japanese anemones distinguish pink narrow-leaf and white single forms without inventing width or cultivar identity',()=>{
+ for(const [i,id] of ['p-9fc86e59c35b','p-794e287b757d'].entries()){
+  const info=CATALOG[id],p={...makePlant(id,18000+i,1,1),height:i?.8:.55,spread:i?.6:.45,leafHeight:i?.30:.22};let axes;
+  assert.equal(info.appearance.status,'partial');assert.equal(info.spread,null);assert.equal(info.latin,'');assert.deepEqual(info.colors,[i?'white':'pink']);
+  assert.deepEqual(info.bloom,i?[9,10,11]:[9,10]);assert.ok(info.appearance.unconfirmed.some(x=>x.includes('雄しべ42本')));
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),leaves=count(i?'leaf-anemone-broad':'leaf-anemone-narrow');
+   assert.equal(g.userData.architecture,'autumnAnemone');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);assert.ok(count('stem-anemone')>0);
+   assert.equal(leaves%3,0);assert.equal(leaves,count('petiolule-anemone'));assert.equal(leaves>0,![12,1,2].includes(month));
+   assert.equal(count('receptacle-anemone')>0,info.bloom.includes(month));assert.equal(count('anther-anemone'),count('receptacle-anemone')*42);assert.equal(count('anther-anemone'),count('filament-anemone'));
+   const sepals=count(i?'sepal-anemone-white':'sepal-anemone-pink');assert.ok(sepals>=count('receptacle-anemone')*5&&sepals<=count('receptacle-anemone')*6);
+   assert.ok(!g.children.some(m=>/^(fruit|seed|stigma)-anemone/.test(m.userData.component)));
+   const now=g.children.filter(m=>['stem-anemone','fork-anemone','pedicel-anemone'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(axes)assert.deepEqual(now,axes);else axes=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.012);assert.ok(m.boundingBox.max.y<p.height*1.15);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<=p.spread*.63);}dispose(g);
+  }
+ }
+ const p={...makePlant('p-9fc86e59c35b',18010,1,1),height:.12,spread:.15,leafHeight:.06},g=plantModel(p,view(9));for(const m of g.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.15);assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}dispose(g);
+});
 test('Oxford Blue is a leafy creeping mat with unequal four-lobed flowers and separate winter colour',()=>{
  const id='p-63c3a78d31fa',info=CATALOG[id],a=info.appearance,p={...makePlant(id,17900,1,1),height:.1,spread:.4,leafHeight:.065};let axes,winter,summer;
  assert.equal(a.status,'partial');assert.deepEqual(info.height,[.05,.1]);assert.deepEqual(info.spread,[.25,.45]);assert.deepEqual(info.bloom,[2,3,4,5]);
