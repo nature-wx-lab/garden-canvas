@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.208';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.209';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.208';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.209';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5447,6 +5447,60 @@ function drawMahoniaCanes(b,{info,s,detail,rand,month},kit){
  }
 }
 
+export function clevelandPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='clevelandLeaf')return [u*.51*sn**.72*(1+.04*Math.cos(t*TAU*15)),t,.075*u*u*sn-.10*t*t+.002*Math.sin(t*55-Math.abs(u)*12)*sn];
+ if(type==='clevelandUpper')return [u*.115*sn,.04+.42*t-.10*t*t,.48+.44*t];
+ if(type==='clevelandLip')return [u*(.04+.24*sn)*(.86+.14*Math.cos(u*Math.PI*3)),-.05-.24*t+.06*sn,.46+.50*t];
+ const az=(u+1)*Math.PI;
+ if(type==='clevelandBud'){const r=.015+.105*sn**.7;return [Math.cos(az)*r,Math.sin(az)*r,.25+.35*t];}
+ const calyx=type==='clevelandCalyx',r=calyx?.13-.025*t:.045+.06*t,teeth=calyx?.13*Math.max(0,Math.cos(az*5))**5*t**7:0;
+ return [Math.cos(az)*r,Math.sin(az)*r,(calyx?.39:.49)*t+teeth];
+}
+
+function drawClevelandSage(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.18,w*.17),F=Math.min(a.flowerLength,h*.075,w*.055),n=Math.max(4,Math.min(19,Math.round(13*detail*Math.sqrt(w/.4))));
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const pair=(at,az,len,i,k)=>{
+  if(noise(i,k)>s.leafDensity)return;
+  for(let q=0;q<2;q++){
+   const aa=az+q*Math.PI,pet=len*.13,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.30,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0008,h*.003),a.stemColor,'petiole-cleveland');b.add('clevelandLeaf','leaf-cleveland',kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,.65+.45*noise(i,k+q+63),aa,(noise(i,k+q+71)-.5)*.18);
+  }
+ };
+ const ring=(at,az,i,k,last)=>{
+  const flowers=last?9:15;
+  for(let q=0;q<flowers;q++){
+   const aa=az+q*TAU/flowers+.12*(noise(i,k+q)-.5),r=F*(last?.40:.69),pos=[at[0]+Math.sin(aa)*r,at[1]+F*.11*(q%3),at[2]+Math.cos(aa)*r],f=flowerFrame(b,pos,-.22-.20*noise(i,k+q+45),aa),fl=F*(.87+.13*noise(i,k+q+90));
+   f.add('clevelandCalyx','calyx-cleveland',s.bloom?a.flowerPalette.calyx:'#9e927c',0,0,0,fl,fl,fl);
+   if(!s.bloom)continue;
+   if(noise(i,k*19+q)>(last?.20:.76)){f.add('clevelandBud','bud-cleveland','#9396c5',0,0,0,fl*.82,fl*.82,fl*.82);continue;}
+   f.add('clevelandTube','tube-cleveland',s.flowerColor,0,0,0,fl,fl,fl);f.add('clevelandLip','petal-cleveland',s.flowerColor,0,0,0,fl,fl,fl);
+   for(let side=-1;side<=1;side+=2){
+    f.add('clevelandUpper','upper-cleveland',s.flowerColor,side*.10*fl,0,0,fl,fl,fl);
+    f.branch([side*.065*fl,.05*fl,.46*fl],[side*.20*fl,.33*fl,1.42*fl],fl*.009,'#d1c3e1','filament-cleveland');f.branch([side*.20*fl,.33*fl,1.42*fl],[side*.23*fl,.43*fl,1.52*fl],fl*.017,'#e3d9cf','anther-cleveland');
+   }
+   f.branch([0,.02*fl,.43*fl],[0,-.03*fl,1.65*fl],fl*.006,'#c7b1d9','style-cleveland');for(let side=-1;side<=1;side+=2)f.branch([0,-.03*fl,1.65*fl],[side*.03*fl,-.01*fl,1.73*fl],fl*.005,'#bb9fca','stigma-cleveland');
+  }
+ };
+ const spike=(base,az,len,i)=>{
+  const levels=3+Math.floor(noise(i,99)*3);let old=base;
+  for(let j=1;j<=levels;j++){
+   const t=j/levels,at=[base[0]+Math.sin(az)*w*.035*t*t,base[1]+len*t,base[2]+Math.cos(az)*w*.035*t*t];b.branch(old,at,Math.min(.0018,h*.004)*(1-t*.35),cold?a.winterStemColor:a.flowerPalette.axis,'axis-cleveland');old=at;pair(at,az+j*Math.PI/2,L*(j===1?.47:.21),i,j+120);ring(at,az+j*.37,i,j*31,j===levels);
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963+(noise(i,1)-.5)*.65,r=w*.28*Math.sqrt((i+.5)/n),root=[Math.sin(az)*r*.25,.006,Math.cos(az)*r*.25],top=[Math.sin(az)*r,h*(.43+.12*noise(i,4)),Math.cos(az)*r];let old=root;
+  for(let j=1;j<=9;j++){
+   const t=j/9,at=mix(root,top,t);at[0]+=w*.02*Math.sin(t*Math.PI)*Math.sin(az+.6);b.branch(old,at,Math.min(.004,h*.011)*(1-t*.6),j<3?a.barkColor:a.stemColor,j<3?'wood-cleveland':'stem-cleveland');old=at;if(j>1)pair(at,az+j*Math.PI/2,L*(.80+.18*Math.sin(t*Math.PI)),i,j+15);
+   if(j!==4&&j!==6)continue;
+   const aa=az+(j===4?1.15:-1.05),end=[at[0]+Math.sin(aa)*w*.13,at[1]+h*.12,at[2]+Math.cos(aa)*w*.13];let prev=at;
+   for(let q=1;q<=5;q++){const loc=mix(at,end,q/5);b.branch(prev,loc,Math.min(.002,h*.006)*(1-q*.07),a.stemColor,'branch-cleveland');prev=loc;pair(loc,aa+q*Math.PI/2,L*(.76+.14*Math.sin(q/5*Math.PI)),i,j*37+q);}
+   if(i%3===0&&j===6)spike(end,aa,h*(.26+.05*noise(i,36)),i+65);
+  }
+  spike(top,az,h*(.29+.09*noise(i,24)),i);
+ }
+}
+
 export function apianaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='apianaLeaf'){
@@ -9684,6 +9738,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='bellisRosettes'){drawBellisRosettes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oleariaSmoky'){drawOleariaSmoky(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='mahoniaCanes'){drawMahoniaCanes(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='clevelandWhorls'){drawClevelandSage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='whiteSageShrub'){drawWhiteSage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='claryPanicles'){drawClarySages(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pineappleSageBranches'){drawPineappleSages(b,{info,s,detail,rand,month},kit);return;}
