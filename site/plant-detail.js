@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.216';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.217';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.216';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.217';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5561,6 +5561,56 @@ function drawBroadSage(b,{info,s,detail,rand,month},kit){
  }
 }
 
+export function rugosaHyssopPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='rugosaHyssopLeaf'){
+  const tooth=1+.048*(Math.abs((t*13%1)*2-1)*2-1),width=.61*sn**.66*(1-.27*t)*tooth;
+  return [u*width,t-.09*Math.abs(u)*Math.exp(-t*9),.046*u*u*sn-.10*t*t+.009*Math.cos(t*47-Math.abs(u)*12)*sn*Math.abs(u)];
+ }
+ if(type==='rugosaHyssopLip')return [u*(.04+.23*sn)*(1+.12*Math.cos(u*Math.PI*3)),-.05-.20*t,.68+.29*t-.03*t*t];
+ if(type==='rugosaHyssopHood')return [u*(.045+.14*sn),.065+.085*sn,.66+.24*t];
+ const az=(u+1)*Math.PI,calyx=type==='rugosaHyssopCalyx',bud=type==='rugosaHyssopBud';
+ const r=bud?.07+.095*sn**.7:calyx?.11+.055*t:.065+.063*t;
+ return [Math.cos(az)*r*(calyx?1+.035*Math.cos(az*5):1),Math.sin(az)*r,(bud?.18+.50*t:calyx?.52*t-.07*Math.cos(az*5)*t**7:.75*t)];
+}
+
+function drawRugosaHyssop(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,gold=a.shootProfile==='golden',cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.26,w*.24),headScale=Math.min(1,h*.18/a.inflorescenceLength),F=a.flowerLength*headScale,n=Math.max(2,Math.min(16,Math.round((gold?12:9)*detail*Math.sqrt(w/.65)*Math.min(1,h/.40)))),stem=cold?a.winterStemColor:a.stemColor;
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const pair=(at,az,len,i,k)=>{
+  if(noise(i,k)>s.leafDensity)return;
+  for(let q=0;q<2;q++){
+   const aa=az+q*Math.PI,pet=len*.35,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.36,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0013,h*.0035),stem,'petiole-rugosa-hyssop');b.add('rugosaHyssopLeaf','leaf-rugosa-hyssop',kit.shade(rand,s.leafColor,.045),...end,len*a.leafWidth/a.leafLength,len,len,1.02+.36*noise(i,k+q+64),aa,(noise(i,k+q+72)-.5)*.26);
+  }
+ };
+ const spike=(base,az,len,i)=>{
+  const heads=s.bloom||a.budMonths.includes(month)||a.seedHeadMonths.includes(month),spent=!s.bloom&&a.seedHeadMonths.includes(month);let old=base;
+  for(let j=0;j<=13;j++){
+   const t=j/13,at=[base[0]+Math.sin(az)*len*.08*t*t,base[1]+len*t,base[2]+Math.cos(az)*len*.08*t*t];if(j)b.branch(old,at,Math.min(.0015,h*.0035)*(1-t*.5),stem,'axis-rugosa-hyssop');old=at;if(!heads)continue;
+   const radius=(.011*headScale)*(.25+.75*Math.sin(Math.PI*t)**.23),cal=spent?(cold||month>=10?a.flowerPalette.spent:a.flowerPalette.calyx):a.flowerPalette.calyx;
+   for(let k=0;k<10;k++){
+    const aa=az+j*1.73+k*TAU/10+(noise(i,j*19+k)-.5)*.28,rr=radius*(.86+.14*noise(i,j*29+k)),pos=[at[0]+Math.sin(aa)*rr,at[1]+len*.015*(noise(i,j*31+k)-.5),at[2]+Math.cos(aa)*rr],fl=F*(.78+.22*noise(i,j*17+k)),f=flowerFrame(b,pos,-.18-.19*noise(i,j*41+k),aa);
+    f.add('rugosaHyssopCalyx',spent?'calyx-rugosa-hyssop-spent':'calyx-rugosa-hyssop',cal,0,0,0,fl,fl,fl);
+    if(!s.bloom||t>.95||noise(i,j*37+k)>.84){if(!spent)f.add('rugosaHyssopBud','bud-rugosa-hyssop',a.flowerPalette.bud,0,0,0,fl,fl,fl);continue;}
+    f.add('rugosaHyssopTube','tube-rugosa-hyssop',s.flowerColor,0,0,0,fl,fl,fl);f.add('rugosaHyssopHood','hood-rugosa-hyssop',s.flowerColor,0,0,0,fl,fl,fl);f.add('rugosaHyssopLip','petal-rugosa-hyssop',s.flowerColor,0,0,0,fl,fl,fl);
+    for(let q=0;q<4;q++){const xx=(q-1.5)*.046*fl,z=fl*(q%2?1.21:1.06);f.branch([xx,.045*fl,.61*fl],[xx*1.2,.10*fl,z],fl*.012,'#b9a4d8','filament-rugosa-hyssop');f.branch([xx*1.2,.10*fl,z],[xx*1.2,.075*fl,z+.04*fl],fl*.021,'#8e70af','anther-rugosa-hyssop');}
+   }
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963+(noise(i,1)-.5)*.65,rr=w*.29*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.37,.006,Math.cos(az)*rr*.37],top=[Math.sin(az)*rr,h*(.64+.18*noise(i,5)),Math.cos(az)*rr];let old=root;
+  for(let j=1;j<=8;j++){
+   const t=j/8,at=mix(root,top,t);at[0]+=Math.sin(az+.6)*w*.016*Math.sin(t*Math.PI);b.branch(old,at,Math.min(.004,h*.008)*(1-t*.50),stem,'stem-rugosa-hyssop');old=at;pair(at,az+j*Math.PI/2,L*(.62+.38*Math.sin(t*Math.PI*.88))*(cold?.46:1),i,j+15);
+   if(j!==3&&j!==5&&j!==6)continue;
+   const aa=az+(j%2?1.15:-1.15),end=[at[0]+Math.sin(aa)*w*(j===6?.085:.13),at[1]+h*(j===6?.13:.18),at[2]+Math.cos(aa)*w*(j===6?.085:.13)];let prev=at;
+   for(let q=1;q<=3;q++){const loc=mix(at,end,q/3);b.branch(prev,loc,Math.min(.002,h*.004)*(1-q*.13),stem,'branch-rugosa-hyssop');prev=loc;pair(loc,aa+q*Math.PI/2,L*(.79-q*.075)*(cold?.46:1),i,j*37+q);}
+   if(j===5||j===6&&i%2===0)spike(end,aa,Math.min(a.inflorescenceLength*.72,h*.15),i+j*21);
+  }
+  spike(top,az,Math.min(a.inflorescenceLength,h*.18)*( .88+.12*noise(i,24)),i);
+ }
+}
+
 export function roseSagePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='roseSageLeaf')return [u*.59*sn**.62*(1-.24*t)*(1+.025*Math.cos(t*TAU*14)),t-.115*Math.abs(u)*Math.exp(-t*10),.060*u*u*sn-.09*t*t+.0022*Math.sin(t*57-Math.abs(u)*14)*sn];
@@ -10045,6 +10095,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='bellisRosettes'){drawBellisRosettes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oleariaSmoky'){drawOleariaSmoky(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='mahoniaCanes'){drawMahoniaCanes(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='rugosaHyssopSpikes'){drawRugosaHyssop(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='roseSageBracts'){drawRoseSage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='broadSagePanicles'){drawBroadSage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='rockinRacemes'){drawRockin(b,{info,s,detail,rand,month},kit);return;}

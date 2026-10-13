@@ -10,6 +10,21 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Rugosa hyssops have toothed broad leaves and dense small-flowered spikes with different winter persistence',()=>{
+ const ids=['p-ee695bf8b522','p-d6fe3845b74d'];assert.equal(CATALOG[ids[0]].spread,null);assert.deepEqual(CATALOG[ids[1]].spread,[.5,.8]);assert.deepEqual(CATALOG[ids[1]].height,[.6,.8]);assert.notEqual(CATALOG[ids[0]].leafColor,CATALOG[ids[1]].leafColor);
+ for(const [i,id] of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'opposite');let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,22700+i,1,1),height:small?.13:i?.7:.8,spread:small?.20:.65,leafHeight:small?.08:.5},g=plantModel(p,view(month));assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+   if(i===0&&[12,1,2].includes(month)){assert.equal(g.userData.groundDormant,true);assert.equal(g.children.length,0);dispose(g);continue;}
+   assert.equal(g.userData.architecture,'rugosaHyssopSpikes');const leaves=g.children.find(m=>m.userData.component==='leaf-rugosa-hyssop');assert.ok(leaves?.count>0);assert.equal(leaves.count%2,0);assert.ok(leaves.geometry.userData.rugosaHyssopLeaf);assert.equal(leaves.count,g.children.find(m=>m.userData.component==='petiole-rugosa-hyssop').count);if(month===1)winter=leaves.count;if(month===6)summer=leaves.count;
+   const flowers=g.children.find(m=>m.userData.component==='tube-rugosa-hyssop');assert.equal(!!flowers,month>=5&&month<=(i?6:10));if(flowers){assert.equal(g.children.find(m=>m.userData.component==='filament-rugosa-hyssop').count,flowers.count*4);assert.ok(g.children.find(m=>m.userData.component==='calyx-rugosa-hyssop').count>flowers.count);}assert.equal(g.children.some(m=>m.userData.component==='calyx-rugosa-hyssop-spent'),info.appearance.seedHeadMonths.includes(month));assert.ok(!g.children.some(m=>/fruit|seed|stolon/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(stem|branch|axis)-rugosa-hyssop$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.72);}dispose(g);
+  }
+  if(i)assert.ok(winter>0&&winter<summer*.20);
+ }
+});
 test('Nazareth and Violin Music distinguish narrow silver leaves and compact violet flower branches through twelve months',()=>{
  const ids=['p-440d8df09615','p-1d9f9cba7fba'];assert.deepEqual(CATALOG[ids[0]].height,[.2,.4]);assert.deepEqual(CATALOG[ids[0]].spread,[.2,.3]);assert.deepEqual(CATALOG[ids[1]].height,[.3,.3]);assert.equal(CATALOG[ids[1]].spread,null);
  for(const [i,id] of ids.entries())for(const small of [false,true]){
