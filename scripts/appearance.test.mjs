@@ -10,6 +10,18 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Helichrysum cultivars distinguish white linear and broad silver leaves with retained flower axes',()=>{
+ const ids=['p-76235859d2d2','p-c8fa64c45209'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],p={...makePlant(id,19400+i,1,1),height:i?.25:.3,spread:.4,leafHeight:i?.18:.24};assert.equal(info.appearance.status,'partial');if(i)assert.equal(info.spread,null);else assert.deepEqual(info.spread,[.4,.4]);let skeleton;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component===k);assert.equal(g.userData.architecture,'helichrysumFoliage');assert.equal(g.scale.y,1);assert.ok(has(i?'leaf-heli-whiteferry':'leaf-heli-korma'));assert.equal(has(i?'bract-heli-whiteferry':'floret-heli-korma'),info.bloom.includes(month));assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+   const axes=g.children.filter(m=>/^(stem|side|peduncle|pedicel)-heli$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.57);}dispose(g);
+  }
+ }
+ const g=plantModel({...makePlant(ids[1],19402,1,1),height:.1,spread:.18,leafHeight:.075},view(6));for(const m of g.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.112);assert.ok(m.boundingBox.min.y>=-.015);}dispose(g);
+});
 test('Cushion bushes preserve silvery twig structure and unknown local flowering across all months',()=>{
  const ids=['p-16b38d744af4','p-ea648c0c7c11'],counts=[];
  for(const [i,id] of ids.entries()){

@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.183';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.184';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.183';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.184';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5087,6 +5087,46 @@ export function artemisiaLeafGeometry(){
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
 }
+export function helichrysumLeafGeometry(broad=false){
+ const pos=[],uv=[],ix=[],N=36,C=20;
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,ph=j/C*TAU,side=Math.cos(ph),sn=Math.max(0,Math.sin(Math.PI*t)),outline=Math.pow(sn,broad?.65:.40)*(broad?.48+.62*t:.82+.18*t),z=(broad?.13:.06)*side*side*sn+.07*t*t+.006*Math.sin(ph)*outline;
+  pos.push(side*.5*outline,t,z);uv.push(j/C,t);if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
+}
+function drawHelichrysumFoliage(b,{info,s,p,detail,rand},kit){
+ const a=info.appearance,white=a.shootProfile==='whiteferry',h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.20,w*.17),n=Math.max(14,Math.min(68,Math.round((white?52:46)*detail*w/.4))),noise=(i,j)=>.5+.5*Math.sin(i*15.6+j*7.8+p.id*.31),stem=white?'#aeb9a5':'#c6cdc4';
+ const blade=(at,az,pitch,len)=>b.add(white?'helichrysumBroad':'helichrysumLinear',white?'leaf-heli-whiteferry':'leaf-heli-korma',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,pitch,az,0);
+ const head=(at,az,key)=>{
+  const r=Math.min(a.flowerRadius,h*.07,w*.045),f=flowerFrame(b,at,.12+noise(key,8)*.30,az);
+  if(white){
+   const closed=key%5===0;
+   for(let layer=0;layer<3;layer++)for(let j=0;j<13;j++){
+    const aa=j*TAU/13+layer*.18,len=r*(.91-layer*.14);f.add('helichrysumLinear','bract-heli-whiteferry','#f0eee5',Math.sin(aa)*r*.13,layer*r*.09,Math.cos(aa)*r*.13,len*.36,len,len,closed?.3+layer*.07:1.2-layer*.20,aa,0);
+   }
+   if(!closed)for(let j=0;j<27;j++){const aa=j*2.399963,rr=r*.36*Math.sqrt(j/27);f.add(kit.bud,'floret-heli-whiteferry','#d4bb51',Math.sin(aa)*rr,r*.17,Math.cos(aa)*rr,r*.065,r*.09,r*.065);}
+  }else{
+   f.add(kit.bud,'involucre-heli-korma','#c6b76a',0,0,0,r,r*.60,r);
+   for(let j=0;j<16;j++){const aa=j*2.399963,rr=r*.77*Math.sqrt(j/16);f.add(kit.bud,'floret-heli-korma','#e5cb46',Math.sin(aa)*rr,r*.49,Math.cos(aa)*rr,r*.18,r*.19,r*.18);}
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*(.05+.31*Math.sqrt((i+.5)/n)),root=[Math.sin(az)*rr*.60,.005,Math.cos(az)*rr*.60],peak=h*(.33+.40*Math.sqrt(1-Math.pow(rr/(w*.44),2)))*(.90+.10*noise(i,1));let prev=root;
+  for(let k=0;k<5;k++)blade(root,az+k*2.399963,1.05,L*(.68+.04*k));
+  for(let j=1;j<=14;j++){
+   const t=j/14,turn=az+.18*Math.sin(t*4+i),at=[Math.sin(turn)*rr*(.60+.40*t),.005+peak*t,Math.cos(turn)*rr*(.60+.40*t)];b.branch(prev,at,Math.min(.0011,h*.006),stem,'stem-heli');prev=at;
+   blade(at,turn+j*2.399963,.65+.55*noise(i,j),L*(.88+.12*noise(j,i)));
+   if(j===4||j===8||j===11){const side=turn+(j===4?1:-1)*.9,tip=[at[0]+Math.sin(side)*L*1.0,at[1]+L*.85,at[2]+Math.cos(side)*L*1.0];b.branch(at,tip,Math.min(.00065,h*.004),stem,'side-heli');for(let k=0;k<5;k++){const t2=(k+1)/5,pt=at.map((v,d)=>v+(tip[d]-v)*t2);blade(pt,side+k*2.399963,.60+k*.11,L*(.55+.05*k));}}
+  }
+  for(let j=0;j<6;j++)blade(prev,az+j*2.399963,.2+j*.22,L*(.54+j*.07));
+  if(i%3===0){
+   const top=[prev[0],h*(.85+.05*noise(i,7)),prev[2]];b.branch(prev,top,Math.min(.0008,h*.005),stem,'peduncle-heli');
+   const count=white?3:7;for(let j=0;j<count;j++){const aa=az+j*2.399963,rr=L*(white?.27:.35)*Math.sqrt(j/count),tip=[top[0]+Math.sin(aa)*rr,top[1]+L*.16,top[2]+Math.cos(aa)*rr];b.branch(top,tip,Math.min(.0004,h*.003),stem,'pedicel-heli');if(s.bloom)head(tip,aa,i+j);}
+  }
+ }
+}
+
 function drawCushionBush(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,compact=a.shootProfile==='windzy',n=Math.max(10,Math.min(64,Math.round((compact?55:40)*detail*Math.sqrt(w/.32)))),noise=(i,j)=>.5+.5*Math.sin(i*16.71+j*7.3+p.id*.43),L=Math.min(a.leafLength,h*.034,w*.025),stem=a.stemColor;
  const leaves=(at,az,tilt,key)=>{
@@ -8892,6 +8932,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='helichrysumFoliage'){drawHelichrysumFoliage(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='cushionBush'){drawCushionBush(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='artemisiaCushion'){drawArtemisiaCushion(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='cerastiumMat'){drawCerastiumMat(b,{info,s,detail,rand},kit);return;}
