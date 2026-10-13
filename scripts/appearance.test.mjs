@@ -10,7 +10,7 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
-test('Good Pink Manners replaces its dimension box with four-row tubular flowers and keeps winter uncertainty',()=>{
+test('Good Pink Manners replaces its generic form with four-row tubular flowers and keeps winter uncertainty',()=>{
  const id='p-2170af3d50b2',info=CATALOG[id];assert.deepEqual(info.height,[.55,.65]);assert.equal(info.spread,null);assert.equal(info.visual,'reference');assert.equal(info.form,'spike');assert.deepEqual(info.colors,['pink']);assert.equal(info.appearance.status,'partial');assert.ok(info.appearance.unconfirmed.includes('persistence'));
  for(const small of [false,true]){let skeleton;
   for(let month=1;month<=12;month++){
