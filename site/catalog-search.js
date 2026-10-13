@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.162';
+import {treeProfile} from './tree-profiles.js?v=0.9.163';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -117,6 +117,10 @@ export function seasonAt(info,month){
  if(a.emergenceMonths?.includes(month)&&!a.dormantMonths?.includes(month)){density=.3;scale=.45;phase='資料の芽出し期';}
  if(a.monthlyLeafDensity?.[m]!==undefined)density=a.monthlyLeafDensity[m];
  if(a.architecture==='brunneraSprays'){scale=[0,0,.42,.62,.85,1,1,1,1,1,.85,0][m];phase=density===0?'冬の地上部なし（境界月は表示目安）':month<6?'小さな春葉と花茎（葉の大きさは参考補間）':'花後に広がる大きな葉（葉量は参考）';}
+ if(a.architecture==='vincaRunners'){
+  scale=1;
+  phase=[12,1,2].includes(month)?'冬の匍匐茎と残葉の参考表示（地域差・茎の残存・月別葉量は未確認）':'匍匐茎と対生葉・短い立ち上がり（花期以外の葉量と茎の残存は参考）';
+ }
  if(a.architecture==='paniclePhlox'){
   scale=1;
   phase=[12,1,2].includes(month)?'冬の枯れ茎の参考表示（残存量・月境界・株元葉は未確認）':month<6?'対生葉と直立茎の展開（芽出し月・伸長量は参考）':'直立する株と枝分かれした花序（花期は国内資料・葉量は参考）';
@@ -158,7 +162,7 @@ export function seasonAt(info,month){
  if(leaflessFlowering)phase='葉のない花茎の開花期';
  else if(groundDormant)phase=a.persistence==='frostDormantTuber'?'霜後の地上部休眠（冬期の表示目安）':info.life==='annual'?'一年草の生育期外（低温期の参考）':'地上部のない休眠期';
  const bloomIndex=flowerMonths.indexOf(month),flowerDensity=bloom?(a.monthlyFlowerDensity?.[m]??(a.architecture==='avalanche'&&month>=7?.24:flowerMonths.length>2&&(bloomIndex===0||bloomIndex===flowerMonths.length-1)?.65:1)):0;
- const shootScale=['paniclePhlox','linariaRacemes','lamiumRunners','cloverStolons','crimsonClover','tiarellaCrowns','heucheraCrowns','ajugaMats','persicariaShoots','pelargoniumErodium','cranesbill','pulmonariaCrowns','perennialVioletShoots','softSucculents','haworthiaCrowns','ribbedSucculents','caudexPlants','agaveRosettes','stoneSucculents','necklacePlants','fleshyGardenPlants','mixedGardenPlants','lateGardenHerbs','uncommonGardenTree','marginGardenPlants','submergedShoots','forestPlants','poppyShoots','rosetteSpires','tubularHerbShoots','leycesteriaCanes','smallPeaHerbs','rhodiolaCrown','seasonalClimbers','betonyGermander','texturedMints','iberisCorymbs','astilbePlumes','aquilegiaCymes','dianthusCymes','verbenaBranches','scabiousHabit','sideritisSpikes','silverMintSpikes','marrubiumWhorls','leonotisTiers','keiskeaRacemes','isodonPanicles','chelonopsisAxils','triporaCymes','leucosceptrumSpikes','melittisAxils','puschkiniaScapes','bletillaShoots','roseaSpire','rugosaSpire','nierembergiaMat','goldenStrawberry','moonCarrot','flamingoRunners','pimpinellaRose','hairyChervil','pinkHogweed','michauxiaAxis','jasioneHeads','tracheliumCorymb','helleboreProfile','shastaAlaska','primroseRosette','gerberaRosette','brunneraSprays','tapienMat','stolonPhlox'].includes(a.architecture)||a.architecture==='beeBalm'&&a.standingWinter&&a.seedHeadMonths?.includes(month)?1:a.persistence==='semiDormant'&&a.architecture!=='beeBalm'&&[12,1,2].includes(month)?.15:!woody&&!dormant&&scale<1?scale:1;
+ const shootScale=['vincaRunners','paniclePhlox','linariaRacemes','lamiumRunners','cloverStolons','crimsonClover','tiarellaCrowns','heucheraCrowns','ajugaMats','persicariaShoots','pelargoniumErodium','cranesbill','pulmonariaCrowns','perennialVioletShoots','softSucculents','haworthiaCrowns','ribbedSucculents','caudexPlants','agaveRosettes','stoneSucculents','necklacePlants','fleshyGardenPlants','mixedGardenPlants','lateGardenHerbs','uncommonGardenTree','marginGardenPlants','submergedShoots','forestPlants','poppyShoots','rosetteSpires','tubularHerbShoots','leycesteriaCanes','smallPeaHerbs','rhodiolaCrown','seasonalClimbers','betonyGermander','texturedMints','iberisCorymbs','astilbePlumes','aquilegiaCymes','dianthusCymes','verbenaBranches','scabiousHabit','sideritisSpikes','silverMintSpikes','marrubiumWhorls','leonotisTiers','keiskeaRacemes','isodonPanicles','chelonopsisAxils','triporaCymes','leucosceptrumSpikes','melittisAxils','puschkiniaScapes','bletillaShoots','roseaSpire','rugosaSpire','nierembergiaMat','goldenStrawberry','moonCarrot','flamingoRunners','pimpinellaRose','hairyChervil','pinkHogweed','michauxiaAxis','jasioneHeads','tracheliumCorymb','helleboreProfile','shastaAlaska','primroseRosette','gerberaRosette','brunneraSprays','tapienMat','stolonPhlox'].includes(a.architecture)||a.architecture==='beeBalm'&&a.standingWinter&&a.seedHeadMonths?.includes(month)?1:a.persistence==='semiDormant'&&a.architecture!=='beeBalm'&&[12,1,2].includes(month)?.15:!woody&&!dormant&&scale<1?scale:1;
  const headPhase=a.architecture==='berzelia'?bloom?'flower':[11,12,1,2].includes(month)?'bud':'dry':null;
  const retainedSummerLeaves=!!a.winterLeafLength&&[11,12,1,2,3].includes(month);
  if(retainedSummerLeaves)phase='春葉が落ち、小さな夏葉が冬を越す時期（地域差あり）';

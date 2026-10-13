@@ -6,10 +6,65 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint} from '../site/plant-detail.js';
+import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint} from '../site/plant-detail.js';
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Vinca keeps rooted runners, opposite variegated leaves and axillary pinwheels without inventing winter pruning',()=>{
+ const ids=['p-26ec29ba3a16','p-3b5edb11fe8a'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],a=info.appearance,p=makePlant(id,17400+i,1,1);p.height=.2;p.spread=.45;p.leafHeight=.13;
+  assert.equal(a.status,'partial');assert.equal(a.architecture,'vincaRunners');assert.equal(a.arrangement,'opposite');assert.equal(a.inflorescence,'solitary');assert.equal(info.variegated,true);
+  assert.deepEqual(a.flowerMonths,[5,6]);assert.deepEqual(info.bloom,a.flowerMonths);assert.ok(a.unconfirmed.some(x=>x.includes('実測')));assert.ok(a.unconfirmed.some(x=>x.includes('内部器官')));assert.ok(a.unconfirmed.some(x=>x.includes('消失する月')));
+  let skeleton,winterLeaves=0,summerLeaves=0;
+  const bounds=g=>{
+   for(const mesh of g.children){
+    assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.normal.array].every(Number.isFinite));
+    mesh.computeBoundingBox();for(const axis of ['x','y','z']){assert.ok(Number.isFinite(mesh.boundingBox.min[axis]));assert.ok(Number.isFinite(mesh.boundingBox.max[axis]));}
+    assert.ok(mesh.boundingBox.min.y>=-.006);assert.ok(mesh.boundingBox.max.y<=p.height*1.15);
+    assert.ok(Math.max(Math.abs(mesh.boundingBox.min.x),Math.abs(mesh.boundingBox.max.x),Math.abs(mesh.boundingBox.min.z),Math.abs(mesh.boundingBox.max.z))<p.spread*.65);
+   }
+  };
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),flowers=count('petal-vinca'),leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-vinca-'));
+   assert.equal(g.userData.architecture,'vincaRunners');assert.equal(g.scale.x,1);assert.equal(g.scale.y,1);assert.equal(seasonAt(info,month).shootScale,1);
+   assert.ok(count('stolon-vinca')>0);assert.ok(count('root-vinca')>0);assert.ok(count('shoot-vinca')>0);
+   assert.equal(flowers>0,[5,6].includes(month));assert.equal(count('tube-vinca'),flowers);assert.equal(count('pedicel-vinca'),flowers);
+   for(const mesh of leaves){assert.equal(mesh.count%2,0);assert.ok(mesh.geometry.userData.vincaLeaf);}
+   const leafCount=leaves.reduce((n,m)=>n+m.count,0);assert.ok(leafCount>0);if(month===1)winterLeaves=leafCount;if(month===6)summerLeaves=leafCount;
+   const stems=g.children.filter(m=>['stolon-vinca','shoot-vinca'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);
+   if(!skeleton)skeleton=stems;else assert.deepEqual(stems,skeleton,'the flower calendar must not prune or shrink perennial stems');
+   if([12,1,2].includes(month)){assert.match(seasonAt(info,month).phase,/参考表示.*未確認/);assert.equal(p.management,null);}
+   if(flowers){assert.ok(g.children.find(m=>m.userData.component==='petal-vinca').geometry.userData.vincaCorolla);assert.ok(!g.children.some(m=>/^(anther|stigma|style)-vinca/.test(m.userData.component)));}
+   if(i===0&&month===5){
+    const tube=g.children.find(m=>m.userData.component==='tube-vinca'),corolla=g.children.find(m=>m.userData.component==='petal-vinca'),pedicel=g.children.find(m=>m.userData.component==='pedicel-vinca');
+    tube.geometry.computeBoundingBox();pedicel.geometry.computeBoundingBox();
+    const tm=tube.instanceMatrix.array,cm=corolla.instanceMatrix.array,pm=pedicel.instanceMatrix.array,world=(mat,p)=>[0,1,2].map(k=>mat[k]*p[0]+mat[4+k]*p[1]+mat[8+k]*p[2]+mat[12+k]),near=(a,b)=>assert.ok(Math.hypot(...a.map((x,k)=>x-b[k]))<1e-7);
+    assert.equal(tube.geometry.boundingBox.min.y,0);assert.equal(tube.geometry.boundingBox.max.y,1);
+    near(world(tm,[0,tube.geometry.boundingBox.min.y,0]),world(pm,[0,pedicel.geometry.boundingBox.max.y,0]));
+    near(world(tm,[0,tube.geometry.boundingBox.max.y,0]),world(cm,[0,0,0]));
+    // Compare the actual top ring of the tube with the actual inner corolla ring.
+    const tp=tube.geometry.attributes.position,cp=corolla.geometry.attributes.position;
+    for(let j=0;j<=100;j++)near(world(tm,[tp.getX(tp.count-101+j),tp.getY(tp.count-101+j),tp.getZ(tp.count-101+j)]),world(cm,[cp.getX(j),cp.getY(j),cp.getZ(j)]));
+   }
+   bounds(g);dispose(g);
+  }
+  assert.ok(winterLeaves<summerLeaves);
+  let smallLeaves=0;
+  for(const width of [.15,.6]){
+   p.spread=width;const g=plantModel(p,view(5)),leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-vinca-')).reduce((n,m)=>n+m.count,0);
+   if(width===.15)smallLeaves=leaves;else{assert.ok(leaves>smallLeaves);assert.ok(leaves<400);}bounds(g);dispose(g);
+  }
+ }
+ // The corolla joins the tube around its full throat and sweeps to one side.
+ for(let j=0;j<=20;j++){
+  const u=j/10-1,tube=vincaPoint('vincaTube',1,u),rim=vincaPoint('vincaCorolla',0,u);
+  assert.ok(Math.hypot(tube[0]-rim[0],tube[2]-rim[2])<1e-9);assert.equal(rim[1],0);
+ }
+ const inner=vincaPoint('vincaCorolla',0,-1),tip=vincaPoint('vincaCorolla',1,-1);
+ assert.ok(tip[0]*inner[2]-tip[2]*inner[0]>.05);assert.notEqual(vincaPoint('vincaLeaf',.5,0)[2],vincaPoint('vincaLeaf',.5,.8)[2]);
+ assert.notEqual(CATALOG[ids[0]].appearance.leafPattern,CATALOG[ids[1]].appearance.leafPattern);assert.equal(CATALOG[ids[1]].height,null);
+});
 test('Panicle Phlox separates three flower colours and keeps dormant dead stems without automatic pruning',()=>{
  const ids=['p-289e28874872','p-5960a0205273','p-a80ce5615f08'];
  for(const [i,id] of ids.entries()){
@@ -2977,7 +3032,7 @@ test('peltate leaves shelter pendant flowers and ironweed never receives daisy r
 test('phlox corollas have five spreading lobes on one tube and Carex retains the correct variegation',()=>{
  const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,shape:'salver',color:'#eeeeee'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
  assert.equal(parts.filter(p=>p.shape==='petal').length,5);assert.equal(parts.filter(p=>p.shape==='tube').length,1);
- for(const info of Object.values(CATALOG).filter(p=>p.latin.startsWith('Phlox'))){assert.ok(['salver','stolonPhloxFlower'].includes(info.appearance.flowerShape));assert.equal(info.appearance.petals,5);}
+ for(const info of Object.values(CATALOG).filter(p=>p.latin.startsWith('Phlox'))){assert.ok(['salver','stolonPhloxFlower','paniclePhloxFlower'].includes(info.appearance.flowerShape));assert.equal(info.appearance.petals,5);}
  const everoro=CATALOG['p-ab429729420b'],everest=CATALOG['p-ba5a0872d571'];
  assert.equal(everoro.appearance.leafPattern,'center');assert.equal(everest.appearance.leafPattern,'margin');
  for(const info of [everoro,everest])assert.equal(seasonAt(info,1).leafDensity,1);

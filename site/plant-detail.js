@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.162';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.163';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.162';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.163';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4875,6 +4875,57 @@ function drawClover(b,{info,s,detail,rand},kit){
  }
 }
 
+// Vinca surfaces are photo-informed approximations, not measured cultivar meshes.
+export function vincaPoint(type,t,u){
+ if(type==='vincaTube'){
+  const angle=(u+1)*Math.PI,r=.09+.05*Math.pow(t,4);
+  return [Math.sin(angle)*r,t,Math.cos(angle)*r];
+ }
+ if(type==='vincaCorolla'){
+  const angle=(u+1)*Math.PI,outer=.73+.27*Math.cos(angle*5),r=.14+(outer-.14)*t,turn=angle+.53*Math.pow(t,1.3);
+  // A continuous salver has five swept lobes, instead of five round petals.
+  return [Math.sin(turn)*r,.024*t*t+.015*Math.sin(angle*5)*Math.sin(Math.PI*t),Math.cos(turn)*r];
+ }
+ const sn=Math.max(0,Math.sin(Math.PI*t)),au=Math.abs(u),width=.56*Math.pow(Math.sin((.10+.90*t)*Math.PI),.78)*(1-.30*t),vein=t-au*(.29-.10*au);
+ return [u*width,t-.10*Math.sin(au*Math.PI/2)*Math.pow(1-t,3),.09*t*t+.045*u*u*sn-.009*Math.exp(-u*u*70)*sn+.0035*Math.cos(vein*TAU*6)*au*sn];
+}
+
+function drawVinca(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.30),P=Math.min(a.petioleLength,w*.07),stem=a.stemColor;
+ const runners=Math.max(4,Math.min(16,Math.round(7*detail*Math.pow(w/.35,.8)))),nodes=Math.max(3,Math.min(9,Math.round(w/.065)));
+ const leafPair=(at,yaw,len,pitch,key)=>{
+  for(const side of [0,Math.PI]){
+   const aa=yaw+side,tip=[at[0]+Math.sin(aa)*P,at[1]+P*.35,at[2]+Math.cos(aa)*P];
+   b.branch(at,tip,.00048,stem,'petiole-vinca');
+   b.add('vincaLeaf','leaf-vinca-'+a.shootProfile+'-'+key%3,kit.shade(rand,s.leafColor,.035),...tip,len*a.leafWidth/a.leafLength,len,len,pitch+.07*Math.sin(aa*3.3),aa,.045*Math.sin(aa*5.1));
+  }
+ };
+ for(let i=0;i<runners;i++){
+  const shape=k=>.5+.5*Math.sin((i+1)*12.9898+k*7.233),angle=i*2.399963,reach=Math.max(.012,w*.47-L*.79-P),origin=[Math.sin(angle+1)*w*.035,.006,Math.cos(angle+1)*w*.035],sites=[];
+  let from=origin;
+  for(let n=1;n<=nodes;n++){
+   const t=(n+(n===nodes?0:(shape(n)-.5)*.32))/nodes,yaw=angle+.15*Math.sin(t*4+i),at=[origin[0]+Math.sin(yaw)*reach*t,.006+.003*Math.sin(t*Math.PI),origin[2]+Math.cos(yaw)*reach*t];
+   b.branch(from,at,.00105*(1-t*.32),stem,'stolon-vinca');sites.push(at);from=at;
+   if(shape(n+30)<s.leafDensity)leafPair(at,yaw+n*Math.PI/2,L*(.76+.20*t),1.20+(shape(n+50)-.5)*.18,i+n);
+   if(n%2===0)for(const side of [-1,1])b.branch(at,[at[0]+side*.002,.001,at[2]+.003],.00024,'#978069','root-vinca');
+  }
+  // Keep the same perennial skeleton in every month. Cold-region stem loss and
+  // post-flowering shoot persistence are unknown, so neither pruning nor a
+  // disappearance month is invented by the flower calendar.
+  const base=sites[Math.min(nodes-1,1+i%2)],top=h*(.60+.16*shape(60));let previous=base;
+  for(let q=1;q<=4;q++){
+   const t=q/4,yaw=angle+q*Math.PI/2,at=[base[0]+Math.sin(angle)*L*.22*t*t,base[1]+(top-base[1])*t,base[2]+Math.cos(angle)*L*.22*t*t];
+   b.branch(previous,at,.00095*(1-t*.35),stem,'shoot-vinca');previous=at;
+   const retained=shape(q+70)<s.leafDensity;
+   if(retained)leafPair(at,yaw,L*(.80-.34*t),1.11+(shape(q+90)-.5)*.18,i+q);
+   if(!s.bloom||!retained||q<2||q>3||shape(q+100)>s.flowerDensity)continue;
+   const aa=yaw+(q===2?0:Math.PI),pedicel=Math.min(.026,w*.10),tip=[at[0]+Math.sin(aa)*pedicel*.62,at[1]+pedicel,at[2]+Math.cos(aa)*pedicel*.62];
+   b.branch(at,tip,.00048,stem,'pedicel-vinca');
+   detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:a.flowerRadius,color:s.flowerColor,shape:'vincaPinwheel',palette:{length:a.flowerLength},tilt:.34+.40*shape(q+110),yaw:aa},{...kit,rand});
+  }
+ }
+}
+
 // Paniculata leaves have a midrib and lateral veins curving towards the margin.
 export function paniclePhloxPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
@@ -6352,6 +6403,13 @@ function flowerFrame(b,origin,pitch,yaw){
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ if(shape==='vincaPinwheel'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length;
+  f.add('vincaTube','tube-vinca',color,0,0,0,r,L,r);
+  f.add('vincaCorolla','petal-vinca',color,0,L,0,r,r,r);
+  // The adopted photos do not resolve reproductive organs or calyx details.
+  return;
+ }
  if(shape==='paniclePhloxFlower'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length,pk=palette.splash?'petal-phlox-picasso-'+palette.pattern:'petal-panicle-phlox';
   f.add('tube','tube-panicle-phlox',palette.tube||color,0,0,0,r*.30,L/1.09,r*.30);
@@ -8126,6 +8184,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['diphylleiaUmbrella','jeffersoniaBasal','ranzaniaTrifoliate','deinantheCymes','kirengeshomaBells','pteridophyllumFern','hylomeconPinnate','eomeconBasal','araliaHerb','saururusRaceme','parnassiaScapes','cornusHerb'].includes(info.appearance?.architecture)){drawWoodlandSpecies(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
