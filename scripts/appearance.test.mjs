@@ -10,6 +10,18 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Snow Hill uses compact domestic dimensions with white lips, green stems and small winter basal leaves',()=>{
+ const id='p-4a97a7aeca72',info=CATALOG[id];assert.deepEqual(info.height,[.2,.3]);assert.deepEqual(info.spread,[.3,.6]);assert.deepEqual(info.bloom,[5,6]);assert.equal(info.appearance.status,'partial');assert.notEqual(info.appearance.stemColor,CATALOG['p-e8a3ee532b78'].appearance.stemColor);
+ for(const [i,dimensions] of [{height:.28,spread:.45,leafHeight:.13},{height:.10,spread:.18,leafHeight:.065}].entries()){
+  let skeleton;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,20600+i,1,1),...dimensions},g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);assert.equal(g.userData.architecture,'nemorosaWhorls');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+   assert.ok(count('leaf-nemorosa-basal')>0);assert.equal(count('leaf-nemorosa')%2,0);assert.equal(count('leaf-nemorosa'),count('petiole-nemorosa'));if([12,1,2].includes(month))assert.equal(count('leaf-nemorosa'),0);assert.equal(count('tube-nemorosa')>0,[5,6].includes(month));assert.equal(count('tube-nemorosa'),count('petal-nemorosa-upper'));assert.equal(count('petal-nemorosa-upper'),count('petal-nemorosa-lower'));
+   const now=g.children.filter(m=>['stem-nemorosa','raceme-nemorosa'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.65);}dispose(g);
+  }
+ }
+});
 test('Mexican sage preserves source-specific calyx and corolla colours, curved canes and contrasting winter conditions',()=>{
  const ids=['p-b9522652b263','p-999eb18d45d6','p-dd06812f8866'];assert.deepEqual(CATALOG[ids[0]].spread,[.8,1.5]);assert.equal(CATALOG[ids[1]].spread,null);assert.equal(CATALOG[ids[2]].spread,null);
  for(const [i,id] of ids.entries())for(const small of [false,true]){

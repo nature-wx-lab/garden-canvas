@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.195';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.196';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.195';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.196';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5925,17 +5925,17 @@ export function nemorosaPoint(type,t,u){
 
 function drawNemorosa(b,{info,s,detail,rand,month},kit){
  if(s.groundDormant)return;
- const a=info.appearance,w=s.spread,h=s.height,winter=[12,1,2].includes(month),caradonna=a.shootProfile==='caradonna';
+ const a=info.appearance,w=s.spread,h=s.height,winter=[12,1,2].includes(month),caradonna=a.shootProfile==='caradonna',snowHill=a.shootProfile==='snowHill';
  const L=Math.min(a.leafLength,w*.28),n=Math.max(6,Math.min(28,Math.round(17*detail*Math.pow(w/.4,.78))));
- const dry=winter||month>=10,stem=dry?a.winterStemColor:a.stemColor,flowerR=a.flowerRadius;
+ const dry=winter||month>=10,stem=dry?a.winterStemColor:a.stemColor,flowerR=snowHill?Math.min(a.flowerRadius,h*.03):a.flowerRadius,flowerLen=snowHill?Math.min(a.flowerLength,h*.075):a.flowerLength;
  const blade=(at,yaw,len,pitch,basal=false)=>b.add('nemorosaLeaf',basal?'leaf-nemorosa-basal':'leaf-nemorosa',kit.shade(rand,s.leafColor,.040),...at,len*a.leafWidth/a.leafLength,len,len,pitch,yaw,(rand()-.5)*.12);
  for(let i=0;i<n;i++){
   const angle=i*2.399963,reach=Math.max(0,w*.44-L*.78)*Math.sqrt((i+.5)/n),root=[Math.sin(angle)*reach,.006,Math.cos(angle)*reach];
   const shape=k=>.5+.5*Math.sin((i+1)*12.9898+k*7.233),top=h*(.77+.19*shape(2));
   const axis=t=>[root[0]+Math.sin(angle)*w*.035*t*t,root[1]+(top-root[1])*t,root[2]+Math.cos(angle)*w*.035*t*t];
-  // A few basal leaves can remain in the grower's semi-evergreen Caradonna.
+  // A few basal leaves can remain in the grower's semi-evergreen cultivars.
   // The old flowering axes are not scaled into these small winter leaves.
-  const basal=Math.round((winter?caradonna?2:0:4)*detail);
+  const basal=Math.round((winter?(caradonna||snowHill)?2:0:4)*detail);
   for(let j=0;j<basal;j++)blade(root,angle+j*2.399963,L*(winter?.40:.80),.65+j*.17,true);
   let from=root;
   for(let j=1;j<=7;j++){
@@ -5948,7 +5948,7 @@ function drawNemorosa(b,{info,s,detail,rand,month},kit){
     }
    }
   }
-  const floralStart=.59,whorls=Math.max(14,Math.min(30,Math.round(top*.41/.012))),calyx=dry?'#836e58':caradonna?'#803e62':'#687456';
+  const floralStart=.59,whorls=snowHill?Math.max(8,Math.min(26,Math.round(top*.41/.006))):Math.max(14,Math.min(30,Math.round(top*.41/.012))),calyx=dry?'#836e58':caradonna?'#803e62':snowHill?'#97a67d':'#687456';
   for(let j=0;j<whorls;j++){
    const t=(j+.4)/whorls,at=axis(floralStart+(1-floralStart)*t);b.branch(from,at,.0010*(1-.48*t),stem,'raceme-nemorosa');from=at;
    const yaw=angle+j*Math.PI/2;
@@ -5958,7 +5958,7 @@ function drawNemorosa(b,{info,s,detail,rand,month},kit){
     for(let k=0;k<3;k++){
      const an=az+(k-1)*.47,tip=[at[0]+Math.sin(an)*.0014,at[1]+(k-1)*.0008,at[2]+Math.cos(an)*.0014];
      b.branch(at,tip,.00019,stem,'pedicel-nemorosa');
-     const f=flowerFrame(b,tip,1.03+.18*shape(j*7+k+70),an),r=flowerR*(.85+.15*(1-t)),tube=a.flowerLength*.56;
+     const f=flowerFrame(b,tip,1.03+.18*shape(j*7+k+70),an),r=flowerR*(.85+.15*(1-t)),tube=flowerLen*.56;
      f.add('nemorosaCalyx','calyx-nemorosa',calyx,0,0,0,r,tube*.63,r);
      // The uppermost whorls are buds, while lower whorls may already be spent.
      // No seed set or reproductive-organ counts are inferred from these photos.
@@ -5966,8 +5966,8 @@ function drawNemorosa(b,{info,s,detail,rand,month},kit){
      if(t>.87){f.add(kit.bud,'bud-nemorosa',calyx,0,tube*.60,0,r*.22,tube*.43,r*.22);continue;}
      if(t<.14&&j%2===0||shape(j*13+k+side+110)>s.flowerDensity)continue;
      f.add('nemorosaTube','tube-nemorosa',s.flowerColor,0,0,0,r,tube,r);
-     f.add('nemorosaHood','petal-nemorosa-upper',s.flowerColor,0,tube,0,r,a.flowerLength*.40,r);
-     f.add('nemorosaLip','petal-nemorosa-lower',s.flowerColor,0,tube,0,r*1.45,a.flowerLength*.38,r,1.42,0,0);
+     f.add('nemorosaHood','petal-nemorosa-upper',s.flowerColor,0,tube,0,r,flowerLen*.40,r);
+     f.add('nemorosaLip','petal-nemorosa-lower',s.flowerColor,0,tube,0,r*1.45,flowerLen*.38,r,1.42,0,0);
     }
    }
   }
