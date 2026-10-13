@@ -1,7 +1,7 @@
-import { EXPANDED_CATALOG, BASE_POPULARITY, RETIRED_GARDEN_PLANTS } from './catalog-data.js?v=0.9.172';
-import {attachAppearance} from './appearance.js?v=0.9.172';
+import { EXPANDED_CATALOG, BASE_POPULARITY, RETIRED_GARDEN_PLANTS } from './catalog-data.js?v=0.9.173';
+import {attachAppearance} from './appearance.js?v=0.9.173';
 // Public botanical facts; monthly boundaries and procedural geometry are display conventions.
-export const CATALOG_VERSION='2026-10-13.16';
+export const CATALOG_VERSION='2026-10-13.17';
 const nc='https://plants.ces.ncsu.edu/plants/';
 const mo='https://plantfinder.mobot.org/PlantFinderDetails.aspx?taxonid=';
 const BASE_CATALOG={
@@ -11,13 +11,14 @@ const BASE_CATALOG={
  hydrangea:{label:'ノリウツギ ライムライト',latin:"Hydrangea paniculata 'Limelight'",form:'hydrangea',group:'低木',leaf:'deciduous',height:[1.83,2.44],spread:[1.83,2.44],bloom:[8,9,10],flower:'#dde6b2',sun:['sun','part'],moisture:['moist'],growth:'中程度（年次量は未確認）',season:'晩夏の淡緑の花からピンクへ',care:'当年枝に咲きます。剪定の目安は冬の終わり〜春。適度な土壌水分を保ち、強風には注意。',source:nc+'hydrangea-paniculata-limelight/',publisher:'NC State Extension',bloomText:'資料は晩夏に咲きピンクへ変化。表示は8〜10月。'},
  salvia:{label:'サルビア・ネモローサ',latin:'Salvia nemorosa',form:'spike',group:'宿根草',leaf:'herb',life:'perennial',colors:['purple','blue'],height:[.46,.91],spread:[.15,.61],bloom:[6,7,8,9],flower:'#6e54a2',sun:['sun','part'],moisture:['drained','moist'],growth:'年次の株幅データは未確認',season:'対生するしわのある葉と、輪状に小花を集める青紫の花穂',care:'花茎が褐色になったら株元の葉まで切り戻すと再開花することがあります。再開花時期の自動予測はしません。',source:nc+'salvia-nemorosa/',publisher:'NC State Extension',bloomText:'資料で6〜9月。品種指定なし。'},
  echinacea:{label:'エキナセア マグナス',latin:"Echinacea purpurea 'Magnus'",form:'daisy',group:'宿根草',leaf:'herb',height:[.76,.91],spread:[.30,.46],bloom:[6,7,8],flower:'#c87c9d',sun:['sun','part'],moisture:['drained','moist'],growth:'RHSの成株到達目安2〜5年。年ごとの寸法は未確認',season:'ピンクの花・冬の種子頭',care:'混み合った株は分割を検討。種子頭を残す冬景色と花がら摘みの両方を選べます。',source:mo+'245977',publisher:'Missouri Botanical Garden',growthSource:'https://www.rhs.org.uk/plants/97560/echinacea-purpurea-magnus/details',bloomText:'資料で6〜8月。花後の種子頭を冬まで残す表現。'},
- lavender:{label:'ラベンダー ヒドコート',latin:"Lavandula angustifolia 'Hidcote'",form:'lavender',group:'小低木',leaf:'semi',height:[.30,.46],spread:[.30,.46],bloom:[6,7,8],flower:'#8461ab',sun:['sun'],moisture:['drained'],growth:'年次の株幅データは未確認',season:'紫の花穂・灰緑の細葉',care:'排水のよい土と日なたを好みます。高温多湿や冬の過湿に注意。暖地では常緑ですが、冬の状態は地域差があります。',source:mo+'249421',publisher:'Missouri Botanical Garden',bloomText:'資料で6〜8月。掲載寸法表を採用、説明本文ではやや大きい例もあります。'},
+ lavender:{label:'ラベンダー ヒドコート',latin:"Lavandula angustifolia 'Hidcote'",form:'botanical',group:'小低木',leaf:'evergreen',height:[.30,.46],spread:[.30,.46],bloom:[6,7],flower:'#63468e',leafColor:'#81927b',sun:['sun'],moisture:['drained'],growth:'年次の株幅データは未確認',season:'紫の花穂・灰緑の細葉',care:'排水のよい土と日なたを好みます。高温多湿や冬の過湿に注意。暖地では常緑ですが、冬の状態は地域差があります。',source:mo+'249421',publisher:'Missouri Botanical Garden',bloomText:'国内販売元では自然環境下6〜7月。温室で5月開花の促成株とは分けます。寸法は既存のMissouri Botanical Garden掲載表による。'},
  hosta:{label:'ギボウシ エレガンス',latin:"Hosta sieboldiana 'Elegans'",form:'hosta',group:'宿根草',leaf:'herb',height:[.61,.91],spread:[.91,1.22],bloom:[5,6,7],flower:'#ece8ee',sun:['part','shade'],moisture:['moist'],growth:'ゆっくり成株へ（複数年。年ごとの寸法は未確認）',season:'青緑の大きな葉・白い花',care:'半日陰〜日陰で適度な湿りを好みます。株分けは春または秋、春の展葉前が扱いやすいとされます。',source:mo+'248947',publisher:'Missouri Botanical Garden',bloomText:'資料で5〜7月。冬は地上部休眠の参考表現。'},
  grass:{label:'パニカム ヘビーメタル',latin:"Panicum virgatum 'Heavy Metal'",form:'grass',group:'グラス',leaf:'grass',height:[1.22,1.52],spread:[.30,.61],bloom:[7,8,9],flower:'#bb9f9d',sun:['sun','part'],moisture:['moist','drained'],growth:'株立ちし、地下茎で緩やかに広がる。年次数値なし',season:'青灰色の葉・秋冬の穂',care:'冬の終わり〜早春に地際で切り戻す方法。日陰が強いと倒れやすくなります。',source:mo+'251778',publisher:'Missouri Botanical Garden',bloomText:'資料の7〜2月は穂の観賞期を含む。開花表示7〜9月、枯れ穂10〜2月。'},
  sedum:{label:'オータムジョイ',latin:"Hylotelephium 'Herbstfreude'",form:'sedum',group:'宿根草',leaf:'herb',height:[.46,.61],spread:[.46,.61],bloom:[9,10],flower:'#b66b7c',sun:['sun'],moisture:['drained'],growth:'年次の株幅データは未確認',season:'多肉質の葉・秋の平たい花房',care:'排水のよい土と日なたを好みます。多肥や日陰では倒れやすくなります。株分けは春が参考時期。',source:mo+'249042',publisher:'Missouri Botanical Garden',bloomText:'資料で9〜10月。冬は枯れた花房を残す参考表現。'}
 };
 const baseGenres={maple:'庭木',olive:'庭木',rose:'バラ',hydrangea:'庭木',salvia:'宿根草',echinacea:'宿根草',lavender:'宿根草',hosta:'カラーリーフ',grass:'カラーリーフ',sedum:'多肉'};
 for(const [key,p] of Object.entries(BASE_CATALOG))Object.assign(p,{genre:baseGenres[key],aliases:[],colors:[key==='rose'?'pink':'unknown'],visual:'reference',bloomKnown:!!p.bloom.length,sourceChecked:'2026-10-09'});
+BASE_CATALOG.lavender.colors=['purple'];
 BASE_CATALOG.sedum.gardenUse={climate:'frost-lowland',basis:'NC State Extensionが耐寒性区分3a〜10bの宿根草として記載。',conditions:'日なたと排水のよい土。湿りすぎる土と多肥を避けます。',source:'https://plants.ces.ncsu.edu/plants/hylotelephium-spectabile-autumn-joy/',checked:'2026-10-11'};
 export const CATALOG=attachAppearance({...BASE_CATALOG,...EXPANDED_CATALOG});
 for(const [id,items] of Object.entries(BASE_POPULARITY))if(CATALOG[id])CATALOG[id].popularity=items;

@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.172';
+import {treeProfile} from './tree-profiles.js?v=0.9.173';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -129,6 +129,7 @@ export function seasonAt(info,month){
   scale=1;
   phase=[12,1,2].includes(month)?'冬の枯れ茎の参考表示（残存量・月境界・株元葉は未確認）':month<6?'対生葉と直立茎の展開（芽出し月・伸長量は参考）':'直立する株と枝分かれした花序（花期は国内資料・葉量は参考）';
  }
+ if(a.architecture==='lavenderMounds'){scale=1;phase=[12,1,2].includes(month)?'冬の常緑葉と残した花茎（残葉・枯れ穂の量は参考）':'細い対生葉と長い花茎（花後の剪定・二番花は未予測）';}
  if(a.architecture==='chocolateCosmos'){scale=1;phase=density===0?'地上部が枯れた冬の参考（防寒・枯れ茎の残存期間は別条件）':'低い葉群と長い花茎（花期・葉量は地域と管理で変化）';}
  if(a.architecture==='silverDropJuvenile'){scale=1;phase='銀青色の対生する幼葉の参考（成木葉への移行・寒害は未予測）';}
  if(a.architecture==='autumnAnemone'){
