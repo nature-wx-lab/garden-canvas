@@ -10,6 +10,18 @@ import {detailedFlower,drawDetailedHerb,coniferShootGeometry,CONIFER_SHOOTS,hama
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Dichondra types retain connected runners and distinguish flat silver from green kidney leaves',()=>{
+ const ids=['p-2a0099e60c2c','p-ad983784e4e8','p-cc0ca92066be'];
+ for(const [i,id] of ids.entries()){
+  const info=CATALOG[id],p={...makePlant(id,19500+i,1,1),height:i===0?.045:i===1?.10:.08,spread:.45,leafHeight:i===0?.04:.07};assert.equal(info.appearance.status,'partial');assert.equal(info.spread,null);assert.equal(info.appearance.habit,'creeping');assert.notEqual(info.appearance.leafRelief,'ruffled');let axes,summer,winter;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),leaf=g.children.find(m=>m.userData.component===(i===2?'leaf-dichondra-silver':'leaf-dichondra-green'));assert.equal(g.userData.architecture,'dichondraMat');assert.equal(g.scale.y,1);assert.ok(leaf.count>100);assert.equal(g.children.some(m=>m.userData.component==='floret-dichondra'),i===1&&[5,6].includes(month));assert.ok(g.children.some(m=>m.userData.component==='root'));assert.ok(!g.children.some(m=>/fruit|seed|wood/.test(m.userData.component)));const runners=g.children.find(m=>m.userData.component==='runner-dichondra');if(axes)assert.deepEqual([...runners.instanceMatrix.array],axes);else axes=[...runners.instanceMatrix.array];if(month===1)winter=leaf.count;if(month===6)summer=leaf.count;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.008);assert.ok(m.boundingBox.max.y<p.height*1.12);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.55);}dispose(g);
+  }
+  assert.ok(winter<summer);
+ }
+ const g=plantModel({...makePlant(ids[2],19503,1,1),height:.03,spread:.18,leafHeight:.025},view(6));for(const m of g.children){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<.034);assert.ok(m.boundingBox.min.y>=-.008);}dispose(g);
+});
 test('Helichrysum cultivars distinguish white linear and broad silver leaves with retained flower axes',()=>{
  const ids=['p-76235859d2d2','p-c8fa64c45209'];
  for(const [i,id] of ids.entries()){
