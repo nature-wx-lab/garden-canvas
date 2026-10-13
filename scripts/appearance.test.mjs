@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Walker catmints retain compact cultivar proportions, crenate leaves and basal winter buds with sterile flowers',()=>{
+ const ids=['p-14d3cdbb072b','p-a038f7c571ba'];
+ for(const [i,id]of ids.entries())for(const small of [false,true]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,i?[.2,.3]:[.3,.5]);assert.deepEqual(info.spread,i?[.3,.5]:[.5,.8]);let skeleton,winter,summer;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,22900+i,1,1),height:small?.10:i?.25:.4,spread:small?.16:i?.4:.65,leafHeight:small?.06:i?.15:.24},g=plantModel(p,view(month));assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);assert.equal(g.userData.architecture,'catmintMounds');
+   const leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-catmint')),count=leaves.reduce((n,m)=>n+m.count,0);assert.ok(count>0);assert.equal(count%2,0);assert.ok(leaves.every(m=>m.geometry.userData.catmintLeaf));assert.equal(count,g.children.filter(m=>m.userData.component.startsWith('petiole-catmint')).reduce((n,m)=>n+m.count,0));if(month===1)winter=count;if(month===6)summer=count;
+   const flowers=g.children.find(m=>m.userData.component==='tube-catmint');assert.equal(!!flowers,month>=5&&month<=11);if(flowers){assert.equal(g.children.find(m=>m.userData.component==='filament-catmint').count,flowers.count*4);assert.ok(g.children.find(m=>m.userData.component==='calyx-catmint').count>flowers.count);}assert.equal(g.children.some(m=>m.userData.component==='leaf-catmint-winter'),[12,1,2].includes(month));assert.ok(!g.children.some(m=>/fruit|seed|stolon/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(stem|branch|axis)-catmint$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.15);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75);}dispose(g);
+  }
+  assert.ok(winter<summer*.15);
+ }
+});
 test('Apache Sunset and Globetrotter separate fine grey foliage from broad leaves and tapered purple spikes',()=>{
  const ids=['p-9ddc79809c90','p-dbbbc74d595c'];assert.deepEqual(CATALOG[ids[0]].height,[.4,.6]);assert.deepEqual(CATALOG[ids[1]].height,[.6,1]);assert.deepEqual(CATALOG[ids[1]].bloom,[6,7,8,9]);
  for(const [i,id] of ids.entries())for(const small of [false,true]){
