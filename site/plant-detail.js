@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.246';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.247';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.246';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.247';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5022,6 +5022,50 @@ export function paniclePhloxPoint(type,t,u){
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
 }
 
+
+// Dropwort keeps finely divided basal rosettes below sparsely leaved flowering stems.
+export function dropwortPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='dropwortTerminal'){const az=u*2.30,near=Math.min(...[-1.02,0,1.02].map(a=>Math.abs(az-a))),r=(.25+.75*Math.max(0,1-near/.75)**.70)*(1-.17*(.5+.5*Math.cos(az*37)))*t;return [Math.sin(az)*r*.48,(.18+Math.cos(az)*r*.82)*t,.035*t*t];}
+ const edge=.54+.46*(.5+.5*Math.cos(t*TAU*9))**.5;return [u*.5*sn**.8*edge,t,.07*t*t+.03*u*u*sn-.01*Math.exp(-u*u*40)*sn];
+}
+export function dropwortDoubleGeometry(){
+ const pos=[],uv=[],ix=[];
+ for(let layer=0;layer<4;layer++)for(let j=0;j<6;j++){
+  const az=j*TAU/6+layer*.51,scale=1-layer*.17,base=pos.length/3,rows=8,cols=6;
+  for(let i=0;i<=rows;i++)for(let k=0;k<=cols;k++){const t=i/rows,u=k/cols*2-1,x=u*.26*Math.sin(Math.PI*t)**.48*scale,z=(.09+t)*scale,y=.08+layer*.13+.11*u*u*t+.33*t*t*layer/3;pos.push(x*Math.cos(az)+z*Math.sin(az),y,-x*Math.sin(az)+z*Math.cos(az));uv.push(k/cols,t);if(i<rows&&k<cols){const n=base+i*(cols+1)+k;ix.push(n,n+cols+1,n+1,n+1,n+cols+1,n+cols+2);}}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.dropwortDouble=true;g.userData.organCount=24;return g;
+}
+function drawDropwort(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,size=Math.min(1,h/.45,w/.25),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor,n=Math.max(3,Math.min(7,Math.round(5*detail*Math.sqrt(w/.25))));
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const leaf=(at,az,i,scale,basal)=>{
+  const len=L*scale,tip=[at[0]+Math.sin(az)*len,at[1]+len*(basal?.20:.32),at[2]+Math.cos(az)*len],shade=kit.shade(rand,s.leafColor,.045);
+  b.branch(at,tip,.00045*size*scale,stem,'rachis-dropwort');flowerFrame(b,tip,1.12,az).add('dropwortTerminal','leaf-dropwort-terminal',shade,0,0,0,W*scale*1.8,W*scale*2.4,W*scale*2.4);
+  for(let j=0;j<13;j++)for(let side=0;side<2;side++){
+   const t=.12+j*.063,p=mix(at,tip,t),aa=az+(side?1:-1)*(1.12+.10*noise(i,j)),q=scale*(.63+.37*Math.sin(Math.PI*t));flowerFrame(b,p,1.08,aa).add('dropwortSide','leaf-dropwort-side',shade,0,0,0,W*q,W*q*2.3,W*q*2.3);
+  }
+ };
+ const basalCount=Math.max(1,Math.ceil(20*detail*s.leafDensity));
+ for(let j=0;j<basalCount;j++){const az=j*2.399963+.24*(noise(j,9)-.5),rr=w*.09*noise(j,1),p=[Math.sin(az)*rr,.009+size*.008*noise(j,3),Math.cos(az)*rr];leaf(p,az,j,.70+.30*noise(j,7),true);}
+ const head=(base,az,i,k,scale=1)=>{
+  const r=.042*size*scale;
+  for(let c=0;c<6;c++){
+   const aa=az+c*2.399963,t=(c+.4)/6,tip=[base[0]+Math.sin(aa)*r*(1-t*.4),base[1]+r*(.6+.7*t),base[2]+Math.cos(aa)*r*(1-t*.4)];b.branch(base,tip,.00065*size*scale,stem,'panicle-dropwort');
+   for(let j=0;j<7;j++){
+    if(!s.bloom||noise(i,k+c*90+j*7)>s.flowerDensity)continue;const ba=aa+j*2.4,rr=r*.36*Math.sqrt((j+.3)/7),p=[tip[0]+Math.sin(ba)*rr,tip[1]+r*.25*noise(i,k+c*43+j*5),tip[2]+Math.cos(ba)*rr];b.branch(tip,p,.0002*size,stem,'flower-stalk-dropwort');const f=flowerFrame(b,p,.2+.7*noise(i,k+c*39+j),ba);
+    if(noise(i,k+c*23+j*89)>.84){f.add(kit.bud,'bud-dropwort',a.budColor,0,0,0,R*.42,R*.48,R*.42);continue;}
+    f.add('filipendulaCalyx6','calyx-dropwort',a.flowerPalette.calyx,0,0,0,R,R,R);f.add('dropwortDouble','petal-dropwort',kit.shade(rand,s.flowerColor,.025),0,0,0,R,R,R);
+   }
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.17*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.30,.007,Math.cos(az)*rr*.30],top=[Math.sin(az)*rr,h*(.78+.08*noise(i,1)),Math.cos(az)*rr];b.branch(root,top,.0014*size,stem,'stem-dropwort');
+  for(let j=1;j<=3;j++){const at=mix(root,top,.16+j*.15);if(!winter&&noise(i,j*43)<s.leafDensity)leaf(at,az+j*2.4,i+j*70,.48-j*.075,false);}
+  head(top,az,i,10000);const at=mix(root,top,.80),aa=az+1.4,end=[at[0]+Math.sin(aa)*w*.13,at[1]+h*.055,at[2]+Math.cos(aa)*w*.13];b.branch(at,end,.0008*size,stem,'branch-dropwort');head(end,aa,i,20000,.72);
+ }
+}
 
 // Ulmaria has interrupted pinnate leaves, unlike the palmately lobed Red Umbrellas.
 export function ulmariaPoint(type,t,u){
@@ -10972,6 +11016,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='dropwortRosettes'){drawDropwort(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='ulmariaSprays'){drawUlmaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='filipendulaSprays'){drawFilipendula(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='gilleniaSprays'){drawGillenia(b,{info,s,detail,rand,month},kit);return;}

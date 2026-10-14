@@ -10,6 +10,19 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Dropwort keeps finely divided basal leaves, sparse stem leaves and narrow double florets',()=>{
+ const id='p-cc27d147a2c1',info=CATALOG[id];assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.4,.6]);assert.deepEqual(info.spread,[.2,.3]);
+ for(const small of [false,true]){let skeleton,winterLeaves,summerLeaves;const p={...makePlant(id,25700+Number(small),1,1),height:small?.2:.6,spread:small?.16:.3,leafHeight:small?.06:.16};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),winter=[12,1,2].includes(month);assert.equal(g.userData.architecture,'dropwortRosettes');assert.equal(stateAt(p,view(month)).shootScale,1);
+   const terminal=g.children.find(m=>m.userData.component==='leaf-dropwort-terminal'),side=g.children.find(m=>m.userData.component==='leaf-dropwort-side');assert.ok(terminal.geometry.userData.dropwortTerminal);assert.ok(side.geometry.userData.dropwortSide);assert.equal(side.count,terminal.count*26);if(month===1)winterLeaves=terminal.count;if(month===5)summerLeaves=terminal.count;
+   const petals=g.children.find(m=>m.userData.component==='petal-dropwort');assert.equal(!!petals,[5,6].includes(month));if(petals){assert.equal(petals.geometry.userData.organCount,24);const calyx=g.children.find(m=>m.userData.component==='calyx-dropwort');assert.equal(calyx.geometry.userData.organCount,6);assert.equal(calyx.count,petals.count);}
+   assert.ok(!g.children.some(m=>/fruit|seed|anther|filament/.test(m.userData.component)));if(winter)assert.match(seasonAt(info,month).phase,/成株写真/);
+   const axes=g.children.filter(m=>/^(stem|branch|panicle)-dropwort$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.2,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.9,m.userData.component);}dispose(g);
+  }assert.ok(winterLeaves>0&&winterLeaves<summerLeaves);
+ }
+});
 test('Ulmaria distinguishes gold and central-variegated compound foliage from double white florets',()=>{
  for(const [i,id,profile] of [[0,'p-73ffd9632430','aurea'],[1,'p-f867a7522037','variegata'],[2,'p-bda4158c2e9b','flore']]){
   const info=CATALOG[id];assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.colors,['white']);assert.equal(info.variegated,i===1);
