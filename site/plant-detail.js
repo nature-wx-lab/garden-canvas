@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.244';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.245';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.244';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.245';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5022,6 +5022,57 @@ export function paniclePhloxPoint(type,t,u){
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
 }
 
+
+// Meadowsweet florets share immutable organ meshes to keep dense sprays responsive.
+export function filipendulaPoint(type,t,u){
+ const broad=type==='filipendulaKahome',rubra=type==='filipendulaRubra',angles=rubra?[-2.45,-1.7,-.85,0,.85,1.7,2.45]:[-2.12,-1.06,0,1.06,2.12],az=u*(rubra?2.83:2.70),near=Math.min(...angles.map(x=>Math.abs(az-x))),base=broad?.42:.20,tip=base+(1-base)*Math.pow(Math.max(0,1-near/(broad?.70:.63)),.90),side=1-.08*(.5+.5*Math.cos(az*124))-.045*(.5+.5*Math.cos(az*248)),r=tip*side*t;
+ return [Math.sin(az)*r*.55,(.20+Math.cos(az)*tip*.80)*t,.04*t*t+.028*Math.cos(az*angles.length)*t];
+}
+export function filipendulaFloretGeometry(part){
+ const pos=[],uv=[],ix=[],append=(g,m)=>{const p=g.attributes.position,base=pos.length/3,v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(m);pos.push(v.x,v.y,v.z);uv.push(g.attributes.uv?.getX(i)??.5,g.attributes.uv?.getY(i)??.5);}if(g.index)for(const n of g.index.array)ix.push(base+n);else for(let i=0;i<p.count;i++)ix.push(base+i);g.dispose();},o=new THREE.Object3D();
+ if(part==='petals'){
+  for(let j=0;j<5;j++){const az=j*TAU/5,rows=6,cols=4,base=pos.length/3;
+   for(let i=0;i<=rows;i++)for(let k=0;k<=cols;k++){const t=i/rows,u=k/cols*2-1,x=u*.40*Math.pow(Math.sin(Math.PI*t),.42)*(.5+.5*t),z=.12+t;pos.push(x*Math.cos(az)+z*Math.sin(az),.17+.17*u*u*t+.13*t*t,-x*Math.sin(az)+z*Math.cos(az));uv.push(k/cols,t);if(i<rows&&k<cols){const n=base+i*(cols+1)+k;ix.push(n,n+cols+1,n+1,n+1,n+cols+1,n+cols+2);}}
+  }
+ }else if(part.startsWith('calyx')){
+  const count=Number(part.slice(5)),rows=4,cols=20;
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){const t=i/rows,az=j/cols*TAU,r=.20+.28*t,yy=-.45+.62*t+.15*Math.cos(az*count)*t**8;pos.push(Math.sin(az)*r,yy,Math.cos(az)*r);uv.push(j/cols,t);if(i<rows&&j<cols){const n=i*(cols+1)+j;ix.push(n,n+1,n+cols+1,n+1,n+cols+2,n+cols+1);}}
+ }else{
+  const count=part.endsWith('50')?50:30;
+  for(let j=0;j<count;j++){const az=j*2.399963,lean=.50+.58*(j%5)/4,tip=new THREE.Vector3(Math.sin(az)*lean,1.0+.60*((j*7)%11)/10,Math.cos(az)*lean),root=new THREE.Vector3(Math.sin(az)*.18,.16,Math.cos(az)*.18);
+   if(part.startsWith('stamens')){const d=tip.clone().sub(root);o.position.copy(root).addScaledVector(d,.5);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize());o.scale.set(1,1,1);o.updateMatrix();append(new THREE.CylinderGeometry(.018,.022,d.length(),3,1,true),o.matrix);}
+   else{o.position.copy(tip);o.quaternion.identity();o.scale.set(.062,.085,.062);o.updateMatrix();append(new THREE.TetrahedronGeometry(1,0),o.matrix);}
+  }
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.filipendulaFloret=part;g.userData.organCount=part==='petals'?5:part.startsWith('calyx')?Number(part.slice(5)):part.endsWith('50')?50:30;return g;
+}
+function drawFilipendula(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,profile=a.shootProfile,red=profile==='red',tall=profile==='venusta',size=Math.min(1,h/(tall?1.3:red?.32:.24),w/(tall?.7:.35)),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,H=a.headRadius*size,n=Math.max(3,Math.min(13,Math.round((tall?7:10)*detail*Math.sqrt(w/(tall?.9:.45))))),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),leafShape=red?'filipendulaRed':tall?'filipendulaRubra':'filipendulaKahome';
+ const leaf=(at,az,i,k,scale=1)=>{
+  if(noise(i,k+700)>s.leafDensity)return;const pet=L*(red?.75:.70)*scale,end=[at[0]+Math.sin(az)*pet,at[1]+pet*.18,at[2]+Math.cos(az)*pet];b.branch(at,end,.00065*size*scale,stem,'petiole-filipendula');const frame=flowerFrame(b,end,.90+.20*noise(i,k+20),az),color=kit.shade(rand,s.leafColor,.035);
+  frame.add(leafShape,'leaf-filipendula-'+profile,color,0,0,0,W*scale,L*scale,L*scale);
+  if(!red)for(let pair=0;pair<(tall?2:1);pair++)for(let side=0;side<2;side++){const pt=mix(at,end,.28+pair*.28),aa=az+(side?1:-1)*1.02;flowerFrame(b,pt,1.12,aa).add('filipendulaKahome','leaflet-filipendula-'+profile,color,0,0,0,W*scale*.32,L*scale*.32,L*scale*.32);}
+ };
+ const head=(base,az,i,k,scale=1)=>{
+  const r=H*scale,clusters=tall?15:10,flowersPer=red?(scale<1?15:35):tall?45:20;
+  for(let c=0;c<clusters;c++){const aa=az+c*2.399963,rr=r*.72*Math.sqrt((c+.4)/clusters),branch=[base[0]+Math.sin(aa)*rr,base[1]+r*(.22+.75*noise(i,k+c+20)),base[2]+Math.cos(aa)*rr];b.branch(base,branch,Math.min(.00055,h*.002)*scale,stem,'panicle-filipendula');
+   for(let j=0;j<flowersPer;j++){const ba=aa+j*2.4,dd=r*.22*Math.sqrt((j+.2)/flowersPer),tip=[branch[0]+Math.sin(ba)*dd,branch[1]+r*(.05+.15*noise(i,k+j*3+c*71)),branch[2]+Math.cos(ba)*dd];
+    if(!s.bloom||noise(i,k+c*700+j*10+900)>s.flowerDensity)continue;b.branch(branch,tip,.00015*size,stem,'flower-stalk-filipendula');const f=flowerFrame(b,tip,.2+.80*noise(i,k+j+c*43),ba);
+    if(noise(i,k+c*230+j*21)>.86){f.add(kit.bud,'bud-filipendula',a.budColor,0,0,0,R*.42,R*.48,R*.42);continue;}
+    f.add('filipendulaCalyx'+(red?'4':'5'),'calyx-filipendula',a.flowerPalette.calyx,0,0,0,R,R,R);
+    f.add('filipendulaPetals','petal-filipendula',kit.shade(rand,s.flowerColor,.035),0,0,0,R,R,R);
+    const count=red?'50':'30';f.add('filipendulaStamens'+count,'filament-filipendula',a.flowerPalette.filament,0,0,0,R,R,R);f.add('filipendulaAnthers'+count,'anther-filipendula',a.flowerPalette.anther,0,0,0,R,R,R);
+   }
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.20*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.4,.006,Math.cos(az)*rr*.4],top=[Math.sin(az)*rr,h*(.64+.11*noise(i,1)),Math.cos(az)*rr];let prev=root;
+  for(let j=1;j<=6;j++){const at=mix(root,top,(j-.28+.28*noise(i,j*71))/6);b.branch(prev,at,Math.min(.0025,h*.006)*(1-j*.06),stem,'stem-filipendula');prev=at;leaf(at,az+j*2.4+.28*noise(i,j*31),i,j*300,1-j*.065);}
+  head(top,az,i,10000,1);
+  for(let j=0;j<(tall?2:1);j++){const at=mix(root,top,.62+j*.13),aa=az+(j?1:-1)*1.3,end=[at[0]+Math.sin(aa)*w*.14,at[1]+h*.13,at[2]+Math.cos(aa)*w*.14];b.branch(at,end,Math.min(.0012,h*.003),stem,'branch-filipendula');leaf(mix(at,end,.6),aa,i,8000+j*300,.48);head(end,aa,i,20000+j*17000,red?.62:.68);}
+ }
+}
 
 // Gillenia has alternate trifoliate leaves and five unequal, lightly twisted petals.
 export function gilleniaPoint(type,t,u){
@@ -10874,6 +10925,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='filipendulaSprays'){drawFilipendula(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='gilleniaSprays'){drawGillenia(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='fireflyCymes'){drawFirefly(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='snowtipMat'){drawSnowtip(b,{info,s,detail,rand,month},kit);return;}

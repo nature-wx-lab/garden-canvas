@@ -10,6 +10,23 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Filipendula cultivars retain distinct palmate foliage, dense small flowers and fixed winter axes',()=>{
+ for(const [i,id,profile] of [[0,'p-9da9ae974d23','red'],[1,'p-1d33caa2dca3','kahome'],[2,'p-f46885585fbd','venusta']]){
+  const info=CATALOG[id],red=i===0,tall=i===2;assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.colors,['pink']);assert.equal(info.appearance.arrangement,'alternate');
+  for(const small of [false,true]){let skeleton;const p={...makePlant(id,25500+i*2+Number(small),1,1),height:small?(tall?.4:.12):[.4,.3,1.8][i],spread:small?(tall?.3:.18):[.5,.35,1][i],leafHeight:small?(tall?.2:.07):[.22,.16,.8][i]};
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),winter=[12,1,2].includes(month);assert.equal(g.userData.architecture,'filipendulaSprays');assert.equal(stateAt(p,view(month)).shootScale,1);
+    const leaves=g.children.find(m=>m.userData.component==='leaf-filipendula-'+profile);assert.equal(!!leaves,!winter);if(leaves){assert.ok(leaves.geometry.userData[red?'filipendulaRed':tall?'filipendulaRubra':'filipendulaKahome']);assert.equal(!!g.children.find(m=>m.userData.component==='leaflet-filipendula-'+profile),!red);}
+    const petals=g.children.find(m=>m.userData.component==='petal-filipendula');assert.equal(!!petals,month>=6&&month<=8);if(petals){assert.equal(petals.geometry.userData.organCount,5);for(const [component,count] of [['calyx-filipendula',red?4:5],['filament-filipendula',red?50:30],['anther-filipendula',red?50:30]]){const mesh=g.children.find(m=>m.userData.component===component);assert.equal(mesh.count,petals.count);assert.equal(mesh.geometry.userData.organCount,count);}}
+    assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));if(winter)assert.match(seasonAt(info,month).phase,/冬写真/);
+    const axes=g.children.filter(m=>/^(stem|branch|panicle)-filipendula$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.2,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.9,m.userData.component);}dispose(g);
+   }
+  }
+  assert.notEqual(seasonAt(info,7).leafColor,seasonAt(info,11).leafColor);
+ }
+ assert.deepEqual(CATALOG['p-9da9ae974d23'].height,[.3,.4]);assert.deepEqual(CATALOG['p-1d33caa2dca3'].height,[.2,.3]);assert.deepEqual(CATALOG['p-f46885585fbd'].height,[1.5,2]);
+});
 test('Gillenia retains alternate trifoliate leaves, unequal five-petal flowers and post-flowering calyces',()=>{
  for(const [id,profile] of [['p-254995d9ed16','white'],['p-9c223c1ea724','pink']]){
   const info=CATALOG[id];assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'alternate');assert.deepEqual(info.height,[.4,.6]);
