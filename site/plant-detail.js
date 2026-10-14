@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.237';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.238';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.237';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.238';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5022,6 +5022,49 @@ export function paniclePhloxPoint(type,t,u){
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
 }
 
+
+// Astrantia's papery outer organs are bracts; each central unit is a small flower.
+export function astrantiaPoint(type,t,u){
+ if(type==='astrantiaLeaf'||type==='astrantiaStemLeaf'){
+  const narrow=type==='astrantiaStemLeaf',az=u*(narrow?1.85:2.45),centres=narrow?[-1.15,0,1.15]:[-1.96,-.98,0,.98,1.96],near=Math.min(...centres.map(v=>Math.abs(v-az))),r=(.20+.75*Math.pow(Math.max(0,1-near/(narrow?.60:.50)),.62))*(1-.12*(.5+.5*Math.cos(az*71)));
+  return [Math.sin(az)*r*t*.62,(.13+Math.cos(az)*r*.87)*t,.045*t*t+.016*Math.cos(az*6)*t];
+ }
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='astrantiaPetal')return [u*.48*sn**.48,t-.22*t**9,.17*sn-.25*t**5];
+ return [u*.50*sn**.88,t,.035*sn+.04*t**5];
+}
+function drawAstrantia(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,profile=a.shootProfile,h=s.height,w=s.spread,size=Math.min(1,h/.52,w/.42),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,BL=a.flowerLength*size,n=Math.max(5,Math.min(16,Math.round(11*detail*Math.sqrt(w/.5))));
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ for(let i=0;i<Math.round(48*detail*Math.sqrt(w/.5));i++){
+  if(noise(i,70)>s.leafDensity)continue;
+  const az=i*2.399963,rr=w*(.13+.15*noise(i,2)),root=[Math.sin(az)*rr*.28,.008,Math.cos(az)*rr*.28],end=[Math.sin(az)*rr,Math.min(s.leafHeight*.70,h*.32)*(.55+.45*noise(i,3)),Math.cos(az)*rr];
+  b.branch(root,end,Math.min(.0014,h*.005),a.stemColor,'petiole-astrantia');flowerFrame(b,end,1.0+.28*noise(i,6),az).add('astrantiaLeaf','leaf-astrantia-basal',kit.shade(rand,s.leafColor,.06),0,0,0,W,L,L);
+ }
+ const head=(at,az,i,k)=>{
+  if(!s.bloom||noise(i,k+700)>s.flowerDensity)return;
+  const f=flowerFrame(b,at,.12+.24*noise(i,k+50),az),young=noise(i,k+34)<.25,base=profile==='florence'&&young?'#eeeee3':s.flowerColor,bracts=profile==='roma'?22:20;
+  f.add(kit.bud,'receptacle-astrantia','#919976',0,0,0,R*.28,R*.13,R*.28);
+  for(let j=0;j<bracts;j++){const aa=j*TAU/bracts,tilt=young?.8:1.38+.10*Math.sin(j);f.add('astrantiaBract','bract-astrantia-'+profile,kit.shade(rand,base,.025),Math.sin(aa)*R*.31,0,Math.cos(aa)*R*.31,BL*.42,BL,BL,tilt,aa,0);}
+  const stamens=profile==='roma'?2:5;
+  for(let j=0;j<60;j++){
+   const aa=j*2.399963,rr=R*.53*Math.sqrt((j+.3)/60),p=[Math.sin(aa)*rr,R*(.27+.29*Math.sqrt(1-(rr/R/.54)**2)),Math.cos(aa)*rr],P=.0013*size,col=profile==='snow'?'#e4e8cf':profile==='roma'?'#c789a3':profile==='florence'?'#c6aabc':base;
+   f.branch([0,R*.06,0],p,.00022*size,profile==='snow'?'#bdc6a1':col,'pedicel-astrantia');f.add(kit.bud,'floret-astrantia',col,...p,P*.70,P*.55,P*.70);
+   for(let z=0;z<5;z++){const an=z*TAU/5;f.add('astrantiaPetal','petal-astrantia',col,p[0]+Math.sin(an)*P*.32,p[1],p[2]+Math.cos(an)*P*.32,P*.8,P,P,1.25,an,0);f.add('astrantiaBract','sepal-astrantia',profile==='snow'?'#a6b78d':col,p[0],p[1]-P*.40,p[2],P*.28,P*1.5,P*1.5,.55,an+Math.PI/5,0);}
+   for(let z=0;z<stamens;z++){const an=z*TAU/stamens,top=[p[0]+Math.sin(an)*P*1.0,p[1]+P*2.6,p[2]+Math.cos(an)*P*1.0];f.branch(p,top,P*.065,col,'filament-astrantia');f.add(kit.bud,'anther-astrantia',profile==='snow'?'#d7d7ab':'#dbccc3',...top,P*.28,P*.18,P*.20);}
+   for(let z=0;z<2;z++)f.branch(p,[p[0]+(z?1:-1)*P*.30,p[1]+P*1.6,p[2]],P*.045,col,'style-astrantia');
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.24*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.3,.008,Math.cos(az)*rr*.3],top=[Math.sin(az)*rr,h*(.70+.20*noise(i,3)),Math.cos(az)*rr];let prev=root;
+  for(let j=1;j<=5;j++){
+   const q=j/5,at=mix(root,top,q);b.branch(prev,at,Math.min(.0016,h*.004)*(1-q*.28),a.stemColor,'stem-astrantia');prev=at;
+   if(j===2||j===3){const aa=az+j*2.399963;if(noise(i,j+100)<s.leafDensity)flowerFrame(b,at,1.15,aa).add('astrantiaStemLeaf','leaf-astrantia-stem',s.leafColor,0,0,0,W*.48,L*.65,L*.65);}
+   if(j===3||j===4){const aa=az+(j===3?1:-1)*1.1,end=[at[0]+Math.sin(aa)*w*.10,at[1]+h*.14,at[2]+Math.cos(aa)*w*.10];b.branch(at,end,Math.min(.001,h*.003),a.stemColor,'branch-astrantia');head(end,aa,i,j*400);}
+   if(j===5)head(at,az,i,2700);
+  }
+ }
+}
 
 // Honeywort has clasping leaves and nodding flower tubes beneath leafy bracts.
 export function cerinthePoint(type,t,u){
@@ -10672,6 +10715,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='astrantiaUmbels'){drawAstrantia(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='cerintheCymes'){drawCerinthe(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='unifloraMats'){drawUniflora(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='maitaiCrowns'){drawMaitai(b,{info,s,detail,rand,month},kit);return;}

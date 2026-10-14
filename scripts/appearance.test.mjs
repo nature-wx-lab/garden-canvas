@@ -10,6 +10,25 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Astrantia separates palmate foliage, involucral bracts and tiny flowers across four domestic entries',()=>{
+ for(const [id,profile] of [['p-b7f3e0f69356','roma'],['p-8160132a3ee9','florence'],['p-c1961ca9a421','major'],['p-2e5618c185e0','snow']]){
+  const info=CATALOG[id];assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'alternate');
+  for(const small of [false,true]){let skeleton;const p={...makePlant(id,24800,1,1),height:small?.20:info.height[1],spread:small?.22:info.spread[1],leafHeight:small?.10:.24};
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),dormant=[12,1,2].includes(month);assert.equal(!!g.userData.groundDormant,dormant);if(dormant){assert.equal(g.children.length,0);assert.equal(seasonAt(info,month).bloom,false);dispose(g);continue;}
+    assert.equal(g.userData.architecture,'astrantiaUmbels');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+    assert.ok(g.children.find(m=>m.userData.component==='leaf-astrantia-basal').geometry.userData.astrantiaLeaf);
+    const heads=g.children.find(m=>m.userData.component==='receptacle-astrantia'),bracts=g.children.find(m=>m.userData.component==='bract-astrantia-'+profile),florets=g.children.find(m=>m.userData.component==='floret-astrantia');assert.equal(!!heads,month>=5&&month<=11);
+    if(heads){assert.equal(bracts.count,heads.count*(profile==='roma'?22:20));assert.ok(bracts.geometry.userData.astrantiaBract);assert.equal(florets.count,heads.count*60);assert.equal(g.children.find(m=>m.userData.component==='petal-astrantia').count,florets.count*5);assert.equal(g.children.find(m=>m.userData.component==='anther-astrantia').count,florets.count*(profile==='roma'?2:5));}
+    const now=g.children.filter(m=>/^(stem|branch)-astrantia$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.2,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.80,m.userData.component);}dispose(g);
+   }
+  }
+ }
+ const florence=CATALOG['p-8160132a3ee9'];assert.notEqual(seasonAt(florence,6).flowerColor,seasonAt(florence,8).flowerColor);
+ const major='p-c1961ca9a421';assert.equal(new Set([24800,24801,24802].map(n=>stateAt(makePlant(major,n,1,1),view(6)).flowerColor)).size,3);
+ const snow=CATALOG['p-2e5618c185e0'];assert.ok(!snow.appearance.flowerOptions);assert.equal(seasonAt(snow,6).flowerColor,'#eef0e3');
+});
 test('Cerinthe separates clasping leaves, leafy bracts and downward tubes without perennial resurrection',()=>{
  const id='p-4384a4aca42e',info=CATALOG[id];assert.deepEqual(info.height,[.4,.6]);assert.deepEqual(info.spread,[.4,.6]);assert.equal(info.life,'annual');assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'alternate');
  for(const small of [false,true]){let skeleton;
