@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.233';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.234';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.233';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.234';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5022,6 +5022,40 @@ export function paniclePhloxPoint(type,t,u){
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
 }
 
+
+export function richardsoniiPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='richardsoniiTube'){const az=u*Math.PI,r=.13+.10*t*t;return [Math.sin(az)*r,t,Math.cos(az)*r];}
+ if(type==='richardsoniiLower')return [u*.51*sn**.48,t,.11*sn+.025*u*u];
+ if(type==='richardsoniiUpper')return [u*.48*sn**.83,t,.06*sn];
+ const broad=type==='richardsoniiBasal',teeth=broad?1-.11*(.5+.5*Math.cos(t*Math.PI*12)):1;
+ return [u*.5*sn**(broad?.61:.83)*(.7+.3*t)*teeth,t,.05*t*t+.025*u*u*sn];
+}
+function drawRichardsonii(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.24,w*.08),R=a.flowerRadius*Math.min(1,h/.07),F=a.flowerLength*Math.min(1,h/.07),n=Math.max(7,Math.min(36,Math.round(23*detail*Math.sqrt(w/.25))));
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),stemColor=[12,1,2].includes(month)?a.winterStemColor:a.stemColor;
+ const leaf=(at,az,i,k,q)=>{if(noise(i,k+100)>s.leafDensity)return;const basal=q<.42,ll=L*(basal?1:.62),width=ll*(basal?.58:.22);b.add(basal?'richardsoniiBasal':'richardsoniiLeaf',basal?'leaf-richardsonii-basal':'leaf-richardsonii-upper',kit.shade(rand,s.leafColor,.04),...at,width,ll,ll,.95+.30*noise(i,k+70),az,(noise(i,k+50)-.5)*.3);};
+ const flower=(at,az,i,k)=>{
+  if(!s.bloom||noise(i,k+901)>s.flowerDensity)return;
+  const f=flowerFrame(b,at,1.05+.35*noise(i,k+800),az),color=kit.shade(rand,s.flowerColor,.03);
+  if(noise(i,k+600)>.88){f.add(kit.bud,'bud-richardsonii','#9eb673',0,F*.4,0,F*.19,F*.55,F*.19);return;}
+  f.add('richardsoniiTube','tube-richardsonii',color,0,0,0,F,F,F);
+  // The three broad lower lobes and two narrow upper lobes retain bilateral symmetry.
+  for(let j=-1;j<=1;j++){const aa=j*.80;f.add('richardsoniiLower','petal-richardsonii-lower',color,Math.sin(aa)*F*.16,F,Math.cos(aa)*F*.16,R*.90,R,R,Math.PI/2+.13,aa,0);}
+  for(const side of [-1,1])f.add('richardsoniiUpper','petal-richardsonii-upper',color,side*F*.13,F,-F*.13,R*.22,R*.72,R*.72,Math.PI/2-.1,Math.PI+side*.32,0);
+  // Narrow green calyx divisions are a photographic approximation; microscopic organs remain unverified.
+  for(let j=0;j<5;j++)f.add('richardsoniiLeaf','sepal-richardsonii',a.stemColor,0,F*.10,0,F*.13,F*.78,F*.78,.35,j*TAU/5,0);
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.36*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr*.36,.004,Math.cos(az)*rr*.36],top=[Math.sin(az)*rr,h*(.47+.27*noise(i,9)),Math.cos(az)*rr];let prev=root;
+  for(let j=1;j<=7;j++){
+   const q=j/7,at=mix(root,top,q);at[1]=.004+(top[1]-.004)*Math.sin(q*Math.PI*.57);at[0]+=Math.sin(q*Math.PI)*w*.025*(noise(i,5)-.5);
+   b.branch(prev,at,Math.min(.00062,h*.006)*(1-q*.52),stemColor,'stem-richardsonii');prev=at;const aa=az+j*2.399963;leaf(at,aa,i,j*100,q);
+   if(j>=3&&j%2===1){const end=[at[0]+Math.sin(aa)*w*.085,at[1]+h*.07,at[2]+Math.cos(aa)*w*.085];b.branch(at,end,Math.min(.00030,h*.003),stemColor,'pedicel-richardsonii');flower(end,aa,i,j*151);}
+   if(j===3||j===5){const aa2=az+(j===3?1:-1)*1.2,end=[at[0]+Math.sin(aa2)*w*.13,at[1]+h*.12,at[2]+Math.cos(aa2)*w*.13];let last=at;for(let k=1;k<=3;k++){const v=mix(at,end,k/3);b.branch(last,v,Math.min(.00039,h*.004)*(1-k*.12),stemColor,'branch-richardsonii');leaf(v,aa2+k*2.4,i,j*900+k*100,.3+k*.2);last=v;}flower(end,aa2,i,j*1111);}
+  }
+ }
+}
 
 // Narrow leaflike whorls and discrete tubular flowers of the spreading Phuopsis mat.
 export function phuopsisPoint(type,t,u){
@@ -10538,6 +10572,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='richardsoniiTrails'){drawRichardsonii(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='phuopsisHeads'){drawPhuopsis(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='alchemillaCymes'){drawAlchemilla(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='doubleRaggedRobin'){drawRaggedRobin(b,{info,s,detail,rand,month},kit);return;}

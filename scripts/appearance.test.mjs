@@ -10,6 +10,19 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Richardsonii has alternate broad and narrow leaves, two upper and three lower lobes, and no January bloom',()=>{
+ const id='p-fb328e7a0f52',info=CATALOG[id];assert.deepEqual(info.height,[.05,.1]);assert.deepEqual(info.spread,[.2,.3]);assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');assert.ok(!info.bloom.includes(1)&&!info.bloom.includes(2));
+ for(const small of [false,true]){let skeleton,winterLeaves,summerLeaves,summerFlowers,autumnFlowers;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,24400,1,1),height:small?.04:.08,spread:small?.13:.25,leafHeight:small?.025:.05},g=plantModel(p,view(month));assert.equal(g.userData.architecture,'richardsoniiTrails');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);assert.equal(seasonAt(info,month).groundDormant,false);
+   const basal=g.children.find(m=>m.userData.component==='leaf-richardsonii-basal'),upper=g.children.find(m=>m.userData.component==='leaf-richardsonii-upper');assert.ok(basal?.geometry.userData.richardsoniiBasal);assert.ok(upper?.geometry.userData.richardsoniiLeaf);const count=basal.count+upper.count;if(month===1){winterLeaves=count;assert.match(seasonAt(info,month).phase,/冬姿写真.*未確認/);}if(month===6)summerLeaves=count;
+   const flowers=g.children.find(m=>m.userData.component==='tube-richardsonii');assert.equal(!!flowers,month>=3);if(flowers){assert.ok(flowers.geometry.userData.richardsoniiTube);assert.equal(g.children.find(m=>m.userData.component==='petal-richardsonii-lower').count,flowers.count*3);assert.equal(g.children.find(m=>m.userData.component==='petal-richardsonii-upper').count,flowers.count*2);assert.equal(g.children.find(m=>m.userData.component==='sepal-richardsonii').count,flowers.count*5);if(month===8)summerFlowers=flowers.count;if(month===10)autumnFlowers=flowers.count;}
+   assert.ok(!g.children.some(m=>/fruit|seed|rhizome|filament|anther|style/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(stem|branch|pedicel)-richardsonii$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.15);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75);}dispose(g);
+  }assert.ok(winterLeaves<summerLeaves);assert.ok(summerFlowers<autumnFlowers);
+ }
+});
 test('Phuopsis has leaflike stipule whorls, separate five-lobed tubular heads and one exserted style per flower',()=>{
  const id='p-f15425251931',info=CATALOG[id];assert.deepEqual(info.height,[.1,.2]);assert.deepEqual(info.spread,[.3,.8]);assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.persistence,'semiDormant');
  for(const small of [false,true]){let skeleton,winterLeaves,summerLeaves;
