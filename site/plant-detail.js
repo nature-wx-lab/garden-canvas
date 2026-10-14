@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.245';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.246';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.245';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.246';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5022,6 +5022,53 @@ export function paniclePhloxPoint(type,t,u){
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
 }
 
+
+// Ulmaria has interrupted pinnate leaves, unlike the palmately lobed Red Umbrellas.
+export function ulmariaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='ulmariaSide'){const edge=1-.075*(.5+.5*Math.cos(t*TAU*25))-.035*(.5+.5*Math.cos(t*TAU*50));return [u*.5*sn**.67*(.9+.1*t)*edge,t,.06*t*t+.04*u*u*sn-.018*Math.exp(-u*u*35)*sn];}
+ const az=u*2.60,near=Math.min(...[-1.14,0,1.14].map(a=>Math.abs(az-a))),lobe=.36+.64*Math.max(0,1-near/.88)**.72,edge=1-.07*(.5+.5*Math.cos(az*96))-.025*(.5+.5*Math.cos(az*192)),r=lobe*edge*t;
+ return [Math.sin(az)*r*.59,(.17+Math.cos(az)*lobe*.83)*t,.038*t*t+.018*Math.cos(az*9)*t];
+}
+export function ulmariaDoubleGeometry(){
+ const pos=[],uv=[],ix=[];
+ for(let layer=0;layer<4;layer++)for(let j=0;j<5;j++){
+  const az=j*TAU/5+layer*.71,scale=1-layer*.18,base=pos.length/3,rows=6,cols=4;
+  for(let i=0;i<=rows;i++)for(let k=0;k<=cols;k++){const t=i/rows,u=k/cols*2-1,x=u*.45*Math.sin(Math.PI*t)**.40*scale,z=(.08+t)*scale,y=.10+layer*.16+.16*u*u*t+.34*t*t*(layer/3);pos.push(x*Math.cos(az)+z*Math.sin(az),y,-x*Math.sin(az)+z*Math.cos(az));uv.push(k/cols,t);if(i<rows&&k<cols){const n=base+i*(cols+1)+k;ix.push(n,n+cols+1,n+1,n+1,n+cols+1,n+cols+2);}}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.ulmariaDouble=true;g.userData.organCount=20;return g;
+}
+function drawUlmaria(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,profile=a.shootProfile,dbl=profile==='flore',variegated=profile==='variegata',size=Math.min(1,h/.65,w/.45),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,H=a.headRadius*size,n=Math.max(3,Math.min(10,Math.round(7*detail*Math.sqrt(w/.6)))),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const compound=(at,az,i,k,scale=1)=>{
+  if(noise(i,k+700)>s.leafDensity)return;const pet=L*1.7*scale,end=[at[0]+Math.sin(az)*pet,at[1]+pet*.21,at[2]+Math.cos(az)*pet],shade=kit.shade(rand,s.leafColor,.035),paint=variegated?'variegata-'+Math.floor(noise(i,k+20)*3):profile;
+  b.branch(at,end,.0007*size*scale,stem,'petiole-ulmaria');flowerFrame(b,end,1.04+.15*noise(i,k+10),az).add('ulmariaTerminal','leaf-ulmaria-terminal-'+paint,shade,0,0,0,W*scale,L*scale,L*scale);
+  for(let j=0;j<3;j++)for(let side=0;side<2;side++){
+   const p=mix(at,end,.22+j*.24),aa=az+(side?1:-1)*1.18,r=L*.12*scale,q=[p[0]+Math.sin(aa)*r,p[1]+r*.2,p[2]+Math.cos(aa)*r];b.branch(p,q,.0004*size*scale,stem,'rachis-ulmaria');flowerFrame(b,q,1.08,aa).add('ulmariaSide','leaflet-ulmaria-side-'+paint,shade,0,0,0,W*scale*.49,L*scale*.62,L*scale*.62);
+   if(j<2){const pt=mix(at,end,.33+j*.24);flowerFrame(b,pt,1.10,aa).add('ulmariaSide','leaflet-ulmaria-intermediate-'+paint,shade,0,0,0,W*scale*.16,L*scale*.19,L*scale*.19);}
+  }
+  for(let side=0;side<2;side++)flowerFrame(b,at,.88,az+(side?1:-1)*1.5).add('ulmariaSide','stipule-ulmaria',shade,0,0,0,.006*size*scale,.010*size*scale,.01*size*scale);
+ };
+ const head=(base,az,i,k,scale=1)=>{
+  const r=H*scale,count=scale<1?7:12,flowers=scale<1?30:40,top=[base[0],base[1]+r*1.75,base[2]];b.branch(base,top,.0009*size*scale,stem,'axis-ulmaria');
+  for(let c=0;c<count;c++){
+   const t=(c+.4)/count,at=mix(base,top,t*.9),aa=az+c*2.399963,rr=r*(.87-.50*t),end=[at[0]+Math.sin(aa)*rr,at[1]+r*(.15+.14*noise(i,k+c+30)),at[2]+Math.cos(aa)*rr];b.branch(at,end,.00055*size*scale,stem,'panicle-ulmaria');
+   for(let j=0;j<flowers;j++){
+    if(!s.bloom||noise(i,k+c*90+j*7)>s.flowerDensity)continue;const ba=aa+j*2.4,rad=r*.22*Math.sqrt((j+.3)/flowers),tip=[end[0]+Math.sin(ba)*rad,end[1]+r*(.04+.16*noise(i,k+c*43+j*5)),end[2]+Math.cos(ba)*rad];b.branch(end,tip,.00013*size,stem,'flower-stalk-ulmaria');const f=flowerFrame(b,tip,.12+.50*noise(i,k+c*39+j),ba);
+    if(noise(i,k+c*23+j*89)>.83){f.add(kit.bud,'bud-ulmaria',a.budColor,0,0,0,R*.5,R*.55,R*.5);continue;}
+    f.add('filipendulaCalyx5','calyx-ulmaria',a.flowerPalette.calyx,0,0,0,R,R,R);f.add(dbl?'ulmariaDouble':'filipendulaPetals','petal-ulmaria-'+profile,kit.shade(rand,s.flowerColor,.035),0,0,0,R,R,R);
+    if(!dbl){f.add('filipendulaStamens30','filament-ulmaria',a.flowerPalette.filament,0,0,0,R,R,R);f.add('filipendulaAnthers30','anther-ulmaria',a.flowerPalette.anther,0,0,0,R,R,R);}
+   }
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.22*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.45,.006,Math.cos(az)*rr*.45],top=[Math.sin(az)*rr,h*(.68+.09*noise(i,1)),Math.cos(az)*rr];let prev=root;
+  for(let j=1;j<=5;j++){const at=mix(root,top,(j-.20+.20*noise(i,j*71))/5);b.branch(prev,at,Math.min(.0024,h*.006)*(1-j*.06),stem,'stem-ulmaria');prev=at;compound(at,az+j*2.4+.20*noise(i,j*31),i,j*300,1.05-j*.05);}
+  head(top,az,i,10000,1);
+  const at=mix(root,top,.69),aa=az+1.3,end=[at[0]+Math.sin(aa)*w*.15,at[1]+h*.10,at[2]+Math.cos(aa)*w*.15];b.branch(at,end,.0010*size,stem,'branch-ulmaria');compound(mix(at,end,.35),aa,i,8000,.48);head(end,aa,i,20000,.60);
+ }
+}
 
 // Meadowsweet florets share immutable organ meshes to keep dense sprays responsive.
 export function filipendulaPoint(type,t,u){
@@ -10925,6 +10972,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='ulmariaSprays'){drawUlmaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='filipendulaSprays'){drawFilipendula(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='gilleniaSprays'){drawGillenia(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='fireflyCymes'){drawFirefly(b,{info,s,detail,rand,month},kit);return;}

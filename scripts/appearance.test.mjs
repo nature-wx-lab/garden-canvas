@@ -10,6 +10,22 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Ulmaria distinguishes gold and central-variegated compound foliage from double white florets',()=>{
+ for(const [i,id,profile] of [[0,'p-73ffd9632430','aurea'],[1,'p-f867a7522037','variegata'],[2,'p-bda4158c2e9b','flore']]){
+  const info=CATALOG[id];assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.colors,['white']);assert.equal(info.variegated,i===1);
+  for(const small of [false,true]){let skeleton;const p={...makePlant(id,25600+i*2+Number(small),1,1),height:small?.2:.8,spread:small?.25:[.5,.6,.65][i],leafHeight:small?.12:.45};
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),winter=[12,1,2].includes(month);assert.equal(g.userData.architecture,'ulmariaSprays');assert.equal(stateAt(p,view(month)).shootScale,1);
+    const leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-ulmaria-terminal')),side=g.children.filter(m=>m.userData.component.startsWith('leaflet-ulmaria-side')),tiny=g.children.filter(m=>m.userData.component.startsWith('leaflet-ulmaria-intermediate'));assert.equal(!!leaves.length,!winter);if(leaves.length){const count=leaves.reduce((n,m)=>n+m.count,0);assert.equal(side.reduce((n,m)=>n+m.count,0),count*6);assert.equal(tiny.reduce((n,m)=>n+m.count,0),count*4);assert.equal(g.children.find(m=>m.userData.component==='stipule-ulmaria').count,count*2);assert.ok(leaves.every(m=>m.geometry.userData.ulmariaTerminal));assert.ok(side.every(m=>m.geometry.userData.ulmariaSide));if(i===1)assert.equal(leaves.length,3);}
+    const petals=g.children.find(m=>m.userData.component==='petal-ulmaria-'+profile);assert.equal(!!petals,month>=6&&month<=8);if(petals){assert.equal(petals.geometry.userData.organCount,i===2?20:5);assert.equal(g.children.find(m=>m.userData.component==='calyx-ulmaria').count,petals.count);const filament=g.children.find(m=>m.userData.component==='filament-ulmaria');assert.equal(!!filament,i!==2);if(filament){assert.equal(filament.count,petals.count);assert.equal(filament.geometry.userData.organCount,30);}}
+    assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));if(winter)assert.match(seasonAt(info,month).phase,/冬写真/);
+    const axes=g.children.filter(m=>/^(stem|branch|axis|panicle)-ulmaria$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.2,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.9,m.userData.component);}dispose(g);
+   }
+  }
+ }
+ assert.equal(CATALOG['p-f867a7522037'].spread,null);assert.deepEqual(CATALOG['p-73ffd9632430'].spread,[.4,.6]);assert.deepEqual(CATALOG['p-bda4158c2e9b'].spread,[.5,.8]);assert.notEqual(seasonAt(CATALOG['p-73ffd9632430'],7).leafColor,seasonAt(CATALOG['p-bda4158c2e9b'],7).leafColor);
+});
 test('Filipendula cultivars retain distinct palmate foliage, dense small flowers and fixed winter axes',()=>{
  for(const [i,id,profile] of [[0,'p-9da9ae974d23','red'],[1,'p-1d33caa2dca3','kahome'],[2,'p-f46885585fbd','venusta']]){
   const info=CATALOG[id],red=i===0,tall=i===2;assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.colors,['pink']);assert.equal(info.appearance.arrangement,'alternate');
