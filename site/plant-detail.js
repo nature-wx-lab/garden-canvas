@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.247';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.248';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.247';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.248';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5023,6 +5023,44 @@ export function paniclePhloxPoint(type,t,u){
 }
 
 
+// Aruncus has toothed compound leaves and narrow, flower-covered panicle branches.
+export function aruncusLeafPoint(t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),tooth=1-.09*(.5+.5*Math.cos(t*TAU*23))-.04*(.5+.5*Math.cos(t*TAU*46)),vein=t-Math.abs(u)*.30;
+ return [u*.5*sn**.83*(1-.20*t)*tooth,t,.055*t*t+.028*u*u*sn+.012*Math.cos(vein*TAU*9)*Math.abs(u)*sn-.01*Math.exp(-u*u*45)*sn];
+}
+function drawAruncus(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,spark=a.shootProfile==='sparkles',size=Math.min(1,h/(spark?.4:1.1),w/(spark?.4:.75)),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,H=a.headRadius*size,n=Math.max(3,Math.min(9,Math.round((spark?7:6)*detail*Math.sqrt(w/(spark?.5:.85))))),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const compound=(at,az,i,k,scale=1)=>{
+  if(noise(i,k+71)>s.leafDensity)return;const len=L*1.2*scale,end=[at[0]+Math.sin(az)*len,at[1]+len*.35,at[2]+Math.cos(az)*len],shade=kit.shade(rand,s.leafColor,.04);b.branch(at,end,.0007*size*scale,stem,'petiole-aruncus');
+  for(let c=0;c<3;c++){
+   const root=c===0?end:mix(at,end,.38),aa=az+(c===0?0:c===1?-1.0:1.0),ll=L*scale*(c===0?.50:.67),tip=[root[0]+Math.sin(aa)*ll,root[1]+ll*.20,root[2]+Math.cos(aa)*ll];b.branch(root,tip,.00045*size*scale,stem,'rachis-aruncus');
+   flowerFrame(b,tip,1.0,aa).add('aruncusLeaf','leaf-aruncus-'+a.shootProfile,shade,0,0,0,W*scale,L*scale,L*scale);
+   for(let side=0;side<2;side++)flowerFrame(b,mix(root,tip,.40),1.02,aa+(side?1:-1)*1.05).add('aruncusLeaf','leaf-aruncus-'+a.shootProfile,shade,0,0,0,W*scale*.76,L*scale*.80,L*scale*.80);
+  }
+ };
+ const plume=(base,az,i)=>{
+  const tip=[base[0]+Math.sin(az)*H*.13,base[1]+H,base[2]+Math.cos(az)*H*.13],branches=spark?18:23;let prev=base;
+  for(let j=1;j<=5;j++){const p=mix(base,tip,j/5);b.branch(prev,p,.0010*size*(1-j*.09),stem,'axis-aruncus');prev=p;}
+  for(let c=0;c<branches;c++){
+   const t=(c+.4)/branches,at=mix(base,tip,t*.88),aa=az+c*2.399963,len=H*(spark?.64:.90)*(1-t*.83),count=Math.max(28,Math.round(290*(1-t*.64))),path=[];
+   for(let j=0;j<=6;j++){const q=j/6,rr=len*q,p=[at[0]+Math.sin(aa)*rr,at[1]+len*(.43*q-(spark?.16:.40)*q*q),at[2]+Math.cos(aa)*rr];path.push(p);if(j)b.branch(path[j-1],p,.00055*size*(1-q*.60),stem,'panicle-aruncus');}
+   for(let j=0;j<count;j++){
+    if(!s.bloom&&!s.seedHeads)continue;if(s.bloom&&noise(i,c*200+j*5)>s.flowerDensity)continue;
+    const q=(j+.3)/count,at2=mix(path[Math.min(5,Math.floor(q*6))],path[Math.min(6,Math.floor(q*6)+1)],q*6%1),ba=j*2.399963,rr=R*(spark?3.9:3.0)*(1-q*.70),p=[at2[0]+Math.sin(ba)*rr,at2[1]+Math.cos(ba)*rr,at2[2]+Math.cos(ba)*rr*.7],f=flowerFrame(b,p,ba,aa);
+    if(s.seedHeads){const color=[7,8,9].includes(month)?a.flowerPalette.afterGreen:[10,11].includes(month)?a.flowerPalette.afterOrange:a.flowerPalette.afterBrown;f.add('filipendulaCalyx5','spent-aruncus-'+a.shootProfile,color,0,0,0,R*1.5,R*1.7,R*1.5);continue;}
+    if(noise(i,c*21+j*29)>.90){f.add(kit.bud,'bud-aruncus',a.budColor,0,0,0,R*.55,R*.70,R*.55);continue;}
+    f.add('filipendulaCalyx5','calyx-aruncus',a.flowerPalette.calyx,0,0,0,R,R,R);f.add('filipendulaPetals','petal-aruncus',kit.shade(rand,s.flowerColor,.035),0,0,0,R,R,R);f.add('filipendulaStamens20','filament-aruncus',a.flowerPalette.filament,0,0,0,R,R,R);f.add('filipendulaAnthers20','anther-aruncus',a.flowerPalette.anther,0,0,0,R,R,R);
+   }
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963+.18*noise(i,3),rr=w*.20*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.5,.008,Math.cos(az)*rr*.5],top=[Math.sin(az)*rr,h*(.66+.07*noise(i,1)),Math.cos(az)*rr];let prev=root;
+  for(let j=1;j<=5;j++){const at=mix(root,top,(j-.20+.18*noise(i,j*71))/5);b.branch(prev,at,(spark?.0018:.0034)*size*(1-j*.09),stem,'stem-aruncus');prev=at;compound(at,az+j*2.4,i,j*200,1.2-j*.11);}
+  plume(top,az,i);
+ }
+}
+
 // Dropwort keeps finely divided basal rosettes below sparsely leaved flowering stems.
 export function dropwortPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
@@ -5129,13 +5167,13 @@ export function filipendulaFloretGeometry(part){
   const count=Number(part.slice(5)),rows=4,cols=20;
   for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){const t=i/rows,az=j/cols*TAU,r=.20+.28*t,yy=-.45+.62*t+.15*Math.cos(az*count)*t**8;pos.push(Math.sin(az)*r,yy,Math.cos(az)*r);uv.push(j/cols,t);if(i<rows&&j<cols){const n=i*(cols+1)+j;ix.push(n,n+1,n+cols+1,n+1,n+cols+2,n+cols+1);}}
  }else{
-  const count=part.endsWith('50')?50:30;
+  const count=Number(part.match(/\d+$/)?.[0]??30);
   for(let j=0;j<count;j++){const az=j*2.399963,lean=.50+.58*(j%5)/4,tip=new THREE.Vector3(Math.sin(az)*lean,1.0+.60*((j*7)%11)/10,Math.cos(az)*lean),root=new THREE.Vector3(Math.sin(az)*.18,.16,Math.cos(az)*.18);
    if(part.startsWith('stamens')){const d=tip.clone().sub(root);o.position.copy(root).addScaledVector(d,.5);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize());o.scale.set(1,1,1);o.updateMatrix();append(new THREE.CylinderGeometry(.018,.022,d.length(),3,1,true),o.matrix);}
    else{o.position.copy(tip);o.quaternion.identity();o.scale.set(.062,.085,.062);o.updateMatrix();append(new THREE.TetrahedronGeometry(1,0),o.matrix);}
   }
  }
- const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.filipendulaFloret=part;g.userData.organCount=part==='petals'?5:part.startsWith('calyx')?Number(part.slice(5)):part.endsWith('50')?50:30;return g;
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.filipendulaFloret=part;g.userData.organCount=part==='petals'?5:part.startsWith('calyx')?Number(part.slice(5)):Number(part.match(/\d+$/)?.[0]??30);return g;
 }
 function drawFilipendula(b,{info,s,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,profile=a.shootProfile,red=profile==='red',tall=profile==='venusta',size=Math.min(1,h/(tall?1.3:red?.32:.24),w/(tall?.7:.35)),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,H=a.headRadius*size,n=Math.max(3,Math.min(13,Math.round((tall?7:10)*detail*Math.sqrt(w/(tall?.9:.45))))),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
@@ -11016,6 +11054,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='aruncusPlumes'){drawAruncus(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='dropwortRosettes'){drawDropwort(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='ulmariaSprays'){drawUlmaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='filipendulaSprays'){drawFilipendula(b,{info,s,detail,rand,month},kit);return;}

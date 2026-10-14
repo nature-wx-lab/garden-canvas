@@ -10,6 +10,20 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Aruncus separates compact retained plumes from tall arching panicles and keeps compound leaves',()=>{
+ for(const [id,profile] of [['p-37155e7e66c3','sparkles'],['p-1f87be9e5a4e','dioicus']]){
+  const info=CATALOG[id],spark=profile==='sparkles';assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');
+  for(const small of [false,true]){let skeleton;const p={...makePlant(id,25800,1,1),height:small?(spark?.18:.3):spark?.5:1.5,spread:small?.23:spark?.5:.85,leafHeight:small?.12:spark?.25:.7};
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),winter=[12,1,2].includes(month);assert.equal(g.userData.architecture,'aruncusPlumes');assert.equal(stateAt(p,view(month)).shootScale,1);const leaves=g.children.find(m=>m.userData.component==='leaf-aruncus-'+profile);assert.equal(!!leaves,!winter);if(leaves){assert.ok(leaves.geometry.userData.aruncusLeaf);assert.equal(leaves.count%9,0);}
+    const petals=g.children.find(m=>m.userData.component==='petal-aruncus');assert.equal(!!petals,info.bloom.includes(month));if(petals){assert.equal(petals.geometry.userData.organCount,5);for(const [component,count] of [['calyx-aruncus',5],['filament-aruncus',20],['anther-aruncus',20]]){const m=g.children.find(x=>x.userData.component===component);assert.equal(m.count,petals.count);assert.equal(m.geometry.userData.organCount,count);}}
+    const spent=g.children.find(m=>m.userData.component==='spent-aruncus-'+profile);assert.equal(!!spent,spark&&[7,8,9,10,11,12,1,2].includes(month));assert.ok(!g.children.some(m=>/fruit|seed|style|stipule/.test(m.userData.component)));if(spent)assert.match(seasonAt(info,month).phase,/花後/);
+    const axes=g.children.filter(m=>/^(stem|axis|panicle)-aruncus$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.2,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.9,m.userData.component);}dispose(g);
+   }
+  }
+ }
+});
 test('Dropwort keeps finely divided basal leaves, sparse stem leaves and narrow double florets',()=>{
  const id='p-cc27d147a2c1',info=CATALOG[id];assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.4,.6]);assert.deepEqual(info.spread,[.2,.3]);
  for(const small of [false,true]){let skeleton,winterLeaves,summerLeaves;const p={...makePlant(id,25700+Number(small),1,1),height:small?.2:.6,spread:small?.16:.3,leafHeight:small?.06:.16};
