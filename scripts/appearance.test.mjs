@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {Matrix4,Vector3,Line3} from '../site/vendor/three.module.js';
 import {CATALOG,makePlant,stateAt,annualGalleryDocument,validateDocument} from '../site/model.js';
 import {CATALOG_VERSION} from '../site/catalog.js';
 import {APPEARANCE_DATA} from '../site/appearance-data.js';
@@ -10,6 +11,25 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+function burnetConnections(g){
+ const stems=g.children.find(m=>m.userData.component==='stem-burnet'),branches=g.children.find(m=>m.userData.component==='branch-burnet'),matrix=new Matrix4(),lines=[];
+ for(let i=0;i<stems.count;i++){stems.getMatrixAt(i,matrix);lines.push(new Line3(new Vector3(0,-.5,0).applyMatrix4(matrix),new Vector3(0,.5,0).applyMatrix4(matrix)));}
+ for(let i=0;i<branches.count;i++){branches.getMatrixAt(i,matrix);const p=new Vector3(0,-.5,0).applyMatrix4(matrix),gap=Math.min(...lines.map(l=>l.closestPointToPoint(p,true,new Vector3()).distanceTo(p)));assert.ok(gap<.00001,'detached burnet lateral: '+gap);}
+}
+test('Burnet cultivars distinguish long white, mixed wavy and broad pink spikes with connected branches',()=>{
+ for(const [i,id,profile,pairs,stamens] of [[0,'p-21a8e3655aac','allTimeHigh',8,4],[1,'p-97652a1f1fd0','strawberry',8,4],[2,'p-07ef9ac3c52b','pinkBrushes',5,8]]){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.life,'perennial');assert.equal(info.appearance.petals,0);assert.equal(info.bloomKnown,false);assert.equal(info.appearance.flowerTiming,'season-reference');
+  for(const small of [false,true]){let axes;const p={...makePlant(id,26100+i*2+Number(small),1,1),height:small?.3:i?1.5:1.8,spread:small?.25:i?.5:.8,leafHeight:small?.14:.65};
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),winter=[12,1,2].includes(month);assert.equal(g.userData.architecture,'sanguisorbaSpikes');assert.equal(stateAt(p,view(month)).shootScale,1);const terminal=g.children.find(m=>m.userData.component==='leaf-burnet-'+profile),side=g.children.find(m=>m.userData.component==='leaflet-burnet-'+profile);assert.equal(!!terminal,!winter);if(terminal){assert.equal(side.count,terminal.count*pairs*2);assert.ok(terminal.geometry.userData[i===2?'burnetBroad':'burnetNarrow']);}
+    const sepals=g.children.find(m=>m.userData.component==='sepal-burnet');assert.equal(!!sepals,info.bloom.includes(month));if(sepals){assert.equal(sepals.geometry.userData.organCount,4);for(const name of ['filament-burnet','anther-burnet']){const m=g.children.find(m=>m.userData.component===name);assert.equal(m.geometry.userData.organCount,stamens);assert.equal(m.count,sepals.count);assert.equal(m.receiveShadow,false);}if(i===1&&month===8){const rgb=g.children.find(m=>m.userData.component==='filament-burnet').instanceColor.array,green=[];for(let j=1;j<rgb.length;j+=3)green.push(rgb[j]);assert.ok(Math.max(...green)-Math.min(...green)>.15);}}
+    assert.ok(!g.children.some(m=>/petal|fruit|seed|style/.test(m.userData.component)));burnetConnections(g);const current=g.children.filter(m=>/^(stem|branch|axis)-burnet$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(axes)assert.deepEqual(current,axes);else axes=current;
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.2,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.9,m.userData.component);}dispose(g);
+   }
+  }
+ }
+ assert.deepEqual(CATALOG['p-21a8e3655aac'].height,[1.5,1.8]);assert.deepEqual(CATALOG['p-97652a1f1fd0'].height,[1.2,1.5]);assert.deepEqual(CATALOG['p-07ef9ac3c52b'].spread,[.4,.6]);
+});
 test('Sanguisorba separates narrow and broad pinnate foliage, drooping petal-free spikes and winter axes',()=>{
  for(const [i,id,pink] of [[0,'p-49bc0a4378eb',false],[1,'p-06c00c6f7ae3',true]]){
   const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.life,'perennial');assert.equal(info.appearance.petals,0);assert.equal(info.bloomKnown,false);assert.equal(info.appearance.flowerTiming,'season-reference');
@@ -18,7 +38,7 @@ test('Sanguisorba separates narrow and broad pinnate foliage, drooping petal-fre
     const g=plantModel(p,view(month)),winter=[12,1,2].includes(month);assert.equal(g.userData.architecture,'sanguisorbaSpikes');assert.equal(stateAt(p,view(month)).shootScale,1);const terminal=g.children.find(m=>m.userData.component==='leaf-burnet-'+(pink?'karai':'alba')),side=g.children.find(m=>m.userData.component==='leaflet-burnet-'+(pink?'karai':'alba'));assert.equal(!!terminal,!winter);if(terminal){assert.equal(side.count,terminal.count*(pink?10:16));assert.ok(terminal.geometry.userData[pink?'burnetBroad':'burnetNarrow']);}
     const calyx=g.children.find(m=>m.userData.component==='sepal-burnet');assert.equal(!!calyx,info.bloom.includes(month));if(calyx){assert.equal(calyx.geometry.userData.organCount,4);for(const name of ['filament-burnet','anther-burnet']){const m=g.children.find(m=>m.userData.component===name);assert.equal(m.geometry.userData.organCount,pink?8:4);assert.equal(m.count,calyx.count);}}
     assert.ok(!g.children.some(m=>/petal|fruit|seed|style/.test(m.userData.component)));if(winter)assert.match(seasonAt(info,month).phase,/冬の成株写真/);
-    const current=g.children.filter(m=>/^(stem|branch|axis)-burnet$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(axes)assert.deepEqual(current,axes);else axes=current;
+    burnetConnections(g);const current=g.children.filter(m=>/^(stem|branch|axis)-burnet$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(axes)assert.deepEqual(current,axes);else axes=current;
     for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.2,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.9,m.userData.component);}dispose(g);
    }
   }

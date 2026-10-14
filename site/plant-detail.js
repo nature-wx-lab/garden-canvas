@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.250';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.251';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.250';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.251';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5042,32 +5042,32 @@ export function burnetFloretGeometry(part){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.burnetFloret=part;g.userData.organCount=count;return g;
 }
 function drawSanguisorba(b,{info,s,detail,rand,month},kit){
- const a=info.appearance,h=s.height,w=s.spread,pink=a.shootProfile==='karai',size=Math.min(1,h/.65,w/(pink?.65:.5)),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,H=a.inflorescenceLength*size,stem=[12,1,2].includes(month)?a.winterStemColor:a.stemColor,n=Math.max(4,Math.min(11,Math.round(8*detail*Math.sqrt(w/(pink?.8:.6))))),pairs=pink?5:8;
+ const a=info.appearance,h=s.height,w=s.spread,pink=a.shootProfile==='karai',brush=a.shootProfile==='pinkBrushes',straw=a.shootProfile==='strawberry',allTime=a.shootProfile==='allTimeHigh',broad=pink||brush,cultivar=brush||straw||allTime,size=Math.min(1,h/(cultivar?1.15:.65),w/(broad?.55:.5)),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,H=a.inflorescenceLength*size,stem=[12,1,2].includes(month)?a.winterStemColor:a.stemColor,n=Math.max(4,Math.min(11,Math.round(8*detail*Math.sqrt(w/(pink?.8:.6))))),pairs=a.leafletCounts?.[0]??(pink?5:8);
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const compound=(at,az,i,k,scale=1)=>{
-  if(noise(i,k+91)>s.leafDensity)return;const len=L*(pink?2.6:3.0)*scale,tip=[at[0]+Math.sin(az)*len,at[1]+len*.25,at[2]+Math.cos(az)*len],shade=kit.shade(rand,s.leafColor,.04);b.branch(at,tip,.00085*size*scale,stem,'rachis-burnet');
-  flowerFrame(b,tip,1.12,az).add(pink?'burnetBroad':'burnetNarrow','leaf-burnet-'+a.shootProfile,shade,0,0,0,W*scale,L*scale,L*scale);
+  if(noise(i,k+91)>s.leafDensity)return;const len=L*(broad?2.6:3.0)*scale,tip=[at[0]+Math.sin(az)*len,at[1]+len*.25,at[2]+Math.cos(az)*len],shade=kit.shade(rand,s.leafColor,.04);b.branch(at,tip,.00085*size*scale,stem,'rachis-burnet');
+  flowerFrame(b,tip,1.12,az).add(broad?'burnetBroad':'burnetNarrow','leaf-burnet-'+a.shootProfile,shade,0,0,0,W*scale,L*scale,L*scale);
   for(let j=0;j<pairs;j++)for(let side=0;side<2;side++){
-   const t=.15+j*(.72/(pairs-1)),at2=mix(at,tip,t),aa=az+(side?1:-1)*(1.0+.08*noise(i,k+j)),ll=scale*(.65+.30*Math.sin(t*Math.PI)),root=[at2[0]+Math.sin(aa)*L*.12*ll,at2[1]+L*.03*ll,at2[2]+Math.cos(aa)*L*.12*ll];b.branch(at2,root,.00035*size,stem,'leaflet-stalk-burnet');flowerFrame(b,root,1.12,aa).add(pink?'burnetBroad':'burnetNarrow','leaflet-burnet-'+a.shootProfile,shade,0,0,0,W*ll,L*ll,L*ll);
+   const t=.15+j*(.72/(pairs-1)),at2=mix(at,tip,t),aa=az+(side?1:-1)*(1.0+.08*noise(i,k+j)),ll=scale*(.65+.30*Math.sin(t*Math.PI)),root=[at2[0]+Math.sin(aa)*L*.12*ll,at2[1]+L*.03*ll,at2[2]+Math.cos(aa)*L*.12*ll];b.branch(at2,root,.00035*size,stem,'leaflet-stalk-burnet');flowerFrame(b,root,1.12,aa).add(broad?'burnetBroad':'burnetNarrow','leaflet-burnet-'+a.shootProfile,shade,0,0,0,W*ll,L*ll,L*ll);
   }
  };
  const spike=(base,az,i,k,scale=1)=>{
-  const len=H*scale,curve=[],bend=pink?.42:.63;
-  for(let j=0;j<=12;j++){const t=j/12,p=[base[0]+Math.sin(az)*len*(.22*t+bend*Math.sin(Math.PI*t/2)),base[1]-len*(.14*t+.92*t*t),base[2]+Math.cos(az)*len*(.22*t+bend*Math.sin(Math.PI*t/2))];curve.push(p);if(j)b.branch(curve[j-1],p,.00075*size*scale,stem,'axis-burnet');}
+  const len=H*scale,curve=[],bend=pink?.42:brush?.58:.63;
+  for(let j=0;j<=12;j++){const t=j/12,p=[base[0]+Math.sin(az)*len*(.22*t+bend*Math.sin(Math.PI*t/2))+(straw?Math.cos(az)*len*.20*Math.sin(t*TAU):0),base[1]-len*(.14*t+(straw?.55:.92)*t*t),base[2]+Math.cos(az)*len*(.22*t+bend*Math.sin(Math.PI*t/2))-(straw?Math.sin(az)*len*.20*Math.sin(t*TAU):0)];curve.push(p);if(j)b.branch(curve[j-1],p,.00075*size*scale,stem,'axis-burnet');}
   if(!s.bloom)return;
-  const flowers=pink?350:320;
+  const flowers=brush?420:allTime?400:pink?350:320;
   for(let j=0;j<flowers;j++){
-   const t=(j+.4)/flowers,aa=j*2.399963,q=t*12,at=mix(curve[Math.floor(q)],curve[Math.min(12,Math.floor(q)+1)],q%1),radius=R*(pink?2.8:2.4)*(.50+.50*Math.sin(Math.PI*t)**.25),tip=[at[0]+Math.sin(aa)*radius,at[1]+Math.cos(aa)*radius,at[2]+Math.cos(aa)*radius*.80],f=flowerFrame(b,tip,aa,az);
-   if(pink&&month===info.bloom[0]&&t<.50||noise(i,k+j*11)>s.flowerDensity){f.add(kit.bud,'bud-burnet',a.budColor,0,0,0,R*.60,R*.70,R*.60);continue;}
-   const count=pink?'8':'4';f.add('burnetSepals','sepal-burnet',a.flowerPalette.sepal,0,0,0,R,R,R);f.add('burnetFilaments'+count,'filament-burnet',kit.shade(rand,s.flowerColor,.035),0,0,0,R,R,R);f.add('burnetAnthers'+count,'anther-burnet',a.flowerPalette.anther,0,0,0,R,R,R);
+   const t=(j+.4)/flowers,aa=j*2.399963,q=t*12,at=mix(curve[Math.floor(q)],curve[Math.min(12,Math.floor(q)+1)],q%1),radius=R*(brush?3.3:pink?2.8:2.4)*(.50+.50*Math.sin(Math.PI*t)**.25),tip=[at[0]+Math.sin(aa)*radius,at[1]+Math.cos(aa)*radius,at[2]+Math.cos(aa)*radius*.80],f=flowerFrame(b,tip,aa,az);
+   if((pink&&month===info.bloom[0]&&t<.50)||(brush&&month===info.bloom[0]&&t>.66)||noise(i,k+j*11)>s.flowerDensity){f.add(kit.bud,'bud-burnet',a.budColor,0,0,0,R*.60,R*.70,R*.60);continue;}
+   const count=String(a.stamenCount),filament=straw&&noise(i,k+j*29)>.30?'#f7eaf0':s.flowerColor;f.add('burnetSepals','sepal-burnet',a.flowerPalette.sepal,0,0,0,R,R,R);f.add('burnetFilaments'+count,'filament-burnet',kit.shade(rand,filament,.035),0,0,0,R,R,R);f.add('burnetAnthers'+count,'anther-burnet',a.flowerPalette.anther,0,0,0,R,R,R);
   }
  };
  for(let j=0;j<15;j++){const az=j*2.399963,rr=w*.14*Math.sqrt((j+.4)/15);compound([Math.sin(az)*rr,.01+size*.022*noise(j,8),Math.cos(az)*rr],az,j,15000,.75+.25*noise(j,9));}
  for(let i=0;i<n;i++){
-  const az=i*2.399963+.18*noise(i,4),rr=w*.25*Math.sqrt((i+.4)/n),root=[Math.sin(az)*rr*.3,.009,Math.cos(az)*rr*.3],top=[Math.sin(az)*rr,h*(.72+.22*noise(i,1)),Math.cos(az)*rr];let prev=root;
-  for(let j=1;j<=5;j++){const at=mix(root,top,j/5);at[0]+=Math.cos(az)*w*.055*Math.sin(j/5*Math.PI);at[2]-=Math.sin(az)*w*.055*Math.sin(j/5*Math.PI);b.branch(prev,at,.0018*size*(1-j*.10),stem,'stem-burnet');prev=at;if(j<4)compound(at,az+j*2.4,i,j*300,.75-j*.12);}
+  const az=i*2.399963+.18*noise(i,4),rr=w*.25*Math.sqrt((i+.4)/n),root=[Math.sin(az)*rr*.3,.009,Math.cos(az)*rr*.3],top=[Math.sin(az)*rr,h*(.72+.22*noise(i,1)),Math.cos(az)*rr];let prev=root;const path=[root];
+  for(let j=1;j<=5;j++){const at=mix(root,top,j/5);at[0]+=Math.cos(az)*w*.055*Math.sin(j/5*Math.PI);at[2]-=Math.sin(az)*w*.055*Math.sin(j/5*Math.PI);path.push(at);b.branch(prev,at,.0018*size*(1-j*.10),stem,'stem-burnet');prev=at;if(j<4)compound(at,az+j*2.4,i,j*300,.75-j*.12);}
   spike(top,az,i,10000);
-  for(let j=0;j<2;j++){const aa=az+(j?1:-1)*1.35,at=mix(root,top,.68+j*.10),end=[at[0]+Math.sin(aa)*w*.15,at[1]+h*.08,at[2]+Math.cos(aa)*w*.15];b.branch(at,end,.0008*size,stem,'branch-burnet');spike(end,aa,i,20000+j*10000,.82);}
+  for(let j=0;j<(straw||brush?3:2);j++){const aa=az+(j%2?1:-1)*(1.35+j*.12),q=(.60+j*.11)*5,at=mix(path[Math.floor(q)],path[Math.ceil(q)],q%1),end=[at[0]+Math.sin(aa)*w*.15,at[1]+h*.08,at[2]+Math.cos(aa)*w*.15];b.branch(at,end,.0008*size,stem,'branch-burnet');spike(end,aa,i,20000+j*10000,.82);}
  }
 }
 
