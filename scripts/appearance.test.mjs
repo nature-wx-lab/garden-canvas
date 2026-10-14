@@ -62,11 +62,21 @@ test('Sanguisorba separates narrow and broad pinnate foliage, drooping petal-fre
  }
  assert.equal(CATALOG['p-49bc0a4378eb'].spread,null);assert.deepEqual(CATALOG['p-06c00c6f7ae3'].spread,[.6,1]);
 });
+test('Aruncus panicles attach to their stems and radiate flowers around curved branches',()=>{
+ for(const [id,h,w] of [['p-37155e7e66c3',.5,.5],['p-1f87be9e5a4e',1.5,.85],['p-8ee1f0b5d612',.3,.3]])for(const scale of [1,.45]){
+  const p={...makePlant(id,26300,1,1),height:h*scale,spread:w*scale,leafHeight:h*.4*scale},g=plantModel(p,view(6)),matrix=new Matrix4(),segments=[];
+  for(const m of g.children.filter(m=>['stem-aruncus','axis-aruncus','panicle-aruncus'].includes(m.userData.component)))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);segments.push({kind:m.userData.component,line:new Line3(new Vector3(0,-.5,0).applyMatrix4(matrix),new Vector3(0,.5,0).applyMatrix4(matrix))});}
+  for(const s of segments.filter(s=>s.kind!=='stem-aruncus')){const gap=Math.min(...segments.filter(o=>o!==s).map(o=>o.line.closestPointToPoint(s.line.start,true,new Vector3()).distanceTo(s.line.start)));assert.ok(gap<.00001,'detached aruncus branch: '+gap);}
+  const flowers=g.children.find(m=>m.userData.component==='petal-aruncus'),directions=[];for(let i=0;i<flowers.count;i+=Math.max(1,Math.floor(flowers.count/300))){flowers.getMatrixAt(i,matrix);directions.push(new Vector3(0,1,0).transformDirection(matrix));}
+  for(const axis of ['x','y','z']){const values=directions.map(n=>n[axis]);assert.ok(Math.min(...values)<-.5&&Math.max(...values)>.5,'florets must face all sides: '+axis);}
+  const mass=g.children.find(m=>m.userData.component==='flower-mass-aruncus');assert.ok(mass);assert.equal(mass.receiveShadow,false);dispose(g);
+ }
+});
 test('Noble Spirit keeps finely incised low foliage, white plumes and red winter nursery-reference leaves',()=>{
  const id='p-8ee1f0b5d612',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.2,.3]);assert.deepEqual(info.spread,[.2,.4]);assert.deepEqual(info.colors,['white']);
  for(const small of [false,true]){let skeleton,summerLeaves,winterLeaves;const p={...makePlant(id,25900+Number(small),1,1),height:small?.12:.3,spread:small?.15:.3,leafHeight:small?.06:.15};
   for(let month=1;month<=12;month++){
-   const g=plantModel(p,view(month));assert.equal(g.userData.architecture,'aruncusPlumes');assert.equal(stateAt(p,view(month)).shootScale,1);const leaves=g.children.find(m=>m.userData.component==='leaf-aruncus-noble');assert.equal(!!leaves,month!==2);if(leaves){assert.ok(leaves.geometry.userData.aruncusFine);assert.equal(leaves.count%9,0);if(month===5)summerLeaves=leaves.count;if(month===12)winterLeaves=leaves.count;}
+   const g=plantModel(p,view(month));assert.equal(g.userData.architecture,'aruncusPlumes');assert.equal(stateAt(p,view(month)).shootScale,1);const leaves=g.children.find(m=>m.userData.component==='leaf-aruncus-noble');assert.equal(!!leaves,month!==2);if(leaves){assert.ok(leaves.geometry.userData.aruncusFine);assert.equal(leaves.count%21,0);if(month===5)summerLeaves=leaves.count;if(month===12)winterLeaves=leaves.count;}
    const petals=g.children.find(m=>m.userData.component==='petal-aruncus');assert.equal(!!petals,[5,6].includes(month));if(petals){assert.equal(petals.geometry.userData.organCount,5);assert.equal(g.children.find(m=>m.userData.component==='filament-aruncus').geometry.userData.organCount,20);}
    assert.equal(!!g.children.find(m=>m.userData.component==='spent-aruncus-noble'),[7,8,9,10].includes(month));assert.ok(!g.children.some(m=>/fruit|seed|style|stipule/.test(m.userData.component)));if([12,1].includes(month))assert.match(seasonAt(info,month).phase,/冬苗写真/);
    const axes=g.children.filter(m=>/^(stem|axis|panicle)-aruncus$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;

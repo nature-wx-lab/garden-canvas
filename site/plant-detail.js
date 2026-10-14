@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.252';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.253';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.252';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.253';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5138,32 +5138,32 @@ function drawAruncus(b,{info,s,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,spark=a.shootProfile==='sparkles',noble=a.shootProfile==='noble',size=Math.min(1,h/(noble?.24:spark?.4:1.1),w/(noble?.25:spark?.4:.75)),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,H=a.headRadius*size,n=Math.max(3,Math.min(9,Math.round((noble?8:spark?7:6)*detail*Math.sqrt(w/(noble?.3:spark?.5:.85))))),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const compound=(at,az,i,k,scale=1)=>{
-  if(noise(i,k+71)>s.leafDensity)return;const len=L*1.2*scale,end=[at[0]+Math.sin(az)*len,at[1]+len*.35,at[2]+Math.cos(az)*len],shade=kit.shade(rand,s.leafColor,.04);b.branch(at,end,.0007*size*scale,stem,'petiole-aruncus');
+  if(noise(i,k+71)>s.leafDensity)return;const len=L*(noble?3.1:1.9)*scale,end=[at[0]+Math.sin(az)*len,at[1]+len*(noble?.70:.45),at[2]+Math.cos(az)*len],shade=kit.shade(rand,s.leafColor,.04);b.branch(at,end,.0007*size*scale,stem,'petiole-aruncus');
   for(let c=0;c<3;c++){
    const root=c===0?end:mix(at,end,.38),aa=az+(c===0?0:c===1?-1.0:1.0),ll=L*scale*(c===0?.50:.67),tip=[root[0]+Math.sin(aa)*ll,root[1]+ll*.20,root[2]+Math.cos(aa)*ll];b.branch(root,tip,.00045*size*scale,stem,'rachis-aruncus');
    flowerFrame(b,tip,1.0,aa).add(noble?'aruncusFine':'aruncusLeaf','leaf-aruncus-'+a.shootProfile,shade,0,0,0,W*scale,L*scale,L*scale);
-   for(let side=0;side<2;side++)flowerFrame(b,mix(root,tip,.40),1.02,aa+(side?1:-1)*1.05).add(noble?'aruncusFine':'aruncusLeaf','leaf-aruncus-'+a.shootProfile,shade,0,0,0,W*scale*.76,L*scale*.80,L*scale*.80);
+   for(let pair=0;pair<(noble?3:1);pair++)for(let side=0;side<2;side++){const ratio=noble?.85-pair*.10:.80;flowerFrame(b,mix(root,tip,noble?.18+pair*.25:.40),1.02,aa+(side?1:-1)*1.05).add(noble?'aruncusFine':'aruncusLeaf','leaf-aruncus-'+a.shootProfile,shade,0,0,0,W*scale*ratio,L*scale*ratio,L*scale*ratio);}
   }
  };
  const plume=(base,az,i)=>{
-  const tip=[base[0]+Math.sin(az)*H*.13,base[1]+H,base[2]+Math.cos(az)*H*.13],branches=noble?9:spark?18:23;let prev=base;
-  for(let j=1;j<=5;j++){const p=mix(base,tip,j/5);b.branch(prev,p,.0010*size*(1-j*.09),stem,'axis-aruncus');prev=p;}
+  const branches=noble?9:spark?18:23,axis=[];let prev=base;
+  axis.push(base);for(let j=1;j<=6;j++){const t=j/6,lean=(noble?.18:spark?.20:.60)*t*t,p=[base[0]+Math.sin(az)*H*lean,base[1]+H*(t-(noble||spark?.06:.20)*t*t),base[2]+Math.cos(az)*H*lean];b.branch(prev,p,.00085*size*(1-j*.08),stem,'axis-aruncus');axis.push(p);prev=p;}
   for(let c=0;c<branches;c++){
-   const t=(c+.4)/branches,at=mix(base,tip,t*.88),aa=az+c*2.399963,len=H*(noble?.72:spark?.64:.90)*(1-t*.83),count=Math.max(28,Math.round(290*(1-t*.64))),path=[];
-   for(let j=0;j<=6;j++){const q=j/6,rr=len*q,p=[at[0]+Math.sin(aa)*rr,at[1]+len*(.43*q-(noble?.22:spark?.16:.40)*q*q),at[2]+Math.cos(aa)*rr];path.push(p);if(j)b.branch(path[j-1],p,.00055*size*(1-q*.60),stem,'panicle-aruncus');}
+   const t=(c+.25+.30*noise(i,c*51))/branches,f=t*.93*6,at=mix(axis[Math.floor(f)],axis[Math.min(6,Math.floor(f)+1)],f%1),aa=az+c*2.399963+.32*(noise(i,c*73)-.5),len=H*(noble?.72:spark?.64:.90)*(1-t*.83)*(.87+.26*noise(i,c*37)),count=Math.max(32,Math.round((noble?390:spark?430:720)*(1-t*.64))),path=[];
+   for(let j=0;j<=6;j++){const q=j/6,rr=len*q,p=[at[0]+Math.sin(aa)*rr,at[1]+len*((noble?.40:spark?.45:.35)*q-(noble?.26:spark?.22:.77)*q*q),at[2]+Math.cos(aa)*rr];path.push(p);if(j){b.branch(path[j-1],p,.00055*size*(1-q*.60),stem,'panicle-aruncus');if(s.bloom&&noise(i,c*411+j*53)<s.flowerDensity)b.branch(path[j-1],p,R*2.15*(1-q*.60),kit.shade(rand,s.flowerColor,.025),'flower-mass-aruncus');}}
    for(let j=0;j<count;j++){
     if(!s.bloom&&!s.seedHeads)continue;if(s.bloom&&noise(i,c*200+j*5)>s.flowerDensity)continue;
-    const q=(j+.3)/count,at2=mix(path[Math.min(5,Math.floor(q*6))],path[Math.min(6,Math.floor(q*6)+1)],q*6%1),ba=j*2.399963,rr=R*(noble?3.3:spark?3.9:3.0)*(1-q*.70),p=[at2[0]+Math.sin(ba)*rr,at2[1]+Math.cos(ba)*rr,at2[2]+Math.cos(ba)*rr*.7],f=flowerFrame(b,p,ba,aa);
+    const q=(j+.15+.70*noise(i,c*907+j*11))/count,segment=Math.min(5,Math.floor(q*6)),at2=mix(path[segment],path[segment+1],q*6%1),ba=j*2.399963+.50*(noise(i,c*1009+j*17)-.5),rr=R*(noble?3.1:spark?3.7:3.0)*(1-q*.62)*(.70+.30*noise(i,c*3001+j*23)),tangent=new THREE.Vector3(...path[segment+1]).sub(new THREE.Vector3(...path[segment])).normalize(),side=new THREE.Vector3(Math.cos(aa),0,-Math.sin(aa)),up=tangent.clone().cross(side).normalize(),normal=side.multiplyScalar(Math.sin(ba)).addScaledVector(up,Math.cos(ba)),p=at2.map((v,k)=>v+normal.getComponent(k)*rr),f=flowerFrame(b,p,Math.acos(Math.max(-1,Math.min(1,normal.y))),Math.atan2(normal.x,normal.z));
     if(s.seedHeads){const color=noble?a.flowerPalette.afterBrown:[7,8,9].includes(month)?a.flowerPalette.afterGreen:[10,11].includes(month)?a.flowerPalette.afterOrange:a.flowerPalette.afterBrown;f.add('filipendulaCalyx5','spent-aruncus-'+a.shootProfile,color,0,0,0,R*1.5,R*1.7,R*1.5);continue;}
     if(noise(i,c*21+j*29)>.90){f.add(kit.bud,'bud-aruncus',a.budColor,0,0,0,R*.55,R*.70,R*.55);continue;}
     f.add('filipendulaCalyx5','calyx-aruncus',a.flowerPalette.calyx,0,0,0,R,R,R);f.add('filipendulaPetals','petal-aruncus',kit.shade(rand,s.flowerColor,.035),0,0,0,R,R,R);f.add('filipendulaStamens20','filament-aruncus',a.flowerPalette.filament,0,0,0,R,R,R);f.add('filipendulaAnthers20','anther-aruncus',a.flowerPalette.anther,0,0,0,R,R,R);
    }
   }
  };
- if(noble)for(let j=0;j<18;j++){const az=j*2.399963+.20*noise(j,9),rr=w*.20*Math.sqrt((j+.3)/18);compound([Math.sin(az)*rr,.008+.025*size*noise(j,1),Math.cos(az)*rr],az,j,18000,.75+.3*noise(j,3));}
+ const basal=noble?42:spark?14:12;for(let j=0;j<basal;j++){const az=j*2.399963+.25*noise(j,9),rr=w*(noble?.12:.17)*Math.sqrt((j+.3)/basal);compound([Math.sin(az)*rr,.008+(noble?.025:.04)*size*noise(j,1),Math.cos(az)*rr],az,j,18000,.75+.3*noise(j,3));}
  for(let i=0;i<n;i++){
   const az=i*2.399963+.18*noise(i,3),rr=w*.20*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.5,.008,Math.cos(az)*rr*.5],top=[Math.sin(az)*rr,h*((noble?.55:.66)+.07*noise(i,1)),Math.cos(az)*rr];let prev=root;
-  for(let j=1;j<=5;j++){const at=mix(root,top,(j-.20+.18*noise(i,j*71))/5);b.branch(prev,at,(spark?.0018:.0034)*size*(1-j*.09),stem,'stem-aruncus');prev=at;if(!noble||j<4)compound(at,az+j*2.4,i,j*200,noble?.90-j*.13:1.2-j*.11);}
+  for(let j=1;j<=5;j++){const at=j===5?top:mix(root,top,(j-.20+.18*noise(i,j*71))/5);b.branch(prev,at,(noble?.0010:spark?.0018:.0034)*size*(1-j*.09),stem,'stem-aruncus');prev=at;if(!noble||j<4)compound(at,az+j*2.4,i,j*200,noble?.90-j*.13:1.2-j*.11);}
   plume(top,az,i);
  }
 }
