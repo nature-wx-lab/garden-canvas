@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.242';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.243';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.242';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.243';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5022,6 +5022,61 @@ export function paniclePhloxPoint(type,t,u){
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
 }
 
+
+// Firefly's double flower has petaloid organs and an inner sepal tube, not stamens.
+export function campionPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='campionCalyx'){const az=u*Math.PI,r=(.15+.09*sn)*(1+.025*Math.cos(az*10));return [Math.sin(az)*r,t+.08*t**10*Math.cos(az*5),Math.cos(az)*r];}
+ if(type==='fireflyPetal')return [u*.50*sn**.45*(.40+.60*t),t-.24*Math.exp(-u*u*35)*t**7,.11*sn+.045*Math.sin(u*11+t*19)*Math.abs(u)**2];
+ return [u*.5*sn**.61*(.85+.15*t),t,.055*sn+.024*u*u*sn-.012*Math.exp(-u*u*55)*sn+.008*Math.cos((t-Math.abs(u)*.25)*40)*Math.abs(u)*sn];
+}
+function drawFirefly(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,size=Math.min(1,h/.45,w/.45),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,C=a.flowerLength*size,n=Math.max(5,Math.min(22,Math.round(17*detail*Math.sqrt(w/.5)))),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const leaf=(at,az,i,k,scale=1)=>{if(noise(i,k+180)>s.leafDensity)return;flowerFrame(b,at,1.02+.28*noise(i,k),az).add('campionLeaf','leaf-firefly',kit.shade(rand,s.leafColor,.04),0,0,0,W*scale,L*scale,L*scale);};
+ const flower=(at,az,i,k)=>{
+  if(!s.bloom||noise(i,k+1000)>s.flowerDensity)return;const f=flowerFrame(b,at,.55+.70*noise(i,k+40),az);
+  f.add('campionCalyx','calyx-firefly',a.flowerPalette.calyx,0,0,0,C,C,C);
+  if(noise(i,k+70)>.87){f.add(kit.bud,'bud-firefly',a.flowerPalette.bud,0,C*.85,0,R*.25,R*.38,R*.25);return;}
+  for(let j=0;j<33;j++){
+   const q=j/32,aa=j*2.399963+(noise(i,k+j+400)-.5)*.25,len=R*(1-.35*q),r=R*(.16-.09*q),white=j===31&&noise(i,k+920)<.7;
+   f.add('fireflyPetal','petal-firefly',white?'#ead9e2':kit.shade(rand,s.flowerColor,.065),Math.sin(aa)*r,C+q*R*.15,Math.cos(aa)*r,len*.66,len,len,1.37-.60*q+(noise(i,k+j+300)-.5)*.24,aa,(noise(i,k+j+500)-.5)*.18);
+  }
+  f.add('campionCalyx','inner-sepal-firefly','#8a9670',0,C,0,C*.28,C*.32,C*.28);
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.21*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.75,.006,Math.cos(az)*rr*.75],top=[Math.sin(az)*rr,h*(.58+.15*noise(i,1)),Math.cos(az)*rr];let prev=root;
+  for(let j=0;j<5;j++)leaf(root,az+j*2.4,i,j*80,1);
+  for(let j=1;j<=6;j++){
+   const q=j/6,at=mix(root,top,q);b.branch(prev,at,Math.min(.0016,h*.005)*(1-q*.40),stem,'stem-firefly');prev=at;
+   for(let side=0;side<2;side++)leaf(at,az+j*Math.PI/2+side*Math.PI,i,j*300+side*100,.85-.38*q);
+   if(j>=4)for(let side=0;side<2;side++){
+    const aa=az+j*1.57+side*Math.PI,end=[at[0]+Math.sin(aa)*w*.11,at[1]+h*.11,at[2]+Math.cos(aa)*w*.11];b.branch(at,end,Math.min(.0008,h*.0025),stem,'branch-firefly');flower(end,aa,i,j*1300+side*900);
+    for(let q2=0;q2<2;q2++){const ba=aa+(q2?1:-1)*.70,tip=[end[0]+Math.sin(ba)*w*.045,end[1]+h*.07,end[2]+Math.cos(ba)*w*.045];b.branch(end,tip,Math.min(.0004,h*.0015),stem,'pedicel-firefly');flower(tip,ba,i,j*3900+side*1900+q2*700);}
+   }
+  }flower(top,az,i,23000);
+ }
+}
+function drawSnowtip(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,size=Math.min(1,h/.14,w/.45),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,C=a.flowerLength*size,n=Math.max(8,Math.min(50,Math.round(38*detail*Math.sqrt(w/.55)))),stem=[12,1,2].includes(month)?a.winterStemColor:a.stemColor;
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const leaves=(at,az,i,k,scale=1)=>{for(let side=0;side<2;side++){if(noise(i,k+side*70+110)>s.leafDensity)continue;flowerFrame(b,at,1.05+.24*noise(i,k+side),az+side*Math.PI).add('campionLeaf','leaf-snowtip',kit.shade(rand,s.leafColor,.04),0,0,0,W*scale,L*scale,L*scale);}};
+ const flower=(at,az,i,k)=>{
+  if(!s.bloom||noise(i,k+800)>s.flowerDensity)return;const f=flowerFrame(b,at,.3+.8*noise(i,k+900),az);f.add('campionCalyx','calyx-snowtip','#93977a',0,0,0,C,C,C);
+  if(noise(i,k+1100)>.90){f.add(kit.bud,'bud-snowtip','#dfdfc4',0,C,0,R*.35,R*.5,R*.35);return;}
+  for(let j=0;j<5;j++)f.add('soapwortPetal','petal-snowtip',s.flowerColor,0,C,0,R*.92,R,R,1.4,j*TAU/5,0);
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.36*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.15,.004,Math.cos(az)*rr*.15],top=[Math.sin(az)*rr,h*(.35+.22*noise(i,3)),Math.cos(az)*rr];let prev=root;
+  for(let j=1;j<=8;j++){
+   const q=j/8,at=mix(root,top,q);at[1]+=.08*h*Math.sin(q*Math.PI);b.branch(prev,at,Math.min(.0006,h*.004)*(1-q*.35),stem,'stem-snowtip');prev=at;leaves(at,az+j*Math.PI/2,i,j*300);
+   if(j>=3){const aa=az+(j%2?1:-1)*.9,end=[at[0]+Math.sin(aa)*w*.075,at[1]+h*.16,at[2]+Math.cos(aa)*w*.075];let last=at;
+    for(let k=1;k<=3;k++){const pt=mix(at,end,k/3);b.branch(last,pt,Math.min(.00035,h*.0025),stem,'branch-snowtip');leaves(pt,aa+k*Math.PI/2,i,j*1900+k*70,.7);last=pt;}
+    for(let k=0;k<5;k++){const ba=aa+k*2.4,dist=.012*size*Math.sqrt((k+.3)/5),tip=[end[0]+Math.sin(ba)*dist,end[1]+h*.055,end[2]+Math.cos(ba)*dist];b.branch(end,tip,Math.min(.00020,h*.0013),stem,'pedicel-snowtip');flower(tip,ba,i,j*1300+k*110);}
+   }
+  }
+ }
+}
 
 // Bugbane racemes are dominated by fine stamens above ternately compound leaves.
 export function actaeaPoint(type,t,u){
@@ -10780,6 +10835,8 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='fireflyCymes'){drawFirefly(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='snowtipMat'){drawSnowtip(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='actaeaRacemes'){drawActaea(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='astrantiaUmbels'){drawAstrantia(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='cerintheCymes'){drawCerinthe(b,{info,s,detail,rand,month},kit);return;}

@@ -10,6 +10,24 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Firefly doubles retain the inner sepal tube and Snow Tip keeps small white five-petal flowers',()=>{
+ for(const [id,profile] of [['p-efc641a49826','firefly'],['p-22e219879524','snowtip']]){
+  const info=CATALOG[id],fire=profile==='firefly';assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');
+  for(const small of [false,true]){let skeleton,winterLeaves,summerLeaves;
+   const p={...makePlant(id,25300,1,1),height:small?(fire?.20:.07):(fire?.5:.15),spread:small?.2:.55,leafHeight:small?.04:fire?.25:.08};
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month));assert.equal(g.userData.architecture,fire?'fireflyCymes':'snowtipMat');assert.equal(stateAt(p,view(month)).shootScale,1);
+    const leaves=g.children.find(m=>m.userData.component==='leaf-'+profile);assert.ok(leaves?.geometry.userData.campionLeaf);if(month===1)winterLeaves=leaves.count;if(month===5)summerLeaves=leaves.count;
+    const petals=g.children.find(m=>m.userData.component==='petal-'+profile);assert.equal(!!petals,fire?month>=3&&month<=6:month>=5&&month<=7);
+    if(petals){assert.equal(petals.count%(fire?33:5),0);if(fire){assert.ok(petals.geometry.userData.fireflyPetal);assert.equal(g.children.find(m=>m.userData.component==='inner-sepal-firefly').count,petals.count/33);}}
+    assert.ok(!g.children.some(m=>/anther|style|fruit|seed/.test(m.userData.component)));
+    const axes=g.children.filter(m=>/^(stem|branch|pedicel)-/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.25,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.8,m.userData.component);}dispose(g);
+   }assert.ok(winterLeaves<summerLeaves);
+  }
+ }
+ assert.equal(CATALOG['p-22e219879524'].appearance.flowerRadius,.0025);assert.deepEqual(CATALOG['p-efc641a49826'].spread,[.4,.6]);assert.match(seasonAt(CATALOG['p-22e219879524'],1).phase,/切戻し株/);
+});
 test('Carbonella and Atropurpurea retain distinct foliage and do not share unsupported winter fruit',()=>{
  for(const [id,profile] of [['p-84162264d849','atropurpurea'],['p-36a4693472e6','carbonella']]){
   const info=CATALOG[id],carbon=profile==='carbonella';assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');
