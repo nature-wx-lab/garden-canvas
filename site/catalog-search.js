@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.248';
+import {treeProfile} from './tree-profiles.js?v=0.9.249';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -141,6 +141,7 @@ export function seasonAt(info,month){
  if(a.architecture==='guaraniticaShoots'){scale=1;phase='大きな対生葉と黒い萼・青い筒状花（地下茎・剪定・地域別の伸長は未予測）';}
  if(a.architecture==='rustySageCalyces'){scale=1;phase='銀灰色の葉と錆桃色の花・花後の萼（残存期間・冬咲き・霜害は未予測）';}
  if(a.architecture==='aruncusPlumes'){scale=1;phase=a.seedHeadMonths?.includes(month)?'花後の穂が残る参考（緑から秋の橙、冬の褐色へ。結実の内部・残存月は未照合）':[12,1,2].includes(month)?'低温で落葉した未剪定茎の参考（冬苗と異なる成株の残存量は未確認）':'鋸歯のある複葉と白い羽状の花穂（雄花を参考にした近似、性別・花量・伸長は未確認）';}
+ if(a.architecture==='aruncusPlumes'&&a.shootProfile==='noble')phase=[12,1].includes(month)?'紅葉後の少ない株元葉と残茎の参考（冬苗写真からの近似、落葉月・成株の姿は未校正）':month===2?'低温期に落葉した参考（月境界・暖地の残葉は未校正）':a.seedHeadMonths?.includes(month)?'花後の穂が残る参考（褐色と残存月は未校正、結実の内部は未確認）':'低い細かな切れ込み葉と白い花穂（販売株の性別・花量・年次成長は未確認）';
  if(a.architecture==='dropwortRosettes'){scale=1;phase=[12,1,2].includes(month)?'少ない株元葉と未剪定茎の参考（冬の成株写真・残葉量と残存月は未確認）':'株元の細かい羽状複葉と白い八重花（花弁数・花量・伸長は参考）';}
  if(a.architecture==='ulmariaSprays'){scale=1;phase=[12,1,2].includes(month)?'低温で落葉した未剪定茎の参考（品種の冬写真・残葉量・残存月は未確認）':'大小の小葉が並ぶ複葉と白い円錐状の花房（品種別の葉色・八重花、花量と伸長は参考）';}
  if(a.architecture==='filipendulaSprays'){scale=1;phase=[12,1,2].includes(month)?'低温期に落葉した未剪定の茎の参考（品種別の冬写真・残葉量・残存月は未確認）':'掌状に裂ける葉と小花を集めた花房（花量・伸長・紅葉時期は参考）';}

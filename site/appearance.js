@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.248';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.249';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -331,3 +331,5 @@ Object.assign(TRAIT_VALUES,{ulmariaPinnate:'大小の側小葉と3裂する頂�
 Object.assign(TRAIT_VALUES,{dropwortPinnate:'深い鋸歯の小葉が多数並ぶ、株元中心の細かい羽状複葉',dropwortDouble:'細長い白い花弁が重なる八重花'});
 
 Object.assign(TRAIT_VALUES,{aruncusCompound:'鋭い重鋸歯の小葉が枝分かれして並ぶ複葉',aruncusPlume:'細い枝に微小な5弁花が密集する羽状の花穂'});
+
+Object.assign(TRAIT_VALUES,{aruncusFine:'小さく深く切れ込む小葉が密に集まる細かな複葉'});
