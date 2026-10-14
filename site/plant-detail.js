@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.232';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.233';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.232';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.233';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5022,6 +5022,58 @@ export function paniclePhloxPoint(type,t,u){
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
 }
 
+
+// Narrow leaflike whorls and discrete tubular flowers of the spreading Phuopsis mat.
+export function phuopsisPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='phuopsisLeaf')return [u*.5*sn**.85*(1-.24*t),t,.045*t*t+.025*u*u*sn];
+ if(type==='phuopsisLobe')return [u*.5*sn**.68,t,.10*sn];
+ const az=u*Math.PI,r=.042+.025*t*t+.045*t**8;
+ return [Math.sin(az)*r,t,Math.cos(az)*r];
+}
+function drawPhuopsis(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.11,h*.18),W=L*a.leafWidth/a.leafLength,F=a.flowerLength*Math.min(1,h/.15),H=a.headRadius*Math.min(1,h/.15);
+ const n=Math.max(8,Math.min(68,Math.round(48*detail*Math.sqrt(w/.55)))),noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const whorl=(at,az,i,k,scale=1)=>{
+  // Two opposite leaves and leaflike stipules form the apparent whorl.
+  const count=noise(i,k+20)>.55?6:8;
+  for(let j=0;j<count;j++){
+   if(noise(i,k+j+60)>s.leafDensity)continue;
+   const angle=az+j*TAU/count,ll=L*scale*(.82+.18*noise(i,k+j)),kind=j===0||j===count/2?'leaf-phuopsis':'leaf-phuopsis-stipule';
+   b.add('phuopsisLeaf',kind,kit.shade(rand,s.leafColor,.035),...at,W*scale,ll,ll,1.19+.18*noise(i,k+j+40),angle,(noise(i,k+j+30)-.5)*.18);
+  }
+ };
+ const head=(at,az,i)=>{
+  if(!s.bloom)return;
+  const count=42+Math.floor(noise(i,90)*10),core=H*.20;
+  for(let j=0;j<8;j++)b.add('phuopsisLeaf','bract-phuopsis',s.leafColor,...at,W*.85,L*.48,L*.48,1.95,az+j*TAU/8,0);
+  for(let j=0;j<count;j++){
+   const angle=az+j*2.399963,tilt=Math.acos(1-(j+.5)/count*1.42),dir=[Math.sin(tilt)*Math.sin(angle),Math.cos(tilt),Math.sin(tilt)*Math.cos(angle)],origin=at.map((v,k)=>v+dir[k]*core),f=flowerFrame(b,origin,tilt,angle),len=F*(.88+.12*noise(i,j+200)),color=kit.shade(rand,s.flowerColor,.045);
+   // The head consists of separate, connected tubular corollas; no solid sphere.
+   f.add('phuopsisTube','tube-phuopsis',color,0,0,0,len,len,len);
+   const lobe=len*.155;
+   for(let q=0;q<5;q++){
+    const aa=q*TAU/5,r=len*.105;
+    f.add('phuopsisLobe','petal-phuopsis',color,Math.sin(aa)*r,len,Math.cos(aa)*r,lobe*.67,lobe,lobe,Math.PI/2+.10,aa,0);
+    const x=Math.sin(aa)*len*.055,z=Math.cos(aa)*len*.055;
+    f.add(kit.bud,'anther-phuopsis','#dca6c6',x,len*.97,z,len*.024,len*.049,len*.021);
+   }
+   // The conspicuous long organ is the style, not a ring of long stamens.
+   const end=[len*.08*(noise(i,j+401)-.5),len*(1.48+.12*noise(i,j+301)),len*.07*(noise(i,j+402)-.5)];
+   f.branch([0,len*.85,0],end,len*.015,'#cc91bd','style-phuopsis');
+   f.add(kit.bud,'stigma-phuopsis','#dc9bcd',...end,len*.045,len*.105,len*.045);
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.35*Math.sqrt((i+.4)/n),root=[Math.sin(az)*rr*.56,.004,Math.cos(az)*rr*.56],tip=[Math.sin(az)*rr,h*(.48+.28*noise(i,3)),Math.cos(az)*rr];let prev=root;
+  for(let j=1;j<=7;j++){
+   const q=j/7,at=mix(root,tip,q);at[1]=.004+(tip[1]-.004)*q**2;at[0]+=Math.sin(q*Math.PI)*w*.035*(noise(i,4)-.5);at[2]+=Math.sin(q*Math.PI)*w*.035*(noise(i,5)-.5);
+   b.branch(prev,at,Math.min(.00072,h*.004)*(1-q*.45),a.stemColor,'stem-phuopsis-square');prev=at;
+   whorl(at,az+j*.31,i,j*100,1-q*.24);
+   if(j===4||j===5){const aa=az+(j===4?1:-1)*.85,end=[at[0]+Math.sin(aa)*w*.045,at[1]+h*.09,at[2]+Math.cos(aa)*w*.045];b.branch(at,end,Math.min(.0004,h*.0022),a.stemColor,'branch-phuopsis-square');whorl(mix(at,end,.46),aa,i,800+j*100,.85);whorl(end,aa,i,900+j*100,.8);}
+  }head(tip,az,i);
+ }
+}
 
 // A single palmately veined blade, not separate compound leaflets.
 export function alchemillaPoint(type,t,u){
@@ -10486,6 +10538,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='phuopsisHeads'){drawPhuopsis(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='alchemillaCymes'){drawAlchemilla(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='doubleRaggedRobin'){drawRaggedRobin(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pinnatePolemonium'){drawPolemonium(b,{info,s,detail,rand,month},kit);return;}
