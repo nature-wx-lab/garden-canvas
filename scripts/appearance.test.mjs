@@ -10,6 +10,19 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Mai Tai keeps pinnate basal leaves, apricot semi-double flowers and smaller summer single flowers',()=>{
+ const id='p-b8b43a3dbf93',info=CATALOG[id];assert.deepEqual(info.height,[.3,.4]);assert.deepEqual(info.spread,[.3,.5]);assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');
+ for(const small of [false,true]){let skeleton,winterLeaves,springLeaves,springPetals,summerPetals;
+  for(let month=1;month<=12;month++){
+   const p={...makePlant(id,24500,1,1),height:small?.12:.35,spread:small?.17:.4,leafHeight:small?.07:.14},g=plantModel(p,view(month));assert.equal(g.userData.architecture,'maitaiCrowns');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);assert.equal(seasonAt(info,month).groundDormant,false);
+   const terminal=g.children.find(m=>m.userData.component==='leaf-maitai-terminal'),lateral=g.children.find(m=>m.userData.component==='leaf-maitai-lateral');assert.ok(terminal?.geometry.userData.maitaiLeaf);assert.ok(lateral.count>=terminal.count*2&&lateral.count<=terminal.count*3);if(month===1)winterLeaves=terminal.count;if(month===5)springLeaves=terminal.count;
+   const flowers=g.children.find(m=>m.userData.component==='receptacle-maitai'),petals=g.children.find(m=>m.userData.component==='petal-maitai');assert.equal(!!flowers,month>=3&&month<=6);if(flowers){assert.ok(petals.geometry.userData.maitaiPetal);assert.equal(g.children.find(m=>m.userData.component==='sepal-maitai').count,flowers.count*6);assert.equal(g.children.find(m=>m.userData.component==='anther-maitai').count,flowers.count*104);if(month===5){springPetals=petals.count/flowers.count;assert.ok(springPetals>=10&&springPetals<=20);}if(month===6){summerPetals=petals.count/flowers.count;assert.equal(summerPetals,5);}}
+   assert.ok(!g.children.some(m=>/fruit|seed|rhizome/.test(m.userData.component)));
+   const now=g.children.filter(m=>/^(stem|branch|pedicel)-maitai$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.15,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75,m.userData.component);}dispose(g);
+  }assert.ok(winterLeaves<springLeaves);assert.ok(summerPetals<springPetals);
+ }
+});
 test('Richardsonii has alternate broad and narrow leaves, two upper and three lower lobes, and no January bloom',()=>{
  const id='p-fb328e7a0f52',info=CATALOG[id];assert.deepEqual(info.height,[.05,.1]);assert.deepEqual(info.spread,[.2,.3]);assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');assert.ok(!info.bloom.includes(1)&&!info.bloom.includes(2));
  for(const small of [false,true]){let skeleton,winterLeaves,summerLeaves,summerFlowers,autumnFlowers;

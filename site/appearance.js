@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.234';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.235';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -30,6 +30,8 @@ Object.assign(TRAIT_VALUES,{linariaLeaf:'細い灰緑の線形葉',linariaLips:'
 Object.assign(TRAIT_VALUES,{heliLinear:'白い毛に覆われ縁が巻く細長い葉',heliBroad:'縁が反り白い毛に覆われる幅広の銀緑葉',heliPapery:'白い乾いた質感の苞が重なる黄色い中心の頭花'});
 TRAIT_VALUES.cushionScale='銀白色の小枝に沿う細い小さな葉';
 TRAIT_VALUES.artemisiaSilver='細く尖った裂片へ羽状に分かれる銀白色の葉';
+TRAIT_VALUES.semiDoubleGeum='花弁が重なる半八重花（夏は小さな一重花の参考）';
+TRAIT_VALUES.doubleFringedSilene='細く裂ける花弁が重なる白い八重花';
 TRAIT_VALUES.semiDormant='冬は冬芽・株元の葉（半常緑〜落葉）';
 Object.assign(TRAIT_VALUES,{lamiumSterlingLeaf:'浅い心形の基部と丸い鋸歯・凹凸のある卵形葉',lamiumGaleobdolonLeaf:'先が尖り鋸歯のある細長い卵形葉',lamiumSilver:'細い緑の葉縁・葉脈を残す銀葉',lamiumBands:'緑の中央脈の左右にある不規則な銀色の帯',lamiumLips:'兜状の上唇と3裂の下唇を持つ小さな花'});
 TRAIT_VALUES.springEphemeral='春に展葉し、夏以降は地上部休眠';
