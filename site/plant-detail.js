@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.251';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.252';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.251';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.252';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5022,6 +5022,60 @@ export function paniclePhloxPoint(type,t,u){
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
 }
 
+
+// White laceflower: compound umbels, enlarged outer petals and finely divided leaves.
+export function orlayaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='orlayaRay'){const notch=.34*Math.exp(-u*u*20)*t**9;return [u*.53*sn**.35*(.35+.65*t),t-notch,.06*u*u*t+.065*t*t];}
+ if(type==='orlayaBract')return [u*.5*sn**.8,t,.06*t*t+.025*u*u*sn];
+ const edge=.38+.62*(.5+.5*Math.cos(t*TAU*3))**.52;return [u*.5*sn**.65*edge,t,.035*t*t];
+}
+export function orlayaFruitGeometry(){
+ const pos=[],uv=[],ix=[],o=new THREE.Object3D(),append=(g,m)=>{const p=g.attributes.position,base=pos.length/3,v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(m);pos.push(v.x,v.y,v.z);uv.push(g.attributes.uv?.getX(i)??.5,g.attributes.uv?.getY(i)??.5);}if(g.index)for(const n of g.index.array)ix.push(base+n);else for(let i=0;i<p.count;i++)ix.push(base+i);g.dispose();};
+ for(const side of [-1,1]){o.position.set(side*.18,0,0);o.quaternion.identity();o.scale.set(.25,.50,.29);o.updateMatrix();append(new THREE.SphereGeometry(1,8,6),o.matrix);}
+ for(let rib=0;rib<5;rib++)for(let row=0;row<2;row++)for(let j=0;j<5;j++){
+  const az=rib*TAU/5+(row?1:-1)*.09,y=-.34+j*.17,rr=.33*Math.sqrt(Math.max(.1,1-(y/.5)**2)),a=new THREE.Vector3(Math.sin(az)*rr,y,Math.cos(az)*rr),tip=new THREE.Vector3(Math.sin(az)*(rr+.18),y+.065,Math.cos(az)*(rr+.18)),d=tip.clone().sub(a);o.position.copy(a).addScaledVector(d,.5);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize());o.scale.set(1,1,1);o.updateMatrix();append(new THREE.CylinderGeometry(.005,.018,d.length(),3,1,true),o.matrix);
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.orlayaFruit=true;g.userData.mericarps=2;g.userData.spines=50;return g;
+}
+function drawOrlaya(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,size=Math.min(1,h/.5,w/.35),L=a.leafLength*size,stem=s.seedHeads?a.winterStemColor:a.stemColor,young=!s.bloom&&!s.seedHeads,leafStage=young?([12,1,2].includes(month)?.60:.8):1,noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const leaf=(at,az,i,scale=1)=>{
+  if(noise(i,43)>s.leafDensity)return;const len=L*scale*leafStage,tip=[at[0]+Math.sin(az)*len,at[1]+len*(young?.70:.35),at[2]+Math.cos(az)*len];b.branch(at,tip,.0007*size,stem,'rachis-orlaya');
+  for(let pair=0;pair<5;pair++)for(let side=0;side<2;side++){
+   const t=.18+pair*.16,root=mix(at,tip,t),aa=az+(side?1:-1)*1.10,ll=len*.32*(1-t*.60),end=[root[0]+Math.sin(aa)*ll,root[1]+ll*.15,root[2]+Math.cos(aa)*ll];b.branch(root,end,.00035*size,stem,'pinna-orlaya');
+   flowerFrame(b,end,1.15,aa).add('orlayaSegment','leaf-orlaya',s.leafColor,0,0,0,ll*.22,ll*.52,ll*.52);
+   for(let j=0;j<3;j++)for(let sign=0;sign<2;sign++){const q=mix(root,end,.25+j*.24),ba=aa+(sign?1:-1)*.95,ss=ll*(.5-j*.085);flowerFrame(b,q,1.10,ba).add('orlayaSegment','leaf-orlaya',kit.shade(rand,s.leafColor,.055),0,0,0,ss*.36,ss,ss);}
+  }
+ };
+ const flower=(at,az,outer,scale)=>{
+  const f=flowerFrame(b,at,.16,az),r=.0018*size*scale;
+  f.add('filipendulaCalyx5','calyx-orlaya',a.flowerPalette.calyx,0,0,0,r,r,r);
+  for(let j=0;j<5;j++){const big=outer&&j===0,rad=j*TAU/5,length=(big?a.flowerLength:.0016)*size*scale;f.add('orlayaRay',big?'petal-orlaya-outer':'petal-orlaya-inner',kit.shade(rand,s.flowerColor,.02),Math.sin(rad)*r*.10,0,Math.cos(rad)*r*.10,length*(big?1.18:.75),length,length,Math.PI/2-.12,rad,0);}
+  f.add('filipendulaStamens5','filament-orlaya',a.flowerPalette.filament,0,0,0,r,r,r);f.add('filipendulaAnthers5','anther-orlaya',a.flowerPalette.anther,0,0,0,r,r,r);
+  for(const side of [-1,1])f.branch([side*r*.12,0,0],[side*r*.32,r*.60,0],r*.035,a.flowerPalette.style,'style-orlaya');
+ };
+ const umbel=(base,az,i,scale=1)=>{
+  const radius=a.headRadius*size*scale,rays=8;
+  for(let j=0;j<5;j++){const aa=az+j*TAU/5;flowerFrame(b,base,1.25,aa).add('orlayaBract','bract-orlaya',a.flowerPalette.bract,0,0,0,.003*size*scale,.012*size*scale,.012*size*scale);}
+  for(let j=0;j<rays;j++){
+   const aa=az+j*TAU/rays,tip=[base[0]+Math.sin(aa)*radius,base[1]+radius*.23,base[2]+Math.cos(aa)*radius];b.branch(base,tip,.00065*size*scale,stem,'ray-orlaya');
+   for(let q=0;q<5;q++){const ba=aa+(q-2)*.8,ll=(q<3?.008:.002)*size*scale;flowerFrame(b,tip,1.4,ba).add('orlayaBract','bracteole-orlaya',a.flowerPalette.bract,0,0,0,ll*.28,ll,ll);}
+   if(s.seedHeads){for(let q=0;q<3;q++){const ba=aa+q*2.4,at=[tip[0]+Math.sin(ba)*radius*.20,tip[1]+.004*size,tip[2]+Math.cos(ba)*radius*.20];b.branch(tip,at,.00035*size,stem,'fruit-stalk-orlaya');b.add('orlayaFruit','fruit-orlaya',a.seedColor,...at,a.fruitRadius*size,a.fruitRadius*size,a.fruitRadius*size,.12,ba,0);}continue;}
+   if(!s.bloom||noise(i,j*71)>s.flowerDensity){b.add(kit.bud,'bud-orlaya',a.budColor,...tip,.003*size*scale,.0035*size*scale,.003*size*scale);continue;}
+   for(let q=0;q<13;q++){const ba=q*2.399963,rr=radius*.24*Math.sqrt((q+.2)/13),at=[tip[0]+Math.sin(ba)*rr,tip[1]+.003*size*scale,tip[2]+Math.cos(ba)*rr];b.branch(tip,at,.0002*size,stem,'pedicel-orlaya');flower(at,ba,Math.cos(ba-aa)>.20&&q>5,scale);}
+  }
+ };
+ for(let j=0;j<12;j++){const az=j*2.399963,rr=w*.14*Math.sqrt((j+.3)/12);leaf([Math.sin(az)*rr,young?.026:.012,Math.cos(az)*rr],az,j,.72+.25*noise(j,4));}
+ if(young)return;
+ const stems=Math.max(3,Math.min(7,Math.round(5*detail*Math.sqrt(w/.4))));
+ for(let i=0;i<stems;i++){
+  const az=i*2.399963,rr=w*.24*Math.sqrt((i+.4)/stems),root=[Math.sin(az)*rr*.2,.01,Math.cos(az)*rr*.2],top=[Math.sin(az)*rr,h*(.72+.17*noise(i,5)),Math.cos(az)*rr],path=[root];
+  for(let j=1;j<=5;j++){const at=mix(root,top,j/5);b.branch(path.at(-1),at,.0018*size*(1-j*.11),stem,'stem-orlaya');path.push(at);if(j<4)leaf(at,az+j*2.4,i*50+j,.62-j*.11);}
+  umbel(top,az,i);
+  for(let j=0;j<2;j++){const at=path[3+j],aa=az+(j?1:-1)*1.25,end=[at[0]+Math.sin(aa)*w*.17,at[1]+h*.075,at[2]+Math.cos(aa)*w*.17];b.branch(at,end,.0008*size,stem,'branch-orlaya');umbel(end,aa,i*10+j+100,.76);}
+ }
+}
 
 // Burnet flowers have no petals: four sepals and conspicuous projecting filaments.
 export function sanguisorbaLeafPoint(type,t,u){
@@ -11107,6 +11161,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='orlayaUmbels'){drawOrlaya(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='sanguisorbaSpikes'){drawSanguisorba(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='aruncusPlumes'){drawAruncus(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='dropwortRosettes'){drawDropwort(b,{info,s,detail,rand,month},kit);return;}
