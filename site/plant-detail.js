@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.256';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.257';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.256';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.257';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5345,6 +5345,48 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
     for(let k=1;k<=3;k++){const pt=mix(at,end,k/3);b.branch(last,pt,Math.min(.00065,h*.002),a.stemColor,'branch-gillenia');leaf(pt,aa+k*2.40,i,j*900+k*50,.44);last=pt;}
     for(let k=0;k<7;k++){const ba=aa+k*2.4,dd=w*.045*Math.sqrt((k+.3)/7),tip=[end[0]+Math.sin(ba)*dd,end[1]+h*(.035+.035*noise(i,j*270+k)),end[2]+Math.cos(ba)*dd];b.branch(end,tip,Math.min(.00028,h*.001),a.stemColor,'pedicel-gillenia');flower(tip,ba,i,j*1800+k*120);}
    }
+  }
+ }
+}
+
+// Maltese-cross campion has a compact terminal head above broad opposite leaves.
+export function chalcedonicaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='chalcedonicaPetal')return [u*.52*sn**.44*(.22+.78*t),t-.48*Math.exp(-u*u*24)*t**7,.035*sn+.015*Math.sin(u*11+t*14)*Math.abs(u)**2];
+ const basal=type==='chalcedonicaBasal',width=.5*sn**(basal?.58:.65)*(basal?.45+.55*t:.92+.08*t);
+ return [u*width*(1+.022*Math.sin(t*29)),t-(basal?0:.025*Math.abs(u)**.5*Math.exp(-t*8)),.055*sn+.036*u*u*sn-.018*Math.exp(-u*u*55)*sn];
+}
+function drawChalcedonica(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,size=Math.min(1,h/.7,w/.35),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*Math.max(.5,size),C=a.flowerLength*Math.max(.5,size),headR=a.headRadius*size,n=Math.max(3,Math.min(9,Math.round(6*detail*Math.sqrt(w/.35)))),shoot=[0,0,.20,.5,.85,1,.9,.65,.35,0,0,0][month-1];
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);};
+ const leaf=(at,az,i,k,scale=1,basal=false)=>{flowerFrame(b,at,(basal?.84:1.0)+.25*noise(i,k),az).add(basal?'chalcedonicaBasal':'chalcedonicaLeaf',basal?'leaf-chalcedonica-basal':'leaf-chalcedonica-upper',kit.shade(rand,s.leafColor,.035),0,0,0,W*scale,L*scale,L*scale);};
+ const flower=(at,az,i,k)=>{
+  const f=flowerFrame(b,at,.08+.50*noise(i,k+15),az);f.add('campionCalyx','calyx-chalcedonica','#718c4c',0,0,0,C*.70,C,C*.70);
+  if(noise(i,k+310)>s.flowerDensity*.9){f.add(kit.bud,'bud-chalcedonica','#9d9e70',0,C*.92,0,R*.20,R*.28,R*.20);return;}
+  const color=a.flowerPalette[noise(i,k+510)<.30?'pale':noise(i,k+510)<.7?'mid':'deep'];
+  for(let j=0;j<5;j++){
+   const aa=j*TAU/5;f.add('chalcedonicaPetal','petal-chalcedonica',color,0,C,0,R,R,R,1.45,aa,0);
+   for(let side=0;side<2;side++)f.add('narrow','appendage-chalcedonica',color,Math.sin(aa)*R*.07,C,Math.cos(aa)*R*.07,.00045*size,.0025*size,.0025*size,.32,aa+side*.15,0);
+  }
+  for(let j=0;j<10;j++){const aa=j*TAU/10,rr=R*.11,tip=[Math.sin(aa)*rr,C+.001*size,Math.cos(aa)*rr];f.branch([0,C*.78,0],tip,.000075*size,'#dcbdaf','filament-chalcedonica');f.add(kit.bud,'anther-chalcedonica','#d8c796',...tip,.00024*size,.00038*size,.0002*size,0,aa,0);}
+  for(let j=0;j<5;j++){const aa=j*TAU/5;f.branch([0,C*.8,0],[Math.sin(aa)*.00045*size,C+.0015*size,Math.cos(aa)*.00045*size],.00008*size,'#e3dccc','style-chalcedonica');}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.22*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.3,.005,Math.cos(az)*rr*.3];
+  for(let j=0;j<8;j++)if(noise(i,j*63)<s.leafDensity)leaf(root,az+j*2.4,i,j*91,1-.3*noise(i,j+40),true);
+  if(shoot===0)continue;
+  const top=[Math.sin(az)*rr,h*shoot*(.74+.17*noise(i,54)),Math.cos(az)*rr];let prev=root;
+  for(let j=1;j<=9;j++){
+   const q=j/9,at=root.map((v,k)=>v+(top[k]-v)*q);b.branch(prev,at,Math.min(.0023,h*.0045)*(1-q*.25),a.stemColor,'stem-chalcedonica');prev=at;
+   if(noise(i,j*231)<s.leafDensity)for(let side=0;side<2;side++)leaf(at,az+j*Math.PI/2+side*Math.PI,i,j*901+side*10,.95-.5*q);
+   // Rough hairs are visible on the flowering stems in the adopted photograph.
+   for(let k=0;k<9;k++){const aa=k*2.4,at2=root.map((v,vk)=>v+(top[vk]-v)*((j-.5)/9)),len=.0009*size,radius=Math.min(.0023,h*.0045)*(1-q*.25);at2[0]+=Math.sin(aa)*radius;at2[2]+=Math.cos(aa)*radius;b.branch(at2,[at2[0]+Math.sin(aa)*len,at2[1]+len*.1,at2[2]+Math.cos(aa)*len],.000035*size,'#b1bd83','hair-chalcedonica');}
+  }
+  if(!s.bloom)continue;
+  for(let j=0;j<45;j++){
+   const aa=j*2.399963,rr2=headR*Math.sqrt((j+.5)/45),tip=[top[0]+Math.sin(aa)*rr2,top[1]+headR*(.23+.32*(1-rr2/headR)),top[2]+Math.cos(aa)*rr2];
+   b.branch(top,tip,Math.min(.00032,h*.001),a.stemColor,'pedicel-chalcedonica');flower(tip,aa,i,j*1000);
+   if(j%5===0)flowerFrame(b,tip,.85,aa).add('narrow','bract-chalcedonica','#648344',0,-.001,0,.004*size,.016*size,.016*size);
   }
  }
 }
@@ -11330,6 +11372,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='chalcedonicaHeads'){drawChalcedonica(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='roseCampion'){drawRoseCampion(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='redValerian'){drawRedValerian(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='fan'){drawFans(b,{info,s,detail,rand},kit);return;}

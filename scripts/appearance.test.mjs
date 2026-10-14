@@ -11,6 +11,18 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Carnea keeps dense terminal bifid flowers and does not invent autumn reblooming',()=>{
+ const id='p-ad2be876ccf2',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.7,1.2]);assert.deepEqual(info.spread,[.3,.4]);assert.equal(info.bloomKnown,false);assert.equal(info.appearance.flowerTiming,'season-reference');
+ for(const small of [false,true]){const p={...makePlant(id,26700+Number(small),1,1),height:small?.25:1.2,spread:small?.23:.35,leafHeight:small?.12:.5};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),rosette=[1,2,10,11,12].includes(month);assert.equal(g.userData.architecture,'chalcedonicaHeads');assert.equal(stateAt(p,view(month)).shootScale,1);const basal=g.children.find(m=>m.userData.component==='leaf-chalcedonica-basal');assert.ok(basal?.geometry.userData.chalcedonicaBasal);
+   const upper=g.children.find(m=>m.userData.component==='leaf-chalcedonica-upper');assert.equal(!!upper,!rosette);if(upper){assert.equal(upper.count%2,0);assert.ok(upper.geometry.userData.chalcedonicaLeaf);assert.ok(g.children.some(m=>m.userData.component==='hair-chalcedonica'));}
+   const petals=g.children.find(m=>m.userData.component==='petal-chalcedonica');assert.equal(!!petals,[3,4,5,6].includes(month));if(petals){assert.equal(petals.receiveShadow,false);assert.ok(petals.geometry.userData.chalcedonicaPetal);const flowers=petals.count/5;assert.equal(g.children.find(m=>m.userData.component==='anther-chalcedonica').count,flowers*10);assert.equal(g.children.find(m=>m.userData.component==='style-chalcedonica').count,flowers*5);assert.equal(g.children.find(m=>m.userData.component==='appendage-chalcedonica').count,flowers*10);const calyx=g.children.find(m=>m.userData.component==='calyx-chalcedonica'),bud=g.children.find(m=>m.userData.component==='bud-chalcedonica');assert.equal(calyx.count,flowers+(bud?.count||0));const colors=petals.instanceColor.array;assert.ok(new Set(Array.from({length:petals.count},(_,j)=>colors.slice(j*3,j*3+3).join(','))).size>=2);}
+   assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.2,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.9,m.userData.component);}dispose(g);
+  }
+ }
+ for(const month of [8,9,10])assert.equal(seasonAt(info,month).bloom,false);assert.match(info.care,/切り戻す/);
+});
 test('Rose campion separates woolly rosettes, blush eyes and sterile double flowers',()=>{
  for(const [index,id] of ['p-84cb69e40b51','p-92b2b04c2c82'].entries()){
   const info=CATALOG[id],a=info.appearance;assert.equal(a.status,'partial');assert.equal(info.bloomKnown,false);assert.equal(a.flowerTiming,'season-reference');assert.equal(a.leafPattern,undefined);assert.equal(a.patternColor,undefined);assert.equal(info.variegated,false);

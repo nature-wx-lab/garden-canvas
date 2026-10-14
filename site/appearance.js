@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.256';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.257';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -341,3 +341,5 @@ Object.assign(TRAIT_VALUES,{branching:'細い茎が枝分かれする草姿',orl
 Object.assign(TRAIT_VALUES,{centranthusLeaves:'下葉は柄のある披針形、上葉は茎を抱く灰緑色の対生葉',centranthusThyrse:'細い花筒・距・5裂の花冠と1本の雄しべを持つ小花の房'});
 
 Object.assign(TRAIT_VALUES,{roseCampionLeaves:'毛で銀白色になるへら形の根出葉と小さくなる対生の茎葉',roseCampionSingle:'白地に桃色が差す、先が浅くくぼむ5枚の花弁',roseCampionDouble:'濃い赤紫の花弁が重なる八重花'});
+
+Object.assign(TRAIT_VALUES,{chalcedonicaLeaves:'緑色で毛のある卵形〜披針形の対生葉',chalcedonicaFlowers:'先が深く2裂する5枚の花弁を持つ、茎先の密な小花房'});
