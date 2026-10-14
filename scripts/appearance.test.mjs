@@ -10,6 +10,26 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Remaining Astrantia cultivars preserve white margins, small branched heads and seed-grown colour differences',()=>{
+ for(const [id,profile] of [['p-132064a068ae','beauty'],['p-18f7c6c47b7d','alba'],['p-3b8c108bbd80','magic'],['p-c3a33b8cb2ba','billion']]){
+  const info=CATALOG[id];assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'alternate');
+  for(const small of [false,true]){let skeleton;const p={...makePlant(id,24900,1,1),height:small?.20:info.height[1],spread:small?.22:(info.spread?.[1]||.45),leafHeight:small?.10:.24};
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),dormant=[12,1,2].includes(month);assert.equal(!!g.userData.groundDormant,dormant);if(dormant){assert.equal(g.children.length,0);assert.equal(seasonAt(info,month).bloom,false);dispose(g);continue;}
+    assert.equal(g.userData.architecture,'astrantiaUmbels');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+    assert.ok(g.children.find(m=>m.userData.component===(profile==='magic'?'leaf-astrantia-magic-'+([3,4,11].includes(month)?'pink':'white'):'leaf-astrantia-basal')).geometry.userData.astrantiaLeaf);
+    const heads=g.children.find(m=>m.userData.component==='receptacle-astrantia'),bracts=g.children.find(m=>m.userData.component==='bract-astrantia-'+profile),florets=g.children.find(m=>m.userData.component==='floret-astrantia');assert.equal(!!heads,month>=5&&month<=11);
+    if(heads){assert.equal(bracts.count,heads.count*20);assert.ok(bracts.geometry.userData.astrantiaBract);assert.equal(florets.count,heads.count*(profile==='magic'?75:60));assert.equal(g.children.find(m=>m.userData.component==='petal-astrantia').count,florets.count*5);assert.equal(g.children.find(m=>m.userData.component==='anther-astrantia').count,florets.count*5);}
+    const now=g.children.filter(m=>/^(stem|branch)-astrantia$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.2,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.80,m.userData.component);}dispose(g);
+   }
+  }
+ }
+ const alba='p-18f7c6c47b7d';assert.equal(new Set([24900,24901,24902].map(n=>stateAt(makePlant(alba,n,1,1),view(6)).flowerColor)).size,3);
+ for(const id of ['p-132064a068ae','p-c3a33b8cb2ba']){assert.equal(CATALOG[id].spread,null);assert.match(CATALOG[id].appearance.phenologyRegion,/品種固有.*未確認/);assert.match(seasonAt(CATALOG[id],1).phase,/種から推定.*未確認/);}
+ const counts=[];for(const id of ['p-132064a068ae','p-c3a33b8cb2ba']){const p={...makePlant(id,24900,1,1),height:.6,spread:.45,leafHeight:.24},g=plantModel(p,view(6));counts.push(g.children.find(m=>m.userData.component==='receptacle-astrantia').count);dispose(g);}assert.equal(counts[1],counts[0]*3);
+ assert.equal(CATALOG['p-3b8c108bbd80'].appearance.leafPattern,'margin');
+});
 test('Astrantia separates palmate foliage, involucral bracts and tiny flowers across four domestic entries',()=>{
  for(const [id,profile] of [['p-b7f3e0f69356','roma'],['p-8160132a3ee9','florence'],['p-c1961ca9a421','major'],['p-2e5618c185e0','snow']]){
   const info=CATALOG[id];assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'alternate');
