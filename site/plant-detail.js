@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.235';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.236';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.235';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.236';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5022,6 +5022,37 @@ export function paniclePhloxPoint(type,t,u){
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
 }
 
+
+// Low sea-campion shoots distinguish inflated calyces from the white corolla.
+export function unifloraPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='unifloraCalyx'){const az=u*Math.PI,r=.12+.28*sn**.64;return [Math.sin(az)*r,t+.035*t**9*Math.cos(az*5),Math.cos(az)*r];}
+ if(type==='unifloraPetal'||type==='unifloraDouble'){const notch=(type==='unifloraPetal'?.28:.16)*Math.exp(-u*u*28)*t**5;return [u*.55*sn**.43*(.45+.55*t),t-notch,.07*sn+.025*Math.sin(u*12+t*24)*Math.abs(u)**2];}
+ return [u*.5*sn**.66*(.80+.20*t),t,.04*sn+.018*u*u*sn];
+}
+function drawUniflora(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,variegated=a.shootProfile==='variegated',h=s.height,w=s.spread,size=Math.min(1,h/.11,w/.23),L=a.leafLength*size,W=a.leafWidth*size,C=a.flowerLength*size,R=a.flowerRadius*size,n=Math.max(9,Math.min(44,Math.round(32*detail*Math.sqrt(w/.3)))),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const leaves=(at,az,i,k)=>{for(let side=0;side<2;side++){if(noise(i,k+side*7+90)>s.leafDensity)continue;flowerFrame(b,at,.85+.35*noise(i,k+side*9+40),az+side*Math.PI).add('unifloraLeaf',variegated?'leaf-uniflora-variegated':'leaf-uniflora-swan',kit.shade(rand,s.leafColor,.035),0,0,0,W,L,L);}};
+ const flower=(at,az,i,k)=>{
+  if(!s.bloom||noise(i,k+1000)>s.flowerDensity*(variegated?1:.38))return;
+  const f=flowerFrame(b,at,.55+noise(i,k+1200)*1.1,az),calyxColor=variegated?'#d6d9bd':'#c7d0b2';
+  f.add('unifloraCalyx','calyx-uniflora',calyxColor,0,0,0,C,C,C);
+  if(noise(i,k+700)>.88){f.add(kit.bud,'bud-uniflora','#e5e8d7',0,C*.97,0,C*.15,C*.15,C*.15);return;}
+  const layers=variegated?1:4,count=variegated?5:9;
+  for(let layer=0;layer<layers;layer++)for(let j=0;j<count;j++){const aa=j*TAU/count+layer*.37,lr=R*(1-layer*.18),spread=variegated?.13:.11;f.add(variegated?'unifloraPetal':'unifloraDouble',variegated?'petal-uniflora-single':'petal-uniflora-double',kit.shade(rand,s.flowerColor,.022),Math.sin(aa)*R*spread,C+layer*R*.055,Math.cos(aa)*R*spread,lr*(variegated?.92:.54),lr,lr,Math.PI/2-.18-layer*.13,aa,0);}
+  // Two short coronal scales per petal are represented only on the observed single form.
+  if(variegated)for(let j=0;j<10;j++){const aa=j*TAU/10;f.add('unifloraLeaf','corona-uniflora','#f0f0e4',Math.sin(aa)*R*.17,C+R*.03,Math.cos(aa)*R*.17,R*.08,R*.28,R*.28,.25,aa,0);}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rad=w*.35*Math.sqrt((i+.4)/n),root=[Math.sin(az)*rad*.34,.005,Math.cos(az)*rad*.34],top=[Math.sin(az)*rad,h*(.33+.20*noise(i,5)),Math.cos(az)*rad];let prev=root;
+  for(let j=1;j<=7;j++){
+   const q=j/7,at=mix(root,top,q);at[1]=.005+(top[1]-.005)*Math.sin(q*Math.PI*.72);at[0]+=w*.025*Math.sin(q*Math.PI)*(noise(i,9)-.5);b.branch(prev,at,Math.min(.00060,h*.006)*(1-q*.35),stem,'stem-uniflora');prev=at;leaves(at,az+j*Math.PI/2,i,j*100);
+   if(j===3||j===5){const ba=az+(j===3?1:-1)*1.15,end=[at[0]+Math.sin(ba)*w*.10,at[1]+h*.10,at[2]+Math.cos(ba)*w*.10];let bp=at;for(let k=1;k<=3;k++){const q2=k/3,v=mix(at,end,q2);b.branch(bp,v,Math.min(.00036,h*.004),stem,'branch-uniflora');leaves(v,ba+k*Math.PI/2,i,j*500+k*90);bp=v;}const neck=[end[0],end[1]+h*.11,end[2]];b.branch(end,neck,Math.min(.00030,h*.003),stem,'pedicel-uniflora');flower(neck,ba,i,j*777);}
+   if(j===7){const end=[at[0]+Math.sin(az)*w*.025,at[1]+h*.15,at[2]+Math.cos(az)*w*.025];b.branch(at,end,Math.min(.00032,h*.003),stem,'pedicel-uniflora');flower(end,az,i,7777);}
+  }
+ }
+}
 
 // Mai Tai keeps large terminal leaflets and variable single/semi-double corollas.
 export function maitaiPoint(type,t,u){
@@ -10609,6 +10640,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='unifloraMats'){drawUniflora(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='maitaiCrowns'){drawMaitai(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='richardsoniiTrails'){drawRichardsonii(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='phuopsisHeads'){drawPhuopsis(b,{info,s,detail,rand},kit);return;}
