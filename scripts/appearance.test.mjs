@@ -10,6 +10,23 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Carbonella and Atropurpurea retain distinct foliage and do not share unsupported winter fruit',()=>{
+ for(const [id,profile] of [['p-84162264d849','atropurpurea'],['p-36a4693472e6','carbonella']]){
+  const info=CATALOG[id],carbon=profile==='carbonella';assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');
+  for(const small of [false,true]){let skeleton;
+   const p={...makePlant(id,25200,1,1),height:small?.3:info.height[1],spread:small?.25:carbon?.7:.8,leafHeight:small?.16:.55};
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),winter=[12,1,2].includes(month);assert.equal(g.userData.architecture,'actaeaRacemes');assert.equal(stateAt(p,view(month)).shootScale,1);
+    const leaves=g.children.find(m=>m.userData.component==='leaf-actaea-'+profile);assert.equal(!!leaves,!winter);if(leaves)assert.ok(leaves.geometry.userData[carbon?'actaeaBroadLeaf':'actaeaLobedLeaf']);
+    const fruit=g.children.find(m=>m.userData.component==='fruit-actaea-follicle');assert.equal(!!fruit,carbon&&[11,12,1,2].includes(month));
+    const flowers=g.children.find(m=>m.userData.component==='receptacle-actaea');if(month<6||month===12)assert.equal(!!flowers,false);if(month===10)assert.ok(flowers);
+    const axes=g.children.filter(m=>/^(stem|branch|raceme)-actaea/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.2,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.85,m.userData.component);}dispose(g);
+   }
+  }
+ }
+ const carbon=CATALOG['p-36a4693472e6'];assert.notEqual(seasonAt(carbon,4).leafColor,seasonAt(carbon,8).leafColor);assert.deepEqual(carbon.spread,[.5,.8]);assert.deepEqual(carbon.height,[1,1.2]);assert.equal(CATALOG['p-84162264d849'].spread,null);
+});
 test('Bronze Actaea distinguishes deep leaves, pale pink flowers and documented winter follicles',()=>{
  for(const [id,profile] of [['p-446df64cf3d9','brunette'],['p-10912a2f9745','pink'],['p-aa840ce6b9a8','negligee']]){
   const info=CATALOG[id];assert.equal(info.life,'perennial');assert.equal(info.appearance.status,'partial');
