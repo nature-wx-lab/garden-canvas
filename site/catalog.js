@@ -1,5 +1,5 @@
-import { EXPANDED_CATALOG, BASE_POPULARITY, RETIRED_GARDEN_PLANTS } from './catalog-data.js?v=0.9.253';
-import {attachAppearance} from './appearance.js?v=0.9.253';
+import { EXPANDED_CATALOG, BASE_POPULARITY, RETIRED_GARDEN_PLANTS } from './catalog-data.js?v=0.9.254';
+import {attachAppearance} from './appearance.js?v=0.9.254';
 // Public botanical facts; monthly boundaries and procedural geometry are display conventions.
 export const CATALOG_VERSION='2026-10-14.51';
 const nc='https://plants.ces.ncsu.edu/plants/';

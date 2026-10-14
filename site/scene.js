@@ -1,8 +1,9 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt } from './model.js?v=0.9.253';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.253';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt } from './model.js?v=0.9.254';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.254';
 
+const BACKDROP_COLOR='#65755a';
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
 function mat(color){if(!sceneMaterials.has(color))sceneMaterials.set(color,new THREE.MeshStandardMaterial({color,roughness:.92}));return sceneMaterials.get(color);}
 const sphere=new THREE.SphereGeometry(1,8,6),box=new THREE.BoxGeometry(1,1,1);sharedGeometry.add(sphere);sharedGeometry.add(box);
@@ -65,7 +66,7 @@ export function createScene(container,onPick){
   const sky=new THREE.Mesh(new THREE.SphereGeometry(500,20,12),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color('#adc5d0')},bottom:{value:new THREE.Color('#e3e0ce')}},vertexShader:'varying vec3 skyDirection; void main(){skyDirection=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',fragmentShader:'varying vec3 skyDirection;uniform vec3 top;uniform vec3 bottom;void main(){float t=smoothstep(-0.05,0.65,normalize(skyDirection).y);gl_FragColor=vec4(mix(bottom,top,t),1.0);#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}'}));
   // Shader directives need their own lines.
   sky.material.fragmentShader=sky.material.fragmentShader.replace(';#include',';\n#include');scene.add(sky);
-  const backdrop=new THREE.Mesh(new THREE.PlaneGeometry(180,180),new THREE.MeshStandardMaterial({color:'#bbc0a8',roughness:1}));backdrop.rotation.x=-Math.PI/2;backdrop.position.y=-.19;backdrop.receiveShadow=true;scene.add(backdrop);
+  const backdrop=new THREE.Mesh(new THREE.PlaneGeometry(180,180),new THREE.MeshStandardMaterial({color:BACKDROP_COLOR,roughness:1}));backdrop.rotation.x=-Math.PI/2;backdrop.position.y=-.19;backdrop.receiveShadow=true;scene.add(backdrop);
   let pondClips=[];
   let dirty=true,root=null,plants=null,draft=null,plan=null,view=null,selection=null,visible=true,windLevel=1,frameCount=0,lastDraw=0,lastTick=0,elapsed=0;
   const textureStatus=document.createElement('div');textureStatus.className='texture-status';textureStatus.textContent='芝と土の質感を読み込み中…';textureStatus.setAttribute('role','status');container.append(textureStatus);
@@ -113,7 +114,7 @@ export function createScene(container,onPick){
   }
   function render(next,nextView,id){
     plan=next;view=nextView;selection=id;dispose(root);for(const material of pondClips)material.dispose();pondClips=[];root=new THREE.Group();plants=new THREE.Group();root.add(plants);scene.add(root);
-    backdrop.material=pondClip(mat('#bbc0a8'));const shape=polygon(plan.outline,0,pondClip(turf));const earth=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false}),pondClip(mat('#807357')));earth.customDepthMaterial=pondClip(pondShadow);earth.rotation.x=-Math.PI/2;earth.position.y=-.186;earth.castShadow=true;earth.receiveShadow=true;root.add(earth);
+    backdrop.material=pondClip(mat(BACKDROP_COLOR));const shape=polygon(plan.outline,0,pondClip(turf));const earth=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false}),pondClip(mat('#807357')));earth.customDepthMaterial=pondClip(pondShadow);earth.rotation.x=-Math.PI/2;earth.position.y=-.186;earth.castShadow=true;earth.receiveShadow=true;root.add(earth);
     for(const [i,z] of plan.zones.entries()){
       let surface=z.kind==='water'?water:soil;
       if(z.kind==='water'&&z.depth>0){surface=water.clone();surface.transparent=true;surface.opacity=.20;surface.depthWrite=false;surface.side=THREE.DoubleSide;pondClips.push(surface);polygon(z.points,-z.depth,pondClip(silt,'owner',i));}
