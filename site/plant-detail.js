@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.255';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.256';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.255';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.256';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5346,6 +5346,63 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
     for(let k=0;k<7;k++){const ba=aa+k*2.4,dd=w*.045*Math.sqrt((k+.3)/7),tip=[end[0]+Math.sin(ba)*dd,end[1]+h*(.035+.035*noise(i,j*270+k)),end[2]+Math.cos(ba)*dd];b.branch(end,tip,Math.min(.00028,h*.001),a.stemColor,'pedicel-gillenia');flower(tip,ba,i,j*1800+k*120);}
    }
   }
+ }
+}
+
+// Rose campion keeps woolly rosettes and open, forked flowering shoots.
+export function roseCampionPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='roseCampionCalyx'){
+  const az=u*Math.PI,r=(.11+.17*sn**.65)*(1+.055*Math.cos(az*10));
+  return [Math.sin(az)*r,t+.12*t**12*Math.cos(az*5),Math.cos(az)*r];
+ }
+ if(type==='roseCampionPetal')return [u*.60*sn**.42*(.35+.65*t),t-.055*Math.exp(-u*u*32)*t**8,.055*sn+.055*Math.sin(u*9+t*8)*Math.abs(u)**2*t*t];
+ const basal=type==='roseCampionBasal',width=.50*sn**(basal?.64:.78)*(basal?.36+.64*t:.80+.20*t);
+ return [u*width*(1+.025*Math.sin(t*31)),t,.075*sn+.045*u*u*sn-.020*Math.exp(-u*u*45)*sn];
+}
+function drawRoseCampion(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,doubled=a.shootProfile==='gardeners',h=s.height,w=s.spread,size=Math.min(1,h/.45,w/.4),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*Math.max(.55,size),C=a.flowerLength*Math.max(.55,size),n=Math.max(4,Math.min(13,Math.round(9*detail*Math.sqrt(w/.45)))),shoot=[0,0,.20,.40,.85,1,.95,.70,.35,0,0,0][month-1];
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const leaf=(at,az,i,k,scale=1,basal=false)=>{
+  const f=flowerFrame(b,at,(basal?.86:1.05)+noise(i,k)*.28,az),len=L*scale,width=W*scale;
+  f.add(basal?'roseCampionBasal':'roseCampionUpper',basal?'leaf-rose-campion-basal-woolly':'leaf-rose-campion-upper-woolly',kit.shade(rand,s.leafColor,.035),0,0,0,width,len,len);
+  // Sparse silhouette hairs complement the surface shading; density is approximate.
+  for(let j=0;j<18;j++){
+   const t=.12+.80*noise(i,k+j*17),u=j%2?1:-1,p=roseCampionPoint(basal?'roseCampionBasal':'roseCampionUpper',t,u),root=[p[0]*width,p[1]*len,p[2]*len],hair=.00045*size;
+   f.branch(root,[root[0]+u*hair,root[1]+hair*.15,root[2]+hair*.5],hair*.06,'#d1d4c8','hair-rose-campion');
+  }
+ };
+ const flower=(at,az,i,k)=>{
+  if(!s.bloom)return;const f=flowerFrame(b,at,.30+.80*noise(i,k+91),az);
+  f.add('roseCampionCalyx','calyx-rose-campion',a.stemColor,0,0,0,C,C,C);
+  if(noise(i,k+921)>s.flowerDensity*.86){f.add(kit.bud,'bud-rose-campion',doubled?'#a52b68':'#e4d8e0',0,C*.87,0,R*.20,R*.31,R*.20);return;}
+  if(doubled){
+   for(let j=0;j<32;j++){const q=j/31,aa=j*2.399963,rr=R*(.13-.09*q),len=R*(1-.5*q);f.add('roseCampionPetal','petal-rose-campion-double',kit.shade(rand,s.flowerColor,.08),Math.sin(aa)*rr,C+q*R*.20,Math.cos(aa)*rr,len*.82,len,len,1.36-q*.75+(noise(i,k+j+310)-.5)*.25,aa,0);}
+   return;
+  }
+  const blush=Math.floor(noise(i,k+410)*3);
+  for(let j=0;j<5;j++){
+   const aa=j*TAU/5;f.add('roseCampionPetal','petal-rose-campion-angel-'+blush,s.flowerColor,0,C,0,R*.99,R,R,1.42,aa,0);
+   for(let side=0;side<2;side++)f.add('narrow','appendage-rose-campion','#f3e8eb',Math.sin(aa)*R*.08,C,Math.cos(aa)*R*.08,R*.065,.003*size,.003*size,.42,aa+side*.14,0);
+  }
+  for(let j=0;j<10;j++){const aa=j*TAU/10,rr=R*.065,tip=[Math.sin(aa)*rr,C+.0015*size,Math.cos(aa)*rr];f.branch([0,C*.75,0],tip,.00010*size,'#e5d6d6','filament-rose-campion');f.add(kit.bud,'anther-rose-campion','#675b56',...tip,.00035*size,.00065*size,.00028*size,0,aa,0);}
+  for(let j=0;j<5;j++){const aa=j*TAU/5;f.branch([0,C*.7,0],[Math.sin(aa)*.0007*size,C+.0018*size,Math.cos(aa)*.0007*size],.00010*size,'#e6ddd0','style-rose-campion');}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.15*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr];
+  for(let j=0;j<7;j++)if(noise(i,j*170)<s.leafDensity)leaf(root,az+j*2.4,i,j*500,1.1-.35*noise(i,j+21),true);
+  if(shoot===0)continue;
+  const top=[root[0]+Math.sin(az)*w*.12,root[1]+h*shoot*(.63+.09*noise(i,77)),root[2]+Math.cos(az)*w*.12];let prev=root;
+  for(let j=1;j<=7;j++){
+   const q=j/7,at=mix(root,top,q);b.branch(prev,at,Math.min(.0018,h*.005)*(1-q*.35),a.stemColor,'stem-rose-campion');prev=at;
+   if(noise(i,j*93)<s.leafDensity)for(let side=0;side<2;side++)leaf(at,az+j*Math.PI/2+side*Math.PI,i,j*800+side*90,.88-.48*q);
+   if(j>=5)for(let side=0;side<2;side++){
+    const aa=az+j*1.57+side*Math.PI,end=[at[0]+Math.sin(aa)*w*(.07+.03*noise(i,j+side)),at[1]+h*shoot*.10,at[2]+Math.cos(aa)*w*(.07+.03*noise(i,j+side))];
+    b.branch(at,end,Math.min(.0009,h*.003),a.stemColor,'branch-rose-campion');flower(end,aa,i,j*2900+side*1300);
+    for(let v=0;v<2;v++){const ba=aa+(v?1:-1)*.65,tip=[end[0]+Math.sin(ba)*w*.06,end[1]+h*shoot*.10,end[2]+Math.cos(ba)*w*.06];b.branch(end,tip,Math.min(.0005,h*.0018),a.stemColor,'pedicel-rose-campion');flower(tip,ba,i,j*8100+side*2100+v*700);}
+   }
+  }
+  flower(top,az,i,33000);
  }
 }
 
@@ -11273,6 +11330,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='roseCampion'){drawRoseCampion(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='redValerian'){drawRedValerian(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='fan'){drawFans(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='nakedScape'){drawNakedScapes(b,{info,s,detail,rand},kit);return;}

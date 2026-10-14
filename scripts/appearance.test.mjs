@@ -11,6 +11,24 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Rose campion separates woolly rosettes, blush eyes and sterile double flowers',()=>{
+ for(const [index,id] of ['p-84cb69e40b51','p-92b2b04c2c82'].entries()){
+  const info=CATALOG[id],a=info.appearance;assert.equal(a.status,'partial');assert.equal(info.bloomKnown,false);assert.equal(a.flowerTiming,'season-reference');assert.equal(a.leafPattern,undefined);assert.equal(a.patternColor,undefined);assert.equal(info.variegated,false);
+  assert.deepEqual(info.height,index?[.4,.6]:[.5,.7]);assert.deepEqual(info.spread,index?[.3,.5]:[.4,.6]);
+  for(const small of [false,true]){
+   const p={...makePlant(id,26600+index*2+Number(small),1,1),height:small?.22:index?.6:.7,spread:small?.23:index?.4:.5,leafHeight:small?.1:.3};
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),rosette=[1,2,10,11,12].includes(month);assert.equal(g.userData.architecture,'roseCampion');assert.equal(stateAt(p,view(month)).shootScale,1);assert.ok(!g.userData.groundDormant);
+    const basal=g.children.find(m=>m.userData.component==='leaf-rose-campion-basal-woolly'),upper=g.children.find(m=>m.userData.component==='leaf-rose-campion-upper-woolly');assert.ok(basal?.geometry.userData.roseCampionBasal);assert.ok(g.children.some(m=>m.userData.component==='hair-rose-campion'));
+    assert.equal(!!upper,!rosette);if(upper){assert.equal(upper.count%2,0);assert.ok(upper.geometry.userData.roseCampionUpper);}if(rosette){assert.ok(!g.children.some(m=>m.userData.component==='stem-rose-campion'));assert.match(seasonAt(info,month).phase,/ロゼット/);}
+    const petals=g.children.filter(m=>m.userData.component.startsWith('petal-rose-campion'));assert.equal(petals.length>0,[3,4,5,6].includes(month));
+    if(petals.length){assert.ok(petals.every(m=>m.geometry.userData.roseCampionPetal));const count=petals.reduce((n,m)=>n+m.count,0),calyx=g.children.find(m=>m.userData.component==='calyx-rose-campion'),buds=g.children.find(m=>m.userData.component==='bud-rose-campion');assert.equal(count,(calyx.count-(buds?.count||0))*(index?32:5));if(!index){assert.equal(g.children.find(m=>m.userData.component==='filament-rose-campion').count,count*2);assert.equal(g.children.find(m=>m.userData.component==='style-rose-campion').count,count);assert.equal(g.children.find(m=>m.userData.component==='appendage-rose-campion').count,count*2);}}
+    if(index)assert.ok(!g.children.some(m=>/filament|anther|style/.test(m.userData.component)));assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.2,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.9,m.userData.component);}dispose(g);
+   }
+  }
+ }
+});
 test('Centranthus keeps connected tubular flowers, one stamen and opposite lower and clasping upper leaves',()=>{
  for(const id of ['p-4a8a59960764','p-bcf4c6b6a5b0']){
   const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.equal(info.appearance.flowerTiming,'season-reference');assert.deepEqual(info.height,[.4,.6]);assert.deepEqual(info.spread,[.4,.6]);
