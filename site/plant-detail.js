@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.243';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.244';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.243';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.244';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5022,6 +5022,45 @@ export function paniclePhloxPoint(type,t,u){
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
 }
 
+
+// Gillenia has alternate trifoliate leaves and five unequal, lightly twisted petals.
+export function gilleniaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='gilleniaPetal')return [u*.5*sn**.70*(.36+.64*t)+.10*t*t,t,.13*Math.sin(t*Math.PI*1.4)+u*.17*t*t];
+ if(type==='gilleniaCalyx'){const az=u*Math.PI,r=.18+.05*sn;return [Math.sin(az)*r,t+.13*t**12*Math.cos(az*5),Math.cos(az)*r];}
+ const width=.5*sn**.72*(.72+.28*t)*(1-.13*(.5+.5*Math.cos(t*Math.PI*44)));
+ return [u*width,t,.055*sn+.025*u*u*sn-.015*Math.exp(-u*u*60)*sn+.011*Math.cos((t-Math.abs(u)*.26)*Math.PI*16)*Math.abs(u)*sn];
+}
+function drawGillenia(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,size=Math.min(1,h/.45,w/.45),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,C=a.flowerLength*size,n=Math.max(5,Math.min(22,Math.round(16*detail*Math.sqrt(w/.60)))),post=a.calyxMonths.includes(month),pink=a.shootProfile==='pink';
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const leaf=(at,az,i,k,scale=1)=>{
+  if(noise(i,k+700)>s.leafDensity)return;const pet=[at[0]+Math.sin(az)*L*.10*scale,at[1]+L*.04*scale,at[2]+Math.cos(az)*L*.10*scale];b.branch(at,pet,.0005*size*scale,a.stemColor,'petiole-gillenia');
+  const color=kit.shade(rand,s.leafColor,.035);
+  for(let j=0;j<3;j++){const aa=az+(j-1)*.84,ss=scale*(j===1?1:.83);flowerFrame(b,pet,1.14+.16*noise(i,k+j),aa).add('gilleniaLeaf','leaf-gillenia-'+a.shootProfile,color,0,0,0,W*ss,L*ss,L*ss);}
+  for(let j=0;j<2;j++)flowerFrame(b,at,.8,az+(j?1:-1)*1.2).add('gilleniaLeaf','stipule-gillenia',color,0,0,0,.0018*size,.0045*size,.0045*size);
+ };
+ const flower=(at,az,i,k)=>{
+  if(!(s.bloom||post)||noise(i,k+900)>(post?.55:s.flowerDensity))return;const f=flowerFrame(b,at,.58+.85*noise(i,k+40),az),calyx=post?'#995d4f':a.calyxColor;
+  f.add('gilleniaCalyx','calyx-gillenia',calyx,0,0,0,C,C,C);if(post)return;
+  if(noise(i,k+1200)>.83){f.add(kit.bud,'bud-gillenia',pink?'#c688a3':'#e4dfd7',0,C*.92,0,R*.13,R*.40,R*.13);return;}
+  const age=noise(i,k+1700),color=pink?(age>.50?'#d898ba':'#eed3df'):s.flowerColor;
+  for(let j=0;j<5;j++){const aa=j*TAU/5+(noise(i,k+j+300)-.5)*.16,len=R*(.85+.25*noise(i,k+j+400));f.add('gilleniaPetal','petal-gillenia',color,0,C,0,len*.27,len,len,1.40+(noise(i,k+j+500)-.5)*.22,aa,(noise(i,k+j+600)-.5)*.12);}
+  // The short stamens remain around the hypanthium mouth, not as long projecting bristles.
+  for(let j=0;j<20;j++){const aa=j*2.4,r=C*(.13+.07*(j%3)/2),yy=C*(.76+.15*(j%3)/2);f.add(kit.bud,'anther-gillenia','#b8a47c',Math.sin(aa)*r,yy,Math.cos(aa)*r,.00022*size,.00035*size,.00022*size);}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.23*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.45,.008,Math.cos(az)*rr*.45],top=[Math.sin(az)*rr,h*(.67+.12*noise(i,1)),Math.cos(az)*rr];let prev=root;
+  for(let j=1;j<=8;j++){
+   const at=mix(root,top,j/8),la=az+j*2.40;b.branch(prev,at,Math.min(.0015,h*.004)*(1-j*.065),a.stemColor,'stem-gillenia');prev=at;
+   leaf(at,la,i,j*300,1-j*.045);
+   if(j>=5){const aa=la,end=[at[0]+Math.sin(aa)*w*.12,at[1]+h*.10,at[2]+Math.cos(aa)*w*.12];let last=at;
+    for(let k=1;k<=3;k++){const pt=mix(at,end,k/3);b.branch(last,pt,Math.min(.00065,h*.002),a.stemColor,'branch-gillenia');leaf(pt,aa+k*2.40,i,j*900+k*50,.44);last=pt;}
+    for(let k=0;k<7;k++){const ba=aa+k*2.4,dd=w*.045*Math.sqrt((k+.3)/7),tip=[end[0]+Math.sin(ba)*dd,end[1]+h*(.035+.035*noise(i,j*270+k)),end[2]+Math.cos(ba)*dd];b.branch(end,tip,Math.min(.00028,h*.001),a.stemColor,'pedicel-gillenia');flower(tip,ba,i,j*1800+k*120);}
+   }
+  }
+ }
+}
 
 // Firefly's double flower has petaloid organs and an inner sepal tube, not stamens.
 export function campionPoint(type,t,u){
@@ -10835,6 +10874,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='gilleniaSprays'){drawGillenia(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='fireflyCymes'){drawFirefly(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='snowtipMat'){drawSnowtip(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='actaeaRacemes'){drawActaea(b,{info,s,detail,rand,month},kit);return;}
