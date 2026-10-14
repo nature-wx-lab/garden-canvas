@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.254';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.255';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.254';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.255';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11730,29 +11730,41 @@ function drawParahebes(b,{info,s,detail,rand},kit){
  }
 }
 
-function drawRedValerian(b,{info,s,detail,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,green=s.leafColor,n=Math.max(7,Math.round(14*detail)),heads=[];
- for(let i=0;i<n;i++){
-  const an=i*2.399,rr=w*.29*Math.sqrt((i+.5)/n),top=h*(.65+rand()*.27);let prev=[Math.sin(an)*rr*.15,0,Math.cos(an)*rr*.15];
-  for(let j=1;j<=7;j++){
-   const t=j/7,at=[Math.sin(an)*rr*t,top*t,Math.cos(an)*rr*t];b.branch(prev,at,h*.0034,green,'stem');prev=at;
-   if(j<6)for(const side of [-1,1]){
-    const yaw=an+j*Math.PI/2+(side<0?Math.PI:0),size=Math.min(.095,w*.26)*(1-t*.44),petiole=j<3?size*.20:0,tip=[at[0]+Math.sin(yaw)*petiole,at[1]+petiole*.4,at[2]+Math.cos(yaw)*petiole];
-    if(petiole)b.branch(at,tip,.0007,green,'petiole');b.add(j<3?'narrow':'claspingOvate','leaf',green,...tip,size*(j<3?1.7:.63),size,size,.85,yaw,0);
-   }
-   if(j>=5){
-    const aa=an+j*2.399,reach=w*.10,tip=[at[0]+Math.sin(aa)*reach,at[1]+h*.065,at[2]+Math.cos(aa)*reach];b.branch(at,tip,.0008,green,'peduncle');heads.push({at:tip,yaw:aa,radius:w*(j===7?.10:.055)});
-   }
-  }
+export function centranthusLeafPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),upper=type==='centranthusUpper',edge=upper?1-.025*(.5+.5*Math.cos(t*TAU*7))*t:1,width=upper?.5*(.26+.74*sn**.64)*(1-.43*t):.5*sn**.80*(1-.15*t);
+ return [u*width*edge,t-(upper?.09*Math.abs(u)**3*(1-t)**3:0),.055*t*t+.05*u*u*sn-.018*Math.exp(-u*u*40)*sn];
+}
+export function centranthusCorollaGeometry(){
+ const p=[],uv=[],ix=[],rows=6,sides=20,length=3.3;
+ for(let j=0;j<=rows;j++)for(let k=0;k<=sides;k++){const t=j/rows,az=k/sides*TAU,r=.16+.09*t;p.push(Math.sin(az)*r,length*t,Math.cos(az)*r);uv.push(k/sides,t);if(j<rows&&k<sides){const n=j*(sides+1)+k;ix.push(n,n+sides+1,n+1,n+1,n+sides+1,n+sides+2);}}
+ // The petal lobes share the tube's rim vertices, preserving one connected corolla.
+ for(let l=0;l<5;l++){const az=(l+.5)*TAU/5,cols=4,levels=5,scale=l===0?1.10:1;let previous=Array.from({length:5},(_,j)=>rows*(sides+1)+l*cols+j);
+  for(let i=1;i<=levels;i++){const row=[],t=i/levels;for(let j=0;j<=cols;j++){const u=j/cols*2-1,angle=az+u*Math.PI/5*(1-t)**.8,r=.25+t*scale;row.push(p.length/3);p.push(Math.sin(angle)*r,length+.10*t+.10*u*u*Math.sin(Math.PI*t),Math.cos(angle)*r);uv.push(j/cols,t);}for(let j=0;j<cols;j++)ix.push(previous[j],row[j],previous[j+1],previous[j+1],row[j],row[j+1]);previous=row;}
  }
- if(s.bloom)for(const {at,yaw,radius} of heads){
-  const count=Math.max(8,Math.round(24*detail));
-  for(let k=0;k<5;k++){
-   const angle=yaw+k*2.399,offset=k===0?0:radius*.58,center=[at[0]+Math.sin(angle)*offset,at[1]+radius*(k===0?1.15:.45+rand()*.35),at[2]+Math.cos(angle)*offset],clusterRadius=radius*(.42+rand()*.09);
-   b.branch(at,center,.00042,green,'peduncle');
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.centranthusCorolla=true;g.userData.organCount=5;g.userData.tubeLength=length;return g;
+}
+function drawRedValerian(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,size=Math.min(1,h/.5,w/.4),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,H=a.headRadius*size,green=s.leafColor,n=Math.max(5,Math.min(13,Math.round(10*detail*Math.sqrt(w/.5)))),noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),heads=[];
+ const pair=(at,yaw,i,k,scale,upper)=>{
+  if(noise(i,k+71)>s.leafDensity)return;
+  for(const side of [-1,1]){const az=yaw+(side<0?Math.PI:0),pet=upper?0:L*.20*scale,tip=[at[0]+Math.sin(az)*pet,at[1]+pet*.3,at[2]+Math.cos(az)*pet];if(pet)b.branch(at,tip,.0007*size,green,'petiole-valerian');flowerFrame(b,tip,.95+.16*noise(i,k+2),az).add(upper?'centranthusUpper':'centranthusLower',upper?'leaf-valerian-upper':'leaf-valerian-lower',kit.shade(rand,green,.045),0,0,0,W*scale*(upper?1.2:1),L*scale,L*scale);}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963+.20*noise(i,5),rr=w*.23*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.25,.007,Math.cos(az)*rr*.25],top=[Math.sin(az)*rr,h*(.76+.08*noise(i,1)),Math.cos(az)*rr],path=[root];
+  for(let j=1;j<=7;j++){const at=mix(root,top,j/7);b.branch(path.at(-1),at,.0022*size*(1-j*.055),a.stemColor,'stem-valerian');path.push(at);if(j<6)pair(at,az+j*Math.PI/2,i,j*30,1-j*.09,j>=3);}
+  heads.push({at:top,yaw:az,i,k:0,scale:1});
+  for(let side=0;side<2;side++){const at=path[5+side],aa=az+(side?1:-1)*1.05,end=[at[0]+Math.sin(aa)*w*.12,at[1]+h*.075,at[2]+Math.cos(aa)*w*.12];b.branch(at,end,.0010*size,a.stemColor,'branch-valerian');pair(mix(at,end,.65),aa+Math.PI/2,i,500+side,.36,true);heads.push({at:end,yaw:aa,i,k:100+side,scale:.76});}
+ }
+ if(!s.bloom)return;
+ for(const {at,yaw,i,k,scale} of heads){
+  const r=H*scale;
+  for(let c=0;c<5;c++){
+   const az=yaw+c*2.399963,offset=c===0?0:r*.58,center=[at[0]+Math.sin(az)*offset,at[1]+r*(c===0?.75:.35+.22*noise(i,k+c+20)),at[2]+Math.cos(az)*offset],cr=r*(.36+.05*noise(i,k+c+8));b.branch(at,center,.00055*size*scale,a.stemColor,'cyme-valerian');
+   const count=scale===1?48:34;
    for(let j=0;j<count;j++){
-    const t=(j+.5)/count,an=j*2.399,rr=clusterRadius*Math.sqrt(t),tip=[center[0]+Math.sin(an)*rr,center[1]+clusterRadius*.85*Math.sqrt(1-t),center[2]+Math.cos(an)*rr];
-    b.branch(center,tip,.00018,green,'pedicel');detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:a.flowerRadius,color:s.flowerColor,shape:'valerianSpur',yaw:an,tilt:.65*Math.sqrt(t)},{...kit,rand});
+    const t=(j+.25+.5*noise(i,k+c*809+j*43))/count,ba=j*2.399963,rr=cr*Math.sqrt(t),tip=[center[0]+Math.sin(ba)*rr,center[1]+cr*.60*Math.sqrt(1-t),center[2]+Math.cos(ba)*rr];b.branch(center,tip,.00020*size,a.stemColor,'pedicel-valerian');const f=flowerFrame(b,tip,.10+.70*Math.sqrt(t),ba);
+    if(noise(i,k+c*211+j*71)>s.flowerDensity*.91){f.add(kit.bud,'bud-valerian',a.budColor,0,R*1.4,0,R*.27,R*1.4,R*.27);continue;}
+    const T=R*3.3;f.add('centranthusCorolla','petal-valerian',kit.shade(rand,s.flowerColor,.03),0,0,0,R,R,R);f.branch([0,T*.10,R*.07],[R*.12,T*.10-R*2.1,R*.45],R*.085,s.flowerColor,'spur-valerian');f.branch([0,T*.82,0],[R*.10,T+R*.80,R*.10],R*.035,a.flowerPalette.style,'filament-valerian');f.add(kit.bud,'anther-valerian',a.flowerPalette.anther,R*.10,T+R*.80,R*.10,R*.11,R*.075,R*.075);f.branch([-R*.08,T*.83,0],[-R*.10,T+R*.95,R*.14],R*.025,a.flowerPalette.style,'style-valerian');f.add(kit.bud,'stigma-valerian',a.flowerPalette.style,-R*.10,T+R*.95,R*.14,R*.06,R*.055,R*.06);
    }
   }
  }

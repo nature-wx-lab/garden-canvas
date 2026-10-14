@@ -11,6 +11,26 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Centranthus keeps connected tubular flowers, one stamen and opposite lower and clasping upper leaves',()=>{
+ for(const id of ['p-4a8a59960764','p-bcf4c6b6a5b0']){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.equal(info.appearance.flowerTiming,'season-reference');assert.deepEqual(info.height,[.4,.6]);assert.deepEqual(info.spread,[.4,.6]);
+  for(const small of [false,true]){const p={...makePlant(id,26500+Number(small),1,1),height:small?.2:.6,spread:small?.25:.5,leafHeight:small?.12:.3};let skeleton;
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),winter=[12,1,2].includes(month);if(winter){assert.equal(g.children.length,0);assert.match(seasonAt(info,month).phase,/低温管理苗/);dispose(g);continue;}
+    assert.equal(g.userData.architecture,'redValerian');assert.equal(stateAt(p,view(month)).shootScale,1);
+    for(const part of ['lower','upper']){const m=g.children.find(m=>m.userData.component==='leaf-valerian-'+part);assert.ok(m);assert.equal(m.count%2,0);assert.ok(m.geometry.userData[part==='lower'?'centranthusLower':'centranthusUpper']);}
+    const flowers=g.children.find(m=>m.userData.component==='petal-valerian');assert.equal(!!flowers,[4,5,6].includes(month));
+    if(flowers){assert.equal(flowers.geometry.userData.organCount,5);assert.equal(flowers.geometry.userData.tubeLength,3.3);for(const name of ['filament-valerian','anther-valerian','style-valerian','stigma-valerian','spur-valerian'])assert.equal(g.children.find(m=>m.userData.component===name).count,flowers.count);
+     const n=flowers.geometry.attributes.position.count,links=Array.from({length:n},()=>[]),ix=flowers.geometry.index.array;for(let i=0;i<ix.length;i+=3){const [a,b,c]=[ix[i],ix[i+1],ix[i+2]];links[a].push(b,c);links[b].push(a,c);links[c].push(a,b);}const seen=new Set([0]),stack=[0];while(stack.length)for(const next of links[stack.pop()])if(!seen.has(next)){seen.add(next);stack.push(next);}assert.equal(seen.size,n,'tube and five petal lobes must share a connected mesh');
+    }
+    assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));const axes=g.children.filter(m=>['stem-valerian','branch-valerian'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(axes,skeleton);else skeleton=axes;
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.02,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.2,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.9,m.userData.component);}dispose(g);
+   }
+  }
+ }
+ assert.notEqual(seasonAt(CATALOG['p-4a8a59960764'],11).leafColor,seasonAt(CATALOG['p-bcf4c6b6a5b0'],11).leafColor);
+ assert.match(seasonAt(CATALOG['p-1bcad79e9efd'],9).phase,/花後に枯れる/);assert.doesNotMatch(seasonAt(CATALOG['p-1bcad79e9efd'],9).phase,/低温/);
+});
 test('Orlaya keeps unequal lace flowers, divided leaves and a single annual flowering cycle',()=>{
  const id='p-1bcad79e9efd',info=CATALOG[id];assert.equal(info.life,'annual');assert.equal(info.group,'一年草');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.colors,['white']);assert.equal(info.spread,null);
  for(const small of [false,true]){const p={...makePlant(id,26200+Number(small),1,1),height:small?.20:.6,spread:small?.22:.45,leafHeight:small?.10:.3};

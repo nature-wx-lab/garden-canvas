@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.254';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.255';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -337,3 +337,5 @@ Object.assign(TRAIT_VALUES,{aruncusFine:'小さく深く切れ込む小葉が密
 Object.assign(TRAIT_VALUES,{burnetNarrowCompound:'細く深い鋸歯の小葉が羽状に並ぶ複葉',burnetBroadCompound:'青灰緑で幅広い鋸歯の小葉が羽状に並ぶ複葉',burnetFilaments:'花弁がなく4枚の萼と長い雄しべが集まる下垂する花穂'});
 
 Object.assign(TRAIT_VALUES,{branching:'細い茎が枝分かれする草姿',orlayaDivided:'2〜3回細かく分かれる羽状の葉',orlayaLace:'傘状の小花房が集まり、外向きの花弁だけ大きく2裂する白花'});
+
+Object.assign(TRAIT_VALUES,{centranthusLeaves:'下葉は柄のある披針形、上葉は茎を抱く灰緑色の対生葉',centranthusThyrse:'細い花筒・距・5裂の花冠と1本の雄しべを持つ小花の房'});
