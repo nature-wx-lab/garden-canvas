@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.236';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.237';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.236';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.237';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5022,6 +5022,38 @@ export function paniclePhloxPoint(type,t,u){
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
 }
 
+
+// Honeywort has clasping leaves and nodding flower tubes beneath leafy bracts.
+export function cerinthePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='cerintheTube'){const az=u*Math.PI,r=(.20+.085*Math.sin(Math.PI*t*.85))*(1-.1*t**10);return [Math.sin(az)*r,t+.035*t**12*Math.cos(az*5),Math.cos(az)*r];}
+ const bract=type==='cerintheBract',width=.50*sn**(bract?.48:.37)*(bract?1:.73+.27*t),clasp=.12*Math.abs(u)**2*(1-t)**4;
+ return [u*width,t-clasp,.07*sn+.10*u*u*(1-t)**2+.022*u*u*sn];
+}
+function drawCerinthe(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,size=Math.min(1,h/.45,w/.45),L=a.leafLength*size,W=a.leafWidth*size,F=a.flowerLength*size,n=Math.max(5,Math.min(17,Math.round(12*detail*Math.sqrt(w/.5))));
+ const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const leaf=(at,az,i,k,q)=>{if(noise(i,k+90)>s.leafDensity)return;const young=q>.70,ll=L*(.85-.25*q),ww=W*(.90-.20*q);flowerFrame(b,at,1.10+.22*noise(i,k+12),az).add('cerintheLeaf',young?'leaf-cerinthe-young':'leaf-cerinthe-mature',kit.shade(rand,s.leafColor,.04),0,0,0,ww,ll,ll);};
+ const cyme=(at,az,i,k)=>{
+  if(!s.bloom||noise(i,k+700)>s.flowerDensity)return;
+  const top=[at[0]+Math.sin(az)*w*.065,at[1]+h*.055,at[2]+Math.cos(az)*w*.065],tip=[top[0]+Math.sin(az)*w*.035,top[1]-h*.06,top[2]+Math.cos(az)*w*.035];
+  b.branch(at,top,Math.min(.0011,h*.003),a.stemColor,'peduncle-cerinthe');b.branch(top,tip,Math.min(.0008,h*.002),a.stemColor,'peduncle-cerinthe');
+  for(let j=0;j<3;j++){
+   const q=(j+.3)/3,p=mix(top,tip,q),aa=az+(j%2?1:-1)*.60,bractColor=['#659480','#63878c','#65648f'][(i+j)%3];
+   for(let side=0;side<2;side++)flowerFrame(b,p,1.8+j*.18,aa+side*Math.PI).add('cerintheBract','bract-cerinthe',kit.shade(rand,bractColor,.025),0,0,0,.025*size,.027*size,.027*size);
+   const f=flowerFrame(b,[p[0]+Math.sin(aa)*.008*size,p[1]-.003*size,p[2]+Math.cos(aa)*.008*size],Math.PI-.23,aa);
+   f.add('cerintheTube','tube-cerinthe',kit.shade(rand,s.flowerColor,.035),0,0,0,F,F,F);
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rad=w*.30*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rad*.22,.009,Math.cos(az)*rad*.22],top=[Math.sin(az)*rad,h*(.67+.18*noise(i,2)),Math.cos(az)*rad];let prev=root;
+  for(let j=1;j<=8;j++){
+   const q=j/8,at=mix(root,top,q);at[0]+=Math.sin(q*Math.PI)*w*.025;b.branch(prev,at,Math.min(.002,h*.006)*(1-q*.42),a.stemColor,'stem-cerinthe');prev=at;leaf(at,az+j*2.399963,i,j*200,q);
+   if(j===5||j===7){const aa=az+(j===5?1:-1)*1.1,end=[at[0]+Math.sin(aa)*w*.09,at[1]+h*.10,at[2]+Math.cos(aa)*w*.09];let p=at;for(let z=1;z<=3;z++){const v=mix(at,end,z/3);b.branch(p,v,Math.min(.001,h*.0035),a.stemColor,'branch-cerinthe');leaf(v,aa+z*2.399963,i,j*1700+z*100,.5+z*.15);p=v;}cyme(end,aa,i,j*500);}
+   if(j===8)cyme(at,az,i,9000);
+  }
+ }
+}
 
 // Low sea-campion shoots distinguish inflated calyces from the white corolla.
 export function unifloraPoint(type,t,u){
@@ -10640,6 +10672,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ajugaMats'){drawAjuga(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenPrimula'){drawGardenPrimula(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='vincaRunners'){drawVinca(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='cerintheCymes'){drawCerinthe(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='unifloraMats'){drawUniflora(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='maitaiCrowns'){drawMaitai(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='richardsoniiTrails'){drawRichardsonii(b,{info,s,detail,rand,month},kit);return;}
