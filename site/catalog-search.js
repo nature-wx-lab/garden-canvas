@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.240';
+import {treeProfile} from './tree-profiles.js?v=0.9.241';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -140,7 +140,7 @@ export function seasonAt(info,month){
  if(a.architecture==='mahoniaCanes'){scale=1;phase=bloom?'枝先に集まる黄色い花房（国内資料の11〜12月を参考表示）':'常緑の羽状複葉（低温での着色・葉量は参考、結実は未再現）';}
  if(a.architecture==='guaraniticaShoots'){scale=1;phase='大きな対生葉と黒い萼・青い筒状花（地下茎・剪定・地域別の伸長は未予測）';}
  if(a.architecture==='rustySageCalyces'){scale=1;phase='銀灰色の葉と錆桃色の花・花後の萼（残存期間・冬咲き・霜害は未予測）';}
- if(a.architecture==='actaeaRacemes'){scale=1;phase=[12,1,2].includes(month)?'冬の落葉と未剪定の枯れ茎の参考（品種固有の冬写真は未確認）':'複葉と雄しべの目立つ花穂（花量・花茎形成・地域差は参考）';}
+ if(a.architecture==='actaeaRacemes'){scale=1;phase=a.seedHeadMonths?.includes(month)?'秋冬の未剪定写真を参考にした袋状の実と枯れ茎（結実量・残存月・倒伏は未校正）':[12,1,2].includes(month)?'冬の落葉と未剪定の枯れ茎の参考（品種固有の冬写真は未確認）':'複葉と雄しべの目立つ花穂（花量・花茎形成・地域差は参考）';}
  if(a.architecture==='astrantiaUmbels'){scale=1;phase='掌状の株元葉と総苞に囲まれた小花（花齢・花量・剪定・成長は参考）';}
  if(a.architecture==='cerintheCymes'){scale=1;phase=[12,1,2].includes(month)?'保護された早春苗を参考にした残葉（成株の冬姿・霜害は未確認）':'互生する丸い銀緑葉と青紫の苞・下向きの筒花（一年草の表示枠、実寿命・連続開花は未予測）';}
  if(a.architecture==='unifloraMats'){scale=1;phase=[12,1,2].includes(month)?a.shootProfile==='swan'?'冬苗写真の枯色の茎と少数の紅葉（残存量は参考）':'国内低温管理の地上部なしの参考（暖地は常緑、月境界は未校正）':'低く広がる対生葉と膨らんだ萼・品種別の白花（剪定と生育は未予測）';}

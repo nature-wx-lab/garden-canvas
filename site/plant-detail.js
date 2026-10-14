@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.240';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.241';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.240';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.241';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5026,13 +5026,21 @@ export function paniclePhloxPoint(type,t,u){
 // Bugbane racemes are dominated by fine stamens above ternately compound leaves.
 export function actaeaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='actaeaLobedLeaf'){
+  const az=u*2.15,near=Math.min(...[-1.32,0,1.32].map(v=>Math.abs(az-v))),r=(.24+.73*Math.pow(Math.max(0,1-near/.72),.72))*(1-.105*(.5+.5*Math.cos(az*63)));
+  return [Math.sin(az)*r*t*.58,(.15+Math.cos(az)*r*.85)*t,.035*t*t+.018*Math.cos(az*5)*t];
+ }
+ if(type==='actaeaFollicle'){
+  const ph=u*Math.PI*.84,rad=.27*sn**.65;
+  return [Math.sin(ph)*rad,t,Math.cos(ph)*rad+.14*t**5];
+ }
  if(type==='actaeaPetal')return [u*.50*sn**.5,t-.22*Math.exp(-u*u*35)*t**8,.07*sn];
  if(type==='actaeaSepal')return [u*.50*sn**.65,t,.06*sn];
  const cut=1-.23*(.5+.5*Math.cos(t*Math.PI*6))-.065*(.5+.5*Math.cos(t*Math.PI*34)),width=.5*sn**.56*(.78+.22*t)*cut;
  return [u*width,t,.045*sn+.025*u*u*sn-.010*Math.exp(-u*u*45)*sn+.006*Math.cos((t-Math.abs(u)*.22)*40)*Math.abs(u)*sn];
 }
 function drawActaea(b,{info,s,detail,rand,month},kit){
- const a=info.appearance,sheba=a.shootProfile==='sheba',h=s.height,w=s.spread,size=Math.min(1,h/1.1,w/.65),L=a.leafLength*size,W=a.leafWidth*size,F=a.flowerLength*size,IL=a.inflorescenceLength*size,n=Math.max(3,Math.min(10,Math.round(6*detail*Math.sqrt(w/.65)))),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
+ const a=info.appearance,sheba=a.shootProfile==='sheba',bronze=['brunette','pink','negligee'].includes(a.shootProfile),pink=a.shootProfile==='pink',seed=a.seedHeadMonths?.includes(month),h=s.height,w=s.spread,size=Math.min(1,h/1.1,w/.65),L=a.leafLength*size,W=a.leafWidth*size,F=a.flowerLength*size,IL=a.inflorescenceLength*size,n=Math.max(3,Math.min(10,Math.round(6*detail*Math.sqrt(w/.65)))),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const compound=(at,az,i,k,scale=1)=>{
   if(noise(i,k+300)>s.leafDensity)return;
@@ -5040,23 +5048,30 @@ function drawActaea(b,{info,s,detail,rand,month},kit){
   for(let j=-1;j<=1;j++){
    const aa=az+j*.88,ll=(j===0?1:.83)*scale,end=[node[0]+Math.sin(aa)*L*1.0*ll,node[1]+L*.12*ll,node[2]+Math.cos(aa)*L*1.0*ll];b.branch(node,end,.0008*size*scale,stem,'rachis-actaea');
    for(let q=-1;q<=1;q++){
-    const ba=aa+q*.9,base=q===0?end:mix(node,end,.55),sl=q===0?1:.73;flowerFrame(b,base,1.28+.12*noise(i,k+j*9+q),ba).add('actaeaLeaf','leaf-actaea-'+a.shootProfile,kit.shade(rand,s.leafColor,.055),0,0,0,W*ll*sl,L*ll*sl,L*ll*sl);
+    const ba=aa+q*.9,base=q===0?end:mix(node,end,.55),sl=q===0?1:.73;flowerFrame(b,base,1.28+.12*noise(i,k+j*9+q),ba).add(bronze?'actaeaLobedLeaf':'actaeaLeaf','leaf-actaea-'+a.shootProfile,kit.shade(rand,s.leafColor,.055),0,0,0,W*ll*sl,L*ll*sl,L*ll*sl);
    }
   }
  };
  for(let i=0;i<Math.round(15*detail*Math.sqrt(w/.65));i++){const az=i*2.399963,rr=w*(.03+.10*noise(i,3)),at=[Math.sin(az)*rr,.010,Math.cos(az)*rr];compound(at,az,i,500,1.0);}
  const raceme=(at,az,i,k,scale=1)=>{
-  const len=IL*scale,curve=t=>[at[0]+Math.sin(az)*len*(sheba?.18*t+.70*t*t:.12*t+.30*t*t),at[1]+len*(sheba?.30*Math.sin(Math.PI*t)-.40*t*t:.85*t-.21*t*t),at[2]+Math.cos(az)*len*(sheba?.18*t+.70*t*t:.12*t+.30*t*t)];let prev=at;
+  const len=IL*scale,curve=t=>{const reach=sheba?.18*t+.70*t*t:bronze?.20*t+.62*t*t:.12*t+.30*t*t,rise=sheba?.30*Math.sin(Math.PI*t)-.40*t*t:bronze?.50*Math.sin(Math.PI*t*.88)+.05*t:.85*t-.21*t*t;return [at[0]+Math.sin(az)*len*reach,at[1]+len*rise,at[2]+Math.cos(az)*len*reach];};let prev=at;
   for(let j=1;j<=12;j++){const end=curve(j/12);b.branch(prev,end,.0009*size*(1-j/20),stem,'raceme-actaea-'+a.shootProfile);prev=end;}
+  // Only the two entries with photographed dry follicles receive this fruit model.
+  if(seed&&(winter||noise(i,k+1700)<.85)){
+   for(let j=0;j<38;j++){
+    const t=(j+.4)/38,base=curve(t),aa=j*2.399963,tip=[base[0]+Math.sin(aa)*.005*size,base[1],base[2]+Math.cos(aa)*.005*size];b.branch(base,tip,.0004*size,a.winterStemColor,'pedicel-seed-actaea');
+    const f=flowerFrame(b,tip,.75,aa);for(let q=0;q<3;q++)f.add('actaeaFollicle','fruit-actaea-follicle',kit.shade(rand,a.seedColor,.07),Math.sin(q*TAU/3)*.0018*size,0,Math.cos(q*TAU/3)*.0018*size,.007*size,.009*size,.007*size,.25,q*TAU/3,0);
+   }return;
+  }
   if(!s.bloom||noise(i,k+700)>s.flowerDensity)return;
-  const count=sheba?60:100;
+  const count=sheba?60:bronze?160:100;
   for(let j=0;j<count;j++){
    const t=(j+.3)/count,base=curve(t),aa=j*2.399963,rad=.0045*size,tip=[base[0]+Math.sin(aa)*rad,base[1],base[2]+Math.cos(aa)*rad];b.branch(base,tip,.00028*size,stem,'pedicel-actaea');
-   if(t>.88&&noise(i,j+k)>.30){b.add(kit.bud,'bud-actaea',sheba?'#655064':'#d6dfc0',...tip,F*.30,F*.34,F*.30);continue;}
-   const f=flowerFrame(b,tip,1.25+.25*noise(i,j+k),aa),col=s.flowerColor;f.add(kit.bud,'receptacle-actaea','#d9dec7',0,0,0,F*.18,F*.15,F*.18);
+   if(t>.88&&noise(i,j+k)>.30){b.add(kit.bud,'bud-actaea',a.budColor||(sheba?'#655064':'#d6dfc0'),...tip,F*.30,F*.34,F*.30);continue;}
+   const f=flowerFrame(b,tip,1.25+.25*noise(i,j+k),aa),col=pink?(t>.45?'#eee9e3':'#e2c9d0'):s.flowerColor;f.add(kit.bud,'receptacle-actaea',bronze?'#ba9bab':'#d9dec7',0,0,0,F*.18,F*.15,F*.18);
    for(let z=0;z<(sheba?2:5);z++){const ba=z*TAU/(sheba?2:5);f.add('actaeaSepal','sepal-actaea',col,0,0,0,F*.28,F*.62,F*.62,1.45,ba,0);}
    if(!sheba)for(let z=0;z<2;z++)f.add('actaeaPetal','petal-actaea',col,0,F*.08,0,F*.3,F*.5,F*.5,1.25,z*Math.PI,0);
-   for(let z=0;z<(sheba?30:36);z++){const ba=z*2.399963,rr=F*(.50+.65*Math.sqrt((z+.5)/(sheba?30:36))),top=[Math.sin(ba)*rr,F*(.20+.70*noise(i,j*80+z+k)),Math.cos(ba)*rr];f.branch([0,F*.07,0],top,F*.018,col,'filament-actaea');f.add(kit.bud,'anther-actaea',col,...top,F*.075,F*.055,F*.045);}
+   for(let z=0;z<(sheba?30:36);z++){const ba=z*2.399963,rr=F*(.50+.65*Math.sqrt((z+.5)/(sheba?30:36))),top=[Math.sin(ba)*rr,F*(.20+.70*noise(i,j*80+z+k)),Math.cos(ba)*rr];f.branch([0,F*.07,0],top,F*(bronze?.028:.018),col,'filament-actaea');f.add(kit.bud,'anther-actaea',col,...top,F*.075,F*.055,F*.045);}
    for(let z=0;z<2;z++)f.branch([0,0,0],[(z?1:-1)*F*.12,F*.40,0],F*.025,'#c2ccad','style-actaea');
   }
  };
