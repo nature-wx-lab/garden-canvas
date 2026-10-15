@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.310';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.311';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -427,3 +427,5 @@ Object.assign(TRAIT_VALUES,{knautiaMarsLeaves:'切れ込む根出葉と、全縁
 Object.assign(TRAIT_VALUES,{pinkLaceLeaves:'幅広く丸い鋸歯のある根出葉・花茎では深く裂ける葉',amethystPinkLeaves:'幅広い根出葉と細く裂ける対生葉・よく枝分かれする株',pinkLaceFrill:'外側が大きくフリル状に開く桃紫の花頭',amethystPinkDome:'淡い藤桃色の周辺花と高く盛り上がる淡色の小花'});
 
 Object.assign(TRAIT_VALUES,{whiteQueenLeaves:'灰緑の細長い根出葉・花茎の少数の長い裂片に分かれる葉',moonDanceLeaves:'幅広く丸い鋸歯のある根出葉・花茎の非常に細く裂ける葉',whiteQueenHead:'大きな白い周辺花と小さな中央花が輪状に開く花頭',moonDanceHead:'淡黄色の小花と、花後に小さな杯と萼の毛を残す花頭'});
+
+Object.assign(TRAIT_VALUES,{irishPrimulaLeaf:'細かな丸い鋸歯と網状のしわを持つ根出葉',irishPrimulaFlower:'浅く切れ込む5裂花・白い筋または淡い縁の八重花'});

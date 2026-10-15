@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.310';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.311';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.310';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.311';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5424,6 +5424,65 @@ export function drawPearlGiant(b,{info,s,rand,month},kit){
    }
    ff.branch([0,.001*z,0],[0,(giant?.009:.005)*z,0],.00009*z,giant?'#ded492':'#e5e0e9','style-'+tag);ff.add(kit.bud,'stigma-'+tag,giant?'#d7ca81':'#c4c1da',0,(giant?.009:.005)*z,0,.00023*z,.0003*z,.00023*z);
    if(giant)for(let q=0;q<4;q++){const a=q*TAU/4,at=point(a,.0016*z,.003*z);ff.branch(at,[at[0]+Math.sin(a)*.0009*z,at[1]+.0008*z,at[2]+Math.cos(a)*.0009*z],.00004*z,'#f0ecc8','corolla-hair-'+tag);}
+  }
+ }
+}
+
+export function irishPrimulaPoint(type,t,u){
+ if(type!=='irishPrimulaLeaf'){
+  if(type==='irishPrimulaStripe')u*=.065+.035*t;
+  if(type==='irishPrimulaInterior'){t*=.94;u*=.88;}
+  const sn=Math.max(0,Math.sin(Math.PI*t)),notch=.12*Math.exp(-u*u*36)*t**9;
+  return[.59*u*sn**.32,.09*t*t+.13*u*u*sn+.026*Math.sin(t*30+u*12)*Math.abs(u)**3*sn+(type==='irishPrimulaPetal'?0:.009),t-notch];
+ }
+ const sn=Math.max(0,Math.sin(Math.PI*t)),width=.5*sn**.54*(.28+.72*t)*(1-.06*Math.cos(t*TAU*13)),rib=(.013*Math.sin((t-Math.abs(u)*.20)*TAU*6)**2+.004*Math.sin(t*47+u*31)**2)*Math.sin(Math.PI*Math.abs(u));
+ return[u*width,t,.12*t*t+.11*u*u*sn+rib];
+}
+export function drawIrishPrimula(b,{info,s,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,profile=a.shootProfile,avondale=profile==='avondale',innis=profile==='innisfree',double=profile==='elizabeth',h=s.height,w=s.spread,small=w<.20,scale=Math.max(.55,Math.min(1,w/.25,h/.1)),fs=Math.max(.82,scale),winter=[12,1,2].includes(month),tag='irish-primula',green=s.leafColor,stem=innis?'#6a414e':'#839368',crowns=small?1:3,pt=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r];
+ const leaf=(base,az,len,pitch)=>{
+  const f=flowerFrame(b,base,pitch,az),L=len,W=len*(innis?.75:double?.88:.84);f.add('irishPrimulaLeaf','leaf-'+tag+'-underside-'+(innis?'77736c':'a4b38c'),kit.shade(rand,green,.035),0,0,0,W,L,L);
+  const pos=(t,u)=>{const p=irishPrimulaPoint('irishPrimulaLeaf',t,u);return[p[0]*W,p[1]*L,p[2]*L-.00018];};
+  for(let j=1;j<=12;j++)f.branch(pos((j-1)/12,0),pos(j/12,0),.00025*scale,innis?'#777767':'#9eb77d','vein-'+tag);
+  for(let j=1;j<=8;j++)for(const side of [-1,1]){
+   const t=.08+j*.10;let from=pos(t,0);
+   for(let k=1;k<=4;k++){const to=pos(t+k*.022,side*k*.22);f.branch(from,to,.00010*scale,innis?'#66685a':'#90a76d','lateral-vein-'+tag);from=to;}
+  }
+  for(let j=0;j<12;j++){const t=.16+j*.065,side=j%2?1:-1,p=pos(t,side*.94);f.branch(p,[p[0]+side*.0006*scale,p[1]+.0003,p[2]-.0005*scale],.000045*scale,'#a6ad98','leaf-hair-'+tag);}
+ };
+ const flower=(at,az,key)=>{
+  const bud=key%9===0,f=flowerFrame(b,at,.20+(key%4)*.13,az),T=.009*fs,r=(double?.0125:.014)*fs,co=s.flowerColor;
+  f.add('tube','calyx-'+tag,innis?'#65434a':'#859765',0,0,0,.0031*fs,.009*fs,.0031*fs);
+  for(let j=0;j<5;j++){const a=j*TAU/5;f.add('narrow','calyx-tooth-'+tag,innis?'#6e4a51':'#859765',...pt(a,.0028*fs,.004*fs),.0016*fs,.006*fs,.0016*fs,.32,a,0);}
+  if(bud){f.add(kit.bud,'bud-'+tag,co,0,.008*fs,0,.0037*fs,.006*fs,.0037*fs);return;}
+  f.add('tube','corolla-tube-'+tag,double?'#e1c858':co,0,.003*fs,0,.0023*fs,T,.0023*fs);
+  const layers=double?3:1;
+  for(let l=0;l<layers;l++)for(let j=0;j<5;j++){
+   const aa=j*TAU/5+l*.57,R=r*(1-l*.18),f2=flowerFrame(f,[0,T+l*.002*fs,0],double?-.12-l*.24:0,aa),colour=double?'#e4dfac':co;
+   f2.add('irishPrimulaPetal','petal-'+tag,kit.shade(rand,colour,.02),0,0,0,R,R,R);
+   if(double)f2.add('irishPrimulaInterior','petal-dark-interior-'+tag,co,0,0,0,R,R,R);
+   if(avondale)f2.add('irishPrimulaStripe','petal-white-stripe-'+tag,'#eee6e7',0,0,0,R,R,R);
+   if(l===0){f2.add('irishPrimulaPetal','eye-outer-'+tag,avondale?'#b9764f':'#d6b446',0,.00016*fs,0,R*.34,R*.34,R*.34);f2.add('irishPrimulaPetal','eye-'+tag,'#e5c949',0,.00022*fs,0,R*.23,R*.23,R*.23);}
+  }
+  for(let j=0;j<5;j++){const aa=j*TAU/5;f.add(kit.bud,'anther-'+tag,'#b9a151',...pt(aa,.0008*fs,T-.0004*fs),.00035*fs,.0005*fs,.00035*fs);}
+  f.add(kit.bud,'stigma-'+tag,'#9c9c65',0,T+.0003*fs,0,.00045*fs,.00040*fs,.00045*fs);
+ };
+ for(let c=0;c<crowns;c++){
+  const az=c*TAU/crowns,base=pt(az,c?w*.14:0,.004),num=winter?(small?7:10):small?13:18,grow=winter?.58:month===3?.85:1;
+  for(let j=0;j<num;j++)leaf(base,j*2.399963+c,(.065+.043*j/num)*scale*grow,.48+j/num*.85);
+  if(!s.bloom)continue;
+  const scapes=innis?(small?5:7):(double?(small?1:2):(small?2:3));
+  for(let j=0;j<scapes;j++){
+   const aa=j*2.399963+c,tip=[base[0]+Math.sin(aa)*w*(innis?.20:.11),h*(innis?.50+j/scapes*.20:.72+j/scapes*.08),base[2]+Math.cos(aa)*w*(innis?.20:.11)];
+   b.branch(base,tip,(double?.002:innis?.0011:.0015)*scale,stem,'scape-'+tag);
+   for(let k=0;k<14;k++){const t=.08+k*.06,at=base.map((v,n)=>v+(tip[n]-v)*t),an=k*2.399963;b.branch(at,[at[0]+Math.sin(an)*.0007,at[1]+.0005,at[2]+Math.cos(an)*.0007],.000045,'#b5b6a0','scape-hair-'+tag);}
+   if(innis){flower(tip,aa,j+c*11+1);continue;}
+   const n=double?10:6;
+   for(let k=0;k<n;k++){
+    const an=k*2.399963+c,rad=(double?.026:.023)*fs*Math.sqrt((k+.5)/n),end=[tip[0]+Math.sin(an)*rad,tip[1]+.012*fs*(1-k/n),tip[2]+Math.cos(an)*rad];
+    b.branch(tip,end,.00065*scale,stem,'pedicel-'+tag);b.add('narrow','bract-'+tag,green,...tip,.002*scale,.008*scale,.002*scale,.8,an,0);flower(end,an,k+j*11+c*23);
+   }
   }
  }
 }
@@ -14248,6 +14307,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
  if(['cephalariaTallCymes','succisellaPearlCymes'].includes(a.architecture)){drawPearlGiant(b,{info,s,detail,rand,month},kit);return;}
+ if(a.architecture==='irishPrimulaCrowns'){drawIrishPrimula(b,{info,s,rand,month},kit);return;}
  if(a.architecture==='atropScabiosaCymes'){drawAtropScabiosa(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='dwarfScabiosaCrowns'){drawDwarfScabiosa(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='famaScabiosaCymes'){drawFamaScabiosa(b,{info,s,detail,rand,month},kit);return;}

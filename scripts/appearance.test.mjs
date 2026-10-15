@@ -11,6 +11,25 @@ import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySage
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Irish primulas distinguish striped umbels bronze single flowers and laced double umbels at two sizes throughout the year',()=>{
+ for(const [ci,id] of ['p-d251546513d8','p-232f004f1085','p-bfa0886d5811'].entries()){
+  const info=CATALOG[id],tag='irish-primula';assert.equal(info.appearance.architecture,'irishPrimulaCrowns');assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.equal(info.life,'perennial');assert.deepEqual(info.spread,ci===2?null:[.20,.30]);
+  for(const [si,size] of [{height:.1,spread:.25,leafHeight:.07},{height:.065,spread:.15,leafHeight:.04}].entries()){
+   const p={...makePlant(id,33700+ci*10+si,1,1),...size};let winterLeaves=0,summerLeaves=0;
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),label=`${id} size=${si} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),leaves=g.children.filter(m=>m.geometry.userData.irishPrimulaLeaf).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+    try{
+     assert.equal(g.userData.architecture,'irishPrimulaCrowns',label);assert.ok(leaves>0,label);assert.ok(count('vein-'+tag)>0,label);assert.ok(count('leaf-hair-'+tag)>0,label);if(month===1)winterLeaves=leaves;if(month===7)summerLeaves=leaves;
+     const bloom=[3,4,5].includes(month),flowers=count('stigma-'+tag);assert.equal(flowers>0,bloom,label);assert.equal(count('scape-'+tag)>0,bloom,label);assert.equal(count('pedicel-'+tag)>0,bloom&&ci!==1,label);assert.equal(count('petal-'+tag),flowers*(ci===2?15:5),label);assert.equal(count('anther-'+tag),flowers*5,label);assert.equal(count('petal-white-stripe-'+tag),ci===0?flowers*5:0,label);assert.equal(count('petal-dark-interior-'+tag),ci===2?flowers*15:0,label);
+     for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.50&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;
+      if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component} actual bounds`);}}
+     }
+    }finally{dispose(g);}
+   }
+   assert.ok(winterLeaves<summerLeaves,id+' winter foliage reduced');
+  }
+ }
+});
 test('Annual seed scabiosas keep plant colours and finish their life cycle while White Pink flowers in winter',()=>{
  const cases=[['p-a354a22e1dd7',33601,1,.45],['p-a354a22e1dd7',33600,1,.45],['p-b256aaf37c02',33610,.60,.30],['p-db707ffc5146',33620,.60,.30],['p-7f57675b7ac0',33630,.70,.35]];
  for(const [ci,[id,base,adult,small]] of cases.entries()){
@@ -5072,9 +5091,9 @@ test('water margin plants distinguish peltate leaves, four fern leaflets and opp
  assert.equal(parts.filter(p=>p.kind==='anther').length,4);assert.equal(parts.filter(p=>p.kind==='sepal').length,5);assert.equal(parts.filter(p=>p.kind==='stigma').length,2);
 });
 
-test('39 rosette and mat entries retain distinct flower structures and winter foliage',()=>{
+test('36 rosette and mat entries retain distinct flower structures and winter foliage',()=>{
  const arches=['primroseRosette','gerberaRosette','brunneraSprays','tapienMat','stolonPhlox'];
- const entries=Object.entries(CATALOG).filter(([,p])=>arches.includes(p.appearance?.architecture));assert.equal(entries.length,39);
+ const entries=Object.entries(CATALOG).filter(([,p])=>arches.includes(p.appearance?.architecture));assert.equal(entries.length,36);
  for(const [id,info] of entries)for(let month=1;month<=12;month++){
   const p=makePlant(id,3501,2,2),g=plantModel(p,view(month));
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
