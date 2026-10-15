@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.281';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.282';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -383,3 +383,5 @@ Object.assign(TRAIT_VALUES,{jacobaeaWoollyLeaf:'白毛に覆われた互生の�
 Object.assign(TRAIT_VALUES,{giantDaisySerrateLeaf:'互生する無柄の細長い単純葉。粗い鋸歯と葉の基部の裂け、細かな腺点',giantDaisyRadiateHead:'白い舌状花と丸く盛り上がる黄色い筒状花、重なる緑の総苞',amberboaHairyLeaf:'株元の有柄のへら形葉と、茎の細い互生葉。白い毛と浅い切れ込み',amberboaRadiantHead:'ライラック色の細く5裂する周辺の筒状花と淡い中央の小花。暗い縁と短い棘を持つ総苞'});
 
 Object.assign(TRAIT_VALUES,{carrotCakeLeaf:"互生する有柄の細い卵形葉。全縁のうねり、羽状の葉脈と短い剛毛",carrotCakeAnemoneHead:"下を向く外側の舌状花と、中央に盛り上がる筒状花。橙色から桃色がかる八重の花"});
+
+Object.assign(TRAIT_VALUES,{empressCompoundLeaf:'対生する小型の複葉。細長く鋸歯のある小葉が離れ、上部は小さい葉',empressCorymbHead:'桃色の総苞に淡桃色の筒状花を集め、白い二股の花柱が突き出す花房'});

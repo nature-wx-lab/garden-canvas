@@ -11,6 +11,27 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Little Empress keeps registered compound leaves, pink heads and five white bifid styles',()=>{
+ const id='p-413953ffa883',info=CATALOG[id];assert.equal(info.appearance.architecture,'littleEmpressCorymbs');assert.equal(info.appearance.status,'partial');assert.equal(info.latin,"Eupatorium japonicum 'Little Empress'");assert.deepEqual(info.height,[.3,.4]);assert.equal(info.spread,null);assert.equal(info.variegated,false);assert.deepEqual(info.bloom,[10,11]);
+ for(const [index,size] of [{height:.4,spread:.35,leafHeight:.25},{height:.15,spread:.20,leafHeight:.1}].entries()){
+  const p={...makePlant(id,30700+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const st=stateAt(p,view(month)),g=plantModel(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'littleEmpressCorymbs',tag);assert.ok(count('leaflet-joint-empress')>0&&count('petiole-empress')>0,tag);
+    const terminal=count('leaf-empress-terminal-underside-9aab79'),lateral=count('leaf-empress-lateral-underside-9aab79');assert.ok(terminal>0,tag);assert.equal(lateral,terminal*2,tag);
+    const heads=count('involucre-empress'),florets=count('floret-empress'),buds=count('bud-floret-empress');assert.equal(heads>0,[10,11].includes(month),tag);assert.equal(florets+buds,heads*5,tag);assert.equal(count('bract-empress'),heads*15,tag);assert.equal(count('style-empress'),florets*2,tag);assert.equal(count('style-arm-empress'),florets*2,tag);
+    assert.ok(!g.children.some(m=>/ray-|seed|fruit|pappus|gland|variegat/.test(m.userData.component||'')),tag);
+    for(const m of meshes('floret-empress'))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;assert.ok(Math.abs(Math.hypot(e[4],e[5],e[6])-.005)<1e-6,tag+': species reference corolla length');}
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+ for(const month of [12,1,2])assert.ok(stateAt(makePlant(id,30702,1,1),view(month)).groundDormant);
+});
 test('Carrot Cake separates tubular double centres, drooping rays and measured petiolate leaves',()=>{
  const id='p-da2c164af57d',info=CATALOG[id];assert.equal(info.appearance.architecture,'carrotCakeCrowns');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.35,.5]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,true);
  for(const [index,size] of [{height:.5,spread:.405,leafHeight:.3},{height:.15,spread:.20,leafHeight:.10}].entries()){
@@ -3918,7 +3939,7 @@ test('31 scabious profiles preserve florets, basal winter leaves, seed cups and 
 });
 
 test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads and biennial lifespan',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,5);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,4);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6000+i,2,2);
   for(let month=1;month<=12;month++){

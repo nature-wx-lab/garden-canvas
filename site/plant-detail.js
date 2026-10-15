@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.281';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.282';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.281';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.282';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,80 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function empressPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='empressCorolla'){
+  const az=u*Math.PI,q=Math.max(0,(t-.72)/.28),lobes=.5+.5*Math.cos(az*5),r=.20+.18*t+.62*q*(.20+.80*lobes);
+  return [Math.cos(az)*r,t-.18*q*(1-lobes),Math.sin(az)*r];
+ }
+ if(type==='empressBract')return [.5*u*sn**.43,t,.04*u*u*sn-.05*t*t];
+ const teeth=.77+.23*(.5+.5*Math.sin(t*Math.PI*18))**2,width=.5*sn**.68*teeth;
+ return [u*width,t,.085*t*t+.045*u*u*sn+.012*Math.sin(t*Math.PI*9)*u*u];
+}
+
+export function drawLittleEmpress(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,scale=Math.max(.48,Math.min(1,h/.30,w/.25)),green=s.leafColor||a.leafColor;
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r],mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const leaf=(at,az,L,tilt,key,simple=false)=>{
+  const f=flowerFrame(b,at,tilt,az),pet=.007*scale,W=L*.29;
+  f.branch([0,0,0],[0,pet,0],.00048*scale,'#829763','petiole-empress');
+  const leaflet=(root,roll,length,width,tag)=>{
+   const qf=flowerFrame(f,root,0,0),p=(t,u,off=0)=>{const q=empressPoint('empressLeaflet',t,u),x=q[0]*width,y=q[1]*length;return [x*Math.cos(roll)-y*Math.sin(roll),x*Math.sin(roll)+y*Math.cos(roll),q[2]*length+off];};
+   qf.add('empressLeaflet',`leaf-empress-${tag}-underside-9aab79`,kit.shade(rand,green,.035),0,0,0,width,length,length,0,0,roll);
+   for(let j=1;j<=9;j++)qf.branch(p((j-1)/9,0,-.00007),p(j/9,0,-.00007),.00013*scale,'#a7ba7e','vein-empress');
+   for(const t of [.25,.43,.61,.78])for(const side of [-1,1])qf.branch(p(t-.06,0,-.00006),p(t,side*.86,-.00006),.000055*scale,'#95a96e','vein-empress-side');
+   for(let j=0;j<8;j++){
+    const t=.15+.78*noise(key,j+21),u=(noise(key,j+41)-.5)*1.7,pt=p(t,u,.00006);
+    qf.branch(pt,[pt[0]+.00009,pt[1]+.00016,pt[2]+.0003],.00002*scale,'#c0c7a9','hair-empress-underside');
+   }
+  };
+  leaflet([0,pet,0],0,L,W,simple?'upper':'terminal');
+  if(!simple)for(const side of [-1,1]){
+   const from=[0,pet,0],to=[side*.003*scale,pet+.002*scale,0];f.branch(from,to,.00035*scale,'#829763','leaflet-joint-empress');
+   leaflet(to,side*.66,L*.64,W*.72,'lateral');
+  }
+ };
+ const shoots=w<.25?3:7,growth=month===3?.24:month===4?.40:month===5?.58:month===6?.73:month===7?.86:month===8?.94:1,heads=[];
+ for(let i=0;i<shoots;i++){
+  const az=i*2.399963,base=point(az,w*.05,.003),top=point(az,w*(.14+.03*noise(i,51)),h*(.84+.07*noise(i,52))*growth),stemR=.00115*scale;
+  b.branch(base,top,stemR,'#827660','stem-empress');
+  for(let j=0;j<7;j++){
+   const t=.08+j*.125,at=mix(base,top,t),L=a.leafLength*scale*(.76+.24*Math.sin(Math.PI*t));
+   for(const side of [-1,1])leaf(at,az+j*Math.PI/2+(side<0?Math.PI:0),L,.90+.15*noise(i,j+61),i*20+j*2+(side>0?1:0),j===6);
+   if(j===4||j===5){
+    const yaw=az+j*1.57,end=[at[0]+Math.sin(yaw)*w*.055,at[1]+h*.09*growth,at[2]+Math.cos(yaw)*w*.055];b.branch(at,end,stemR*.55,'#867263','branch-empress');
+    for(const side of [-1,1])leaf(end,yaw+(side<0?Math.PI:0),L*.46,.65,i*20+j+300,true);
+   }
+  }
+  if(!s.bloom||![10,11].includes(month))continue;
+  for(let c=0;c<3;c++){
+   const yaw=az+c*TAU/3,cluster=[top[0]+Math.sin(yaw)*w*.075,top[1]+h*(c===0?.055:.015),top[2]+Math.cos(yaw)*w*.075],from=mix(base,top,.90);
+   b.branch(from,cluster,.00066*scale,'#93687e','corymb-branch-empress');
+   for(let j=0;j<9;j++){
+    const aa=j*2.399963,r=.013*Math.sqrt((j+.5)/9),at=[cluster[0]+Math.sin(aa)*r,cluster[1]+.005*(1-r/.014),cluster[2]+Math.cos(aa)*r];
+    b.branch(cluster,at,.00025,'#99718a','pedicel-empress');heads.push({at,az:aa,key:i*27+c*9+j});
+   }
+  }
+ }
+ for(const {at,az,key} of heads){
+  const f=flowerFrame(b,at,.10+.22*noise(key,71),az),bud=key%4===3;
+  f.add(kit.bud,'involucre-empress','#a97592',0,.0027,0,.0017,.0028,.0017);
+  for(let ring=0;ring<3;ring++)for(let j=0;j<5;j++){
+   const aa=j*TAU/5+ring*.34,L=[.002,.004,.0055][ring],bf=flowerFrame(f,point(aa,.0012+ring*.00012,.0004),.10,aa);
+   bf.add('empressBract','bract-empress',kit.shade(rand,'#bb83a3',.03),0,0,0,.00105,L,L);
+  }
+  for(let j=0;j<5;j++){
+   const aa=j*TAU/5,pt=point(aa,.00085,.0045),ff=flowerFrame(f,pt,.17,aa);
+   if(bud){ff.add(kit.bud,'bud-floret-empress','#d2a0bb',0,.0018,0,.00068,.0022,.00068);continue;}
+   ff.add('empressCorolla','floret-empress','#dfc6db',0,0,0,.00048,.005,.00048);
+   const curve=[0,.0048,0],mid=[.0003,.0072,.0001],fork=[.0006,.0092,.0003];ff.branch(curve,mid,.00018,'#ffffff','style-empress');ff.branch(mid,fork,.00016,'#ffffff','style-empress');
+   for(const side of [-1,1])ff.branch(fork,[fork[0]+side*.0012,.0112,fork[2]+.00025],.00015,'#ffffff','style-arm-empress');
+  }
+ }
+}
+
 export function carrotCakePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='carrotDisc'){
@@ -12701,6 +12775,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='littleEmpressCorymbs'){drawLittleEmpress(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='carrotCakeCrowns'){drawCarrotCake(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='giantDaisyShoots'){drawGiantDaisy(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='amberboaHeads'){drawAmberboa(b,{info,s,detail,rand,month},kit);return;}
