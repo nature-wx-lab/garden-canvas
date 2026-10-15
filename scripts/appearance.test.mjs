@@ -11,6 +11,31 @@ import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySage
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Brunnera cultivar sprays scale crowns and connected cymes across two sizes and twelve months',()=>{
+ const ids=['p-664aec20b6d2','p-66b9d1a69d94','p-a449fd7481d7','p-f7b278ea076e'];
+ for(const [ci,id] of ids.entries()){
+  const info=CATALOG[id],adult=[[.4,.6,.25],[.45,.75,.32],[.3,.35,.20],[.4,.6,.25]][ci];let adultLeaves=0,smallLeaves=0;
+  assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.equal(info.appearance.winterClimateSensitive,true);
+  for(const [si,size] of [adult,ci===2?[.15,.20,.10]:[.18,.25,.12]].entries()){
+   const p={...makePlant(id,34200+ci*10+si,1,1),height:size[0],spread:size[1],leafHeight:size[2]};
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),label=`${id} size=${si} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+    try{
+     if([12,1,2].includes(month)){assert.equal(g.children.length,0,label);assert.ok(g.userData.groundDormant,label);continue;}
+     assert.equal(g.userData.architecture,'brunneraCultivarSprays',label);
+     const leaves=count('leaf-brunnera-'+info.appearance.shootProfile),flowers=count('tube-brunnera'),buds=count('bud-brunnera');assert.ok(leaves>0,label);assert.ok(count('hair-brunnera')>0,label);
+     if(month===7){if(si===0)adultLeaves=leaves;else smallLeaves=leaves;}
+     assert.equal(flowers>0,[3,4,5].includes(month),label);assert.equal(count('petal-brunnera'),flowers*5,label);assert.equal(count('anther-brunnera'),flowers*5,label);assert.equal(count('stigma-brunnera'),flowers,label);assert.equal(count('pedicel-brunnera'),flowers+buds,label);assert.equal(count('cyme-axis-brunnera'),flowers+buds,label);assert.equal(count('cyme-brunnera')*7,flowers+buds,label);
+     for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.008&&y<p.height*1.3&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;
+      if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component}`);}}
+     }
+    }finally{dispose(g);}
+   }
+  }
+  assert.ok(adultLeaves>smallLeaves*2,id+' small crown is not a miniaturized three-crown clump');assert.ok(seasonAt(info,7).leafScale>seasonAt(info,4).leafScale);
+ }
+ const gold=CATALOG[ids[3]];assert.notEqual(seasonAt(gold,4).leafColor,seasonAt(gold,7).leafColor);assert.deepEqual(CATALOG[ids[2]].spread,[.3,.4]);assert.deepEqual(CATALOG[ids[1]].spread,[.6,.8]);
+});
 test('Wild primrose keeps pin and thrum separate within each plant and bends fruiting stalks across two sizes and twelve months',()=>{
  const id='p-9841bfb331f7',info=CATALOG[id],tag='wild-primrose';assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,true);assert.deepEqual(info.height,[.1,.2]);assert.equal(info.spread,null);
  for(const morph of [0,1])for(const [si,size] of [{height:.15,spread:.28,leafHeight:.08},{height:.08,spread:.16,leafHeight:.05}].entries()){
@@ -2913,7 +2938,7 @@ test('Clover separates creeping perennial leaves from annual crimson racemes and
  const old=annualGalleryDocument(entries[0][0]);old.catalogVersion='2026-10-13.3';assert.equal(validateDocument(old).catalogVersion,CATALOG_VERSION);
 });
 test('Brunnera distinguishes silver veins, cream margins and flower colours with winter dieback',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='brunneraSprays');assert.equal(entries.length,7);
+ const entries=Object.entries(CATALOG).filter(([,p])=>['brunneraSprays','brunneraCultivarSprays'].includes(p.appearance?.architecture));assert.equal(entries.length,7);
  for(const [i,[id,info]]of entries.entries()){
   const p=makePlant(id,16900+i,2,2);p.height=info.height[1];p.leafHeight=p.height*info.appearance.foliageHeightRatio;p.spread=info.spread?.[1]||.5;
   for(let month=1;month<=12;month++){
@@ -5176,7 +5201,7 @@ test('water margin plants distinguish peltate leaves, four fern leaflets and opp
 
 test('23 rosette and mat entries retain distinct flower structures and winter foliage',()=>{
  const arches=['primroseRosette','gerberaRosette','brunneraSprays','tapienMat','stolonPhlox'];
- const entries=Object.entries(CATALOG).filter(([,p])=>arches.includes(p.appearance?.architecture));assert.equal(entries.length,23);
+ const entries=Object.entries(CATALOG).filter(([,p])=>arches.includes(p.appearance?.architecture));assert.equal(entries.length,19);
  for(const [id,info] of entries)for(let month=1;month<=12;month++){
   const p=makePlant(id,3501,2,2),g=plantModel(p,view(month));
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
