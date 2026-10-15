@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.320';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.321';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.320';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.321';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,61 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function woodlandPhloxPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='woodlandPhloxBasal'||type==='woodlandPhloxStem'){
+  const basal=type==='woodlandPhloxBasal',width=(basal?.31:.21)*Math.pow(sn,basal?.55:.65)*(basal?.36+.64*t:1);
+  return [u*width,t,.045*t*t+.055*u*u*sn+.005*Math.cos((t-Math.abs(u)*.3)*36)*Math.abs(u)*sn];
+ }
+ const broad=type==='woodlandPhloxBroadLobe',width=(broad?.58:.36)*Math.pow(sn,broad?.25:.43);
+ return [u*width,.025*t*t+.018*u*u*sn+.004*Math.sin(t*17+u*6)*Math.pow(Math.abs(u),3),t];
+}
+function drawWoodlandPhloxFlower(b,at,r,L,color,typ,tilt,yaw,kit){
+ const f=flowerFrame(b,at,tilt,yaw),tag='woodland-phlox';
+ f.add('tube','petal-tube-'+tag,color,0,0,0,.0048,L/1.09,.0048);
+ for(let k=0;k<5;k++){
+  const an=k*TAU/5;f.add(typ==='blue'?'woodlandPhloxBroadLobe':'woodlandPhloxLobe','petal-lobe-'+tag,color,Math.sin(an)*r*.07,L,Math.cos(an)*r*.07,r*.94,r*.94,r*.94,-.02,an,0);
+  f.add('narrow','calyx-'+tag,'#6e8750',Math.sin(an)*.0008,-.001,Math.cos(an)*.0008,.001,.008,.0015,.14,an,0);
+  const st=[Math.sin(an)*.00055,L*(.85+.025*k),Math.cos(an)*.00055];f.branch([st[0],L*.55,st[2]],st,.0001,'#ddd6ad','filament-'+tag);f.add(kit.bud,'anther-'+tag,'#b49543',...st,.00038,.00055,.00028,0,an,0);
+  const hair=[Math.sin(an)*.001,.004,Math.cos(an)*.001],tip=[hair[0]*1.55,hair[1]+.0002,hair[2]*1.55];f.branch(hair,tip,.00004,'#c6c7a2','gland-hair-'+tag);f.add(kit.bud,'gland-tip-'+tag,'#aeb382',...tip,.00009,.00009,.00009);
+ }
+ const style=[0,L*.94,0];f.branch([0,.001,0],style,.0001,'#d4d9a5','style-'+tag);for(let k=0;k<3;k++){const an=k*TAU/3;f.branch(style,[Math.sin(an)*.0005,L*.97,Math.cos(an)*.0005],.00008,'#e2deb7','stigma-'+tag);}
+}
+function drawWoodlandPhlox(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,small=w<.3,stem=a.stemColor,tag='woodland-phlox',n=small?4:9,nodes=small?4:6,L=Math.min(a.leafLength,w*.16)*s.leafScale,shoots=[];
+ const leaf=(at,len,pitch,yaw,shape,kind)=>{
+  const f=flowerFrame(b,at,pitch,yaw);f.add(shape,kind,kit.shade(rand,s.leafColor,.045),0,0,0,len,len,len);
+  let prev=[0,0,-.0003];for(let q=1;q<=5;q++){const p=woodlandPhloxPoint(shape,q/5,0).map(v=>v*len);p[2]-=.0003;f.branch(prev,p,.00012,'#9aa47c','vein-'+tag);prev=p;}
+ };
+ for(let j=0;j<n;j++){
+  const an=j*TAU/n+.17,reach=w*(.34+rand()*.05);let from=[0,.006,0];
+  for(let k=1;k<=nodes;k++){
+   const t=k/nodes,aa=an+Math.sin(t*4+j)*.12,at=[Math.sin(aa)*reach*t,.007+h*.025*Math.sin(t*Math.PI),Math.cos(aa)*reach*t];
+   b.branch(from,at,.0008,stem,'stolon-'+tag);
+   for(const side of [-1,1]){const tip=[at[0]+Math.sin(aa+.45*side)*.004,0,at[2]+Math.cos(aa+.45*side)*.004];b.branch(at,tip,.00024,'#887452','node-root-'+tag);}
+   if((j===0&&k===1)||rand()<s.leafDensity)for(const side of [0,Math.PI]){
+    const la=aa+Math.PI/2+side+(k%2)*.22,base=[at[0]+Math.sin(la)*.003,at[1]+.002,at[2]+Math.cos(la)*.003];b.branch(at,base,.00035,stem,'petiole-'+tag);leaf(base,L*(.75+rand()*.25),1.18,la,'woodlandPhloxBasal','leaf-basal-'+tag);
+   }
+   if(k%2===0&&s.bloom&&rand()<s.flowerDensity)shoots.push({at,an:aa});from=at;
+  }
+ }
+ for(const [index,{at,an}] of shoots.entries()){
+  const top=[at[0]+Math.sin(an)*w*.015,h*(.73+rand()*.07),at[2]+Math.cos(an)*w*.015];let from=at;
+  for(let k=1;k<=4;k++){
+   const t=k/4,to=at.map((v,d)=>v+(top[d]-v)*t);b.branch(from,to,.0006*(1-t*.25),stem,'flower-stem-'+tag);
+   if(k<4)for(const side of [0,Math.PI])leaf(to,Math.min(.019,w*.08)*(1-k*.1),.83,an+k*Math.PI/2+side,'woodlandPhloxStem','leaf-stem-'+tag);
+   for(let q=0;q<3;q++){const aa=q*TAU/3,mid=from.map((v,d)=>(v+to[d])/2),end=[mid[0]+Math.sin(aa)*.00055,mid[1]+.0002,mid[2]+Math.cos(aa)*.00055];b.branch(mid,end,.00004,'#c0c6a2','stem-hair-'+tag);}from=to;
+  }
+  const rr=Math.min(.031,w*.10),r=Math.min(a.flowerRadius,w*.06),tube=Math.min(a.flowerLength,h*.13);
+  for(let f=0;f<5;f++){
+   const aa=an+(f-1)*TAU/4,rad=f?rr:0,end=[top[0]+Math.sin(aa)*rad,top[1]+(f?-.004:.012),top[2]+Math.cos(aa)*rad],base=[top[0],top[1]-(f?.012:.002),top[2]];b.branch(base,end,.0003,stem,'pedicel-'+tag);
+   const color=a.shootProfile==='sherwood'&&f===index%5?new THREE.Color(s.flowerColor).lerp(new THREE.Color('#b388d0'),.30).getStyle():kit.shade(rand,s.flowerColor,.025);
+   drawWoodlandPhloxFlower(b,end,r,tube,color,a.shootProfile,.12+rand()*.35,aa,kit);
+  }
+  const bud=[top[0]+rr*.45,top[1]-.01,top[2]-rr*.4];b.branch([top[0],top[1]-.015,top[2]],bud,.0003,stem,'bud-pedicel-'+tag);const f=flowerFrame(b,bud,.3,an);f.add(kit.bud,'bud-'+tag,s.flowerColor,0,tube*.35,0,.0016,tube*.45,.0016);for(let k=0;k<5;k++)f.add('narrow','bud-calyx-'+tag,'#718553',0,0,0,.0007,.007,.001,.12,k*TAU/5,0);
+ }
+}
+
 export function wildGerberaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='wildGerberaLeaf'||type==='wildGerberaYoungLeaf'){
@@ -14535,6 +14590,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='woodlandPhloxStolons'){drawWoodlandPhlox(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='wildGerberaCrowns'){drawWildGerbera(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenGerberaCrowns'){drawGardenGerbera(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='bengalCrowns'){drawBengal(b,{info,s,detail,rand},kit);return;}

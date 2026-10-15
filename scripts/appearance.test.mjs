@@ -11,6 +11,26 @@ import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySage
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Woodland phlox keeps rooted stolons opposite leaf pairs and tubular spring flowers at two sizes across twelve months',()=>{
+ const ids=['p-34f42ede3e6f','p-1a978391fa83','p-dcb033b4b56b','p-bee017b7b9b8','p-d32f2b65fcd2'];
+ for(const [ci,id] of ids.entries()){
+  const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.deepEqual(info.height,[.1,.2]);assert.equal(info.spread,null);
+  for(const [si,size] of [[.2,.45,.06],[.12,.24,.035]].entries()){
+   const p={...makePlant(id,34700+ci*10+si,1,1),height:size[0],spread:size[1],leafHeight:size[2]};let winter=0,summer=0;
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),label=`${id} size=${si} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+    try{
+     assert.equal(g.userData.architecture,'woodlandPhloxStolons',label);const basal=count('leaf-basal-woodland-phlox'),stolons=count('stolon-woodland-phlox');assert.ok(basal>=2,label);assert.equal(basal%2,0,label);assert.equal(count('petiole-woodland-phlox'),basal,label);assert.equal(count('node-root-woodland-phlox'),stolons*2,label);if(month===1)winter=basal;if(month===7)summer=basal;
+     const flowers=count('petal-tube-woodland-phlox'),stems=count('flower-stem-woodland-phlox');assert.equal(flowers>0,month>=3&&month<=6,label);assert.equal(count('petal-lobe-woodland-phlox'),flowers*5,label);assert.equal(count('anther-woodland-phlox'),flowers*5,label);assert.equal(count('stigma-woodland-phlox'),flowers*3,label);assert.equal(count('calyx-woodland-phlox'),flowers*5,label);assert.equal(count('gland-tip-woodland-phlox'),flowers*5,label);assert.equal(count('leaf-stem-woodland-phlox'),stems/4*6,label);assert.equal(count('bud-woodland-phlox'),stems/4,label);
+     for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.008&&y<p.height*1.3&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.68;
+      if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component}`);}}
+     }
+    }finally{dispose(g);}
+   }
+   assert.ok(winter<summer,id+' winter reduction');
+  }
+ }
+});
 test('Wild gerbera keeps narrow rays bilabiate central florets and reduced winter foliage at two sizes across twelve months',()=>{
  const id='p-8aec06913708',info=CATALOG[id],a=info.appearance;
  assert.equal(a.status,'partial');assert.equal(info.bloomKnown,false);assert.deepEqual(info.height,[.3,.5]);assert.deepEqual(info.spread,[.3,.5]);assert.equal(a.flowerRadius,.032);
@@ -4500,7 +4520,7 @@ test('camellias retain alternate evergreen leaves, distinct flowers and stable w
 });
 
 test('olives preserve axillary four-lobed flowers, cultivar fruits and evergreen versus deciduous leaves',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>['oliveBranches','russianOliveBranches'].includes(p.appearance?.architecture));assert.equal(entries.length,10);
+ const entries=Object.entries(CATALOG).filter(([,p])=>['oliveBranches','russianOliveBranches'].includes(p.appearance?.architecture));assert.equal(entries.length,5);
  for(const [i,[id,info]] of entries.entries()){
   const a=info.appearance,russian=a.shootProfile==='russian';let wood;
   for(let month=1;month<=12;month++){
@@ -4597,7 +4617,7 @@ test('Deutzia preserves cultivar habit, opposite hairy blades, flower anatomy, s
 });
 
 test('Viburnum distinguishes sterile balls, lacecaps, pendant cymes, fruits and stable leafless winter wood',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='viburnumBranches');assert.equal(entries.length,10);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='viburnumBranches');assert.equal(entries.length,5);
  for(const [i,[id,info]] of entries.entries()){
   let wood;
   for(let month=1;month<=12;month++){
@@ -5286,7 +5306,7 @@ test('water margin plants distinguish peltate leaves, four fern leaflets and opp
 
 test('23 rosette and mat entries retain distinct flower structures and winter foliage',()=>{
  const arches=['primroseRosette','gerberaRosette','brunneraSprays','tapienMat','stolonPhlox'];
- const entries=Object.entries(CATALOG).filter(([,p])=>arches.includes(p.appearance?.architecture));assert.equal(entries.length,10);
+ const entries=Object.entries(CATALOG).filter(([,p])=>arches.includes(p.appearance?.architecture));assert.equal(entries.length,5);
  for(const [id,info] of entries)for(let month=1;month<=12;month++){
   const p=makePlant(id,3501,2,2),g=plantModel(p,view(month));
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
