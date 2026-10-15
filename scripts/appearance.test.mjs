@@ -11,6 +11,26 @@ import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySage
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Salmon Oxford and Gelato distinguish flower stages and compact plant dimensions without calendar colour claims',()=>{
+ for(const [ci,id] of ['p-647beb0af01a','p-37261b00d15a','p-503dd79cccec'].entries()){
+  const info=CATALOG[id],gelato=ci===2,tag='atrop-scabiosa',sizes=[{height:gelato?.40:.85,spread:gelato?.25:.35,leafHeight:gelato?.18:.28},{height:gelato?.22:.40,spread:gelato?.20:.25,leafHeight:gelato?.10:.14}];
+  assert.equal(info.appearance.architecture,'atropScabiosaCymes');assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[6,7,8,9,10]);assert.deepEqual(info.height,gelato?[.3,.45]:[.6,1]);assert.deepEqual(info.spread,gelato?[.2,.3]:[.25,.4]);assert.equal(info.appearance.monthlyFlowerColors,undefined);assert.equal(seasonAt(info,6).timingBasis,'季節からの表示上の目安');assert.ok(info.appearance.unconfirmed.some(t=>t.includes('夏越し')));
+  for(const [si,size] of sizes.entries()){
+   const p={...makePlant(id,33500+ci*10+si,1,1),...size};let stems;
+   for(let month=1;month<=12;month++){
+    const v=view(month),st=stateAt(p,v),g=plantModel(p,v),label=`${id} h=${p.height} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+    try{
+     assert.equal(st.groundDormant,false,label);assert.equal(g.userData.architecture,'atropScabiosaCymes',label);assert.ok(count('leaf-'+tag+'-basal-underside-a2b38d')>0,label);assert.equal(count('leaf-'+tag+'-divided-underside-a2b38d')>0,![12,1,2].includes(month),label);
+     const heads=count('involucre-'+tag),open=count('receptacle-'+tag),florets=count('petal-'+tag+'-tube');assert.equal(heads>0,st.bloom||month===5,label);assert.equal(open>0,st.bloom,label);assert.equal(heads,open+count('bud-'+tag),label);assert.equal(count('petal-'+tag+'-outer')+count('petal-'+tag+'-inner'),florets*5,label);assert.equal(count('filament-'+tag),florets*4,label);assert.equal(count('anther-'+tag),florets*4,label);assert.equal(count('calyx-bristle-'+tag),florets*5,label);assert.equal(count('style-'+tag),florets,label);assert.equal(count('petal-coloured-centre-'+tag),0,label);assert.equal(count('petal-aged-centre-'+tag)>0,ci===0&&st.bloom,label);assert.equal(count('unopened-central-floret-'+tag)>0,st.bloom,label);assert.ok(!g.children.some(m=>/scabious/.test(m.userData.component||'')),label);
+     if([6,9].includes(month)){const current=g.children.filter(m=>['stem-'+tag,'branch-'+tag,'peduncle-'+tag].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(!stems)stems=current;else assert.deepEqual(current,stems,label);}
+     for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.22&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+      if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component} actual bounds`);}}
+     }
+    }finally{dispose(g);}
+   }
+  }
+ }
+});
 test('Atropurpurea cultivars distinguish dark buds, white margins and dense white heads through the year',()=>{
  for(const [ci,id] of ['p-37e2dd1af05a','p-be6f4a152960','p-d31690f18185'].entries()){
   const info=CATALOG[id],bonnet=ci===1,tag='atrop-scabiosa',sizes=[{height:bonnet?.55:.85,spread:.35,leafHeight:.28},{height:bonnet?.28:.40,spread:.25,leafHeight:.14}];
@@ -4577,8 +4597,8 @@ test('verbena distinguishes terminal heads, progressive spikes, creeping mats an
  assert.deepEqual(CATALOG['p-7869cffdff1b'].appearance.flowerMonths,[4,5,6,7,8,9,10,11]);
 });
 
-test('7 scabious profiles preserve florets, basal winter leaves and seed cups',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='scabiousHabit');assert.equal(entries.length,7);
+test('4 scabious profiles preserve florets, basal winter leaves and seed cups',()=>{
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='scabiousHabit');assert.equal(entries.length,4);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6100+i,2,2);
   for(let month=1;month<=12;month++){
