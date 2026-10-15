@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.264';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.265';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.264';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.265';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,38 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function belliumPoint(type,t,u){
+ const v=Math.max(0,(t-.26)/.74),sn=Math.max(0,Math.sin(Math.PI*v)),width=t<.26?.06:Math.max(.06*(1-v),sn**.48*(.48+.52*v));
+ return [u*.5*width,t,.04*sn+.025*u*u*sn-.012*Math.exp(-u*u*60)*sn];
+}
+function drawBellium(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),scale=Math.max(.65,Math.min(1,w/.25)),n=Math.max(18,Math.min(80,Math.round(58*detail*Math.sqrt(w/.25)))),roots=[];
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ for(let i=0;i<n;i++){
+  const az=i*2.399963+(noise(i,15)-.5)*.30,r=w*.39*Math.sqrt((i+.3)/n),root=[Math.sin(az)*r,.003,Math.cos(az)*r];roots.push(root);
+  if(i){const from=roots.slice(0,-1).reduce((best,q)=>Math.hypot(q[0]-root[0],q[2]-root[2])<Math.hypot(best[0]-root[0],best[2]-root[2])?q:best,roots[0]),mid=from.map((v,k)=>(v+root[k])*.5);mid[0]+=Math.sin(az)*.002*scale;mid[2]+=Math.cos(az)*.002*scale;b.branch(from,mid,.00035*scale,'#7b8d60','stolon-bellium');b.branch(mid,root,.00035*scale,'#7b8d60','stolon-bellium');}
+  for(let j=0;j<7;j++){
+   if(noise(i,j*73)>s.leafDensity)continue;
+   const aa=az+j*2.4,len=a.leafLength*scale*(.75+.25*noise(i,j+55))*(winter?.75:1),width=a.leafWidth*scale*(winter?.8:1),f=flowerFrame(b,root,.8+noise(i,j+67)*.65,aa);
+   f.add('belliumLeaf','leaf-bellium-rosette',kit.shade(rand,s.leafColor,.045),0,0,0,width,len,len);
+   f.branch([0,0,.00005],[0,len*.84,.0004],.000055*scale,'#82a367','vein-bellium');
+  }
+  if(!s.bloom)continue;
+  const top=h*(.43+.43*noise(i,103)),reach=w*.055,point=t=>[root[0]+Math.sin(az+.25*Math.sin(t*4))*reach*t,root[1]+top*t,root[2]+Math.cos(az+.25*Math.sin(t*4))*reach*t];let prev=root;
+  for(let j=1;j<=8;j++){const at=point(j/8);b.branch(prev,at,.00045*scale,a.stemColor,'scape-bellium');prev=at;}
+  const f=flowerFrame(b,prev,.12+noise(i,119)*.45,az),cupR=a.involucreRadius,cupH=a.involucreHeight,discR=a.discRadius,age=noise(i,133),spent=age>.91,bud=!spent&&age>s.flowerDensity*.91;
+  f.add(kit.bud,'involucre-bellium',spent?'#9e8264':'#839553',0,cupH*.4,0,cupR,cupH*.5,cupR);
+  for(let j=0;j<10;j++){const aa=j*TAU/10;f.add('erigeronLeaf','bract-bellium',spent?'#ab9874':'#8b9c58',Math.sin(aa)*cupR*.65,0,Math.cos(aa)*cupR*.65,.0005,cupH,cupH,.7,aa,0);}
+  if(spent){f.add(kit.bud,'spent-bellium','#a18a66',0,cupH*.8,0,cupR*.75,cupH*.35,cupR*.75);continue;}
+  if(bud){f.add(kit.bud,'bud-bellium','#d4d9c2',0,cupH*.8,0,cupR*.75,cupH*.55,cupR*.75);continue;}
+  const rays=10+2*Math.floor(noise(i,143)*4),len=a.headRadius-discR*.6;
+  for(let j=0;j<rays;j++){const aa=j*TAU/rays;f.add('miyakowasureRay','ray-bellium',kit.shade(rand,'#f2f0e6',.02),Math.sin(aa)*discR*.6,cupH*.8,Math.cos(aa)*discR*.6,.0013,len,len,1.2+noise(i,j+151)*.35,aa,0);}
+  f.add(kit.bud,'disc-bellium-base','#d4b94d',0,cupH*.8,0,discR,.0004,discR);
+  for(let j=0;j<35;j++){const aa=j*2.399963,rr=discR*Math.sqrt((j+.4)/35);f.add('erigeronDisk','disc-floret-bellium','#e4c74c',Math.sin(aa)*rr,cupH*.7+.0004*(1-rr/discR),Math.cos(aa)*rr,.00045,.0012,.00045,.05,aa,0);}
+ }
+}
+
+
 export function miyakowasurePoint(type,t,u){
  const basal=type==='miyakowasureBasal',v=basal?Math.max(0,(t-.28)/.72):t,sn=Math.max(0,Math.sin(Math.PI*v));
  if(type==='miyakowasureRay')return [u*.5*Math.sin(Math.PI*t)**.45*(.6+.4*t),t-.025*(1-Math.cos(u*3*Math.PI))*t**10,.10*t*t+.025*u*u*Math.sin(Math.PI*t)];
@@ -11606,6 +11638,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='belliumRunners'){drawBellium(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='miyakowasureCrowns'){drawMiyakowasure(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='compositusRosettes'){drawCompositus(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='karvinskianusTrails'){drawKarvinskianus(b,{info,s,detail,rand,month},kit);return;}
