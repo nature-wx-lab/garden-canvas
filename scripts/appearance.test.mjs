@@ -11,6 +11,21 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Cotton thistle keeps spiny rosettes before flowering and does not regrow after its flowering season',()=>{
+ const id='p-5a9afc3c9bdc',info=CATALOG[id],a=info.appearance;assert.equal(a.architecture,'cottonThistleWings');assert.equal(a.status,'partial');assert.deepEqual(info.height,[1.5,2]);assert.deepEqual(info.spread,[1,1.5]);assert.equal(info.bloomKnown,false);assert.equal(info.life,'biennial');assert.match(a.unconfirmed.join(' '),/12か月/);
+ for(const small of [false,true]){const p={...makePlant(id,29700+Number(small),1,1),height:small?.5:2,spread:small?.5:1.25,leafHeight:small?.2:.35};
+  for(let month=1;month<=12;month++){
+   const v={...view(month),year:small?0:1},state=stateAt(p,v),g=plantModel(p,v),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),finished=!small&&month>=11,bolting=!small&&month>=5&&month<=10;
+   if(finished){assert.equal(state.groundDormant,true);assert.equal(g.children.length,0);assert.match(state.phase,/生育終了/);dispose(g);continue;}
+   assert.equal(g.userData.architecture,'cottonThistleWings');assert.equal(state.shootScale,1);assert.ok(count('leaf-cotton-basal')>0);assert.ok(count('spine-cotton-leaf')>0);assert.equal(count('stem-cotton')>0,bolting);assert.equal(count('wing-cotton-stem')>0,bolting);assert.equal(count('floret-cotton')>0,bolting&&info.bloom.includes(month));const heads=count('involucre-cotton');assert.equal(heads,bolting&&month>=6?9:0);
+   if(heads){assert.equal(count('bract-cotton-spiny'),heads*108);assert.equal(count('spine-cotton-bract'),heads*108);assert.equal(count('floret-cotton'),(heads-count('bud-cotton'))*420);assert.equal(count('floret-cotton'),count('style-cotton'));}if(bolting)assert.equal(count('wing-cotton-stem'),(count('stem-cotton')+count('branch-cotton'))*4);
+   assert.ok(!g.children.some(m=>/ray|seed|fruit/.test(m.userData.component)));for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();if(m.userData.component.startsWith('leaf-cotton')){const matrix=new Matrix4(),v=new Vector3(),pos=m.geometry.attributes.position;let low=Infinity;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);for(let j=0;j<pos.count;j++)low=Math.min(low,v.fromBufferAttribute(pos,j).applyMatrix4(matrix).y);}assert.ok(low>=-.01,`actual leaf surface ${low}`);}else assert.ok(m.boundingBox.min.y>=-.01,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.15,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75,m.userData.component);}dispose(g);
+  }
+ }
+ const p=makePlant(id,29702,1,1);const ref=stateAt(p,{...view(8),reference:true});assert.equal(ref.biennialRosette,false);assert.equal(ref.bloom,true);assert.match(ref.phase,/苗齢/);assert.equal(stateAt(p,{...view(8),year:0}).biennialRosette,true);assert.equal(stateAt(p,{...view(1),year:2}).present,false);
+ for(const v of [{year:0,month:11},{year:1,month:1},{year:1,month:8}]){const s=stateAt(p,{...v,reference:true});assert.equal(s.bloom,false);assert.equal(s.groundDormant,true);const g=plantModel(p,{...v,reference:true});assert.equal(g.children.length,0);dispose(g);}
+ const late={...p,start:10};assert.equal(stateAt(late,{...view(12),reference:true}).groundDormant,false);assert.equal(stateAt(late,{...view(8),year:1,reference:true}).bloom,true);assert.equal(stateAt(late,{...view(11),year:1,reference:true}).groundDormant,true);
+});
 test('Jurinea separates nodding heads, white pappus and entire seedling leaves from divided adult foliage',()=>{
  const id='p-c66dc5e68f24',info=CATALOG[id],a=info.appearance;assert.equal(a.architecture,'jurineaNoddingHeads');assert.equal(a.status,'partial');assert.deepEqual(info.height,[.2,.45]);assert.deepEqual(info.spread,[.15,.25]);assert.equal(info.bloomKnown,false);assert.match(a.unconfirmed.join(' '),/転載本文/);
  for(const small of [false,true]){const p={...makePlant(id,29600+Number(small),1,1),height:small?.20:.45,spread:small?.15:.25,leafHeight:small?.06:.13};let winterLeafMax=0,summerLeafMax=0;
@@ -3620,7 +3635,7 @@ test('31 scabious profiles preserve florets, basal winter leaves, seed cups and 
 });
 
 test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads and biennial lifespan',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,15);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,14);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6000+i,2,2);
   for(let month=1;month<=12;month++){

@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.273';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.274';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -367,3 +367,5 @@ Object.assign(TRAIT_VALUES,{artichokeLobedLeaf:'株元に広がる大きな銀�
 Object.assign(TRAIT_VALUES,{cotulaDividedLeaf:'細かく二重に裂けた柔らかな銀灰色の葉が低く密生',cotulaButton:'非常に細い無葉花茎の先の黄色いボタン状花。小花の詳細は未同定'});
 
 Object.assign(TRAIT_VALUES,{jurineaDividedLeaf:'株元に多い羽状深裂葉と少数の茎葉。葉裏は灰白色。小苗は切れ込みの少ない葉',jurineaNoddingHead:'曲がる花茎に横・下向きにも咲く赤紫の頭花と、先が曲がる細い総苞片。花後は白い冠毛'});
+
+Object.assign(TRAIT_VALUES,{cottonSpinyLeaf:'銀灰色の裂葉。葉縁に棘があり、茎葉は上ほど小さい',cottonSpinyHead:'棘を持つ細い総苞片に囲まれた紫の筒状花。分枝した茎には棘付きの翼'});
