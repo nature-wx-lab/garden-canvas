@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.284';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.285';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.284';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.285';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,64 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function crystalPoint(type,t,u){
+ if(type==='crystalRayBase')return crystalPoint('crystalInnerRay',t*.78,u);
+ if(type==='crystalRayTip')return crystalPoint('crystalInnerRay',.78+t*.22,u);
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='crystalInnerRay')return [.5*u*Math.sin(t*Math.PI*.86)**.66,.88*t+.06*u*u*sn,.30*t-.48*t*t+.05*u*u*sn];
+ if(type==='crystalRay')return [.5*u*Math.sin(t*Math.PI*.86)**.66,.065*t*t+.10*u*u*sn+.015*Math.cos(u*Math.PI*3)*sn,t-.025*t**12*(1-u*u)];
+ if(type==='crystalBract')return [.5*u*sn**.7,t,.06*u*u*sn];
+ const lobe=Math.max(.85*Math.exp(-(((t-.23)/.11)**2)),Math.exp(-(((t-.48)/.14)**2)),.65*Math.exp(-(((t-.74)/.17)**2))),edge=(.32+.68*lobe)*(.94+.06*Math.sin(t*Math.PI*25));
+ return [.5*u*sn**.64*edge,t,.05*t*t+.07*u*u*sn+.018*Math.sin(t*Math.PI*6)*u*u];
+}
+export function drawCrystalPurple(b,{info,s,rand,month},kit){
+ if(s.groundDormant)return;
+ const h=s.height,w=s.spread,scale=Math.max(.48,Math.min(1,h/.30,w/.32)),green=s.leafColor||'#506e40',noise=(i,k)=>{const x=Math.sin(i*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r],mix=(a,b,t)=>a.map((v,k)=>v+(b[k]-v)*t);
+ const leaf=(at,az,L,W,pet,tilt,key,tag)=>{
+  const f=flowerFrame(b,at,tilt,az),pt=(t,u,off=0)=>{const p=crystalPoint('crystalLeaf',t,u);return[p[0]*W,pet+p[1]*L,p[2]*L+off];};
+  f.branch([0,0,0],[0,pet,0],.00085*scale,'#839461','petiole-crystal');
+  f.add('crystalLeaf','leaf-crystal-'+tag+'-underside-829568',kit.shade(rand,green,.035),0,pet,0,W,L,L);
+  for(let j=1;j<=8;j++)f.branch(pt((j-1)/8,0,-.00012),pt(j/8,0,-.00012),.00018*scale,'#91a870','vein-crystal');
+  for(const t of [.23,.48,.74])for(const side of [-1,1])f.branch(pt(t*.55,0,-.00008),pt(t,side*.9,-.00008),.00010*scale,'#91a870','vein-crystal-side');
+ };
+ if([12,1,2,3].includes(month)){
+  for(let i=0;i<3;i++){
+   const az=i*2.399963;b.branch(point(az,w*.025,.003),point(az,w*.04,Math.min(.12,h*.25)),.0013*scale,'#867658','winter-stem-crystal');
+   for(let j=0;j<3;j++)leaf(point(az,w*.035,.005+j*.002),az+j*2.399963,(month===3?.023:.016)*scale,.014*scale,.003*scale,.95,i*3+j,'winter');
+  }return;
+ }
+ const growth=month===4?.30:month===5?.52:month===6?.70:month===7?.85:1,shoots=w<.28?3:6,heads=[];
+ for(let i=0;i<shoots;i++){
+  const az=i*2.399963,r=w*(.08+.11*Math.sqrt((i+.5)/shoots)),base=point(az,r*.18,.003),fork=point(az,r,h*.51*growth),top=point(az,r*1.2,h*(.78+.07*noise(i,3))*growth);
+  b.branch(base,fork,.0018*scale,'#74865a','stem-crystal');b.branch(fork,top,.0013*scale,'#819165','stem-crystal');
+  for(let j=0;j<8;j++){const t=.08+j*.11,lf=1-.25*t;leaf(mix(base,top,t),az+j*2.399963,.065*scale*lf,.047*scale*lf,.012*scale,.95+.1*noise(i,j+4),i*20+j,'main');}
+  for(let k=0;k<3;k++){
+   const aa=az+(k-1)*.64,at=mix(base,top,.32+k*.19),rr=k===1?r*1.25:w*(.27+.06*noise(i,k+11)),end=point(aa,rr,h*(.89-.20*rr/(w*.36)+.04*noise(i,k+21))*growth);
+   b.branch(at,end,.0011*scale,'#819165','branch-crystal');
+   for(let j=0;j<5;j++)leaf(mix(at,end,.16+j*.17),aa+j*2.399963,.05*scale,.036*scale,.009*scale,.95,i*50+k*7+j,'lateral');
+   const count=w<.28?1:2;
+   for(let j=0;j<count;j++){
+    const yaw=aa+j*2.399963,reach=j===0?.007:.035,head=[end[0]+Math.sin(yaw)*reach*scale,end[1]+.028*scale,end[2]+Math.cos(yaw)*reach*scale];
+    b.branch(mix(at,end,.8),head,.00095*scale,'#85996b','peduncle-crystal');heads.push({at:head,az:yaw,key:i*9+k*2+j});
+   }
+  }
+ }
+ if(!s.bloom||![9,10,11].includes(month))return;
+ for(const {at,az,key} of heads){
+  const bud=key%8===7,opening=key%4===0,f=flowerFrame(b,at,.09+.22*noise(key,51),az),size=.85+.15*noise(key,64);
+  f.add(kit.bud,'involucre-crystal','#688451',0,-.003,0,.009*size,.004*size,.009*size);
+  for(let j=0;j<18;j++){const aa=j*2.399963,bf=flowerFrame(f,point(aa,.006*size,-.003+(j%3)*.0007),2.0,aa);bf.add('crystalBract','bract-crystal','#758c5c',0,0,0,.003,.008,.008);}
+  if(bud){f.add(kit.bud,'bud-crystal','#82395f',0,.004,0,.007,.009,.007);continue;}
+  const counts=[22,20,18,16,14,12,10,8];
+  for(let ring=0;ring<counts.length;ring++)for(let j=0;j<counts[ring];j++){
+   const v=ring/7,inner=ring>=4,aa=j*TAU/counts[ring]+ring*.27,L=(inner?.020*(1-v*.55):.024*(1-v*.68))*size*(.88+.24*noise(key,ring*31+j)),W=.007*size*(1-v*.47),rf=flowerFrame(f,point(aa,inner?.008*(1-v*.85):.004*(1-v),.001+.004*v),inner?(.06+.15*Math.sin(j*2.399)):-.05-v*.85-(opening?.18:0)+.04*Math.sin(j*2.399),aa);
+   rf.add(inner?'crystalRayBase':'crystalRay','petal-crystal-purple-'+(inner?'inner-':'')+(opening?'opening':'open'),kit.shade(rand,ring>4?'#7e1f57':'#983269',.04),0,0,0,W,L,L);
+   if(inner)rf.add('crystalRayTip','petal-crystal-reverse-tip',kit.shade(rand,'#b25a96',.025),0,0,0,W,L,L);
+  }
+ }
+}
+
 export function frostyPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='frostyRay')return [.5*u*Math.sin(t*Math.PI*.82)**.64,.055*t*t+.06*u*u*sn+.012*Math.cos(u*Math.PI*4)*sn,t-.045*t**12*(1-u*u)];
@@ -12924,6 +12982,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='crystalPurpleMounds'){drawCrystalPurple(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='frostyIglooMounds'){drawFrostyIgloo(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='electraQuills'){drawElectra(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='littleEmpressCorymbs'){drawLittleEmpress(b,{info,s,detail,rand,month},kit);return;}
