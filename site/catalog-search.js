@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.260';
+import {treeProfile} from './tree-profiles.js?v=0.9.261';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -140,7 +140,7 @@ export function seasonAt(info,month){
  if(a.architecture==='mahoniaCanes'){scale=1;phase=bloom?'枝先に集まる黄色い花房（国内資料の11〜12月を参考表示）':'常緑の羽状複葉（低温での着色・葉量は参考、結実は未再現）';}
  if(a.architecture==='guaraniticaShoots'){scale=1;phase='大きな対生葉と黒い萼・青い筒状花（地下茎・剪定・地域別の伸長は未予測）';}
  if(a.architecture==='rustySageCalyces'){scale=1;phase='銀灰色の葉と錆桃色の花・花後の萼（残存期間・冬咲き・霜害は未予測）';}
- if(a.architecture==='erigeronHeads'){scale=1;phase=[12,1,2].includes(month)?'低温管理苗の落葉期を参考表示（成株の残葉・残茎・地域差は未校正）':bloom?a.shootProfile==='azure'?'分枝した茎先の細い青紫の舌状花（初夏・晩秋を月へ参考換算）':'1本の茎先に1花。赤から橙への咲き進みを混在表示（月別の色ではない）':'互生する細長い葉と株元の葉（花後の残茎量・草姿は参考）';}
+ if(a.architecture==='erigeronHeads'){scale=1;phase=[12,1,2].includes(month)?'低温管理苗の落葉期を参考表示（成株の残葉・残茎・地域差は未校正）':bloom?a.shootProfile==='rosa'?'分枝する茎先の桃色の半八重花（切戻し後の秋の再開花は自動表示しない）':a.shootProfile==='prosperity'?'短い節間と細かな分枝の淡い青紫花（連続開花・花がら摘みの効果は未予測）':a.shootProfile==='azure'?'分枝した茎先の細い青紫の舌状花（初夏・晩秋を月へ参考換算）':'1本の茎先に1花。赤から橙への咲き進みを混在表示（月別の色ではない）':'互生する細長い葉と株元の葉（花後の残茎量・草姿は参考）';}
  if(a.architecture==='linumCymes'){scale=1;phase=[11,12,1,2].includes(month)?'低温管理苗を参考にした低い葉茎（成株の残葉・残茎・地域差は未校正）':a.seedHeadMonths?.includes(month)?'花後の球形蒴果の参考（結実量・熟期・残存月は未校正）':bloom?'細い灰緑の茎葉と青い5花弁（一日の落花は自動表示しない）':'花後の細い灰緑の茎葉（秋の再開花は自動表示しない）';}
  if(a.architecture==='chalcedonicaHeads'){scale=1;phase=[10,11,12,1,2].includes(month)?'花茎を切った株元葉の参考（冬の残葉量・落葉は地域差がある）':'対生する緑葉と茎先の小花房（切戻し後の秋の再開花は自動表示しない）';}
  if(a.architecture==='roseCampion'){scale=1;phase=[10,11,12,1,2].includes(month)?'低い銀葉のロゼット（花後に花茎を切った管理例・月別葉量は参考）':'銀白色の対生葉と枝分かれする花茎（国内の春〜初夏を月へ参考換算）';}

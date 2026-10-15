@@ -11,6 +11,19 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Erigeron cultivars preserve tall pink heads and compact lilac branching without automatic Rosa rebloom',()=>{
+ for(const [i,id] of ['p-1f47d8af38b6','p-a0ec0a8e726a'].entries()){
+  const info=CATALOG[id],a=info.appearance;assert.equal(a.status,'partial');assert.equal(info.bloomKnown,false);assert.deepEqual(info.height,i?[.3,.4]:[.5,.7]);assert.deepEqual(info.spread,[.2,.3]);assert.equal(a.shootProfile,i?'prosperity':'rosa');assert.equal(seasonAt(info,10).bloom,!!i);if(!i){assert.match(info.care,/切戻す/);assert.match(a.unconfirmed.join(' '),/幅50〜100cm/);}
+  for(const small of [false,true]){const p={...makePlant(id,28300+i*2+Number(small),1,1),height:small?.2:i?.4:.7,spread:small?.18:.25,leafHeight:small?.1:.23};
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);if([12,1,2].includes(month)){assert.equal(g.children.length,0);dispose(g);continue;}
+    assert.equal(g.userData.architecture,'erigeronHeads');assert.ok(count('leaf-erigeron')>0);assert.equal(count('hair-erigeron-stem'),0);assert.equal(count('ray-erigeron')>0,info.bloom.includes(month));
+    const stems=count('stem-erigeron')/(i?18:14),heads=count('involucre-erigeron'),open=heads-count('bud-erigeron');assert.equal(count('branch-erigeron'),stems*(i?5:3));assert.equal(count('twig-erigeron'),stems*(i?10:0));if(heads){assert.equal(heads,stems*(i?16:4));assert.equal(count('ray-erigeron'),open*(i?64:108));assert.equal(count('disc-floret-erigeron'),open*85);assert.equal(count('twig-erigeron'),stems*(i?10:0));}
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.008,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.12,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75,m.userData.component);}dispose(g);
+   }
+  }
+ }
+});
 test('Erigeron separates branched blue heads and solitary hairy orange heads across seasons',()=>{
  for(const [i,id] of ['p-29105f0378f9','p-21ff9a5f246d'].entries()){
   const info=CATALOG[id],a=info.appearance;assert.equal(a.status,'partial');assert.equal(a.architecture,'erigeronHeads');assert.equal(info.bloomKnown,false);assert.equal(a.flowerTiming,'season-reference');assert.equal(a.arrangement,'alternate');assert.equal(a.leafShape,'erigeronLeaf');assert.equal(info.life,'perennial');assert.deepEqual(info.height,i?[.3,.4]:[.4,.5]);assert.deepEqual(info.spread,i?[.15,.25]:[.3,.4]);assert.equal(seasonAt(info,10).bloom,!i);
@@ -18,7 +31,7 @@ test('Erigeron separates branched blue heads and solitary hairy orange heads acr
    for(let month=1;month<=12;month++){
     const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);if([12,1,2].includes(month)){assert.equal(g.children.length,0);assert.ok(stateAt(p,view(month)).groundDormant);dispose(g);continue;}
     assert.equal(g.userData.architecture,'erigeronHeads');assert.equal(stateAt(p,view(month)).shootScale,1);assert.ok(count(i?'leaf-erigeron-hairy':'leaf-erigeron')>0);assert.equal(count('hair-erigeron-stem')>0,!!i);
-    const rays=count('ray-erigeron'),heads=count('involucre-erigeron'),open=heads-count('bud-erigeron'),stems=count('stem-erigeron')/(i?12:14);assert.equal(rays>0,info.bloom.includes(month));assert.equal(count('branch-erigeron')>0,!i&&info.bloom.includes(month));
+    const rays=count('ray-erigeron'),heads=count('involucre-erigeron'),open=heads-count('bud-erigeron'),stems=count('stem-erigeron')/(i?12:14);assert.equal(rays>0,info.bloom.includes(month));assert.equal(count('branch-erigeron')>0,!i);
     if(heads){assert.equal(heads,stems*(i?1:4));assert.equal(count('disc-floret-erigeron'),open*85);assert.ok(rays>=open*(i?84:96));assert.ok(rays<=open*(i?84:128));assert.ok(g.children.find(m=>m.userData.component==='ray-erigeron').geometry.userData.erigeronRay);assert.equal(g.children.find(m=>m.userData.component==='ray-erigeron').receiveShadow,false);}
     assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
     for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.008,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.12,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75,m.userData.component);}dispose(g);
