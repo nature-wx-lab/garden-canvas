@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.297';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.298';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.297';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.298';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5355,6 +5355,49 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 // Fine-leaved nursery selections: exact species/registered names remain unconfirmed.
 // Ruby Frost and Redshift: organ descriptions from cultivar patents; Japanese garden seasons remain references.
 // Tango Leur retail identities are kept separate from similarly named patented cultivars.
+export function angelicPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(t*Math.PI));
+ if(type==='angelicRay'){const edge=1-.025*Math.exp(-(((Math.abs(u)-.33)/.14)**2));return[.5*u*Math.sin(t*Math.PI*.93)**.58*Math.min(1,t/.20),.025*t*t+.08*u*u*sn+.018*Math.cos(u*8*Math.PI)*sn,t*(1-(1-edge)*t**10)];}
+ if(type==='angelicBract')return[.5*u*sn**.65,t,.08*u*u*sn];
+ if(type==='angelicLobe'){const width=.5*sn**.65*(.19+.81*(.5+.5*Math.cos((t-.34)*Math.PI*6))**1.2);return[u*width,t,.025*t*t+.035*u*u*sn];}
+ return[.5*u*sn**.64,t,.035*t*t+.025*u*u*sn];
+}
+export function drawAngelicPink(b,{info,s,rand,month},kit){
+ const h=s.height,w=s.spread,scale=Math.max(.7,Math.min(1,h/.40,w/.5)),fs=Math.max(.85,scale),green=s.leafColor||'#708b7b',winter=[1,2].includes(month),small=h<.27,shoots=small?3:8,branches=small?2:4,point=(a,r,y)=>[Math.sin(a)*r,y,Math.cos(a)*r],mix=(a,b,t)=>a.map((v,k)=>v+(b[k]-v)*t),noise=(i,k)=>{const q=Math.sin(i*127.1+k*311.7)*43758.5453;return q-Math.floor(q);},heads=[];
+ const leaf=(at,az,size,tilt,key)=>{
+  const f=flowerFrame(b,at,tilt,az),L=.065*scale*size,pet=.008*scale*size;
+  f.branch([0,0,0],[0,pet,0],.0004*scale,green,'petiole-angelic');
+  // The overlapping blade lobes join the central blade without separate leaflet stalks.
+  f.add('angelicLeaf','leaf-angelic-axis-underside-91a293',kit.shade(rand,green,.025),0,pet,0,.004*scale*size,L,L);
+  for(let j=0;j<5;j++){const t=.17+j*.135,len=L*(.33-.026*j);for(const side of [-1,1]){const rot=side*(.98-.09*j),lf=flowerFrame(f,[0,pet+L*t,.035*t*t*L],0,0);lf.add('angelicLobe','leaf-angelic-lobe-underside-91a293',kit.shade(rand,green,.025),0,0,0,len*.50,len,len,0,0,rot);const end=[-len*Math.sin(rot),len*Math.cos(rot),len*.025-.00006];lf.branch([0,0,-.00006],end,.000065*scale,green,'lateral-vein-angelic');}}
+  for(let j=1;j<=6;j++){const a=(j-1)/6,c=j/6;f.branch([0,pet+L*a,.035*a*a*L-.00006],[0,pet+L*c,.035*c*c*L-.00006],.00011*scale,green,'vein-angelic');}
+ };
+ const trunkTop=[0,h*.17,0];b.branch([0,.002,0],trunkTop,(small?.0028:.007)*scale,'#8a7964','wood-angelic');
+ for(let i=0;i<shoots;i++){
+  const az=i*2.399963,base=[0,h*(.04+.09*noise(i,1)),0],mid=point(az,w*.17,h*(.30+.10*noise(i,2))),top=point(az,w*.26,h*(.59+.08*noise(i,3)));
+  b.branch(base,mid,.0032*scale,'#95836a','wood-angelic');b.branch(mid,top,.0017*scale,'#829276','shoot-angelic');
+  for(let j=0;j<(winter?4:7);j++)leaf(mix(base,mid,.34+j*(winter?.17:.10)),az+j*2.399963,1.05,.98,i*7+j);
+  const mainLeaves=winter?7:13;for(let j=0;j<mainLeaves;j++){const t=.08+j*.9/mainLeaves;leaf(mix(mid,top,t),az+j*2.399963,1-.15*t,.82+(j%3)*.10,i*17+j);}
+  const lowFrom=mix(base,mid,.35),lowTip=point(az+.60,w*.33,h*.30);b.branch(lowFrom,lowTip,.001*scale,'#819571','lower-branch-angelic');for(let j=0;j<(winter?4:8);j++)leaf(mix(lowFrom,lowTip,.15+j*(winter?.21:.11)),az+j*2.399963,.92,.95,i*8+j);
+  for(let k=0;k<branches;k++){
+   const aa=az+(k%2?1:-1)*(.60+.7*noise(i,k+21)),from=mix(mid,top,.18+k*.20),rr=w*(.18+.20*noise(i,k+25)),end=point(aa,rr,h*(.55+.15*Math.sqrt(Math.max(.05,1-(rr/(w*.5))**2))+.03*noise(i,k+26)));
+   b.branch(from,end,.0012*scale,'#829474','branch-angelic');for(let j=0;j<(winter?4:7);j++)leaf(mix(from,end,.08+j*(winter?.25:.145)),aa+j*2.399963,.85-j*.055,.78,i*31+k*7+j);
+   const tip=point(aa,rr+w*.025,h*(.60+.30*Math.sqrt(Math.max(.05,1-(rr/(w*.5))**2))+.035*noise(i,k+40)));b.branch(end,tip,.00085*scale,'#94a777','peduncle-angelic');heads.push({at:tip,az:aa,key:i*19+k});
+  }
+ }
+ if(!s.bloom)return;
+ for(const {at,az,key} of heads){
+  const bud=key%7===6,opening=key%5===0,spent=!bud&&key%19===18,sz=fs*(.94+.06*noise(key,73)),f=flowerFrame(b,at,.03+.25*noise(key,74),az),diskR=.0075;
+  f.add(kit.bud,'involucre-angelic','#82946e',0,-.003*sz,0,.007*sz,.004*sz,.007*sz);
+  for(let layer=0;layer<3;layer++){const n=8+layer*2;for(let j=0;j<n;j++){const aa=j*TAU/n+layer*.31,bf=flowerFrame(f,point(aa,(.0048+.0006*layer)*sz,-.0025*sz),1.15-layer*.15,aa);bf.add('angelicBract','bract-angelic',layer===0?'#a9aa87':'#718667',0,0,0,(.0022+.0003*layer)*sz,(.005+.0003*layer)*sz,.006*sz);}}
+  if(bud||spent){f.add(kit.bud,spent?'spent-angelic':'bud-angelic',spent?'#9b835c':'#bda4b2',0,.001*sz,0,.0055*sz,.0055*sz,.0055*sz);continue;}
+  f.add(kit.bud,'receptacle-angelic','#ca9c35',0,-.001*sz,0,diskR*sz,.002*sz,diskR*sz);
+  const n=18+key%9,col=opening?'#c66aab':key%3===0?'#e3b5d7':'#d68dbe';
+  for(let j=0;j<n;j++){const aa=j*TAU/n,rf=flowerFrame(f,point(aa,diskR*.85*sz,0),opening?-.48:-.02+.045*Math.sin(j*2.399963),aa);rf.add('angelicRay','petal-angelic-'+(opening?'opening':'open'),kit.shade(rand,col,.035),0,0,0,.007*sz,.024*sz,.024*sz);}
+  for(let j=0;j<240;j++){const t=(j+.5)/240,aa=j*2.399963,ff=flowerFrame(f,point(aa,diskR*.94*sz*Math.sqrt(t),(-.0017+.0018*Math.sqrt(1-t))*sz),0,aa);ff.add('jewelCoreopsisDisc','disc-angelic',t<.3?'#bd8b31':'#d6ac36',0,0,0,.0008*sz,.0025*sz,.0008*sz);if(t>.35){ff.branch([0,.0023*sz,0],[0,.0032*sz,0],.000065*sz,'#e4bc3e','style-angelic');for(const side of [-1,1])ff.branch([0,.0032*sz,0],[side*.00022*sz,.0035*sz,0],.000065*sz,'#e6bf43','stigma-angelic');}}
+ }
+}
+
 export function tangoCoreopsisPoint(type,t,u){
  const sn=Math.max(0,Math.sin(t*Math.PI));
  if(type==='tangoRay'){const half=.5*Math.sin(t*Math.PI*.93)**.57*Math.min(1,t/.18),edge=1-.095*Math.exp(-(((Math.abs(u)-.34)/.10)**2))-.025*Math.exp(-((u/.09)**2));return[u*half,.035*t*t+.11*u*u*sn+.023*Math.cos(u*6*Math.PI)*sn,t*(1-(1-edge)*t**9)];}
@@ -13597,6 +13640,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='angelicPinkShrub'){drawAngelicPink(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='tangoCoreopsisShoots'){drawTangoCoreopsis(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='canaryGazaniaBranches'){drawCanaryGazania(b,{s,rand,month},kit);return;}
  if(a.architecture==='prettyBidensMounds'){drawPrettyBidens(b,{s,rand,month},kit);return;}
