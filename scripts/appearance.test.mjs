@@ -11,6 +11,108 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Berkheya keeps winged leafy shoots, seasonal closed heads and pale rays around dark pollen-bearing discs',()=>{
+ const id='p-5d9d19a10ef5',info=CATALOG[id],a=info.appearance;
+ assert.equal(a.architecture,'berkheyaWingedShoots');
+ assert.equal(a.status,'partial');
+ assert.deepEqual([...info.bloom].sort((x,y)=>x-y),[6,7,8]);
+ assert.ok(a.unconfirmed.length>0,'reference geometry and unverified seasonal details must remain explicit');
+ for(const [index,size] of [{height:.6,spread:.3,leafHeight:.23},{height:.2,spread:.2,leafHeight:.10}].entries()){
+  const p={...makePlant(id,30100+index,1,1),...size};
+  let winterLeaves=0,summerLeaves=0;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),tag=`h=${p.height}, month=${month}`;
+   try{
+    const meshes=k=>g.children.filter(m=>m.userData.component===k);
+    const count=k=>meshes(k).reduce((sum,m)=>sum+m.count,0);
+    const prefixCount=k=>g.children.filter(m=>(m.userData.component||'').startsWith(k)).reduce((sum,m)=>sum+m.count,0);
+    const winter=[12,1,2].includes(month),bloom=[6,7,8].includes(month),headSeason=month>=5&&month<=11;
+    const basal=prefixCount('leaf-berkheya-basal-'),cauline=prefixCount('leaf-berkheya-cauline-');
+    const heads=count('involucre-berkheya'),openHeads=count('disc-berkheya'),rays=count('ray-berkheya');
+    assert.equal(g.userData.architecture,'berkheyaWingedShoots',tag);
+    assert.ok(basal>0,`${tag}: basal foliage remains`);
+    assert.equal(count('stem-berkheya')>0,headSeason,tag);
+    assert.equal(cauline>0,headSeason,tag);
+    assert.equal(count('wing-berkheya-decurrent')>0,headSeason,tag);
+    assert.equal(heads>0,headSeason,tag);
+    assert.equal(openHeads>0,bloom,tag);
+    assert.equal(rays>0,bloom,tag);
+    assert.ok(count('spine-berkheya-leaf')>0&&count('hair-berkheya-underside')>0,tag);
+    if(winter){
+     assert.equal(count('branch-berkheya'),0,tag);
+     assert.equal(count('bud-berkheya')+count('closed-involucre-berkheya'),0,tag);
+    }
+    if(month===5){
+     assert.equal(count('bud-berkheya'),heads,`${tag}: May heads are buds`);
+     assert.equal(count('closed-involucre-berkheya'),0,tag);
+    }
+    if(month>=9&&month<=11){
+     assert.equal(count('closed-involucre-berkheya'),heads,`${tag}: provisional closed involucres`);
+     assert.equal(count('bud-berkheya'),0,tag);
+    }
+    if(bloom){
+     assert.equal(openHeads+count('bud-berkheya'),heads,tag);
+     assert.equal(count('closed-involucre-berkheya'),0,tag);
+     assert.ok(rays>=openHeads*20&&rays<=openHeads*24,`${tag}: 20-24 ligules per open head`);
+     assert.ok(count('floret-berkheya-disc')>rays,`${tag}: disc contains separate tubular florets`);
+     assert.ok(count('pollen-berkheya')>0,`${tag}: pale pollen present`);
+     // Verify whole-head scale through rendered ray tips, independent of plant
+     // height. Ray roots identify their own nearest disc, avoiding cross-head
+     // distances in a branched cluster. Local tip [0,.06,1] is the ray mesh end.
+     const discs=[],matrix=new Matrix4(),rayCounts=[];
+     for(const m of meshes('disc-berkheya'))for(let i=0;i<m.count;i++){
+      m.getMatrixAt(i,matrix);discs.push(matrix.elements.slice(12,15));rayCounts.push(0);
+     }
+     for(const m of meshes('ray-berkheya'))for(let i=0;i<m.count;i++){
+      m.getMatrixAt(i,matrix);const e=matrix.elements,root=e.slice(12,15);
+      let nearest=0,distance=Infinity;
+      for(let j=0;j<discs.length;j++){
+       const d=Math.hypot(...root.map((v,k)=>v-discs[j][k]));
+       if(d<distance){nearest=j;distance=d;}
+      }
+      rayCounts[nearest]++;
+      const tip=[e[12]+e[4]*.06+e[8],e[13]+e[5]*.06+e[9],e[14]+e[6]*.06+e[10]];
+      const radius=Math.hypot(...tip.map((v,k)=>v-discs[nearest][k]));
+      assert.ok(radius>.035&&radius<.045,`${tag}: approximately 8cm head, radius=${radius}`);
+     }
+     assert.ok(rayCounts.every(n=>n>=20&&n<=24),`${tag}: each head has 20-24 ligules`);
+     for(const m of [...meshes('disc-berkheya'),...meshes('floret-berkheya-disc')]){
+      const colors=m.instanceColor.array;
+      for(let i=0;i<m.count;i++)assert.ok(Math.max(colors[i*3],colors[i*3+1],colors[i*3+2])<.35,`${tag}: dark disc instance color`);
+     }
+     for(const m of meshes('pollen-berkheya')){
+      const colors=m.instanceColor.array;
+      for(let i=0;i<m.count;i++){
+       const rgb=[colors[i*3],colors[i*3+1],colors[i*3+2]];
+       assert.ok(Math.min(...rgb)>.65&&Math.max(...rgb)-Math.min(...rgb)<.18,`${tag}: near-white pollen instance color`);
+      }
+     }
+    }else{
+     assert.equal(count('floret-berkheya-disc')+count('pollen-berkheya'),0,tag);
+    }
+    assert.ok(!g.children.some(m=>/fruit|seed|pappus/.test(m.userData.component||'')),`${tag}: no invented fruit or seed stage`);
+    for(const m of g.children){
+     const component=m.userData.component;
+     for(const arr of [m.instanceMatrix.array,m.instanceColor.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array]){
+      for(const value of arr)assert.ok(Number.isFinite(value),`${tag}: finite ${component}`);
+     }
+     m.computeBoundingBox();const box=m.boundingBox;
+     let minY=box.min.y;
+     if(minY<-.005){
+      minY=Infinity;const matrix=new Matrix4(),v=new Vector3(),vertices=m.geometry.attributes.position;
+      for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);for(let j=0;j<vertices.count;j++){v.fromBufferAttribute(vertices,j).applyMatrix4(matrix);minY=Math.min(minY,v.y);}}
+     }
+     assert.ok(minY>=-.005,`${tag}: ${component} below ground ${minY}`);
+     assert.ok(box.max.y<p.height*1.15,`${tag}: ${component} exceeds height ${box.max.y}`);
+     assert.ok(Math.max(Math.abs(box.min.x),Math.abs(box.max.x),Math.abs(box.min.z),Math.abs(box.max.z))<p.spread*.75,`${tag}: ${component} exceeds spread`);
+    }
+    if(month===1)winterLeaves=basal;
+    if(month===6)summerLeaves=basal;
+   }finally{dispose(g);}
+  }
+  assert.ok(winterLeaves<summerLeaves,`h=${p.height}: winter keeps fewer basal leaves`);
+ }
+});
 test('Hieracium keeps long white hairs, leafy forked stems and five-toothed ligulate heads',()=>{
  const id='p-d0fe72351085',info=CATALOG[id],a=info.appearance;assert.equal(a.architecture,'hieraciumHairyShoots');assert.equal(a.status,'partial');assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.ok(a.sources.some(s=>s.scope==='tribe'));assert.match(a.unconfirmed.join(' '),/冬姿|冬は/);
  for(const small of [false,true]){const p={...makePlant(id,29900+Number(small),1,1),height:small?.12:.30,spread:small?.15:.30,leafHeight:small?.04:.07};let winterLeaves=0,summerLeaves=0;
@@ -3657,7 +3759,7 @@ test('31 scabious profiles preserve florets, basal winter leaves, seed cups and 
 });
 
 test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads and biennial lifespan',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,12);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,11);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6000+i,2,2);
   for(let month=1;month<=12;month++){

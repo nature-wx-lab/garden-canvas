@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.276';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.277';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.276';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.277';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,107 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function berkheyaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='berkheyaDisc'){
+  const az=u*Math.PI,q=Math.max(0,(t-.62)/.38),lobes=.5+.5*Math.cos(az*5),r=.20+.14*t+.66*q*q*lobes;
+  return [Math.cos(az)*r,t-.18*q*q*(1-lobes),Math.sin(az)*r];
+ }
+ if(type==='berkheyaRay')return [.5*u*sn**.46,t*.025+.035*t*t+.018*u*u*sn,t];
+ if(type==='berkheyaBract')return [.5*u*sn**.65*(1-.28*t),t,-.18*t*t+.055*u*u*sn];
+ if(type==='berkheyaWing'){
+  const edge=.64+.36*(.5+.5*Math.cos(t*Math.PI*6));
+  return [u*edge,t,.045*u*Math.sin(t*Math.PI*6)];
+ }
+ const v=Math.max(0,(t-.09)/.91),s=Math.max(0,Math.sin(Math.PI*v)),margin=.82+.18*Math.cos(v*Math.PI*12),width=t<.09?.035:s**.62*margin;
+ return [.5*u*width,t,.07*t*t+u*u*s*(.055+.035*Math.sin(v*Math.PI*12))];
+}
+
+export function drawBerkheya(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),scale=Math.max(.35,Math.min(1,w/.3,h/.4)),R=a.headRadius??a.flowerRadius??.04;
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),underside=(a.leafUnderside||'#c0c8b3').replace('#','');
+ const leaf=(at,az,L,W,tilt,tag,key)=>{
+  const f=flowerFrame(b,at,tilt,az),point=(t,u,offset=0)=>{const p=berkheyaPoint('berkheyaLeaf',t,u);return [p[0]*W,p[1]*L,p[2]*L+offset];};
+  f.add('berkheyaLeaf',tag+'-underside-'+underside,kit.shade(rand,s.leafColor,.045),0,0,0,W,L,L);
+  // With the documented winding and positive pitch, -z is the upper leaf face.
+  for(let j=1;j<=9;j++)f.branch(point((j-1)/9,0,-.00008),point(j/9,0,-.00008),.00034*scale,'#9bac88','vein-berkheya');
+  for(let j=0;j<9;j++)for(const side of [-1,1]){
+   const t=.15+j*.087,p=point(t,side),length=(.0022+.0017*noise(key,j+31))*scale;
+   f.branch(point(t-.035,0,-.00006),point(t,side*.86,-.00006),.00013*scale,'#9aab86','vein-berkheya-side');
+   f.branch(p,[p[0]+side*length,p[1]+length*.28,p[2]+length*.12],.00013*scale,'#a5a775','spine-berkheya-leaf');
+  }
+  const tip=point(1,0);f.branch(tip,[tip[0],tip[1]+.003*scale,tip[2]+.0003*scale],.00012*scale,'#a5a775','spine-berkheya-leaf');
+  for(let j=0;j<24;j++){
+   const t=.12+.81*noise(key,j+51),u=j<8?(j%2?1:-1)*.96:(noise(key,j+77)-.5)*1.7,p=point(t,u,.00007),len=(.0007+.0007*noise(key,j+91))*scale;
+   f.branch(p,[p[0]+len*.45,p[1]+len*.22,p[2]+len*.60],.000024*scale,'#d5dacb','hair-berkheya-underside');
+  }
+ };
+ const basalCount=Math.max(winter?4:10,Math.round((winter?7:25)*Math.min(1,w/.3)*detail)),density=Math.max(winter?.22:.5,s.leafDensity??1);
+ for(let i=0;i<basalCount;i++){
+  if(i>=(winter?4:7)&&noise(i,101)>density)continue;
+  const az=i*2.399963,rr=w*.018*Math.sqrt((i+.5)/basalCount),at=[Math.sin(az)*rr,.005*scale,Math.cos(az)*rr],short=winter?.34:1;
+  leaf(at,az,a.leafLength*scale*short*(.78+.22*noise(i,107)),a.leafWidth*scale*short,.52+.25*noise(i,113),'leaf-berkheya-basal',i);
+ }
+ // May buds and September-November closed heads are provisional display seasons.
+ if(winter||month<5)return;
+ const stemRadius=.0027*scale,base=[0,.006*scale,0],tip=[0,h*.91,0],heads=[tip];
+ b.branch(base,tip,stemRadius,a.stemColor,'stem-berkheya');
+ const wing=(from,to,r,width,angle)=>{
+  const d=to.map((v,k)=>v-from[k]),len=Math.hypot(...d);if(len<1e-6)return;
+  const f=flowerFrame(b,from,Math.acos(Math.max(-1,Math.min(1,d[1]/len))),Math.atan2(d[0],d[2]));
+  for(const aa of [angle,angle+Math.PI]){
+   const c=Math.cos(aa),z=-Math.sin(aa),inner=r*.55;f.add('berkheyaWing','wing-berkheya-decurrent',kit.shade(rand,'#809275',.035),inner*c,0,inner*z,width,len,width,0,aa,0);
+   for(let j=0;j<4;j++){
+    const q=berkheyaPoint('berkheyaWing',(j+.25)/4,1),x=inner+q[0]*width,zz=q[2]*width,at=[x*c+zz*Math.sin(aa),q[1]*len,x*z+zz*c],out=.0025*scale;
+    f.branch(at,[at[0]+c*out,at[1]+out*.25,at[2]+z*out],.00012*scale,'#afb080','spine-berkheya-wing');
+   }
+  }
+ };
+ let previous=base;
+ for(let i=0;i<8;i++){
+  const t=.11+i*.085,at=mix(base,tip,t),az=i*2.399963;
+  wing(previous,at,stemRadius,.0075*scale,az-Math.PI/2);previous=at;
+  leaf(at,az,a.leafLength*scale*(.72-.48*t),a.leafWidth*scale*(.64-.40*t),.77,'leaf-berkheya-cauline',40+i);
+ }
+ wing(previous,mix(base,tip,.88),stemRadius,.0045*scale,1.2);
+ const sideCount=Math.max(2,Math.round(4*Math.min(1,w/.3)));
+ for(let i=0;i<sideCount;i++){
+  const az=i*2.399963+.6,t=.66+i*.065,from=mix(base,tip,t),reach=w*(.17+.07*noise(i,131)),top=[Math.sin(az)*reach,Math.min(h*.94,from[1]+h*.16),Math.cos(az)*reach];
+  b.branch(from,top,stemRadius*.61,a.stemColor,'branch-berkheya');wing(from,top,stemRadius*.61,.004*scale,0);
+  leaf(mix(from,top,.30),az,a.leafLength*.25*scale,a.leafWidth*.23*scale,.86,'leaf-berkheya-branch',70+i);heads.push(top);
+ }
+ const spent=!s.bloom&&month>=9,budSeason=!s.bloom&&month===5;
+ if(!s.bloom&&!spent&&!budSeason)return;
+ for(let i=0;i<heads.length;i++){
+  const bud=budSeason||(!spent&&noise(i,151)>Math.max(.1,s.flowerDensity??1)*.95),open=!spent&&!bud,f=flowerFrame(b,heads[i],.10+.12*noise(i,157),i*2.399963),D=R*.31;
+  f.add(kit.bud,'involucre-berkheya','#849570',0,-R*.10,0,D,R*.16,D);
+  for(let ring=0;ring<2;ring++)for(let j=0;j<12;j++){
+   const aa=j*TAU/12+ring*.26,rr=R*(.16+.035*ring),L=R*(.43-.045*ring),W=R*.20,pitch=open?1.48:.24,bf=flowerFrame(f,[Math.sin(aa)*rr,-R*.22,Math.cos(aa)*rr],pitch,aa);
+   bf.add('berkheyaBract','bract-berkheya-spiny',kit.shade(rand,spent?'#8d9977':'#8da179',.04),0,0,0,W,L,L);
+   const point=(t,u)=>{const p=berkheyaPoint('berkheyaBract',t,u);return [p[0]*W,p[1]*L,p[2]*L];};
+   for(let j=0;j<3;j++)for(const side of [-1,1]){const p=point(.25+j*.23,side);bf.branch(p,[p[0]+side*.0016,p[1]+.0006,p[2]],.00011,'#aab27e','spine-berkheya-bract');}
+   const p=point(1,0);bf.branch(p,[p[0],p[1]+.002,p[2]-.0003],.00012,'#aab27e','spine-berkheya-bract');
+  }
+  if(!open){f.add(kit.bud,spent?'closed-involucre-berkheya':'bud-berkheya',spent?'#899476':'#96a67d',0,0,0,D*.84,R*.23,D*.84);continue;}
+  const rayCount=20+Math.floor(noise(i,163)*5),rayLength=R*.79;
+  for(let j=0;j<rayCount;j++){
+   const az=j*TAU/rayCount+(noise(i,j+171)-.5)*.035;
+   f.add('berkheyaRay','ray-berkheya',kit.shade(rand,s.flowerColor||'#d2bddb',.035),Math.sin(az)*R*.21,R*.015,Math.cos(az)*R*.21,R*.20,rayLength,rayLength,.015+.035*noise(i,j+181),az,0);
+  }
+  f.add(kit.bud,'disc-berkheya','#44364a',0,R*.025,0,D,.0018,D);
+  for(let j=0;j<110;j++){
+   const aa=j*2.399963,t=(j+.5)/110,r=D*.91*Math.sqrt(t),at=[Math.sin(aa)*r,R*.025+.0018*Math.sqrt(Math.max(0,1-(r/D)**2))-.00010,Math.cos(aa)*r],L=.0038+.0012*noise(j,i+191),fl=flowerFrame(f,at,.12*r/D,aa);
+   fl.add('berkheyaDisc','floret-berkheya-disc',kit.shade(rand,'#493449',.05),0,0,0,.00058,L,.00058);
+   if(noise(j,i+211)>.56)continue;
+   fl.branch([0,L*.82,0],[0,L+.0008,0],.000055,'#c1b0bd','style-berkheya');
+   fl.add(kit.bud,'style-tip-berkheya','#ece9df',0,L+.0008,0,.00016,.00012,.00016);
+   for(let k=0;k<5;k++){const ba=k*TAU/5;fl.add(kit.bud,'pollen-berkheya','#f0ede4',Math.sin(ba)*.00034,L*.93,Math.cos(ba)*.00034,.00019,.00014,.00019);}
+  }
+ }
+}
+
 export function hieraciumPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='hieraciumRay'){
@@ -12129,6 +12230,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='berkheyaWingedShoots'){drawBerkheya(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='hieraciumHairyShoots'){drawHieracium(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='raouliaMats'){drawRaoulia(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='cottonThistleWings'){drawCottonThistle(b,{info,s,detail,rand,month},kit);return;}
