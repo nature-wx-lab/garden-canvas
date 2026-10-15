@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.289';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.290';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.289';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.290';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5353,6 +5353,56 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 // Brasco Violet (DBRASC9): organ dimensions from its patent; garden dimensions from Hakusan.
 // Fresco Candy: compact habit and broad scalloped foliage from cultivar photographs.
 // Fine-leaved nursery selections: exact species/registered names remain unconfirmed.
+export function goldenSpherePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='goldenSphereRay'){
+  const half=.5*Math.sin(t*Math.PI*.93)**.65,fold=.025*Math.sin(t*Math.PI*4+u*3)*sn;
+  return [u*half,.12*t*t-.24*t**5+.12*u*u*sn+fold,t-.04*t**8*(1-u*u)];
+ }
+ if(type==='goldenSphereInnerBract')return [.5*u*sn**.75,t,.10*u*u*sn];
+ if(type==='goldenSphereOuterBract')return [.5*u*Math.sin(t*Math.PI*.96)**.5,t,.07*u*u*sn];
+ const half=.5*Math.sin(t*Math.PI*.97)**.65*Math.min(1,t/.30)*(.60+.40*t);
+ return [u*half,t,.04*t*t+.035*u*u*sn];
+}
+export function drawGoldenSphere(b,{info,s,rand,month},kit){
+ const h=s.height,w=s.spread,scale=Math.max(.50,Math.min(1,h/.30,w/.30)),green=s.leafColor||'#517241',noise=(i,k)=>{const x=Math.sin(i*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r],mix=(a,b,t)=>a.map((v,k)=>v+(b[k]-v)*t);
+ const leaf=(at,az,L,W,tilt)=>{
+  const f=flowerFrame(b,at,tilt,az),pt=t=>{const p=goldenSpherePoint('goldenSphereLeaf',t,0);return[p[0]*W,p[1]*L,p[2]*L-.00006];};
+  f.add('goldenSphereLeaf','leaf-golden-sphere-underside-799267',kit.shade(rand,green,.035),0,0,0,W,L,L);
+  for(let j=1;j<=6;j++)f.branch(pt((j-1)/6),pt(j/6),.00012*scale,'#8a9e70','vein-golden-sphere');
+  for(let j=0;j<5;j++){const t=.22+j*.13,pp=goldenSpherePoint('goldenSphereLeaf',t,.6);for(const side of [-1,1])f.branch(pt(t-.055),[pp[0]*W*side,pp[1]*L,pp[2]*L-.00006],.000065*scale,'#7c9764','side-vein-golden-sphere');}
+ };
+ // Spring basal growth is an illustrative stage, not a calibrated emergence date.
+ if(month===3){for(let i=0;i<12;i++)leaf(point(i*2.399963,w*.025,.003),i*2.399963,.055*scale,.010*scale,.75+noise(i,2)*.3);return;}
+ const growth=month===4?.60:month===11?.72:1,small=h<.22,shoots=small?3:7,heads=[];
+ for(let i=0;i<20;i++)leaf(point(i*2.399963,w*.06,.004),i*2.399963,(.060+.025*noise(i,1))*scale,.013*scale,1.0+.25*noise(i,2));
+ for(let i=0;i<shoots;i++){
+  const az=i*2.399963,r=w*(.16+.15*Math.sqrt((i+.5)/shoots)),base=point(az,w*.025,.004),top=point(az,r,h*.49*growth);
+  b.branch(base,top,.0015*scale,'#7e9956','stem-golden-sphere');
+  for(let j=0;j<8;j++){const t=.08+j*.12,at=mix(base,top,t),aa=az+j*Math.PI*.5;for(const side of [0,Math.PI])leaf(at,aa+side,(.085-.020*t)*scale,.013*scale,.90+.18*noise(i,j+4));}
+  const branches=small?2:3;
+  for(let k=0;k<branches;k++){
+   const aa=az+(k-1)*1.20,from=mix(base,top,.35+k*.25),end=[top[0]+Math.sin(aa)*w*.09,h*(.57+.05*noise(i,k+8))*growth,top[2]+Math.cos(aa)*w*.09];
+   b.branch(from,end,.0011*scale,'#829b58','branch-golden-sphere');
+   for(let j=0;j<3;j++)for(const side of [0,Math.PI])leaf(mix(from,end,.22+j*.25),aa+side+j*Math.PI*.5,(.062-.006*j)*scale,.011*scale,1.0);
+   const tip=[end[0]+Math.sin(aa)*.01*scale,h*(.83+.055*noise(i,k+20))*growth,end[2]+Math.cos(aa)*.01*scale];
+   b.branch(end,tip,.0015*scale,'#8ca360','peduncle-golden-sphere');heads.push({at:tip,az:aa,key:i*3+k});
+  }
+ }
+ if(!s.bloom)return;
+ for(const {at,az,key} of heads){
+  const bud=key%9===8,opening=key%4===0,sz=scale*(.93+.07*noise(key,33)),f=flowerFrame(b,at,.06+.24*noise(key,31),az);
+  f.add(kit.bud,'involucre-golden-sphere','#658548',0,-.006*sz,0,.008*sz,.006*sz,.008*sz);
+  for(let layer=0;layer<2;layer++)for(let j=0;j<8;j++){const aa=j*TAU/8+layer*.38,bf=flowerFrame(f,point(aa,(layer?.007:.006)*sz,-.007*sz),layer?1.65:1.1,aa);bf.add(layer?'goldenSphereOuterBract':'goldenSphereInnerBract',layer?'outer-bract-golden-sphere':'inner-bract-golden-sphere',layer?'#91a959':'#638445',0,0,0,(layer?.003:.006)*sz,(layer?.012:.010)*sz,(layer?.012:.010)*sz);}
+  if(bud){f.add(kit.bud,'bud-golden-sphere','#a8b05d',0,.001*sz,0,.005*sz,.0063*sz,.005*sz);continue;}
+  f.add(kit.bud,'receptacle-golden-sphere','#dfb225',0,.001*sz,0,.007*sz,.009*sz,.007*sz);
+  for(let j=0;j<120;j++){
+   const q=(j+.5)/120,aa=j*2.399963,r=.010*(1-q)**.55*sz,yy=(-.005+.008*q)*sz,elevation=-.40+1.70*q+.10*Math.sin(j*1.67),rf=flowerFrame(f,point(aa,r,yy),-elevation-(opening?.12:0),aa),L=.025*(1-.15*q)*sz*(.92+.16*noise(j,key+8));
+   rf.add('goldenSphereRay','petal-golden-sphere-'+(opening?'opening':'open'),kit.shade(rand,q>.7?'#f9c62b':'#f8c72d',.04),0,0,0,.010*(1-.08*q)*sz,L,L);
+  }
+ }
+}
+
 export function fineBrachyPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='fineBrachyDisc'){const az=u*Math.PI,q=Math.max(0,(t-.72)/.28),lobe=.5+.5*Math.cos(az*5),r=.27+.10*t+.25*q*lobe;return[Math.cos(az)*r,t-.10*q*(1-lobe),Math.sin(az)*r];}
@@ -13166,6 +13216,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='goldenSphereCrowns'){drawGoldenSphere(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='fineBrachyShoots'){drawFineBrachy(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='frescoCandyMounds'){drawFrescoCandy(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='brascoMounds'){drawBrasco(b,{info,s,detail,rand,month},kit);return;}
