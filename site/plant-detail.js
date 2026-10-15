@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.258';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.259';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.258';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.259';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,53 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Maltese-cross campion has a compact terminal head above broad opposite leaves.
+export function linumPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='linumPetal')return [u*.82*sn**.40*(.32+.68*t),t,.045*sn+.035*Math.sin(u*9+t*13)*Math.abs(u)**2*t*t];
+ return [u*.5*sn**.72*(1-.20*t),t,.035*sn+.018*u*u*sn-.009*Math.exp(-u*u*60)*sn];
+}
+function drawLinum(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,size=Math.min(1,h/.5,w/.3),L=a.leafLength*Math.max(.55,size),W=a.leafWidth*Math.max(.55,size),R=a.flowerRadius*Math.max(.58,size),n=Math.max(6,Math.min(28,Math.round(16*detail*(w/.3)**.7))),winter=[11,12,1,2].includes(month),shoot=winter?.13:month===3?.38:month===4?.68:1;
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const leaf=(at,az,len)=>flowerFrame(b,at,.45+noise(az,3)*.45,az).add('linumLeaf','leaf-linum',s.leafColor,0,0,0,W*len,L*len,L*len);
+ const flower=(at,az,i,k,mode)=>{
+  const f=flowerFrame(b,at,mode==='bud'?2.4:.10+.60*noise(i,k+7),az),calyx=.005*Math.max(.58,size);
+  for(let j=0;j<5;j++)f.add('linumLeaf','sepal-linum','#758c68',0,0,0,calyx*.4,calyx,calyx,.55,j*TAU/5,0);
+  if(mode==='bud'){f.add(kit.bud,'bud-linum','#8a9f8e',0,.002*size,0,.0022*size,.0042*size,.0022*size);return;}
+  if(mode==='fruit'){f.add(kit.bud,'capsule-linum',month<8?'#8a9c68':'#9a8663',0,.002*size,0,.0032*size,.0035*size,.0032*size);return;}
+  if(mode==='spent')return;
+  const color=kit.shade(rand,s.flowerColor,.035);
+  for(let j=0;j<5;j++)f.add('linumPetal','petal-linum-veined',color,0,.001*size,0,R,R,R,1.43+noise(i,k+j)*.08,az+j*TAU/5,0);
+  // One heterostylous morph per specimen: long styles, shorter stamens.
+  for(let j=0;j<5;j++){
+   const aa=j*TAU/5,tip=[Math.sin(aa)*.0014*size,.005*size,Math.cos(aa)*.0014*size];
+   f.branch([0,0,0],tip,.00010*size,'#c6d7a0','filament-linum');f.add(kit.bud,'anther-linum','#edeedc',...tip,.00032*size,.0010*size,.00032*size,0,aa,0);
+   const st=[Math.sin(aa+.5)*.0013*size,.008*size,Math.cos(aa+.5)*.0013*size];f.branch([0,0,0],st,.00010*size,'#d2d5bd','style-linum');f.add(kit.bud,'stigma-linum','#dadbbf',...st,.00026*size,.0003*size,.00026*size);
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.30*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.22,.003,Math.cos(az)*rr*.22],top=h*shoot*(.70+.24*noise(i,9)),nodes=winter?14:34;
+  const point=t=>[root[0]+Math.sin(az+.16*t)*rr*t,root[1]+top*t,root[2]+Math.cos(az+.16*t)*rr*t];let previous=root;
+  for(let j=1;j<=nodes;j++){
+   const t=j/nodes,at=point(t);b.branch(previous,at,Math.min(.00085,h*.0025)*(1-t*.45),a.stemColor,winter?'stem-linum-winter':'stem-linum');previous=at;
+   if(noise(i,j*31)<s.leafDensity||winter&&j>nodes*.7)leaf(at,az+j*2.399963,(.95-.45*t)*(winter?.7:1));
+  }
+  if(winter||!s.bloom&&!s.seedHeads)continue;
+  // Small terminal cymes have staggered flowers, drooping buds and spent calyces.
+  for(let branch=0;branch<3;branch++){
+   const q=(28+branch*2)/nodes,base=point(q),aa=az+branch*2.399963,reach=w*(.055+.035*noise(i,branch+30)),rise=h*(.055+.025*noise(i,branch+37)),tip=[base[0]+Math.sin(aa)*reach,base[1]+rise,base[2]+Math.cos(aa)*reach];
+   b.branch(base,tip,.00035*Math.max(.5,size),a.stemColor,'branch-linum-cyme');leaf(base,aa,.42);
+   for(let k=0;k<(branch===0?4:3);k++){
+    const angle=aa+k*2.4,r=w*(.025+.018*noise(i,branch*10+k+44)),end=[tip[0]+Math.sin(angle)*r,tip[1]+h*.025*(.35+noise(i,branch*10+k+54)),tip[2]+Math.cos(angle)*r];
+    const mode=s.seedHeads?'fruit':k===3||noise(i,branch*10+k+70)>.78?'bud':noise(i,branch*10+k+90)<s.flowerDensity*.75?'open':'spent';
+    const bend=mode==='bud'?[end[0],end[1]+.006*size,end[2]]:end;
+    b.branch(tip,bend,.00020*Math.max(.5,size),a.stemColor,'pedicel-linum');if(mode==='bud')b.branch(bend,end,.00018*Math.max(.5,size),a.stemColor,'pedicel-linum');
+    flower(end,angle,i,branch*100+k*17,mode);
+   }
+  }
+ }
+}
+
 export function chalcedonicaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='chalcedonicaPetal')return [u*.52*sn**.44*(.22+.78*t),t-.48*Math.exp(-u*u*24)*t**7,.035*sn+.015*Math.sin(u*11+t*14)*Math.abs(u)**2];
@@ -11384,6 +11431,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='linumCymes'){drawLinum(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='chalcedonicaHeads'){drawChalcedonica(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='roseCampion'){drawRoseCampion(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='redValerian'){drawRedValerian(b,{info,s,detail,rand},kit);return;}

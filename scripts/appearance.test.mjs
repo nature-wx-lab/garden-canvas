@@ -11,6 +11,26 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Linum separates five-petalled blue flowers, terminal cymes and low winter foliage',()=>{
+ const id='p-f71f9ea6b620',info=CATALOG[id],a=info.appearance;assert.equal(a.status,'partial');assert.equal(a.architecture,'linumCymes');assert.equal(info.life,'perennial');assert.deepEqual(info.colors,['blue']);assert.deepEqual(info.height,[.4,.6]);assert.deepEqual(info.spread,[.2,.4]);assert.equal(info.bloomKnown,false);assert.equal(a.flowerTiming,'season-reference');assert.notEqual(a.arrangement,'whorled');assert.match(seasonAt(info,10).phase,/花後の細い灰緑/);assert.equal(seasonAt(info,10).bloom,false);
+ for(const small of [false,true]){
+  const p={...makePlant(id,28100+Number(small),1,1),height:small?.22:.6,spread:small?.20:.35,leafHeight:small?.1:.3};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),winter=[11,12,1,2].includes(month),petals=count('petal-linum-veined');
+   assert.equal(g.userData.architecture,'linumCymes');assert.equal(stateAt(p,view(month)).shootScale,1);assert.ok(!g.userData.groundDormant);assert.ok(count('leaf-linum')>0);
+   assert.equal(count('stem-linum-winter')>0,winter);assert.equal(count('stem-linum')>0,!winter);assert.equal(petals>0,[3,4,5,6].includes(month));assert.equal(count('capsule-linum')>0,[7,8,9].includes(month));
+   assert.equal(petals,count('filament-linum'));assert.equal(petals,count('anther-linum'));assert.equal(petals,count('style-linum'));assert.equal(petals,count('stigma-linum'));assert.equal(petals%5,0);
+   if(petals){assert.ok(count('bud-linum')>0);assert.ok(g.children.find(m=>m.userData.component==='petal-linum-veined').geometry.userData.linumPetal);assert.equal(g.children.find(m=>m.userData.component==='petal-linum-veined').receiveShadow,false);}
+   if(month===6){
+    const endpoints=m=>{m.geometry.computeBoundingBox();const matrix=new Matrix4(),out=[];for(let j=0;j<m.count;j++){m.getMatrixAt(j,matrix);for(const y of [m.geometry.boundingBox.min.y,m.geometry.boundingBox.max.y])out.push(new Vector3(0,y,0).applyMatrix4(matrix));}return out;};
+    const stems=endpoints(g.children.find(m=>m.userData.component==='stem-linum')),branches=g.children.find(m=>m.userData.component==='branch-linum-cyme'),ends=endpoints(branches);
+    for(let i=0;i<ends.length;i+=2)assert.ok(stems.some(v=>v.distanceTo(ends[i])<.000002),'terminal cyme must connect to a stem node');
+   }
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.008,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.12,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75,m.userData.component);if(winter)assert.ok(m.boundingBox.max.y<p.height*.24);}
+   dispose(g);
+  }
+ }
+});
 test('Peachy Linaria has broader leaves, two-tone spurred flowers and low winter shoots',()=>{
  const id='p-55bf983a3a5e',info=CATALOG[id],a=info.appearance;
  assert.equal(a.status,'partial');assert.equal(a.shootProfile,'peachy');assert.equal(info.bloomKnown,false);assert.equal(a.flowerTiming,'season-reference');
