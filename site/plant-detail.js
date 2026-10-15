@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.288';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.289';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.288';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.289';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5352,6 +5352,51 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
 // Brasco Violet (DBRASC9): organ dimensions from its patent; garden dimensions from Hakusan.
 // Fresco Candy: compact habit and broad scalloped foliage from cultivar photographs.
+// Fine-leaved nursery selections: exact species/registered names remain unconfirmed.
+export function fineBrachyPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='fineBrachyDisc'){const az=u*Math.PI,q=Math.max(0,(t-.72)/.28),lobe=.5+.5*Math.cos(az*5),r=.27+.10*t+.25*q*lobe;return[Math.cos(az)*r,t-.10*q*(1-lobe),Math.sin(az)*r];}
+ if(type==='fineBrachyRay')return [.5*u*Math.sin(t*Math.PI*.91)**.55,.045*t*t+.10*u*u*sn,t-.018*t**12*(1-u*u)];
+ if(type==='fineBrachyBract')return [.5*u*sn**.7,t,.08*u*u*sn];
+ const white=type==='supremeFineLeaf',centres=white?[.27,.47,.67]:[.35,.62];
+ let half=.035*sn;for(let j=0;j<centres.length;j++)half+=(.46-j*.065)*Math.exp(-(((t-centres[j])/.060)**2));
+ return [u*half,t+.18*Math.abs(u)*half,.04*t*t+.20*t**5+.025*u*u*sn];
+}
+export function drawFineBrachy(b,{info,s,rand,month},kit){
+ const white=info.appearance.shootProfile==='supremeWhite',tag=white?'supreme':'lavender-petit',h=s.height,w=s.spread,scale=Math.max(.5,Math.min(1,h/.15,w/.28)),green=s.leafColor||'#507649',noise=(i,k)=>{const x=Math.sin(i*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r],mix=(a,b,t)=>a.map((v,k)=>v+(b[k]-v)*t);
+ const shape=white?'supremeFineLeaf':'petitFineLeaf',leafL=(white?.030:.025)*scale,leafW=(white?.018:.014)*scale;
+ const leaf=(at,az,size,tilt)=>{
+  const f=flowerFrame(b,at,tilt,az),pt=t=>{const p=fineBrachyPoint(shape,t,0);return[p[0]*leafW*size,p[1]*leafL*size,p[2]*leafL*size-.00006];};
+  f.add(shape,'leaf-'+tag+'-underside-79946a',kit.shade(rand,green,.035),0,0,0,leafW*size,leafL*size,leafL*size);
+  for(let j=1;j<=5;j++)f.branch(pt((j-1)/5),pt(j/5),.00010*scale,'#88a474','vein-'+tag);
+ };
+ const winter=[12,1,2].includes(month),growth=winter?.80:month===3?.9:1,small=w<.25,shoots=small?8:white?24:20,branches=3,heads=[];
+ for(let i=0;i<shoots;i++){
+  const az=i*2.399963,rootR=white?w*(.04+.18*Math.sqrt((i+.5)/shoots)):w*.02,base=point(az,rootR,.003),mid=point(az,w*(white?.25:.19),h*.27*growth),top=point(az,w*(white?.37:.30),h*(.59+.09*noise(i,2))*growth);
+  b.branch(base,mid,.0008*scale,'#688b53','stem-'+tag);b.branch(mid,top,.00055*scale,'#76955d','stem-'+tag);
+  for(let j=0;j<12;j++){const t=.07+j*.080,at=t<.5?mix(base,mid,t*2):mix(mid,top,(t-.5)*2);leaf(at,az+j*2.399963,1-t*.25,.85+.25*noise(i,j+7));}
+  for(let k=0;k<branches;k++){
+   const aa=az+k*2.399963,t=.23+k*.25,from=t<.5?mix(base,mid,t*2):mix(mid,top,(t-.5)*2),rr=w*.12,end=[from[0]+Math.sin(aa)*rr,h*(.40+.12*k+.04*noise(i,k+18))*growth,from[2]+Math.cos(aa)*rr];
+   b.branch(from,end,.0004*scale,'#799860','branch-'+tag);
+   for(let j=0;j<8;j++)leaf(mix(from,end,.10+j*.11),aa+j*2.399963,.85-j*.035,.95);
+   if((i+k)%2===1)continue;
+   const tip=[end[0]+Math.sin(aa)*.012*scale,h*(.82+.13*noise(i,k+31))*growth,end[2]+Math.cos(aa)*.012*scale];
+   b.branch(end,tip,.00038*scale,'#89a269','peduncle-'+tag);heads.push({at:tip,az:aa,key:i*5+k});
+  }
+ }
+ if(!s.bloom||![4,5,6,9,10,11].includes(month))return;
+ for(const {at,az,key} of heads){
+  const bud=key%8===7,opening=key%4===0,sz=scale*(.9+.1*noise(key,33)),f=flowerFrame(b,at,.08+.32*noise(key,31),az),diskR=white?.0027:.0021;
+  f.add(kit.bud,'involucre-'+tag,'#7d9957',0,-.0015*sz,0,(diskR+.0006)*sz,.0025*sz,(diskR+.0006)*sz);
+  for(let j=0;j<16;j++){const aa=j*TAU/16,bf=flowerFrame(f,point(aa,diskR*sz,-.002*sz),2.15,aa);bf.add('fineBrachyBract','bract-'+tag,'#799855',0,0,0,.0012*sz,.0035*sz,.0035*sz);}
+  if(bud){f.add(kit.bud,'bud-'+tag,white?'#c5cba3':'#b2a7c5',0,.0015*sz,0,.002*sz,.0033*sz,.002*sz);continue;}
+  f.add(kit.bud,'receptacle-'+tag,'#a7b653',0,0,0,diskR*sz,.0013*sz,diskR*sz);
+  const rays=white?22:20,discs=white?60:40;
+  for(let j=0;j<rays;j++){const aa=j*TAU/rays,rf=flowerFrame(f,point(aa,diskR*.9*sz,.0001*sz),-.03-(opening?.23:0)+.09*Math.sin(j*2.399),aa);rf.add('fineBrachyRay','petal-'+tag+'-'+(opening?'opening':'open'),kit.shade(rand,white?'#f2f1e9':'#c4b5e2',.035),0,0,0,(white?.00145:.0016)*sz,(white?.008:.0065)*sz,(white?.008:.0065)*sz);}
+  for(let j=0;j<discs;j++){const t=(j+.5)/discs,aa=j*2.399963,ff=flowerFrame(f,point(aa,diskR*.91*sz*Math.sqrt(t),(-.0004+.0006*Math.sqrt(1-t))*sz),0,aa);ff.add('fineBrachyDisc','disc-'+tag,opening?'#bfcd57':'#dac748',0,0,0,.00045*sz,.0023*sz,.00045*sz);}
+ }
+}
+
 export function frescoPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='frescoDisc'){const az=u*Math.PI,q=Math.max(0,(t-.74)/.26),lobe=.5+.5*Math.cos(az*5),r=.27+.10*t+.24*q*lobe;return[Math.cos(az)*r,t-.09*q*(1-lobe),Math.sin(az)*r];}
@@ -13121,6 +13166,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='fineBrachyShoots'){drawFineBrachy(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='frescoCandyMounds'){drawFrescoCandy(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='brascoMounds'){drawBrasco(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='rurimurasakiSprays'){drawRurimurasaki(b,{info,s,detail,rand,month},kit);return;}

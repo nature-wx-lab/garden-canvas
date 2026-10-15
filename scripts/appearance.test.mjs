@@ -11,6 +11,42 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Fine Brachy lavenderPetit retains divided foliage, cultivar heads and seasonal reference limits',()=>{
+ const id='p-c1dc792b059c',info=CATALOG[id];assert.equal(info.appearance.architecture,'fineBrachyShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.10,.15]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,true);assert.deepEqual(info.bloom,[4,5,6,9,10,11]);
+ for(const [index,size] of [{height:.15,spread:.32,leafHeight:.08},{height:.10,spread:.20,leafHeight:.05}].entries()){
+  const p={...makePlant(id,31400+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),st=stateAt(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'fineBrachyShoots',tag);assert.ok(count('vein-lavender-petit')>0,tag);assert.equal(count('stem-lavender-petit')>0,true,tag);
+    const heads=count('involucre-lavender-petit'),open=count('receptacle-lavender-petit');assert.equal(heads>0,[4,5,6,9,10,11].includes(month),tag);assert.equal(heads,open+count('bud-lavender-petit'),tag);assert.equal(count('petal-lavender-petit-open')+count('petal-lavender-petit-opening'),open*20,tag);assert.equal(count('disc-lavender-petit'),open*40,tag);assert.equal(count('bract-lavender-petit'),heads*16,tag);
+    assert.ok(!g.children.some(m=>/seed|fruit|pappus|petal-daisy/.test(m.userData.component||'')),tag);
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+});
+test('Fine Brachy supremeWhite retains divided foliage, cultivar heads and seasonal reference limits',()=>{
+ const id='p-ef395a34253d',info=CATALOG[id];assert.equal(info.appearance.architecture,'fineBrachyShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.10,.15]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,true);assert.deepEqual(info.bloom,[4,5,6,9,10,11]);
+ for(const [index,size] of [{height:.15,spread:.32,leafHeight:.08},{height:.10,spread:.20,leafHeight:.05}].entries()){
+  const p={...makePlant(id,31410+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),st=stateAt(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'fineBrachyShoots',tag);assert.ok(count('vein-supreme')>0,tag);assert.equal(count('stem-supreme')>0,true,tag);
+    const heads=count('involucre-supreme'),open=count('receptacle-supreme');assert.equal(heads>0,[4,5,6,9,10,11].includes(month),tag);assert.equal(heads,open+count('bud-supreme'),tag);assert.equal(count('petal-supreme-open')+count('petal-supreme-opening'),open*22,tag);assert.equal(count('disc-supreme'),open*60,tag);assert.equal(count('bract-supreme'),heads*16,tag);
+    assert.ok(!g.children.some(m=>/seed|fruit|pappus|petal-daisy/.test(m.userData.component||'')),tag);
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+});
 test('Fresco Candy retains broad rounded foliage below pink heads without borrowing Brasco organ measurements',()=>{
  const id='p-caa6025f4ba6',info=CATALOG[id];assert.equal(info.appearance.architecture,'frescoCandyMounds');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.10,.15]);assert.deepEqual(info.spread,[.25,.35]);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[4,5,6,7,8,9,10,11]);
  for(const [index,size] of [{height:.15,spread:.35,leafHeight:.06},{height:.10,spread:.20,leafHeight:.04}].entries()){
@@ -4086,7 +4122,7 @@ test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads 
 
 
 test('daisy cultivars keep distinct leaves, flower patterns and winter organs in all months',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='daisyBranches');assert.equal(entries.length,22);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='daisyBranches');assert.equal(entries.length,20);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,5900+i,2,2);
   for(let month=1;month<=12;month++){
