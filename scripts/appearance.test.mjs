@@ -11,6 +11,27 @@ import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySage
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Belarina final cultivars distinguish bicolour petals blue reverses and large double flowers at two sizes across twelve months',()=>{
+ const ids=['p-e71412ef8b7d','p-ddfff8f0cd18','p-83d4374859c3','p-a0966d1f4088'];
+ for(const [ci,id] of ids.entries()){
+  const info=CATALOG[id],tag='belarina';assert.equal(info.appearance.architecture,'belarinaCrowns');assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.deepEqual(info.height,[.05,.1]);assert.deepEqual(info.spread,[.2,.3]);assert.equal(info.appearance.monthlyFlowerColors,undefined);
+  for(const [si,size] of [{height:.1,spread:.25,leafHeight:.07},{height:.065,spread:.15,leafHeight:.04}].entries()){
+   const p={...makePlant(id,34000+ci*10+si,1,1),...size};let winterLeaves=0,summerLeaves=0;
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),label=`${id} size=${si} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+    try{
+     assert.equal(g.userData.architecture,'belarinaCrowns',label);const leaves=count('leaf-'+tag+'-underside-a9b78c');assert.ok(leaves>0,label);assert.ok(count('vein-'+tag)>0,label);assert.ok(count('leaf-underside-hair-'+tag)>0,label);if(month===1)winterLeaves=leaves;if(month===7)summerLeaves=leaves;
+     const bloom=[3,4,5].includes(month),flowers=count('receptacle-'+tag),buds=count('bud-'+tag);assert.equal(flowers>0,bloom,label);assert.equal(count('scape-'+tag),2*(flowers+buds),label);assert.equal(count('petal-'+tag+(ci===0?'-lively':ci===1?'-baltic':'')),flowers*[42,58,64,46][ci],label);assert.ok(count('sepal-'+tag)>=(flowers+buds)*5,label);assert.ok(count('sepal-'+tag)<=(flowers+buds)*5,label);assert.equal(count('petal-age-interior-'+tag),0,label);assert.equal(count('petal-laced-interior-'+tag),0,label);assert.equal(count('eye-'+tag)>0,false,label);assert.ok(!g.children.some(m=>/anther|stigma|fruit|stamen/.test(m.userData.component||'')),label);
+     assert.equal(count('petiole-'+tag)>0,ci>=2,label);const shape=ci>=2?'belarinaNarrowLeaf':'belarinaLeaf';assert.ok(g.children.some(m=>m.geometry.userData[shape]),label);
+     for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.5&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;
+      if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component} actual bounds`);}}
+     }
+    }finally{dispose(g);}
+   }
+   assert.ok(winterLeaves<summerLeaves,id+' winter leaves reduced');
+  }
+ }
+});
 test('Belarina companion cultivars distinguish smooth small flowers and white laced petals at two sizes across twelve months',()=>{
  const ids=['p-95db5ece1636','p-6a5b52de14d3','p-c177610036ea','p-736505e70e80'];
  for(const [ci,id] of ids.entries()){
@@ -5133,9 +5154,9 @@ test('water margin plants distinguish peltate leaves, four fern leaflets and opp
  assert.equal(parts.filter(p=>p.kind==='anther').length,4);assert.equal(parts.filter(p=>p.kind==='sepal').length,5);assert.equal(parts.filter(p=>p.kind==='stigma').length,2);
 });
 
-test('28 rosette and mat entries retain distinct flower structures and winter foliage',()=>{
+test('24 rosette and mat entries retain distinct flower structures and winter foliage',()=>{
  const arches=['primroseRosette','gerberaRosette','brunneraSprays','tapienMat','stolonPhlox'];
- const entries=Object.entries(CATALOG).filter(([,p])=>arches.includes(p.appearance?.architecture));assert.equal(entries.length,28);
+ const entries=Object.entries(CATALOG).filter(([,p])=>arches.includes(p.appearance?.architecture));assert.equal(entries.length,24);
  for(const [id,info] of entries)for(let month=1;month<=12;month++){
   const p=makePlant(id,3501,2,2),g=plantModel(p,view(month));
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
