@@ -11,6 +11,21 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Erigeron separates branched blue heads and solitary hairy orange heads across seasons',()=>{
+ for(const [i,id] of ['p-29105f0378f9','p-21ff9a5f246d'].entries()){
+  const info=CATALOG[id],a=info.appearance;assert.equal(a.status,'partial');assert.equal(a.architecture,'erigeronHeads');assert.equal(info.bloomKnown,false);assert.equal(a.flowerTiming,'season-reference');assert.equal(a.arrangement,'alternate');assert.equal(a.leafShape,'erigeronLeaf');assert.equal(info.life,'perennial');assert.deepEqual(info.height,i?[.3,.4]:[.4,.5]);assert.deepEqual(info.spread,i?[.15,.25]:[.3,.4]);assert.equal(seasonAt(info,10).bloom,!i);
+  for(const small of [false,true]){const p={...makePlant(id,28200+i*2+Number(small),1,1),height:small?.2:i?.4:.5,spread:small?.18:i?.22:.35,leafHeight:small?.1:.23};
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);if([12,1,2].includes(month)){assert.equal(g.children.length,0);assert.ok(stateAt(p,view(month)).groundDormant);dispose(g);continue;}
+    assert.equal(g.userData.architecture,'erigeronHeads');assert.equal(stateAt(p,view(month)).shootScale,1);assert.ok(count(i?'leaf-erigeron-hairy':'leaf-erigeron')>0);assert.equal(count('hair-erigeron-stem')>0,!!i);
+    const rays=count('ray-erigeron'),heads=count('involucre-erigeron'),open=heads-count('bud-erigeron'),stems=count('stem-erigeron')/(i?12:14);assert.equal(rays>0,info.bloom.includes(month));assert.equal(count('branch-erigeron')>0,!i&&info.bloom.includes(month));
+    if(heads){assert.equal(heads,stems*(i?1:4));assert.equal(count('disc-floret-erigeron'),open*85);assert.ok(rays>=open*(i?84:96));assert.ok(rays<=open*(i?84:128));assert.ok(g.children.find(m=>m.userData.component==='ray-erigeron').geometry.userData.erigeronRay);assert.equal(g.children.find(m=>m.userData.component==='ray-erigeron').receiveShadow,false);}
+    assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)));
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.008,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.12,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75,m.userData.component);}dispose(g);
+   }
+  }
+ }
+});
 test('Linum separates five-petalled blue flowers, terminal cymes and low winter foliage',()=>{
  const id='p-f71f9ea6b620',info=CATALOG[id],a=info.appearance;assert.equal(a.status,'partial');assert.equal(a.architecture,'linumCymes');assert.equal(info.life,'perennial');assert.deepEqual(info.colors,['blue']);assert.deepEqual(info.height,[.4,.6]);assert.deepEqual(info.spread,[.2,.4]);assert.equal(info.bloomKnown,false);assert.equal(a.flowerTiming,'season-reference');assert.notEqual(a.arrangement,'whorled');assert.match(seasonAt(info,10).phase,/花後の細い灰緑/);assert.equal(seasonAt(info,10).bloom,false);
  for(const small of [false,true]){
@@ -4249,8 +4264,10 @@ test('purple eryngo dies after flowering while protea eryngo retains neighbourin
 test('every catalog entry has an explicit evidence record and no unsupported completion claim',()=>{
  assert.deepEqual(Object.keys(APPEARANCE_DATA).sort(),Object.keys(CATALOG).sort());
  const allowed=new Set(['sources','basis','status','unconfirmed','arrangement','inflorescence','flowerShape','habit','leafShape','leafTexture','leafColor','barkColor','barkPattern','petals','persistence','flowerMonths','flowerTiming','emergenceMonths','dormantMonths','leafPattern','patternColor','flowerLayers','flowerPattern','scientificName','phenologyRegion','leafLength','leafWidth','leafRelief','seasonalColors','stemColor','leaflets','compoundType','standingWinter','flowerSeasons','leafMargin','architecture','winterClimateSensitive','lifeForm','flowerPatternColor','outerFlowerPattern','flowerRadius','seedHeadMonths','seedColor','flowerPalette','flowerGuides','foliageMonths','leaflessBloom','flowerOptions','leafletShape','flowerFadeTo','headRadius','inflorescenceLength','leafletCounts','leafUnderside','springShootColor','stamenCount','leafFlushAfterFlower','monthlyLeafColors','bracts','flowerOutsideColor','flowerEyeColor','monthlyPatternColors','budMonths','fruitMonths','greenFruitMonths','fruitRadius','fruitColor','winterLeafLength','monthlyFlowerDensity','collection','components','shootProfile','flushMonths','winterTipColor','basalLeafShape','basalLeafWidth','standingAfterDeathMonths','foliageHeightRatio','flowerAbundance','pistilCount','flowerLength','monthlyFlowerColors']);
+ for(const field of ['involucreRadius','involucreHeight','discRadius','rayWidth','discLength'])allowed.add(field);
  allowed.add('calyxMonths');allowed.add('calyxColor');allowed.add('waterSurfaceModel');allowed.add('monthlyLeafDensity');allowed.add('leafletPairs');allowed.add('budColor');allowed.add('winterStemColor');allowed.add('fourLeafShare');allowed.add('petioleLength');allowed.add('upperPetalWidth');allowed.add('lowerPetalWidth');
  for(const [id,a] of Object.entries(APPEARANCE_DATA)){
+  for(const field of ['involucreRadius','involucreHeight','discRadius','rayWidth','discLength'])if(a[field]!==undefined)assert.ok(Number.isFinite(a[field])&&a[field]>.0001&&a[field]<.05,id+':'+field);
   for(const field of ['upperPetalWidth','lowerPetalWidth'])if(a[field]!==undefined)assert.ok(Number.isFinite(a[field])&&a[field]>=.001&&a[field]<=.1,id+':'+field);
   if(a.petioleLength!==undefined)assert.ok(Number.isFinite(a.petioleLength)&&a.petioleLength>=.002&&a.petioleLength<=.08,id+':petioleLength');
   if(a.monthlyLeafDensity!==undefined){assert.equal(a.monthlyLeafDensity.length,12,id);assert.ok(a.monthlyLeafDensity.every(x=>Number.isFinite(x)&&x>=0&&x<=1),id);}

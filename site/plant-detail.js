@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.259';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.260';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.259';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.260';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5349,7 +5349,65 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
  }
 }
 
-// Maltese-cross campion has a compact terminal head above broad opposite leaves.
+// Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function erigeronPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='erigeronRay')return [u*.5*(.25+.75*Math.sin(Math.PI*t/2)**.45),t-.045*Math.abs(u)**2*t**6,.12*t*t+.018*Math.sin(t*19+u*7)*t*t];
+ if(type==='erigeronDisk'){
+  const az=u*Math.PI,r=.21+.13*t**4+.08*t**12*(.5+.5*Math.cos(az*5));
+  return [Math.sin(az)*r,t+.06*t**12*Math.cos(az*5),Math.cos(az)*r];
+ }
+ const basal=type==='erigeronBasal';
+ return [u*.5*sn**.62*(basal?.16+.84*t:.8+.2*t),t,.045*sn+.025*u*u*sn-.015*Math.exp(-u*u*45)*sn];
+}
+function drawErigeron(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,azure=a.shootProfile==='azure',h=s.height,w=s.spread,size=Math.min(1,h/.35,w/(azure?.35:.22)),L=a.leafLength*size,W=a.leafWidth*size,R=a.headRadius*Math.max(.58,size),cupR=a.involucreRadius*Math.max(.58,size),cupH=a.involucreHeight*Math.max(.58,size),discR=a.discRadius*Math.max(.58,size),n=Math.max(5,Math.min(22,Math.round((azure?10:14)*detail*Math.sqrt(w/(azure?.35:.22))))),growth=month===3?.28:month===4?.58:month===5?.88:1;
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const leaf=(at,az,i,k,scale=1,basal=false)=>{
+  const type=basal?'erigeronBasal':'erigeronLeaf',f=flowerFrame(b,at,(basal?.90:.70)+noise(i,k)*.40,az),len=L*scale,width=W*scale;
+  f.add(type,azure?'leaf-erigeron':'leaf-erigeron-hairy',kit.shade(rand,s.leafColor,.035),0,0,0,width,len,len);
+  if(!azure)for(let j=0;j<12;j++){
+   const q=.15+.7*noise(i,k+j*31),u=(noise(i,k+j*43)-.5)*1.7,p=erigeronPoint(type,q,u),root=[p[0]*width,p[1]*len,p[2]*len+.00015*size];
+   f.branch(root,[root[0]+.00025*size,root[1]+.00012*size,root[2]+.0008*size],.000025*size,'#b3bf9e','hair-erigeron');
+  }
+ };
+ const head=(at,az,i,k)=>{
+  const f=flowerFrame(b,at,.04+.28*noise(i,k+3),az),bud=noise(i,k+8)>s.flowerDensity*.9,green=azure?'#729657':'#66884f';
+  f.add(kit.bud,'involucre-erigeron',green,0,cupH*.45,0,cupR,cupH*.5,cupR);
+  for(let row=0;row<3;row++)for(let j=0;j<22;j++){
+   const aa=(j+row*.4)*TAU/22,rr=cupR*(.35+row*.12);f.add('erigeronLeaf',azure?'bract-erigeron-green':'bract-erigeron-purple-tip',green,Math.sin(aa)*rr,cupH*(.03+row*.11),Math.cos(aa)*rr,cupH*.10,cupH*.95,cupH*.95,.60+row*.16,aa,0);
+  }
+  if(bud){f.add(kit.bud,'bud-erigeron',azure?'#9b9ac4':'#bb5f40',0,cupH*.83,0,cupR*.65,cupH*.38,cupR*.65);return;}
+  const age=noise(i,k+30),color=azure?a.flowerPalette[age<.35?'pale':'deep']:a.flowerPalette[age<.40?'red':age<.76?'mid':'orange'],rows=azure&&size>.85&&noise(i,k+41)>.40?4:3,perRow=azure?32:28;
+  for(let row=0;row<rows;row++)for(let j=0;j<perRow;j++){
+   const aa=(j+row*.37)*TAU/perRow,radius=cupR*(.82-row*.10),len=(R-radius)*(.9+noise(i,k+j+row*50)*.20),pitch=(azure?1.40:1.20)-row*.15+(noise(i,j*13+k)-.5)*.16;
+   f.add('erigeronRay','ray-erigeron',kit.shade(rand,color,.028),Math.sin(aa)*radius,cupH*.82+row*.0004*size,Math.cos(aa)*radius,a.rayWidth*Math.max(.58,size),len,len,pitch,aa,0);
+  }
+  f.add(kit.bud,'disc-erigeron-base','#d6b847',0,cupH*.85,0,discR,.0012*size,discR);
+  for(let j=0;j<85;j++){
+   const aa=j*2.399963,rr=discR*Math.sqrt((j+.3)/85),yy=cupH*.74+.0015*size*(1-rr/discR),len=a.discLength*Math.max(.58,size);
+   f.add('erigeronDisk','disc-floret-erigeron',j%3?'#e4bd31':'#efd45c',Math.sin(aa)*rr,yy,Math.cos(aa)*rr,.0012*size,len,len*.22,.06,aa,0);
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.24*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.45,.004,Math.cos(az)*rr*.45],top=h*growth*(.66+.24*noise(i,5)),nodes=azure?14:12;
+  for(let j=0;j<(azure?4:7);j++)if(noise(i,j*101)<s.leafDensity)leaf(root,az+j*2.4,i,j*73,(azure?.85:1.1)*(.85+.15*noise(i,j+57)),true);
+  const point=t=>[root[0]+Math.sin(az)*rr*t,root[1]+top*t,root[2]+Math.cos(az)*rr*t];let previous=root;
+  for(let j=1;j<=nodes;j++){
+   const t=j/nodes,at=point(t);b.branch(previous,at,Math.min(.0016,h*.004)*(1-t*.42),a.stemColor,'stem-erigeron');previous=at;
+   if(!azure)for(let hair=0;hair<(j>nodes*.6?5:2);hair++){const q=(j-1+(hair+.5)/5)/nodes,base=point(q),aa=az+hair*2.4; b.branch(base,[base[0]+Math.sin(aa)*.0014*size,base[1]+.0003*size,base[2]+Math.cos(aa)*.0014*size],.000035*size,'#b3bf9e','hair-erigeron-stem');}
+   if(j<nodes&&noise(i,j*53)<s.leafDensity)leaf(at,az+j*2.4,i,j*89,.85-.48*t);
+  }
+  if(!s.bloom)continue;
+  head(previous,az,i,1000);
+  if(azure)for(let branch=0;branch<3;branch++){
+   const q=(nodes-3-branch)/nodes,base=point(q),aa=az+branch*2.4,reach=w*(.08+.025*noise(i,branch+300)),tip=[base[0]+Math.sin(aa)*reach,base[1]+h*(.08+.025*noise(i,branch+500)),base[2]+Math.cos(aa)*reach];
+   b.branch(base,tip,.00065*size,a.stemColor,'branch-erigeron');leaf(base,aa,i,branch+600,.42);head(tip,aa,i,2000+branch*100);
+  }
+ }
+}
+
 export function linumPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='linumPetal')return [u*.82*sn**.40*(.32+.68*t),t,.045*sn+.035*Math.sin(u*9+t*13)*Math.abs(u)**2*t*t];
@@ -11431,6 +11489,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='erigeronHeads'){drawErigeron(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='linumCymes'){drawLinum(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='chalcedonicaHeads'){drawChalcedonica(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='roseCampion'){drawRoseCampion(b,{info,s,detail,rand,month},kit);return;}
