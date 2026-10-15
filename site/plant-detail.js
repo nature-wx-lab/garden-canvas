@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.312';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.313';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.312';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.313';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5430,19 +5430,20 @@ export function drawPearlGiant(b,{info,s,rand,month},kit){
 
 export function belarinaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
- if(type==='belarinaPetal'||type==='belarinaPetalInner'){
+ if(['belarinaPetal','belarinaPetalInner','belarinaSmoothPetal','belarinaLacedInner'].includes(type)){
   if(type==='belarinaPetalInner'){t*=.91;u*=.84;}
+  if(type==='belarinaLacedInner'){t*=.978;u*=.95;}
   const s=Math.max(0,Math.sin(Math.PI*t)),notch=.12*Math.exp(-u*u*28)*t**8;
-  return[.56*u*s**.37*(1+.035*Math.sin(t*37)),.10*t*t+.16*u*u*s+.035*Math.sin(t*28+u*10)*Math.abs(u)**3*s+(type==='belarinaPetalInner'?.009:0),t-notch];
+  return[.56*u*s**.37*(1+.035*Math.sin(t*37)),.10*t*t+.16*u*u*s+(type==='belarinaSmoothPetal'?.008:.035)*Math.sin(t*28+u*10)*Math.abs(u)**3*s+(['belarinaPetalInner','belarinaLacedInner'].includes(type)?.009:0),t-notch];
  }
  const sepal=type==='belarinaSepal',narrow=type==='belarinaNarrowLeaf',width=.5*sn**(sepal?.52:.48)*(sepal?.56+.44*t:narrow?.25+.75*t:.58+.42*t)*(1-(sepal?.08:.055)*Math.cos(t*TAU*(sepal?7:14))),rib=.008*Math.sin((t-Math.abs(u)*.19)*TAU*7)**2*Math.sin(Math.PI*Math.abs(u));
  return[u*width,t,.10*t*t+.10*u*u*sn+rib+.007*Math.sin(t*49+u*27)**2*sn];
 }
 export function drawBelarina(b,{info,s,rand,month},kit){
  if(s.groundDormant)return;
- const profile=info.appearance.shootProfile,pink=profile==='pinkIce',blue=profile==='cobaltBlue',red=profile==='valentine',nectar=profile==='nectarine',narrow=red||nectar,h=s.height,w=s.spread,small=w<.20,scale=Math.max(.55,Math.min(1,w/.25,h/.1)),fs=Math.max(.78,scale),winter=[12,1,2].includes(month),crowns=small?1:3,tag='belarina',green=s.leafColor,stem='#81525d',pt=(a,r,y)=>[Math.sin(a)*r,y,Math.cos(a)*r];
+ const profile=info.appearance.shootProfile,pink=profile==='pinkIce',blue=profile==='cobaltBlue',red=profile==='valentine',nectar=profile==='nectarine',cream=profile==='cream',butter=profile==='butterYellow',amethyst=profile==='amethystIce',champagne=profile==='pinkChampagne',narrow=red||nectar||butter,h=s.height,w=s.spread,small=w<.20,scale=Math.max(.55,Math.min(1,w/.25,h/.1)),fs=Math.max(.78,scale),winter=[12,1,2].includes(month),crowns=small?1:3,tag='belarina',green=s.leafColor,stem='#81525d',pt=(a,r,y)=>[Math.sin(a)*r,y,Math.cos(a)*r];
  const leaf=(base,az,L,pitch)=>{
-  const type=narrow?'belarinaNarrowLeaf':'belarinaLeaf',W=L*(red?.49:nectar?.62:pink?.74:.98),f=flowerFrame(b,base,pitch,az),petiole=.022*scale;
+  const type=narrow?'belarinaNarrowLeaf':'belarinaLeaf',W=L*(red?.49:nectar||butter?.62:pink||cream?.74:champagne?.79:.98),f=flowerFrame(b,base,pitch,az),petiole=(cream?.005:amethyst||champagne?.003:butter?.018:.022)*scale;
   f.branch([0,0,0],[0,petiole,0],.0015*scale,stem,'petiole-'+tag);f.add(type,'leaf-'+tag+'-underside-a9b78c',kit.shade(rand,green,.032),0,petiole,0,W,L,L);
   const pos=(t,u)=>{const p=belarinaPoint(type,t,u);return[p[0]*W,p[1]*L+petiole,p[2]*L-.0002];};
   for(let j=1;j<=12;j++)f.branch(pos((j-1)/12,0),pos(j/12,0),.00024*scale,'#a8bb80','vein-'+tag);
@@ -5453,28 +5454,29 @@ export function drawBelarina(b,{info,s,rand,month},kit){
   }
  };
  const flower=(at,az,key)=>{
-  const bud=key%8===0,stage=key%3,f=flowerFrame(b,at,.14+(key%4)*.13,az),R=(red?.0195:.016)*fs,sepals=red&&key%2?6:5,SL=(nectar?.019:red?.019:.014)*fs,SW=(nectar?.024:red?.015:.008)*fs;
+  const bud=key%8===0,stage=key%3,f=flowerFrame(b,at,.14+(key%4)*.13,az),R=(red?.0195:cream?.018:butter?.012:champagne?.0175:.016)*fs,sepals=red&&key%2?6:butter&&key%2?4:5,SL=(butter?.023:nectar||red||amethyst?.019:.014)*fs,SW=(butter?.032:nectar||amethyst?.024:red?.015:.008)*fs;
   f.add('tube','calyx-'+tag,green,0,-.002*fs,0,.0035*fs,.006*fs,.0035*fs);
   for(let j=0;j<sepals;j++){
    const a=j*TAU/sepals,cf=flowerFrame(f,pt(a,.002*fs,-.001*fs),bud?.28:1.15,a);cf.add('belarinaSepal','sepal-'+tag,kit.shade(rand,green,.02),0,0,0,SW,SL,SL);
   }
   if(bud){f.add(kit.bud,'bud-'+tag,red?'#dbae5d':green,0,.006*fs,0,.0038*fs,.006*fs,.0038*fs);return;}
   f.add(kit.bud,'receptacle-'+tag,green,0,.001*fs,0,.0034*fs,.003*fs,.0034*fs);
-  const count=nectar?70:pink?40:35,rings=nectar?[12,13,13,12,11,9]:pink?[10,10,8,7,5]:[9,8,7,6,5],co=red?'#c82942':blue?(stage===2?'#6e409a':'#4944b1'):pink?(stage===0?'#eee6ca':stage===1?'#e7d2da':'#d6b6db'):(stage===0?'#e8cb63':stage===1?'#e2ad71':'#dc927d');let drawn=0;
+  const rings=cream?[6,6,5,4,4]:butter?[6,6,5,4]:amethyst?[10,10,9,8,8]:champagne?[8,8,7,6,6]:nectar?[12,13,13,12,11,9]:pink?[10,10,8,7,5]:[9,8,7,6,5],co=cream?'#ece7cb':butter?'#e8c43e':amethyst?'#753baf':champagne?(stage===0?'#eee8ce':stage===1?'#ddbdd2':'#cb8abd'):red?'#c82942':blue?(stage===2?'#6e409a':'#4944b1'):pink?(stage===0?'#eee6ca':stage===1?'#e7d2da':'#d6b6db'):(stage===0?'#e8cb63':stage===1?'#e2ad71':'#dc927d'),petalShape=cream||butter||champagne?'belarinaSmoothPetal':'belarinaPetal';
   for(let layer=0;layer<rings.length;layer++)for(let j=0;j<rings[layer];j++){
-   const a=j*TAU/rings[layer]+layer*.52+.06*Math.sin(j*7+key),L=R*(1-layer*(nectar?.115:.135))*(.90+.10*Math.cos(j*3+key)),rf=flowerFrame(f,pt(a,.0013*fs*(1-layer/rings.length),(.003+layer*.0015)*fs),-.08-layer*.17-.055*Math.sin(j*4+key),a);
-   rf.add('belarinaPetal','petal-'+tag,kit.shade(rand,co,.025),0,0,0,L,L,L);drawn++;
+   const a=j*TAU/rings[layer]+layer*.52+.06*Math.sin(j*7+key),L=R*(1-layer*(nectar?.115:.135))*(.90+.10*Math.cos(j*3+key)),rf=flowerFrame(f,pt(a,.0013*fs*(1-layer/rings.length),(.003+layer*.0015)*fs),(amethyst?-.28:cream||butter||champagne?-.16:-.08)-layer*.17-.055*Math.sin(j*4+key),a);
+   const petalColour=champagne&&stage===1&&layer<2?'#eae0d5':co;rf.add(petalShape,'petal-'+tag,kit.shade(rand,amethyst?'#eee8e8':petalColour,.025),0,0,0,L,L,L);
+   if(amethyst)rf.add('belarinaLacedInner','petal-laced-interior-'+tag,co,0,0,0,L,L,L);
+   if((cream||amethyst||champagne)&&layer===0)rf.add(petalShape,'eye-'+tag,cream?'#ddba56':'#dbc048',0,.0001*fs,0,L*.28,L*.28,L*.28);
    if((blue||nectar)&&stage===2)rf.add('belarinaPetalInner','petal-age-interior-'+tag,blue?'#544ca9':'#e5bc70',0,0,0,L,L,L);
   }
-  for(let j=0;j<3;j++){const cf=flowerFrame(f,[0,(nectar?.011:.009)*fs,0],-1.05,j*TAU/3+key);cf.add('belarinaPetal','petal-'+tag,kit.shade(rand,co,.02),0,0,0,.0035*fs,.004*fs,.004*fs);}
-  // The named cultivars are described as sterile; no invented stamens, stigma or fruit.
-  if(drawn!==count)throw new Error('Belarina petal profile mismatch');
+  for(let j=0;j<3;j++){const cf=flowerFrame(f,[0,(nectar?.011:.009)*fs,0],-1.05,j*TAU/3+key);cf.add(petalShape,'petal-'+tag,kit.shade(rand,co,.02),0,0,0,.0035*fs,.004*fs,.004*fs);}
+  // Do not invent reproductive organs hidden by the double corolla; fertility evidence is cultivar-specific.
  };
  for(let c=0;c<crowns;c++){
   const base=pt(c*TAU/crowns,c?w*.13:0,.004),leaves=winter?(small?6:8):(small?11:15),grow=winter?.54:month===3?.85:1;
-  for(let j=0;j<leaves;j++){const L=(red?.105:pink?.10:blue?.085:.085)*(.66+.34*j/leaves)*scale*grow;leaf(base,j*2.399963+c,L,.50+j/leaves*.85);}
+  for(let j=0;j<leaves;j++){const L=(red?.105:cream?.11:pink||amethyst?.10:champagne?.095:.085)*(.66+.34*j/leaves)*scale*grow;leaf(base,j*2.399963+c,L,.50+j/leaves*.85);}
   if(!s.bloom)continue;
-  const n=small?(red?8:6):red?16:nectar?6:8;
+  const n=small?(red?8:butter?5:6):red?16:butter?5:nectar||cream?6:8;
   for(let j=0;j<n;j++){
    const az=j*2.399963+c,r=w*(.10+.22*Math.sqrt((j+.5)/n)),tip=[base[0]+Math.sin(az)*r,h*(.45+.25*((j*7)%n)/n),base[2]+Math.cos(az)*r],mid=base.map((v,k)=>v+(tip[k]-v)*.55);mid[1]*=1.1;
    b.branch(base,mid,.0011*scale,stem,'scape-'+tag);b.branch(mid,tip,.0011*scale,stem,'scape-'+tag);
