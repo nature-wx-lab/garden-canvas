@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.266';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.267';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.266';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.267';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,49 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function koreanAsterPoint(t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),width=sn**.8*(1.18-.35*t);
+ return [u*.5*width,t,.045*sn+.035*u*u*sn-.014*Math.exp(-u*u*65)*sn];
+}
+function drawKoreanAster(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,scale=Math.max(.55,Math.min(1,h/.55,w/.30)),n=Math.max(3,Math.min(12,Math.round(7*detail*Math.sqrt(w/.30)))),growth=month===3?.18:month===4?.35:month===5?.58:month===6?.78:1;
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const leaf=(at,az,i,k,fac=1,basal=false)=>{
+  if(noise(i,k+27)>s.leafDensity)return;
+  const len=a.leafLength*scale*fac,width=a.leafWidth*scale*fac,f=flowerFrame(b,at,basal?1.02:.70+noise(i,k+11)*.50,az);
+  f.add('koreanAsterLeaf',basal?'leaf-korean-aster-basal':'leaf-korean-aster-cauline',kit.shade(rand,s.leafColor,.04),0,0,0,width,len,len);
+  const point=(t,u)=>{const q=koreanAsterPoint(t,u);return [q[0]*width,q[1]*len,q[2]*len+.00009];};
+  for(let j=1;j<=9;j++)f.branch(point((j-1)/9,0),point(j/9,0),.00009*scale,'#8a9f6c','vein-korean-aster');
+  for(let j=0;j<5;j++)for(const side of [-1,1]){const t=.15+j*.13;f.branch(point(t,0),point(t+.12,side*.84),.00005*scale,'#7d9560','vein-korean-aster');}
+ };
+ const head=(at,az,i,k)=>{
+  if(!s.bloom)return;
+  const f=flowerFrame(b,at,.10+noise(i,k+50)*.34,az),R=a.headRadius,cupR=a.involucreRadius,cupH=a.involucreHeight,discR=a.discRadius,bud=noise(i,k+60)>s.flowerDensity*.94;
+  f.add(kit.bud,'involucre-korean-aster','#73854c',0,cupH*.4,0,cupR,cupH*.5,cupR);
+  for(let row=0;row<3;row++)for(let j=0;j<12;j++){const aa=(j+row*.4)*TAU/12,r=cupR*(.45+row*.1);f.add('erigeronLeaf','bract-korean-aster','#72874c',Math.sin(aa)*r,cupH*row*.1,Math.cos(aa)*r,.0019,cupH*.85,cupH*.85,.65+row*.20,aa,0);}
+  if(bud){f.add(kit.bud,'bud-korean-aster','#a199b2',0,cupH*.85,0,cupR*.65,cupH*.65,cupR*.65);return;}
+  const rays=24+2*Math.floor(noise(i,k+70)*5),rootR=discR*.72,len=R-rootR;
+  for(let j=0;j<rays;j++){const aa=j*TAU/rays+(noise(i,k+j)*.04);f.add('miyakowasureRay','ray-korean-aster',kit.shade(rand,info.flower,.04),Math.sin(aa)*rootR,cupH*.84,Math.cos(aa)*rootR,.0038,len,len,1.28+noise(i,k+j+90)*.22,aa,0);}
+  f.add(kit.bud,'disc-korean-aster-base','#d5ad3d',0,cupH*.8,0,discR,.0015,discR);
+  for(let j=0;j<100;j++){const aa=j*2.399963,r=discR*Math.sqrt((j+.4)/100),y=cupH*.72+.0016*(1-r/discR),x=Math.sin(aa)*r,z=Math.cos(aa)*r;
+   f.add('erigeronDisk','disc-floret-korean-aster',r>discR*.55?'#e6b73a':'#e4c450',x,y,z,.0009,.003,.0009,.08,aa,0);
+   if(r>discR*.48)f.branch([x,y+.0028,z],[x+Math.sin(aa)*.0003,y+.0038,z+Math.cos(aa)*.0003],.00007,'#f5d16a','style-korean-aster');
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,r=w*.24*Math.sqrt((i+.4)/n),base=[Math.sin(az)*r,.004,Math.cos(az)*r];
+  if(month<=6)for(let j=0;j<5;j++)leaf(base,az+j*2.4,i,j*79,.65, true);
+  const top=h*growth*(.77+.12*noise(i,17)),point=t=>[base[0]+Math.sin(az)*w*.07*t,base[1]+top*t,base[2]+Math.cos(az)*w*.07*t];let prev=base;
+  for(let j=1;j<=12;j++){const t=j/12,at=point(t);b.branch(prev,at,(.0013-.0007*t)*scale,a.stemColor,'stem-korean-aster');prev=at;if(j<11)leaf(at,az+j*2.4,i,j*53,(1-t*.70)*(month<=4?.55:1));}
+  head(prev,az,i,1000);
+  if(month<6)continue;
+  for(let j=0;j<3;j++){const t=.57+j*.11,at=point(t),aa=az+j*2.4+1.3,end=[at[0]+Math.sin(aa)*w*(.15-.02*j),Math.min(h*growth*.96,at[1]+h*growth*(.25-.03*j)),at[2]+Math.cos(aa)*w*(.15-.02*j)];let prev=at;
+   for(let q=1;q<=3;q++){const pt=at.map((v,k)=>v+(end[k]-v)*q/3);b.branch(prev,pt,.00055*scale,a.stemColor,'branch-korean-aster');if(q<3)leaf(pt,aa+q*2.4,i,1300+j*71+q*17,.32-q*.07);prev=pt;}head(end,aa,i,1600+j*100);
+  }
+ }
+}
+
 export function marshalliaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='marshalliaTube'){const az=u*Math.PI,r=.16+.09*t**3;return [Math.sin(az)*r,t,Math.cos(az)*r];}
@@ -11682,6 +11725,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='koreanAsterShoots'){drawKoreanAster(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='marshalliaHeads'){drawMarshallia(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='belliumRunners'){drawBellium(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='miyakowasureCrowns'){drawMiyakowasure(b,{info,s,detail,rand,month},kit);return;}
