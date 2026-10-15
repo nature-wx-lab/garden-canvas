@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {emptyDocument,sampleDocument,validateDocument,makePlant,clone,outlineFor,validOutline,contained,canPlant,stateAt,replacePlant,editSize,budget,calendar,taskEvents,observations,pondDepthAt,plantBaseAt} from '../site/model.js';
+import {emptyDocument,sampleDocument,validateDocument,makePlant,clone,outlineFor,validOutline,contained,canPlant,stateAt,replacePlant,editSize,budget,calendar,taskEvents,observations,pondDepthAt,plantBaseAt,plantSizeLimits} from '../site/model.js';
 const view=(year,month,reference=false)=>({year,month,reference,footprints:false,camera:null});
 const fixture=()=>{const d=emptyDocument();d.plans.A.plants=[makePlant('maple',1,2,2)];return d;};
 const task=(type,month,repeat='annual',min=10,max=20,count=1)=>({id:1,type,month,repeat,min,max,count});
@@ -15,7 +15,7 @@ test('water-surface flowering disappears at the same depth boundary as the rende
 });
 test('released catalogue revisions preserve saved garden contents when models are enriched',()=>{
  const original=fixture();original.plans.A.plants.push(makePlant('p-281a043a4b8a',2,5,4));
- for(const revision of ['2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.53','2026-10-10.54','2026-10-10.55','2026-10-10.56','2026-10-10.57','2026-10-10.58','2026-10-12.1','2026-10-12.2','2026-10-12.3','2026-10-12.4','2026-10-13.4','2026-10-13.5','2026-10-13.6','2026-10-13.7','2026-10-13.8','2026-10-13.9','2026-10-13.10','2026-10-13.11','2026-10-13.12','2026-10-13.13','2026-10-13.14','2026-10-13.15','2026-10-13.16','2026-10-13.17','2026-10-13.18','2026-10-13.19','2026-10-13.20','2026-10-13.21','2026-10-13.22','2026-10-13.23','2026-10-13.24','2026-10-13.25','2026-10-13.26','2026-10-13.27','2026-10-13.28','2026-10-13.29','2026-10-13.30','2026-10-13.31','2026-10-13.32','2026-10-13.33','2026-10-13.34','2026-10-13.35','2026-10-13.36','2026-10-13.37','2026-10-13.38','2026-10-13.39','2026-10-13.40','2026-10-13.41','2026-10-13.42','2026-10-13.43','2026-10-13.44','2026-10-13.45','2026-10-13.46','2026-10-14.1','2026-10-14.2','2026-10-14.3','2026-10-14.4','2026-10-14.15','2026-10-14.16','2026-10-14.17','2026-10-14.18','2026-10-14.19','2026-10-14.20','2026-10-14.21','2026-10-14.22','2026-10-14.23','2026-10-14.24','2026-10-14.25','2026-10-14.26','2026-10-14.27','2026-10-14.28','2026-10-14.29','2026-10-14.30','2026-10-14.31','2026-10-14.32','2026-10-14.33','2026-10-14.34','2026-10-14.35','2026-10-14.36','2026-10-14.37','2026-10-14.38','2026-10-14.39','2026-10-14.40','2026-10-14.41','2026-10-14.42','2026-10-14.43','2026-10-14.44','2026-10-14.45','2026-10-14.46','2026-10-14.47','2026-10-14.48','2026-10-14.49','2026-10-14.50','2026-10-14.51','2026-10-14.52','2026-10-14.53','2026-10-14.54','2026-10-14.55','2026-10-15.1','2026-10-15.2','2026-10-15.3','2026-10-15.4','2026-10-15.5','2026-10-15.6','2026-10-15.7','2026-10-15.8','2026-10-15.9','2026-10-15.10','2026-10-15.11','2026-10-15.12','2026-10-15.13','2026-10-15.14','2026-10-15.15','2026-10-14.14','2026-10-14.13','2026-10-14.12','2026-10-14.11','2026-10-14.10','2026-10-14.9','2026-10-14.8','2026-10-14.7','2026-10-14.6','2026-10-14.5',...Array.from({length:62},(_,i)=>`2026-10-11.${i+1}`)]){
+ for(const revision of ['2026-10-10.4','2026-10-10.5','2026-10-10.6','2026-10-10.7','2026-10-10.53','2026-10-10.54','2026-10-10.55','2026-10-10.56','2026-10-10.57','2026-10-10.58','2026-10-12.1','2026-10-12.2','2026-10-12.3','2026-10-12.4','2026-10-13.4','2026-10-13.5','2026-10-13.6','2026-10-13.7','2026-10-13.8','2026-10-13.9','2026-10-13.10','2026-10-13.11','2026-10-13.12','2026-10-13.13','2026-10-13.14','2026-10-13.15','2026-10-13.16','2026-10-13.17','2026-10-13.18','2026-10-13.19','2026-10-13.20','2026-10-13.21','2026-10-13.22','2026-10-13.23','2026-10-13.24','2026-10-13.25','2026-10-13.26','2026-10-13.27','2026-10-13.28','2026-10-13.29','2026-10-13.30','2026-10-13.31','2026-10-13.32','2026-10-13.33','2026-10-13.34','2026-10-13.35','2026-10-13.36','2026-10-13.37','2026-10-13.38','2026-10-13.39','2026-10-13.40','2026-10-13.41','2026-10-13.42','2026-10-13.43','2026-10-13.44','2026-10-13.45','2026-10-13.46','2026-10-14.1','2026-10-14.2','2026-10-14.3','2026-10-14.4','2026-10-14.15','2026-10-14.16','2026-10-14.17','2026-10-14.18','2026-10-14.19','2026-10-14.20','2026-10-14.21','2026-10-14.22','2026-10-14.23','2026-10-14.24','2026-10-14.25','2026-10-14.26','2026-10-14.27','2026-10-14.28','2026-10-14.29','2026-10-14.30','2026-10-14.31','2026-10-14.32','2026-10-14.33','2026-10-14.34','2026-10-14.35','2026-10-14.36','2026-10-14.37','2026-10-14.38','2026-10-14.39','2026-10-14.40','2026-10-14.41','2026-10-14.42','2026-10-14.43','2026-10-14.44','2026-10-14.45','2026-10-14.46','2026-10-14.47','2026-10-14.48','2026-10-14.49','2026-10-14.50','2026-10-14.51','2026-10-14.52','2026-10-14.53','2026-10-14.54','2026-10-14.55','2026-10-15.1','2026-10-15.2','2026-10-15.3','2026-10-15.4','2026-10-15.5','2026-10-15.6','2026-10-15.7','2026-10-15.8','2026-10-15.9','2026-10-15.10','2026-10-15.11','2026-10-15.12','2026-10-15.13','2026-10-15.14','2026-10-15.15','2026-10-15.16','2026-10-14.14','2026-10-14.13','2026-10-14.12','2026-10-14.11','2026-10-14.10','2026-10-14.9','2026-10-14.8','2026-10-14.7','2026-10-14.6','2026-10-14.5',...Array.from({length:62},(_,i)=>`2026-10-11.${i+1}`)]){
   const saved={...clone(original),catalogVersion:revision};assert.deepEqual(validateDocument(saved),original);
  }
 });
@@ -34,6 +34,35 @@ test('size changes invalidate obsolete prices and scenario targets',()=>{const p
 test('low ground covers round-trip at their documented centimetre height while zero is rejected',()=>{
  const d=fixture(),p=d.plans.A.plants[0];Object.assign(p,{kind:'p-2a0099e60c2c',height:.03,leafHeight:.025,spread:.5});assert.equal(validateDocument(d).plans.A.plants[0].height,.03);
  p.height=0;assert.throws(()=>validateDocument(d));p.height=.03;p.leafHeight=.04;assert.throws(()=>validateDocument(d));
+});
+test('raoulia alone uses millimetre input limits and unrounded initial sizes',()=>{
+ const kind='p-27d773c2c05a',p=makePlant(kind,1,2,2),other=makePlant('hosta',2,3,2);
+ assert.deepEqual([p.height,p.spread,p.leafHeight],[.006,.3,.003]);
+ assert.deepEqual(plantSizeLimits(kind),{minHeight:.003,minLeafHeight:.001,step:.001,digits:3});
+ assert.deepEqual(plantSizeLimits('hosta'),{minHeight:.01,minLeafHeight:.005,step:.01,digits:2});
+ assert.deepEqual([other.height,other.spread,other.leafHeight],[.35,.3,.19]);
+ const exchanged=replacePlant(other,kind);assert.deepEqual([exchanged.height,exchanged.spread,exchanged.leafHeight],[.006,.3,.003]);
+});
+test('raoulia size, scenario and management survive JSON without relaxing other species',()=>{
+ const d=emptyDocument(),p=makePlant('p-27d773c2c05a',1,2,2);d.plans.A.plants=[p];
+ Object.assign(p,{height:.003,leafHeight:.001,scenario:{year:2,height:.009,spread:.4,leafHeight:.004},management:{height:.003,spread:.2,method:'trim',recovery:6}});
+ assert.deepEqual(validateDocument(JSON.parse(JSON.stringify(d))),d);
+ for(const change of [q=>q.height=.00299,q=>q.leafHeight=.00099,q=>q.leafHeight=.00301,q=>q.management.height=.00299,q=>q.scenario.height=.00299,q=>q.scenario.leafHeight=.00099,q=>q.scenario.leafHeight=.01,q=>q.height=NaN]){const bad=clone(d);change(bad.plans.A.plants[0]);assert.throws(()=>validateDocument(bad));}
+ const other=emptyDocument();other.plans.A.plants=[makePlant('hosta',1,2,2)];
+ for(const change of [q=>q.height=.003,q=>q.leafHeight=.001,q=>q.management={height:.003,spread:.2,method:'trim',recovery:6}]){const bad=clone(other);change(bad.plans.A.plants[0]);assert.throws(()=>validateDocument(bad));}
+});
+test('raoulia millimetre growth and cutback apply while ordinary pruning limits stay intact',()=>{
+ const p=makePlant('p-27d773c2c05a',1,2,2);p.scenario={year:2,height:.01,spread:.4,leafHeight:.005};
+ const middle=stateAt(p,view(1,1));assert.ok(Math.abs(middle.height-.008)<1e-12);assert.ok(Math.abs(middle.leafHeight-.004)<1e-12);
+ p.scenario=null;p.management={height:.003,spread:.2,method:'trim',recovery:6};p.tasks=[task('cutback',6)];
+ assert.equal(stateAt(p,view(0,5)).height,.006);const cut=stateAt(p,view(0,6));assert.equal(cut.unsupported,false);assert.equal(cut.height,.003);assert.equal(cut.leafHeight,.003);assert.equal(stateAt(p,view(0,12)).height,.006);
+ const other=makePlant('hosta',2,3,2);other.management={height:.01,spread:.2,method:'trim',recovery:6};other.tasks=[task('cutback',6)];const unchanged=stateAt(other,view(0,6));assert.equal(unchanged.unsupported,true);assert.equal(unchanged.height,other.height);
+});
+test('raoulia rests just above the visible zone surface and ordinary bases stay unchanged',()=>{
+ const d=emptyDocument(),plan=d.plans.A,p=makePlant('p-27d773c2c05a',1,2,2),other=makePlant('hosta',2,2,2);
+ assert.equal(plantBaseAt(plan,p),.0008);assert.equal(plantBaseAt(plan,other),.012);
+ plan.zones=[{kind:'soil',points:[[1,1],[4,1],[4,4],[1,4]]},{kind:'soil',points:[[1.5,1.5],[3,1.5],[3,3],[1.5,3]]}];
+ assert.ok(Math.abs(plantBaseAt(plan,p)-.007)<1e-12);p.x=1.25;assert.ok(Math.abs(plantBaseAt(plan,p)-.0068)<1e-12);p.x=6;assert.equal(plantBaseAt(plan,p),.0008);assert.equal(plantBaseAt(plan,other),.012);
 });
 test('unknown price is not zero; existing and reference plants do not enter purchase total',()=>{const d=sampleDocument(),p=d.plans.A.plants;p[0].price=5000;p[1].role='existing';p[1].price=9000;p[2].role='reference';p[3].price=0;const b=budget(d.plans.A);assert.equal(b.total,5000);assert.equal(b.count,6);assert.equal(b.unknown,4);});
 test('first year means first 12 months after planting, crossing the year boundary',()=>{const p=makePlant('rose',1,2,2);p.start=10;p.tasks=[task('feed',3,'first')];assert.equal(taskEvents(p,0).length,0);assert.equal(taskEvents(p,1).length,1);assert.equal(taskEvents(p,2).length,0);});

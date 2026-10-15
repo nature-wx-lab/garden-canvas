@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt } from './model.js?v=0.9.274';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.274';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.275';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.275';
 
 const BACKDROP_COLOR='#65755a';
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
@@ -98,15 +98,17 @@ export function createScene(container,onPick){
   function solid(color,x,y,z,sx,sy,sz){const m=new THREE.Mesh(box,mat(color));m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;root.add(m);return m;}
   function groundDetail(){
     const rand=random(923),group=new THREE.Group(),lawn=batch(group,.08,.1,.3),mulch=new THREE.Group(),pebbleGeometry=new THREE.IcosahedronGeometry(1,0),matrices=[],colors=[];
+    const lowMats=plan.plants.filter(p=>isRaouliaMat(p.kind)).map(p=>({p,s:stateAt(p,view)})).filter(({s})=>s.present&&!s.groundDormant);
     const candidates=Math.min(7000,Math.round(plan.width*plan.depth*180));
     for(let i=0;i<candidates;i++){
       const x=rand()*plan.width,z=rand()*plan.depth;if(!canPlant(plan,x,z))continue;
-      const zone=zoneAt(plan,x,z);if(zone?.kind==='water')continue;
+      const zone=zoneAt(plan,x,z);if(zone?.kind==='water')continue;const covered=lowMats.some(({p,s})=>Math.hypot(x-p.x,z-p.z)<=s.spread/2);
       if(zone){
-        const dummy=new THREE.Object3D(),size=.015+rand()*.025;dummy.position.set(x-plan.width/2,.018,z-plan.depth/2);dummy.rotation.set(rand(),rand()*6,rand());dummy.scale.set(size,.008+rand()*.008,size*.42);dummy.updateMatrix();matrices.push(dummy.matrix.clone());colors.push(new THREE.Color().setHSL(.07+rand()*.025,.32+rand()*.15,.16+rand()*.14));
+        const dummy=new THREE.Object3D(),size=.015+rand()*.025;dummy.position.set(x-plan.width/2,.018,z-plan.depth/2);dummy.rotation.set(rand(),rand()*6,rand());dummy.scale.set(size,.008+rand()*.008,size*.42);dummy.updateMatrix();const color=new THREE.Color().setHSL(.07+rand()*.025,.32+rand()*.15,.16+rand()*.14);if(!covered){matrices.push(dummy.matrix.clone());colors.push(color);}
       }else{
-        const h=.025+rand()*.028;
-        lawn.add('blade','grass',new THREE.Color().setHSL(.22+rand()*.045,.23+rand()*.12,.24+rand()*.1),x-plan.width/2,.002,z-plan.depth/2,.022,h,h*.6,.1,rand()*6,0);
+        // Consume the same random values even when a low mat hides this blade.
+        const h=.025+rand()*.028,color=new THREE.Color().setHSL(.22+rand()*.045,.23+rand()*.12,.24+rand()*.1),yaw=rand()*6;
+        if(!covered)lawn.add('blade','grass',color,x-plan.width/2,.002,z-plan.depth/2,.022,h,h*.6,.1,yaw,0);
       }
     }
     lawn.finish({castShadow:false});root.add(group);
@@ -132,8 +134,8 @@ export function createScene(container,onPick){
     }
     const detail=Math.min(1,Math.sqrt(18/Math.max(1,plan.plants.length)));
     for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;const depth=pondDepthAt(plan,p.x,p.z),g=plantModel(p,{...view,waterDepth:depth},detail);g.position.set(p.x-plan.width/2,plantBaseAt(plan,p),p.z-plan.depth/2);plants.add(g);
-      const contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.rotation.x=-Math.PI/2;contact.position.set(g.position.x,.012,g.position.z);contact.scale.set(s.spread*.95,s.spread*.95,1);if(zoneAt(plan,p.x,p.z)?.kind!=='water')root.add(contact);
-      if(view.footprints)circle(p.x,p.z,s.spread/2,'#9bb9b1');if(p.id===id){circle(p.x,p.z,s.spread/2+.06,'#d2b05f',.018);if(p.management){circle(p.x,p.z,p.management.spread/2,'#7bacad',p.management.height);for(const a of [0,Math.PI]){const x=p.x-plan.width/2+Math.cos(a)*p.management.spread/2,z=p.z-plan.depth/2;line([new THREE.Vector3(x,.04,z),new THREE.Vector3(x,p.management.height,z)],'#7bacad');}}}
+      const contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.rotation.x=-Math.PI/2;contact.position.set(g.position.x,isRaouliaMat(p.kind)?g.position.y-.0006:.012,g.position.z);contact.scale.set(s.spread*.95,s.spread*.95,1);if(zoneAt(plan,p.x,p.z)?.kind!=='water')root.add(contact);
+      if(view.footprints)circle(p.x,p.z,s.spread/2,'#9bb9b1');if(p.id===id){circle(p.x,p.z,s.spread/2+.06,'#d2b05f',.018);if(p.management){const low=isRaouliaMat(p.kind),base=low?plantBaseAt(plan,p):0;circle(p.x,p.z,p.management.spread/2,'#7bacad',base+p.management.height);for(const a of [0,Math.PI]){const x=p.x-plan.width/2+Math.cos(a)*p.management.spread/2,z=p.z-plan.depth/2;line([new THREE.Vector3(x,low?base:.04,z),new THREE.Vector3(x,base+p.management.height,z)],'#7bacad');}}}
     }
     tallest=Math.max(1,...plan.plants.map(p=>stateAt(p,view).height),...plan.obstacles.map(o=>o.height));fitShadow();
     container.dataset.plantCount=String(plants.children.length);dirty=true;

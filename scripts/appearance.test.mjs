@@ -11,6 +11,17 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Raoulia keeps millimetre imbricate foliage and small rayless heads on a creeping mat',()=>{
+ const id='p-27d773c2c05a',info=CATALOG[id],a=info.appearance;assert.equal(a.architecture,'raouliaMats');assert.equal(a.status,'partial');assert.deepEqual(info.height,[.003,.01]);assert.deepEqual(info.spread,[.2,.4]);assert.equal(info.bloomKnown,false);assert.match(a.unconfirmed.join(' '),/12か月/);
+ for(const small of [false,true]){const p={...makePlant(id,29800+Number(small),1,1),height:small?.003:.01,spread:small?.2:.4,leafHeight:small?.001:.005};let winter=0,spring=0;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),heads=count('involucre-raoulia'),leaves=count('leaf-raoulia-imbricate');assert.equal(g.userData.architecture,'raouliaMats');assert.equal(stateAt(p,view(month)).shootScale,1);assert.ok(leaves>0);assert.equal(leaves,count('shoot-raoulia')*25);assert.equal(count('hair-raoulia-appressed'),leaves*2);assert.ok(count('creeping-stem-raoulia')>0);assert.equal(heads>0,!small&&info.bloom.includes(month));assert.ok(g.children.find(m=>m.userData.component==='leaf-raoulia-imbricate').geometry.userData.raouliaLeaf);
+   const lm=g.children.find(m=>m.userData.component==='leaf-raoulia-imbricate'),matrix=new Matrix4(),levels=new Set();for(let i=0;i<5;i++){lm.getMatrixAt(i,matrix);levels.add(matrix.elements[13].toFixed(8));}assert.equal(levels.size,5,'five leaf series have staggered insertions, not whorls');
+   if(heads){assert.equal(count('short-peduncle-raoulia'),heads);assert.equal(count('bract-raoulia'),heads*20);const open=heads-count('bud-raoulia');assert.ok(count('floret-raoulia')>=open*12&&count('floret-raoulia')<=open*20);}
+   assert.ok(!g.children.some(m=>/ray|fruit|seed|style|stamen/.test(m.userData.component)));for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.0003,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.08,`${m.userData.component} ${m.boundingBox.max.y}`);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.52,m.userData.component);}if(month===1)winter=leaves;if(month===4)spring=leaves;dispose(g);
+  }assert.ok(winter<spring*.5,'winter density remains an explicit partial reference');
+ }
+});
 test('Cotton thistle keeps spiny rosettes before flowering and does not regrow after its flowering season',()=>{
  const id='p-5a9afc3c9bdc',info=CATALOG[id],a=info.appearance;assert.equal(a.architecture,'cottonThistleWings');assert.equal(a.status,'partial');assert.deepEqual(info.height,[1.5,2]);assert.deepEqual(info.spread,[1,1.5]);assert.equal(info.bloomKnown,false);assert.equal(info.life,'biennial');assert.match(a.unconfirmed.join(' '),/12か月/);
  for(const small of [false,true]){const p={...makePlant(id,29700+Number(small),1,1),height:small?.5:2,spread:small?.5:1.25,leafHeight:small?.2:.35};
@@ -3635,7 +3646,7 @@ test('31 scabious profiles preserve florets, basal winter leaves, seed cups and 
 });
 
 test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads and biennial lifespan',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,14);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,13);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6000+i,2,2);
   for(let month=1;month<=12;month++){
@@ -3656,12 +3667,12 @@ test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads 
  assert.equal(CATALOG['p-51cd86dd10f9'].latin,'Berlandiera lyrata');
  const thistle=makePlant('p-5a9afc3c9bdc',6012,2,2);
  assert.ok(stateAt(thistle,view(8)).biennialRosette);assert.equal(stateAt(thistle,view(8)).bloom,false);
- const second={...view(8),year:1};assert.ok(stateAt(thistle,second).bloom);assert.ok(plantModel(thistle,second).children.some(m=>m.userData.component==='petal-aster-florets'));
+ const second={...view(8),year:1};assert.ok(stateAt(thistle,second).bloom);const flowered=plantModel(thistle,second);assert.ok(flowered.children.some(m=>m.userData.component==='floret-cotton'));dispose(flowered);
  assert.equal(stateAt(thistle,{...view(8),year:2}).present,false);
  const silver=CATALOG['p-a4614b2e3705'];assert.equal(foliageKind(silver),'leaf-woolly');
  assert.notEqual(CATALOG['p-5d9d19a10ef5'].appearance.leafColor,'#654756');
  const june=plantModel(makePlant('p-c66dc5e68f24',6022,2,2),view(6)),july=plantModel(makePlant('p-c66dc5e68f24',6022,2,2),view(7));
- assert.ok(june.children.some(m=>m.userData.component==='petal-aster-florets'));assert.ok(july.children.some(m=>m.userData.component==='pappus'));assert.ok(!july.children.some(m=>m.userData.component.startsWith('petal')));dispose(june);dispose(july);
+ assert.ok(june.children.some(m=>m.userData.component==='floret-jurinea'));assert.ok(july.children.some(m=>m.userData.component==='pappus-jurinea'));assert.ok(!july.children.some(m=>m.userData.component==='floret-jurinea'));dispose(june);dispose(july);
 });
 
 

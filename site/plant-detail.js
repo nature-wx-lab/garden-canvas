@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.274';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.275';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.274';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.275';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,34 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function raouliaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='raouliaFloret'){const r=.18+.12*t+.70*Math.max(0,(t-.55)/.45)**2;return [.5*Math.cos(u)*r,t,.5*Math.sin(u)*r];}
+ const width=type==='raouliaBract'?sn**.55:Math.max(.08*(1-t),sn**.65*(.22+.78*t));
+ return [u*.5*width,t,.045*t*t+.05*u*u*sn];
+}
+function drawRaoulia(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),n=Math.max(200,Math.min(8000,Math.round(5000*detail*(w/.3)**1.7))),roots=[],foliage=Math.min(h*.65,s.leafHeight),L=Math.min(a.leafLength,h*.65),W=a.leafWidth,noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ for(let i=0;i<n;i++){
+  const az=i*2.399963+(noise(i,3)-.5)*.13,r=w*.475*Math.sqrt((i+.5)/n),base=[Math.sin(az)*r,.00018,Math.cos(az)*r];roots.push(base);
+  if(i){let near=roots[i-1];for(const step of [13,21,34,55])if(i>=step){const q=roots[i-step];if(Math.hypot(q[0]-base[0],q[2]-base[2])<Math.hypot(near[0]-base[0],near[2]-base[2]))near=q;}b.branch(near,base,.00010,'#8a8872','creeping-stem-raoulia');}
+  const retained=noise(i,7)<Math.min(1,s.leafDensity*(winter?.8:1));if(!retained)continue;
+  const top=[base[0],Math.min(h-L*.8,foliage*(.55+.25*noise(i,11))),base[2]];b.branch(base,top,.00013,a.stemColor,'shoot-raoulia');
+  for(let level=0;level<5;level++)for(let series=0;series<5;series++){
+   const yaw=az+series*TAU/5+level*.14,at=[base[0],base[1]+(top[1]-base[1])*(level+series/5)/5,base[2]],f=flowerFrame(b,at,1.05+level*.025,yaw),len=L*(.75+.25*noise(i,level*5+series+17));
+   f.add('raouliaLeaf','leaf-raoulia-imbricate',kit.shade(rand,s.leafColor,.035),0,0,0,W,len,len);
+   for(let j=0;j<2;j++){const t=.45+j*.32,u=(noise(i,series*13+level+j+51)-.5)*1.4,p=raouliaPoint('raouliaLeaf',t,u),q=[p[0]*W,p[1]*len,p[2]*len+.00002];f.branch(q,[q[0]+.00012,q[1]+.00024,q[2]+.00004],.000012,'#e1e2d5','hair-raoulia-appressed');}
+  }
+  if(!s.bloom||h<.006||noise(i,101)>.022)continue;
+  const topHead=[base[0],Math.max(.0013,h*.43),base[2]],f=flowerFrame(b,topHead,.08,az),R=a.headRadius,bud=noise(i,107)>s.flowerDensity*.94;
+  b.branch(top,topHead,.00015,a.stemColor,'short-peduncle-raoulia');
+  f.add(kit.bud,'involucre-raoulia','#c1c4a0',0,-.0003,0,R*.72,.0008,R*.72);
+  for(let j=0;j<20;j++){const aa=j*TAU/10+(j>=10?.25:0),rr=R*(j<10?.58:.72),bf=flowerFrame(f,[Math.sin(aa)*rr,-.0008,Math.cos(aa)*rr],.32,aa),len=j<10?.0022:.0017;bf.add('raouliaBract','bract-raoulia',j<10?'#d7c765':'#b6bd9c',0,0,0,.00055,len,len);}
+  if(bud){f.add(kit.bud,'bud-raoulia','#d5ca81',0,.0007,0,R*.65,.001,R*.65);continue;}
+  const florets=12+Math.floor(noise(i,113)*9);for(let j=0;j<florets;j++){const aa=j*2.399963,r=R*.56*Math.sqrt((j+.3)/florets);f.add('raouliaFloret','floret-raoulia','#e2d570',Math.sin(aa)*r,-.0004,Math.cos(aa)*r,.00055,.0030+.0007*noise(j,i+127),.00055);}
+ }
+}
+
 export function cottonPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='cottonBract')return [.5*u*sn**.65*(1-t*.5),t,-.20*t*t+.03*u*u*sn];
@@ -11977,6 +12005,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='raouliaMats'){drawRaoulia(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='cottonThistleWings'){drawCottonThistle(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='jurineaNoddingHeads'){drawJurinea(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='cotulaCushions'){drawCotula(b,{info,s,detail,rand,month},kit);return;}
