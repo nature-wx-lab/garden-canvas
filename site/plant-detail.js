@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.268';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.269';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.268';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.269';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,39 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function craspediaLeafPoint(t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),ridge=.014*(Math.exp(-u*u*65)+Math.exp(-((Math.abs(u)-.48)**2)*80))*sn;
+ return [u*.5*sn**.55,t,.14*t*t+.035*u*u*sn-ridge];
+}
+function drawCraspedia(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,scale=Math.max(.55,Math.min(1,h/.7,w/.35)),n=Math.max(6,Math.min(30,Math.round(18*detail*Math.sqrt(w/.35)))),winter=[12,1,2].includes(month),leafN=Math.max(30,Math.min(100,Math.round(74*detail*Math.sqrt(w/.35))));
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ for(let i=0;i<leafN;i++){
+  if(noise(i,7)>s.leafDensity)continue;
+  const az=i*2.399963,r=w*.18*Math.sqrt((i+.3)/leafN),root=[Math.sin(az)*r,.004,Math.cos(az)*r],len=a.leafLength*scale*(.65+.35*noise(i,13))*(winter?.85:1),width=a.leafWidth*scale,f=flowerFrame(b,root,.45+noise(i,19)*.90,az);
+  f.add('craspediaLeaf','leaf-craspedia-woolly',kit.shade(rand,s.leafColor,.04),0,0,0,width,len,len);
+  const point=(t,u)=>{const q=craspediaLeafPoint(t,u);return [q[0]*width,q[1]*len,q[2]*len+.00009];};
+  for(const u of [-.70,-.36,0,.36,.70])for(let q=1;q<=8;q++)f.branch(point((q-1)/8,u),point(q/8,u),.000065*scale,'#b5bfa9','vein-craspedia');
+  for(let q=0;q<14;q++){const t=.08+noise(i,q+31)*.85,u=(noise(i,q+53)-.5)*1.6,p=point(t,u);f.branch(p,[p[0]+.0005*scale,p[1]+.0002*scale,p[2]+.0010*scale],.000035*scale,'#d0d4c4','hair-craspedia');}
+ }
+ if(!s.bloom)return;
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,r=w*.25*Math.sqrt((i+.4)/n),root=[Math.sin(az)*r*.55,.006,Math.cos(az)*r*.55],top=[Math.sin(az)*r,h*(.65+.29*noise(i,79)),Math.cos(az)*r];let prev=root;
+  for(let j=1;j<=12;j++){const t=j/12,at=root.map((v,k)=>v+(top[k]-v)*t);at[0]+=.006*scale*Math.sin(t*Math.PI);b.branch(prev,at,.0010*scale,a.stemColor,'scape-craspedia');prev=at;}
+  const R=a.headRadius,core=R-.004,bud=noise(i,97)>s.flowerDensity*.92,f=flowerFrame(b,top,0,az),base=bud?'#b2b785':'#d7b72e';
+  f.add(kit.bud,'glomerule-craspedia-core',base,0,0,0,core,core,core);
+  for(let j=0;j<70;j++){
+   const y=1-2*(j+.5)/70,aa=j*2.399963,rr=Math.sqrt(1-y*y),direction=[Math.sin(aa)*rr,y,Math.cos(aa)*rr],at=direction.map(v=>v*core),g=flowerFrame(f,at,Math.acos(y),aa);
+   g.add(kit.bud,'partial-head-craspedia',bud?'#c0c39a':'#e0c138',0,0,0,.0017,.0012,.0017);
+   for(let q=0;q<3;q++){const a=q*TAU/3,at=[Math.sin(a)*.0007,.00045,Math.cos(a)*.0007];
+    if(bud){g.add(kit.bud,'bud-floret-craspedia','#d0d0a4',...at,.00060,.0010,.00060);continue;}
+    g.add('erigeronDisk','disc-floret-craspedia',kit.shade(rand,'#ebc729',.025),...at,.0016,.0030,.0016,0,a,0);
+    const y=.0034;g.branch([at[0],y-.0003,at[2]],[at[0],y+.00055,at[2]],.00006,'#f3d84a','style-craspedia');
+   }
+  }
+ }
+}
+
 export function syneilesisPoint(type,t,az){
  const wave=(1+Math.cos(7*az))*.5,split=1-.22*Math.exp(-((Math.sin(3.5*az)/.13)**2)),teeth=.94+.06*Math.cos(84*az),edge=(.18+.82*wave**.55)*split*teeth,r=t*edge,opening=type==='syneilesisClosed'?.23:type==='syneilesisOpening'?.95:1.38;
  const x=Math.sin(az)*r*Math.sin(opening),z=Math.cos(az)*r*Math.sin(opening),y=r*Math.cos(opening)*-1+.025*Math.sin(Math.PI*t)*Math.cos(7*az);
@@ -11769,6 +11802,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='craspediaGlobes'){drawCraspedia(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='syneilesisUmbrellas'){drawSyneilesis(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='koreanAsterShoots'){drawKoreanAster(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='marshalliaHeads'){drawMarshallia(b,{info,s,detail,rand,month},kit);return;}

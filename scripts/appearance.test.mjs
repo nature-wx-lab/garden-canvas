@@ -11,6 +11,17 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Craspedia carries spherical compound heads above woolly basal leaves',()=>{
+ const id='p-8169d1a9555a',info=CATALOG[id],a=info.appearance;assert.equal(a.architecture,'craspediaGlobes');assert.equal(a.status,'partial');assert.equal(info.spread,null);assert.deepEqual(info.height,[.8,.8]);assert.equal(info.bloomKnown,false);assert.equal(a.persistence,'evergreen');assert.match(a.unconfirmed.join(' '),/異名対応/);
+ for(const small of [false,true]){const p={...makePlant(id,29200+Number(small),1,1),height:small?.4:.8,spread:small?.25:.4,leafHeight:small?.12:.25};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),heads=count('glomerule-craspedia-core');assert.equal(g.userData.architecture,'craspediaGlobes');assert.equal(stateAt(p,view(month)).groundDormant,false);assert.equal(stateAt(p,view(month)).shootScale,1);assert.ok(count('leaf-craspedia-woolly')>0);assert.equal(count('vein-craspedia'),count('leaf-craspedia-woolly')*40);assert.equal(count('hair-craspedia'),count('leaf-craspedia-woolly')*14);assert.equal(heads>0,info.bloom.includes(month));
+   if(heads){assert.equal(count('scape-craspedia'),heads*12);assert.equal(count('partial-head-craspedia'),heads*70);assert.equal(count('disc-floret-craspedia')+count('bud-floret-craspedia'),heads*210);assert.equal(count('style-craspedia'),count('disc-floret-craspedia'));assert.equal(g.children.find(m=>m.userData.component==='partial-head-craspedia').castShadow,false);assert.equal(g.children.find(m=>m.userData.component==='partial-head-craspedia').receiveShadow,false);const core=g.children.find(m=>m.userData.component==='glomerule-craspedia-core'),matrix=new Matrix4();core.getMatrixAt(0,matrix);assert.ok(Math.abs(Math.hypot(matrix.elements[0],matrix.elements[1],matrix.elements[2])-.011)<1e-7);}
+   if(month===7){const core=g.children.find(m=>m.userData.component==='glomerule-craspedia-core'),matrix=new Matrix4(),centres=[];for(let i=0;i<core.count;i++){core.getMatrixAt(i,matrix);centres.push(new Vector3().setFromMatrixPosition(matrix));}let radius=0;for(const m of g.children.filter(m=>['disc-floret-craspedia','style-craspedia','partial-head-craspedia','bud-floret-craspedia'].includes(m.userData.component))){const p=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);for(let j=0;j<p.count;j++){const v=new Vector3().fromBufferAttribute(p,j).applyMatrix4(matrix);radius=Math.max(radius,Math.min(...centres.map(c=>c.distanceTo(v))));}}}assert.ok(radius>.014&&radius<.0155,`whole flowering ball radius ${radius} stays near the 3cm reference`);}
+   assert.ok(!g.children.some(m=>/cauline|ray|fruit|seed/.test(m.userData.component)));for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();if(m.userData.component==='leaf-craspedia-woolly'){const matrix=new Matrix4(),v=new Vector3(),pos=m.geometry.attributes.position;let low=Infinity;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);for(let j=0;j<pos.count;j++)low=Math.min(low,v.fromBufferAttribute(pos,j).applyMatrix4(matrix).y);}assert.ok(low>=-.008,`actual leaf surface ${low} stays above soil`);}else assert.ok(m.boundingBox.min.y>=-.008,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.12,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75,m.userData.component);}dispose(g);
+  }
+ }
+});
 test('Syneilesis opens connected umbrella blades and reserves panicles for flowering-size plants',()=>{
  const id='p-a426d8adbfca',info=CATALOG[id],a=info.appearance;assert.equal(a.architecture,'syneilesisUmbrellas');assert.equal(a.status,'partial');assert.deepEqual(info.height,[.4,.6]);assert.deepEqual(info.spread,[.3,.4]);assert.deepEqual(info.bloom,[6,7]);assert.match(a.unconfirmed.join(' '),/高さ50cm未満/);const edge=syneilesisPoint('syneilesisUpper',1,Math.PI);assert.ok(edge.every(v=>Math.abs(v)<1e-8),'upper leaf attaches at its basal sinus, not the blade centre');
  for(const small of [false,true]){const p={...makePlant(id,29100+Number(small),1,1),height:small?.3:.6,spread:small?.25:.4,leafHeight:small?.20:.3};
@@ -3565,7 +3576,7 @@ test('31 scabious profiles preserve florets, basal winter leaves, seed cups and 
 });
 
 test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads and biennial lifespan',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,20);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,19);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6000+i,2,2);
   for(let month=1;month<=12;month++){
@@ -3619,7 +3630,7 @@ test('daisy cultivars keep distinct leaves, flower patterns and winter organs in
 });
 
 test('Myrtaceae retain evergreen frameworks, species leaf types and independently timed flowers and fruit',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='myrtaceousTree');assert.equal(entries.length,20);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='myrtaceousTree');assert.equal(entries.length,19);
  for(const [i,[id,info]] of entries.entries()){
   const plant=makePlant(id,5800+i,2,2);let woody;
   for(let month=1;month<=12;month++){
@@ -4857,7 +4868,7 @@ test('woodland species keep distinct leaves, floral organs and deciduous versus 
 });
 
 test('20 spurges and gauras use distinct leaf and reproductive organs through all twelve months',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>['spurgeCanes','spurgeDome','snowSpurge','gauraWands'].includes(p.appearance?.architecture));assert.equal(entries.length,20);
+ const entries=Object.entries(CATALOG).filter(([,p])=>['spurgeCanes','spurgeDome','snowSpurge','gauraWands'].includes(p.appearance?.architecture));assert.equal(entries.length,19);
  for(const [id,info] of entries)for(let month=1;month<=12;month++){
   const p=makePlant(id,3701,2,2),g=plantModel(p,view(month));
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
