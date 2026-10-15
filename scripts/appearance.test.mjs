@@ -11,6 +11,56 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Giant daisy keeps leafy tall stems, toothed leaves and independently sized autumn heads',()=>{
+ const id='p-07a11acdf8d1',info=CATALOG[id];assert.equal(info.appearance.architecture,'giantDaisyShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.9,1.5]);assert.deepEqual(info.spread,[.5,.8]);assert.equal(info.bloomKnown,false);
+ for(const [index,size] of [{height:1.5,spread:.65,leafHeight:.8},{height:.30,spread:.25,leafHeight:.18}].entries()){
+  const p={...makePlant(id,30400+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),winter=[12,1,2].includes(month),bloom=[8,9,10].includes(month);
+   try{
+    const heads=count('involucre-giant-daisy'),open=count('disc-giant-daisy');assert.equal(g.userData.architecture,'giantDaisyShoots',tag);
+    assert.equal(count('stem-giant-daisy')>0,!winter,tag);assert.equal(count('winter-shoot-giant-daisy')>0,winter,tag);assert.equal(open>0,bloom,tag);
+    assert.ok(g.children.some(m=>(m.userData.component||'').startsWith('leaf-giant-daisy-')),tag);assert.ok(count('gland-giant-daisy')>0,tag);
+    assert.equal(count('ray-giant-daisy'),open*28,tag);assert.equal(count('bract-giant-daisy'),heads*42,tag);assert.equal(count('floret-giant-daisy')+count('immature-giant-daisy'),open*144,tag);assert.equal(heads,open+count('bud-giant-daisy'),tag);
+    assert.ok(!g.children.some(m=>/fruit|seed|pappus/.test(m.userData.component||'')),tag);
+    const matrix=new Matrix4(),centers=[];for(const m of meshes('disc-giant-daisy'))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);centers.push(new Vector3().setFromMatrixPosition(matrix));}
+    for(const m of meshes('ray-giant-daisy')){
+     m.geometry.computeBoundingBox();const box=m.geometry.boundingBox;
+     for(let i=0;i<m.count;i++){
+      m.getMatrixAt(i,matrix);const e=matrix.elements,L=Math.hypot(e[8],e[9],e[10])*(box.max.z-box.min.z);assert.ok(L>=.010&&L<=.025,tag+': ray length in species range');
+      const root=new Vector3().setFromMatrixPosition(matrix),center=centers.reduce((a,b)=>root.distanceTo(a)<root.distanceTo(b)?a:b),tip=new Vector3(0,.08,1).applyMatrix4(matrix),r=tip.distanceTo(center);assert.ok(r>=.025&&r<=.035,`${tag}: domestic whole-head radius ${r}`);
+     }
+    }
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox;assert.ok(box.min.y>=-.005&&box.max.y<p.height*1.15,tag+': height');assert.ok(Math.max(Math.abs(box.min.x),Math.abs(box.max.x),Math.abs(box.min.z),Math.abs(box.max.z))<p.spread*.75,tag+': spread');}
+   }finally{dispose(g);}
+  }
+ }
+});
+test('Amberboa separates five-lobed sterile outer florets, pale inner florets and spiny layered involucres',()=>{
+ const id='p-78c00b661a0d',info=CATALOG[id];assert.equal(info.appearance.architecture,'amberboaHeads');assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.ok(info.aliases.includes('Volutaria muricata'));
+ for(const [index,size] of [{height:.7,spread:.5,leafHeight:.35},{height:.20,spread:.25,leafHeight:.10}].entries()){
+  const p={...makePlant(id,30500+index,1,1),...size};let summerOpen=0,juneOpen=0;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),winter=[12,1,2].includes(month),bloom=[6,7,8,9,10].includes(month);
+   try{
+    const heads=count('involucre-amberboa'),open=count('receptacle-amberboa');assert.equal(g.userData.architecture,'amberboaHeads',tag);assert.equal(count('stem-amberboa')>0,!winter,tag);assert.equal(open>0,bloom,tag);
+    assert.ok(g.children.some(m=>(m.userData.component||'').startsWith('leaf-amberboa-basal-')),tag);assert.ok(count('hair-amberboa-leaf')>0,tag);
+    assert.equal(count('outer-floret-amberboa'),open*30,tag);assert.equal(count('inner-floret-amberboa'),open*72,tag);assert.equal(count('bract-amberboa'),heads*72,tag);assert.equal(count('spine-amberboa-bract'),heads*60,tag);assert.equal(heads,open+count('bud-amberboa')+count('spent-head-amberboa'),tag);
+    assert.equal(count('spent-head-amberboa')>0,[7,8].includes(month),tag);assert.ok(!g.children.some(m=>/fruit|seed|pappus|ray-/.test(m.userData.component||'')),tag);
+    if(month===6)juneOpen=open;if(month===7)summerOpen=open;
+    const matrix=new Matrix4();
+    for(const m of meshes('inner-floret-amberboa'))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements,L=Math.hypot(e[4],e[5],e[6]);assert.ok(L>=.013-1e-7&&L<=.014+1e-7,tag+': inner corolla length');}
+    for(const m of meshes('involucre-amberboa'))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements,H=2*Math.hypot(e[4],e[5],e[6]),D=2*Math.hypot(e[0],e[1],e[2]);assert.ok(H>=.015-1e-7&&H<=.018+1e-7,tag+': involucre length');assert.ok(D>=.010-1e-7&&D<=.015+1e-7,tag+': involucre diameter');}
+    for(const m of g.children){
+     const pos=m.geometry.attributes.position,name=m.userData.component;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);
+     m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.15&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${name} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+  assert.ok(summerOpen<juneOpen,'domestic summer reduction is visible');
+ }
+});
 test('Jacobaea keeps connected woolly foliage in winter and small independent corymb heads',()=>{
  const ids=['p-a4614b2e3705','p-38a0315b1459'],rayLengths=[];
  for(const [plantIndex,id] of ids.entries()){
@@ -3840,7 +3890,7 @@ test('31 scabious profiles preserve florets, basal winter leaves, seed cups and 
 });
 
 test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads and biennial lifespan',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,8);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,6);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6000+i,2,2);
   for(let month=1;month<=12;month++){

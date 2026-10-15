@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.279';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.280';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.279';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.280';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,181 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function giantDaisyPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='giantDaisyDisc'){
+  const az=u*Math.PI,q=Math.max(0,(t-.63)/.37),lobes=.5+.5*Math.cos(az*5),r=.24+.14*t+.62*q*q*lobes;
+  return [Math.cos(az)*r,t-.16*q*q*(1-lobes),Math.sin(az)*r];
+ }
+ if(type==='giantDaisyRay'){
+  const width=.5*Math.sin(t*Math.PI*.75)**.55,groove=.015*Math.cos(u*Math.PI*4)*sn;
+  return [u*width,.08*t*t+groove+.035*u*u*sn,t-.050*t**12*(.5-.5*Math.cos(u*Math.PI*3))];
+ }
+ if(type==='giantDaisyBract')return [.5*u*sn**.6,t,-.24*t*t+.025*u*u*sn];
+ const edge=.80+.20*(.5+.5*Math.sin(t*Math.PI*24))**2,baseLobes=.12*Math.exp(-(((t-.16)/.055)**2))+.10*Math.exp(-(((t-.27)/.06)**2)),width=.5*(sn**.68*edge+baseLobes);
+ return [u*width,t,.08*t*t+.035*u*u*sn+.010*Math.sin(t*Math.PI*12)*u*u];
+}
+
+export function drawGiantDaisy(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),scale=Math.max(.5,Math.min(1,h/.45,w/.35));
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r],mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),green=s.leafColor||a.leafColor;
+ const leaf=(at,az,L,W,tilt,key,tag)=>{
+  const f=flowerFrame(b,at,tilt,az),p=(t,u,off=0)=>{const q=giantDaisyPoint('giantDaisyLeaf',t,u);return[q[0]*W,q[1]*L,q[2]*L+off];};
+  f.add('giantDaisyLeaf',`leaf-giant-daisy-${tag}-underside-8ca475`,kit.shade(rand,green,.035),0,0,0,W,L,L);
+  for(let j=1;j<=10;j++)f.branch(p((j-1)/10,0,-.00008),p(j/10,0,-.00008),.00015*scale,'#97ad76','vein-giant-daisy');
+  for(const t of [.26,.42,.60,.76])for(const side of [-1,1])f.branch(p(t-.05,0,-.00007),p(t,side*.82,-.00007),.00007*scale,'#859b68','vein-giant-daisy-side');
+  // Gland dots and sparse hairs are visible structure references, not measured density.
+  for(let j=0;j<12;j++){
+   const t=.15+.78*noise(key,j+11),u=(noise(key,j+41)-.5)*1.8,at=p(t,u,-.00008);
+   f.add(kit.bud,'gland-giant-daisy','#8a9b5a',at[0],at[1],at[2],.00013*scale,.00013*scale,.00007*scale);
+  }
+ };
+ const shoots=w<.40?2:6,stemR=.0025*scale;
+ if(winter){
+  for(let i=0;i<shoots;i++){
+   const az=i*TAU/shoots,base=point(az,w*.025,.003*scale),top=point(az,w*.05,Math.min(.055,h*.10));
+   b.branch(base,top,stemR*.65,'#809263','winter-shoot-giant-daisy');
+   for(let j=0;j<3;j++)leaf(mix(base,top,.25+j*.25),az+j*2.399963,.045*scale,.016*scale,1.0,i*3+j,'winter');
+  }
+  return;
+ }
+ const growth=month===3?.30:month===4?.48:month===5?.66:month===6?.82:month===7?.94:1,heads=[];
+ for(let i=0;i<shoots;i++){
+  const az=i*TAU/shoots+.17,base=point(az,w*.035,.003*scale),fork=point(az,w*.22,h*.64*growth),top=point(az,w*.32,h*(.92+.035*noise(i,71))*growth);
+  b.branch(base,fork,stemR,'#6e8951','stem-giant-daisy');
+  const nodes=Math.max(9,Math.round(22*Math.min(1,h/1.2)*growth));
+  for(let j=0;j<nodes;j++){
+   const t=.06+.89*j/(nodes-1),L=a.leafLength*scale*(.95-.20*t),W=a.leafWidth*scale*(1-.16*t);
+   leaf(mix(base,fork,t),az+j*2.399963,L,W,.95+.15*noise(i,j+81),i*30+j,'cauline');
+  }
+  for(let k=0;k<3;k++){
+   const yaw=az+(k-1)*.64,at=mix(base,fork,.73+k*.13),end=k===1?top:point(yaw,w*(.39+.030*k),h*(.80+.045*k)*growth),last=mix(at,end,.72);
+   b.branch(at,last,stemR*.68,'#6e8951','branch-giant-daisy');b.branch(last,end,stemR*.48,'#79935a','peduncle-giant-daisy');
+   for(let j=0;j<5;j++)leaf(mix(at,last,.12+j*.18),yaw+j*2.399963,a.leafLength*scale*.54,a.leafWidth*scale*.45,.72,i*20+k*5+j+200,'branch');
+   heads.push({at:end,az:yaw,key:i*3+k});
+  }
+ }
+ if(!s.bloom||![8,9,10].includes(month))return;
+ for(const {at,az,key} of heads){
+  const f=flowerFrame(b,at,.25+.60*noise(key,111),az),bud=key%7===6;
+  f.add(kit.bud,'involucre-giant-daisy','#71834f',0,-.0038,0,.010,.0045,.010);
+  for(let ring=0;ring<3;ring++)for(let j=0;j<14;j++){
+   const aa=j*TAU/14+ring*.21,L=.005+ring*.001,W=.0028+ring*.0003,bf=flowerFrame(f,point(aa,.005+ring*.0007,-.0068),.65+ring*.15,aa);
+   bf.add('giantDaisyBract','bract-giant-daisy',kit.shade(rand,'#879358',.04),0,0,0,W,L,L);
+  }
+  if(bud){f.add(kit.bud,'bud-giant-daisy','#a9b46d',0,.001,0,.008,.007,.008);continue;}
+  for(let j=0;j<28;j++){
+   const aa=j*TAU/28,rf=flowerFrame(f,point(aa,.0093,.0004),0,aa),L=.020*(.96+.06*noise(j,key+151)),W=.0045*(.95+.10*noise(j,key+171));
+   rf.add('giantDaisyRay','ray-giant-daisy',kit.shade(rand,'#f1f0e8',.012),0,0,0,W,L,L);
+   for(const u of [-.52,0,.52])for(let k=1;k<=8;k++){
+    const p=giantDaisyPoint('giantDaisyRay',.06+.88*(k-1)/8,u),q=giantDaisyPoint('giantDaisyRay',.06+.88*k/8,u);
+    rf.branch([p[0]*W,p[1]*L+.00006,p[2]*L],[q[0]*W,q[1]*L+.00006,q[2]*L],.00004,'#d4d9d3','groove-giant-daisy-ray');
+   }
+  }
+  f.add(kit.bud,'disc-giant-daisy','#a4a039',0,.0004,0,.0096,.0045,.0096);
+  for(let j=0;j<144;j++){
+   const t=(j+.5)/144,r=.0092*Math.sqrt(t),aa=j*2.399963,y=.0004+.0045*Math.sqrt(1-(r/.0096)**2)-.00015,at=point(aa,r,y);
+   if(t<.35){f.add(kit.bud,'immature-giant-daisy',kit.shade(rand,'#a6a84a',.045),at[0],at[1]+.00035,at[2],.00055,.00058,.00055);continue;}
+   const ff=flowerFrame(f,at,.25*r/.0096,aa);ff.add('giantDaisyDisc','floret-giant-daisy',kit.shade(rand,'#d1ae24',.04),0,0,0,.00065,.0021,.00065);
+   ff.add(kit.bud,'pollen-giant-daisy','#e3be38',0,.0016,0,.00028,.00038,.00028);
+  }
+ }
+}
+
+export function amberboaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='amberboaOuter'||type==='amberboaInner'){
+  const az=u*Math.PI,outer=type==='amberboaOuter',split=outer?.43:.60,q=Math.max(0,(t-split)/(1-split)),lobes=.5+.5*Math.cos(az*5);
+  const r=outer?.08+.16*t+.76*q**1.2*(.06+.94*lobes):.08+.13*t+.79*q**1.2*(.10+.90*lobes);
+  return [Math.cos(az)*r,t-(1-split)*q**1.15*(1-lobes),Math.sin(az)*r];
+ }
+ if(type==='amberboaBract')return [.5*u*sn**.48,t,-.22*t*t+.05*u*u*sn];
+ if(type==='amberboaSpine')return [.5*u*(1-t),t,-.18*t*t];
+ const basal=type==='amberboaBasal',v=Math.max(0,(t-(basal?.10:0))/(basal?.90:1)),sv=Math.max(0,Math.sin(Math.PI*v));
+ const scallop=basal?.82+.18*Math.cos(v*Math.PI*12):.95+.05*Math.cos(v*Math.PI*14),width=t<.10&&basal?.020:sv**(basal?.60:.78)*scallop;
+ return [.5*u*width,t,.09*t*t+.04*u*u*sn+.012*u*u*Math.sin(t*Math.PI*10)];
+}
+
+export function drawAmberboa(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),scale=Math.max(.5,Math.min(1,h/.5,w/.4));
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r],mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),green=a.leafColor||'#8ba277',stem='#809365';
+ const leaf=(at,az,L,W,tilt,key,shape,tag)=>{
+  const f=flowerFrame(b,at,tilt,az),p=(t,u,off=0)=>{const q=amberboaPoint(shape,t,u);return[q[0]*W,q[1]*L,q[2]*L+off];};
+  f.add(shape,`leaf-amberboa-${tag}-underside-b4bfa2`,kit.shade(rand,green,.04),0,0,0,W,L,L);
+  for(let j=1;j<=10;j++)f.branch(p((j-1)/10,0,-.00008),p(j/10,0,-.00008),.00017*scale,'#b2c39a','vein-amberboa');
+  for(const t of [.28,.45,.63,.79])for(const side of [-1,1])f.branch(p(t-.04,0,-.00008),p(t,side*.80,-.00008),.00006*scale,'#a4b58b','vein-amberboa-side');
+  for(let j=0;j<24;j++){
+   const t=.16+.80*noise(key,j+11),u=(noise(key,j+41)-.5)*1.90,side=j%3?1:-1,at=p(t,u,side*.00007),len=(.00045+.00045*noise(key,j+71))*scale;
+   f.branch(at,[at[0]+len*.3,at[1]+len*.35,at[2]+side*len],.000025*scale,'#c9d1b9','hair-amberboa-leaf');
+  }
+ };
+ const basal=winter?5:Math.max(7,Math.round(12*Math.min(1,w/.5)));
+ for(let i=0;i<basal;i++){
+  const az=i*2.399963,L=a.leafLength*scale*(winter?.48:.88+.12*noise(i,81));
+  leaf(point(az,w*.025,.004*scale),az,L,a.leafWidth*scale*(winter?.55:1),.99,i,'amberboaBasal','basal');
+ }
+ if(winter)return;
+ const shoots=w<.35?3:5,heads=[],growth=month===3?.36:month===4?.58:month===5?.82:1;
+ const hairyStem=(from,to,r,key,kind)=>{
+  b.branch(from,to,r,stem,kind);
+  const d=to.map((v,k)=>v-from[k]),len=Math.hypot(...d),f=flowerFrame(b,from,Math.acos(Math.max(-1,Math.min(1,d[1]/len))),Math.atan2(d[0],d[2]));
+  for(let j=0;j<16;j++){
+   const t=.35+.62*(j+.5)/16,az=j*2.399963,root=r*(1-.38*t)*.90,out=.00065*scale;
+   f.branch(point(az,root,len*t),point(az,root+out,len*t+out*.45),.000022*scale,'#cbd3bf','hair-amberboa-peduncle');
+  }
+ };
+ for(let i=0;i<shoots;i++){
+  const az=i*TAU/shoots+.15,base=point(az,w*.035,.005*scale),fork=point(az,w*.15,h*.60*growth),stemR=.0018*scale;
+  b.branch(base,fork,stemR,stem,'stem-amberboa');
+  for(let j=0;j<7;j++){
+   const t=.10+j*.13,L=a.leafLength*scale*(.80-.30*t);
+   leaf(mix(base,fork,t),az+j*2.399963,L,a.leafWidth*scale*(.58-.16*t),.82,i*10+j+100,'amberboaCauline','cauline');
+  }
+  for(let k=0;k<3;k++){
+   const yaw=az+(k-1)*.65,at=mix(base,fork,.74+k*.13),end=point(yaw,w*(.30+.025*k),h*(.85+.045*k)*growth),last=mix(at,end,.55);
+   b.branch(at,last,stemR*.68,stem,'branch-amberboa');hairyStem(last,end,stemR*.45,i*3+k,'peduncle-amberboa');
+   for(let j=0;j<2;j++)leaf(mix(at,last,.25+j*.4),yaw+j*2.399963,a.leafLength*scale*.36,a.leafWidth*scale*.20,.70,i*10+k*2+j+200,'amberboaCauline','branch');
+   heads.push({at:end,az:yaw,key:i*3+k});
+  }
+ }
+ if(!s.bloom||![6,7,8,9,10].includes(month))return;
+ for(const {at,az,key} of heads){
+  const f=flowerFrame(b,at,.10+.18*noise(key,111),az),spent=[7,8].includes(month)&&noise(key,141)>.60,bud=!spent&&key%6===5;
+  // Species descriptions distinguish the 15-18 mm involucre length from its
+  // 10-15 mm diameter. Domestic 'Desert Star' whole heads are about 60 mm wide.
+  f.add(kit.bud,'involucre-amberboa','#7d8c61',0,-.0085,0,.0068,.0085,.0068);
+  for(let ring=0;ring<6;ring++)for(let j=0;j<12;j++){
+   const aa=j*TAU/12+ring*.25,y=-.015+ring*.0019,rr=.0034+.0028*Math.sin((ring+.5)/6*Math.PI),L=.0042+ring*.0006,W=.0026,tilt=.12+ring*.06,bf=flowerFrame(f,point(aa,rr,y),tilt,aa);
+   bf.add('amberboaBract','bract-amberboa',kit.shade(rand,spent?'#8e8967':'#8a9b70',.035),0,0,0,W,L,L);
+   for(const side of [-1,1])for(let k=1;k<=6;k++){
+    const p=amberboaPoint('amberboaBract',(k-1)/6,side),q=amberboaPoint('amberboaBract',k/6,side);
+    bf.branch([p[0]*W,p[1]*L,p[2]*L-.00004],[q[0]*W,q[1]*L,q[2]*L-.00004],.000065,'#5e634a','margin-amberboa-bract');
+   }
+   if(ring<5){const p=amberboaPoint('amberboaBract',1,0),sf=flowerFrame(bf,[p[0]*W,p[1]*L,p[2]*L],1.0+.07*ring,0);sf.add('amberboaSpine','spine-amberboa-bract','#c2c7a1',0,0,0,.0007,.004,.004);}
+  }
+  if(bud){f.add(kit.bud,'bud-amberboa','#a4a381',0,.002,0,.0052,.006,.0052);continue;}
+  if(spent){
+   f.add(kit.bud,'spent-head-amberboa','#79644f',0,.001,0,.0055,.0028,.0055);
+   for(let j=0;j<12;j++){const aa=j*2.399963;f.branch(point(aa,.003,.002),point(aa,.006,-.004),.00025,'#8f697d','withered-corolla-amberboa');}
+   continue;
+  }
+  f.add(kit.bud,'receptacle-amberboa','#8c6a88',0,.001,0,.0062,.002,.0062);
+  for(let j=0;j<30;j++){
+   const aa=j*TAU/30,ff=flowerFrame(f,point(aa,.006,.0015),1.08+.08*noise(j,key+161),aa);
+   ff.add('amberboaOuter','outer-floret-amberboa',kit.shade(rand,'#c68bd0',.045),0,0,0,.0045,.024,.0045);
+  }
+  for(let j=0;j<72;j++){
+   const t=(j+.5)/72,r=.0053*Math.sqrt(t),aa=j*2.399963,ff=flowerFrame(f,point(aa,r,.001+.0015*(1-t)),.24*Math.sqrt(t),aa);
+   ff.add('amberboaInner','inner-floret-amberboa',kit.shade(rand,t<.36?'#c293bf':'#e4d6cb',.045),0,0,0,.0015,.0135,.0015);
+   ff.branch([0,.009,0],[0,.014,0],.00016,t<.36?'#b78bb4':'#ece5d5','style-amberboa');
+  }
+ }
+}
+
 export function jacobaeaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='jacobaeaDisc'){
@@ -12438,6 +12613,8 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='giantDaisyShoots'){drawGiantDaisy(b,{info,s,detail,rand,month},kit);return;}
+ if(a.architecture==='amberboaHeads'){drawAmberboa(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='jacobaeaShrubs'){drawJacobaea(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='berlandieraCymes'){drawBerlandiera(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='berkheyaWingedShoots'){drawBerkheya(b,{info,s,detail,rand,month},kit);return;}

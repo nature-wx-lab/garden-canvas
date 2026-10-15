@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.279';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.280';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -379,3 +379,5 @@ Object.assign(TRAIT_VALUES,{berkheyaSpinyLeaf:'波打つ棘のある葉。裏は
 Object.assign(TRAIT_VALUES,{berlandieraLyrateLeaf:'互生する有柄の単純葉。羽状の切れ込みと柔らかい毛',berlandieraRadiateHead:'黄色い舌状花8枚と赤褐色の筒状花・緑の未熟小花、丸い緑の総苞'});
 
 Object.assign(TRAIT_VALUES,{jacobaeaWoollyLeaf:'白毛に覆われた互生の単純葉。丸い裂片と深浅の切れ込み、下葉には葉柄',jacobaeaCorymbHead:'分枝した花茎の小さな黄色い頭花。舌状花と筒状花、白毛のある総苞'});
+
+Object.assign(TRAIT_VALUES,{giantDaisySerrateLeaf:'互生する無柄の細長い単純葉。粗い鋸歯と葉の基部の裂け、細かな腺点',giantDaisyRadiateHead:'白い舌状花と丸く盛り上がる黄色い筒状花、重なる緑の総苞',amberboaHairyLeaf:'株元の有柄のへら形葉と、茎の細い互生葉。白い毛と浅い切れ込み',amberboaRadiantHead:'ライラック色の細く5裂する周辺の筒状花と淡い中央の小花。暗い縁と短い棘を持つ総苞'});
