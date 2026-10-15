@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.275';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.276';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.275';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.276';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,130 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function hieraciumPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='hieraciumRay'){
+  // Five terminal maxima at u=-.8,-.4,0,.4,.8; distal width stays nonzero.
+  const blade=Math.min(1,t/.32),width=.07+.93*Math.sin(blade*Math.PI/2),teeth=.5+.5*Math.cos(u*Math.PI*5);
+  return [.5*u*width,t-.075*t**12*(1-teeth),.035*u*u*sn+.055*t*t];
+ }
+ if(type==='hieraciumBract')return [.5*u*sn**.65*(1-.30*t),t,.075*sn+.035*t*t];
+ if(type==='hieraciumCauline'){
+  // Broad sessile attachment; continuous, nearly entire blade, not pinnatifid.
+  const width=(.72+.50*sn)*Math.max(0,1-t)**.70;
+  return [.5*u*width,t,.065*t*t+.035*u*u*sn+.015*u*u*Math.sin(t*TAU*2)];
+ }
+ const v=Math.max(0,(t-.12)/.88),blade=Math.max(0,Math.sin(Math.PI*v)),width=t<.12?.045:.045*(1-v)+blade**.65*(.70+.30*v)/.85;
+ return [.5*u*width,t,.065*t*t+.035*u*u*blade+.015*u*u*Math.sin(t*TAU*2)];
+}
+
+function drawHieracium(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),quality=Math.max(.45,Math.min(1.6,detail));
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const leafColor=s.leafColor||a.leafColor||'#809878',stemColor=a.stemColor||'#8b9b7e',flowerColor=s.flowerColor||'#e1c847',hairColor='#e4e7dc';
+ const L0=a.leafLength||.05,W0=a.leafWidth||.018,R=a.headRadius||.018;
+ // Geometric fit only: .12m and .30m use the same organ/flowering rules.
+ const leafScale=Math.max(.65,Math.min(1,w/.22))*(.72+.28*Math.min(1,h/.30)),stemRadius=.0008+.0004*Math.min(1,h/.30);
+ const crowns=Math.max(1,Math.min(5,Math.round(3*quality*Math.min(1.35,w/.25))));
+ const cross=(p,q)=>[p[1]*q[2]-p[2]*q[1],p[2]*q[0]-p[0]*q[2],p[0]*q[1]-p[1]*q[0]];
+ const unit=p=>{const d=Math.hypot(...p);return p.map(v=>v/d);};
+ const hair=(frame,p,normal,length,seed,kind)=>{
+  const n=unit(normal),basis=unit(cross(n,Math.abs(n[1])<.85?[0,1,0]:[1,0,0])),side=cross(n,basis),az=noise(seed,31)*TAU;
+  const tangent=basis.map((v,k)=>v*Math.cos(az)+side[k]*Math.sin(az)),radius=.000028+.000010*noise(seed,37);
+  let from=p;
+  // Three soft bends; segment lengths sum exactly to the 3-10mm hair length.
+  for(let j=0;j<3;j++){
+   const angle=.10+j*(.23+.10*noise(seed,43)),to=from.map((v,k)=>v+length/3*(n[k]*Math.cos(angle)+tangent[k]*Math.sin(angle)));
+   frame.branch(from,to,radius*(1-j*.25),hairColor,kind);from=to;
+  }
+ };
+ const leaf=(at,az,length,width,tilt,cauline,seed)=>{
+  const type=cauline?'hieraciumCauline':'hieraciumLeaf',f=flowerFrame(b,at,tilt,az);
+  f.add(type,cauline?'leaf-hieracium-cauline-sessile':'leaf-hieracium-basal',kit.shade(rand,leafColor,.045),0,0,0,width,length,length);
+  const point=(t,u)=>{const q=hieraciumPoint(type,t,u);return [q[0]*width,q[1]*length,q[2]*length-.00004];};
+  for(let j=1;j<=7;j++)f.branch(point((j-1)/7,0),point(j/7,0),.000075,'#a5b29a','vein-hieracium');
+  const hairs=Math.round((cauline?10:15)*quality);
+  for(let j=0;j<hairs;j++){
+   const t=.15+.78*noise(j,seed+13),u=(noise(j,seed+17)-.5)*1.85,p=point(t,u);
+   hair(f,p,[u*.20,.08,-1],.003+.007*noise(j,seed+23)**2,seed+j*7,'hair-hieracium-leaf');
+  }
+ };
+ const stem=(from,to,r,seed,kind)=>{
+  b.branch(from,to,r,stemColor,kind);
+  const d=to.map((v,k)=>v-from[k]),length=Math.hypot(...d);
+  if(length<.001)return;
+  const f=flowerFrame(b,from,Math.acos(d[1]/length),Math.atan2(d[0],d[2])),n=Math.max(4,Math.round(length*150*quality));
+  for(let j=0;j<n;j++){
+   const az=j*2.399963,normal=[Math.sin(az),.08,Math.cos(az)],p=[normal[0]*r,length*(.08+.84*(j+.5)/n),normal[2]*r];
+   hair(f,p,normal,.003+.006*noise(j,seed+29)**2,seed+j*13,'hair-hieracium-stem');
+  }
+ };
+ const head=(at,seed)=>{
+  const bud=noise(seed,67)>Math.max(0,Math.min(1,s.flowerDensity??1))*.90,f=flowerFrame(b,at,.04+.11*noise(seed,71),seed*2.4);
+  const involucreLength=.014+.009*noise(seed,73),cupRadius=R*(bud?.43:.40);
+  // The green cup occupies the measured vertical involucre length beneath the
+  // ligule bases. The opened 36mm head diameter remains a photo approximation.
+  f.add(kit.bud,'involucre-hieracium',kit.shade(rand,stemColor,.04),0,-involucreLength*.50,0,cupRadius,involucreLength*.50,cupRadius);
+  for(let ring=0;ring<3;ring++){
+   const n=ring===0?10:14;
+   for(let j=0;j<n;j++){
+    const az=j*TAU/n+ring*.17,outer=ring===0,bl=involucreLength*(outer?.72:1),bw=outer?.0048:.0020;
+    const radius=cupRadius*(outer?.78:ring===1?.65:.40),bf=flowerFrame(f,[Math.sin(az)*radius,-involucreLength,Math.cos(az)*radius],outer?(bud?.24:.43):.10,az);
+    bf.add('hieraciumBract',outer?'bract-hieracium-outer':'bract-hieracium-inner',kit.shade(rand,stemColor,.05),0,0,0,bw,bl,bl);
+    for(let k=0;k<2;k++){
+     const t=.30+k*.32,q=hieraciumPoint('hieraciumBract',t,(noise(j,seed+k+83)-.5)*1.2),p=[q[0]*bw,q[1]*bl,q[2]*bl+.00004];
+     hair(bf,p,[.12*(k?1:-1),.08,1],.003+.004*noise(j,seed+ring*17+k+89),seed+j*5+ring*23+k,'hair-hieracium-involucre');
+    }
+   }
+  }
+  if(bud)return;
+  // All florets are ligulate. Shorter inner ligules fill the head rather than
+  // adding a disc sphere; counts and ring spacing are representational only.
+  const rings=[{n:25,r:.25,l:.74,w:.12,tilt:1.43},{n:23,r:.20,l:.65,w:.12,tilt:1.27},{n:19,r:.13,l:.52,w:.11,tilt:1.06},{n:15,r:.06,l:.38,w:.10,tilt:.82},{n:9,r:.015,l:.24,w:.09,tilt:.56}];
+  for(let ring=0;ring<rings.length;ring++){
+   const q=rings[ring];
+   for(let j=0;j<q.n;j++){
+    const az=j*TAU/q.n+ring*.21,fl=flowerFrame(f,[Math.sin(az)*R*q.r,.0003+ring*.00035,Math.cos(az)*R*q.r],q.tilt,az),length=R*q.l*(.96+.04*noise(j,seed+ring+97));
+    fl.add('hieraciumRay','ray-hieracium-five-toothed',kit.shade(rand,flowerColor,.035),0,0,0,R*q.w,length,length);
+   }
+  }
+ };
+ for(let i=0;i<crowns;i++){
+  const az=i*2.399963,radial=crowns===1?0:w*.21*Math.sqrt((i+.35)/crowns),base=[Math.sin(az)*radial,.003,Math.cos(az)*radial];
+  const density=Math.max(winter?.35:.55,Math.min(1,s.leafDensity??1)),n=Math.max(5,Math.round((winter?8:15)*quality*density));
+  for(let j=0;j<n;j++){
+   const angle=az+j*2.399963,length=L0*leafScale*(winter?.82:1)*(.75+.25*noise(j,i+101));
+   leaf(base,angle,length,W0*leafScale*(.85+.15*noise(j,i+103)),1.0+.22*noise(j,i+107),false,i*503+j*19);
+  }
+  if(winter)continue;
+  const count=1+i%4,H=Math.max(.045,h*(.85+.07*noise(i,109))),forkY=count===1?H:H*.68;
+  const tip=[base[0]+Math.sin(az+.45)*h*.025,forkY,base[2]+Math.cos(az+.45)*h*.025];
+  const trunkPoint=t=>base.map((v,k)=>v+(tip[k]-v)*t+(k===0?Math.sin(Math.PI*t)*h*.009:k===2?Math.sin(Math.PI*t)*h*.006:0));
+  for(let j=1;j<=5;j++)stem(trunkPoint((j-1)/5),trunkPoint(j/5),stemRadius,i*73+j,'stem-hieracium');
+  const cauline=3+Math.floor(noise(i,113)*6);
+  for(let j=0;j<cauline;j++){
+   const t=.14+j*.75/(cauline-1),length=L0*leafScale*(.72-.43*t);
+   leaf(trunkPoint(t),az+j*2.399963,length,W0*leafScale*(.80-.42*t),.64+.20*noise(j,i+127),true,i*733+j*29);
+  }
+  const terminals=[];
+  // Each shoot has one head, one fork, or one/two further forked branches:
+  // exactly 1-4 terminal heads, never a generic many-headed panicle.
+  const branch=(from,n,angle,level,seed)=>{
+   if(n===1){terminals.push(from);return;}
+   const children=[Math.ceil(n/2),Math.floor(n/2)],run=R*1.30*(n>2?1.5:1);
+   for(let side=0;side<2;side++){
+    const sign=side?1:-1,child=children[side],aa=angle+(level?Math.PI*.33:0),to=[from[0]+Math.sin(aa)*run*sign,child===1?H*(.96+.04*noise(seed,side+131)):H*.84,from[2]+Math.cos(aa)*run*sign];
+    stem(from,to,stemRadius*(level?.58:.76),seed*11+side,'branch-hieracium');
+    branch(to,child,aa,level+1,seed*7+side+1);
+   }
+  };
+  branch(tip,count,az+.8,0,i+137);
+  // Flowering uses the existing domestic seasonal state at every plant size.
+  // Outside bloom, only leafy shoots remain; no unverified fruit is invented.
+  if(s.bloom)for(let j=0;j<terminals.length;j++)head(terminals[j],i*157+j*11);
+ }
+}
+
 export function raouliaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='raouliaFloret'){const r=.18+.12*t+.70*Math.max(0,(t-.55)/.45)**2;return [.5*Math.cos(u)*r,t,.5*Math.sin(u)*r];}
@@ -12005,6 +12129,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='hieraciumHairyShoots'){drawHieracium(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='raouliaMats'){drawRaoulia(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='cottonThistleWings'){drawCottonThistle(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='jurineaNoddingHeads'){drawJurinea(b,{info,s,detail,rand,month},kit);return;}

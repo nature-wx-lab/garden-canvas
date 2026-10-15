@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.275';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.276';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -371,3 +371,5 @@ Object.assign(TRAIT_VALUES,{jurineaDividedLeaf:'株元に多い羽状深裂葉�
 Object.assign(TRAIT_VALUES,{cottonSpinyLeaf:'銀灰色の裂葉。葉縁に棘があり、茎葉は上ほど小さい',cottonSpinyHead:'棘を持つ細い総苞片に囲まれた紫の筒状花。分枝した茎には棘付きの翼'});
 
 Object.assign(TRAIT_VALUES,{raouliaImbricateLeaf:'長さ2mm以下のへら形の葉が、短い枝先で約5列に密に重なる。灰白色の伏せた毛',raouliaTinyHead:'径4〜5mmの小さな頭花。12〜20個の漏斗形小花と黄みのある総苞片。大きな舌状花はない'});
+
+Object.assign(TRAIT_VALUES,{hieraciumHairyLeaf:'長い白毛のある単純葉。下葉はへら形〜披針形、上の茎葉は無柄で基部が広い',hieraciumLigulateHead:'黄色い5歯の舌状花だけからなる頭花。長い白毛の総苞と丸い蕾、1茎に1〜4頭花'});
