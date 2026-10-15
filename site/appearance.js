@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.318';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.319';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -433,3 +433,5 @@ Object.assign(TRAIT_VALUES,{belarinaLeaf:'しわと丸い鋸歯のある楕円�
 Object.assign(TRAIT_VALUES,{wildPrimroseLeaf:'深い網目状のしわと浅い鋸歯を持つへら形の根出葉',wildPrimroseFlower:'毛のある花柄に単生する淡黄色の5裂花冠・株ごとに異なる花柱の高さ'});
 
 Object.assign(TRAIT_VALUES,{bengalLeaf:'波打つ縁と不規則な切れ込みを持つ有毛の根出葉',bengalHead:'先端が3裂する舌状花・短い移行花・中心の細かな小花からなる大輪の頭花'});
+
+Object.assign(TRAIT_VALUES,{gardenGerberaLeaf:'広い先端と切れ込みのある根出葉',gardenGerberaHead:'品種ごとの舌状花・短い移行花と中心の小花を持つ頭花'});

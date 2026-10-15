@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.318';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.319';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.318';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.319';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,62 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function gardenGerberaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='gardenGerberaLeaf'){
+  const lobes=.56+.44*Math.pow(.5+.5*Math.cos(t*22+.4),2),width=.48*Math.pow(sn,.72)*(.36+.64*t)*lobes;
+  return [u*width,t,.07*t*t+.055*u*u*sn+.010*Math.cos((t-Math.abs(u)*.28)*35)*Math.abs(u)*sn+.008*Math.sin(t*27+u*6)*Math.pow(Math.abs(u),3)];
+ }
+ const width=(type==='gardenGerberaBroadRay'?.23:.17)*Math.pow(sn,.32)*(.70+.30*t),notch=.025*(Math.exp(-Math.pow((u-.33)/.13,2))+Math.exp(-Math.pow((u+.33)/.13,2)))*Math.pow(t,15);
+ return [u*width,.06*t*t+.045*u*u*sn+.004*Math.cos(u*15)*sn,t-notch];
+}
+
+function drawGardenGerberaHead(b,origin,r,color,palette,phase,tilt,yaw,kit){
+ const f=flowerFrame(b,origin,tilt,yaw),disc=r*.25,typ=palette.type,corine=typ==='corine',pastry=typ==='pastry',tag='garden-gerbera';
+ f.add(kit.bud,'receptacle-'+tag,'#758753',0,-r*.06,0,r*.31,r*.10,r*.31);
+ for(let row=0;row<3;row++)for(let j=0;j<18;j++){
+  const an=j*TAU/18+row*.13;f.add('narrow','involucre-'+tag,'#6c804c',Math.sin(an)*r*.21,-r*(.08+row*.035),Math.cos(an)*r*.21,r*.08,r*(.36-row*.03),r*.10,1.32+row*.21,an,0);
+ }
+ // Counts and relative lengths illustrate the photographed rows, not measured cultivar counts.
+ const rays=corine?[[30,.77],[30,.65],[30,.53]]:pastry?[[26,.77],[28,.68]]:[[24,.77],[26,.70]],trans=corine?[[32,.38],[34,.30],[36,.24],[38,.18]]:pastry?[[30,.36],[32,.28],[34,.19]]:[[36,.14]];
+ const female=(an,len,key,row,lift)=>{
+  const rad=disc*(.88+row*.06),at=[Math.sin(an)*rad,r*lift,Math.cos(an)*rad],shape=pastry?'gardenGerberaBroadRay':'gardenGerberaRay';
+  f.add(shape,key,color,...at,r*len,r*len,r*len,-.08-row*.04,an,0);
+  for(const side of [-1,1])f.add('gardenGerberaRay','inner-lip-'+tag,color,at[0]+Math.cos(an)*side*r*.012,at[1],at[2]-Math.sin(an)*side*r*.012,r*.026,r*.07,r*.07,-.65,an+Math.PI+side*.18,0);
+  const tip=[at[0],at[1]+r*.045,at[2]];f.branch(at,tip,r*.0028,'#e4d7ba','style-female-'+tag);
+  for(const side of [-1,1])f.branch(tip,[tip[0]+Math.cos(an)*side*r*.014,tip[1]+r*.018,tip[2]-Math.sin(an)*side*r*.014],r*.0025,'#e5d7ae','stigma-female-'+tag);
+ };
+ for(const [row,[n,len]] of rays.entries())for(let j=0;j<n;j++)female(j*TAU/n+row*.11,len,'petal-'+tag+'-'+typ+'-ray',row,.012*row);
+ for(const [row,[n,len]] of trans.entries())for(let j=0;j<n;j++)female(j*TAU/n+row*.14,len,'petal-'+tag+'-'+typ+'-trans',trans.length-1-row,.055+row*.016);
+ for(let j=0;j<180;j++){
+  const t=(j+.5)/180,an=j*2.399963,rr=disc*.86*Math.sqrt(t),at=[Math.sin(an)*rr,r*(.05+.045*Math.sqrt(1-t)),Math.cos(an)*rr],open=t>(corine?.72-phase*.14:.82-phase*.07);
+  if(!open){f.add(kit.bud,'disc-bud-'+tag,palette.disc,...at,r*.017,r*.023,r*.017);continue;}
+  f.add('tube','disc-corolla-'+tag,corine?'#e4c762':pastry?'#e6a2ad':'#be4340',...at,r*.062,r*.052/1.09,r*.062);
+  for(let k=0;k<5;k++){const aa=k*TAU/5;f.add('gardenGerberaRay','disc-lobe-'+tag,corine?'#f3d46d':pastry?'#eeb2bb':'#b94540',at[0]+Math.sin(aa)*r*.011,at[1]+r*.05,at[2]+Math.cos(aa)*r*.011,r*.04,r*.055,r*.055,-.65,aa,0);}
+  f.add('tube','anther-column-'+tag,'#d7b65e',at[0],at[1]+r*.03,at[2],r*.04,r*.05/1.09,r*.04);
+  for(const side of [-1,1])f.branch([at[0],at[1]+r*.075,at[2]],[at[0]+Math.cos(an)*side*r*.014,at[1]+r*.095,at[2]+Math.sin(an)*side*r*.014],r*.0038,'#eddda3','stigma-disc-'+tag);
+ }
+}
+
+function drawGardenGerbera(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,lh=s.leafHeight||h*.52,small=w<.28,tag='garden-gerbera',stem=a.stemColor,L=Math.min(a.leafLength,w*.48)*s.leafScale,n=Math.max(3,Math.round((small?8:16)*s.leafDensity*detail));
+ for(let j=0;j<n;j++){
+  const t=j/(n-1),an=j*2.399963,len=L*(.58+.42*t),base=[Math.sin(an)*w*.022,.006,Math.cos(an)*w*.022],tip=[Math.sin(an)*len*.14,lh*(.20+.08*(1-t)),Math.cos(an)*len*.14],pitch=.48+t*1.02,f=flowerFrame(b,tip,pitch,an);
+  b.branch(base,tip,.002,stem,'petiole-'+tag);f.add('gardenGerberaLeaf','leaf-'+tag+'-underside-9aa781',kit.shade(rand,s.leafColor,.04),0,0,0,len,len,len);
+  let prev=[0,0,-.001];for(let q=1;q<=8;q++){const tt=q/8,at=gardenGerberaPoint('gardenGerberaLeaf',tt,0).map(v=>v*len);at[2]-=.0004;f.branch(prev,at,.0004,'#839c63','vein-'+tag);prev=at;}
+  for(let q=0;q<8;q++){const at=gardenGerberaPoint('gardenGerberaLeaf',.18+q*.09,q%2?.7:-.7).map(v=>v*len);at[2]-=.0003;f.branch(at,[at[0]+.0003,at[1]+.0003,at[2]-.0007],.000045,'#d5d9c5','leaf-hair-'+tag);}
+ }
+ if(!s.bloom)return;
+ const heads=Math.max(1,Math.round((small?3:6)*s.flowerDensity)),buds=small?1:2,r=Math.min(a.flowerRadius,h*.30);
+ for(let j=0;j<heads+buds;j++){
+  const bud=j>=heads,an=bud?j*2.399963:(j-1)*TAU/Math.max(1,heads-1)+.38,rr=bud?w*.12:j===0?0:w*.31,tip=[Math.sin(an)*rr,h*(bud?.46:j===0?.94:.72+rand()*.16),Math.cos(an)*rr],root=[tip[0]*.12,.006,tip[2]*.12];let from=root;
+  for(let q=1;q<=4;q++){const t=q/4,to=root.map((v,d)=>v+(tip[d]-v)*(d===1?t:t*t));b.branch(from,to,.0025*(1-t*.13),stem,'scape-'+tag);from=to;}
+  for(let q=0;q<20;q++){const t=.08+q*.044,aa=q*2.399963,at=root.map((v,d)=>v+(tip[d]-v)*(d===1?t:t*t));b.branch(at,[at[0]+Math.sin(aa)*.0012,at[1]+.0005,at[2]+Math.cos(aa)*.0012],.00006,'#c7ceb7','scape-hair-'+tag);}
+  if(bud){const f=flowerFrame(b,tip,.7,an);f.add(kit.bud,'bud-'+tag,'#748b58',0,0,0,r*.25,r*.28,r*.25);for(let k=0;k<18;k++)f.add('narrow','bud-bract-'+tag,'#6b8152',0,-r*.18,0,r*.05,r*.46,r*.10,-.25,k*TAU/18,0);continue;}
+  drawGardenGerberaHead(b,tip,r,kit.shade(rand,s.flowerColor,.025),a.flowerPalette,j%3,.035+rand()*.09,an,kit);
+ }
+}
+
 export function bengalPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='bengalLeaf'){
@@ -14424,6 +14480,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='gardenGerberaCrowns'){drawGardenGerbera(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='bengalCrowns'){drawBengal(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='brunneraCultivarSprays'){drawBrunneraCultivars(b,{info,s,detail,rand},kit);return;}
  if(['primroseRosette','gerberaRosette'].includes(info.appearance?.architecture)){drawBasalFlowerForms(b,{info,s,detail,rand},kit);return;}
