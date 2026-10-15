@@ -11,6 +11,44 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Berlandiera preserves independent small heads, eight rays and reference July cups',()=>{
+ const id='p-51cd86dd10f9',info=CATALOG[id];assert.equal(info.appearance.architecture,'berlandieraCymes');assert.equal(info.appearance.status,'partial');assert.deepEqual([...info.bloom].sort((a,b)=>a-b),[4,5,6]);
+ const rayLengths=[];
+ for(const [index,size] of [{height:.30,spread:.30,leafHeight:.10},{height:.12,spread:.15,leafHeight:.04}].entries()){
+  const p={...makePlant(id,30200+index,1,1),...size};let winterLeaves=0,springLeaves=0;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),tag=`h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0);
+   try{
+    const winter=[12,1,2].includes(month),bloom=[4,5,6].includes(month),basal=g.children.filter(m=>(m.userData.component||'').startsWith('leaf-berlandiera-basal-')).reduce((n,m)=>n+m.count,0),heads=count('involucre-berlandiera'),open=count('disc-base-berlandiera');
+    assert.equal(g.userData.architecture,'berlandieraCymes',tag);assert.ok(basal>0,tag);assert.equal(count('stem-berlandiera')>0,!winter,tag);assert.equal(open>0,bloom,tag);assert.equal(heads>0,bloom||month===7,tag);
+    assert.equal(count('cup-base-berlandiera'),month===7?heads:0,tag);assert.equal(count('ray-berlandiera'),open*8,tag);
+    const florets=count('floret-berlandiera-maroon')+count('immature-floret-berlandiera');assert.ok(florets>=open*80&&florets<=open*200,tag);
+    if(bloom)assert.equal(open+count('bud-berlandiera'),heads,tag);else assert.equal(count('bud-berlandiera'),0,tag);
+    assert.ok(!g.children.some(m=>/pappus|seed|fruit/.test(m.userData.component||'')),`${tag}: no inferred fruits`);
+    const matrix=new Matrix4(),lengths=[];
+    for(const m of meshes('ray-berlandiera')){
+     m.geometry.computeBoundingBox();const local=m.geometry.boundingBox;
+     for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements,L=Math.hypot(e[8],e[9],e[10])*(local.max.z-local.min.z),W=Math.hypot(e[0],e[1],e[2])*(local.max.x-local.min.x);assert.ok(L>=.010-1e-7&&L<=.014+1e-7,`${tag}: ray length ${L}`);assert.ok(W>=.0055-1e-7&&W<=.008+1e-7,`${tag}: ray width ${W}`);lengths.push(L);}
+    }
+    for(const m of meshes('involucre-berlandiera'))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(const offset of [0,8]){const diameter=2*Math.hypot(e[offset],e[offset+1],e[offset+2]);assert.ok(diameter>=.013-1e-7&&diameter<=.017+1e-7,`${tag}: involucre diameter ${diameter}`);}}
+    if(month===5){assert.ok(lengths.length>0,tag);rayLengths[index]=lengths.reduce((a,b)=>a+b,0)/lengths.length;springLeaves=basal;}
+    if(month===1)winterLeaves=basal;
+    for(const m of g.children){
+     const name=m.userData.component,pos=m.geometry.attributes.position;
+     for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),`${tag}: finite ${name}`);
+     m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.15&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;
+     // A rotated local bounding box may cross the ground although every mesh
+     // vertex is safe. Only then inspect actual transformed vertices.
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z)){
+      for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j),X=e[0]*x+e[4]*y+e[8]*z+e[12],Y=e[1]*x+e[5]*y+e[9]*z+e[13],Z=e[2]*x+e[6]*y+e[10]*z+e[14];assert.ok([X,Y,Z].every(Number.isFinite)&&within(X,Y,Z),`${tag}: actual ${name} vertex ${X},${Y},${Z}`);}}
+     }
+    }
+   }finally{dispose(g);}
+  }
+  assert.ok(winterLeaves<springLeaves,`h=${p.height}: reduced winter foliage`);
+ }
+ assert.ok(Math.abs(rayLengths[0]-rayLengths[1])<1e-7,'small plant keeps the same flower-organ size');
+});
 test('Berkheya keeps winged leafy shoots, seasonal closed heads and pale rays around dark pollen-bearing discs',()=>{
  const id='p-5d9d19a10ef5',info=CATALOG[id],a=info.appearance;
  assert.equal(a.architecture,'berkheyaWingedShoots');
@@ -3759,7 +3797,7 @@ test('31 scabious profiles preserve florets, basal winter leaves, seed cups and 
 });
 
 test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads and biennial lifespan',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,11);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,10);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6000+i,2,2);
   for(let month=1;month<=12;month++){

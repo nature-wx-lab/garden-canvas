@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.277';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.278';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.277';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.278';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,108 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function berlandieraPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='berlandieraDisc'){
+  const az=u*Math.PI,q=Math.max(0,(t-.62)/.38),lobes=.5+.5*Math.cos(az*5),r=.25+.12*t+.63*q*q*lobes;
+  return [Math.cos(az)*r,t-.17*q*q*(1-lobes),Math.sin(az)*r];
+ }
+ if(type==='berlandieraRay'){
+  const width=.5*Math.sin(t*Math.PI*.64)**.58,teeth=.5-.5*Math.cos(u*Math.PI*3);
+  return [u*width,.018*sn+.012*Math.cos(u*Math.PI*3)*sn+.035*t*t,t-.055*t**10*teeth];
+ }
+ if(type==='berlandieraBract')return [.5*u*sn**.43,t,-.20*t*t+.04*u*u*sn];
+ // One continuous lyrate blade, with a petiole and large terminal lobe: not leaflets.
+ const g=(c,r)=>Math.exp(-(((t-c)/r)**2)),blade=(.42*g(.78,.18)+.18*g(.31,.065)+.24*g(.49,.075))*Math.min(1,Math.max(0,(1-t)/.12))**.65;
+ const width=t<.18?.017:Math.max(.017*(1-t),blade);
+ return [.5*u*width/.42,t,.055*t*t+.025*u*u*sn+.008*u*u*Math.sin(t*Math.PI*8)];
+}
+
+export function drawBerlandiera(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),scale=Math.max(.3,Math.min(1,h/.3,w/.3));
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r];
+ const R=a.headRadius??a.flowerRadius??.0195,invR=.0075,discR=.0065,leafL=a.leafLength??.1,leafW=a.leafWidth??.04;
+ const underside=(a.leafUnderside||'#abb99a').replace('#',''),stem=a.stemColor||'#688052',green=s.leafColor||a.leafColor||'#81946c';
+ const leaf=(at,az,L,W,tilt,key,tag)=>{
+  const f=flowerFrame(b,at,tilt,az),p=(t,u,off=0)=>{const q=berlandieraPoint('berlandieraLeaf',t,u);return [q[0]*W,q[1]*L,q[2]*L+off];};
+  f.add('berlandieraLeaf',tag+'-underside-'+underside,kit.shade(rand,green,.035),0,0,0,W,L,L);
+  for(let j=1;j<=10;j++)f.branch(p((j-1)/10,0,-.00007),p(j/10,0,-.00007),.00017*scale,'#a3b58c','vein-berlandiera');
+  for(const t of [.31,.49,.69,.82])for(const side of [-1,1])f.branch(p(t-.035,0,-.00008),p(t,side*.83,-.00008),.00007*scale,'#a2b28c','vein-berlandiera-side');
+  for(let j=0;j<24;j++){
+   const t=.20+.75*noise(key,j+11),u=(noise(key,j+31)-.5)*1.90,side=j%3?1:-1,at=p(t,u,side*.00007),len=(.00045+.00045*noise(key,j+51))*scale;
+   f.branch(at,[at[0]+len*.30,at[1]+len*.24,at[2]+side*len],.000022*scale,'#d2d8be','hair-berlandiera-leaf');
+  }
+ };
+ const basalCount=winter?4:Math.max(7,Math.round(12*detail*Math.min(1,w/.3)));
+ for(let i=0;i<basalCount;i++){
+  const az=i*2.399963,rr=w*.025*Math.sqrt((i+.5)/basalCount),f=winter?.42:.78+.22*noise(i,71);
+  leaf(point(az,rr,.004*scale),az,leafL*scale*f,leafW*scale*f,.90+.12*noise(i,81),i,'leaf-berlandiera-basal');
+ }
+ // The small winter rosette is provisional; no standing flowering shoots in winter.
+ if(winter)return;
+ const heads=[],shoots=Math.max(3,Math.round(4*Math.min(1,w/.3))),stemR=.0010*scale;
+ const hairyStem=(from,to,r,key,kind)=>{
+  b.branch(from,to,r,stem,kind);
+  const d=to.map((v,k)=>v-from[k]),len=Math.hypot(...d),f=flowerFrame(b,from,Math.acos(Math.max(-1,Math.min(1,d[1]/len))),Math.atan2(d[0],d[2]));
+  for(let j=0;j<18;j++){
+   const az=j*2.399963,t=(j+.5)/18,y=len*t,root=r*(1-.38*t)*.90,from=point(az,root,y),out=.0006*scale;
+   f.branch(from,point(az,root+out,y+out*.30),.000021*scale,'#d4d9c4','hair-berlandiera-peduncle');
+  }
+ };
+ for(let i=0;i<shoots;i++){
+  const az=i*TAU/shoots+.2,base=point(az,w*.035,.004*scale),fork=point(az,w*.15,h*(.50+.04*noise(i,91))),top=point(az,w*.30,h*(.88+.06*noise(i,101)));
+  hairyStem(base,fork,stemR,i,'stem-berlandiera');hairyStem(fork,top,stemR*.75,i+20,'peduncle-berlandiera');
+  for(let n=0;n<4;n++){
+   const t=.15+n*.20,at=mix(base,fork,t),yaw=az+n*2.399963,L=leafL*scale*(.65-.34*t);
+   leaf(at,yaw,L,leafW*scale*(.55-.28*t),.96,i*10+n+50,'leaf-berlandiera-cauline');
+  }
+  heads.push({at:top,az,key:i});
+  if(w>.22&&i%2===0){
+   const side=point(az+.70,w*.34,h*.77);hairyStem(fork,side,stemR*.65,i+40,'branch-berlandiera');
+   leaf(mix(fork,side,.25),az+.7,leafL*scale*.24,leafW*scale*.23,1.0,100+i,'leaf-berlandiera-branch');heads.push({at:side,az:az+.7,key:10+i});
+  }
+ }
+ const flowering=s.bloom&&[4,5,6].includes(month),cup=month===7;
+ if(!flowering&&!cup)return;
+ for(const {at,az,key} of heads){
+  const f=flowerFrame(b,at,.10+.10*noise(key,121),az),bud=!cup&&noise(key,131)>Math.max(.1,s.flowerDensity??1)*.97;
+  // Involucre diameter 15 mm, distinct from the approximately 35-40 mm whole head.
+  f.add(kit.bud,'involucre-berlandiera','#829451',0,-.003,0,invR,.003,invR);
+  for(let ring=0;ring<2;ring++)for(let j=0;j<9;j++){
+   const aa=j*TAU/9+ring*.32,rr=.0030+ring*.0005,L=ring?.0057:.0051,W=ring?.0054:.0048,bf=flowerFrame(f,point(aa,rr,-.0046),cup||bud?.40:1.12,aa);
+   bf.add('berlandieraBract','bract-berlandiera-rounded',kit.shade(rand,'#8fa451',.035),0,0,0,W,L,L);
+   for(let k=1;k<=5;k++){
+    const p=berlandieraPoint('berlandieraBract',(k-1)/5,0),q=berlandieraPoint('berlandieraBract',k/5,0);
+    bf.branch([p[0]*W,p[1]*L,p[2]*L-.00005],[q[0]*W,q[1]*L,q[2]*L-.00005],.000055,'#a7b86c','vein-berlandiera-bract');
+   }
+  }
+  if(bud){f.add(kit.bud,'bud-berlandiera','#9ca65d',0,.0002,0,.0055,.0033,.0055);continue;}
+  // July is only a green cup reference. No inferred seeds or disc-derived fruits.
+  if(cup){f.add(kit.bud,'cup-base-berlandiera','#849347',0,-.0018,0,.0051,.0011,.0051);continue;}
+  const rayBase=.0068,rayW=.007,rayL=Math.sqrt(Math.max(.0001,R*R-(rayW*.5)**2))-rayBase;
+  for(let j=0;j<8;j++){
+   const aa=j*TAU/8,rf=flowerFrame(f,point(aa,rayBase,.0005),0,aa);
+   rf.add('berlandieraRay','ray-berlandiera','#f0cb25',0,0,0,rayW,rayL,rayL);
+   for(const u of [-.56,0,.56])for(let k=1;k<=10;k++){
+    const p=berlandieraPoint('berlandieraRay',.08+.87*(k-1)/10,u),q=berlandieraPoint('berlandieraRay',.08+.87*k/10,u);
+    rf.branch([p[0]*rayW,p[1]*rayL+.00005,p[2]*rayL],[q[0]*rayW,q[1]*rayL+.00005,q[2]*rayL],.00004,'#c8a51f','groove-berlandiera-ray');
+    rf.branch([p[0]*rayW,p[1]*rayL-.00008,p[2]*rayL],[q[0]*rayW,q[1]*rayL-.00008,q[2]*rayL],.00004,'#83533a','vein-berlandiera-ray-back');
+   }
+  }
+  f.add(kit.bud,'disc-base-berlandiera','#8c954a',0,.00035,0,discR,.0015,discR);
+  // 120 five-lobed florets is a genus-range density reference. Outer open florets
+  // surround green immature buds; both are florets, never fruits or ripe seed.
+  for(let j=0;j<120;j++){
+   const t=(j+.5)/120,r=discR*.94*Math.sqrt(t),aa=j*2.399963,y=.00035+.0015*Math.sqrt(1-(r/discR)**2)-.00013,at=point(aa,r,y);
+   if(t<.48){f.add(kit.bud,'immature-floret-berlandiera',kit.shade(rand,'#9b9b52',.05),at[0],at[1]+.00045,at[2],.00040,.00055,.00040);continue;}
+   const fl=flowerFrame(f,at,.07*r/discR,aa),L=.0017+.00035*noise(j,key+151);
+   fl.add('berlandieraDisc','floret-berlandiera-maroon',kit.shade(rand,'#5c3735',.045),0,0,0,.00048,L,.00048);
+  }
+ }
+}
+
 export function berkheyaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='berkheyaDisc'){
@@ -12230,6 +12332,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='berlandieraCymes'){drawBerlandiera(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='berkheyaWingedShoots'){drawBerkheya(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='hieraciumHairyShoots'){drawHieracium(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='raouliaMats'){drawRaoulia(b,{info,s,detail,rand,month},kit);return;}
