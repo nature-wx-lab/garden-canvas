@@ -29,6 +29,42 @@ test('Golden Sphere retains opposite sessile leaves and fully double heads witho
   }
  }
 });
+test('Jewel Coreopsis marmalade keeps cultivar leaf organs and two series of bracts',()=>{
+ const id='p-c0fbf1923906',info=CATALOG[id];assert.equal(info.appearance.architecture,'jewelCoreopsisShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.4,.4]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[6,7,8,9,10,11]);
+ for(const [index,size] of [{height:.40,spread:.50,leafHeight:.25},{height:.18,spread:.25,leafHeight:.10}].entries()){
+  const p={...makePlant(id,31600+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),st=stateAt(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'jewelCoreopsisShoots',tag);assert.ok(count('vein-marmalade')>0,tag);assert.equal(count('stem-marmalade')>0,true,tag);
+    const heads=count('involucre-marmalade'),open=count('receptacle-marmalade');assert.equal(heads>0,[6,7,8,9,10,11].includes(month),tag);assert.equal(heads,open+count('bud-marmalade'),tag);assert.equal(count('petal-marmalade-open')+count('petal-marmalade-opening'),open*8,tag);assert.equal(count('disc-marmalade'),open*160,tag);assert.equal(count('inner-bract-marmalade'),heads*8,tag);assert.equal(count('outer-bract-marmalade'),heads*8,tag);
+    assert.ok(!g.children.some(m=>/seed|fruit|pappus|petal-daisy/.test(m.userData.component||'')),tag);
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+});
+test('Jewel Coreopsis garnet keeps cultivar leaf organs and two series of bracts',()=>{
+ const id='p-2f5d835d32f1',info=CATALOG[id];assert.equal(info.appearance.architecture,'jewelCoreopsisShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.4,.4]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[6,7,8,9,10,11]);
+ for(const [index,size] of [{height:.40,spread:.50,leafHeight:.25},{height:.18,spread:.25,leafHeight:.10}].entries()){
+  const p={...makePlant(id,31610+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),st=stateAt(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'jewelCoreopsisShoots',tag);assert.ok(count('vein-garnet')>0,tag);assert.equal(count('stem-garnet')>0,true,tag);
+    const heads=count('involucre-garnet'),open=count('receptacle-garnet');assert.equal(heads>0,[6,7,8,9,10,11].includes(month),tag);assert.equal(heads,open+count('bud-garnet'),tag);assert.equal(count('petal-garnet-open')+count('petal-garnet-opening'),open*8,tag);assert.equal(count('disc-garnet'),open*75,tag);assert.equal(count('inner-bract-garnet'),heads*8,tag);assert.equal(count('outer-bract-garnet'),heads*5,tag);
+    assert.ok(!g.children.some(m=>/seed|fruit|pappus|petal-daisy/.test(m.userData.component||'')),tag);
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+});
 test('Fine Brachy lavenderPetit retains divided foliage, cultivar heads and seasonal reference limits',()=>{
  const id='p-c1dc792b059c',info=CATALOG[id];assert.equal(info.appearance.architecture,'fineBrachyShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.10,.15]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,true);assert.deepEqual(info.bloom,[4,5,6,9,10,11]);
  for(const [index,size] of [{height:.15,spread:.32,leafHeight:.08},{height:.10,spread:.20,leafHeight:.05}].entries()){
@@ -4140,7 +4176,7 @@ test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads 
 
 
 test('daisy cultivars keep distinct leaves, flower patterns and winter organs in all months',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='daisyBranches');assert.equal(entries.length,19);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='daisyBranches');assert.equal(entries.length,17);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,5900+i,2,2);
   for(let month=1;month<=12;month++){

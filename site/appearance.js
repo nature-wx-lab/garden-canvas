@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.290';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.291';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -397,3 +397,5 @@ Object.assign(TRAIT_VALUES,{frescoLobedLeaf:'丸みのある裂片を持つ幅�
 Object.assign(TRAIT_VALUES,{petitFineLobes:'細い線形の裂片に分かれる小葉',supremeFineLobes:'細く深く裂け、先が少し曲がる互生葉',petitLavenderHead:'淡いラベンダー色の小さな舌状花と黄色の中心',supremeWhiteHead:'白い細い舌状花と黄緑から黄色の中心'});
 
 Object.assign(TRAIT_VALUES,{goldenSphereLeaf:'葉柄のない対生の倒披針形葉。丸い先端と全縁',goldenSphereHead:'黄金色の舌状花が中心まで丸く重なる八重花。筒状花はない'});
+
+Object.assign(TRAIT_VALUES,{marmaladePinnateLeaf:'長い葉柄を持ち、3〜5裂する対生葉と上部の細い単葉',garnetLanceolateLeaf:'対生する細長い単葉。丸い先と全縁、短い葉柄',marmaladeSingleHead:'8枚の杏色〜橙色の舌状花、黄色い基部と筒状花',garnetSingleHead:'先端が浅く3裂する桃赤色の舌状花と暗赤紫の基部、中央の筒状花'});
