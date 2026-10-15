@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.272';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.273';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.272';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.273';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,45 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function jurineaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='jurineaFloret'){const az=u*Math.PI,q=Math.max(0,(t-.56)/.44),lobes=.5+.5*Math.cos(az*5),r=.24+.14*t+.62*q*q*lobes;return [Math.sin(az)*r,t-.27*q*q*(1-lobes),Math.cos(az)*r];}
+ if(type==='jurineaBract')return [.5*u*sn**.6*(1-t*.55),t,.14*sn-.45*Math.max(0,(t-.62)/.38)**2];
+ const entire=type==='jurineaEntire',v=Math.max(0,(t-.15)/.85),wave=Math.max(0,Math.sin(Math.PI*(v*10%1)))**1.7,width=t<.15?.024:Math.max(.025*(1-v),Math.sin(Math.PI*v)**.45*(entire?.90+.10*Math.sin(v*TAU*5):.04+.96*wave));
+ return [.5*u*width,t,.08*t*t+.035*u*u*Math.sin(t*TAU*5)];
+}
+function drawJurinea(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),small=h<.25,scale=Math.max(.55,Math.min(1,w/.22)),n=Math.round((small?15:86)*detail*(winter?.20:1)),roots=[];
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const leaf=(root,az,L,W,tilt,entire,tag)=>{
+  const shape=entire?'jurineaEntire':'jurineaDivided',f=flowerFrame(b,root,tilt,az);f.add(shape,tag+'-underside-'+a.leafUnderside.slice(1),kit.shade(rand,s.leafColor,.05),0,0,0,W,L,L);
+  const point=(t,u)=>{const q=jurineaPoint(shape,t,u);return [q[0]*W,q[1]*L,q[2]*L+.00006];};
+  for(let j=1;j<=8;j++)f.branch(point((j-1)/8,0),point(j/8,0),.00018*scale,'#bcc5b2','vein-jurinea');
+  for(let j=0;j<10;j++){const p=point(.16+j*.079,(noise(j,az+37)-.5)*1.4);f.branch(p,[p[0]+.00045,p[1]+.0001,p[2]+.0008],.00004,'#cdd3c6','hair-jurinea');}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,r=w*.28*Math.sqrt((i+.2)/n),root=[Math.sin(az)*r,.003,Math.cos(az)*r];roots.push(root);const L=a.leafLength*(small?.5:1)*(winter?.25:1)*scale*(.75+.25*noise(i,17)),W=a.leafWidth*(small?.65:1)*(winter?.3:1)*scale;
+  leaf(root,az+(noise(i,31)-.5)*1.8,L,W,.10+.65*noise(i,23),small&&i%4!==0,'leaf-jurinea-basal');
+ }
+ const seed=s.seedHeads;if(small||winter||!s.bloom&&!seed)return;
+ const heads=Math.max(5,Math.round(22*detail)),R=a.headRadius;
+ for(let i=0;i<heads;i++){
+  const az=i*2.399963,r=w*.19*Math.sqrt((i+.5)/heads),base=[Math.sin(az)*r,.008,Math.cos(az)*r],nodding=!seed&&i%4!==0,H=h*(.65+.26*noise(i,43)),radial=w*(.10+.09*noise(i,47)),p1=[base[0],H*.66,base[2]],p2=[base[0]+Math.sin(az)*radial*.40,H*(nodding?1.23:.93),base[2]+Math.cos(az)*radial*.40],top=[base[0]+Math.sin(az)*radial,H*(nodding?.84:1),base[2]+Math.cos(az)*radial],point=t=>base.map((v,k)=>(1-t)**3*v+3*(1-t)**2*t*p1[k]+3*(1-t)*t*t*p2[k]+t**3*top[k]);let prev=base;
+  for(let j=1;j<=18;j++){const at=point(j/18);b.branch(prev,at,.00125*scale,a.stemColor,'stem-jurinea');prev=at;}
+  for(let j=0;j<3;j++)leaf(point(.10+j*.12),az+j*2.4,a.leafLength*scale*(.38-j*.1),a.leafWidth*scale*(.40-j*.13),.50+j*.12,j===2,'leaf-jurinea-cauline');
+  const dir=top.map((v,k)=>v-point(.99)[k]),tilt=Math.acos(dir[1]/Math.hypot(...dir)),yaw=Math.atan2(dir[0],dir[2]),f=flowerFrame(b,top,seed?.2:tilt,yaw),bud=!seed&&noise(i,67)>s.flowerDensity*.91;
+  f.add(kit.bud,'involucre-jurinea','#8c9a7e',0,-R*.24,0,R*.72,R*.52,R*.72);
+  for(let ring=0;ring<4;ring++)for(let j=0;j<20;j++){const aa=j*TAU/20+ring*.16,r=R*(.48+ring*.075),L=R*(.30+ring*.07);f.add('jurineaBract','bract-jurinea-hooked',kit.shade(rand,ring===3?'#727d5e':'#adb6a0',.05),Math.sin(aa)*r,-R*.58+ring*R*.13,Math.cos(aa)*r,R*.15,L,L,.28,aa,0);}
+  if(seed){
+   f.add(kit.bud,'seed-receptacle-jurinea','#b0aa88',0,R*.08,0,R*.67,R*.20,R*.67);
+   for(let j=0;j<180;j++){const aa=j*2.399963,rr=R*.55*Math.sqrt((j+.4)/180),p=[Math.sin(aa)*rr,R*.20,Math.cos(aa)*rr],L=.008+.004*noise(j,i+71),theta=rr/(R*.55)*1.2,out=.0018+.0012*noise(j,i+73);for(let k=0;k<8;k++){const ba=aa+k*TAU/8;f.branch(p,[p[0]+Math.sin(aa)*Math.sin(theta)*L+Math.sin(ba)*out,p[1]+Math.cos(theta)*L,p[2]+Math.cos(aa)*Math.sin(theta)*L+Math.cos(ba)*out],.00008,month===7?'#f1efda':'#e9e3c6','pappus-jurinea');}}
+   continue;
+  }
+  if(bud){f.add(kit.bud,'bud-jurinea','#a47b99',0,R*.05,0,R*.55,R*.38,R*.55);continue;}
+  for(let j=0;j<340;j++){const aa=j*2.399963,r=R*.61*Math.sqrt((j+.3)/340),f2=flowerFrame(f,[Math.sin(aa)*r,R*.05,Math.cos(aa)*r],.12+.65*r/R+.15*noise(j,i+83),aa),L=.017+.006*noise(j,i+79);f2.add('jurineaFloret','floret-jurinea',kit.shade(rand,s.flowerColor,.07),0,0,0,.00135,L,.00135);f2.branch([0,L,0],[0,L+.0018,0],.00009,'#dfb2da','style-jurinea');}
+ }
+}
+
 export function cotulaLeafPoint(t,u){
  const v=Math.max(0,(t-.16)/.84),sn=Math.max(0,Math.sin(Math.PI*v)),phase=v*8,part=phase-Math.floor(phase),primary=Math.max(0,Math.sin(Math.PI*part))**.65,secondary=.24+.76*(.5+.5*Math.cos(part*TAU*3))**.8,width=t<.16?.022:Math.max(.022*(1-v),sn**.55*(.025+.975*primary*secondary));
  return [u*.5*width,t,.075*t*t+.025*u*u*sn];
@@ -11904,6 +11943,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='jurineaNoddingHeads'){drawJurinea(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='cotulaCushions'){drawCotula(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='artichokeCrowns'){drawArtichoke(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='leptinellaMats'){drawLeptinella(b,{info,s,detail,rand,month},kit);return;}
