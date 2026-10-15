@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.306';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.307';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.306';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.307';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5432,15 +5432,16 @@ export function dwarfScabiosaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='dwarfScabiosaLobe')return[.5*u*sn**.5*(1+.06*Math.sin(t*TAU*4)),.10*t*t+.10*u*u*sn,t];
  if(type==='dwarfScabiosaBract')return[.5*u*sn**1.2,t,.10*t*t];
- const basal=type==='dwarfScabiosaBasal';let width=.5*sn**.7*(.50+.50*t),cut=0;
+ if(type==='pincushionPinkBasal')return[.5*u*sn**.55*(.35+.65*t)*(1-.09*Math.cos(t*TAU*8)),t,.12*t*t+.055*u*u*sn];
+ const retail=type==='retailBlueBasal'||type==='retailBlueDivided',basal=type==='dwarfScabiosaBasal'||type==='retailBlueBasal';let width=.5*sn**.7*(.50+.50*t),cut=0;
  for(const c of (basal?[.23,.41,.57]:[.18,.32,.46,.60,.73]))cut=Math.max(cut,Math.exp(-(((t-c)/(basal?.048:.037))**2)));
- width*=1-(basal?.75:.94)*cut;return[u*width,t,.16*t*t+.05*u*u*sn];
+ width*=1-(basal?.75:.94)*cut;if(retail&&basal)width*=1-.14*Math.cos(t*TAU*14);return[u*width,t,.16*t*t+.05*u*u*sn];
 }
 export function drawDwarfScabiosa(b,{info,s,rand,month},kit){
  if(s.groundDormant)return;
- const h=s.height,w=s.spread,small=h<.19,scale=Math.max(.58,Math.min(1,h/.28,w/.25)),fs=Math.max(.80,scale),winter=[12,1,2].includes(month),tag='dwarf-scabiosa',profile=info.appearance.shootProfile,milky=profile==='milkyEcho',pink=profile==='dwarfPink',green=s.leafColor||'#628647',stem='#769554',co=s.flowerColor||info.flower,point=(a,r,y)=>[Math.sin(a)*r,y,Math.cos(a)*r],mix=(a,b,t)=>a.map((v,k)=>v+(b[k]-v)*t),noise=(i,k)=>{const q=Math.sin(i*127.1+k*311.7)*43758.5453;return q-Math.floor(q);};
+ const profile=info.appearance.shootProfile,pincushion=profile==='pincushionPink',retailBlue=profile==='retailBlue',h=s.height,w=s.spread,small=h<(retailBlue?.15:.19),scale=Math.max(.58,Math.min(1,h/(retailBlue?.20:.28),w/.25)),fs=Math.max(.80,scale),winter=[12,1,2].includes(month),tag='dwarf-scabiosa',milky=profile==='milkyEcho',pink=profile==='dwarfPink'||pincushion,green=s.leafColor||'#628647',stem='#769554',co=s.flowerColor||info.flower,point=(a,r,y)=>[Math.sin(a)*r,y,Math.cos(a)*r],mix=(a,b,t)=>a.map((v,k)=>v+(b[k]-v)*t),noise=(i,k)=>{const q=Math.sin(i*127.1+k*311.7)*43758.5453;return q-Math.floor(q);};
  const leaf=(at,az,size,basal,pitch)=>{
-  const L=(basal?.075:.065)*scale*size,W=(basal?.032:.030)*scale*size,shape=basal?'dwarfScabiosaBasal':'dwarfScabiosaDivided',f=flowerFrame(b,at,pitch,az);f.add(shape,'leaf-'+tag+(basal?'-basal':'-divided')+'-underside-9dad86',kit.shade(rand,green,.035),0,0,0,W,L,L);
+  const L=(basal?(pincushion?.055:retailBlue?.065:.075):.065)*scale*size,W=(basal?(pincushion?.029:.032):.030)*scale*size,shape=basal?(pincushion?'pincushionPinkBasal':retailBlue?'retailBlueBasal':'dwarfScabiosaBasal'):retailBlue?'retailBlueDivided':'dwarfScabiosaDivided',f=flowerFrame(b,at,pitch,az);f.add(shape,'leaf-'+tag+(basal?'-basal':'-divided')+'-underside-9dad86',kit.shade(rand,green,.035),0,0,0,W,L,L);
   const pt=t=>{const v=dwarfScabiosaPoint(shape,t,0);return[v[0]*W,v[1]*L,v[2]*L-.00014];};
   for(let j=1;j<=9;j++)f.branch(pt((j-1)/9),pt(j/9),.00022*scale,'#a9bf88','vein-'+tag);
   for(let j=1;j<=5;j++)for(const side of [-1,1]){const t=.12+j*.14,v=dwarfScabiosaPoint(shape,t+.04,side*.85);f.branch(pt(t),[v[0]*W,v[1]*L,v[2]*L-.00016],.00008*scale,'#9db57d','lateral-vein-'+tag);}
@@ -5448,7 +5449,7 @@ export function drawDwarfScabiosa(b,{info,s,rand,month},kit){
  };
  for(let j=0;j<(winter?(small?7:14):(small?12:24));j++){const az=j*2.399963;leaf(point(az,w*.13*Math.sqrt(noise(j,2)),.005+j%3*.002),az,(winter?.50:.75)+.25*noise(j,3),true,winter?1.24:1.07+.28*noise(j,4));}
  if(winter)return;
- const grow=month===3?.68:month===11?.62:1,n=small?3:9,heads=[];
+ const grow=month===3?.68:month===11?.62:1,n=small?3:pincushion?6:retailBlue?7:9,heads=[];
  for(let j=0;j<n;j++){
   const az=j*2.399963,rr=w*(.04+.15*Math.sqrt((j+.5)/n)),base=point(az,w*.06,.005),node=point(az,rr,h*.32*grow),tip=point(az,rr+w*.055,h*(.78+.14*noise(j,9))*grow);
   b.branch(base,node,.0012*scale,stem,'stem-'+tag);b.branch(node,tip,.0008*scale,stem,'peduncle-'+tag);heads.push({at:tip,az,key:j*2});
@@ -5457,16 +5458,17 @@ export function drawDwarfScabiosa(b,{info,s,rand,month},kit){
   for(const side of [0,Math.PI])leaf(mid,aa+side,.50,false,1.08);
   b.branch(mid,end,.00065*scale,stem,'peduncle-'+tag);heads.push({at:end,az:aa,key:j*2+1});
  }
- if(!s.bloom&&month!==3)return;
+ if(!s.bloom&&month!==(pincushion?5:3))return;
  for(const head of heads){
   const z=fs*(.90+.10*noise(head.key,31)),f=flowerFrame(b,head.at,.06+.20*noise(head.key,32),head.az),bud=!s.bloom||head.key%5===0,r=.008*z;
   f.add(kit.bud,'involucre-'+tag,green,0,-.0015*z,0,.0055*z,.002*z,.0055*z);
   for(let j=0;j<12;j++){const a=j*TAU/12,bf=flowerFrame(f,point(a,.004*z,-.002*z),1.18,a);bf.add('dwarfScabiosaBract','bract-'+tag,green,0,0,0,.0015*z,.007*z,.007*z);}
   if(bud){f.add(kit.bud,'bud-'+tag,green,0,.002*z,0,.0058*z,.0035*z,.0058*z);for(let j=0;j<44;j++){const t=(j+.5)/44,a=j*2.399963,rr=.0057*z*Math.sqrt(t);f.add(kit.bud,'bud-floret-'+tag,kit.shade(rand,green,.04),Math.sin(a)*rr,(.002+.003*Math.sqrt(1-t))*z,Math.cos(a)*rr,.00052*z,.00070*z,.00052*z);}continue;}
   f.add(kit.bud,'receptacle-'+tag,green,0,0,0,r,.002*z,r);
-  const inner=milky?72:pink?74:108,outerN=14,dome=milky?.004:pink?.0045:.006;
+  const inner=milky?72:pincushion?82:pink?74:retailBlue?126:108,outerN=14,dome=milky?.004:pincushion?.005:pink?.0045:retailBlue?.008:.006,closed=pincushion?[.78,.35,0][head.key%3]:0;
   for(let j=0;j<inner+outerN;j++){
    const outer=j>=inner,t=outer?(j-inner+.5)/outerN:(j+.5)/inner,a=outer?t*TAU:j*2.399963,rr=r*(outer?1:Math.sqrt(t)*.92),y=dome*Math.sqrt(1-(outer?1:t))*z,ff=flowerFrame(f,point(a,rr,y),outer?.42:.10+.48*t,a),L=(outer?.0045:.0038)*z,colour=outer?co:milky?co:pink?'#d7c0d0':'#c1b0df';
+   if(!outer&&t<closed){ff.add(kit.bud,'unopened-central-floret-'+tag,'#a87681',0,.002*z,0,.00075*z,.0011*z,.00075*z);continue;}
    for(let k=0;k<5;k++){const aa=k*TAU/5;ff.branch(point(aa,.0004*z,0),point(aa,.0012*z,.003*z),.00005*z,'#695760','calyx-bristle-'+tag);}
    ff.add('teaselTube','petal-'+tag+'-tube',colour,0,0,0,.0011*z,L,.0011*z);
    for(let k=0;k<5;k++){

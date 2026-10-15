@@ -1,8 +1,9 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.306';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.307';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
 export const TRAIT_VALUES={heart:'心形',round:'円形',kidney:'腎形',triangular:'三角形',lobed:'切れ込みのある葉',compound:'複葉',serrated:'鋸歯のある葉',narrow:'細葉',blade:'線形・剣形',needle:'針形',leaf:'卵形・楕円形',obovate:'倒卵形',spoon:'へら形',arrow:'矢じり形',margin:'覆輪',center:'中斑',spots:'斑点',silverVeins:'銀葉・緑の葉脈',stripes:'縞斑',evergreen:'常緑',semiEvergreen:'半常緑（寒さで変化）',deciduous:'落葉（幹・枝は残る）',winterDormant:'冬に地上部休眠',summerDormant:'夏に地上部休眠',bell:'鐘形',trumpet:'漏斗・ラッパ形',tube:'筒形',urn:'壺形',cup:'杯形',flat:'平開',star:'星形',cross:'十字形',pea:'蝶形',lipped:'唇形',spurred:'距のある花',spoonRay:'スプーン状の花弁',pompon:'ポンポン咲き',smooth:'平滑',peeling:'剥離する樹皮',furrowed:'縦に割れる樹皮',scaly:'鱗片状',lenticels:'皮目',clump:'株立ち',mound:'こんもり',creeping:'地面に広がる',rosette:'ロゼット',upright:'直立',arching:'弓状',spreading:'横に広がる',weeping:'枝垂れ',columnar:'細い直立形',pyramidal:'円錐形',vase:'箒状',rounded:'丸い樹冠',multistem:'根元から株立ち',oval:'卵形の樹冠',layered:'段状の横枝',irregular:'不規則な枝'};
+Object.assign(TRAIT_VALUES,{pincushionNurseryLeaves:'幅広く浅い鋸歯のある根出葉と細かく裂ける茎葉',retailBlueLeaves:'深い切れ込みと細かな鋸歯のある根出葉・細い裂片の茎葉',pincushionPinkHead:'桃色の周辺花と茶桃色の未開花中央部・5裂花冠',retailBlueHead:'濃い青紫の周辺花と高く盛り上がる小花・白い雄しべ'});
 Object.assign(TRAIT_VALUES,{dwarfScabiosaLeaves:'根元の浅く裂ける葉と細かく羽状に裂ける茎葉・細かな毛',dwarfScabiosaHead:'中央が盛り上がる小さな5裂花冠と大きい周辺花・4本の雄しべ'});
 Object.assign(TRAIT_VALUES,{famaLeaves:'細長い根出葉と少数の深い切れ込みを持つ対生する茎葉',famaCuppedHead:'上へ反る大きな周辺花と波打つ5裂花冠・未開花の中央小花'});
 Object.assign(TRAIT_VALUES,{arvensisLeaves:'毛と丸い鋸歯のある根出葉・上部の深く裂ける対生葉',meltonLeaves:'幅広い披針形の根出葉・細かく裂ける対生する茎葉',arvensisHead:'淡いライラック色の不等4裂花冠と4本の雄しべを持つ両性花の参考',meltonHead:'株ごとに色が異なる桃色〜ライラック色の4裂する小花'});
