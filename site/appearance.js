@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.294';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.295';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -404,4 +404,5 @@ Object.assign(TRAIT_VALUES,{rubyPinnatifidLeaf:'対生し、3〜5枚の細い裂
 
 Object.assign(TRAIT_VALUES,{starClusterLinearLeaf:'対生する無柄の細い線形葉。全縁で先が尖る',fullMoonTrifidLeaf:'対生する無柄の3裂葉と細い単葉。裂片は全縁',starClusterHead:'白い舌状花に暗紫の目、低温期は紫の縁と淡い紫の色付き',fullMoonHead:'幅広い8枚の舌状花が重なる大輪。黄色からクリーム色へ咲き進む'});
 
+Object.assign(TRAIT_VALUES,{redSatinLeaf:'無柄で対生する線形葉。単葉と細い3裂葉が混在',chameleonLeaf:'無柄で対生する細長い単葉。一部は2裂する',redSatinHead:'細い8枚の舌状花。夏の赤紫から秋の濃いワイン色へ',chameleonHead:'8枚の舌状花と内側の小さな花弁状器官。白から桃色へ咲き進む'});
 Object.assign(TRAIT_VALUES,{iceWineDividedLeaf:'無柄で対生し、3〜5本の細い裂片に分かれる葉',cosmicLinearLeaf:'無柄で対生する細い線形の単葉',iceWineHead:'9〜11枚の白い舌状花と、はっきりしたベリー紫の目・赤褐色の中心',cosmicHead:'白い8枚の舌状花が互い違いに重なり、低温や咲き進みで赤紫の目と縁が広がる'});

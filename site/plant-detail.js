@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.294';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.295';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.294';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.295';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5354,6 +5354,59 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 // Fresco Candy: compact habit and broad scalloped foliage from cultivar photographs.
 // Fine-leaved nursery selections: exact species/registered names remain unconfirmed.
 // Ruby Frost and Redshift: organ descriptions from cultivar patents; Japanese garden seasons remain references.
+export function satinChameleonPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(t*Math.PI));
+ if(type==='satinChameleonRay'){const half=.5*Math.sin(t*Math.PI*.92)**.57*Math.min(1,t/.22),edge=1-.08*Math.exp(-(((Math.abs(u)-.34)/.11)**2))-.025*Math.exp(-((u/.08)**2));return[u*half,.04*t*t+.12*u*u*sn+.025*Math.cos(u*6*Math.PI)*sn,t*(1-(1-edge)*t**9)];}
+ if(type==='satinChameleonBract')return[.5*u*sn**.65,t,.10*u*u*sn];
+ return[.5*u*sn**.52*Math.min(1,t/.15),t,.025*t*t+.025*u*u*sn];
+}
+export function drawSatinChameleon(b,{info,s,rand,month},kit){
+ const satin=info.appearance.shootProfile==='redSatin',tag=satin?'red-satin':'chameleon',h=s.height,w=s.spread,scale=Math.max(.5,Math.min(1,h/(satin?.45:.30),w/(satin?.45:.35))),green=s.leafColor||'#547949',point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r],mix=(a,b,t)=>a.map((v,k)=>v+(b[k]-v)*t),noise=(i,k)=>{const x=Math.sin(i*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const leaf=(at,az,size,tilt,key)=>{
+  const f=flowerFrame(b,at,tilt,az);
+  const blade=(base,L,W,angle)=>{const lf=flowerFrame(f,base,0,0);lf.add('satinChameleonLeaf','leaf-'+tag+'-underside-78946c',kit.shade(rand,green,.03),0,0,0,W,L,L,0,0,angle);const pt=t=>{const p=satinChameleonPoint('satinChameleonLeaf',t,0),x=p[0]*W,y=p[1]*L;return[x*Math.cos(angle)-y*Math.sin(angle),x*Math.sin(angle)+y*Math.cos(angle),p[2]*L-.00005];};for(let j=1;j<=5;j++)lf.branch(pt((j-1)/5),pt(j/5),.000075*scale,green,'vein-'+tag);};
+  const divided=satin?key%3!==0:key%5===0,L=satin?.070:divided?.054:.043,W=satin?.002:divided?.004:key%11===0?.017:.005;
+  blade([0,0,0],L*scale*size,W*scale*size,0);
+  if(divided){const n=satin?2:1;for(let j=0;j<n;j++)blade([0,(satin?.025:.020)*scale*size,0],(satin?.030:.025)*scale*size,(satin?.002:.003)*scale*size,(j?1:-1)*.60);}
+
+ };
+ if(month===1||month===2||month===3||month===12){for(let i=0;i<4;i++){const az=i*2.399963,base=point(az,w*.035,.003),tip=point(az,w*.06,h*.13);b.branch(base,tip,.0006*scale,'#759453','stem-'+tag);for(let j=0;j<4;j++)for(const side of [0,Math.PI])leaf(mix(base,tip,.12+j*.23),az+j*Math.PI*.5+side,.55,.85,i*4+j);}return;}
+ const growth=month===4?.38:month===5?.68:month===11?.90:1,small=h<(satin?.30:.20),shoots=small?3:satin?18:8,branches=small?3:satin?2:5,heads=[];
+ for(let i=0;i<shoots;i++){
+  const az=i*2.399963,base=point(az,w*(.04+.15*Math.sqrt((i+.5)/shoots)),.004),mid=point(az,w*.19,h*(satin?.29:.24)*growth),top=point(az,w*.23,h*(satin?.61:.60)*growth);
+  b.branch(base,mid,(satin?.0028:.0009)*scale,'#6d8e50','stem-'+tag);b.branch(mid,top,.001*scale,'#789756','stem-'+tag);
+  for(let j=0;j<10;j++){const t=.04+j*.105,at=t<.5?mix(base,mid,t*2):mix(mid,top,(t-.5)*2);for(const side of [0,Math.PI])leaf(at,az+j*Math.PI*.5+side,1-.25*t,.82,i*10+j);}
+  for(let k=0;k<2;k++){const aa=az+(k?-.8:.8),from=mix(base,mid,.13),tip=point(aa,w*.32,h*.35*growth);b.branch(from,tip,.00065*scale,'#769452','lower-branch-'+tag);for(let j=0;j<8;j++)for(const side of [0,Math.PI])leaf(mix(from,tip,.06+j*.13),aa+j*Math.PI*.5+side,.86-j*.025,.88,i*16+k*8+j);}
+  for(let k=0;k<branches;k++){
+   const aa=az+(k%2?1:-1)*(1.1+noise(i,k)*.45),from=mix(mid,top,.03+.90*k/branches),radius=w*(.13+.22*noise(i,k+8)),end=point(aa,radius,h*(satin?.45+.20*k/branches+.08*noise(i,k+5):.58+.16*k/branches+.06*noise(i,k+5))*growth);
+   b.branch(from,end,(satin?.00085:.0009)*scale,'#7a9856','branch-'+tag);
+   for(let j=0;j<(satin?5:4);j++)for(const side of [0,Math.PI])leaf(mix(from,end,.07+j*.18),aa+j*Math.PI*.5+side,.73-j*.08,.84,i*37+k*5+j);
+   const n=satin?(small?2:4):1;
+   for(let j=0;j<n;j++){
+    const start=n===1?end:mix(from,end,.30+j*(n===4?.22:.55)),a2=aa+(j-(n-1)*.5)*.70,tip=[start[0]+Math.sin(a2)*w*.075,0,start[2]+Math.cos(a2)*w*.075],rr=Math.hypot(tip[0],tip[2])/(w*.50);
+    tip[1]=h*(.48+.34*Math.sqrt(Math.max(.08,1-rr*rr))+.15*noise(i*17+k,j+90))*growth;tip[1]=Math.max(tip[1],start[1]+.045*scale);b.branch(start,tip,(satin?.00085:.0006)*scale,'#829d5b','peduncle-'+tag);heads.push({at:tip,az:a2,key:i*37+k*3+j});
+   }
+  }
+ }
+ if(!s.bloom)return;
+ for(const {at,az,key} of heads){
+  const bud=key%10===9,opening=key%4===0,sz=scale*(.94+.06*noise(key,33)),f=flowerFrame(b,at,.04+.24*noise(key,31),az),diskR=satin?.004:.0035;
+  f.add(kit.bud,'involucre-'+tag,'#758f4d',0,-.002*sz,0,diskR*sz,.0025*sz,diskR*sz);
+  for(let layer=0;layer<2;layer++){const n=satin?(layer?4:5):8;for(let j=0;j<n;j++){const aa=j*TAU/n+layer*.35,bf=flowerFrame(f,point(aa,(layer?.0025:.003)*sz,-.002*sz),layer?1.0:1.30,aa),L=satin?.003:layer?.003:.007,W=satin?.001:layer?.002:.004;bf.add('satinChameleonBract',(layer?'outer-bract-':'inner-bract-')+tag,layer?'#789450':satin?'#769448':'#b18755',0,0,0,W*sz,L*sz,L*sz);}}
+  // The Red Satin patent's 5 cm bud conflicts with the 4.5 cm head; this 5 mm bud is a photo approximation.
+  if(bud){f.add(kit.bud,'bud-'+tag,satin?'#a78160':'#9c995f',0,.001*sz,0,.0025*sz,.0025*sz,.0025*sz);continue;}
+  f.add(kit.bud,'receptacle-'+tag,satin?'#976943':'#8c593b',0,-.001*sz,0,diskR*sz,.0015*sz,diskR*sz);
+  const phase=month<=8?'summer':'autumn',col=satin?(phase==='summer'?'#b92f58':'#8f2444'):(opening?'#eee9d9':key%3===0?'#ddbedc':'#e6d3e3');
+  for(let j=0;j<8;j++){const aa=j*TAU/8,rf=flowerFrame(f,point(aa,diskR*.78*sz,0),-.03-(opening?.11:0)+.05*Math.sin(j*2.399),aa);rf.add('satinChameleonRay','petal-'+tag+'-'+(satin?phase:opening?'opening':'open'),kit.shade(rand,col,.035),0,0,0,(satin?.007:.009)*sz,(satin?.020:.018)*sz,(satin?.020:.018)*sz);}
+  if(!satin)for(let j=0;j<4;j++){const aa=j*TAU/4+.35,ff=flowerFrame(f,point(aa,.003*sz,.001*sz),-.25,aa);ff.add('satinChameleonRay','petaloid-chameleon',col,0,0,0,.002*sz,.005*sz,.005*sz);}
+  for(let j=0;j<80;j++){
+   const t=(j+.5)/80,aa=j*2.399963,ff=flowerFrame(f,point(aa,diskR*.95*sz*Math.sqrt(t),(-.0028+.002*Math.sqrt(1-t))*sz),0,aa),L=satin?.004:.0045;
+   ff.add('jewelCoreopsisDisc','disc-'+tag,satin?'#8a433c':'#884a37',0,0,0,.001*sz,L*sz,.001*sz);
+   if(t>.35){ff.branch([0,(L-.0006)*sz,0],[0,(L+.0011)*sz,0],.000075*sz,satin?'#d9ad42':'#cda65a','style-'+tag);for(const side of [-1,1])ff.branch([0,(L+.0011)*sz,0],[side*.00025*sz,(L+.0015)*sz,0],.000075*sz,satin?'#e2b84b':'#d6ad64','stigma-'+tag);}
+  }
+ }
+}
+
 export function wineCoreopsisPoint(type,t,u){
  const sn=Math.max(0,Math.sin(t*Math.PI));
  if(type==='wineCoreopsisRay'){const half=.5*Math.sin(t*Math.PI*.92)**.57*Math.min(1,t/.22),edge=1-.08*Math.exp(-(((Math.abs(u)-.34)/.11)**2))-.025*Math.exp(-((u/.08)**2));return[u*half,.04*t*t+.12*u*u*sn+.025*Math.cos(u*6*Math.PI)*sn,t*(1-(1-edge)*t**9)];}
@@ -13446,6 +13499,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='satinChameleonShoots'){drawSatinChameleon(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='wineCoreopsisShoots'){drawWineCoreopsis(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='starMoonCoreopsisShoots'){drawStarMoonCoreopsis(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='borderCoreopsisShoots'){drawBorderCoreopsis(b,{info,s,detail,rand,month},kit);return;}
