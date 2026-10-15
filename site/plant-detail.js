@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.278';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.279';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.278';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.279';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,112 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function jacobaeaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='jacobaeaDisc'){
+  const az=u*Math.PI,q=Math.max(0,(t-.65)/.35),lobes=.5+.5*Math.cos(az*5),r=.28+.12*t+.60*q*q*lobes;
+  return [Math.cos(az)*r,t-.16*q*q*(1-lobes),Math.sin(az)*r];
+ }
+ if(type==='jacobaeaRay')return [.5*u*Math.sin(t*Math.PI*.72)**.65,.055*t*t+.012*u*u*sn,t-.045*t**12*(.5-.5*Math.cos(u*Math.PI*3))];
+ if(type==='jacobaeaBract')return [.5*u*sn**.5,t,-.16*t*t];
+ if(type==='jacobaeaUpper')return [.5*u*sn**.75*(.84+.16*Math.cos(t*6*Math.PI)),t,.055*t*t+.025*u*u*sn];
+ // A continuous blade links the rounded lobes to the midrib and petiole.
+ // Both source photographs contain shallow and deeply divided leaves.
+ const shallow=type==='jacobaeaShallow',silver=type==='jacobaeaSilver',g=(c,r)=>Math.exp(-(((t-c)/r)**2));
+ let edge=.035;
+ if(t>=.15){
+  const envelope=Math.max(0,Math.sin(Math.PI*(t-.15)/.85))**.52;
+  const lobes=.68*g(.31,.057)+.94*g(.49,.064)+1*g(.67,.068)+.70*g(.86,.10);
+  const secondary=.065*(.5+.5*Math.cos(t*Math.PI*38));
+  edge=shallow?envelope*(.77+.23*Math.cos(t*Math.PI*10)**2):Math.max(.045*envelope,(lobes+secondary*lobes)*(silver?.96:1));
+ }
+ if(t>.94)edge*=Math.max(0,(1-t)/.06)**.55;
+ return [.5*u*edge,t+.035*Math.abs(u)**1.5*sn,.10*t*t+.055*u*u*sn+.015*u*u*Math.sin(t*12*Math.PI)];
+}
+
+export function drawJacobaea(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,scale=Math.max(.25,Math.min(1,h/.30,w/.30)),silver=a.shootProfile==='silverDust';
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r],mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const green=a.leafColor||'#b6c1b7',stem='#cbd2c2',leafL=a.leafLength,leafW=a.leafWidth;
+ const leaf=(at,az,L,W,tilt,key,shape,tag)=>{
+  const f=flowerFrame(b,at,tilt,az),p=(t,u,off=0)=>{const q=jacobaeaPoint(shape,t,u);return[q[0]*W,q[1]*L,q[2]*L+off];};
+  const old=shape==='jacobaeaShallow',color=old?'#98a995':green;
+  f.add(shape,`leaf-woolly-jacobaea-${tag}-underside-d7dcd1`,kit.shade(rand,color,.035),0,0,0,W,L,L);
+  for(let j=1;j<=12;j++)f.branch(p((j-1)/12,0,-.00009),p(j/12,0,-.00009),.00019*scale,'#d0d7c9','vein-jacobaea');
+  for(const t of [.31,.49,.67,.86])for(const side of [-1,1])f.branch(p(t-.035,0,-.00008),p(t,side*.82,-.00008),.00008*scale,'#c9d1c1','vein-jacobaea-lobe');
+  for(let j=0;j<32;j++){
+   const t=.16+.82*noise(key,j+11),u=(noise(key,j+41)-.5)*1.94,side=j%3?1:-1,at=p(t,u,side*.00008),len=(.0004+.00045*noise(key,j+71))*scale;
+   f.branch(at,[at[0]+len*.4,at[1]+len*.3,at[2]+side*len],.000022*scale,'#e1e4da','hair-jacobaea-leaf');
+  }
+ };
+ const hairyStem=(from,to,r,key,kind)=>{
+  b.branch(from,to,r,stem,kind);
+  const d=to.map((v,k)=>v-from[k]),len=Math.hypot(...d),f=flowerFrame(b,from,Math.acos(Math.max(-1,Math.min(1,d[1]/len))),Math.atan2(d[0],d[2]));
+  for(let j=0;j<16;j++){
+   const az=j*2.399963,t=(j+.5)/16,root=r*(1-.38*t)*.90,out=.0006*scale;
+   f.branch(point(az,root,len*t),point(az,root+out,len*t+out*.4),.000024*scale,'#e0e3d8','hair-jacobaea-stem');
+  }
+ };
+ const deep=silver?'jacobaeaSilver':'jacobaeaDeep',shoots=w<.22?3:5,flowering=s.bloom&&[6,7,8,9].includes(month),heads=[];
+ for(let i=0;i<shoots;i++){
+  const az=i*TAU/shoots+.23,base=point(az,w*.018,.002*scale),wood=point(az,w*.040,h*.10),fork=point(az,w*.13,h*.38),top=point(az,w*.22,h*(.56+.07*noise(i,27)));
+  b.branch(base,wood,.0027*scale,'#8a8975','wood-jacobaea');hairyStem(wood,fork,.0023*scale,i,'stem-jacobaea');hairyStem(fork,top,.0016*scale,i+10,'stem-jacobaea');
+  for(let j=0;j<6;j++){
+   const t=.08+j*.16,at=mix(wood,top,t),yaw=az+j*2.399963,L=leafL*scale*(.95-.34*t),W=leafW*scale*(.95-.25*t);
+   leaf(at,yaw,L,W,.94+.14*noise(i,j),i*20+j,j===0?'jacobaeaShallow':deep,'main');
+  }
+  for(let j=0;j<3;j++)leaf(top,az+j*2.399963,leafL*scale*(.44+.06*j),leafW*scale*(.48+.04*j),.38+.22*j,i*3+j+700,deep,'terminal');
+  for(let k=0;k<2;k++){
+   const yaw=az+(k?-.80:.80),at=mix(wood,fork,.62),tip=point(yaw,w*.30,h*(.43+.04*k));
+   hairyStem(at,tip,.00125*scale,i*2+k,'branch-jacobaea');
+   for(let j=0;j<3;j++){
+    const t=.3+j*.30,L=leafL*scale*(.57-.10*t);
+    leaf(mix(at,tip,t),yaw+j*2.399963,L,leafW*scale*.53,.90,i*20+k*3+j+100,j===0?'jacobaeaShallow':deep,'branch');
+   }
+  }
+  // The flower-bearing shoot is taller, with reduced, nearly sessile leaves.
+  // Flowering is a seasonal reference, not an assertion about this plant's age.
+  if(!flowering)continue;
+  const bloomFork=point(az,w*.24,h*.79);hairyStem(top,bloomFork,.0012*scale,i+200,'flower-stem-jacobaea');
+  for(let j=0;j<2;j++)leaf(mix(top,bloomFork,.25+j*.4),az+j*2.4,leafL*scale*.23,leafW*scale*.16,.65,i*4+j+300,'jacobaeaUpper','upper');
+  for(let k=0;k<3;k++){
+   const yaw=az+(k-1)*.75,cluster=point(yaw,w*(.25+.025*k),h*(.89+.022*k));
+   hairyStem(bloomFork,cluster,.00072*scale,i*3+k+400,'corymb-jacobaea');
+   const count=w<.22?2:3;
+   for(let j=0;j<count;j++){
+    const aa=yaw+j*TAU/count,at=cluster.map((v,n)=>v+(n===1?(j%2)*.003:[Math.sin(aa),0,Math.cos(aa)][n]*.010));
+    hairyStem(cluster,at,.00043*scale,i*9+k*3+j+500,'pedicel-jacobaea');heads.push({at,az:aa,key:i*9+k*3+j});
+   }
+  }
+ }
+ for(const {at,az,key} of heads){
+  const f=flowerFrame(b,at,.10+.16*noise(key,121),az),bud=noise(key,131)>.83;
+  f.add(kit.bud,'involucre-jacobaea','#b6c2a0',0,-.0027,0,.0027,.003,.0027);
+  for(let j=0;j<12;j++){
+   const aa=j*TAU/12,bf=flowerFrame(f,point(aa,.0011,-.0055),.23,aa);
+   bf.add('jacobaeaBract','bract-jacobaea-woolly','#c6cfb8',0,0,0,.0015,.006,.006);
+  }
+  for(let j=0;j<4;j++){
+   const aa=j*TAU/4,bf=flowerFrame(f,point(aa,.0011,-.0055),.72,aa);
+   bf.add('jacobaeaBract','supplementary-bract-jacobaea','#b2bf99',0,0,0,.0009,.0024,.0024);
+  }
+  if(bud){f.add(kit.bud,'bud-jacobaea','#c1c57c',0,.0002,0,.0024,.0025,.0024);continue;}
+  const rayL=.0045,rayW=.0018,rayBase=.0025;
+  for(let j=0;j<12;j++){
+   const aa=j*TAU/12,rf=flowerFrame(f,point(aa,rayBase,.0005),0,aa);
+   rf.add('jacobaeaRay','ray-jacobaea','#e7cc28',0,0,0,rayW,rayL,rayL);
+  }
+  f.add(kit.bud,'disc-jacobaea','#c4b325',0,.0002,0,.0028,.0017,.0028);
+  for(let j=0;j<52;j++){
+   const t=(j+.5)/52,r=.0026*Math.sqrt(t),aa=j*2.399963,y=.0002+.0017*Math.sqrt(1-(r/.0028)**2)-.00015;
+   if(t<.38){f.add(kit.bud,'immature-jacobaea','#d4c53b',Math.sin(aa)*r,y+.00024,Math.cos(aa)*r,.00027,.00038,.00027);continue;}
+   const ff=flowerFrame(f,point(aa,r,y),.12,aa);ff.add('jacobaeaDisc','floret-jacobaea','#e2c226',0,0,0,.00032,.0011,.00032);
+  }
+ }
+}
+
 export function berlandieraPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='berlandieraDisc'){
@@ -12332,6 +12438,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='jacobaeaShrubs'){drawJacobaea(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='berlandieraCymes'){drawBerlandiera(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='berkheyaWingedShoots'){drawBerkheya(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='hieraciumHairyShoots'){drawHieracium(b,{info,s,detail,rand,month},kit);return;}

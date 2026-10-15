@@ -11,6 +11,49 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Jacobaea keeps connected woolly foliage in winter and small independent corymb heads',()=>{
+ const ids=['p-a4614b2e3705','p-38a0315b1459'],rayLengths=[];
+ for(const [plantIndex,id] of ids.entries()){
+  const info=CATALOG[id];assert.equal(info.appearance.architecture,'jacobaeaShrubs');assert.equal(info.appearance.status,'partial');assert.equal(info.spread,null);
+  assert.equal(info.bloomKnown,plantIndex===1,'cultivar month certainty is not borrowed from species');
+  for(const [sizeIndex,size] of [{height:.30,spread:.30,leafHeight:.20},{height:.12,spread:.15,leafHeight:.08}].entries()){
+   const p={...makePlant(id,30300+plantIndex*2+sizeIndex,1,1),...size};let winterLeaves=0,summerLeaves=0;
+   for(let month=1;month<=12;month++){
+    const g=plantModel(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0);
+    try{
+     const flowering=[6,7,8,9].includes(month),leaves=g.children.filter(m=>(m.userData.component||'').startsWith('leaf-woolly-jacobaea-')).reduce((n,m)=>n+m.count,0),open=count('disc-jacobaea'),heads=count('involucre-jacobaea');
+     assert.equal(g.userData.architecture,'jacobaeaShrubs',tag);assert.ok(leaves>0&&count('wood-jacobaea')>0&&count('branch-jacobaea')>0,tag);
+     assert.ok(count('hair-jacobaea-leaf')>0&&count('hair-jacobaea-stem')>0,tag);
+     assert.equal(open>0,flowering,tag);assert.equal(heads,open+count('bud-jacobaea'),tag);assert.equal(count('ray-jacobaea'),open*12,tag);
+     assert.equal(count('bract-jacobaea-woolly'),heads*12,tag);assert.equal(count('supplementary-bract-jacobaea'),heads*4,tag);
+     assert.ok(!g.children.some(m=>/fruit|seed|pappus/.test(m.userData.component||'')),tag);
+     if(month===1)winterLeaves=leaves;if(month===7)summerLeaves=leaves;
+     const matrix=new Matrix4(),lengths=[];
+     for(const m of meshes('ray-jacobaea')){
+      m.geometry.computeBoundingBox();const box=m.geometry.boundingBox;
+      for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements,L=Math.hypot(e[8],e[9],e[10])*(box.max.z-box.min.z);assert.ok(L>=.004-1e-7&&L<=.006+1e-7,`${tag}: source ray length ${L}`);lengths.push(L);}
+     }
+     if(month===7)rayLengths.push(lengths.reduce((a,b)=>a+b,0)/lengths.length);
+     // Check full-head size through ray tips relative to the associated disc.
+     const centers=[];for(const m of meshes('disc-jacobaea'))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);centers.push(new Vector3().setFromMatrixPosition(matrix));}
+     for(const m of meshes('ray-jacobaea'))for(let i=0;i<m.count;i++){
+      m.getMatrixAt(i,matrix);const root=new Vector3().setFromMatrixPosition(matrix),center=centers.reduce((a,b)=>root.distanceTo(a)<root.distanceTo(b)?a:b),tip=new Vector3(0,.055,1).applyMatrix4(matrix);assert.ok(tip.distanceTo(center)<=.0076,tag+': whole-head radius <= 7.5mm plus tilt');
+     }
+     for(const m of g.children){
+      const name=m.userData.component,pos=m.geometry.attributes.position;
+      for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),`${tag}: finite ${name}`);
+      m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.15&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;
+      if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){
+       m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j),X=e[0]*x+e[4]*y+e[8]*z+e[12],Y=e[1]*x+e[5]*y+e[9]*z+e[13],Z=e[2]*x+e[6]*y+e[10]*z+e[14];assert.ok(within(X,Y,Z),`${tag}: actual ${name} vertex ${X},${Y},${Z}`);}
+      }
+     }
+    }finally{dispose(g);}
+   }
+   assert.ok(winterLeaves>0&&winterLeaves<=summerLeaves,'evergreen foliage is retained through winter');
+  }
+ }
+ assert.ok(rayLengths.every(v=>Math.abs(v-rayLengths[0])<1e-7),'flower organ dimensions are independent of overall plant size');
+});
 test('Berlandiera preserves independent small heads, eight rays and reference July cups',()=>{
  const id='p-51cd86dd10f9',info=CATALOG[id];assert.equal(info.appearance.architecture,'berlandieraCymes');assert.equal(info.appearance.status,'partial');assert.deepEqual([...info.bloom].sort((a,b)=>a-b),[4,5,6]);
  const rayLengths=[];
@@ -3797,7 +3840,7 @@ test('31 scabious profiles preserve florets, basal winter leaves, seed cups and 
 });
 
 test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads and biennial lifespan',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,10);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,8);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6000+i,2,2);
   for(let month=1;month<=12;month++){
@@ -3820,7 +3863,7 @@ test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads 
  assert.ok(stateAt(thistle,view(8)).biennialRosette);assert.equal(stateAt(thistle,view(8)).bloom,false);
  const second={...view(8),year:1};assert.ok(stateAt(thistle,second).bloom);const flowered=plantModel(thistle,second);assert.ok(flowered.children.some(m=>m.userData.component==='floret-cotton'));dispose(flowered);
  assert.equal(stateAt(thistle,{...view(8),year:2}).present,false);
- const silver=CATALOG['p-a4614b2e3705'];assert.equal(foliageKind(silver),'leaf-woolly');
+ const silver=CATALOG['p-a4614b2e3705'];assert.equal(silver.appearance.leafTexture,'woolly');
  assert.notEqual(CATALOG['p-5d9d19a10ef5'].appearance.leafColor,'#654756');
  const june=plantModel(makePlant('p-c66dc5e68f24',6022,2,2),view(6)),july=plantModel(makePlant('p-c66dc5e68f24',6022,2,2),view(7));
  assert.ok(june.children.some(m=>m.userData.component==='floret-jurinea'));assert.ok(july.children.some(m=>m.userData.component==='pappus-jurinea'));assert.ok(!july.children.some(m=>m.userData.component==='floret-jurinea'));dispose(june);dispose(july);
