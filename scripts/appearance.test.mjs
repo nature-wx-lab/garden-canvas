@@ -11,6 +11,43 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Wine Coreopsis Ice Wine keeps cultivar organs and bounded seasonal patterns',()=>{
+ const id='p-c746d7e0f4ea',info=CATALOG[id];assert.equal(info.appearance.architecture,'wineCoreopsisShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.5,.5]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[6,7,8,9,10,11]);
+ for(const [index,size] of [{height:.50,spread:.65,leafHeight:.28},{height:.22,spread:.32,leafHeight:.13}].entries()){
+  const p={...makePlant(id,31900+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),st=stateAt(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'wineCoreopsisShoots',tag);assert.ok(count('vein-ice-wine')>0,tag);assert.equal(count('stem-ice-wine')>0,true,tag);
+    const heads=count('involucre-ice-wine'),open=count('receptacle-ice-wine');assert.equal(heads>0,[6,7,8,9,10,11].includes(month),tag);assert.equal(heads,open+count('bud-ice-wine'),tag);const rays=count('petal-ice-wine-open')+count('petal-ice-wine-opening');assert.ok(rays>=open*9&&rays<=open*11,tag);assert.equal(count('disc-ice-wine'),open*120,tag);assert.equal(count('inner-bract-ice-wine'),heads*9,tag);assert.equal(count('outer-bract-ice-wine'),heads*10,tag);
+    assert.ok(!g.children.some(m=>/seed|fruit|pappus|petal-daisy/.test(m.userData.component||'')),tag);
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+});
+test('Wine Coreopsis Cosmic Evolution keeps cultivar organs and bounded seasonal patterns',()=>{
+ const id='p-31bb8f24c44b',info=CATALOG[id];assert.equal(info.appearance.architecture,'wineCoreopsisShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.5,.5]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[6,7,8,9,10,11]);
+ for(const [index,size] of [{height:.50,spread:.65,leafHeight:.28},{height:.22,spread:.32,leafHeight:.13}].entries()){
+  const p={...makePlant(id,31910+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),st=stateAt(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'wineCoreopsisShoots',tag);assert.ok(count('vein-cosmic-evolution')>0,tag);assert.equal(count('stem-cosmic-evolution')>0,true,tag);
+    const heads=count('involucre-cosmic-evolution'),open=count('receptacle-cosmic-evolution');assert.equal(heads>0,[6,7,8,9,10,11].includes(month),tag);assert.equal(heads,open+count('bud-cosmic-evolution'),tag);assert.equal(['summer','turning','cool','purple'].reduce((n,phase)=>n+count('petal-cosmic-evolution-'+phase),0),open*8,tag);assert.equal(count('disc-cosmic-evolution'),open*200,tag);assert.equal(count('inner-bract-cosmic-evolution'),heads*8,tag);assert.equal(count('outer-bract-cosmic-evolution'),heads*8,tag);
+    if(open){const expected=month<=8?'summer':month===9?'turning':month===10?'cool':'purple';assert.equal(count('petal-cosmic-evolution-'+expected),open*8,tag);}
+    assert.ok(!g.children.some(m=>/seed|fruit|pappus|petal-daisy/.test(m.userData.component||'')),tag);
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+});
 test('Star Moon Coreopsis Star Cluster keeps cultivar organs and seasonal reference limits',()=>{
  const id='p-fe9ba8e0d24b',info=CATALOG[id];assert.equal(info.appearance.architecture,'starMoonCoreopsisShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[0.4,0.4]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[6,7,8,9,10,11]);
  for(const [index,size] of [{height:0.4,spread:0.5,leafHeight:0.22},{height:0.2,spread:0.28,leafHeight:0.11}].entries()){
@@ -4250,7 +4287,7 @@ test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads 
 
 
 test('daisy cultivars keep distinct leaves, flower patterns and winter organs in all months',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='daisyBranches');assert.equal(entries.length,13);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='daisyBranches');assert.equal(entries.length,11);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,5900+i,2,2);
   for(let month=1;month<=12;month++){
