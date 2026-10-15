@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.316';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.317';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.316';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.317';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,49 +11198,13 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
-function drawBrunnera(b,{info,s,detail,rand},kit){
- if(s.groundDormant)return;
- const a=info.appearance,h=s.height,w=s.spread,lh=Math.min(s.leafHeight||h,h*a.foliageHeightRatio),L=Math.min(a.leafLength,w*.37)*s.leafScale,typ=a.shootProfile;
- const kind=`leaf-brunnera-${typ}`,stem=a.stemColor,crowns=[];
- for(let c=0;c<5;c++){
-  const az=c*2.399963,rr=c===0?0:Math.max(0,w*.47-L*1.20)*(.55+rand()*.4),root=[Math.sin(az)*rr,.006,Math.cos(az)*rr];crowns.push(root);
-  const n=Math.max(4,Math.round(9*detail*s.leafDensity));
-  for(let j=0;j<n;j++){
-   const t=j/(n-1),angle=az+j*2.399963+(rand()-.5)*.18,len=L*(.56+.42*t),reach=len*(.30+.25*t),rise=lh*(.64-.36*t)*Math.sqrt(s.leafScale),tip=[root[0]+Math.sin(angle)*reach,root[1]+rise,root[2]+Math.cos(angle)*reach];
-   let from=root;
-   for(let q=1;q<=4;q++){const z=q/4,to=[root[0]+(tip[0]-root[0])*z*z,root[1]+rise*(1-Math.pow(1-z,1.6)),root[2]+(tip[2]-root[2])*z*z];b.branch(from,to,.0015*(1-z*.32),stem,'petiole-brunnera');from=to;}
-   b.add('brunneraHeart',kind,kit.shade(rand,s.leafColor,.07),...tip,len*a.leafWidth/a.leafLength*(.92+rand()*.16),len,len,1.00+t*.84+(rand()-.5)*.30,angle,(rand()-.5)*.32);
-  }
- }
- if(!s.bloom)return;
- const n=Math.max(3,Math.round(9*detail*s.flowerDensity));
- for(let j=0;j<n;j++){
-  const root=crowns[j%crowns.length],an=j*2.399963,top=[root[0]+Math.sin(an)*w*.12,h*(.85+rand()*.13),root[2]+Math.cos(an)*w*.12];let from=root;
-  for(let q=1;q<=5;q++){
-   const t=q/5,to=root.map((v,d)=>v+(top[d]-v)*(d===1?t:Math.pow(t,1.4)));b.branch(from,to,.0011*(1-t*.50),stem,'scape-brunnera');
-   if(q<4){const len=L*(.18+q*.055);b.add('brunneraHeart',kind,s.leafColor,...to,len*.65,len,len,.65,an+q*2.399,0);}
-   from=to;
-  }
-  for(let k=0;k<5;k++){
-   const aa=an+k*2.399963,t=.58+k*.07,start=root.map((v,d)=>v+(top[d]-v)*t),len=w*(.10+rand()*.055),end=[start[0]+Math.sin(aa)*len,start[1]+h*.13,start[2]+Math.cos(aa)*len];
-   let branchStart=start;
-   for(let q=1;q<=3;q++){const z=q/3,branchEnd=[start[0]+(end[0]-start[0])*z,start[1]+(end[1]-start[1])*(1-Math.pow(1-z,1.5)),start[2]+(end[2]-start[2])*z];b.branch(branchStart,branchEnd,.0006*(1-z*.25),stem,'cyme-brunnera');branchStart=branchEnd;}
-   for(let f=0;f<7;f++){
-    const t2=f/7,phase=aa+t2*2.0,at=[end[0]+Math.sin(phase)*.018*(1+t2),end[1]+t2*.029,end[2]+Math.cos(phase)*.018*(1+t2)];b.branch(end,at,.00025,stem,'pedicel-brunnera');
-    if(f===6){b.add(kit.bud,'bud-brunnera',typ==='morse'?'#d5debc':'#9e9bbb',...at,.0012,.0014,.0012);continue;}
-    detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius*(.9+rand()*.16),color:s.flowerColor,shape:'brunneraCorolla',palette:a.flowerPalette,tilt:.30+rand()*.70,yaw:aa+f*.7},{...kit,rand});
-   }
-  }
- }
-}
-
 function drawBrunneraCultivars(b,{info,s,detail,rand},kit){
  if(s.groundDormant)return;
  const a=info.appearance,h=s.height,w=s.spread,lh=Math.min(s.leafHeight||h,h*a.foliageHeightRatio),baseL=Math.min(a.leafLength,w*.37),L=baseL*s.leafScale,typ=a.shootProfile,small=w<.30;
- const kind=`leaf-brunnera-${typ}`,stem=a.stemColor,crowns=[],nc=small?1:3;
+ const kind=`leaf-brunnera-${typ}`,stem=a.stemColor,crowns=[],nc=small?1:3,hair=a.stemHairLength||.0014;
  const hairy=(from,to,r,key)=>{
   b.branch(from,to,r,stem,key);
-  for(let q=1;q<=3;q++){const t=q/4,at=from.map((v,d)=>v+(to[d]-v)*t),an=q*2.399963+rand()*.4;b.branch(at,[at[0]+Math.sin(an)*.0014,at[1]+.00065,at[2]+Math.cos(an)*.0014],.000055,'#c5d0b6','hair-brunnera');}
+  for(let q=1;q<=3;q++){const t=q/4,at=from.map((v,d)=>v+(to[d]-v)*t),an=q*2.399963+rand()*.4;b.branch(at,[at[0]+Math.sin(an)*hair,at[1]+hair*.35,at[2]+Math.cos(an)*hair],.000055,'#c5d0b6','hair-brunnera');}
  };
  for(let c=0;c<nc;c++){
   const az=c*2.399963,rr=c===0?0:Math.max(0,w*.43-baseL*1.04),root=[Math.sin(az)*rr,.006,Math.cos(az)*rr];crowns.push(root);
@@ -11264,7 +11228,7 @@ function drawBrunneraCultivars(b,{info,s,detail,rand},kit){
    for(let f=0;f<7;f++){
     const t=(f+1)/7,turn=aa+t*1.4,step=[end[0]+Math.sin(turn)*.018*t,end[1]+h*.075*t,end[2]+Math.cos(turn)*.018*t];b.branch(prev,step,.00028*(1-.35*t),stem,'cyme-axis-brunnera');prev=step;
     const side=f%2?1:-1,pa=turn+side*1.1,at=[step[0]+Math.sin(pa)*.004,step[1]+.003,step[2]+Math.cos(pa)*.004];b.branch(step,at,.00019,stem,'pedicel-brunnera');
-    if(f===6){b.add(kit.bud,'bud-brunnera','#a3adc5',...at,.0012,.0014,.0012);continue;}
+    if(f===6){b.add(kit.bud,'bud-brunnera',typ==='morse'?'#dce3c7':'#a3adc5',...at,.0012,.0014,.0012);continue;}
     detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius*(.94+rand()*.1),color:s.flowerColor,shape:'brunneraCorolla',palette:a.flowerPalette,tilt:.3+rand()*.65,yaw:pa},{...kit,rand});
    }
   }
@@ -13003,7 +12967,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
    f.add(kit.bud,'throat-brunnera','#eeece0',Math.sin(aa)*r*.12,r*.017,Math.cos(aa)*r*.12,r*.11,r*.06,r*.07);
    f.add(kit.bud,'anther-brunnera','#59545a',Math.sin(aa)*r*.07,-r*.15,Math.cos(aa)*r*.07,r*.025,r*.042,r*.025);
   }
-  f.add(kit.bud,'stigma-brunnera','#a5ac7a',0,-r*.06,0,r*.027,r*.040,r*.027);return;
+  f.add(kit.bud,'stigma-brunnera',palette.type==='morse'?'#eeeee7':'#a5ac7a',0,-r*.06,0,r*.027,r*.040,r*.027);return;
  }
  if(['brunneraFlower','stolonPhloxFlower'].includes(shape)){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),br=shape==='brunneraFlower',tube=br?.45:shape==='tapienFloret'?1.5:1.65,pk=palette.edge?patternKind('petal','primroseEdge',palette.edge):'petal';
@@ -14405,7 +14369,6 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='brunneraCultivarSprays'){drawBrunneraCultivars(b,{info,s,detail,rand},kit);return;}
- if(info.appearance?.architecture==='brunneraSprays'){drawBrunnera(b,{info,s,detail,rand},kit);return;}
  if(['primroseRosette','gerberaRosette'].includes(info.appearance?.architecture)){drawBasalFlowerForms(b,{info,s,detail,rand},kit);return;}
  if(['tapienMat','stolonPhlox'].includes(info.appearance?.architecture)){drawLowFlowerMats(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='sunspot'){drawSunspot(b,{info,s,rand},kit);return;}
