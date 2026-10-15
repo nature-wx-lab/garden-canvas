@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.298';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.299';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -411,3 +411,7 @@ Object.assign(TRAIT_VALUES,{iceWineDividedLeaf:'無柄で対生し、3〜5本の
 Object.assign(TRAIT_VALUES,{tangoLinear:'対生する細い単葉（品種写真を参考）',tangoDivided:'細い裂片へ分かれる対生葉（品種写真を参考）',tangoHead:'先端に切れ込みのある約8枚の舌状花・褐色の筒状花と黄色い花柱'});
 
 Object.assign(TRAIT_VALUES,{angelicDissected:'灰緑色で二段に深く切れ込む互生葉',angelicPinkHead:'細長い桃色の舌状花と黄色い筒状花・重なる総苞片'});
+
+Object.assign(TRAIT_VALUES,{teaselCorrugated:'浅い鋸歯としわのある単葉・対生葉の基部が杯状につながる',teaselRingHeads:'卵形から円柱形の棘ある花穂・4裂する小花が輪状に開花'});
+
+Object.assign(TRAIT_VALUES,{drumstickLeaves:'下部は鋸歯のあるへら形・上部は羽状に切れ込む対生葉',drumstickFlowers:'中心は白く周囲は淡青の大きな小花・花後は紙状の杯と暗色の星形の萼'});
