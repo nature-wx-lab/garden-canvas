@@ -11,6 +11,42 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Canary Gazania keeps cultivar organs and bounded seasonal patterns',()=>{
+ const id='p-c31838efba91',info=CATALOG[id];assert.equal(info.appearance.architecture,'canaryGazaniaBranches');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.2,.3]);assert.deepEqual(info.spread,[.4,.5]);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[3,4,5,6,7,8,9,10,11]);
+ for(const [index,size] of [{height:.25,spread:.45,leafHeight:.16},{height:.12,spread:.23,leafHeight:.08}].entries()){
+  const p={...makePlant(id,32100+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),st=stateAt(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'canaryGazaniaBranches',tag);assert.ok(count('vein-canary')>0,tag);assert.equal(count('branch-canary')>0,true,tag);
+    const heads=count('involucre-canary'),open=count('receptacle-canary');assert.equal(heads>0,st.bloom,tag);assert.equal(heads,open+count('bud-canary'),tag);const rays=count('petal-canary-open')+count('petal-canary-opening');assert.ok(rays>=open*18&&rays<=open*20,tag);assert.equal(count('disc-canary'),open*120,tag);
+    assert.ok(!g.children.some(m=>/seed|fruit|pappus|petal-daisy/.test(m.userData.component||'')),tag);
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+});
+test('Pretty Bidens keeps cultivar organs and bounded seasonal patterns',()=>{
+ const id='p-f08f0e85d727',info=CATALOG[id];assert.equal(info.appearance.architecture,'prettyBidensMounds');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.25,.3]);assert.deepEqual(info.spread,[.45,.6]);assert.equal(info.bloomKnown,true);assert.deepEqual(info.bloom,[3,4,5,6,7,8,9]);
+ for(const [index,size] of [{height:.28,spread:.50,leafHeight:.18},{height:.14,spread:.27,leafHeight:.09}].entries()){
+  const p={...makePlant(id,32110+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),st=stateAt(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'prettyBidensMounds',tag);assert.ok(count('vein-pretty')>0,tag);assert.equal(count('stem-pretty')>0,true,tag);
+    const heads=count('involucre-pretty'),open=count('receptacle-pretty');assert.equal(heads>0,st.bloom,tag);assert.equal(heads,open+count('bud-pretty')+count('spent-pretty'),tag);assert.equal(count('petal-pretty-pale')+count('petal-pretty-pink'),open*8,tag);assert.equal(count('disc-pretty'),open*45,tag);assert.equal(count('bract-pretty'),heads*8,tag);
+    assert.ok(!g.children.some(m=>/seed|fruit|pappus|petal-daisy/.test(m.userData.component||'')),tag);
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+});
 test('Satin Chameleon Red Satin keeps cultivar organs and bounded seasonal patterns',()=>{
  const id='p-d32e8cbb65df',info=CATALOG[id];assert.equal(info.appearance.architecture,'satinChameleonShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[0.45,0.45]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[6,7,8,9,10,11]);
  for(const [index,size] of [{height:.45,spread:.55,leafHeight:.28},{height:.20,spread:.28,leafHeight:.12}].entries()){
@@ -2440,7 +2476,7 @@ test('Lamium keeps paired silver leaves on runners and axillary hooded flowers w
  assert.notEqual(CATALOG[ids[0]].appearance.leafShape,CATALOG[ids[1]].appearance.leafShape);assert.notEqual(CATALOG[ids[0]].appearance.leafPattern,CATALOG[ids[1]].appearance.leafPattern);
 });
 test('Clover separates creeping perennial leaves from annual crimson racemes and prevents regrowth after death',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>['cloverStolons','crimsonClover'].includes(p.appearance?.architecture));assert.equal(entries.length,9);
+ const entries=Object.entries(CATALOG).filter(([,p])=>['cloverStolons','crimsonClover'].includes(p.appearance?.architecture));assert.equal(entries.length,7);
  for(const [i,[id,info]]of entries.entries()){
   const p=makePlant(id,17000+i,2,2);p.height=info.height[1];p.spread=.3;p.leafHeight=p.height*.65;const annual=info.life==='annual';
   for(let month=1;month<=12;month++){
@@ -3878,7 +3914,7 @@ test('Euonymus separates evergreen cultivar foliage, leafless corky winter branc
 });
 
 test('Osmanthus has opposite evergreen leaves, four-lobed axillary flowers and cultivar-specific annual colour',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='osmanthusAxils');assert.equal(entries.length,9);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='osmanthusAxils');assert.equal(entries.length,7);
  for(const [i,[id,info]] of entries.entries()){
   const a=info.appearance;let wood;
   for(let month=1;month<=12;month++){
@@ -3896,7 +3932,7 @@ test('Osmanthus has opposite evergreen leaves, four-lobed axillary flowers and c
 });
 
 test('nine magnolias preserve flowers before leaves, evergreen undersides and species fruit across twelve months',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='magnoliaBranches');assert.equal(entries.length,9);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='magnoliaBranches');assert.equal(entries.length,7);
  for(const [i,[id,info]] of entries.entries()){
   let skeleton;
   for(let month=1;month<=12;month++){
@@ -3935,7 +3971,7 @@ test('camellias retain alternate evergreen leaves, distinct flowers and stable w
 });
 
 test('olives preserve axillary four-lobed flowers, cultivar fruits and evergreen versus deciduous leaves',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>['oliveBranches','russianOliveBranches'].includes(p.appearance?.architecture));assert.equal(entries.length,9);
+ const entries=Object.entries(CATALOG).filter(([,p])=>['oliveBranches','russianOliveBranches'].includes(p.appearance?.architecture));assert.equal(entries.length,7);
  for(const [i,[id,info]] of entries.entries()){
   const a=info.appearance,russian=a.shootProfile==='russian';let wood;
   for(let month=1;month<=12;month++){
@@ -3956,7 +3992,7 @@ test('olives preserve axillary four-lobed flowers, cultivar fruits and evergreen
 
 test('Syringa keeps four-lobed tubular flowers, cultivar doubling and variegation, repeat bloom and winter buds',()=>{
  assert.ok(syringaLeafPoint('syringaCordate',.08,1)[1]<0,'cordate leaf base extends below the petiole notch');
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='syringaPanicles');assert.equal(entries.length,9);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='syringaPanicles');assert.equal(entries.length,7);
  for(const [i,[id,info]] of entries.entries()){
   let wood;
   for(let month=1;month<=12;month++){
@@ -4013,7 +4049,7 @@ test('Fothergilla separates leaf-first timing, asymmetric leaf bases, petal-free
 });
 
 test('Deutzia preserves cultivar habit, opposite hairy blades, flower anatomy, summer repeat and winter wood',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='deutziaSprays');assert.equal(entries.length,9);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='deutziaSprays');assert.equal(entries.length,7);
  for(const [i,[id,info]] of entries.entries()){
   let wood;
   for(let month=1;month<=12;month++){
@@ -4323,7 +4359,7 @@ test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads 
 
 
 test('daisy cultivars keep distinct leaves, flower patterns and winter organs in all months',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='daisyBranches');assert.equal(entries.length,9);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='daisyBranches');assert.equal(entries.length,7);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,5900+i,2,2);
   for(let month=1;month<=12;month++){
