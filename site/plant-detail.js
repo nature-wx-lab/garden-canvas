@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.261';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.262';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.261';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.262';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,45 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function karvinskianusPoint(type,t,u){
+ const blade=Math.max(0,(t-.13)/.87),sn=Math.max(0,Math.sin(Math.PI*blade)),lobed=type==='karvinskianusLobed';
+ const edge=lobed?1+.8*Math.exp(-(((t-.61)/.085)**2))-.63*Math.exp(-(((t-.75)/.048)**2)):1;
+ return [u*.5*(t<.13?.035:Math.max(.01,sn**.7*(.30+.70*blade)*edge)),t,.045*sn+.025*u*u*sn-.018*Math.exp(-u*u*55)*sn];
+}
+function drawKarvinskianus(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),size=Math.min(1,h/.22,w/.35),scale=Math.max(.55,size),R=a.headRadius,cupR=a.involucreRadius,cupH=a.involucreHeight,discR=a.discRadius,n=Math.max(9,Math.min(26,Math.round(19*detail*Math.sqrt(w/.35)))),growth=winter?.22:month===3?.38:month===4?.65:1;
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const leaf=(at,az,i,k,fac=1)=>{
+  if(noise(i,k+29)>s.leafDensity)return;
+  const f=flowerFrame(b,at,.75+noise(i,k+39)*.4,az),kind=noise(i,k+45)>.44?'karvinskianusLobed':'karvinskianusEntire',len=a.leafLength*scale*fac,width=a.leafWidth*scale*fac,color=winter&&noise(i,k+19)>.6?'#8b655d':s.leafColor;
+  f.add(kind,'leaf-karvinskianus',kit.shade(rand,color,.035),0,0,0,width,len,len);
+  for(let j=0;j<5;j++){const t=.35+j*.11,u=(noise(i,j+k)-.5)*1.6,p=karvinskianusPoint(kind,t,u),root=[p[0]*width,p[1]*len,p[2]*len];f.branch(root,[root[0],root[1]+.0001*scale,root[2]+.00045*scale],.000022*scale,'#b2bd93','hair-karvinskianus');}
+ };
+ const head=(at,az,i,k)=>{
+  if(!s.bloom)return;
+  const f=flowerFrame(b,at,.12+noise(i,k+33)*.34,az),age=noise(i,k+55),bud=noise(i,k+74)>s.flowerDensity*.92;
+  f.add(kit.bud,'involucre-karvinskianus','#72914f',0,cupH*.42,0,cupR,cupH*.5,cupR);
+  for(let row=0;row<3;row++)for(let j=0;j<18;j++){const aa=(j+row*.4)*TAU/18;f.add('erigeronLeaf','bract-karvinskianus','#758e50',Math.sin(aa)*cupR*.48,cupH*row*.12,Math.cos(aa)*cupR*.48,.0005,cupH*.95,cupH*.95,.65,aa,0);}
+  if(bud){f.add(kit.bud,'bud-karvinskianus','#b97f9b',0,cupH*.9,0,cupR*.55,cupH*.55,cupR*.55);return;}
+  const color=age<.58?'#f2efe2':age<.80?'#e8b6cb':'#c87b9c',pitch=age<.80?1.48:.95;
+  for(let row=0;row<2;row++)for(let j=0;j<30;j++){const aa=(j+row*.5)*TAU/30,rootR=cupR*.66,len=R-rootR;f.add('erigeronRay','ray-karvinskianus',kit.shade(rand,color,.015),Math.sin(aa)*rootR,cupH*.9+row*.00025,Math.cos(aa)*rootR,.0006,len,len,pitch-row*.07,aa,0);}
+  f.add(kit.bud,'disc-karvinskianus-base','#d5b249',0,cupH*.8,0,discR,.0007,discR);
+  for(let j=0;j<55;j++){const aa=j*2.399963,rr=discR*Math.sqrt((j+.3)/55),len=a.discLength;f.add('erigeronDisk','disc-floret-karvinskianus',age>.8?'#c29b3a':'#e1bc3c',Math.sin(aa)*rr,cupH*.65+.0005*(1-rr/discR),Math.cos(aa)*rr,.0007,len,.0007,.03,aa,0);}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,spread=w*(winter?.23:.30)*(.55+.45*Math.sqrt((i+.5)/n)),top=h*growth*(.60+.26*noise(i,7)),root=[Math.sin(az)*w*.15*Math.sqrt((i+.5)/n),.003,Math.cos(az)*w*.15*Math.sqrt((i+.5)/n)];
+  b.branch([0,.003,0],root,.001*scale,'#8a8066','base-karvinskianus-woody');
+  const point=t=>[root[0]+Math.sin(az+.15*Math.sin(t*5+i))*spread*t,root[1]+top*Math.sin(t*Math.PI*.5)**1.4,root[2]+Math.cos(az+.15*Math.sin(t*5+i))*spread*t];let prev=root;
+  for(let j=1;j<=12;j++){const t=j/12,at=point(t);b.branch(prev,at,(.00075-.00035*t)*scale,j<3?'#8a8066':winter?'#8a8b68':a.stemColor,j<3?'base-karvinskianus-woody':'stem-karvinskianus');prev=at;if(j<11)leaf(at,az+j*2.4,i,j*97,winter?.75:1);if([3,5,7].includes(j)){const aa=az+j*2.4,tip=[at[0]+Math.sin(aa)*.008*scale,at[1]+.004*scale,at[2]+Math.cos(aa)*.008*scale];b.branch(at,tip,.00025*scale,a.stemColor,'axil-karvinskianus');for(let q=0;q<3;q++)leaf(tip,aa+q*2.4,i,j*103+q*27,.62);}}
+  head(prev,az,i,1000);
+  for(let k=0;k<4;k++){
+   const q=(5+k)/12,base=point(q),aa=az+(k%2?-.7:.7),reach=w*(winter?.06:.095),tip=[base[0]+Math.sin(aa)*reach,Math.min(h*growth*.94,base[1]+h*growth*(.16+.04*noise(i,k+8))),base[2]+Math.cos(aa)*reach];let prev=base;
+   for(let j=1;j<=3;j++){const t=j/3,at=base.map((v,x)=>v+(tip[x]-v)*t);b.branch(prev,at,.00035*scale,winter?'#8a8b68':a.stemColor,'branch-karvinskianus');prev=at;if(j<3)leaf(at,aa+j*2.4,i,700+k*33+j*5,.8);}
+   head(tip,aa,i,1500+k*100);
+  }
+ }
+}
+
 export function erigeronPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='erigeronRay')return [u*.5*(.25+.75*Math.sin(Math.PI*t/2)**.45),t-.045*Math.abs(u)**2*t**6,.12*t*t+.018*Math.sin(t*19+u*7)*t*t];
@@ -11489,6 +11528,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='karvinskianusTrails'){drawKarvinskianus(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='erigeronHeads'){drawErigeron(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='linumCymes'){drawLinum(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='chalcedonicaHeads'){drawChalcedonica(b,{info,s,detail,rand,month},kit);return;}
