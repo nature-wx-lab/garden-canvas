@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.257';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.258';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.257';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.258';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -8046,21 +8046,24 @@ function drawNemorosa(b,{info,s,detail,rand,month},kit){
 // Slender curved blades and two separate lips; dimensions are drawing estimates.
 export function linariaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='linariaPeachyLeaf')return [u*(.48*Math.pow(sn,.62)+.09*Math.exp(-t*10)),t-.02*Math.abs(u)*Math.exp(-t*8),.07*t*t+.035*u*u*sn-.012*Math.exp(-u*u*60)*sn];
  if(type==='linariaLeaf')return [u*.5*Math.pow(sn,.72)*(1-.32*t),t,.10*t*t+.034*u*u*sn-.012*Math.exp(-u*u*65)*sn];
  if(type==='linariaSpur'){
   const an=(u+1)*Math.PI,r=.075*Math.pow(1-t,1.15)+.002;
   return [Math.sin(an)*r,-t*.58,Math.cos(an)*r+.10+.27*t*t];
  }
  const upper=type==='linariaUpperLip',lobes=upper?2:3;
- const edge=1-.15*Math.pow(Math.max(0,Math.cos((u+1)*Math.PI*lobes)),6)*Math.pow(t,5);
- return [u*.5*Math.pow(sn,.42),t*edge,(upper?-.10:.16)*u*u*sn+(upper?-.24:.24)*t*t];
+ // A lip opens from a narrow throat into a broad, lobed free edge.
+ // Closing the width at t=1 would turn both lips into pointed paddles.
+ const edge=1-(upper?.26:.21)*Math.pow(Math.max(0,Math.cos((u+1)*Math.PI*lobes)),4)*Math.pow(t,5);
+ return [u*.5*(.15+.85*Math.pow(Math.sin(Math.PI*t/2),.62)),t*edge,(upper?-.10:.16)*u*u*sn+(upper?-.24:.24)*t*t];
 }
 
 function drawLinaria(b,{info,s,detail,rand,month},kit){
  if(s.groundDormant)return;
  const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),stem=a.stemColor;
  const L=Math.min(a.leafLength,w*.30),count=Math.max(4,Math.min(14,Math.round(7*detail*Math.pow(w/.3,.72))));
- const leaf=(at,angle,len,pitch,basal=false)=>b.add('linariaLeaf',basal?'leaf-linaria-basal':'leaf-linaria',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,pitch,angle,(rand()-.5)*.10);
+ const leaf=(at,angle,len,pitch,basal=false)=>b.add(a.shootProfile==='peachy'?'linariaPeachyLeaf':'linariaLeaf',basal?'leaf-linaria-basal':'leaf-linaria',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,pitch,angle,(rand()-.5)*.10);
  for(let i=0;i<count;i++){
   const an=i*2.399963,rr=w*.32*Math.sqrt((i+.4)/count),root=[Math.sin(an)*rr,.003,Math.cos(an)*rr];
   // Winter shoots are new basal growth, not shrunken flowering stems.
@@ -8081,10 +8084,11 @@ function drawLinaria(b,{info,s,detail,rand,month},kit){
    }
   }
   if(!s.bloom)continue;
-  const racemeLength=top-body,flowerCount=Math.max(36,Math.round(racemeLength/.0028)),racemePoint=t=>point(1+t*.24,body+racemeLength*t);
-  for(let k=1;k<=8;k++){const at=racemePoint(k/8);b.branch(from,at,.00047*(1-k/8*.50),stem,'raceme-linaria');from=at;}
+  const drawRaceme=(racemePoint,racemeLength,axisAngle,side=false)=>{
+  const flowerCount=Math.max(a.shootProfile==='peachy'?(side?10:18):36,Math.round(racemeLength/(a.shootProfile==='peachy'?.0045:.0028)));let previous=racemePoint(0);
+  for(let k=1;k<=8;k++){const at=racemePoint(k/8);b.branch(previous,at,.00047*(1-k/8*.50)*(side?.78:1),stem,'raceme-linaria');previous=at;}
   for(let j=0;j<flowerCount;j++){
-   const t=(j+.3+rand()*.35)/flowerCount,aa=an+j*2.399963+(rand()-.5)*.3,at=racemePoint(t),reach=.0017+.0018*(1-t),tip=[at[0]+Math.sin(aa)*reach,at[1]-.0015+rand()*.002,at[2]+Math.cos(aa)*reach];
+   const t=(j+.3+rand()*.35)/flowerCount,aa=axisAngle+j*2.399963+(rand()-.5)*.3,at=racemePoint(t),reach=.0017+.0018*(1-t),tip=[at[0]+Math.sin(aa)*reach,at[1]-.0015+rand()*.002,at[2]+Math.cos(aa)*reach];
    b.branch(at,tip,.00015,stem,'pedicel-linaria');
    if(t>.84){
     b.add(kit.bud,'bud-linaria',a.flowerPalette.bud,...tip,.00085*(1.25-t*.3),.0021,.00085,.12,aa,0);continue;
@@ -8093,6 +8097,14 @@ function drawLinaria(b,{info,s,detail,rand,month},kit){
     b.add('narrow','calyx-linaria-spent',stem,...tip,.0018,.0024,.0018,.75,aa,0);continue;
    }
    detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:a.flowerRadius*(.88+rand()*.16),color:s.flowerColor,shape:'linariaLips',palette:{...a.flowerPalette,length:a.flowerLength*.65},tilt:1.45+rand()*.42,yaw:aa},{...kit,rand});
+  }
+  };
+  drawRaceme(t=>point(1+t*.24,body+(top-body)*t),top-body,an);
+  if(a.shootProfile==='peachy')for(let k=0;k<2;k++){
+   const node=nodes-(k?6:3),t=node/nodes,base=point(t,body*t),aa=an+(k?1.75:-1.45),rise=h*(.15+rand()*.055),reach=w*(.10+rand()*.035);
+   const branchPoint=q=>[base[0]+Math.sin(aa)*reach*q,base[1]+rise*q,base[2]+Math.cos(aa)*reach*q];
+   let previous=base;for(let n=1;n<=4;n++){const at=branchPoint(n/4);b.branch(previous,at,.00045*(1-n*.10),stem,'stem-linaria-branch');if(n<4)leaf(at,aa+n*2.4,L*(.50-n*.055),.85);previous=at;}
+   drawRaceme(q=>[previous[0]+Math.sin(aa)*reach*.42*q,previous[1]+h*.13*q,previous[2]+Math.cos(aa)*reach*.42*q],h*.13,aa,true);
   }
  }
 }
@@ -9490,8 +9502,8 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length,lip=palette.lip||color;
   f.add('woodlandMintTube','corolla-linaria',color,0,0,0,r*2.1,L*.56,r*2.1);
   f.add('linariaSpur','spur-linaria',color,0,L*.10,r*.10,L,L,L);
-  f.add('linariaUpperLip','petal-linaria-upper',lip,0,L*.51,-r*.30,r*1.85,L*.34,L*.34,-.40,0,0);
-  f.add('linariaLowerLip','petal-linaria-lower',lip,0,L*.52,r*.27,r*2.40,L*.36,L*.36,.48,0,0);
+  f.add('linariaUpperLip','petal-linaria-upper',palette.upper||lip,0,L*.51,-r*.30,r*1.85,L*.34,L*.34,-.40,0,0);
+  f.add('linariaLowerLip','petal-linaria-lower',palette.lower||lip,0,L*.52,r*.27,r*2.40,L*.36,L*.36,.48,0,0);
   f.add('linariaLowerLip','palate-linaria',palette.palate,0,L*.48,r*.45,r*1.5,L*.19,L*.16,-.25,0,0);
   for(let j=0;j<5;j++){const aa=j*TAU/5;f.add('narrow','sepal-linaria','#839b87',Math.sin(aa)*r*.42,0,Math.cos(aa)*r*.42,r*.29,L*.22,L*.22,.26,aa,0);}
   // Stamens, style and ovary are not resolved by the adopted sources.

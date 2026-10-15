@@ -11,6 +11,27 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Peachy Linaria has broader leaves, two-tone spurred flowers and low winter shoots',()=>{
+ const id='p-55bf983a3a5e',info=CATALOG[id],a=info.appearance;
+ assert.equal(a.status,'partial');assert.equal(a.shootProfile,'peachy');assert.equal(info.bloomKnown,false);assert.equal(a.flowerTiming,'season-reference');
+ assert.deepEqual(info.height,[.4,.6]);assert.deepEqual(info.spread,[.2,.3]);assert.deepEqual(info.colors,['yellow','orange','pink']);
+ assert.ok(a.leafWidth/a.leafLength>.25);assert.notEqual(a.flowerPalette.upper,a.flowerPalette.lower);
+ assert.ok(a.unconfirmed.some(x=>x.includes('不一致')));assert.ok(a.unconfirmed.some(x=>x.includes('冬の実物写真ではない')));
+ for(const small of [false,true]){
+  const p={...makePlant(id,26800+Number(small),1,1),height:small?.22:.6,spread:small?.18:.25,leafHeight:small?.12:.3};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),winter=[1,2,12].includes(month),flowers=count('corolla-linaria');
+   assert.equal(g.userData.architecture,'linariaRacemes');assert.equal(stateAt(p,view(month)).shootScale,1);
+   assert.ok(count('leaf-linaria-basal')>0);assert.equal(count('stem-linaria')>0,!winter);assert.equal(flowers>0,info.bloom.includes(month));assert.equal(count('stem-linaria-branch')>0,info.bloom.includes(month));
+   assert.equal(count('spur-linaria'),flowers);assert.equal(count('petal-linaria-upper'),flowers);assert.equal(count('petal-linaria-lower'),flowers);assert.equal(count('sepal-linaria'),flowers*5);
+   assert.ok(g.children.filter(m=>m.userData.component.startsWith('leaf-linaria')).every(m=>m.geometry.userData.linariaPeachyLeaf));
+   if(flowers){const upper=g.children.find(m=>m.userData.component==='petal-linaria-upper'),lower=g.children.find(m=>m.userData.component==='petal-linaria-lower');assert.notDeepEqual([...upper.instanceColor.array.slice(0,3)],[...lower.instanceColor.array.slice(0,3)]);assert.equal(upper.castShadow,false);assert.equal(lower.receiveShadow,false);}
+   assert.ok(!g.children.some(m=>/fruit|seed|anther|style/.test(m.userData.component)));
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.006,m.userData.component);assert.ok(m.boundingBox.max.y<=p.height*1.10,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.70,m.userData.component);if(winter)assert.ok(m.boundingBox.max.y<p.height*.15);}
+   dispose(g);
+  }
+ }
+});
 test('Carnea keeps dense terminal bifid flowers and does not invent autumn reblooming',()=>{
  const id='p-ad2be876ccf2',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.7,1.2]);assert.deepEqual(info.spread,[.3,.4]);assert.equal(info.bloomKnown,false);assert.equal(info.appearance.flowerTiming,'season-reference');
  for(const small of [false,true]){const p={...makePlant(id,26700+Number(small),1,1),height:small?.25:1.2,spread:small?.23:.35,leafHeight:small?.12:.5};
