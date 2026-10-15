@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.263';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.264';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.263';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.264';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,50 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function miyakowasurePoint(type,t,u){
+ const basal=type==='miyakowasureBasal',v=basal?Math.max(0,(t-.28)/.72):t,sn=Math.max(0,Math.sin(Math.PI*v));
+ if(type==='miyakowasureRay')return [u*.5*Math.sin(Math.PI*t)**.45*(.6+.4*t),t-.025*(1-Math.cos(u*3*Math.PI))*t**10,.10*t*t+.025*u*u*Math.sin(Math.PI*t)];
+ const teeth=.80+.20*((v*8)%1),width=basal&&t<.28?.055:Math.max(basal?.055*(1-v):0,sn**.70*(.75+.25*v)*teeth);
+ return [u*.5*width,t,.045*sn+.025*u*u*sn-.018*Math.exp(-u*u*65)*sn];
+}
+function drawMiyakowasure(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),shoots=[3,4,5,6].includes(month),scale=Math.max(.6,Math.min(1,h/.35,w/.25)),n=Math.max(5,Math.min(16,Math.round(11*detail*Math.sqrt(w/.25))));
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const leaf=(at,az,i,k,basal=false,fac=1)=>{
+  if(noise(i,k+27)>s.leafDensity)return;
+  const f=flowerFrame(b,at,basal?1.10:.8+noise(i,k+13)*.4,az),len=(basal?.080:a.leafLength)*scale*fac,width=a.leafWidth*scale*fac,kind=basal?'miyakowasureBasal':'miyakowasureLeaf';
+  f.add(kind,basal?'leaf-miyakowasure-basal':'leaf-miyakowasure-cauline',kit.shade(rand,s.leafColor,.035),0,0,0,width,len,len);
+  const point=(t,u)=>{const q=miyakowasurePoint(kind,t,u);return [q[0]*width,q[1]*len,q[2]*len+.00008];};
+  for(let j=1;j<=8;j++)f.branch(point((j-1)/8,0),point(j/8,0),.00009*scale,'#829b69','vein-miyakowasure');
+  for(let j=0;j<5;j++)for(const side of [-1,1]){const t=(basal?.38:.16)+j*.11;f.branch(point(t,0),point(t+.12,side*.84),.000055*scale,'#718c60','vein-miyakowasure');}
+  for(let j=0;j<5;j++){const t=.35+noise(i,k+j)*.48,q=point(t,.3);f.branch(q,[q[0]+.0002,q[1]+.00015,q[2]+.00065],.000025*scale,'#a8b699','hair-miyakowasure-leaf');}
+ };
+ const head=(at,az,i,k)=>{
+  if(!s.bloom)return;
+  const f=flowerFrame(b,at,.08+noise(i,k+50)*.30,az),R=a.headRadius,cupR=a.involucreRadius,cupH=a.involucreHeight,discR=a.discRadius,bud=noise(i,k+60)>s.flowerDensity*.94;
+  f.add(kit.bud,'involucre-miyakowasure','#68854e',0,cupH*.4,0,cupR,cupH*.5,cupR);
+  for(let row=0;row<2;row++)for(let j=0;j<12;j++){const aa=(j+row*.5)*TAU/12,r=cupR*(.5+row*.1);f.add('erigeronLeaf','bract-miyakowasure','#6d8b50',Math.sin(aa)*r,cupH*row*.1,Math.cos(aa)*r,.0018,cupH,cupH,.7+row*.15,aa,0);}
+  if(bud){f.add(kit.bud,'bud-miyakowasure','#9b66bd',0,cupH*.8,0,cupR*.60,cupH*.60,cupR*.60);return;}
+  const rays=18+2*Math.floor(noise(i,k+70)*3),rootR=discR*.80,len=R-rootR;
+  for(let j=0;j<rays;j++){const aa=j*TAU/rays+(noise(i,k+j)*.06);f.add('miyakowasureRay','ray-miyakowasure',kit.shade(rand,info.flower,.035),Math.sin(aa)*rootR,cupH*.83,Math.cos(aa)*rootR,.0045,len,len,1.33+noise(i,k+j+90)*.12,aa,0);}
+  f.add(kit.bud,'disc-miyakowasure-base','#c5ce66',0,cupH*.7,0,discR,.001,discR);
+  for(let j=0;j<80;j++){const aa=j*2.399963,r=discR*Math.sqrt((j+.4)/80),y=cupH*.68+.001*(1-r/discR),x=Math.sin(aa)*r,z=Math.cos(aa)*r;
+   f.add('erigeronDisk','disc-floret-miyakowasure',r>discR*.55?'#e6df7e':'#d0d875',x,y,z,.00085,.003,.00085,.08,aa,0);
+   if(r>discR*.48){const root=[x,y+.0028,z],tip=[x+Math.sin(aa)*.0004,y+.0048,z+Math.cos(aa)*.0004];f.branch(root,tip,.000065,'#f0e8bd','style-miyakowasure');}
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,r=w*.28*Math.sqrt((i+.4)/n),base=[Math.sin(az)*r,.004,Math.cos(az)*r];
+  for(let j=0;j<5;j++)leaf(base,az+j*2.4,i,j*79,true,winter?.65:1);
+  if(!shoots)continue;
+  const top=h*(month===3?.26:.73+.14*noise(i,17)),point=t=>[base[0]+Math.sin(az)*w*.06*t,base[1]+top*t,base[2]+Math.cos(az)*w*.06*t];let prev=base;
+  for(let j=1;j<=10;j++){const t=j/10,at=point(t);b.branch(prev,at,(.0011-.0005*t)*scale,a.stemColor,'stem-miyakowasure');prev=at;if(j<9)leaf(at,az+j*2.4,i,j*53,false,(1-t*.40)*(month===3?.6:1));}
+  head(prev,az,i,1000);
+  for(let j=0;j<2;j++){const t=.55+j*.16,at=point(t),aa=az+(j?1.0:-1.0),end=[at[0]+Math.sin(aa)*w*.10,Math.min(h*.91,at[1]+h*(month===3?.06:.23)),at[2]+Math.cos(aa)*w*.10];b.branch(at,end,.0005*scale,a.stemColor,'branch-miyakowasure');leaf(at.map((v,k)=>v+(end[k]-v)*.35),aa,i,1300+j*41,false,.60);head(end,aa,i,1500+j*100);}
+ }
+}
+
+
 export function compositusLeafGeometry(){
  const points=[[0,0],[-.026,0],[-.026,.31],[-.10,.42],[-.46,.65],[-.55,.80],[-.42,.78],[-.10,.53],[-.11,.88],[0,1],[.11,.88],[.10,.53],[.42,.78],[.55,.80],[.46,.65],[.10,.42],[.026,.31],[.026,0]],shape=new THREE.Shape();
  for(let i=0;i<points.length;i++){const a=points[i],next=points[(i+1)%points.length],mid=[(a[0]+next[0])/2,(a[1]+next[1])/2];if(i===0)shape.moveTo(...mid);else shape.quadraticCurveTo(...a,...mid);}shape.closePath();
@@ -5435,7 +5479,7 @@ export function erigeronPoint(type,t,u){
 }
 function drawErigeron(b,{info,s,detail,rand,month},kit){
  if(s.groundDormant)return;
- const a=info.appearance,branched=a.shootProfile!=='aurantiacus',rosa=a.shootProfile==='rosa',prosperity=a.shootProfile==='prosperity',h=s.height,w=s.spread,size=Math.min(1,h/.35,w/(prosperity||rosa?.25:branched?.35:.22)),L=a.leafLength*size,W=a.leafWidth*size,R=a.headRadius*Math.max(.58,size),cupR=a.involucreRadius*Math.max(.58,size),cupH=a.involucreHeight*Math.max(.58,size),discR=a.discRadius*Math.max(.58,size),n=Math.max(5,Math.min(22,Math.round((prosperity?14:branched?10:14)*detail*Math.sqrt(w/(prosperity||rosa?.25:branched?.35:.22))))),growth=month===3?.28:month===4?.58:month===5?.88:1;
+ const a=info.appearance,branched=a.shootProfile!=='aurantiacus',rosa=a.shootProfile==='rosa',prosperity=a.shootProfile==='prosperity',h=s.height,w=s.spread,size=Math.min(1,h/.35,w/(prosperity||rosa?.25:branched?.35:.22)),L=a.leafLength*size,W=a.leafWidth*size,R=a.headRadius,cupR=a.involucreRadius,cupH=a.involucreHeight,discR=a.discRadius,n=Math.max(5,Math.min(22,Math.round((prosperity?14:branched?10:14)*detail*Math.sqrt(w/(prosperity||rosa?.25:branched?.35:.22))))),growth=month===3?.28:month===4?.58:month===5?.88:1;
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
  const leaf=(at,az,i,k,scale=1,basal=false)=>{
   const type=basal?'erigeronBasal':'erigeronLeaf',f=flowerFrame(b,at,(basal?.90:.70)+noise(i,k)*.40,az),len=L*scale,width=W*scale;
@@ -5452,15 +5496,15 @@ function drawErigeron(b,{info,s,detail,rand,month},kit){
    const aa=(j+row*.4)*TAU/22,rr=cupR*(.35+row*.12);f.add('erigeronLeaf',branched?'bract-erigeron-green':'bract-erigeron-purple-tip',green,Math.sin(aa)*rr,cupH*(.03+row*.11),Math.cos(aa)*rr,cupH*.10,cupH*.95,cupH*.95,.60+row*.16,aa,0);
   }
   if(bud){f.add(kit.bud,'bud-erigeron',rosa?'#d19acb':branched?'#9b9ac4':'#bb5f40',0,cupH*.83,0,cupR*.65,cupH*.38,cupR*.65);return;}
-  const age=noise(i,k+30),color=branched?a.flowerPalette[age<.35?'pale':'deep']:a.flowerPalette[age<.40?'red':age<.76?'mid':'orange'],rows=prosperity?2:rosa?3:branched&&size>.85&&noise(i,k+41)>.40?4:3,perRow=prosperity?32:rosa?36:branched?32:28;
+  const age=noise(i,k+30),color=branched?a.flowerPalette[age<.35?'pale':'deep']:a.flowerPalette[age<.40?'red':age<.76?'mid':'orange'],rows=prosperity?2:rosa?3:branched&&noise(i,k+41)>.40?4:3,perRow=prosperity?32:rosa?36:branched?32:28;
   for(let row=0;row<rows;row++)for(let j=0;j<perRow;j++){
    const aa=(j+row*.37)*TAU/perRow,radius=cupR*(.82-row*.10),len=(R-radius)*(.9+noise(i,k+j+row*50)*.20),pitch=(branched?1.40:1.20)-row*.15+(noise(i,j*13+k)-.5)*.16;
-   f.add('erigeronRay','ray-erigeron',kit.shade(rand,color,.028),Math.sin(aa)*radius,cupH*.82+row*.0004*size,Math.cos(aa)*radius,a.rayWidth*Math.max(.58,size),len,len,pitch,aa,0);
+   f.add('erigeronRay','ray-erigeron',kit.shade(rand,color,.028),Math.sin(aa)*radius,cupH*.82+row*.0004,Math.cos(aa)*radius,a.rayWidth,len,len,pitch,aa,0);
   }
-  f.add(kit.bud,'disc-erigeron-base','#d6b847',0,cupH*.85,0,discR,.0012*size,discR);
+  f.add(kit.bud,'disc-erigeron-base','#d6b847',0,cupH*.85,0,discR,.0012,discR);
   for(let j=0;j<85;j++){
-   const aa=j*2.399963,rr=discR*Math.sqrt((j+.3)/85),yy=cupH*.74+.0015*size*(1-rr/discR),len=a.discLength*Math.max(.58,size);
-   f.add('erigeronDisk','disc-floret-erigeron',j%3?'#e4bd31':'#efd45c',Math.sin(aa)*rr,yy,Math.cos(aa)*rr,.0012*size,len,len*.22,.06,aa,0);
+   const aa=j*2.399963,rr=discR*Math.sqrt((j+.3)/85),yy=cupH*.74+.0015*(1-rr/discR),len=a.discLength;
+   f.add('erigeronDisk','disc-floret-erigeron',j%3?'#e4bd31':'#efd45c',Math.sin(aa)*rr,yy,Math.cos(aa)*rr,.0012,len,len*.22,.06,aa,0);
   }
  };
  for(let i=0;i<n;i++){
@@ -11562,6 +11606,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='miyakowasureCrowns'){drawMiyakowasure(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='compositusRosettes'){drawCompositus(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='karvinskianusTrails'){drawKarvinskianus(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='erigeronHeads'){drawErigeron(b,{info,s,detail,rand,month},kit);return;}
