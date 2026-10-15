@@ -1,6 +1,6 @@
 {
   "name": "garden-canvas",
-  "version": "0.9.300",
+  "version": "0.9.301",
   "private": true,
   "type": "module",
   "scripts": {
