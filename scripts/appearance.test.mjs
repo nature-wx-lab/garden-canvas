@@ -11,6 +11,29 @@ import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySage
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Annual seed scabiosas keep plant colours and finish their life cycle while White Pink flowers in winter',()=>{
+ const cases=[['p-a354a22e1dd7',33601,1,.45],['p-a354a22e1dd7',33600,1,.45],['p-b256aaf37c02',33610,.60,.30],['p-db707ffc5146',33620,.60,.30],['p-7f57675b7ac0',33630,.70,.35]];
+ for(const [ci,[id,base,adult,small]] of cases.entries()){
+  const info=CATALOG[id],whitePink=ci===4,tag='atrop-scabiosa',sizes=[{height:adult,spread:.35,leafHeight:.25},{height:small,spread:.25,leafHeight:.13}];
+  assert.equal(info.appearance.architecture,'atropScabiosaCymes');assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,true);assert.equal(info.spread,null);assert.deepEqual(info.bloom,whitePink?[9,10,11,12,1,2,3,4,5]:[6,7,8,9]);
+  for(const [si,size] of sizes.entries()){
+   const p={...makePlant(id,base+si*2,1,1),...size};let stems;
+   for(let month=1;month<=12;month++){
+    const v=view(month),st=stateAt(p,v),g=plantModel(p,v),label=`${id} colour=${ci} h=${p.height} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+    try{
+     assert.equal(st.groundDormant,!whitePink&&month>=10,label);if(st.groundDormant){assert.equal(g.children.length,0,label);continue;}assert.equal(g.userData.architecture,'atropScabiosaCymes',label);assert.ok(count('leaf-'+tag+'-basal-underside-a2b38d')>0,label);assert.equal(count('leaf-'+tag+'-divided-underside-a2b38d')>0,whitePink||![12,1,2].includes(month),label);
+     const heads=count('involucre-'+tag),open=count('receptacle-'+tag),florets=count('petal-'+tag+'-tube');assert.equal(heads>0,st.bloom||month===5,label);assert.equal(open>0,st.bloom,label);assert.equal(heads,open+count('bud-'+tag),label);assert.equal(count('petal-'+tag+'-outer')+count('petal-'+tag+'-inner'),florets*5,label);assert.equal(count('filament-'+tag),florets*4,label);assert.equal(count('anther-'+tag),florets*4,label);assert.equal(count('calyx-bristle-'+tag),florets*5,label);assert.equal(count('petal-pink-sector-'+tag)>0,whitePink&&st.bloom,label);assert.equal(count('petal-aged-centre-'+tag),0,label);
+     if(ci<2)assert.equal(st.flowerColor,ci===0?'#33232b':'#e8e5dc',label);
+     if((whitePink?[1,5]:[6,9]).includes(month)){const current=g.children.filter(m=>['stem-'+tag,'branch-'+tag,'peduncle-'+tag].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(!stems)stems=current;else assert.deepEqual(current,stems,label);}
+     for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.22&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+      if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component} actual bounds`);}}
+     }
+    }finally{dispose(g);}
+   }
+   if(!whitePink){const next={month:6,year:1,reference:false},old=plantModel(p,next);try{assert.equal(old.children.length,0,id+' old annual must not regrow');}finally{dispose(old);}const autumn={...p,start:9};assert.equal(stateAt(autumn,next).bloom,true,id+' autumn seedling flowers next summer');}
+  }
+ }
+});
 test('Salmon Oxford and Gelato distinguish flower stages and compact plant dimensions without calendar colour claims',()=>{
  for(const [ci,id] of ['p-647beb0af01a','p-37261b00d15a','p-503dd79cccec'].entries()){
   const info=CATALOG[id],gelato=ci===2,tag='atrop-scabiosa',sizes=[{height:gelato?.40:.85,spread:gelato?.25:.35,leafHeight:gelato?.18:.28},{height:gelato?.22:.40,spread:gelato?.20:.25,leafHeight:gelato?.10:.14}];
@@ -4597,25 +4620,7 @@ test('verbena distinguishes terminal heads, progressive spikes, creeping mats an
  assert.deepEqual(CATALOG['p-7869cffdff1b'].appearance.flowerMonths,[4,5,6,7,8,9,10,11]);
 });
 
-test('4 scabious profiles preserve florets, basal winter leaves and seed cups',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='scabiousHabit');assert.equal(entries.length,4);
- for(const [i,[id,info]] of entries.entries()){
-  const p=makePlant(id,6100+i,2,2);
-  for(let month=1;month<=12;month++){
-   const st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component.startsWith(k));
-   if(st.groundDormant){assert.equal(g.children.length,0,id+':'+month);continue;}
-   assert.equal(g.userData.architecture,'scabiousHabit');assert.equal(has('petal'),st.bloom,id+':'+month);
-   if(st.leafDensity>0)assert.ok(has('leaf'),id+':'+month);
-   assert.ok(!has('discFloret'),id+': daisies must not replace scabious');
-   if(info.appearance.shootProfile==='succisella')assert.ok(!has('involucre'),id+': no enlarged outer florets');
-   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}dispose(g);
-  }
- }
- for(const id of ['p-3c99bf4428bf','p-714c22be3735','p-f929d5901779']){const g=plantModel(makePlant(id,6200,2,2),view(1));assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf')));assert.ok(!g.children.some(m=>m.userData.component.startsWith('stem')));dispose(g);}
- assert.equal(stateAt(makePlant('p-e63ef5461f19',6201,2,2),view(1)).groundDormant,true);
- const winterFlower=makePlant('p-7f57675b7ac0',6202,2,2);assert.ok(stateAt(winterFlower,view(1)).bloom);assert.equal(stateAt(winterFlower,view(7)).bloom,false);
-
-});
+test('all scabious catalog entries now have source-specific renderers',()=>{assert.equal(Object.values(CATALOG).filter(p=>p.appearance?.architecture==='scabiousHabit').length,0);});
 
 test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads and biennial lifespan',()=>{
  const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,0);
