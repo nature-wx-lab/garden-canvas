@@ -11,6 +11,27 @@ import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySage
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Dwarf Scabiosa entries keep divided leaves, small domed heads and qualified cool-weather colours',()=>{
+ for(const [ci,id] of ['p-e4317cbe077f','p-f7e4208f5810','p-572e197d8077','p-53aeb23c747a'].entries()){
+  const info=CATALOG[id],tag='dwarf-scabiosa',sizes=[{height:.28,spread:.25,leafHeight:.13},{height:.15,spread:.20,leafHeight:.075}];
+  assert.equal(info.appearance.architecture,'dwarfScabiosaCrowns');assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[4,5,6,7,8,9,10]);assert.deepEqual(info.height,[.15,.30]);assert.deepEqual(info.spread,[.20,.30]);assert.equal(seasonAt(info,6).timingBasis,'季節からの表示上の目安');assert.ok(info.appearance.unconfirmed.some(t=>t.includes(ci<3?'入荷品種':'低温条件')));
+  for(const [si,size] of sizes.entries()){
+   const p={...makePlant(id,33200+ci*10+si,1,1),...size};let stems;
+   for(let month=1;month<=12;month++){
+    const v=view(month),st=stateAt(p,v),g=plantModel(p,v),label=`${tag} h=${p.height} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+    try{
+     assert.equal(st.groundDormant,false,label);assert.equal(g.userData.architecture,'dwarfScabiosaCrowns',label);assert.ok(count('leaf-'+tag+'-basal-underside-9dad86')>0,label);assert.equal(count('leaf-'+tag+'-divided-underside-9dad86')>0,![12,1,2].includes(month),label);
+     const heads=count('involucre-dwarf-scabiosa'),open=count('receptacle-dwarf-scabiosa'),florets=count('petal-dwarf-scabiosa-tube');assert.equal(heads>0,st.bloom||month===3,label);assert.equal(open>0,st.bloom,label);assert.equal(heads,open+count('bud-dwarf-scabiosa'),label);assert.equal(count('petal-dwarf-scabiosa-outer')+count('petal-dwarf-scabiosa-inner'),florets*5,label);assert.equal(count('filament-dwarf-scabiosa'),florets*4,label);assert.equal(count('anther-dwarf-scabiosa'),florets*4,label);assert.equal(count('calyx-bristle-dwarf-scabiosa'),florets*5,label);assert.equal(count('style-dwarf-scabiosa'),florets,label);assert.ok(count('leaf-hair-dwarf-scabiosa')>0,label);assert.equal(florets,open*((ci===3?72:ci===2?74:108)+14),label);assert.ok(!g.children.some(m=>/scabious|moonDance/.test(m.userData.component||'')),label);
+     if(ci===3&&st.bloom){assert.equal(st.flowerColor,[4,10].includes(month)?'#dfcbd4':'#e9e8e2',label);}
+     if([6,9].includes(month)){const current=g.children.filter(m=>['stem-'+tag,'branch-'+tag,'peduncle-'+tag].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(!stems)stems=current;else assert.deepEqual(current,stems,label);}
+     for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.22&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+      if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component} actual bounds`);}}
+     }
+    }finally{dispose(g);}
+   }
+  }
+ }
+});
 test('Fama cultivars retain winter rosettes, cupped five-lobed flowers and stable branching',()=>{
  for(const [ci,id] of ['p-3c99bf4428bf','p-714c22be3735','p-f929d5901779'].entries()){
   const info=CATALOG[id],tag='fama',sizes=[{height:.60,spread:.35,leafHeight:.25},{height:.30,spread:.25,leafHeight:.14}];
@@ -4515,8 +4536,8 @@ test('verbena distinguishes terminal heads, progressive spikes, creeping mats an
  assert.deepEqual(CATALOG['p-7869cffdff1b'].appearance.flowerMonths,[4,5,6,7,8,9,10,11]);
 });
 
-test('16 scabious profiles preserve florets, basal winter leaves and seed cups',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='scabiousHabit');assert.equal(entries.length,16);
+test('12 scabious profiles preserve florets, basal winter leaves and seed cups',()=>{
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='scabiousHabit');assert.equal(entries.length,12);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6100+i,2,2);
   for(let month=1;month<=12;month++){
