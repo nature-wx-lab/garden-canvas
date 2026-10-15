@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.317';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.318';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.317';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.318';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,62 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function bengalPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='bengalLeaf'){
+  const lobes=.72+.28*Math.pow(.5+.5*Math.cos(t*24+.5),2),width=.44*Math.pow(sn,.64)*(.48+.52*t)*lobes;
+  return [u*width,t,.08*t*t+.075*u*u*sn+.011*Math.cos((t-Math.abs(u)*.25)*37)*Math.abs(u)*sn+.012*Math.sin(t*29+u*9)*Math.pow(Math.abs(u),3)];
+ }
+ const width=.175*Math.pow(sn,.35)*(.76+.24*t),notch=.047*(Math.exp(-Math.pow((u-.33)/.14,2))+Math.exp(-Math.pow((u+.33)/.14,2)))*Math.pow(t,13);
+ return [u*width,.045*t*t+.045*u*u*sn+.006*Math.cos(u*18)*sn,t-notch];
+}
+
+function drawBengalHead(b,origin,r,color,palette,phase,tilt,yaw,kit){
+ const f=flowerFrame(b,origin,tilt,yaw),disc=r*.29,white=palette.type==='white',tag='bengal';
+ f.add(kit.bud,'receptacle-'+tag,'#799259',0,-r*.055,0,r*.30,r*.095,r*.30);
+ for(let row=0;row<3;row++)for(let j=0;j<18;j++){
+  const an=j*TAU/18+row*.13;
+  f.add('narrow','involucre-'+tag,'#71834c',Math.sin(an)*r*.20,-r*(.07+row*.035),Math.cos(an)*r*.20,r*.085,r*(.36-row*.035),r*.10,1.32+row*.21,an,0);
+ }
+ const female=(an,rad,len,key,lift)=>{
+  const at=[Math.sin(an)*rad,r*lift,Math.cos(an)*rad];
+  f.add('bengalRay',key,color,...at,len,len,len,-.045,an,0);
+  for(const side of [-1,1])f.add('bengalRay','inner-lip-'+tag,color,at[0]+Math.cos(an)*side*r*.012,at[1],at[2]-Math.sin(an)*side*r*.012,r*.026,r*.075,r*.075,-.65,an+Math.PI+side*.18,0);
+  const tip=[at[0],at[1]+r*.045,at[2]];f.branch(at,tip,r*.0028,'#e1d4b1','style-female-'+tag);
+  for(const side of [-1,1])f.branch(tip,[tip[0]+Math.cos(an)*side*r*.014,tip[1]+r*.018,tip[2]-Math.sin(an)*side*r*.014],r*.0025,'#e3d5ae','stigma-female-'+tag);
+ };
+ for(let row=0;row<2;row++){const n=row?24:26;for(let j=0;j<n;j++)female(j*TAU/n+row*.13,disc*.86,r*(row?.73:.75),'ray-'+tag,row*.014);}
+ for(let j=0;j<36;j++)female(j*TAU/36+.06,disc*.88,r*.13,'trans-'+tag,.045);
+ for(let j=0;j<180;j++){
+  const t=(j+.5)/180,an=j*2.399963,rr=disc*.88*Math.sqrt(t),yy=r*(.045+.04*Math.sqrt(1-t)),at=[Math.sin(an)*rr,yy,Math.cos(an)*rr],open=t>(.72-phase*.12),col=white?'#a4aa53':'#543033';
+  if(!open){f.add(kit.bud,'disc-bud-'+tag,col,...at,r*.017,r*.023,r*.017);continue;}
+  f.add('tube','disc-corolla-'+tag,white?'#e8dfbc':'#954353',...at,r*.061,r*.048/1.09,r*.061);
+  for(let k=0;k<5;k++){const aa=k*TAU/5;f.add('bengalRay','disc-lobe-'+tag,white?'#f0e8d5':'#b66470',at[0]+Math.sin(aa)*r*.010,at[1]+r*.045,at[2]+Math.cos(aa)*r*.010,r*.036,r*.048,r*.048,-.50,aa,0);}
+  f.add('tube','anther-column-'+tag,white?'#dbc68b':'#c8af76',at[0],at[1]+r*.026,at[2],r*.038,r*.046/1.09,r*.038);
+  for(const side of [-1,1])f.branch([at[0],at[1]+r*.065,at[2]],[at[0]+Math.cos(an)*side*r*.012,at[1]+r*.087,at[2]+Math.sin(an)*side*r*.012],r*.0038,'#eadbb4','stigma-disc-'+tag);
+ }
+}
+
+function drawBengal(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,lh=s.leafHeight||h*.54,small=w<.27,tag='bengal',stem=a.stemColor,L=Math.min(a.leafLength,w*.46)*s.leafScale,n=Math.max(3,Math.round((small?8:15)*s.leafDensity*detail));
+ for(let j=0;j<n;j++){
+  const t=j/(n-1),an=j*2.399963,len=L*(.60+.40*t),base=[Math.sin(an)*w*.025,.006,Math.cos(an)*w*.025],tip=[Math.sin(an)*len*.16,lh*(.20+.10*(1-t)),Math.cos(an)*len*.16],pitch=.55+t*.90;
+  b.branch(base,tip,.0017,stem,'petiole-'+tag);const f=flowerFrame(b,tip,pitch,an);
+  f.add('bengalLeaf','leaf-'+tag+'-underside-95a176',kit.shade(rand,s.leafColor,.04),0,0,0,len,len,len);
+  let prev=[0,0,.001];for(let q=1;q<=7;q++){const tt=q/7,p=bengalPoint('bengalLeaf',tt,0),at=p.map(v=>v*len);at[2]-=.0004;f.branch(prev,at,.00035,'#83955e','vein-'+tag);prev=at;}
+  for(let q=0;q<8;q++){const tt=.18+q*.09,u=q%2?.7:-.7,p=bengalPoint('bengalLeaf',tt,u).map(v=>v*len);p[2]-=.0003;f.branch(p,[p[0]+.0003,p[1]+.0003,p[2]-.0007],.000045,'#d5d7c1','leaf-hair-'+tag);}
+ }
+ if(!s.bloom)return;
+ const heads=Math.max(1,Math.round((small?3:5)*s.flowerDensity)),buds=small?1:2,r=Math.min(a.flowerRadius,h*.34);
+ for(let j=0;j<heads+buds;j++){
+  const bud=j>=heads,an=bud?j*2.399963:(j-1)*TAU/Math.max(1,heads-1)+.38,rr=bud?w*.12:j===0?0:w*.31,tip=[Math.sin(an)*rr,h*(bud?.50:j===0?.94:.72+rand()*.16),Math.cos(an)*rr],root=[tip[0]*.15,.006,tip[2]*.15];let from=root;
+  for(let q=1;q<=4;q++){const t=q/4,to=root.map((v,d)=>v+(tip[d]-v)*(d===1?t:t*t));b.branch(from,to,.0022*(1-t*.15),stem,'scape-'+tag);from=to;}
+  for(let q=0;q<20;q++){const t=.08+q*.044,aa=q*2.399963,at=root.map((v,d)=>v+(tip[d]-v)*(d===1?t:t*t));b.branch(at,[at[0]+Math.sin(aa)*.0011,at[1]+.0005,at[2]+Math.cos(aa)*.0011],.00006,'#c4cbb6','scape-hair-'+tag);}
+  if(bud){const f=flowerFrame(b,tip,.6,an);f.add(kit.bud,'bud-'+tag,'#7e9564',0,0,0,r*.26,r*.25,r*.26);for(let k=0;k<18;k++)f.add('narrow','bud-bract-'+tag,'#6f8754',0,-r*.18,0,r*.045,r*.43,r*.09,-.27,k*TAU/18,0);continue;}
+  drawBengalHead(b,tip,r,kit.shade(rand,s.flowerColor,.025),a.flowerPalette,j%3,.035+rand()*.09,an,kit);
+ }
+}
+
 function drawBrunneraCultivars(b,{info,s,detail,rand},kit){
  if(s.groundDormant)return;
  const a=info.appearance,h=s.height,w=s.spread,lh=Math.min(s.leafHeight||h,h*a.foliageHeightRatio),baseL=Math.min(a.leafLength,w*.37),L=baseL*s.leafScale,typ=a.shootProfile,small=w<.30;
@@ -14368,6 +14424,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='bengalCrowns'){drawBengal(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='brunneraCultivarSprays'){drawBrunneraCultivars(b,{info,s,detail,rand},kit);return;}
  if(['primroseRosette','gerberaRosette'].includes(info.appearance?.architecture)){drawBasalFlowerForms(b,{info,s,detail,rand},kit);return;}
  if(['tapienMat','stolonPhlox'].includes(info.appearance?.architecture)){drawLowFlowerMats(b,{info,s,detail,rand},kit);return;}
