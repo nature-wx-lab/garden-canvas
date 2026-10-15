@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.292';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.293';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.292';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.293';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5354,6 +5354,55 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 // Fresco Candy: compact habit and broad scalloped foliage from cultivar photographs.
 // Fine-leaved nursery selections: exact species/registered names remain unconfirmed.
 // Ruby Frost and Redshift: organ descriptions from cultivar patents; Japanese garden seasons remain references.
+export function starMoonPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(t*Math.PI));
+ if(type==='starMoonRay'){const half=.5*Math.sin(t*Math.PI*.92)**.57*Math.min(1,t/.22),edge=1-.08*Math.exp(-(((Math.abs(u)-.34)/.11)**2))-.025*Math.exp(-((u/.08)**2));return[u*half,.04*t*t+.12*u*u*sn+.025*Math.cos(u*6*Math.PI)*sn,t*(1-(1-edge)*t**9)];}
+ if(type==='starMoonBract')return[.5*u*sn**.65,t,.10*u*u*sn];
+ return[.5*u*sn**.52*Math.min(1,t/.15),t,.025*t*t+.025*u*u*sn];
+}
+export function drawStarMoonCoreopsis(b,{info,s,rand,month},kit){
+ const star=info.appearance.shootProfile==='starCluster',tag=star?'star-cluster':'full-moon',h=s.height,w=s.spread,scale=Math.max(.5,Math.min(1,h/(star?.40:.60),w/(star?.40:.60))),green=s.leafColor||'#547949',point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r],mix=(a,b,t)=>a.map((v,k)=>v+(b[k]-v)*t),noise=(i,k)=>{const x=Math.sin(i*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const leaf=(at,az,size,tilt,key)=>{
+  const f=flowerFrame(b,at,tilt,az),trifid=!star&&key%4!==0;
+  const blade=(base,L,W,angle)=>{const lf=flowerFrame(f,base,0,0);lf.add('starMoonLeaf','leaf-'+tag+'-underside-77925e',kit.shade(rand,green,.03),0,0,0,W,L,L,0,0,angle);const pt=t=>{const p=starMoonPoint('starMoonLeaf',t,0),x=p[0]*W,y=p[1]*L;return[x*Math.cos(angle)-y*Math.sin(angle),x*Math.sin(angle)+y*Math.cos(angle),p[2]*L-.00005];};for(let j=1;j<=5;j++)lf.branch(pt((j-1)/5),pt(j/5),.000075*scale,green,'vein-'+tag);};
+  blade([0,0,0],(trifid?.045:.04)*scale*size,(star||trifid?.005:.004)*scale*size,0);
+  if(trifid)for(const side of [-1,1])blade([0,.010*scale*size,0],.020*scale*size,.003*scale*size,side*.76);
+ };
+ if(month===1||month===2||month===3||month===12){for(let i=0;i<4;i++){const az=i*2.399963,base=point(az,w*.035,.003),tip=point(az,w*.06,h*.13);b.branch(base,tip,.0006*scale,'#759453','stem-'+tag);for(let j=0;j<4;j++)for(const side of [0,Math.PI])leaf(mix(base,tip,.12+j*.23),az+j*Math.PI*.5+side,.55,.85,i*4+j);}return;}
+ const growth=month===4?.38:month===5?.68:month===11?.90:1,small=h<(star?.28:.35),shoots=small?3:star?5:10,branches=small?4:star?12:7,heads=[];
+ for(let i=0;i<shoots;i++){
+  const az=i*2.399963,base=point(az,w*(.04+.15*Math.sqrt((i+.5)/shoots)),.004),mid=point(az,w*.19,h*.29*growth),top=point(az,w*.23,h*.61*growth);
+  b.branch(base,mid,(star?.0015:.00175)*scale,'#6d8e50','stem-'+tag);b.branch(mid,top,.001*scale,'#789756','stem-'+tag);
+  for(let j=0;j<10;j++){const t=.04+j*.105,at=t<.5?mix(base,mid,t*2):mix(mid,top,(t-.5)*2);for(const side of [0,Math.PI])leaf(at,az+j*Math.PI*.5+side,1-.25*t,.82,i*10+j);}
+  for(let k=0;k<2;k++){const aa=az+(k?-.8:.8),from=mix(base,mid,.13),tip=point(aa,w*.32,h*.35*growth);b.branch(from,tip,.00065*scale,'#769452','lower-branch-'+tag);for(let j=0;j<8;j++)for(const side of [0,Math.PI])leaf(mix(from,tip,.06+j*.13),aa+j*Math.PI*.5+side,.86-j*.025,.88,i*16+k*8+j);}
+  for(let k=0;k<branches;k++){
+   const aa=az+(k%2?1:-1)*(1.1+noise(i,k)*.45),from=mix(mid,top,.03+.90*k/branches),radius=w*(.13+.22*noise(i,k+8)),end=point(aa,radius,h*(.51+.20*k/branches+.08*noise(i,k+5))*growth);
+   b.branch(from,end,(star?.00085:.0009)*scale,'#7a9856','branch-'+tag);
+   for(let j=0;j<5;j++)for(const side of [0,Math.PI])leaf(mix(from,end,.07+j*.18),aa+j*Math.PI*.5+side,.73-j*.08,.84,i*37+k*5+j);
+   const n=star?1:small?2:3;
+   for(let j=0;j<n;j++){
+    const start=n===1?end:mix(from,end,.35+j*.30),a2=aa+(j-(n-1)*.5)*.70,tip=[start[0]+Math.sin(a2)*w*.075,0,start[2]+Math.cos(a2)*w*.075],rr=Math.hypot(tip[0],tip[2])/(w*.50);
+    tip[1]=h*(.48+.34*Math.sqrt(Math.max(.08,1-rr*rr))+.15*noise(i*17+k,j+90))*growth;tip[1]=Math.max(tip[1],start[1]+.045*scale);b.branch(start,tip,(star?.00085:.0006)*scale,'#829d5b','peduncle-'+tag);heads.push({at:tip,az:a2,key:i*37+k*3+j});
+   }
+  }
+ }
+ if(!s.bloom)return;
+ for(const {at,az,key} of heads){
+  const bud=key%9===8,opening=key%4===0,sz=scale*(.94+.06*noise(key,33)),f=flowerFrame(b,at,.05+.23*noise(key,31),az),diskR=star?.004:.010;
+  f.add(kit.bud,'involucre-'+tag,'#75914c',0,-.002*sz,0,diskR*sz,.003*sz,diskR*sz);
+  for(let layer=0;layer<2;layer++)for(let j=0;j<8;j++){const aa=j*TAU/8+layer*.38,bf=flowerFrame(f,point(aa,(layer?diskR*.65:diskR*.8)*sz,-.003*sz),layer?(star?2.25:2.35):1.25,aa),L=star?(layer?.007:.012):(layer?.0065:.010),W=star?(layer?.0015:.004):(layer?.002:.0035);bf.add('starMoonBract',(layer?'outer-bract-':'inner-bract-')+tag,layer?'#7f9955':'#b5b060',0,0,0,W*sz,L*sz,L*sz);}
+  if(bud){f.add(kit.bud,'bud-'+tag,star?'#c2b378':'#e2c36a',0,.002*sz,0,(star?.004:.005)*sz,(star?.004:.005)*sz,(star?.004:.005)*sz);continue;}
+  f.add(kit.bud,'receptacle-'+tag,'#a6974a',0,-.001*sz,0,diskR*sz,.002*sz,diskR*sz);
+  const phase=month<=8?'summer':month===9?'turning':'cool';
+  for(let j=0;j<8;j++){const aa=j*TAU/8,rf=flowerFrame(f,point(aa,diskR*.72*sz,0),-.04-(opening?.11:0)+.05*Math.sin(j*2.399),aa);rf.add('starMoonRay','petal-'+tag+'-'+(star?phase:opening?'opening':'open'),kit.shade(rand,star?(opening?'#f0e9c1':'#f0eddb'):opening?'#e8ca65':key%3===0?'#e9dda7':'#eee8cc',.035),0,0,0,(star?.009:.020)*sz,(star?.021:.030)*sz,(star?.021:.030)*sz);}
+  const n=star?200:180;
+  for(let j=0;j<n;j++){const t=(j+.5)/n,aa=j*2.399963,ff=flowerFrame(f,point(aa,diskR*.96*sz*Math.sqrt(t),(-.003+.003*Math.sqrt(1-t))*sz),0,aa),width=star?.00048:.00115;
+   ff.add('jewelCoreopsisDisc','disc-'+tag,opening?'#b5aa4e':'#c6a047',0,0,0,width*sz,.006*sz,width*sz);
+   if(t>.35){ff.branch([0,.005*sz,0],[0,.0067*sz,0],.000075*sz,'#d2ad46','style-'+tag);for(const side of [-1,1])ff.branch([0,.0067*sz,0],[side*.00035*sz,.0071*sz,0],.000075*sz,'#d7b247','stigma-'+tag);}
+  }
+ }
+}
+
 export function borderCoreopsisPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='borderCoreopsisRay'){
@@ -13347,6 +13396,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='starMoonCoreopsisShoots'){drawStarMoonCoreopsis(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='borderCoreopsisShoots'){drawBorderCoreopsis(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='jewelCoreopsisShoots'){drawJewelCoreopsis(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='goldenSphereCrowns'){drawGoldenSphere(b,{info,s,detail,rand,month},kit);return;}

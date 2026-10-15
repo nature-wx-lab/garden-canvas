@@ -11,6 +11,43 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Star Moon Coreopsis Star Cluster keeps cultivar organs and seasonal reference limits',()=>{
+ const id='p-fe9ba8e0d24b',info=CATALOG[id];assert.equal(info.appearance.architecture,'starMoonCoreopsisShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[0.4,0.4]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[6,7,8,9,10,11]);
+ for(const [index,size] of [{height:0.4,spread:0.5,leafHeight:0.22},{height:0.2,spread:0.28,leafHeight:0.11}].entries()){
+  const p={...makePlant(id,31800+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),st=stateAt(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'starMoonCoreopsisShoots',tag);assert.ok(count('vein-star-cluster')>0,tag);assert.equal(count('stem-star-cluster')>0,true,tag);
+    const heads=count('involucre-star-cluster'),open=count('receptacle-star-cluster');assert.equal(heads>0,[6,7,8,9,10,11].includes(month),tag);assert.equal(heads,open+count('bud-star-cluster'),tag);assert.equal(['summer','turning','cool'].reduce((n,phase)=>n+count('petal-star-cluster-'+phase),0),open*8,tag);assert.equal(count('disc-star-cluster'),open*200,tag);assert.equal(count('inner-bract-star-cluster'),heads*8,tag);assert.equal(count('outer-bract-star-cluster'),heads*8,tag);
+    if(open){const expected=month<=8?'summer':month===9?'turning':'cool';assert.equal(count('petal-star-cluster-'+expected),open*8,tag);}
+    assert.ok(!g.children.some(m=>/seed|fruit|pappus|petal-daisy/.test(m.userData.component||'')),tag);
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+});
+test('Star Moon Coreopsis Full Moon keeps cultivar organs and seasonal reference limits',()=>{
+ const id='p-e727a4189874',info=CATALOG[id];assert.equal(info.appearance.architecture,'starMoonCoreopsisShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[0.6,0.6]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[6,7,8,9,10,11]);
+ for(const [index,size] of [{height:0.6,spread:0.75,leafHeight:0.33},{height:0.25,spread:0.36,leafHeight:0.1375}].entries()){
+  const p={...makePlant(id,31810+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),st=stateAt(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'starMoonCoreopsisShoots',tag);assert.ok(count('vein-full-moon')>0,tag);assert.equal(count('stem-full-moon')>0,true,tag);
+    const heads=count('involucre-full-moon'),open=count('receptacle-full-moon');assert.equal(heads>0,[6,7,8,9,10,11].includes(month),tag);assert.equal(heads,open+count('bud-full-moon'),tag);assert.equal(count('petal-full-moon-open')+count('petal-full-moon-opening'),open*8,tag);assert.equal(count('disc-full-moon'),open*180,tag);assert.equal(count('inner-bract-full-moon'),heads*8,tag);assert.equal(count('outer-bract-full-moon'),heads*8,tag);
+    assert.ok(!g.children.some(m=>/seed|fruit|pappus|petal-daisy/.test(m.userData.component||'')),tag);
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+});
 test('Border Coreopsis Ruby Frost keeps cultivar leaves and seasonal flower patterns',()=>{
  const id='p-ee2893d69cba',info=CATALOG[id];assert.equal(info.appearance.architecture,'borderCoreopsisShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[0.6,0.6]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[6,7,8,9,10,11]);
  for(const [index,size] of [{height:0.6,spread:0.75,leafHeight:0.33},{height:0.25,spread:0.36,leafHeight:0.1375}].entries()){
@@ -4213,7 +4250,7 @@ test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads 
 
 
 test('daisy cultivars keep distinct leaves, flower patterns and winter organs in all months',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='daisyBranches');assert.equal(entries.length,15);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='daisyBranches');assert.equal(entries.length,13);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,5900+i,2,2);
   for(let month=1;month<=12;month++){

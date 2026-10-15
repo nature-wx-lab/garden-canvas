@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.292';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.293';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -401,3 +401,5 @@ Object.assign(TRAIT_VALUES,{goldenSphereLeaf:'葉柄のない対生の倒披針�
 Object.assign(TRAIT_VALUES,{marmaladePinnateLeaf:'長い葉柄を持ち、3〜5裂する対生葉と上部の細い単葉',garnetLanceolateLeaf:'対生する細長い単葉。丸い先と全縁、短い葉柄',marmaladeSingleHead:'8枚の杏色〜橙色の舌状花、黄色い基部と筒状花',garnetSingleHead:'先端が浅く3裂する桃赤色の舌状花と暗赤紫の基部、中央の筒状花'});
 
 Object.assign(TRAIT_VALUES,{rubyPinnatifidLeaf:'対生し、3〜5枚の細い裂片に分かれる有柄の葉',redshiftLanceolateLeaf:'葉柄のない対生の披針形葉。時に片側へ細長い裂片',rubyFrostHead:'不規則なクリーム色の縁が暗赤色を囲む8枚の舌状花と、黄色〜褐色の中心',redshiftHead:'夏は淡黄の舌状花に暗赤の目、低温期は赤い面積が広がる花'});
+
+Object.assign(TRAIT_VALUES,{starClusterLinearLeaf:'対生する無柄の細い線形葉。全縁で先が尖る',fullMoonTrifidLeaf:'対生する無柄の3裂葉と細い単葉。裂片は全縁',starClusterHead:'白い舌状花に暗紫の目、低温期は紫の縁と淡い紫の色付き',fullMoonHead:'幅広い8枚の舌状花が重なる大輪。黄色からクリーム色へ咲き進む'});
