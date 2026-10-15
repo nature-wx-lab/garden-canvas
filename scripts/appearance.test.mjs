@@ -11,6 +11,34 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Carrot Cake separates tubular double centres, drooping rays and measured petiolate leaves',()=>{
+ const id='p-da2c164af57d',info=CATALOG[id];assert.equal(info.appearance.architecture,'carrotCakeCrowns');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.35,.5]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,true);
+ for(const [index,size] of [{height:.5,spread:.405,leafHeight:.3},{height:.15,spread:.20,leafHeight:.10}].entries()){
+  const p={...makePlant(id,30600+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const st=stateAt(p,view(month)),g=plantModel(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'carrotCakeCrowns',tag);assert.ok(count('petiole-carrot')>0&&count('vein-carrot')>0&&count('hair-carrot-leaf')>0,tag);
+    assert.equal(count('involucre-carrot')>0,[6,7,8,9,10].includes(month),tag);assert.equal(count('bract-carrot'),count('involucre-carrot')*48,tag);
+    let open=0;
+    for(const stage of ['opening','mature','aged']){
+     const n=count('receptacle-carrot-'+stage);open+=n;assert.equal(count('ray-carrot-'+stage),n*24,tag);assert.equal(count('disc-floret-carrot-'+stage),n*120,tag);
+     if(st.bloom)assert.ok(n>0,tag+': simultaneous flower stages');
+     for(const m of meshes('ray-carrot-'+stage))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;assert.ok(Math.abs(Math.hypot(e[8],e[9],e[10])-.034)<1e-6,tag+': ray length');assert.ok(Math.abs(Math.hypot(e[0],e[1],e[2])-.009)<1e-6,tag+': ray width');}
+     if(stage!=='opening')for(const m of meshes('disc-floret-carrot-'+stage))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;assert.ok(Math.abs(Math.hypot(e[4],e[5],e[6])-.013)<1e-6,tag+': tubular disc-floret length');}
+    }
+    assert.equal(count('involucre-carrot'),open+count('bud-carrot'),tag);assert.ok(!g.children.some(m=>/seed|fruit|pappus|petal-aster-inner/.test(m.userData.component||'')),tag);
+    for(const m of g.children){
+     const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);
+     m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.20&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.78;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+ for(const month of [12,1,2])assert.ok(stateAt(makePlant(id,30602,1,1),view(month)).groundDormant);
+});
 test('Giant daisy keeps leafy tall stems, toothed leaves and independently sized autumn heads',()=>{
  const id='p-07a11acdf8d1',info=CATALOG[id];assert.equal(info.appearance.architecture,'giantDaisyShoots');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.9,1.5]);assert.deepEqual(info.spread,[.5,.8]);assert.equal(info.bloomKnown,false);
  for(const [index,size] of [{height:1.5,spread:.65,leafHeight:.8},{height:.30,spread:.25,leafHeight:.18}].entries()){
@@ -3890,7 +3918,7 @@ test('31 scabious profiles preserve florets, basal winter leaves, seed cups and 
 });
 
 test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads and biennial lifespan',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,6);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,5);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6000+i,2,2);
   for(let month=1;month<=12;month++){

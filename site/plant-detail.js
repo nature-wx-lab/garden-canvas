@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.280';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.281';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.280';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.281';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,94 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function carrotCakePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='carrotDisc'){
+  const az=u*Math.PI,q=Math.max(0,(t-.75)/.25),lobes=.5+.5*Math.cos(az*5),r=.14+.45*t+.41*q*(.20+.80*lobes);
+  return [Math.cos(az)*r,t-.16*q*(1-lobes),Math.sin(az)*r];
+ }
+ if(type==='carrotRay'){
+  const width=.5*Math.sin(t*Math.PI*.74)**.58;
+  return [u*width,.035*u*u*sn+.012*Math.cos(u*Math.PI*4)*sn,t-.05*t**12*(.5+.5*Math.cos(u*Math.PI*5))];
+ }
+ if(type==='carrotBract')return [.5*u*sn**.7,t,.035*u*u*sn];
+ return [.5*u*sn**.72*(.97+.03*Math.sin(t*Math.PI*9)),t,.07*t*t+.055*u*u*sn+.017*Math.sin(t*Math.PI*7)*u*u];
+}
+
+export function drawCarrotCake(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,scale=Math.max(.48,Math.min(1,h/.40,w/.35)),green=s.leafColor||a.leafColor;
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const point=(az,r,y)=>[Math.sin(az)*r,y,Math.cos(az)*r],mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const leaf=(at,az,L,W,petiole,tilt,key,tag)=>{
+  const f=flowerFrame(b,at,tilt,az),p=(t,u,off=0)=>{const q=carrotCakePoint('carrotLeaf',t,u);return[q[0]*W,petiole+q[1]*L,q[2]*L+off];};
+  f.branch([0,0,0],[0,petiole,0],.0011*scale,'#86a36b','petiole-carrot');
+  f.add('carrotLeaf',`leaf-carrot-${tag}-underside-8ea373`,kit.shade(rand,green,.035),0,petiole,0,W,L,L);
+  for(let j=1;j<=10;j++)f.branch(p((j-1)/10,0,-.00010),p(j/10,0,-.00010),.00022*scale,'#aec18b','vein-carrot');
+  for(const t of [.26,.43,.61,.78])for(const side of [-1,1])f.branch(p(t-.10,0,-.00008),p(t,side*.9,-.00008),.000085*scale,'#98b27b','vein-carrot-side');
+  for(let j=0;j<22;j++){
+   const t=.12+.83*noise(key,j+11),u=(noise(key,j+41)-.5)*1.8,side=j%3?1:-1,at=p(t,u,side*.00008),len=.0002*scale;
+   f.branch(at,[at[0]+len*.25,at[1]+len*.45,at[2]+side*len],.000023*scale,'#b6c3a4','hair-carrot-leaf');
+  }
+ };
+ const growth=month===3?.28:month===4?.48:month===5?.76:month===11?.85:1;
+ const basal=w<.30?7:12;
+ for(let i=0;i<basal;i++){
+  const az=i*2.399963,lf=month===3?.55:1;
+  leaf(point(az,w*.035,.004),az,.126*scale*lf,.058*scale*lf,.12*scale*lf,.72+.12*noise(i,61),i,'basal');
+ }
+ const shoots=w<.30?3:12,heads=[],stemR=.00175*scale;
+ const stem=(from,to,r,key,tag)=>{
+  b.branch(from,to,r,'#78935a',tag);
+  const d=to.map((v,k)=>v-from[k]),len=Math.hypot(...d),f=flowerFrame(b,from,Math.acos(Math.max(-1,Math.min(1,d[1]/len))),Math.atan2(d[0],d[2]));
+  for(let j=0;j<14;j++){
+   const t=.08+.85*j/14,az=j*2.399963,root=r*(1-.38*t)*.90,ext=.0002*scale;
+   f.branch(point(az,root,len*t),point(az,root+ext,len*t+ext*.35),.000025*scale,'#b1bda0','hair-carrot-stem');
+  }
+ };
+ for(let i=0;i<shoots;i++){
+  const az=i*2.399963,rad=w*(.09+.10*Math.sqrt((i+.5)/shoots)),base=point(az,rad*.45,.004),fork=point(az,rad,h*(.63+.05*noise(i,72))*growth),top=point(az,rad*1.28,h*(.87+.05*noise(i,73))*growth);
+  stem(base,fork,stemR,i,'stem-carrot');stem(fork,top,stemR*.82,i,'peduncle-carrot');
+  for(let j=0;j<5;j++){
+   const t=.08+j*.19,lf=.94-.22*t;
+   leaf(mix(base,fork,t),az+j*2.399963,.088*scale*lf,.041*scale*lf,.017*scale,.94+.16*noise(i,j+81),i*10+j+100,'cauline');
+  }
+  heads.push({at:top,az,key:i*2});
+  if(i%2===0){
+   const yaw=az+.8,at=mix(base,fork,.72),end=point(yaw,w*.35,h*(.77+.04*noise(i,74))*growth),last=mix(at,end,.56);
+   stem(at,last,stemR*.75,i,'branch-carrot');stem(last,end,stemR*.62,i,'peduncle-carrot');
+   leaf(mix(at,last,.45),yaw,.060*scale,.027*scale,.012*scale,.8,i+300,'upper');
+   heads.push({at:end,az:yaw,key:i*2+1});
+  }
+ }
+ if(!s.bloom||![6,7,8,9,10].includes(month))return;
+ for(const {at,az,key} of heads){
+  const stage=key%5===4?'bud':key%3===0?'opening':key%3===1?'mature':'aged',f=flowerFrame(b,at,.08+.20*noise(key,91),az),opening=stage==='opening',old=stage==='aged';
+  const rayColor=old?'#d9a095':opening?'#e56a37':'#d67b63',discColor=old?'#c66587':opening?'#992c3e':'#c94e59';
+  f.add(kit.bud,'involucre-carrot','#688452',0,-.0037,0,.009,.0045,.009);
+  for(let ring=0;ring<3;ring++)for(let j=0;j<16;j++){
+   const aa=j*TAU/16+ring*.16,bf=flowerFrame(f,point(aa,.0045+ring*.0012,-.0045+ring*.0006),Math.PI*.75,aa);
+   bf.add('carrotBract','bract-carrot',kit.shade(rand,'#7b985e',.035),0,0,0,.002,.009,.009);
+  }
+  if(stage==='bud'){f.add(kit.bud,'bud-carrot','#72954e',0,.003,0,.009,.0075,.009);continue;}
+  f.add(kit.bud,'receptacle-carrot-'+stage,discColor,0,.003,0,.015,.004,.015);
+  for(let j=0;j<24;j++){
+   const aa=j*TAU/24,rf=flowerFrame(f,point(aa,.010,.001),(opening?.40:Math.PI/4)+.12*Math.sin(j*2.399),aa),L=.034,W=.009;
+   rf.add('carrotRay','ray-carrot-'+stage,kit.shade(rand,rayColor,.025),0,0,0,W,L,L);
+   for(const u of [-.5,0,.5])for(let k=1;k<=8;k++){
+    const p=carrotCakePoint('carrotRay',.08+.85*(k-1)/8,u),q=carrotCakePoint('carrotRay',.08+.85*k/8,u);
+    rf.branch([p[0]*W,p[1]*L+.00006,p[2]*L],[q[0]*W,q[1]*L+.00006,q[2]*L],.00004,old?'#d4b49f':'#eb9c63','groove-carrot-ray');
+   }
+  }
+  for(let j=0;j<120;j++){
+   const t=(j+.5)/120,aa=j*2.399963,r=.014*Math.sqrt(t),rise=opening?.008:.012,y=(opening?.001:-.004)+rise*Math.sqrt(1-t),ff=flowerFrame(f,point(aa,r,y),(opening?.50:1.05)*r/.014,aa);
+   const immature=opening&&t<.45,L=immature?.008:.013,W=immature?.00055:.00175;
+   ff.add('carrotDisc','disc-floret-carrot-'+stage,kit.shade(rand,immature?'#786c39':discColor,.045),0,0,0,W,L,W);
+   if(j%2===0)ff.branch([.0007,.0002,0],[.0007,.0108,0],.00022,opening?'#772d37':'#a3424c','receptacle-bristle-carrot');
+  }
+ }
+}
+
 export function giantDaisyPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='giantDaisyDisc'){
@@ -12613,6 +12701,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='carrotCakeCrowns'){drawCarrotCake(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='giantDaisyShoots'){drawGiantDaisy(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='amberboaHeads'){drawAmberboa(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='jacobaeaShrubs'){drawJacobaea(b,{info,s,detail,rand,month},kit);return;}
