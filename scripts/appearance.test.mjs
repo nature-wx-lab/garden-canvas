@@ -11,6 +11,24 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Brasco Violet retains sessile divided leaves and measured single heads across seasonal reference views',()=>{
+ const id='p-143c726fe441',info=CATALOG[id];assert.equal(info.appearance.architecture,'brascoMounds');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.30,.45]);assert.deepEqual(info.spread,[.25,.35]);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[4,5,6,7,8,9,10,11]);
+ for(const [index,size] of [{height:.45,spread:.35,leafHeight:.28},{height:.18,spread:.24,leafHeight:.1}].entries()){
+  const p={...makePlant(id,31200+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),st=stateAt(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(st.groundDormant){assert.equal(g.children.length,0,tag);continue;}
+    assert.equal(g.userData.architecture,'brascoMounds',tag);assert.ok(count('vein-brasco')>0,tag);assert.equal(count('stem-brasco')>0,true,tag);
+    const heads=count('involucre-brasco'),open=count('receptacle-brasco');assert.equal(heads>0,[4,5,6,7,8,9,10,11].includes(month),tag);assert.equal(heads,open+count('bud-brasco'),tag);assert.equal(count('petal-brasco-open')+count('petal-brasco-opening'),open*26,tag);assert.equal(count('disc-brasco'),open*35,tag);assert.equal(count('bract-brasco'),heads*14,tag);
+    assert.ok(!g.children.some(m=>/seed|fruit|pappus|petiole|petal-daisy/.test(m.userData.component||'')),tag);
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+});
 test('Rurimurasaki retains narrow branched shoots, layered violet heads and a low spring crown',()=>{
  const id='p-4e634cdede06',info=CATALOG[id];assert.equal(info.appearance.architecture,'rurimurasakiSprays');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.8,1.3]);assert.equal(info.spread,null);assert.deepEqual(info.bloom,[9,10]);
  for(const [index,size] of [{height:1.3,spread:.6,leafHeight:.8},{height:.18,spread:.24,leafHeight:.1}].entries()){
@@ -4050,7 +4068,7 @@ test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads 
 
 
 test('daisy cultivars keep distinct leaves, flower patterns and winter organs in all months',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='daisyBranches');assert.equal(entries.length,24);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='daisyBranches');assert.equal(entries.length,23);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,5900+i,2,2);
   for(let month=1;month<=12;month++){
