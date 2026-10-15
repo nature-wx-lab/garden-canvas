@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.265';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.266';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -351,3 +351,5 @@ Object.assign(TRAIT_VALUES,{linumLeaf:'細い灰緑色の全縁葉（偽輪生�
 Object.assign(TRAIT_VALUES,{miyakowasureLeaf:'互生する大きな鋸歯のある長楕円葉と、翼のある葉柄をもつ根生葉',miyakowasureHead:'紫の舌状花と淡黄色の筒状花を持つ頭花・2列の総苞片'});
 
 Object.assign(TRAIT_VALUES,{belliumLeaf:'全縁で丸みのある小さなへら形葉・株元のロゼット',belliumHead:'無葉の花茎につく1cm未満の白い頭花・黄色い筒状花'});
+
+Object.assign(TRAIT_VALUES,{marshalliaLeaf:'根元に多く上へ小さくなる、明瞭な3本の葉脈を持つ細長い葉',marshalliaHead:'舌状花がなく、反り返る5裂花冠と二裂花柱を持つ小花の頭花'});

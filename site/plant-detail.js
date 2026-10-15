@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.265';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.266';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.265';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.266';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,50 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function marshalliaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='marshalliaTube'){const az=u*Math.PI,r=.16+.09*t**3;return [Math.sin(az)*r,t,Math.cos(az)*r];}
+ if(type==='marshalliaLobe')return [u*.5*sn**.55,.85*t-.80*t*t,t**1.1];
+ const width=sn**.72*(1.12-.45*t),ridge=.018*Math.exp(-u*u*60)*sn+.012*Math.exp(-((Math.abs(u)-.52)**2)*90)*sn;
+ return [u*.5*width,t,.05*u*u*sn+.035*sn-ridge];
+}
+function drawMarshallia(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),size=Math.max(.55,Math.min(1,h/.40,w/.25)),n=Math.max(1,Math.min(3,Math.round(3*detail))),leafL=a.leafLength*size,leafW=a.leafWidth*size;
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const leaf=(at,az,i,k,fac=1,basal=false)=>{
+  if(noise(i,k+17)>s.leafDensity)return;
+  const f=flowerFrame(b,at,basal?(winter?1.15:.66+noise(i,k+13)*.40):.7+noise(i,k+13)*.35,az),len=leafL*fac*(winter?.48:1),width=leafW*fac*(winter?.65:1);
+  f.add('marshalliaLeaf',basal?'leaf-marshallia-basal':'leaf-marshallia-cauline',kit.shade(rand,s.leafColor,.04),0,0,0,width,len,len);
+  for(const u of [-.52,0,.52])for(let j=1;j<=12;j++){const q=t=>{const v=marshalliaPoint('marshalliaLeaf',t,u);return [v[0]*width,v[1]*len,v[2]*len+.0001];};f.branch(q((j-1)/12),q(j/12),.00008*size,'#87a069','vein-marshallia-three');}
+ };
+ const head=(at,az,i,k)=>{
+  if(!s.bloom)return;
+  const f=flowerFrame(b,at,.06+noise(i,k+22)*.26,az),baseR=a.headRadius*.37,age=.35+noise(i,k+37)*.65;
+  f.add(kit.bud,'involucre-marshallia','#729753',0,0,0,baseR,.0025,baseR);
+  for(let row=0;row<2;row++)for(let j=0;j<12;j++){const aa=(j+row*.5)*TAU/12,rr=baseR*(.70+row*.12);f.add('erigeronLeaf','bract-marshallia','#7c9b55',Math.sin(aa)*rr,-.002+row*.001,Math.cos(aa)*rr,.0013,.004,.004,.65+row*.30,aa,0);}
+  for(let j=0;j<70;j++){
+   const t=(j+.4)/70,aa=j*2.399963,rr=baseR*Math.sqrt(t),root=[Math.sin(aa)*rr,.0018*(1-t),Math.cos(aa)*rr],g=flowerFrame(f,root,.12+.83*t,aa),open=t>1-age*s.flowerDensity;
+   if(!open){g.add(kit.bud,'bud-marshallia','#c9c1d1',0,.0014,0,.00075,.0016,.00075);continue;}
+   const tube=a.floretTube,lobe=a.floretLobe,color=kit.shade(rand,j%3?'#d0b6dc':'#ddcbe5',.025);
+   g.add('marshalliaTube','corolla-marshallia-tube',color,0,0,0,.0024,tube,.0024);
+   for(let k=0;k<5;k++){const aa=k*TAU/5;g.add('marshalliaLobe','corolla-marshallia-lobe',color,Math.sin(aa)*.0006,tube,Math.cos(aa)*.0006,.00095,lobe,lobe,0,aa,0);}
+   g.add(kit.bud,'anther-column-marshallia','#665474',0,tube+.0005,0,.00034,.0011,.00034);
+   const y=tube+.0012;g.branch([0,tube,0],[0,y+.0013,0],.000075,'#eee6ee','style-marshallia');
+   for(const side of [-1,1]){let prev=[0,y+.0013,0];for(let q=1;q<=4;q++){const t=q/4,pt=[side*.00075*Math.sin(t*Math.PI*.70),y+.0013+.0008*Math.sin(t*Math.PI),.00015*t];g.branch(prev,pt,.000065,'#eee6ee','style-marshallia-fork');prev=pt;}}
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,r=w*.14*Math.sqrt((i+.5)/n),base=[Math.sin(az)*r,.004,Math.cos(az)*r];
+  for(let j=0;j<12;j++)leaf(base,az+j*2.4,i,j*71,.78+.22*noise(i,j+43),true);
+  if(winter)continue;
+  const growth=month===3?.24:month===4?.55:month===5?.80:1,top=h*growth*(.79+.08*noise(i,87)),point=t=>[base[0]+Math.sin(az)*w*.10*t,base[1]+top*t,base[2]+Math.cos(az)*w*.10*t];let prev=base;
+  for(let j=1;j<=10;j++){const t=j/10,at=point(t);b.branch(prev,at,.0012*size,a.stemColor,'stem-marshallia');prev=at;if(j<=6)leaf(at,az+j*2.4,i,j*53,(.72-.08*j)*(month===3?.6:1));}
+  head(prev,az,i,1000);
+  for(let j=0;j<2;j++){const t=.60+j*.16,at=point(t),aa=az+(j?1.0:-1.0),tip=[at[0]+Math.sin(aa)*w*.13,Math.min(h*growth*.94,at[1]+h*growth*.22),at[2]+Math.cos(aa)*w*.13];b.branch(at,tip,.00065*size,a.stemColor,'branch-marshallia');leaf(at,aa,i,1300+j*97,.22);head(tip,aa,i,1500+j*300);}
+ }
+}
+
+
 export function belliumPoint(type,t,u){
  const v=Math.max(0,(t-.26)/.74),sn=Math.max(0,Math.sin(Math.PI*v)),width=t<.26?.06:Math.max(.06*(1-v),sn**.48*(.48+.52*v));
  return [u*.5*width,t,.04*sn+.025*u*u*sn-.012*Math.exp(-u*u*60)*sn];
@@ -11638,6 +11682,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='marshalliaHeads'){drawMarshallia(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='belliumRunners'){drawBellium(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='miyakowasureCrowns'){drawMiyakowasure(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='compositusRosettes'){drawCompositus(b,{info,s,detail,rand,month},kit);return;}
