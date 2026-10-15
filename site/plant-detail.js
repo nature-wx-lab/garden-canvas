@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.269';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.270';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.269';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.270';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,34 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function leptinellaLeafPoint(t,u){
+ const v=Math.max(0,(t-.09)/.91),sn=Math.max(0,Math.sin(Math.PI*v)),cell=v*16,phase=cell-Math.floor(cell),lobe=Math.max(0,Math.sin(Math.PI*phase))**.48,teeth=.89+.11*Math.cos(phase*8*Math.PI),neck=v>.68?.13:.028;
+ const width=t<.09?.025:sn**.5*(neck+(1-neck)*lobe*teeth);
+ return [u*.5*width,t,.045*Math.sin(Math.PI*t)+.022*u*u*sn-.018*t*t];
+}
+function drawLeptinella(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),scale=Math.max(.72,Math.min(1,w/.25)),n=Math.max(30,Math.min(180,Math.round(130*detail*(w/.3)**1.2))),roots=[];
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ for(let i=0;i<n;i++){
+  const az=i*2.399963+(noise(i,15)-.5)*.30,r=w*.39*Math.sqrt((i+.3)/n),root=[Math.sin(az)*r,.0025,Math.cos(az)*r];roots.push(root);
+  if(i){const from=roots.slice(0,-1).reduce((best,q)=>Math.hypot(q[0]-root[0],q[2]-root[2])<Math.hypot(best[0]-root[0],best[2]-root[2])?q:best,roots[0]);b.branch(from,root,.00030*scale,'#82715c','rhizome-leptinella');}
+  for(let j=0;j<5;j++){
+   if(noise(i,j*73)>s.leafDensity*(winter?.80:1))continue;
+   const aa=az+j*2.4,len=a.leafLength*scale*(.7+.3*noise(i,j+55)),width=a.leafWidth*scale,f=flowerFrame(b,root,.8+noise(i,j+67)*.55,aa),color=kit.shade(rand,s.leafColor,.05);
+   f.add('leptinellaBlade','leaf-leptinella-dark',color,0,0,0,width,len,len);
+   f.add('leptinellaTip','leaf-leptinella-green-tip',kit.shade(rand,winter?'#899262':'#a1b665',.06),0,0,0,width,len,len);
+   const point=t=>{const q=leptinellaLeafPoint(t,0);return [q[0]*width,q[1]*len,q[2]*len+.00005];};
+   for(let q=1;q<=8;q++)f.branch(point((q-1)/8),point(q/8),.00005*scale,'#827662','rachis-leptinella');
+  }
+  if(!s.bloom||noise(i,101)>.24)continue;
+  const top=[root[0]+Math.sin(az)*.004,Math.max(.025,h*(.65+.20*noise(i,107))),root[2]+Math.cos(az)*.004];b.branch(root,top,.00030*scale,a.stemColor,'scape-leptinella');
+  const f=flowerFrame(b,top,.12,az),R=a.headRadius,bud=noise(i,127)>s.flowerDensity*.90;
+  f.add(kit.bud,'involucre-leptinella','#8a9d68',0,0,0,R,.0018,R);
+  for(let j=0;j<24;j++){const aa=j*2.399963,t=(j%3)/2,r=R*(.72+.20*t),y=-.0012+.0012*t;f.add(kit.bud,'bract-leptinella','#b1bd88',Math.sin(aa)*r,y,Math.cos(aa)*r,.00055,.0008,.00055);}
+  for(let j=0;j<30;j++){const aa=j*2.399963,r=R*.77*Math.sqrt((j+.4)/30);f.add(kit.bud,bud?'bud-leptinella':'floret-leptinella',bud?'#c3ca9c':kit.shade(rand,'#e4e8c8',.025),Math.sin(aa)*r,.0008+.00045*(1-r/R),Math.cos(aa)*r,.00035,.0005,.00035);}
+ }
+}
+
 export function craspediaLeafPoint(t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),ridge=.014*(Math.exp(-u*u*65)+Math.exp(-((Math.abs(u)-.48)**2)*80))*sn;
  return [u*.5*sn**.55,t,.14*t*t+.035*u*u*sn-ridge];
@@ -11802,6 +11830,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='leptinellaMats'){drawLeptinella(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='craspediaGlobes'){drawCraspedia(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='syneilesisUmbrellas'){drawSyneilesis(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='koreanAsterShoots'){drawKoreanAster(b,{info,s,detail,rand,month},kit);return;}
