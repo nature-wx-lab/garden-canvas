@@ -11,6 +11,25 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Frosty Igloo retains lobed petiolate foliage and two separate flushes of layered white heads',()=>{
+ const id='p-7188d7ffb443',info=CATALOG[id];assert.equal(info.appearance.architecture,'frostyIglooMounds');assert.equal(info.appearance.status,'partial');assert.equal(info.latin,"Chrysanthemum × morifolium 'Frosty Yoigloo'");assert.deepEqual(info.height,[.4,.5]);assert.equal(info.spread,null);assert.deepEqual(info.bloom,[6,7,9,10,11]);
+ for(const [index,size] of [{height:.5,spread:.5,leafHeight:.32},{height:.16,spread:.24,leafHeight:.1}].entries()){
+  const p={...makePlant(id,30900+index,1,1),...size};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),tag=`${id}, h=${p.height}, month=${month}`,meshes=k=>g.children.filter(m=>m.userData.component===k),count=k=>meshes(k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    assert.equal(g.userData.architecture,'frostyIglooMounds',tag);assert.ok(count('petiole-frosty')>0&&count('vein-frosty')>0,tag);
+    const winter=[12,1,2,3].includes(month);assert.equal(count('winter-stem-frosty')>0,winter,tag);assert.equal(count('stem-frosty')>0,!winter,tag);
+    const open=count('receptacle-frosty'),heads=count('involucre-frosty');assert.equal(heads>0,[6,7,9,10,11].includes(month),tag);assert.equal(heads,open+count('bud-frosty'),tag);assert.equal(count('petal-frosty-open')+count('petal-frosty-opening'),open*118,tag);assert.equal(count('disc-floret-frosty'),open*10,tag);assert.equal(count('bract-frosty'),heads*14,tag);
+    assert.ok(!g.children.some(m=>/seed|fruit|pappus|petal-aster/.test(m.userData.component||'')),tag);
+    for(const m of meshes('disc-floret-frosty'))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;assert.ok(Math.abs(Math.hypot(e[4],e[5],e[6])-.0045)<1e-6,tag+': corolla length');}
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),tag);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.2&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${tag}: ${m.userData.component} actual bounds`);}}
+    }
+   }finally{dispose(g);}
+  }
+ }
+});
 test('Electra Shock uses measured broad hairy leaves, quilled rays and independent disc florets',()=>{
  const id='p-b3ded22bcf26',info=CATALOG[id];assert.equal(info.appearance.architecture,'electraQuills');assert.equal(info.appearance.status,'partial');assert.equal(info.latin,"Rudbeckia hybrid 'ET RDB 404'");assert.deepEqual(info.height,[.4,.6]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);
  for(const [index,size] of [{height:.6,spread:.42,leafHeight:.32},{height:.18,spread:.24,leafHeight:.1}].entries()){
@@ -3963,7 +3982,7 @@ test('31 scabious profiles preserve florets, basal winter leaves, seed cups and 
 });
 
 test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads and biennial lifespan',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,3);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,2);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6000+i,2,2);
   for(let month=1;month<=12;month++){
