@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.302';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.303';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -419,3 +419,5 @@ Object.assign(TRAIT_VALUES,{teaselCorrugated:'浅い鋸歯としわのある単�
 Object.assign(TRAIT_VALUES,{drumstickLeaves:'下部は鋸歯のあるへら形・上部は羽状に切れ込む対生葉',drumstickFlowers:'中心は白く周囲は淡青の大きな小花・花後は紙状の杯と暗色の星形の萼'});
 
 Object.assign(TRAIT_VALUES,{knautiaMarsLeaves:'切れ込む根出葉と、全縁から羽状中裂の対生葉',knautiaThunderLeaves:'クリーム色で縁取られた倒披針形の対生葉。一部は左右2対に切れ込む',knautiaMarsHead:'ルビー色の4裂する小花と白っぽい葯を集めた小さな花頭',knautiaThunderHead:'赤紫の小花を集めた花頭と、クリーム色で縁取られた13枚前後の総苞片'});
+
+Object.assign(TRAIT_VALUES,{pinkLaceLeaves:'幅広く丸い鋸歯のある根出葉・花茎では深く裂ける葉',amethystPinkLeaves:'幅広い根出葉と細く裂ける対生葉・よく枝分かれする株',pinkLaceFrill:'外側が大きくフリル状に開く桃紫の花頭',amethystPinkDome:'淡い藤桃色の周辺花と高く盛り上がる淡色の小花'});
