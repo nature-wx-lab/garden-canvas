@@ -11,6 +11,28 @@ import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONI
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Meadow Knautia separates overwintering rosettes, divided stem leaves and stable seed-strain colours',()=>{
+ for(const [ci,id] of ['p-5cc1be1df674','p-f96bb9d5915f'].entries()){
+  const arv=ci===0,info=CATALOG[id],tag=arv?'arvensis':'melton',sizes=arv?[{height:.4,spread:.4,leafHeight:.23},{height:.2,spread:.25,leafHeight:.12}]:[{height:1.2,spread:.45,leafHeight:.5},{height:.5,spread:.3,leafHeight:.24}];
+  assert.equal(info.appearance.architecture,'knautiaMeadowCymes');assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,!arv);assert.deepEqual(info.bloom,arv?[4,5,6,7,8]:[7,8,9,10]);if(!arv)assert.equal(info.spread,null);else assert.ok(info.appearance.unconfirmed.some(t=>t.includes('雌株')));
+  for(const [si,size] of sizes.entries()){
+   const p={...makePlant(id,32800+ci*10+si,1,1),...size};let stems,colour;
+   for(let month=1;month<=12;month++){
+    const v=view(month),st=stateAt(p,v),g=plantModel(p,v),label=`${tag} h=${p.height} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+    try{
+     assert.equal(st.groundDormant,false,label);assert.equal(g.userData.architecture,'knautiaMeadowCymes',label);assert.ok(count('leaf-'+tag+'-basal-underside-9fae92')>0,label);assert.ok(count('leaf-hair-'+tag)>0,label);assert.equal(count('leaf-'+tag+'-divided-underside-9fae92')>0,![12,1,2].includes(month),label);
+     const heads=count('involucre-'+tag),open=count('receptacle-'+tag),florets=count('petal-'+tag+'-tube');assert.equal(heads>0,st.bloom||month===(arv?3:6),label);assert.equal(open>0,st.bloom,label);assert.equal(heads,open+count('bud-'+tag),label);assert.equal(florets,open*(arv?74:100),label);assert.equal(count('petal-'+tag+'-outer')+count('petal-'+tag+'-inner'),florets*4,label);assert.equal(count('filament-'+tag),florets*4,label);assert.equal(count('anther-'+tag),florets*4,label);assert.equal(count('calyx-tooth-'+tag),florets*8,label);assert.equal(count('calyx-tip-hair-'+tag),arv?florets*8:0,label);assert.equal(count('stigma-lobe-'+tag),florets*2,label);assert.ok(!g.children.some(m=>/scabious|papery-cup/.test(m.userData.component||'')),label);
+     if([7,8].includes(month)){const current=g.children.filter(m=>['stem-'+tag,'branch-'+tag,'peduncle-'+tag].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(!stems)stems=current;else assert.deepEqual(current,stems,label);}
+     if(st.bloom){if(!colour)colour=st.flowerColor;else assert.equal(st.flowerColor,colour,label);}
+     for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.005&&y<p.height*1.22&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.8;
+      if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component} actual bounds`);}}
+     }
+    }finally{dispose(g);}
+   }
+  }
+  if(!arv){const p=makePlant(id,32810,1,1),q=makePlant(id,32811,2,1);assert.notEqual(stateAt(p,view(7)).flowerColor,stateAt(q,view(7)).flowerColor);assert.equal(stateAt(p,view(7)).flowerColor,stateAt(p,view(10)).flowerColor);}
+ }
+});
 test('Cephalaria and Succisella keep distinct foliage and four-lobed flowers through seasonal transitions',()=>{
  for(const [ci,id] of ['p-6c3e2e7343d7','p-e333294cee0f'].entries()){
   const giant=ci===0,info=CATALOG[id],tag=giant?'cephalaria':'succisella',sizes=giant?[{height:1.75,spread:.75,leafHeight:.7},{height:.65,spread:.4,leafHeight:.28}]:[{height:.7,spread:.5,leafHeight:.42},{height:.30,spread:.28,leafHeight:.19}];
@@ -4430,8 +4452,8 @@ test('verbena distinguishes terminal heads, progressive spikes, creeping mats an
  assert.deepEqual(CATALOG['p-7869cffdff1b'].appearance.flowerMonths,[4,5,6,7,8,9,10,11]);
 });
 
-test('25 scabious profiles preserve florets, basal winter leaves and seed cups',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='scabiousHabit');assert.equal(entries.length,25);
+test('23 scabious profiles preserve florets, basal winter leaves and seed cups',()=>{
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='scabiousHabit');assert.equal(entries.length,23);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6100+i,2,2);
   for(let month=1;month<=12;month++){
