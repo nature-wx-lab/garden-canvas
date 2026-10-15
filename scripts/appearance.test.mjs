@@ -7,10 +7,22 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint} from '../site/plant-detail.js';
+import {detailedFlower,drawDetailedHerb,rustySagePoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Artichoke builds overlapping fleshy bracts and smaller lateral buds above broad lobed foliage',()=>{
+ const id='p-9ebc70425360',info=CATALOG[id],a=info.appearance;assert.equal(a.architecture,'artichokeCrowns');assert.equal(a.status,'partial');assert.deepEqual(info.height,[1.5,2]);assert.deepEqual(info.spread,[2,3]);assert.equal(info.bloomKnown,false);assert.ok(!a.leafTexture);assert.match(a.unconfirmed.join(' '),/高さ90cm未満/);assert.ok(artichokePoint('artichokeLeaf',.11,1)[0]>.016,'petiole retains width at the blade junction');
+ for(const small of [false,true]){const p={...makePlant(id,29400+Number(small),1,1),height:small?.6:2,spread:small?.8:2.5,leafHeight:small?.25:.6};
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),winter=[12,1,2].includes(month);if(winter){assert.equal(g.children.length,0);dispose(g);continue;}
+   assert.equal(g.userData.architecture,'artichokeCrowns');assert.equal(stateAt(p,view(month)).shootScale,1);assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-artichoke-basal')));assert.equal(count('stem-artichoke')>0,!small&&month>=5&&month<=10);const heads=count('involucre-artichoke-core')+count('bud-artichoke-core');assert.equal(heads,!small&&month>=6&&month<=10?6:0);assert.equal(count('floret-artichoke')>0,!small&&info.bloom.includes(month));
+   if(heads){assert.equal(count('branch-artichoke'),25);assert.equal(count('bract-artichoke-fleshy'),360+count('bud-artichoke-core')*6);assert.equal(count('floret-artichoke'),count('involucre-artichoke-core')*1200);assert.equal(count('style-artichoke'),count('floret-artichoke'));assert.ok(g.children.find(m=>m.userData.component==='bract-artichoke-fleshy').geometry.userData.artichokeBract);const cores=g.children.find(m=>m.userData.component==='involucre-artichoke-core'||m.userData.component==='bud-artichoke-core'),matrix=new Matrix4(),radii=[];for(let j=0;j<cores.count;j++){cores.getMatrixAt(j,matrix);radii.push(Math.hypot(matrix.elements[0],matrix.elements[1],matrix.elements[2]));}assert.ok(radii[0]>Math.max(...radii.slice(1))*1.2,'terminal head is larger than lateral heads');}
+   if(!small&&month===8){const matrix=new Matrix4(),centres=[];for(const mesh of g.children.filter(m=>['involucre-artichoke-core','bud-artichoke-core'].includes(m.userData.component)))for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);centres.push(new Vector3().setFromMatrixPosition(matrix));}let radius=0;for(const mesh of g.children.filter(m=>/^(bract|floret|style|receptacle)-artichoke/.test(m.userData.component))){const pos=mesh.geometry.attributes.position;for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);for(let j=0;j<pos.count;j++){const v=new Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix);if(centres.every(c=>v.distanceTo(centres[0])<=v.distanceTo(c)))radius=Math.max(radius,Math.hypot(v.x-centres[0].x,v.z-centres[0].z));}}}assert.ok(radius>.0725&&radius<.0775,`whole terminal head diameter ${radius*2} stays near 15cm`);}
+   assert.ok(!g.children.some(m=>/ray|hair|seed|fruit|stemWing/.test(m.userData.component)));let maxReach=0;for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();if(m.userData.component.startsWith('leaf-artichoke')){const matrix=new Matrix4(),v=new Vector3(),pos=m.geometry.attributes.position;let low=Infinity;for(let j=0;j<m.count;j++){m.getMatrixAt(j,matrix);for(let k=0;k<pos.count;k++){v.fromBufferAttribute(pos,k).applyMatrix4(matrix);low=Math.min(low,v.y);maxReach=Math.max(maxReach,Math.hypot(v.x,v.z));}}assert.ok(low>=-.008,'actual leaf surface stays above soil');}else assert.ok(m.boundingBox.min.y>=-.008,m.userData.component);assert.ok(m.boundingBox.max.y<p.height*1.15,m.userData.component);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75,m.userData.component);}if(month===8)assert.ok(maxReach>p.spread*.43&&maxReach<p.spread*.58,'broad foliage reaches the requested clump width');dispose(g);
+  }
+ }
+});
 test('Leptinella forms a dark pinnatifid mat with attached green tips and rayless buttons',()=>{
  const id='p-6f95b2de95d6',info=CATALOG[id],a=info.appearance;assert.equal(a.architecture,'leptinellaMats');assert.equal(a.status,'partial');assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.match(a.unconfirmed.join(' '),/雌雄は未同定/);
  for(const small of [false,true]){const p={...makePlant(id,29300+Number(small),1,1),height:small?.04:.05,spread:small?.15:.30,leafHeight:small?.018:.025};
@@ -3588,7 +3600,7 @@ test('31 scabious profiles preserve florets, basal winter leaves, seed cups and 
 });
 
 test('Asteraceae preserve rosettes, silver and dissected foliage, rayless heads and biennial lifespan',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,18);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='asteraceaeHabit');assert.equal(entries.length,17);
  for(const [i,[id,info]] of entries.entries()){
   const p=makePlant(id,6000+i,2,2);
   for(let month=1;month<=12;month++){
@@ -3642,7 +3654,7 @@ test('daisy cultivars keep distinct leaves, flower patterns and winter organs in
 });
 
 test('Myrtaceae retain evergreen frameworks, species leaf types and independently timed flowers and fruit',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='myrtaceousTree');assert.equal(entries.length,18);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='myrtaceousTree');assert.equal(entries.length,20);
  for(const [i,[id,info]] of entries.entries()){
   const plant=makePlant(id,5800+i,2,2);let woody;
   for(let month=1;month<=12;month++){
@@ -4880,7 +4892,7 @@ test('woodland species keep distinct leaves, floral organs and deciduous versus 
 });
 
 test('20 spurges and gauras use distinct leaf and reproductive organs through all twelve months',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>['spurgeCanes','spurgeDome','snowSpurge','gauraWands'].includes(p.appearance?.architecture));assert.equal(entries.length,18);
+ const entries=Object.entries(CATALOG).filter(([,p])=>['spurgeCanes','spurgeDome','snowSpurge','gauraWands'].includes(p.appearance?.architecture));assert.equal(entries.length,20);
  for(const [id,info] of entries)for(let month=1;month<=12;month++){
   const p=makePlant(id,3701,2,2),g=plantModel(p,view(month));
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}

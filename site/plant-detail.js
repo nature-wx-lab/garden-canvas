@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.270';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.271';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.270';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.271';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5350,6 +5350,50 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
 }
 
 // Fleabanes carry narrow ray florets around a centre of tubular disc florets.
+export function artichokePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='artichokeBract'){const outline=sn**.65*(.78+.22*t);return [.5*Math.cos(u)*outline,t,.055*Math.sin(u)*outline-.24*t*t];}
+ const v=Math.max(0,(t-.11)/.89),wave=Math.max(0,Math.sin(Math.PI*v)),lobes=(.5+.5*Math.cos((v-.10)*TAU*6.3))**.65,edge=(.10+.90*lobes)*(.89+.11*Math.cos(v*TAU*40)),width=t<.11?.035:Math.max(.035*(1-v),wave**.55*edge);
+ return [u*.5*width,t,.30*t*t+.065*u*u*wave-.018*Math.exp(-u*u*70)*wave];
+}
+function drawArtichoke(b,{info,s,detail,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,scale=Math.max(.4,Math.min(1,h/1.8,w/2.5)),floweringSize=h>=.9,stemSeason=floweringSize&&month>=5&&month<=10,growth=month===3?.45:month===4?.70:month===11?.65:1,n=Math.max(14,Math.round(25*detail)),root=[0,.028,0];
+ const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
+ const leaf=(at,az,L,tilt,tag)=>{
+  const f=flowerFrame(b,at,tilt,az),W=L*.38;f.add('artichokeLeaf',tag+'-underside-'+a.leafUnderside.slice(1),kit.shade(rand,s.leafColor,.04),0,0,0,W,L,L);
+  const point=(t,u)=>{const q=artichokePoint('artichokeLeaf',t,u);return [q[0]*W,q[1]*L,q[2]*L+.0004*scale];};
+  for(let j=1;j<=12;j++)f.branch(point((j-1)/12,0),point(j/12,0),.0012*scale,'#c3cfb4','vein-artichoke-main');
+  for(let j=0;j<6;j++)for(const side of [-1,1]){const t=.20+j*.125;f.branch(point(t-.045,0),point(t,side*.88),.00045*scale,'#b7c6aa','vein-artichoke-side');}
+ };
+ for(let i=0;i<n;i++){
+  if(noise(i,11)>Math.max(.4,s.leafDensity))continue;
+  const az=i*2.399963,L=w*.49*(.66+.34*noise(i,17))*growth;leaf(root,az,L,.98+.18*noise(i,23),'leaf-artichoke-basal');
+ }
+ if(!stemSeason)return;
+ const top=[.045*scale,h*.88,.02*scale],point=t=>root.map((v,k)=>v+(top[k]-v)*t);let prev=root;
+ for(let j=1;j<=14;j++){const at=point(j/14);b.branch(prev,at,.013*scale*(1-j/32),a.stemColor,'stem-artichoke');prev=at;}
+ for(let j=0;j<7;j++){const t=.14+j*.10;leaf(point(t),j*2.4,w*.34*(1-t),.95,'leaf-artichoke-cauline');}
+ if(month<6)return;
+ const head=(at,az,k,fac)=>{
+  const bud=!s.bloom||k===2||k===4,R=a.headRadius*fac*1.26,f=flowerFrame(b,at,.05,az),color='#93aa7e';
+  f.add(kit.bud,bud?'bud-artichoke-core':'involucre-artichoke-core',color,0,0,0,R*(bud?.43:.64),R*(bud?.50:.48),R*(bud?.43:.64));
+  for(let ring=0;ring<5;ring++)for(let j=0;j<12;j++){
+   const aa=j*TAU/12+ring*.27,r=R*(.43+.10*Math.sin(ring*.65)),y=R*(-.50+ring*.20),len=R*(.75-ring*(bud?.07:.10)),width=R*(.49-ring*.035),pitch=bud?.35-ring*.20:.50-ring*.10;
+   f.add('artichokeBract','bract-artichoke-fleshy',kit.shade(rand,ring>2?'#adb48a':color,.04),Math.sin(aa)*r,y,Math.cos(aa)*r,width,len,len,pitch,aa,0);
+  }
+  if(bud){for(let j=0;j<6;j++){const aa=j*TAU/6;f.add('artichokeBract','bract-artichoke-fleshy','#a7b38b',Math.sin(aa)*R*.18,R*.40,Math.cos(aa)*R*.18,R*.25,R*.35,R*.35,-.45,aa,0);}return;}
+  f.add(kit.bud,'receptacle-artichoke','#8975b3',0,R*.22,0,R*.65,R*.15,R*.65);
+  for(let j=0;j<1200;j++){const aa=j*2.399963,r=R*.66*Math.sqrt((j+.3)/1200),x=Math.sin(aa)*r,z=Math.cos(aa)*r,y=R*.23,L=R*(.43+.08*noise(j,k+73)+.06*(1-r/R)),fl=flowerFrame(f,[x,y,z],.06+.12*noise(j,k+99),aa);fl.add('erigeronDisk','floret-artichoke',kit.shade(rand,s.flowerColor,.05),0,0,0,R*.042,L,R*.042);fl.branch([0,L,0],[0,L+R*.045,0],R*.0012,'#c0a4e0','style-artichoke');}
+ };
+ head(top,0,0,1);
+ for(let i=0;i<5;i++){
+  const t=.46+i*.075,base=point(t),az=i*2.399963,end=[base[0]+Math.sin(az)*w*.25,Math.min(h*.84,base[1]+h*.20),base[2]+Math.cos(az)*w*.25];let prev=base;
+  for(let j=1;j<=5;j++){const f=j/5,at=base.map((v,k)=>v+(end[k]-v)*f);b.branch(prev,at,.0048*scale*(1-f*.30),a.stemColor,'branch-artichoke');prev=at;}
+  leaf(base.map((v,k)=>v+(end[k]-v)*.45),az+.6,w*.10,.95,'leaf-artichoke-branch');head(end,az,i+1,.58+.07*(i%3));
+ }
+}
+
 export function leptinellaLeafPoint(t,u){
  const v=Math.max(0,(t-.09)/.91),sn=Math.max(0,Math.sin(Math.PI*v)),cell=v*16,phase=cell-Math.floor(cell),lobe=Math.max(0,Math.sin(Math.PI*phase))**.48,teeth=.89+.11*Math.cos(phase*8*Math.PI),neck=v>.68?.13:.028;
  const width=t<.09?.025:sn**.5*(neck+(1-neck)*lobe*teeth);
@@ -11830,6 +11874,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='avalanche'||a.architecture==='diggerSpeedwell'){drawParahebes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='globeDaisy'||a.architecture==='blueEyeShrub'){drawGlobularias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='artichokeCrowns'){drawArtichoke(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='leptinellaMats'){drawLeptinella(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='craspediaGlobes'){drawCraspedia(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='syneilesisUmbrellas'){drawSyneilesis(b,{info,s,detail,rand,month},kit);return;}
