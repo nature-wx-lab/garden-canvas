@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.321';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.322';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.321';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.322';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,84 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function tapienRunnerPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='tapienDissectedLeaf'){
+  const lobe=.045+.955*Math.pow(.5+.5*Math.cos(t*37+.3),2.8),minor=.68+.32*Math.pow(.5+.5*Math.cos(t*111),2),width=.34*Math.pow(sn,.58)*lobe*minor;
+  return [u*width,t,.045*t*t+.025*u*u*sn];
+ }
+ const notch=.16*Math.exp(-Math.pow(u/.28,2))*Math.pow(t,12),width=.51*Math.pow(sn,.30);
+ return [u*width,.025*t*t+.028*u*u*sn,t-notch];
+}
+function drawTapienFloret(b,at,r,L,color,tilt,yaw,kit){
+ const f=flowerFrame(b,at,tilt,yaw),tag='tapien-runner';
+ f.add('tube','petal-tube-'+tag,color,0,0,0,.0032,L/1.09,.0032);
+ f.add('tube','calyx-tube-'+tag,'#6c8150',0,-.001,0,.0038,L*.58/1.09,.0038);
+ for(let k=0;k<5;k++){
+  const an=k*TAU/5,scale=k===0?.90:k<3?1:1.03;
+  f.add('tapienNotchedLobe','petal-lobe-'+tag,color,Math.sin(an)*r*.10,L,Math.cos(an)*r*.10,r*.92*scale,r*.92,r*.92*scale,-.02,an,0);
+  f.add('narrow','calyx-tooth-'+tag,'#78905a',Math.sin(an)*.0006,L*.52,Math.cos(an)*.0006,.0007,.0028,.001,.16,an,0);
+  f.branch([Math.sin(an)*.0008,L*.25,Math.cos(an)*.0008],[Math.sin(an)*.0014,L*.25+.0003,Math.cos(an)*.0014],.00005,'#bdc5aa','calyx-hair-'+tag);
+ }
+ f.add('tube','petal-throat-'+tag,'#e6e0d0',0,L*.91,0,.0037,L*.09/1.09,.0037);
+ for(let k=0;k<4;k++){
+  const an=k*TAU/4,at=[Math.sin(an)*.00042,L*(k%2?.84:.72),Math.cos(an)*.00042];
+  f.branch([at[0],L*.52,at[2]],at,.00008,'#dfd5a7','filament-'+tag);f.add(kit.bud,'anther-'+tag,'#c6b253',...at,.00021,.00045,.00021);
+ }
+ const sty=[0,L*.88,0];f.branch([0,.001,0],sty,.00008,'#b0bf85','style-'+tag);
+ for(const side of [-1,1])f.branch(sty,[side*.00028,L*.92,0],.00009,'#c4cea2','stigma-'+tag);
+}
+function drawTapienRunners(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,small=w<.4,n=small?12:32,nodes=small?6:9,tag='tapien-runner',stem=a.stemColor,L=Math.min(a.leafLength,w*.12)*s.leafScale,shoots=[];
+ const leaf=(at,len,pitch,yaw)=>{
+  const f=flowerFrame(b,at,pitch,yaw);f.add('tapienDissectedLeaf','leaf-'+tag,kit.shade(rand,s.leafColor,.055),0,0,0,len,len,len);
+  f.branch([0,0,-.0001],[0,len*.94,len*.04],.00011,'#90a16a','vein-'+tag);
+  for(let q=0;q<5;q++){const t=.18+q*.15,side=q%2?1:-1,p=tapienRunnerPoint('tapienDissectedLeaf',t,side*.7).map(v=>v*len);f.branch(p,[p[0],p[1],p[2]-.00055],.00004,'#c3caaa','leaf-hair-'+tag);}
+ };
+ const pair=(at,yaw,len)=>{
+  for(const side of [0,Math.PI]){const aa=yaw+side,end=[at[0]+Math.sin(aa)*len*.15,at[1]+.002,at[2]+Math.cos(aa)*len*.15];b.branch(at,end,.00027,stem,'petiole-'+tag);leaf(end,len,1.18,aa);}
+ };
+ for(let j=0;j<n;j++){
+  const aa=j*TAU/n+(rand()-.5)*.32,reach=w*(.30+rand()*.12);let prev=[0,.005,0];
+  for(let k=1;k<=nodes;k++){
+   const t=k/nodes,an=aa+Math.sin(k*.74+j)*.13,at=[Math.sin(an)*reach*t,.006+h*.05*Math.sin(t*Math.PI),Math.cos(an)*reach*t];
+   b.branch(prev,at,.00065,stem,'stolon-'+tag);
+   if(k%2===0)for(const side of [-1,1])b.branch(at,[at[0]+side*.004,0,at[2]+.003],.00018,'#8b7755','node-root-'+tag);
+   if((j===0&&k===1)||rand()<s.leafDensity)pair(at,an+Math.PI/2+(k%2)*.35,L*(.72+rand()*.28));
+   if(k%3===0){
+    const direction=an+(j%2?-.9:.9),end=[at[0]+Math.sin(direction)*w*.07,at[1]+h*.05,at[2]+Math.cos(direction)*w*.07];let lateral=at;
+    for(let q=1;q<=3;q++){const t=q/3,to=at.map((v,d)=>v+(end[d]-v)*t);b.branch(lateral,to,.0005,stem,'lateral-'+tag);if(rand()<s.leafDensity)pair(to,direction+Math.PI/2+(q%2)*.3,L*(.80-q*.07));lateral=to;}
+    if(rand()<.85)shoots.push({at:end,an:direction,flower:s.bloom&&rand()<s.flowerDensity});
+   }
+   if(k===nodes)shoots.push({at,an,flower:s.bloom&&rand()<s.flowerDensity});prev=at;
+  }
+ }
+ for(const {at,an,flower} of shoots){
+  const top=[at[0]+Math.sin(an)*w*.02,h*(flower?.48+rand()*.40:.16+rand()*.27),at[2]+Math.cos(an)*w*.02];let prev=at;
+  for(let k=1;k<=4;k++){
+   const t=k/4,to=at.map((v,d)=>v+(top[d]-v)*t);b.branch(prev,to,.0005,stem,(flower?'peduncle-':'vegetative-shoot-')+tag);
+   if(k<4&&rand()<s.leafDensity)pair(to,an+k*Math.PI/2,L*(.85-.13*k));
+   for(let q=0;q<3;q++){const aa=q*TAU/3,pt=prev.map((v,d)=>(v+to[d])/2);b.branch(pt,[pt[0]+Math.sin(aa)*.0006,pt[1]+.0002,pt[2]+Math.cos(aa)*.0006],.00004,'#bcc4a0','stem-hair-'+tag);}prev=to;
+  }
+  if(!flower)continue;
+  const r=Math.min(a.flowerRadius,w*.035),tube=Math.min(a.flowerLength,h*.15),ax=.012;
+  b.branch([top[0],top[1]-.004,top[2]],[top[0],top[1]+ax,top[2]],.002,'#798e54','head-axis-'+tag);
+  // Sessile florets attach directly to the short axis. Outer blooms surround younger central buds.
+  for(let k=0;k<18;k++){
+   const outer=k<12,aa=an+(outer?k*TAU/12:(k-12)*TAU/6+.2),tilt=outer?.55:.20,rr=outer?.006:.003,base=[top[0]+Math.sin(aa)*rr,top[1]+(outer?.001:.006),top[2]+Math.cos(aa)*rr];
+   b.branch([top[0],base[1],top[2]],base,.0013,'#798e54','head-axis-support-'+tag);
+   drawTapienFloret(b,base,r,tube,kit.shade(rand,s.flowerColor,.025),tilt,aa,kit);
+   const f=flowerFrame(b,base,tilt,aa);f.add('narrow','floral-bract-'+tag,'#71854f',0,-.002,0,.0011,.006,.0014,.15,0,0);
+  }
+  for(let k=0;k<7;k++){
+   const aa=k*2.399,rr=.004*Math.sqrt(k/7),base=[top[0]+Math.sin(aa)*rr,top[1]+ax-.001,top[2]+Math.cos(aa)*rr],f=flowerFrame(b,base,.15,aa);
+   f.add(kit.bud,'bud-'+tag,k<4?'#788b54':s.flowerColor,0,.003,0,.00085,.004,.00085);
+   for(let q=0;q<5;q++)f.add('narrow','bud-calyx-'+tag,'#7e9259',0,0,0,.0006,.005,.001,.12,q*TAU/5,0);
+  }
+ }
+}
+
 export function woodlandPhloxPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='woodlandPhloxBasal'||type==='woodlandPhloxStem'){
@@ -14590,6 +14668,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='tapienRunners'){drawTapienRunners(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='woodlandPhloxStolons'){drawWoodlandPhlox(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='wildGerberaCrowns'){drawWildGerbera(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='gardenGerberaCrowns'){drawGardenGerbera(b,{info,s,detail,rand},kit);return;}

@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.321';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.322';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -439,3 +439,5 @@ Object.assign(TRAIT_VALUES,{gardenGerberaLeaf:'広い先端と切れ込みのあ
 Object.assign(TRAIT_VALUES,{wildGerberaLeaf:'若葉は浅く成葉は深く裂ける毛のある根出葉',wildGerberaHead:'細い舌状花と短い内側の小花を持つ原種ガーベラの頭花'});
 
 Object.assign(TRAIT_VALUES,{woodlandPhloxBasal:'匍匐枝の大きなへら形葉と花茎の小葉',woodlandPhloxSalver:'細い筒から開く5裂の花冠'});
+
+Object.assign(TRAIT_VALUES,{tapienDissectedLeaf:'細かく深く裂けた対生葉と毛のある匍匐枝',tapienRunnerSalver:'中央につぼみを残す房と先端がくぼむ5裂の小花'});

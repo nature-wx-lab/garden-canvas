@@ -11,6 +11,24 @@ import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySage
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Tapien and tenera keep sessile five lobed florets rooted branching runners and distinct winter states',()=>{
+ const ids=['p-634f8a32bd09','p-1cfdd4f3b3ef','p-876e53ce71cd','p-79285a524b1b','p-e1232b763519'];
+ for(const [ci,id] of ids.entries())for(const [si,size] of [[ci===1?.3:.2,.7,.05],[.12,.3,.03]].entries()){
+  const info=CATALOG[id],p={...makePlant(id,34800+ci*10+si,1,1),height:size[0],spread:size[1],leafHeight:size[2]};assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,true);let winter=0,summer=0;
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),label=`${id} size=${si} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    if(ci===1&&[1,2,12].includes(month)){assert.equal(g.children.length,0,label);continue;}
+    assert.equal(g.userData.architecture,'tapienRunners',label);const leaves=count('leaf-tapien-runner'),heads=count('head-axis-tapien-runner'),flowers=count('petal-tube-tapien-runner');assert.ok(leaves>=2,label);assert.equal(leaves%2,0,label);assert.equal(count('petiole-tapien-runner'),leaves,label);assert.equal(count('leaf-hair-tapien-runner'),leaves*5,label);assert.ok(count('node-root-tapien-runner')>0&&count('lateral-tapien-runner')>0,label);
+    assert.equal(heads>0,ci===1?month>=5&&month<=10:month>=4&&month<=11,label);assert.equal(flowers,heads*18,label);assert.equal(count('petal-lobe-tapien-runner'),flowers*5,label);assert.equal(count('anther-tapien-runner'),flowers*4,label);assert.equal(count('stigma-tapien-runner'),flowers*2,label);assert.equal(count('bud-tapien-runner'),heads*7,label);assert.ok(!g.children.some(m=>m.userData.component.includes('pedicel')),label+' sessile florets');if(month===1)winter=leaves;if(month===7)summer=leaves;
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const n of arr)assert.ok(Number.isFinite(n),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.008&&y<p.height*1.3&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.65;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component}`);}}
+    }
+   }finally{dispose(g);}
+  }
+  assert.ok(winter<summer,id+' winter foliage reduction');
+ }
+});
 test('Woodland phlox keeps rooted stolons opposite leaf pairs and tubular spring flowers at two sizes across twelve months',()=>{
  const ids=['p-34f42ede3e6f','p-1a978391fa83','p-dcb033b4b56b','p-bee017b7b9b8','p-d32f2b65fcd2'];
  for(const [ci,id] of ids.entries()){
@@ -4520,7 +4538,7 @@ test('camellias retain alternate evergreen leaves, distinct flowers and stable w
 });
 
 test('olives preserve axillary four-lobed flowers, cultivar fruits and evergreen versus deciduous leaves',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>['oliveBranches','russianOliveBranches'].includes(p.appearance?.architecture));assert.equal(entries.length,5);
+ const entries=Object.entries(CATALOG).filter(([,p])=>['oliveBranches','russianOliveBranches'].includes(p.appearance?.architecture));assert.equal(entries.length,11);
  for(const [i,[id,info]] of entries.entries()){
   const a=info.appearance,russian=a.shootProfile==='russian';let wood;
   for(let month=1;month<=12;month++){
@@ -4617,7 +4635,7 @@ test('Deutzia preserves cultivar habit, opposite hairy blades, flower anatomy, s
 });
 
 test('Viburnum distinguishes sterile balls, lacecaps, pendant cymes, fruits and stable leafless winter wood',()=>{
- const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='viburnumBranches');assert.equal(entries.length,5);
+ const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='viburnumBranches');assert.equal(entries.length,10);
  for(const [i,[id,info]] of entries.entries()){
   let wood;
   for(let month=1;month<=12;month++){
@@ -4836,14 +4854,14 @@ test('Dianthus keeps five fringed petals, paired simple leaves and source-specif
 });
 
 test('verbena distinguishes terminal heads, progressive spikes, creeping mats and winter basal leaves',()=>{
- const rows=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='verbenaBranches'||p.appearance?.architecture==='tapienMat');assert.equal(rows.length,10);
+ const rows=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='verbenaBranches'||p.appearance?.architecture==='tapienRunners');assert.equal(rows.length,10);
  for(const [i,[id,info]] of rows.entries())for(let month=1;month<=12;month++){
   const p=makePlant(id,6400+i,2,2),st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component.startsWith(k));
   assert.equal(has('petal'),st.bloom,id+':'+month);
   if(st.groundDormant)assert.equal(g.children.length,0,id+':'+month);
   else {assert.ok(has('leaf'),id+':'+month);for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}}
   if(st.bloom&&['hastata','bampton'].includes(info.appearance.shootProfile))assert.ok(has('flowerSpike'));
-  if(st.bloom&&info.appearance.architecture==='tapienMat')assert.ok(has('stolon'));
+  if(st.bloom&&info.appearance.architecture==='tapienRunners')assert.ok(has('stolon'));
   dispose(g);
  }
  for(const id of ['p-b4dedb0c3b62','p-15a8dbc3b5db','p-7869cffdff1b']){const g=plantModel(makePlant(id,6415,2,2),view(1));assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf')));assert.ok(!g.children.some(m=>m.userData.component.startsWith('stem')));dispose(g);}
@@ -5304,9 +5322,9 @@ test('water margin plants distinguish peltate leaves, four fern leaflets and opp
  assert.equal(parts.filter(p=>p.kind==='anther').length,4);assert.equal(parts.filter(p=>p.kind==='sepal').length,5);assert.equal(parts.filter(p=>p.kind==='stigma').length,2);
 });
 
-test('23 rosette and mat entries retain distinct flower structures and winter foliage',()=>{
+test('Legacy rosette and mat entries have dedicated models and retained source boundaries',()=>{
  const arches=['primroseRosette','gerberaRosette','brunneraSprays','tapienMat','stolonPhlox'];
- const entries=Object.entries(CATALOG).filter(([,p])=>arches.includes(p.appearance?.architecture));assert.equal(entries.length,5);
+ const entries=Object.entries(CATALOG).filter(([,p])=>arches.includes(p.appearance?.architecture));assert.equal(entries.length,0);
  for(const [id,info] of entries)for(let month=1;month<=12;month++){
   const p=makePlant(id,3501,2,2),g=plantModel(p,view(month));
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
@@ -5853,7 +5871,7 @@ test('peltate leaves shelter pendant flowers and ironweed never receives daisy r
 test('phlox corollas have five spreading lobes on one tube and Carex retains the correct variegation',()=>{
  const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,shape:'salver',color:'#eeeeee'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
  assert.equal(parts.filter(p=>p.shape==='petal').length,5);assert.equal(parts.filter(p=>p.shape==='tube').length,1);
- for(const info of Object.values(CATALOG).filter(p=>p.latin.startsWith('Phlox'))){assert.ok(['salver','stolonPhloxFlower','paniclePhloxFlower'].includes(info.appearance.flowerShape));assert.equal(info.appearance.petals,5);}
+ for(const info of Object.values(CATALOG).filter(p=>p.latin.startsWith('Phlox'))){assert.ok(['salver','stolonPhloxFlower','paniclePhloxFlower','woodlandPhloxSalver'].includes(info.appearance.flowerShape));assert.equal(info.appearance.petals,5);}
  const everoro=CATALOG['p-ab429729420b'],everest=CATALOG['p-ba5a0872d571'];
  assert.equal(everoro.appearance.leafPattern,'center');assert.equal(everest.appearance.leafPattern,'margin');
  for(const info of [everoro,everest])assert.equal(seasonAt(info,1).leafDensity,1);
