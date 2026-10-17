@@ -11,6 +11,23 @@ import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySage
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Lantern bellflowers distinguish double cups internal spots glossy silver leaves and supported winter states',()=>{
+ const ids=['p-aaff7e59fdcf','p-6adb65ad5f62','p-a64efb116d8c','p-373c93fc0ac4','p-11ca0ca1aaaf','p-cdc1771b5712'];
+ for(const [ci,id] of ids.entries())for(const [si,size] of [[[.6,.5,.5,.6,.4,.5][ci],.4,.12],[.22,.22,.045]].entries()){
+  const info=CATALOG[id],p={...makePlant(id,35500+ci*10+si,1,1),height:size[0],spread:size[1],leafHeight:size[2]},glossy=[1,3,4].includes(ci),basal=(glossy?'leaf-glossy-basal-':'leaf-basal-')+'lantern-bell';let winter=0,summer=0;assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),label=`${id} size=${si} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    const bloom=month>=5&&month<=(ci===4?8:6),outer=count('petal-outer-lantern-bell'),inner=count('petal-inner-lantern-bell'),buds=count('bud-lantern-bell');assert.equal(g.userData.architecture,'lanternBellCrowns',label);assert.ok(count(basal)>0,label);assert.equal(outer>0,bloom,label);assert.equal(inner,ci===2?outer:0,label);assert.equal(count('calyx-lobe-lantern-bell'),(outer+buds)*5,label);assert.equal(count('anther-relict-lantern-bell'),ci===2?0:outer*5,label);assert.equal(count('stigma-lantern-bell'),ci===2?0:outer*3,label);assert.equal(count('petal-inner-spot-lantern-bell')>0,bloom&&ci!==0,label);if(ci===2)assert.equal(info.appearance.stamenCount,undefined);if(month===1)winter=count(basal);if(month===6)summer=count(basal);
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const v of arr)assert.ok(Number.isFinite(v),label);if(m.userData.component==='petal-outer-lantern-bell')for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);assert.ok(matrix.elements[5]<0,label+' downward corolla');}m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.008&&y<p.height*1.3&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component}`);}}
+    }
+   }finally{dispose(g);}
+  }
+  if([0,1,3].includes(ci))assert.ok(winter<summer,id+' reduced winter leaves');else{assert.equal(winter,summer,id+' winter unverified');assert.equal(info.appearance.persistence,undefined);}
+ }
+ const silver=makePlant(ids[4],35540,1,1);assert.notEqual(stateAt(silver,view(10)).leafColor,stateAt(silver,view(6)).leafColor);
+});
 test('Nodding bellflower racemes retain the broad blue versus narrow ivory corolla and reduced winter leaves',()=>{
  const ids=['p-b221bdef7e3c','p-4ac2b3bab61f'];
  for(const [ci,id] of ids.entries())for(const [si,size] of [[ci===0?1.2:.4,ci===0?.6:.35,ci===0?.12:.08],[.22,.22,.045]].entries()){

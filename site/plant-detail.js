@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.331';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.332';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.331';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.332';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,54 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function lanternBellPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='lanternBellCup'){
+  const lobe=.5+.5*Math.cos(u*5),rim=Math.pow(t,9),r=(.07+.92*Math.pow(Math.sin(t*Math.PI*.70),.70))*(1+.09*lobe*rim);
+  return [Math.sin(u)*r,t*(1-.28*(1-lobe)*rim),Math.cos(u)*r];
+ }
+ const basal=type==='lanternBellBasalLeaf',width=(basal?.38:.25)*Math.pow(sn,basal?.48:.62)*(basal?1.15-.30*t:1)*(.94+.06*Math.cos(t*61));
+ return [u*width,t-(basal?.18:0)*Math.abs(u)*Math.pow(sn,.30)*Math.pow(1-t,3),.08*t*t+.09*u*u*sn+.012*Math.cos((t-Math.abs(u)*.20)*35)*Math.abs(u)*sn];
+}
+function drawLanternBellFlower(b,at,r,L,color,pitch,yaw,open,{a,rand,detail},kit){
+ const f=flowerFrame(b,at,pitch,yaw),tag='lantern-bell',double=a.shootProfile==='wedding';f.add(kit.bud,'inferior-ovary-'+tag,'#70874c',0,-.003,0,r*.16,.004,r*.16);
+ for(let k=0;k<5;k++)f.add('narrow','calyx-lobe-'+tag,'#688346',0,-.002,0,r*.07,L*.32,r*.13,.42,k*TAU/5,0);
+ if(!open){f.add(kit.bud,'bud-'+tag,'#9aaa71',0,L*.32,0,r*.25,L*.38,r*.25);return;}
+ f.add('lanternBellCup','petal-outer-'+tag,color,0,0,0,r,L,r);
+ if(double)f.add('lanternBellCup','petal-inner-'+tag,color,0,0,0,r*.77,L*1.10,r*.77,0,.30,0);
+ if(a.flowerPattern==='spots')for(let q=0;q<(detail<.7?22:54);q++){
+  const t=.28+rand()*.68,an=rand()*TAU,pt=lanternBellPoint('lanternBellCup',t,an),rr=r*(double?.77:1),ll=L*(double?1.1:1),rad=Math.min(.00065,rr*.04);f.add(kit.bud,'petal-inner-spot-'+tag,a.flowerPatternColor,pt[0]*rr*.96,pt[1]*ll,pt[2]*rr*.96,rad,rad*.60,rad*.18,0,an,0);
+ }
+ // Double corollas can change the reproductive organs; do not assume their count.
+ if(double)return;
+ for(let k=0;k<5;k++){const an=k*TAU/5,tip=[Math.sin(an)*r*.10,L*.17,Math.cos(an)*r*.10];f.branch([tip[0],0,tip[2]],tip,.00010,'#b7a682','filament-relict-'+tag);f.add(kit.bud,'anther-relict-'+tag,'#ac9b73',...tip,.00025,.00055,.00018);}
+ const tip=[0,L*.78,0];f.branch([0,0,0],tip,.00030,'#dce0b9','style-'+tag);for(let k=0;k<3;k++){const an=k*TAU/3;f.branch(tip,[Math.sin(an)*r*.16,L*.94,Math.cos(an)*r*.16],.00027,'#e6e8c9','stigma-'+tag);}
+}
+function drawLanternBellCrowns(b,{info,s,rand,month,detail},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,n=w<.3?3:6,nodes=h<.3?6:9,first=Math.ceil(nodes*.42),tag='lantern-bell',L=Math.min(a.leafLength,w*.28)*s.leafScale,silver=a.shootProfile==='silver',glossy=a.leafTexture==='glossy';
+ const leaf=(at,len,pitch,yaw,basal)=>{
+  const shape=basal?'lanternBellBasalLeaf':'lanternBellStemLeaf',f=flowerFrame(b,at,pitch,yaw),component=(glossy?'leaf-glossy-':'leaf-')+(basal?'basal-':'stem-')+tag;f.add(shape,component,kit.shade(rand,s.leafColor,.04),0,0,0,len,len,len);
+  let prev=[0,0,-.0002];for(let k=1;k<=6;k++){const p=lanternBellPoint(shape,k/6,0).map(v=>v*len);p[2]-=.0002;f.branch(prev,p,.00017,silver?'#bcc5b3':'#91a570','vein-'+tag);prev=p;}
+  if(!glossy)for(let q=0;q<5;q++){const t=.18+q*.14,side=q%2?1:-1,p=lanternBellPoint(shape,t,side*.7).map(v=>v*len);f.branch(p,[p[0]+side*.0004,p[1]+.0002,p[2]-.00065],.00005,'#c8ceba','leaf-hair-'+tag);}
+ };
+ for(let j=0;j<n;j++){
+  const an=j*2.399+rand()*.25,rad=w*.17*Math.sqrt((j+.5)/n),base=[Math.sin(an)*rad,.012,Math.cos(an)*rad];
+  for(let k=0;k<9;k++)if((j===0&&k===0)||rand()<s.leafDensity){const aa=an+k*2.399,end=[base[0]+Math.sin(aa)*L*.16,base[1]+.003,base[2]+Math.cos(aa)*L*.16];b.branch(base,end,.00055,a.stemColor,'petiole-basal-'+tag);leaf(end,L*(.74+rand()*.26),.96+rand()*.17,aa,true);}
+  if(![4,5,6,7,8,9].includes(month))continue;
+  const sh=h*(month===4?.48+rand()*.06:.78+rand()*.14),curve=w*.07;let prev=base;
+  for(let k=1;k<=nodes;k++){
+   const t=k/nodes,to=[base[0]+Math.sin(an)*curve*t*t,base[1]+(sh-base[1])*t,base[2]+Math.cos(an)*curve*t*t];b.branch(prev,to,.0017*(1-t*.35),a.stemColor,'stem-'+tag);
+   if(k<nodes-1&&rand()<s.leafDensity)leaf(to,L*(.9-k/nodes*.50),.65,an+k*2.399,false);
+   if(s.bloom&&k>=first){
+    const yaw=an+k*2.399,reach=Math.min(.038,w*.12),end=[to[0]+Math.sin(yaw)*reach,to[1]+.004,to[2]+Math.cos(yaw)*reach],arch=[to[0]+Math.sin(yaw)*reach*.55,to[1]+.012,to[2]+Math.cos(yaw)*reach*.55];b.branch(to,arch,.0007,a.stemColor,'pedicel-'+tag);b.branch(arch,end,.0006,a.stemColor,'pedicel-'+tag);
+    drawLanternBellFlower(b,end,Math.min(a.flowerRadius,w*.10),Math.min(a.flowerLength,h*.21),kit.shade(rand,s.flowerColor,.025),2.68+rand()*.25,yaw,k<nodes&&(k===first||rand()<s.flowerDensity),{a,rand,detail},kit);
+   }
+   prev=to;
+  }
+ }
+}
+
 export function noddingBellPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='noddingBellOpenCup'||type==='noddingBellNarrowCup'){
@@ -14958,6 +15006,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='lanternBellCrowns'){drawLanternBellCrowns(b,{info,s,rand,month,detail},kit);return;}
  if(info.appearance?.architecture==='noddingBellRacemes'){drawNoddingBellRacemes(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='alpineBellMats'){drawAlpineBellMats(b,{info,s,rand,detail},kit);return;}
  if(info.appearance?.architecture==='milkBellPanicles'){drawMilkBellPanicles(b,{info,s,rand,month,detail},kit);return;}
