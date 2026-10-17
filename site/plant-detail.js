@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.325';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.326';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.325';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.326';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,65 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function clusterBellPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='clusterBellCup'||type==='clusterBellRim'){
+  const v=type==='clusterBellRim'?.87+t*.13:t,lobe=.5+.5*Math.cos(u*5),rim=Math.pow(v,8),r=(.06+.78*v+.16*Math.sin(v*Math.PI))*(1-.08*(1-lobe)*rim)*(type==='clusterBellRim'?1.003:1);
+  return [Math.sin(u)*r,v*(1-.33*(1-lobe)*rim),Math.cos(u)*r];
+ }
+ if(type==='clusterBellWhiteSepal')return [u*.065*Math.pow(sn,.62),t,.25*t*t];
+ const basal=type==='clusterBellBasalLeaf',width=(basal?.27:.23)*Math.pow(sn,basal?.58:.70)*(.95+.05*Math.cos(t*57));
+ return [u*width,t,.06*t*t+.07*u*u*sn+.009*Math.cos((t-Math.abs(u)*.15)*38)*Math.abs(u)*sn];
+}
+function drawClusterBellUnit(b,at,r,L,color,open,twister,pitch,yaw,detail,rand,kit,edge,calyxColor){
+ const f=flowerFrame(b,at,pitch,yaw),tag='cluster-bell';
+ f.add(kit.bud,'inferior-ovary-'+tag,'#6d874d',0,-.002,0,.0025,.003,.0025);
+ if(twister){
+  f.add(kit.bud,'purple-bud-twister',color,0,L*.32,0,r*.38,L*.34,r*.38);
+  const len=L*1.35,hairs=detail<.7?2:5;
+  for(let k=0;k<5;k++){
+   const sf=flowerFrame(f,[0,0,0],.12+rand()*.16,k*TAU/5);sf.add('clusterBellWhiteSepal','sepal-white-twister',calyxColor||'#f1efdf',0,0,0,len,len,len);
+   for(let q=0;q<hairs;q++){const t=.18+q*.14,side=q%2?1:-1,p=clusterBellPoint('clusterBellWhiteSepal',t,side*.88).map(v=>v*len);sf.branch(p,[p[0]+side*.0006,p[1]+.0002,p[2]-.0004],.000045,'#f5f2e7','calyx-hair-twister');}
+  }
+  return;
+ }
+ for(let k=0;k<5;k++){const an=k*TAU/5;f.add('narrow','calyx-lobe-'+tag,'#6b854b',Math.sin(an)*.0009,-.001,Math.cos(an)*.0009,.001,.006,.0017,.3,an,0);}
+ if(!open){f.add(kit.bud,'bud-'+tag,color,0,L*.40,0,r*.30,L*.52,r*.30);return;}
+ f.add('clusterBellCup','petal-cup-'+tag,color,0,0,0,r,L,r);
+ if(edge)f.add('clusterBellRim','petal-rim-'+tag,edge,0,0,0,r,L,r);
+ for(let k=0;k<5;k++){const an=k*TAU/5,tip=[Math.sin(an)*.001,L*.17,Math.cos(an)*.001];f.branch([tip[0],0,tip[2]],tip,.00009,'#b3a783','filament-relict-'+tag);f.add(kit.bud,'anther-relict-'+tag,'#a9976d',...tip,.0002,.0005,.00015);}
+ const tip=[0,L*.85,0];f.branch([0,-.001,0],tip,.0003,'#d8dfb7','style-'+tag);for(let k=0;k<3;k++){const an=k*TAU/3;f.branch(tip,[Math.sin(an)*r*.24,L*1.02,Math.cos(an)*r*.24],.00023,'#e2e6c4','stigma-'+tag);}
+}
+function drawClusterBellHead(b,at,terminal,{info,s,w,rand,detail},kit){
+ const a=info.appearance,twister=a.shootProfile==='twister',tag='cluster-bell',openCount=terminal?12:5,total=terminal?15:7,head=Math.min(.026,w*.10)*(terminal?1:.65),r=Math.min(a.flowerRadius,w*.04),L=Math.min(a.flowerLength,s.height*.14);
+ b.branch([at[0],at[1]-.005,at[2]],[at[0],at[1]+.009,at[2]],.0021,'#6e874f','head-axis-'+tag);
+ for(let k=0;k<total;k++){
+  const ring=k%3,an=k*2.399,rr=head*(ring===0?.24:ring===1?.65:1),base=[at[0]+Math.sin(an)*rr,at[1]+(ring===0?.009:ring===1?.002:-.004),at[2]+Math.cos(an)*rr];b.branch([at[0],base[1],at[2]],base,.0012,'#70874d','head-support-'+tag);
+  drawClusterBellUnit(b,base,r,L,kit.shade(rand,s.flowerColor,.025),k<openCount,twister,.18+ring*.22,an,detail,rand,kit,a.flowerPatternColor,a.flowerPalette?.calyx);
+ }
+}
+function drawClusterBellShoots(b,{info,s,rand,month,detail},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,n=w<.3?3:6,tag='cluster-bell',L=Math.min(a.leafLength,w*.28)*s.leafScale;
+ const leaf=(at,len,pitch,yaw,basal)=>{
+  const f=flowerFrame(b,at,pitch,yaw),shape=basal?'clusterBellBasalLeaf':'clusterBellStemLeaf';f.add(shape,(basal?'leaf-basal-':'leaf-stem-')+tag,kit.shade(rand,s.leafColor,.045),0,0,0,len,len,len);
+  let prev=[0,0,-.0003];for(let k=1;k<=5;k++){const p=clusterBellPoint(shape,k/5,0).map(v=>v*len);p[2]-=.0003;f.branch(prev,p,.00017,'#92a673','vein-'+tag);prev=p;}
+  for(let k=0;k<3;k++){const t=.25+k*.2,side=k%2?1:-1,p=clusterBellPoint(shape,t,side*.75).map(v=>v*len);f.branch(p,[p[0]+side*.0004,p[1]+.0001,p[2]-.0007],.00004,'#c3c8ab','leaf-hair-'+tag);}
+ };
+ for(let j=0;j<n;j++){
+  const an=j*2.399+rand()*.2,rad=w*.18*Math.sqrt((j+.5)/n),base=[Math.sin(an)*rad,.005,Math.cos(an)*rad];
+  for(let k=0;k<9;k++)if((j===0&&k===0)||rand()<s.leafDensity){const aa=an+k*2.399,end=[base[0]+Math.sin(aa)*L*.17,base[1]+.003,base[2]+Math.cos(aa)*L*.17];b.branch(base,end,.0005,a.stemColor,'petiole-basal-'+tag);leaf(end,L*(.72+rand()*.28),.95+rand()*.20,aa,true);}
+  if(![5,6,7,8,9].includes(month))continue;
+  const top=[base[0]+Math.sin(an)*w*.035,h*(.74+rand()*.17),base[2]+Math.cos(an)*w*.035];let prev=base;
+  for(let k=1;k<=8;k++){
+   const t=k/8,to=base.map((v,d)=>v+(top[d]-v)*t);b.branch(prev,to,.0015*(1-t*.32),a.stemColor,'stem-'+tag);
+   if(k<=7&&rand()<s.leafDensity)leaf(to,Math.min(.085,w*.23)*(1-k*.065)*s.leafScale,.66,an+k*2.399,false);
+   if(s.bloom&&[5,7,8].includes(k)&&(k===8||rand()<s.flowerDensity))drawClusterBellHead(b,to,k===8,{info,s,w,rand,detail},kit);
+   prev=to;
+  }
+ }
+}
+
 export function harebellPoint(type,t,u){
  if(type==='harebellCup'){
   const lobe=.5+.5*Math.cos(u*5),rim=Math.pow(t,8),r=(.055+.76*t+.185*Math.sin(Math.PI*t))*(1-.08*(1-lobe)*rim);
@@ -14772,6 +14831,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='clusterBellShoots'){drawClusterBellShoots(b,{info,s,rand,month,detail},kit);return;}
  if(info.appearance?.architecture==='harebellThreads'){drawHarebellThreads(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='peachBellRacemes'){drawPeachBellRacemes(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='tapienRunners'){drawTapienRunners(b,{info,s,detail,rand},kit);return;}
