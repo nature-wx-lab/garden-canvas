@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.329';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.331';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -451,3 +451,5 @@ Object.assign(TRAIT_VALUES,{clusterBellBasalLeaf:'細かな鋸歯と毛のある
 Object.assign(TRAIT_VALUES,{milkBellBasalLeaf:'細かな鋸歯と葉脈の起伏をもつ卵形〜披針形葉と小さな互生茎葉',milkBellCup:'上部で枝分かれする円錐状の花序と、広く開く5裂の小花'});
 
 Object.assign(TRAIT_VALUES,{alpineBellLeaf:'低く密集し、細かい鋸歯と葉脈の起伏をもつ小葉',alpineBellCup:'低い株から立つ大きな5裂の釣鐘形花冠（青花は長い毛を描写）'});
+
+Object.assign(TRAIT_VALUES,{noddingBellBasalLeaf:'毛と鋸歯をもつ心形の根出葉と小さな互生茎葉',noddingBellOpenCup:'片側へ並ぶ下向きの5裂の青い釣鐘形花',noddingBellNarrowCup:'弓状の花茎に並ぶ細長い5裂の白い釣鐘形花'});
