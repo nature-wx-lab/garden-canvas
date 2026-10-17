@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.322';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.324';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.322';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.324';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,54 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function peachBellPoint(type,t,u){
+ if(type==='peachBellCup'||type==='peachBellRim'){
+  const v=type==='peachBellRim'?.86+t*.14:t,lobe=.5+.5*Math.cos(u*5),rim=Math.pow(v,8),r=(.055+.945*Math.pow(Math.sin(v*Math.PI/2),.82))*(1-.14*(1-lobe)*rim)*(type==='peachBellRim'?1.003:1);
+  return [Math.sin(u)*r,v*(1-.20*(1-lobe)*rim),Math.cos(u)*r];
+ }
+ const basal=type==='peachBellBasalLeaf',sn=Math.max(0,Math.sin(Math.PI*t)),width=(basal?.12:.062)*Math.pow(sn,.75)*(basal?.35+.65*t:1)*(.955+.045*Math.cos(t*75));
+ return [u*width,t,.05*t*t+.06*u*u*sn+.008*Math.cos((t-Math.abs(u)*.1)*43)*Math.abs(u)*sn];
+}
+function drawPeachBellFlower(b,at,r,L,color,edge,pitch,yaw,kit){
+ const f=flowerFrame(b,at,pitch,yaw),tag='peach-bell';
+ f.add('peachBellCup','petal-cup-'+tag,color,0,0,0,r,L,r);
+ if(edge)f.add('peachBellRim','petal-rim-'+tag,edge,0,0,0,r,L,r);
+ f.add(kit.bud,'inferior-ovary-'+tag,'#718b48',0,-.0025,0,r*.22,.004,r*.22);
+ for(let k=0;k<5;k++){
+  const an=k*TAU/5;
+  f.add('narrow','calyx-lobe-'+tag,'#628149',Math.sin(an)*r*.12,-.002,Math.cos(an)*r*.12,.0014,.016,.0028,.36,an,0);
+  const st=[Math.sin(an)*r*.15,L*.38,Math.cos(an)*r*.15];
+  f.branch([st[0],0,st[2]],st,.00015,'#dedbbb','filament-'+tag);f.add(kit.bud,'anther-'+tag,'#d7ca96',...st,.0007,.0017,.0005,0,an,0);
+ }
+ const tip=[0,L*.93,0];f.branch([0,-.002,0],tip,.00038,'#d9deb2','style-'+tag);
+ for(let k=0;k<3;k++){const an=k*TAU/3;f.branch(tip,[Math.sin(an)*r*.25,L*1.025,Math.cos(an)*r*.25],.00032,'#e3e5bd','stigma-'+tag);}
+}
+function drawPeachBellRacemes(b,{info,s,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,small=w<.3,n=small?3:7,tag='peach-bell',L=Math.min(a.leafLength,w*.32)*s.leafScale;
+ const leaf=(at,len,pitch,yaw,basal)=>{
+  const f=flowerFrame(b,at,pitch,yaw),shape=basal?'peachBellBasalLeaf':'peachBellStemLeaf';
+  f.add(shape,(basal?'leaf-basal-':'leaf-stem-')+tag,kit.shade(rand,s.leafColor,.045),0,0,0,len,len,len);
+  let prev=[0,0,-.0002];for(let q=1;q<=6;q++){const p=peachBellPoint(shape,q/6,0).map(v=>v*len);p[2]-=.0002;f.branch(prev,p,.00016,'#8fa668','vein-'+tag);prev=p;}
+ };
+ for(let j=0;j<n;j++){
+  const aa=j*2.399+rand()*.22,rad=w*.16*Math.sqrt((j+.5)/n),base=[Math.sin(aa)*rad,.005,Math.cos(aa)*rad];
+  for(let k=0;k<12;k++)if(k===0||rand()<s.leafDensity)leaf(base,L*(.72+rand()*.28),1.02+rand()*.25,aa+k*2.399,true);
+  if(![4,5,6,7,8].includes(month))continue;
+  const sh=h*(month===4?.48+rand()*.1:.78+rand()*.15),top=[base[0]+Math.sin(aa)*w*.025,sh,base[2]+Math.cos(aa)*w*.025];let prev=base;
+  for(let k=1;k<=10;k++){
+   const t=k/10,to=base.map((v,d)=>v+(top[d]-v)*t);b.branch(prev,to,.0011*(1-t*.4),a.stemColor,'stem-'+tag);
+   if(k<=6&&rand()<s.leafDensity)leaf(to,Math.min(.1,w*.27)*(1-k*.10)*s.leafScale,.70+rand()*.18,aa+k*2.399,false);
+   if(s.bloom&&k>=5){
+    const yaw=aa+k*2.399,rr=Math.min(.038,w*.12),end=[to[0]+Math.sin(yaw)*rr,to[1]+.004,to[2]+Math.cos(yaw)*rr];b.branch(to,end,.0006,a.stemColor,'pedicel-'+tag);
+    if(k===10||rand()>s.flowerDensity){const f=flowerFrame(b,end,.6,yaw);f.add(kit.bud,'bud-'+tag,'#a2b389',0,.01,0,.004,.013,.004);for(let q=0;q<5;q++)f.add('narrow','bud-calyx-'+tag,'#608044',0,0,0,.001,.012,.002,.18,q*TAU/5,0);}
+    else drawPeachBellFlower(b,end,Math.min(a.flowerRadius,w*.08),Math.min(a.flowerLength,h*.15),kit.shade(rand,s.flowerColor,.022),a.flowerPatternColor,1.12+rand()*.25,yaw,kit);
+   }
+   prev=to;
+  }
+ }
+}
+
 export function tapienRunnerPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='tapienDissectedLeaf'){
@@ -14668,6 +14716,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='peachBellRacemes'){drawPeachBellRacemes(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='tapienRunners'){drawTapienRunners(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='woodlandPhloxStolons'){drawWoodlandPhlox(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='wildGerberaCrowns'){drawWildGerbera(b,{info,s,detail,rand},kit);return;}

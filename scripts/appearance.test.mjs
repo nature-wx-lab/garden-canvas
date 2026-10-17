@@ -11,6 +11,26 @@ import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySage
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Peach leaved bellflowers keep basal rosettes alternate stem leaves fused cups and regional winter foliage at two sizes',()=>{
+ const ids=['p-f069f2a18f6b','p-ea7904a799a1','p-818d35d59a4b','p-2721f0dd6bc3'];
+ for(const [ci,id] of ids.entries())for(const [si,size] of [[ci===3?.7:1,.45,.12],[.3,.24,.06]].entries()){
+  const info=CATALOG[id],p={...makePlant(id,34900+ci*10+si,1,1),height:size[0],spread:size[1],leafHeight:size[2]};let winter=0,summer=0;
+  assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.equal(info.appearance.arrangement,'alternate');
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),label=`${id} size=${si} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    assert.equal(g.userData.architecture,'peachBellRacemes',label);assert.ok(count('leaf-basal-peach-bell')>0,label);
+    const flowers=count('petal-cup-peach-bell');assert.equal(flowers>0,[5,6].includes(month),label);assert.equal(count('calyx-lobe-peach-bell'),flowers*5,label);assert.equal(count('anther-peach-bell'),flowers*5,label);assert.equal(count('stigma-peach-bell'),flowers*3,label);assert.equal(count('petal-rim-peach-bell'),ci===3?flowers:0,label);
+    assert.equal(count('stem-peach-bell')>0,[4,5,6,7,8].includes(month),label);assert.equal(g.children.some(m=>m.userData.component.includes('stolon')),false,label);
+    if(month===1)winter=count('leaf-basal-peach-bell');if(month===6)summer=count('leaf-basal-peach-bell');
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const v of arr)assert.ok(Number.isFinite(v),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.008&&y<p.height*1.3&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.7;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component}`);}}
+    }
+   }finally{dispose(g);}
+  }
+  assert.ok(winter<summer,id+' winter basal leaf reduction');
+ }
+});
 test('Tapien and tenera keep sessile five lobed florets rooted branching runners and distinct winter states',()=>{
  const ids=['p-634f8a32bd09','p-1cfdd4f3b3ef','p-876e53ce71cd','p-79285a524b1b','p-e1232b763519'];
  for(const [ci,id] of ids.entries())for(const [si,size] of [[ci===1?.3:.2,.7,.05],[.12,.3,.03]].entries()){
