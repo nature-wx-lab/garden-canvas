@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.327';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.329';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.327';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.329';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,44 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function alpineBellPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='alpineBellCup'){
+  const lobe=.5+.5*Math.cos(u*5),rim=Math.pow(t,7),r=(.10+.79*Math.pow(Math.sin(t*Math.PI/2),.65)+.11*t)*(1-.10*(1-lobe)*rim);
+  return [Math.sin(u)*r,t*(1-.36*(1-lobe)*rim),Math.cos(u)*r];
+ }
+ const width=.25*Math.pow(sn,.48)*(.94+.06*Math.cos(t*45));
+ return [u*width,t,.08*t*t+.09*u*u*sn+.012*Math.cos((t-Math.abs(u)*.20)*27)*Math.abs(u)*sn];
+}
+function drawAlpineBellFlower(b,at,r,L,color,pitch,yaw,hairy,detail,kit){
+ const f=flowerFrame(b,at,pitch,yaw),tag='alpine-bell';f.add('alpineBellCup','petal-cup-'+tag,color,0,0,0,r,L,r);
+ f.add(kit.bud,'inferior-ovary-'+tag,'#668144',0,-.0015,0,r*.15,.002,r*.15);
+ for(let k=0;k<5;k++){
+  const an=k*TAU/5;f.add('narrow','calyx-lobe-'+tag,'#5c7d3f',0,-.001,0,r*.08,L*.40,r*.13,.35,an,0);
+  const tip=[Math.sin(an)*r*.10,L*.18,Math.cos(an)*r*.10];f.branch([tip[0],0,tip[2]],tip,.00008,'#c1b389','filament-relict-'+tag);f.add(kit.bud,'anther-relict-'+tag,'#b7a270',...tip,.00020,.00045,.00015);
+  if(hairy){
+   let prev=null;for(let q=0;q<=8;q++){const pt=alpineBellPoint('alpineBellCup',.2+q*.093,an).map((v,d)=>v*(d===1?L:r));pt[0]*=1.002;pt[2]*=1.002;if(prev)f.branch(prev,pt,.00010,'#66629c','petal-vein-'+tag);prev=pt;}
+   for(let q=0;q<6;q++){const t=.80+(q%3)*.075,edge=an+(q<3?-.30:.30),pt=alpineBellPoint('alpineBellCup',t,edge).map((v,d)=>v*(d===1?L:r));f.branch(pt,[pt[0]*1.035,pt[1]+L*.065,pt[2]*1.035],.000085,'#efedf5','petal-fringe-'+tag);}
+  }
+ }
+ if(hairy)for(let k=0;k<(detail<.7?22:48);k++){
+  const t=.45+(k%6)*.10,an=k*2.399,pt=alpineBellPoint('alpineBellCup',t,an).map((v,d)=>v*(d===1?L:r));f.branch(pt,[pt[0]*.92,pt[1]+L*.045,pt[2]*.92],.000075,'#efedf5','petal-hair-'+tag);
+ }
+ const tip=[0,L*.70,0];f.branch([0,0,0],tip,.00025,'#dbdfb3','style-'+tag);for(let k=0;k<3;k++){const an=k*TAU/3;f.branch(tip,[Math.sin(an)*r*.16,L*.88,Math.cos(an)*r*.16],.00023,'#e7e7c4','stigma-'+tag);}
+}
+function drawAlpineBellMats(b,{info,s,rand,detail},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,n=w<.16?5:12,tag='alpine-bell',hairy=a.shootProfile==='chishimaHairy',L=Math.min(a.leafLength,w*.18,h*.35)*s.leafScale;
+ for(let j=0;j<n;j++){
+  const an=j*2.399+rand()*.25,rad=w*.30*Math.sqrt((j+.5)/n),base=[Math.sin(an)*rad,.004,Math.cos(an)*rad];b.branch([0,.004,0],base,.0007,a.stemColor,'short-shoot-'+tag);
+  for(let k=0;k<7;k++)if(k===0||rand()<s.leafDensity){const aa=an+k*2.399,end=[base[0]+Math.sin(aa)*L*.12,base[1]+.002,base[2]+Math.cos(aa)*L*.12],f=flowerFrame(b,end,.95+rand()*.22,aa);b.branch(base,end,.0004,a.stemColor,'petiole-'+tag);f.add('alpineBellLeaf',(hairy?'leaf-glossy-':'leaf-')+tag,kit.shade(rand,s.leafColor,.04),0,0,0,L,L,L);f.branch([0,0,-.0001],[0,L*.94,L*.065],.0001,'#96ac77','vein-'+tag);}
+  if(!s.bloom||j>0&&rand()>s.flowerDensity)continue;
+  const top=[base[0]+Math.sin(an)*w*.025,h*(.46+rand()*.20),base[2]+Math.cos(an)*w*.025],mid=base.map((v,d)=>v+(top[d]-v)*.55);b.branch(base,mid,.00065,a.stemColor,'peduncle-'+tag);b.branch(mid,top,.00055,a.stemColor,'peduncle-'+tag);
+  const f=flowerFrame(b,mid,.65,an+2.1);f.add('alpineBellLeaf',(hairy?'leaf-glossy-stem-':'leaf-stem-')+tag,s.leafColor,0,0,0,L*.55,L*.55,L*.55);
+  drawAlpineBellFlower(b,top,Math.min(a.flowerRadius,w*.10,h*.18),Math.min(a.flowerLength,h*.34),kit.shade(rand,s.flowerColor,.025),.82+rand()*.42,an,hairy,detail,kit);
+ }
+}
+
 export function milkBellPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='milkBellCup'){
@@ -14879,6 +14917,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='alpineBellMats'){drawAlpineBellMats(b,{info,s,rand,detail},kit);return;}
  if(info.appearance?.architecture==='milkBellPanicles'){drawMilkBellPanicles(b,{info,s,rand,month,detail},kit);return;}
  if(info.appearance?.architecture==='clusterBellShoots'){drawClusterBellShoots(b,{info,s,rand,month,detail},kit);return;}
  if(info.appearance?.architecture==='harebellThreads'){drawHarebellThreads(b,{info,s,rand,month},kit);return;}
