@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.324';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.325';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.324';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.325';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,62 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function harebellPoint(type,t,u){
+ if(type==='harebellCup'){
+  const lobe=.5+.5*Math.cos(u*5),rim=Math.pow(t,8),r=(.055+.76*t+.185*Math.sin(Math.PI*t))*(1-.08*(1-lobe)*rim);
+  return [Math.sin(u)*r,t*(1-.30*(1-lobe)*rim),Math.cos(u)*r];
+ }
+ const basal=type==='harebellBasalLeaf',sn=Math.max(0,Math.sin(Math.PI*t)),width=basal?.42*Math.pow(sn,.48)*(.96+.04*Math.cos(t*43)):.03*Math.pow(sn,.62);
+ return [u*width,t,.04*t*t+.04*u*u*sn];
+}
+function drawHarebellFlower(b,at,r,L,color,phase,pitch,yaw,kit){
+ const f=flowerFrame(b,at,pitch,yaw),tag='harebell';
+ f.add('harebellCup','petal-cup-'+tag,color,0,0,0,r,L,r);
+ f.add(kit.bud,'inferior-ovary-'+tag,'#719053',0,-.0015,0,.0018,.0025,.0018);
+ for(let k=0;k<5;k++){
+  const an=k*TAU/5;
+  f.add('narrow','calyx-lobe-'+tag,'#69874e',Math.sin(an)*.0007,0,Math.cos(an)*.0007,.00065,.006,.0011,.38,an,0);
+  const tip=[Math.sin(an)*.0012,.004,Math.cos(an)*.0012];f.branch([tip[0],0,tip[2]],tip,.00008,'#a39b73','filament-shrivelled-'+tag);f.add(kit.bud,'anther-shrivelled-'+tag,'#9d9069',...tip,.00018,.0005,.00015);
+ }
+ // Open flowers have collapsed anthers; pollen-brush and receptive stigma stages differ.
+ const y=phase==='pollen'?Math.min(.0112,L*.56):Math.min(.0105,L*.525),tip=[0,y,0];f.branch([0,-.001,0],tip,.00020,'#d7d9b1','style-'+phase+'-'+tag);
+ if(phase==='pollen')for(let k=0;k<18;k++){const an=k*2.399,t=.65+.35*k/18;f.branch([0,y*t,0],[Math.sin(an)*.00045,y*t+Math.min(.0004,L*.02),Math.cos(an)*.00045],.00006,'#d4cc98','pollen-brush-'+tag);}
+ else for(let k=0;k<3;k++){const an=k*TAU/3;f.branch(tip,[Math.sin(an)*.0012,Math.min(.0115,L*.575),Math.cos(an)*.0012],.00018,'#dce2bd','stigma-lobe-'+tag);}
+}
+function drawHarebellThreads(b,{info,s,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,n=w<.16?3:7,tag='harebell',stem=a.stemColor,stemLeaf=Math.min(a.leafLength,w*.20)*s.leafScale,basalLeaf=Math.min(.011,w*.08)*s.leafScale;
+ const leaf=(at,len,pitch,yaw,basal)=>{
+  const f=flowerFrame(b,at,pitch,yaw),shape=basal?'harebellBasalLeaf':'harebellStemLeaf';f.add(shape,(basal?'leaf-basal-':'leaf-stem-')+tag,kit.shade(rand,s.leafColor,.045),0,0,0,len,len,len);
+  if(basal)f.branch([0,0,-.0001],[0,len*.92,len*.035],.00008,'#8f9e70','vein-basal-'+tag);
+ };
+ let flowerIndex=0;
+ for(let j=0;j<n;j++){
+  const an=j*2.399+rand()*.22,reach=w*(.21+rand()*.08);let prev=[0,.003,0],root=prev;
+  for(let k=1;k<=3;k++){
+   const t=k/3,at=[Math.sin(an)*reach*t,.003,Math.cos(an)*reach*t];b.branch(prev,at,.00045,stem,'runner-'+tag);
+   for(let q=0;q<3;q++)if((!s.bloom&&j===0&&k===1&&q===0)||rand()<s.leafDensity*(s.bloom?.10:.75)){
+    const aa=an+k*1.3+q*2.399,end=[at[0]+Math.sin(aa)*.012,at[1]+.002,at[2]+Math.cos(aa)*.012];b.branch(at,end,.00020,stem,'petiole-basal-'+tag);leaf(end,basalLeaf*(.8+rand()*.2),1.07,aa,true);
+   }
+   prev=at;root=at;
+  }
+  if(![4,5,6,7,8,9,10,11].includes(month))continue;
+  const top=[root[0]+Math.sin(an+.3)*w*.08,h*(.69+rand()*.22),root[2]+Math.cos(an+.3)*w*.08];prev=root;
+  for(let k=1;k<=8;k++){
+   const t=k/8,to=root.map((v,d)=>v+(top[d]-v)*t);b.branch(prev,to,.00042*(1-t*.25),stem,'stem-'+tag);
+   if(k<=6&&rand()<s.leafDensity)leaf(to,stemLeaf*(1-k*.07),.70,an+k*2.399,false);
+   if(s.bloom&&k>=4&&k%2===0){
+    const yaw=an+k*2.399,reach=w*(.08+rand()*.04),end=[to[0]+Math.sin(yaw)*reach,to[1]+h*(.045+rand()*.06),to[2]+Math.cos(yaw)*reach],arch=[to[0]+Math.sin(yaw)*reach*.55,end[1]+.004,to[2]+Math.cos(yaw)*reach*.55];b.branch(to,arch,.00028,stem,'pedicel-'+tag);b.branch(arch,end,.00025,stem,'pedicel-'+tag);
+    const L=Math.min(a.flowerLength,h*.20),r=Math.min(a.flowerRadius,w*.09),pitch=2.48+rand()*.35;
+    if(flowerIndex>0&&rand()>s.flowerDensity){const f=flowerFrame(b,end,pitch,yaw);f.add(kit.bud,'bud-'+tag,'#93a982',0,L*.35,0,.0018,L*.45,.0018);for(let q=0;q<5;q++)f.add('narrow','bud-calyx-'+tag,'#6b874e',0,0,0,.0005,.005,.001,.16,q*TAU/5,0);}
+    else drawHarebellFlower(b,end,r,L,kit.shade(rand,s.flowerColor,.025),flowerIndex%3===0?'pollen':'stigma',pitch,yaw,kit);
+    flowerIndex++;
+   }
+   prev=to;
+  }
+ }
+}
+
 export function peachBellPoint(type,t,u){
  if(type==='peachBellCup'||type==='peachBellRim'){
   const v=type==='peachBellRim'?.86+t*.14:t,lobe=.5+.5*Math.cos(u*5),rim=Math.pow(v,8),r=(.055+.945*Math.pow(Math.sin(v*Math.PI/2),.82))*(1-.14*(1-lobe)*rim)*(type==='peachBellRim'?1.003:1);
@@ -14716,6 +14772,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='harebellThreads'){drawHarebellThreads(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='peachBellRacemes'){drawPeachBellRacemes(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='tapienRunners'){drawTapienRunners(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='woodlandPhloxStolons'){drawWoodlandPhlox(b,{info,s,detail,rand},kit);return;}

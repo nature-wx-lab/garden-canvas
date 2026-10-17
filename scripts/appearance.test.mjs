@@ -11,6 +11,26 @@ import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySage
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Harebells keep threadlike alternate leaves nodding bells and separate pollen and stigma phases across twelve months',()=>{
+ const ids=['p-a2ba638be9e3','p-c05780de1170'];
+ for(const [ci,id] of ids.entries())for(const [si,size] of [[.2,.2,.04],[.12,.12,.025]].entries()){
+  const info=CATALOG[id],p={...makePlant(id,35000+ci*10+si,1,1),height:size[0],spread:size[1],leafHeight:size[2]};let spring=0,summer=0;
+  assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.equal(info.appearance.arrangement,'alternate');
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),label=`${id} size=${si} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    assert.equal(g.userData.architecture,'harebellThreads',label);assert.ok(count('runner-harebell')>0,label);
+    const flowers=count('petal-cup-harebell'),pollen=count('style-pollen-harebell'),stigma=count('style-stigma-harebell');assert.equal(flowers>0,month>=5&&month<=11,label);assert.equal(flowers,pollen+stigma,label);assert.equal(count('calyx-lobe-harebell'),flowers*5,label);assert.equal(count('anther-shrivelled-harebell'),flowers*5,label);assert.equal(count('pollen-brush-harebell'),pollen*18,label);assert.equal(count('stigma-lobe-harebell'),stigma*3,label);
+    assert.equal(count('stem-harebell')>0,month>=4&&month<=11,label);if([1,2,3,12].includes(month)){assert.ok(count('leaf-basal-harebell')>0,label);assert.equal(count('leaf-stem-harebell'),0,label);}
+    if(month===3)spring=count('leaf-basal-harebell');if(month===7)summer=count('leaf-basal-harebell');
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const v of arr)assert.ok(Number.isFinite(v),label);if(m.userData.component==='petal-cup-harebell')for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);assert.ok(matrix.elements[5]<0,label+' downward corolla');}m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.008&&y<p.height*1.3&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component}`);}}
+    }
+   }finally{dispose(g);}
+  }
+  assert.ok(summer<spring,id+' round basal leaves decrease at flowering');
+ }
+});
 test('Peach leaved bellflowers keep basal rosettes alternate stem leaves fused cups and regional winter foliage at two sizes',()=>{
  const ids=['p-f069f2a18f6b','p-ea7904a799a1','p-818d35d59a4b','p-2721f0dd6bc3'];
  for(const [ci,id] of ids.entries())for(const [si,size] of [[ci===3?.7:1,.45,.12],[.3,.24,.06]].entries()){
