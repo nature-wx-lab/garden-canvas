@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.326';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.327';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.326';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.327';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,54 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function milkBellPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='milkBellCup'){
+  const lobe=.5+.5*Math.cos(u*5),rim=Math.pow(t,7),r=(.06+.94*Math.pow(Math.sin(t*Math.PI/2),.86))*(1-.12*(1-lobe)*rim);
+  return [Math.sin(u)*r,t*(1-.56*(1-lobe)*rim),Math.cos(u)*r];
+ }
+ const basal=type==='milkBellBasalLeaf',width=(basal?.27:.22)*Math.pow(sn,.64)*(.94+.06*Math.cos(t*67));
+ return [u*width*(1+.035*u*Math.sin(t*7)),t,.065*t*t+.06*u*u*sn+.007*Math.cos((t-Math.abs(u)*.18)*39)*Math.abs(u)*sn];
+}
+function drawMilkBellFlower(b,at,r,L,color,pitch,yaw,open,kit){
+ const f=flowerFrame(b,at,pitch,yaw),tag='milk-bell';
+ f.add(kit.bud,'inferior-ovary-'+tag,'#71874d',0,-.0015,0,.0017,.002,.0017);
+ for(let k=0;k<5;k++)f.add('narrow','calyx-lobe-'+tag,'#6c864a',0,-.001,0,.0009,.006,.0013,.3,k*TAU/5,0);
+ if(!open){f.add(kit.bud,'bud-'+tag,color,0,L*.35,0,r*.22,L*.40,r*.22);return;}
+ f.add('milkBellCup','petal-cup-'+tag,color,0,0,0,r,L,r);
+ for(let k=0;k<5;k++){const an=k*TAU/5,tip=[Math.sin(an)*r*.10,L*.16,Math.cos(an)*r*.10];f.branch([tip[0],0,tip[2]],tip,.00008,'#baa77d','filament-relict-'+tag);f.add(kit.bud,'anther-relict-'+tag,'#a8946b',...tip,.00018,.0004,.00013);}
+ const tip=[0,L*.75,0];f.branch([0,0,0],tip,.00024,'#dbdfb8','style-'+tag);
+ for(let k=0;k<3;k++){const an=k*TAU/3;f.branch(tip,[Math.sin(an)*r*.17,L*.96,Math.cos(an)*r*.17],.00022,'#e2e5bf','stigma-'+tag);}
+}
+function drawMilkBellPanicles(b,{info,s,rand,month,detail},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,n=w<.3?3:5,tag='milk-bell',L=Math.min(a.leafLength,w*.27)*s.leafScale;
+ const leaf=(at,len,pitch,yaw,basal)=>{
+  const f=flowerFrame(b,at,pitch,yaw),shape=basal?'milkBellBasalLeaf':'milkBellStemLeaf';f.add(shape,(basal?'leaf-basal-':'leaf-stem-')+tag,kit.shade(rand,s.leafColor,.04),0,0,0,len,len,len);
+  let prev=[0,0,-.0002];for(let k=1;k<=5;k++){const p=milkBellPoint(shape,k/5,0).map(v=>v*len);p[2]-=.0002;f.branch(prev,p,.00014,'#91a66c','vein-'+tag);prev=p;}
+ };
+ const flower=(at,yaw,force)=>drawMilkBellFlower(b,at,Math.min(a.flowerRadius,w*.055),Math.min(a.flowerLength,h*.09),kit.shade(rand,s.flowerColor,.025),.58+rand()*.65,yaw,force||rand()<s.flowerDensity,kit);
+ for(let j=0;j<n;j++){
+  const an=j*2.399+rand()*.35,rad=w*.12*Math.sqrt((j+.5)/n),base=[Math.sin(an)*rad,.005,Math.cos(an)*rad];
+  for(let k=0;k<10;k++)if((j===0&&k===0)||rand()<s.leafDensity)leaf(base,L*(.75+rand()*.25),.98+rand()*.24,an+k*2.399,true);
+  if(![4,5,6,7,8,9,10].includes(month))continue;
+  const top=[base[0]+Math.sin(an)*w*.035,h*(month===4?.45+rand()*.08:.78+rand()*.13),base[2]+Math.cos(an)*w*.035];let prev=base;
+  for(let k=1;k<=10;k++){
+   const t=k/10,to=base.map((v,d)=>v+(top[d]-v)*t);b.branch(prev,to,.0016*(1-t*.45),a.stemColor,'stem-'+tag);
+   if(k<=8&&rand()<s.leafDensity)leaf(to,L*(1-k*.065),.65+rand()*.20,an+k*2.399,false);
+   if(s.bloom&&k>=6){
+    const aa=an+k*2.399,reach=w*(.24-(k-6)*.042)*(.86+rand()*.20),end=[to[0]+Math.sin(aa)*reach,to[1]+h*(.055+rand()*.025),to[2]+Math.cos(aa)*reach],mid=to.map((v,d)=>v+(end[d]-v)*.52),qcount=detail<.7?3:5;
+    b.branch(to,mid,.0008,a.stemColor,'panicle-branch-'+tag);b.branch(mid,end,.0006,a.stemColor,'panicle-branch-'+tag);
+    leaf(mid,L*.36,.65,aa+1.7,false);
+    for(let q=0;q<qcount;q++){
+     const v=.3+.7*q/(qcount-1),at=to.map((x,d)=>x+(end[d]-x)*v),yaw=aa+(q%2?-.8:.8),rr=w*(.025+rand()*.025),bud=[at[0]+Math.sin(yaw)*rr,at[1]+h*(.008+rand()*.013),at[2]+Math.cos(yaw)*rr];b.branch(at,bud,.00035,a.stemColor,'pedicel-'+tag);flower(bud,yaw,q===0&&k===6);
+    }
+   }
+   prev=to;
+  }
+ }
+}
+
 export function clusterBellPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='clusterBellCup'||type==='clusterBellRim'){
@@ -14831,6 +14879,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='milkBellPanicles'){drawMilkBellPanicles(b,{info,s,rand,month,detail},kit);return;}
  if(info.appearance?.architecture==='clusterBellShoots'){drawClusterBellShoots(b,{info,s,rand,month,detail},kit);return;}
  if(info.appearance?.architecture==='harebellThreads'){drawHarebellThreads(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='peachBellRacemes'){drawPeachBellRacemes(b,{info,s,rand,month},kit);return;}

@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.326';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.327';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -447,3 +447,5 @@ Object.assign(TRAIT_VALUES,{peachBellBasalLeaf:'細かな鋸歯のある細長�
 Object.assign(TRAIT_VALUES,{harebellBasalLeaf:'丸い根出葉と互生する糸状の茎葉',harebellCup:'細い枝先で下を向く5裂の釣鐘形の花'});
 
 Object.assign(TRAIT_VALUES,{clusterBellBasalLeaf:'細かな鋸歯と毛のある卵形〜披針形の根出葉と小さな互生茎葉',clusterBellCup:'上向きの5裂の小花が茎先と上部の葉腋へ集まる',clusterBellCalyxBud:'細裂する白い萼と青紫の蕾の観賞段階（開花後は未確認）'});
+
+Object.assign(TRAIT_VALUES,{milkBellBasalLeaf:'細かな鋸歯と葉脈の起伏をもつ卵形〜披針形葉と小さな互生茎葉',milkBellCup:'上部で枝分かれする円錐状の花序と、広く開く5裂の小花'});

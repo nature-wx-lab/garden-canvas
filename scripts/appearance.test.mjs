@@ -11,6 +11,24 @@ import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySage
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Milky bellflowers keep branched panicles and open fused five-lobed flowers distinct from winter basal leaves',()=>{
+ const ids=['p-fb87ee4df0a9','p-8bbf0bd8df36'];
+ for(const [ci,id] of ids.entries())for(const [si,size] of [[ci===0?1.5:1,.5,.14],[.3,.25,.06]].entries()){
+  const info=CATALOG[id],p={...makePlant(id,35200+ci*10+si,1,1),height:size[0],spread:size[1],leafHeight:size[2]};let winter=0,summer=0;
+  assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.equal(info.appearance.inflorescence,'panicle');
+  for(let month=1;month<=12;month++){
+   const g=plantModel(p,view(month)),label=`${id} size=${si} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),matrix=new Matrix4();
+   try{
+    const bloom=month>=6&&month<=8,cups=count('petal-cup-milk-bell'),buds=count('bud-milk-bell');assert.equal(g.userData.architecture,'milkBellPanicles',label);assert.ok(count('leaf-basal-milk-bell')>0,label);assert.equal(cups>0,bloom,label);assert.equal(count('panicle-branch-milk-bell')>0,bloom,label);assert.equal(count('stem-milk-bell')>0,month>=4&&month<=10,label);
+    assert.equal(count('calyx-lobe-milk-bell'),(cups+buds)*5,label);assert.equal(count('anther-relict-milk-bell'),cups*5,label);assert.equal(count('stigma-milk-bell'),cups*3,label);if(month===1)winter=count('leaf-basal-milk-bell');if(month===7)summer=count('leaf-basal-milk-bell');
+    for(const m of g.children){const pos=m.geometry.attributes.position;for(const arr of [m.instanceMatrix.array,pos.array,m.geometry.attributes.normal.array])for(const v of arr)assert.ok(Number.isFinite(v),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.008&&y<p.height*1.3&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;
+     if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z))for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),`${label}: ${m.userData.component}`);}}
+    }
+   }finally{dispose(g);}
+  }
+  assert.ok(winter<summer,id+' winter leaf reduction');
+ }
+});
 test('Clustered bellflowers separate upward flower heads from Twister white calyx buds across sizes and seasons',()=>{
  const ids=['p-3ff7a14cd5d4','p-5f0d3d9c5800','p-4370a8f72d97','p-d43769e164f5'];
  for(const [ci,id] of ids.entries())for(const [si,size] of [[.6,.4,.12],[.25,.22,.06]].entries()){
