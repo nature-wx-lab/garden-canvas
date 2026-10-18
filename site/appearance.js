@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.406';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.407';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -521,3 +521,5 @@ Object.assign(TRAIT_VALUES,{slenderTulipNarrow:'細い線形の葉が茎に互�
 Object.assign(TRAIT_VALUES,{minorTulipNarrow:'細い互生葉と茎を抱く葉の基部',sylvestrisNodding:'曲がる花首と尖った黄花・下向きの蕾',minorTulipYellowEye:'桃〜紫色の花被片と大きな黄色い基部',minorTulipBlueEye:'白い花被片と青紫の基部・濃い葯',minorTulipPinkEdge:'桃色の縁と白い中央、暗い紫の基部',minorTulipHilde:'白い内側と桃色の外側、黄色い基部の小花',minorTulipDouble:'赤い八重の花弁状部分と緑筋のある外側',fewFlowerTulip:'1本の花茎に複数花（最大3花の資料を参照）',basalTulipBouquet:'一つの球から複数花をつける参考例'});
 
 Object.assign(TRAIT_VALUES,{doubleTulipLayeredCup:'花弁状部分が不規則に重なる八重の杯形花',semiDoubleTulipCup:'白い花弁状部分が少なめに重なる半八重の花'});
+
+Object.assign(TRAIT_VALUES,{rainLilyChannel:'根元から出る浅い溝のある細長い葉',rainLilyFunnel:'短い筒から開く6枚の花被と長い黄色の葯'});
