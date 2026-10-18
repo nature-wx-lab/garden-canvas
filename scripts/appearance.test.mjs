@@ -7146,3 +7146,16 @@ test('retail coum keeps its flowering conflict explicit while showing a winter s
   }finally{dispose(g);}
  }
 });
+
+
+test('retail tokusa has evergreen ridged jointed stems and banded sheaths without water horsetail branches or flowers',()=>{
+ const id='p-4136736f36e6',info=CATALOG[id],a=info.appearance;assert.equal(info.latin,'Equisetum hyemale');assert.deepEqual(info.height,[.3,1]);assert.equal(info.spread,null);assert.deepEqual(info.bloom,[]);assert.equal(info.bloomKnown,true);assert.match(info.bloomText,/花は付けません/);assert.equal(a.architecture,'evergreenHorsetail');assert.equal(a.persistence,'evergreen');assert.equal(a.status,'partial');
+ for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,41300+(small?1:0),2,2),height:small?.30:1,spread:small?.28:.60,leafHeight:small?.28:.95},g=plantModel(p,view(month)),label=`tokusa small=${small} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+  try{
+   assert.equal(g.scale.x,1,label);assert.ok(count('culm')>0,label);assert.ok(count('hyemale-sheath')>=count('culm')/12*4&&count('hyemale-sheath')<=count('culm'),label+'4–12 nodes by stem height');assert.equal(count('hyemale-black-band'),count('hyemale-sheath')*2,label);assert.equal(count('hyemale-sheath-tooth'),count('culm')/12*72,label+'24 teeth on upper3nodes');assert.equal(count('whorledBranch'),0,label);assert.equal((g.userData.flowerTargets?.length||0),0,label);assert.ok(!g.children.some(m=>/petal|anther|stigma|fruit|cone|spore|leaf-/.test(m.userData.component)),label);
+   const culm=g.children.find(m=>m.userData.component==='culm');assert.ok(culm.geometry.userData.hyemaleCulm,label);const p0=culm.geometry.attributes.position,rad=[];for(let k=0;k<p0.count;k++){const r=Math.hypot(p0.getX(k),p0.getZ(k));if(r>.5)rad.push(r);}assert.ok(Math.max(...rad)-Math.min(...rad)>.06,label+'24 longitudinal ridges');
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const b=m.boundingBox;assert.ok(b.min.y>=-.002&&b.max.y<p.height*1.13,label+' height');assert.ok(Math.max(Math.abs(b.min.x),Math.abs(b.max.x),Math.abs(b.min.z),Math.abs(b.max.z))<p.spread*.75,label+' width');}
+  }finally{dispose(g);}
+ }
+});

@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.412';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.413';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.412';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.413';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16543,7 +16543,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['waterCoin','marsileaMutica','bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(info.appearance?.architecture)){drawWaterMargin(b,{info,s,detail,rand},kit);return;}
  if(['waterHyacinth','amazonFrogbit','salviniaNatans','salviniaMolesta','salviniaCucullata'].includes(info.appearance?.architecture)){drawFreeFloaters(b,{info,s,detail,rand},kit);return;}
  if(['waterArrowhead','nupharEmergent','floatingHeart','waterPoppy'].includes(info.appearance?.architecture)){drawFloatingAquatics(b,{info,s,detail,rand},kit);return;}
- if(['umbrellaSedge','dwarfPapyrus','waterHorsetail','twigRush'].includes(info.appearance?.architecture)){drawAquaticReeds(b,{info,s,detail,rand},kit);return;}
+ if(['umbrellaSedge','dwarfPapyrus','waterHorsetail','evergreenHorsetail','twigRush'].includes(info.appearance?.architecture)){drawAquaticReeds(b,{info,s,detail,rand},kit);return;}
  if(['blueFescue','snowTussock','goldMillet','redMelica','crystalSedge','redHookSedge','goldMatRush','goldDwarfBamboo','sweetFlagFans','whitetopSedge'].includes(info.appearance?.architecture)){drawGrassAndSedgeProfiles(b,{info,s,detail,rand},kit);return;}
  if(['spurgeCanes','spurgeDome','snowSpurge','gauraWands'].includes(info.appearance?.architecture)){drawSpurgesAndGaura(b,{info,s,detail,rand},kit);return;}
  if(['diphylleiaUmbrella','jeffersoniaBasal','ranzaniaTrifoliate','deinantheCymes','kirengeshomaBells','pteridophyllumFern','hylomeconPinnate','eomeconBasal','araliaHerb','saururusRaceme','parnassiaScapes','cornusHerb'].includes(info.appearance?.architecture)){drawWoodlandSpecies(b,{info,s,detail,rand},kit);return;}
@@ -19255,12 +19255,12 @@ function drawGrassAndSedgeProfiles(b,{info,s,detail,rand},kit){
 
 function drawAquaticReeds(b,{info,s,detail,rand},kit){
  if(s.groundDormant)return;
- const a=info.appearance,arch=a.architecture,h=s.height,w=s.spread,umbrella=arch==='umbrellaSedge',papyrus=arch==='dwarfPapyrus',horsetail=arch==='waterHorsetail',rush=arch==='twigRush',green=s.leafColor,stem=a.stemColor;
+ const a=info.appearance,arch=a.architecture,h=s.height,w=s.spread,umbrella=arch==='umbrellaSedge',papyrus=arch==='dwarfPapyrus',hyemale=arch==='evergreenHorsetail',horsetail=arch==='waterHorsetail'||hyemale,rush=arch==='twigRush',green=s.leafColor,stem=a.stemColor;
  const section=(shape,from,to,r,color,part)=>{
   const v=new THREE.Vector3(...from),end=new THREE.Vector3(...to),dir=end.clone().sub(v),len=dir.length(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');
   b.add(shape,part,color,...v.add(end).multiplyScalar(.5).toArray(),r,len,r,e.x,e.y,e.z);
  };
- const line=(from,to,r,color=stem,part='culm')=>horsetail&&part==='culm'?section('horsetailCulm',from,to,r,color,part):umbrella||papyrus?section('triangularCulm',from,to,r,color,part):b.branch(from,to,r,color,part);
+ const line=(from,to,r,color=stem,part='culm')=>horsetail&&part==='culm'?section(hyemale?'hyemaleCulm':'horsetailCulm',from,to,r,color,part):umbrella||papyrus?section('triangularCulm',from,to,r,color,part):b.branch(from,to,r,color,part);
  const glume=(at,len,yaw,pitch,color)=>{b.add('grassGlume','glume',color,...at,len,len,len,pitch,yaw,0);b.add('grassGlume','glume',color,...at,len*.85,len*.88,len*.85,pitch,yaw+1.1,0);};
  const spikelet=(at,len,yaw,pitch,color)=>{
   const f=flowerFrame(b,at,pitch,yaw);f.branch([0,0,0],[0,len,0],.0002,color,'spikeletAxis');
@@ -19273,16 +19273,25 @@ function drawAquaticReeds(b,{info,s,detail,rand},kit){
    b.add('twigRushBlade','leaf-glossy',kit.shade(rand,green,.045),Math.sin(an)*rr,0,Math.cos(an)*rr,len*width,len,len,.015+rand()*.20,an,0);
   }
  }
- const n=Math.max(4,Math.round((horsetail?74:rush?15:papyrus?19:25)*detail*(rush?1:s.leafDensity)));
+ const n=Math.max(4,Math.round((hyemale?52:horsetail?74:rush?15:papyrus?19:25)*detail*(rush?1:s.leafDensity)));
  for(let i=0;i<n;i++){
-  const an=i*2.399,rr=w*(horsetail?.32:.24)*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,.002,Math.cos(an)*rr],height=h*(horsetail?.53+rand()*.45:papyrus?.61+rand()*.29:umbrella?.52+rand()*.39:.82+rand()*.17),reach=w*(horsetail?.055:papyrus?.10:umbrella?.07:.025),path=t=>[root[0]+Math.sin(an)*reach*t*t,height*t,root[2]+Math.cos(an)*reach*t*t],tip=path(1),radius=horsetail?.0017:papyrus?.0024:umbrella?.0023:.0018;
+  const an=i*2.399,rr=w*(horsetail?.32:.24)*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,.002,Math.cos(an)*rr],height=h*(horsetail?.53+rand()*.45:papyrus?.61+rand()*.29:umbrella?.52+rand()*.39:.82+rand()*.17),reach=w*(hyemale?.025:horsetail?.055:papyrus?.10:umbrella?.07:.025),path=t=>[root[0]+Math.sin(an)*reach*t*t,height*t,root[2]+Math.cos(an)*reach*t*t],tip=path(1),radius=hyemale?Math.min(.004,Math.max(.00125,h*.004)):horsetail?.0017:papyrus?.0024:umbrella?.0023:.0018;
   let old=root;for(let k=1;k<=12;k++){const at=path(k/12);line(old,at,radius*(1-.18*k/12));old=at;}
   if(horsetail){
-   for(let k=1;k<=12;k++){
-    const t=k/13,at=path(t),r=radius*(1-.18*t),f=flowerFrame(b,at,0,an);
-    f.add('horsetailCulm','sheath','#758866',0,-.0017,0,r*1.10,.0034,r*1.10);
-    for(let j=0;j<18;j++){const aa=j*TAU/18;f.add('horsetailSheath','sheathTooth','#393f2d',Math.sin(aa)*r,.0001,Math.cos(aa)*r,.0015,.0022,.0015,.05,aa,0);}
-    if(i%5===0&&k>=5&&k<=8)for(let j=0;j<5;j++){
+   const joints=hyemale?Math.max(4,Math.min(12,Math.round(height/.06))):12;
+   for(let k=1;k<=joints;k++){
+    const t=k/(joints+1),at=path(t),r=radius*(1-.18*t),f=flowerFrame(b,at,0,an);
+    if(hyemale){
+     const length=Math.min(.012,Math.max(.008,height*.015));
+     f.add('horsetailCulm','hyemale-sheath','#aab0a2',0,0,0,r*1.10,length*.72,r*1.10);
+     for(const sign of [-1,1])f.add('horsetailCulm','hyemale-black-band','#292e25',0,sign*length*.43,0,r*1.13,length*.14,r*1.13);
+     // Persistent teeth on the youngest upper nodes; older teeth may shed.
+     if(k>joints-3)for(let j=0;j<24;j++){const aa=j*TAU/24;f.add('horsetailSheath','hyemale-sheath-tooth','#30352b',Math.sin(aa)*r,length*.5,Math.cos(aa)*r,.0022,.0020,.0022,.02,aa,0);}
+    }else{
+     f.add('horsetailCulm','sheath','#758866',0,-.0017,0,r*1.10,.0034,r*1.10);
+     for(let j=0;j<18;j++){const aa=j*TAU/18;f.add('horsetailSheath','sheathTooth','#393f2d',Math.sin(aa)*r,.0001,Math.cos(aa)*r,.0015,.0022,.0015,.05,aa,0);}
+    }
+    if(!hyemale&&i%5===0&&k>=5&&k<=8)for(let j=0;j<5;j++){
      const aa=an+j*TAU/5,ll=Math.min(.10,h*.19)*(1-(k-5)*.13),end=[at[0]+Math.sin(aa)*ll*.7,at[1]+ll*.8,at[2]+Math.cos(aa)*ll*.7];b.branch(at,end,.0005,stem,'whorledBranch');
      for(let z=1;z<4;z++){const p=at.map((v,q)=>v+(end[q]-v)*z/4);b.add(kit.bud,'branchSheath','#515a3e',...p,.0008,.001,.0008);}
     }
