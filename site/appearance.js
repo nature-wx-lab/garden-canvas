@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.416';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.417';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -537,3 +537,5 @@ Object.assign(TRAIT_VALUES,{somekawaSword:'目立つ中脈のない剣状の根�
 Object.assign(TRAIT_VALUES,{paraneeFloating:'基部に深い切れ込みがある丸い浮葉',paraneeMottle:'緑の浮葉に入る暗紫色の不規則な斑',paraneeYellowStreaks:'黄色に紅色の筋・斑が入り、多数の花弁が重なる花'});
 
 Object.assign(TRAIT_VALUES,{eucomisWavyStrap:'緩やかに波打つ幅広い帯状の根出葉',eucomisStarRaceme:'小さな6枚の花被を持つ星形の花穂と、頂部の葉に似た苞の房'});
+
+Object.assign(TRAIT_VALUES,{rudyGrass:'球根ごとに2〜3枚の細い根出葉（花期の残葉は条件で変化）',rudySixLobedFunnel:'白地に青紫の筋・6裂して開く漏斗形の花と、2段に付く6本の雄しべ'});

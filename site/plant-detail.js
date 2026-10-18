@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.416';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.417';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.416';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.417';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15627,6 +15627,44 @@ function drawIridReferenceSpikes(b,{info,s,detail,rand},kit){
   }
  }
 }
+export function rudyPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='rudyLeaf')return [u*.5*sn**.32,.95*t-.25*t**3,.46*t*t+.01*u*u*sn];
+ if(type==='rudyBud'){const r=.14*sn**.65;return [Math.sin(u)*r,.70*t,Math.cos(u)*r];}
+ if(type==='rudyTube'){const r=.06+.34*t**1.2;return [Math.sin(u)*r,.65*t,Math.cos(u)*r];}
+ const angle=u*(Math.PI/6*(1-t)**3+(type==='rudyInner'?.28:.25)*sn**.85),r=.40+.58*t;
+ return [Math.sin(angle)*r,.65+.45*t-.18*t*t,Math.cos(angle)*r];
+}
+function drawRudyUmbels(b,{info,s,detail,rand},kit){
+ const h=s.height,w=s.spread,n=Math.max(1,Math.round(3*detail));
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.15*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],density=s.leafDensity,green=s.leafDensity<.5?'#a6a17b':s.leafColor;
+  for(let j=0;j<3;j++){
+   if(j/3>=density)continue;
+   const L=Math.min(s.leafHeight/.70,w*1.25)*s.leafScale*(.75+rand()*.25),W=Math.min(.014,L*.06),f=flowerFrame(b,root,.10+rand()*.35,yaw+j*2.1);
+   f.add('rudyLeaf','leaf-rudy',kit.shade(rand,green,.02),0,0,0,W,L,L);
+  }
+  if(!s.bloom)continue;
+  const head=[root[0]+Math.sin(yaw)*h*.02,h*(.66+rand()*.025),root[2]+Math.cos(yaw)*h*.02],L=Math.min(.022,h*.075,w*.12),stemR=Math.min(.002,h*.006);b.branch(root,head,stemR,'#79935e','scape-rudy');
+  for(let k=0;k<3;k++)b.add('rudyLeaf','scarious-bract-rudy','#b3a58b',...head,L*.20,L*.70,L*.70,1.20,k*TAU/3+yaw,0);
+  const count=Math.max(8,Math.round(24*detail)),reach=Math.min(.10,w*.28,h*.20);
+  for(let q=0;q<count;q++){
+   const t=(q+.5)/count,angle=q*2.399+yaw,r=reach*Math.sqrt(t),end=[head[0]+Math.sin(angle)*r,head[1]+reach*(.34+.60*(1-t)),head[2]+Math.cos(angle)*r],f=flowerFrame(b,end,.12+.95*t,angle);let from=head;
+   for(let k=1;k<=10;k++){const v=k/10,to=head.map((x,a)=>x+(end[a]-x)*v);to[1]+=.007*Math.sin(v*Math.PI);b.branch(from,to,stemR*.35,'#829966','pedicel-rudy');from=to;}
+   if(q%5===4){f.add('rudyBud','bud-rudy','#98a875',0,0,0,L,L,L,.25,0,0);continue;}
+   if(i===0&&q===0)f.flower([0,L*.60,0],L*1.1,.20,0);
+   f.add('rudyTube','tube-rudy',s.flowerColor,0,0,0,L,L,L);
+   for(let k=0;k<6;k++){
+    const angle=k*TAU/6,part=flowerFrame(f,[0,0,0],0,angle),low=k%2===0,baseY=low?.45:.53,baseR=.06+.34*(baseY/.65)**1.2,tipR=low?.12:.16;part.add(low?'rudyOuter':'rudyInner','tepal-rudy',s.flowerColor,0,0,0,L,L,L);
+    let from=[Math.sin(angle)*L*baseR,L*baseY,Math.cos(angle)*L*baseR];
+    for(let k=1;k<=6;k++){const t=k/6,r=baseR+(tipR-baseR)*t,to=[Math.sin(angle)*L*r,L*(baseY+.13*t**3),Math.cos(angle)*L*r];f.branch(from,to,L*.008,'#b9b6c9','filament-rudy-'+(low?'low':'high'));from=to;}
+    f.add(kit.bud,'anther-rudy-'+(low?'low':'high'),'#d3d1db',...from,L*.020,L*.070,L*.020,.10,angle,0);
+   }
+   f.branch([0,L*.05,0],[0,L*.28,0],L*.018,'#a1a986','ovary-stipe-rudy');f.add(kit.bud,'ovary-superior-rudy','#aab393',0,L*.325,0,L*.045,L*.045,L*.045);f.branch([0,L*.37,0],[0,L*.62,0],L*.010,'#cbc8ce','style-rudy');f.add(kit.bud,'stigma-rudy','#dedbdc',0,L*.62,0,L*.022,L*.012,L*.022);
+  }
+ }
+}
+
 export function eucomisPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='eucomisStrap')return [u*.5*sn**.30,.96*t-.13*t**5+.018*Math.sin(t*43+u*4)*Math.abs(u)**3*sn,.14*t*t+.020*u*u*sn];
@@ -16771,6 +16809,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='alliumReferences'){drawAlliumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='daylilyReferences'){drawDaylilyReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='iridReferenceSpikes'){drawIridReferenceSpikes(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='rudyUmbels'){drawRudyUmbels(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='bronzeEucomis'){drawBronzeEucomis(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='paraneeWaterlily'){drawParanee(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='somekawaIris'){drawSomekawaIris(b,{info,s,detail,rand},kit);return;}
