@@ -7058,3 +7058,15 @@ test('free floating aquatics retain species hair types, flower asymmetry and dis
  for(const id of [ids[0],ids[1],ids[3],ids[4]]){assert.match(seasonAt(CATALOG[id],1).phase,/保護場所/);assert.equal(seasonAt(CATALOG[id],4).groundDormant,true);assert.equal(seasonAt(CATALOG[id],5).groundDormant,false);}
  const doc=annualGalleryDocument();doc.plans.A.plants=ids.map((id,i)=>makePlant(id,4200+i,1+i*.4,2));assert.doesNotThrow(()=>validateDocument(doc));
 });
+
+test('two retail Narcissus references retain domestic dimensions and clustered reflexed hollow cups',()=>{
+ const ids=['p-8c74bbcfe360','p-68092dfca45b'],types=['retailThalia','angelWhisper'];
+ for(const [ci,id]of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,40600+ci*10+(small?1:0),2,2),height:small?.10:ci?.25:.30,spread:small?.20:.32,leafHeight:small?.075:ci?.18:.23},g=plantModel(p,view(month)),label=id+' small='+small+' month='+month,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),flowers=count('corona-narcissus-'+types[ci]),leaves=count('leaf-narcissus-reference');
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(CATALOG[id].latin,'');assert.equal(CATALOG[id].bloomKnown,true);assert.equal(CATALOG[id].spread,null);assert.equal(g.scale.x,1,label);assert.equal(flowers>0,[3,4].includes(month),label);assert.equal(count('tepal-narcissus-'+types[ci]),flowers*6,label);assert.equal(count('vein-leaf-narcissus-reference'),leaves*48,label);assert.ok(!g.children.some(m=>/fruit|seed|anther|stigma|style/.test(m.userData.component)),label);if([7,8].includes(month))assert.equal(g.children.length,0,label);
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const bb=m.boundingBox,within=(x,y,z)=>y>=-.003&&y<p.height*1.15&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;if(!within(bb.min.x,bb.min.y,bb.min.z)||!within(bb.max.x,bb.max.y,bb.max.z)){const matrix=new Matrix4(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),label+' actual vertex '+m.userData.component);}}}}
+  }finally{dispose(g);}
+ }
+ assert.deepEqual(CATALOG[ids[0]].height,[.2,.3]);assert.deepEqual(CATALOG[ids[1]].height,[.2,.25]);assert.deepEqual(CATALOG[ids[1]].colors,['yellow']);
+});
