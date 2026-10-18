@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.401';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.402';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.401';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.402';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,13 +15097,13 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
-export const SINGLE_TULIP_PROFILES={lightBlue:{height:1.20,radius:.46},shinyBlue:{height:1.35,radius:.43},candyPrince:{height:1.04,radius:.50},negrita:{height:1.28,radius:.46},menton:{height:1.42,radius:.45},whiteMarvel:{height:1.16,radius:.49},kikomachi:{height:1.12,radius:.49},lemonChiffon:{height:1.40,radius:.45}};
+export const SINGLE_TULIP_PROFILES={lightBlue:{height:1.20,radius:.46},shinyBlue:{height:1.35,radius:.43},candyPrince:{height:1.04,radius:.50},negrita:{height:1.28,radius:.46},menton:{height:1.42,radius:.45},whiteMarvel:{height:1.16,radius:.49},kikomachi:{height:1.12,radius:.49},lemonChiffon:{height:1.40,radius:.45},ballerina:{height:1.48,radius:.34,flare:.26,pointed:true},dollsMinuet:{height:1.48,radius:.34,flare:.42,pointed:true},purpleDoll:{height:1.50,radius:.35,flare:.36,pointed:true},formosa:{height:1.25,radius:.46,flare:.14,wavy:true}};
 export function singleTulipPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='singleTulipLeaf')return [u*.5*sn**.52*(1+.018*Math.sin(t*25)),.84*Math.sin(t*1.37),.32*t**1.3+.025*u*u*sn];
  if(type==='singleTulipSheath'){const az=u*Math.PI*.8,r=.5;return [Math.sin(az)*r,t,Math.cos(az)*r];}
- const key=Object.keys(SINGLE_TULIP_PROFILES).find(k=>type.startsWith(k)),p=SINGLE_TULIP_PROFILES[key],inner=type.includes('Inner'),angle=u*(inner?.74:.67)*sn**.25,r=.025+p.radius*Math.sin(t*Math.PI*.63),wave=.007*Math.sin(t*23+u*7)*Math.abs(u)**4*sn;
- return [Math.sin(angle)*r,p.height*t+.012*u*u*sn+wave,Math.cos(angle)*r];
+ const key=Object.keys(SINGLE_TULIP_PROFILES).find(k=>type.startsWith(k)),p=SINGLE_TULIP_PROFILES[key],inner=type.includes('Inner'),tip=Math.max(0,(t-.60)/.40),angle=u*(p.pointed?(inner?.66:.57):(inner?.74:.67))*sn**(p.pointed?1.08:.25),r=.025+p.radius*Math.sin(t*Math.PI*.63)+(p.flare||0)*tip*tip,wave=(p.wavy?.018:.007)*Math.sin(t*23+u*7)*Math.abs(u)**4*sn;
+ return [Math.sin(angle)*r,p.height*t-(p.pointed?.08:0)*tip*tip+.012*u*u*sn+wave,Math.cos(angle)*r];
 }
 function drawSingleTulipReferences(b,{info,s,detail,rand},kit){
  const a=info.appearance,type=a.flowerPalette.type,h=s.height,w=s.spread,n=Math.max(2,Math.round(3*detail)),profile=SINGLE_TULIP_PROFILES[type],L=Math.min(a.flowerRadius,h*.24),green=s.leafDensity<.5?'#b0a67c':s.leafColor;

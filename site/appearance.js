@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.401';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.402';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -513,3 +513,5 @@ Object.assign(TRAIT_VALUES,{gardenAnemoneLeaf:'三つに分かれ、さらに深
 Object.assign(TRAIT_VALUES,{cannaPaddle:'葉鞘で茎を抱く大きな一枚葉',cannaAsymmetric:'花弁状の仮雄しべと片側の葯を持つ非対称の花',cannaWhitePatch:'緑の葉に不規則な白斑',cannaYellowVeins:'緑の葉に細い黄色の筋',cannaBronzeMottle:'緑が混ざる銅紫色の葉',cannaRedVeins:'緑の葉に赤黒い葉脈'});
 
 Object.assign(TRAIT_VALUES,{singleTulipBroad:'互い違いに付き葉鞘で茎を抱く幅広い葉',singleTulipCup:'外側3枚・内側3枚の花被片が重なる一重の杯形花'});
+
+Object.assign(TRAIT_VALUES,{sourceTulipPointed:'細く尖った花被の先が外へ反る一重花',sourceTulipWavy:'中央に緑が入り縁がゆるく波打つ一重花'});

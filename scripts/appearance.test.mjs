@@ -5847,6 +5847,19 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
 });
 
 
+test('four lily and green tulips retain recurved pointed tepals versus broad Formosa and seasonal rather than measured flowering months',()=>{
+ const ids=['p-1bfc078ae889','p-76079019479d','p-a1f59ae61229','p-d21f2c25bee9'],types=['ballerina','dollsMinuet','purpleDoll','formosa'];
+ for(const [ci,id]of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,40200+ci*10+(small?1:0),2,2),height:small?.16:[.5,.6,.4,.6][ci],spread:small?.23:.36,leafHeight:small?.10:.22},g=plantModel(p,view(month)),label=id+' small='+small+' month='+month,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),flowers=count('ovary-superior-single-tulip'),leaves=count('leaf-single-tulip');
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(CATALOG[id].bloomKnown,false);assert.equal(CATALOG[id].appearance.flowerMonths,undefined);assert.equal(CATALOG[id].appearance.flowerTiming,'season-reference');assert.equal(CATALOG[id].latin,'');assert.equal(CATALOG[id].spread,null);assert.equal(g.scale.x,1,label);assert.equal(flowers>0,[4,5].includes(month),label);assert.equal(count('tepal-single-tulip-'+types[ci]+'-inner'),flowers*3,label);assert.equal(count('tepal-single-tulip-'+types[ci]+'-outer'),flowers*3,label);assert.equal(count('anther-single-tulip'),flowers*6,label);assert.equal(count('stigma-single-tulip'),flowers*3,label);assert.equal(count('sheath-single-tulip'),leaves,label);if([1,2,7,8,9,10,11,12].includes(month))assert.equal(g.children.length,0,label);assert.ok(!g.children.some(m=>/fruit|seed|capsule|nectar|inferior|style/.test(m.userData.component)),label);
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const b=m.boundingBox,within=(x,y,z)=>y>=-.003&&y<p.height*1.15&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;if(!within(b.min.x,b.min.y,b.min.z)||!within(b.max.x,b.max.y,b.max.z)){const matrix=new Matrix4(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),label+' actual vertex '+m.userData.component);}}}}
+  }finally{dispose(g);}
+ }
+ for(const type of types){const tip=singleTulipPoint(type+'InnerSingleTulipTepal',1,0),middle=singleTulipPoint(type+'InnerSingleTulipTepal',.5,0);assert.ok(tip[2]>middle[2]*(type==='formosa'?1.2:1.7),type+' outward recurved tips');}
+ assert.ok(singleTulipPoint('dollsMinuetInnerSingleTulipTepal',.5,1)[0]<singleTulipPoint('formosaInnerSingleTulipTepal',.5,1)[0], 'Formosa has broader tepals');
+});
+
 test('eight single tulip references keep six separate tepals six stamens broad clasping leaves retail colours and spring bulb dormancy',()=>{
  const ids=['p-748914cee343','p-dc62b29e0e78','p-3120ea6bac79','p-46feefa641b1','p-5b55dcdc7cee','p-2fb6bec364ac','p-70e352db6647','p-b143c61baa21'],types=Object.keys(SINGLE_TULIP_PROFILES);
  for(const [ci,id]of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
