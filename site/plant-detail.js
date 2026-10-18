@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.370';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.371';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.370';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.371';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15027,6 +15027,31 @@ function drawLilies(b,{info,s,detail,rand},kit){
 }
 
 
+export function borderTulipPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='borderTulipLeaf')return [u*.5*sn**.52*(1+.025*Math.sin(t*22)),.86*Math.sin(t*1.37),.32*t**1.3+.014*u*u*sn];
+ const spring=type.startsWith('spring'),inner=type.includes('Inner'),angle=u*(inner?.67:.63)*sn**(spring?.34:.25),radius=.025+(spring?.41:.39)*Math.sin(t*Math.PI*.63);
+ return [Math.sin(angle)*radius,1.15*t+.010*Math.sin(t*12)*u*u*sn,Math.cos(angle)*radius];
+}
+function drawBorderTulips(b,{info,s,detail,rand},kit){
+ const type=info.appearance.flowerPalette.type,h=s.height,w=s.spread,n=Math.max(2,Math.round(5*detail)),green=s.leafDensity<.5?'#b5ad7a':s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.34*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],L=Math.min(type==='queen'?.065:.060,h*.27),top=h*(.76+rand()*.20)-L*1.15,axis=t=>[root[0]+Math.sin(yaw)*h*.018*t*t,top*t,root[2]+Math.cos(yaw)*h*.018*t*t],leaves=Math.max(1,Math.round(3*s.leafDensity));
+  if(s.leafDensity>0)for(let j=0;j<leaves;j++){
+   const y=s.leafHeight*.30*j/Math.max(1,leaves-1),at=axis(y/top),length=Math.min(.27,(s.leafHeight-y)/.84,w*.85)*s.leafScale*(.9+rand()*.1),width=Math.min(.047,length*.23),f=flowerFrame(b,at,.04+j*.05,yaw+j*2.399);
+   f.add('borderTulipLeaf','leaf-border-tulip',kit.shade(rand,green,.025),0,0,0,width,length,length);
+   for(const u of [-.65,-.32,0,.32,.65]){let p=borderTulipPoint('borderTulipLeaf',.02,u),from=[p[0]*width,p[1]*length,p[2]*length+.00006];for(let k=1;k<=15;k++){p=borderTulipPoint('borderTulipLeaf',.02+k*.065,u);const to=[p[0]*width,p[1]*length,p[2]*length+.00006];f.branch(from,to,.000045,'#a8b6a6','vein-leaf-border-tulip');from=to;}}
+   if(y>0)b.branch(root,at,.0012,green,'lower-stem-border-tulip');
+  }
+  if(!s.bloom)continue;
+  let from=root;for(let k=1;k<=24;k++){const to=axis(k/24);b.branch(from,to,.0015,type==='queen'?'#646c60':'#7c9872','stem-border-tulip');from=to;}
+  const f=flowerFrame(b,axis(1),.03,yaw);
+  for(let j=0;j<6;j++){
+   const inner=j%2===1,petal=flowerFrame(f,[0,inner?L*.014:0,0],0,j*TAU/6);
+   petal.add(type+(inner?'InnerCupTepal':'OuterCupTepal'),'petal-border-tulip-'+type+(inner?'-inner':'-outer'),s.flowerColor,0,0,0,L,L,L,-.04+(i%3)*.035,0,0);
+  }
+ }
+}
 export function retailTulipPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type.endsWith('Leaf'))return [u*.5*sn**.55,.84*Math.sin(t*1.4),.25*t**1.35+.004*u*u*sn];
@@ -15755,6 +15780,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='borderTulipCrowns'){drawBorderTulips(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='retailTulipCrowns'){drawRetailTulips(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='camassiaRacemes'){drawCamassiaRacemes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='autumnCyclamenCrowns'){drawAutumnCyclamens(b,{info,s,detail,rand},kit);return;}
