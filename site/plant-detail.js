@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.356';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.357';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.356';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.357';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -14034,6 +14034,16 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   for(let j=0;j<3;j++){const an=j*TAU/3;f.add(bud,'stigma','#b3bc78',Math.sin(an)*r*.030,end[1],Math.cos(an)*r*.030,r*.040,r*.024,r*.040);}
   return;
  }
+ if(shape==='grapeUrn'||shape==='grapeAzure'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),azure=shape==='grapeAzure';
+  f.add(azure?'grapeAzure':'grapeUrn',azure?'petal-grape-azure':palette.tipFlower?'petal-grape-tip':'petal-grape-urn',color,0,0,0,r,r,r);
+  if(!palette.tipFlower){
+   f.add(bud,'ovary-grape','#90a66a',0,r*.03,0,r*.13,r*.17,r*.13);
+   for(let j=0;j<6;j++){const an=j*TAU/6,xx=Math.sin(an)*r*.20,zz=Math.cos(an)*r*.20,yy=r*(j%2?.93:.74);f.branch([xx,r*.35,zz],[xx,yy,zz],r*.010,'#c1c7a3','filament-grape');f.add(bud,'anther-grape','#505580',xx,yy,zz,r*.046,r*.075,r*.046);}
+   f.branch([0,r*.12,0],[0,r*1.06,0],r*.013,'#dae0be','style-grape');for(let j=0;j<3;j++){const an=j*TAU/3;f.add(bud,'stigma-grape','#c6d0a3',Math.sin(an)*r*.028,r*1.06,Math.cos(an)*r*.028,r*.029,r*.021,r*.029);}
+  }
+  return;
+ }
  if(shape==='muscariUrn'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw);
   f.add('muscariUrn','petal-muscari-mouth',color,0,0,0,r,r,r);
@@ -14926,6 +14936,31 @@ function drawLilies(b,{info,s,detail,rand},kit){
  for(const {at,an} of heads)detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'liliumFlower',palette,tilt:palette.tilt,yaw:an},{...kit,rand});
 }
 
+export function grapeHyacinthPoint(type,t,u){
+ if(type.startsWith('grapeLeaf')){const long=type==='grapeLeafArch',wide=.5*Math.pow(Math.max(0,1-t),.35)*Math.min(1,.5+t*5);return [u*wide,long?.82*Math.sin(t*2.6):t,(long?.30:.25)*t*t+.055*u*u*Math.sin(Math.PI*t)+.005*Math.cos(u*24)*Math.sin(Math.PI*t)];}
+ const azure=type==='grapeAzure',an=u,edge=t**16,teeth=.5+.5*Math.cos(an*6),rad=azure?.13+.76*Math.sin(t*Math.PI/2)**.85:t<.65?.16+.74*Math.sin(t*Math.PI/.90)**.70:.25+.46*((1-t)/.35)**1.4;
+ return [Math.sin(an)*(rad+edge*teeth*.065),t*1.65+edge*teeth*(azure?.19:.075),Math.cos(an)*(rad+edge*teeth*.065)];
+}
+function drawGrapeHyacinths(b,{info,s,detail,rand},kit){
+ const a=info.appearance,palette=a.flowerPalette||{},azure=a.flowerShape==='grapeAzure',h=s.height,w=s.spread,n=Math.max(2,Math.round(7*detail)),long=!!palette.longLeaf,leafType=long?'grapeLeafArch':'grapeLeafUpright',green=s.leafDensity<.4?'#b1aa5d':s.leafColor;
+ for(let i=0;i<n;i++){
+  const an=i*2.399,rr=w*.22*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,.001,Math.cos(an)*rr],top=h*(.85+rand()*.14),leafCount=Math.max(2,Math.round((azure?3:5)*s.leafDensity));
+  if(s.leafDensity>0)for(let j=0;j<leafCount;j++){
+   const yaw=an+j*2.399,L=Math.min(h*(long?1.08:.72),w*(long?1.5:1.1))*(.82+rand()*.18)*s.leafScale,W=Math.min(palette.width||.009,L*.20),f=flowerFrame(b,root,.06+(1-s.leafDensity)*.22,yaw);
+   f.add(leafType,'leaf-grape',kit.shade(rand,green,.035),0,0,0,W,L,L);
+   for(const q of [-.5,0,.5]){let previous=grapeHyacinthPoint(leafType,.02,q);previous=[previous[0]*W,previous[1]*L,previous[2]*L+.00005];for(let k=1;k<=9;k++){const p=grapeHyacinthPoint(leafType,.02+k*.105,q),to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(previous,to,.000035,'#9bad80','vein-leaf-grape');previous=to;}}
+  }
+  if(!s.bloom)continue;
+  const length=Math.min(palette.head||.06,h*.38),base=top-length,stem='#859967';b.branch(root,[root[0],top,root[2]],.00115,stem,'scape-grape');
+  const count=azure?48:72;
+  for(let j=0;j<count;j++){
+   const t=(j+.5)/count,yaw=an+j*2.399,R=Math.min(azure?.006:.0075,w*.08)*(.50+.50*Math.sin(Math.PI*t)),at=[root[0]+Math.sin(yaw)*R,base+t*length,root[2]+Math.cos(yaw)*R],tip=t>(palette.whiteTop||.85),color=tip?palette.tip||s.flowerColor:palette.earlyColor&&t>.55?palette.earlyColor:s.flowerColor,r=Math.min(a.flowerRadius||.0035,h*.029)*(1-t*.18);
+   b.branch([root[0],at[1],root[2]],at,.00022,stem,'pedicel-grape');
+   if(t>.94)b.add(kit.bud,'bud-grape',color,...at,r*.68,r*.85,r*.68);
+   else detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color,shape:a.flowerShape,palette:{tipFlower:tip},tilt:azure?2.35:2.10,yaw},{...kit,rand});
+  }
+ }
+}
 function drawSpringRacemes(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,hy=a.architecture==='hyacinth',freesia=a.architecture==='freesia',palette=a.flowerPalette||{},n=Math.max(2,Math.round((hy?3:freesia?5:8)*detail)),heads=[];
  for(let i=0;i<n;i++){
@@ -15270,6 +15305,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='grapeHyacinthSpikes'){drawGrapeHyacinths(b,{info,s,detail,rand},kit);return;}
  if(['muscari','hyacinth','freesia'].includes(a.architecture)){drawSpringRacemes(b,{info,s,detail,rand},kit);return;}
  if(['miniIris','beardedIris','snakeIris','dietes','blackberryLily'].includes(a.architecture)){drawIrises(b,{info,s,detail,rand},kit);return;}
  if(['compactDahlia','tallDahlia','treeDahlia'].includes(a.architecture)){drawDahlias(b,{info,s,detail,rand},kit);return;}

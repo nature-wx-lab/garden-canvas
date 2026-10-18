@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5846,6 +5846,18 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  }
 });
 
+test('seven grape hyacinths preserve constricted versus open fused six-lobed flowers included organs leaf curves and summer dormancy',()=>{
+ const ids=['p-0ee7dee3eb63','p-5f4e8f2b98cd','p-8b533b243e51','p-a1cc3b916321','p-22edb96199c8','p-040659e18f2b','p-91482789209b'];
+ for(const [ci,id] of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,36900+ci*10+(small?1:0),2,2),height:small?.08:.2,spread:small?.1:.18,leafHeight:small?.05:.12},g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),label=`${id} small=${small} month=${month}`;
+  try{assert.equal(CATALOG[id].appearance.status,'partial');if(month===4){assert.ok(count(ci>=5?'petal-grape-azure':'petal-grape-urn')>0,label);assert.equal(count('anther-grape'),count('ovary-grape')*6,label);assert.equal(count('stigma-grape'),count('ovary-grape')*3,label);assert.ok(count('bud-grape')>0,label);assert.ok(g.children.some(m=>m.geometry.userData[ci===1?'grapeLeafArch':'grapeLeafUpright']),label);}
+   if(month===7)assert.equal(g.children.length,0,label);if(month===1){assert.ok(count('leaf-grape')>0,label);assert.equal(count('ovary-grape'),0,label);}
+   for(const m of g.children)for(const values of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...values].every(Number.isFinite),label);
+  }finally{dispose(g);}
+ }
+ const radius=(type,t)=>Math.hypot(...[grapeHyacinthPoint(type,t,0)[0],grapeHyacinthPoint(type,t,0)[2]]);assert.ok(radius('grapeUrn',1)<radius('grapeUrn',.5)*.5);assert.ok(radius('grapeAzure',1)>radius('grapeAzure',.5));assert.ok(grapeHyacinthPoint('grapeLeafArch',1,0)[1]<grapeHyacinthPoint('grapeLeafArch',.65,0)[1]);
+});
+
 test('refined snowdrops separate convolute and pleated leaves single flower anatomy double petaloids and summer dormancy',()=>{
  const ids=['p-aac0769c3974','p-51376e6758ea','p-f4f491ff7a88','p-6ca95760490f','p-1cc7a931f3d8'];
  for(const [i,id] of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
@@ -6376,7 +6388,7 @@ test('mallows, speedwells, valerian and globe daisies retain distinct winter str
 
 test('chloranthus is petal-less, acaena stays evergreen and domestic mignonette life cycles remain distinct',()=>{
  for(const id of ['p-7c89f4e9de4e','p-f803ec8edf0e']){
-  const p=makePlant(id,501,2,2),spring=plantModel(p,view(4));assert.equal(plantModel(p,view(1)).children.length,0);assert.ok(spring.children.some(m=>m.userData.component==='filament'));assert.ok(!spring.children.some(m=>m.userData.component.startsWith('petal')));dispose(spring);
+  const p=makePlant(id,501,2,2),spring=plantModel(p,view(4));assert.equal(plantModel(p,view(1)).children.length,0);assert.ok(spring.children.some(m=>m.userData.component==='connective-chloranthus'));assert.ok(!spring.children.some(m=>m.userData.component==='filament'));assert.ok(!spring.children.some(m=>m.userData.component.startsWith('petal')));dispose(spring);
  }
  const leafCounts=[];
  for(const id of ['p-1b5b5fe5d852','p-20964346be80']){
