@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.413';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.414';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.413';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.414';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15627,6 +15627,42 @@ function drawIridReferenceSpikes(b,{info,s,detail,rand},kit){
   }
  }
 }
+export function somekawaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='somekawaSword')return [u*.5*sn**.32,.995*t,.09*t*t+.003*u*u*sn];
+ if(type==='somekawaFall')return [u*.39*sn**.62,.16*sn-.46*t**3+.016*Math.sin(t*24+u*3)*Math.abs(u)**3*sn,.04+.96*t];
+ if(type==='somekawaStandard')return [u*.13*sn**.65,.99*t,.28*Math.sin(t*Math.PI*.85)+.012*u*u*sn];
+ if(type==='somekawaStyle')return [u*.135*sn**.5,.10+.27*Math.sin(t*Math.PI*.60),.64*t];
+ if(type==='somekawaCrest')return [u*.055*(1-t)**.55*(.3+.7*t),.18*t,.12*t];
+ return [0,0,0];
+}
+function drawSomekawaIris(b,{info,s,detail,rand},kit){
+ const h=s.height,w=s.spread,n=Math.max(2,Math.round(4*detail)),green=s.leafDensity<.5?'#a4a17b':s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.20*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],L=Math.min(.055,h*.15);
+  for(let j=0;j<7;j++){
+   if(j/7>=s.leafDensity)continue;
+   const rank=Math.floor(j/2),angle=yaw+j%2*Math.PI,len=Math.min(s.leafHeight/.995,w*1.2)*s.leafScale*(1-rank*.10),width=Math.min(.020,len*.075),f=flowerFrame(b,[root[0]+Math.sin(yaw)*rank*.0015,.001+rank*.001,root[2]+Math.cos(yaw)*rank*.0015],.025+rank*.055,angle);
+   f.add('somekawaSword','leaf-somekawa',kit.shade(rand,green,.025),0,0,0,width,len,len);
+  }
+  if(!s.bloom)continue;
+  const top=h*(.73+rand()*.04),at=[root[0]+Math.sin(yaw)*h*.025,top,root[2]+Math.cos(yaw)*h*.025];b.branch(root,at,Math.min(.0025,h*.007),'#718e56','scape-somekawa');
+  for(let j=0;j<2;j++){
+   const f=flowerFrame(b,[at[0],at[1]-L*.66,at[2]],.13,yaw+j*Math.PI);f.add('somekawaSword','spathe-somekawa','#889c65',0,0,0,L*.16,L*.85,L*.85);
+  }
+  const bud=[at[0]+Math.sin(yaw+.9)*L*.27,at[1]-L*.32,at[2]+Math.cos(yaw+.9)*L*.27];b.branch([at[0],at[1]-L*.65,at[2]],bud,.0007,'#718e56','bud-pedicel-somekawa');b.add(kit.bud,'bud-somekawa','#7d8f62',...bud,L*.09,L*.30,L*.09,.12,yaw,0);
+  const f=flowerFrame(b,at,0,yaw),color=s.flowerColor;if(i===0)f.flower([0,L*.18,0],L*1.2,.85,0);
+  f.add(kit.bud,'ovary-inferior-somekawa','#829763',0,-L*.23,0,L*.070,L*.16,L*.070);f.branch([0,-L*.10,0],[0,L*.03,0],L*.05,'#a2aa7d','tube-somekawa');
+  for(let k=0;k<3;k++){
+   const part=flowerFrame(f,[0,0,0],0,k*TAU/3),std=flowerFrame(f,[0,0,0],0,k*TAU/3+Math.PI/3);
+   part.add('somekawaFall','fall-somekawa',color,0,0,0,L,L,L);std.add('somekawaStandard','standard-somekawa',color,0,0,0,L,L,L);part.add('somekawaStyle','style-somekawa',color,0,0,0,L,L,L);
+   for(const side of [-1,1])part.add('somekawaCrest','crest-somekawa',color,side*L*.045,L*.357,L*.64,L,L,L,-.08,side*.35,0);
+   part.add(kit.bud,'stigma-somekawa','#d8d2cc',0,L*.350,L*.61,L*.075,L*.008,L*.012);
+   part.branch([0,L*.025,L*.08],[0,L*.195,L*.37],L*.010,'#c3b3bf','filament-somekawa');part.add(kit.bud,'anther-somekawa','#dedbd1',0,L*.21,L*.39,L*.018,L*.025,L*.10,.02,0,0);
+  }
+ }
+}
+
 export function irisReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='referenceIrisSword')return [u*.5*sn**.35,.98*Math.sin(t*1.47),.22*t*t+.009*u*u*sn];
@@ -16668,6 +16704,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='alliumReferences'){drawAlliumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='daylilyReferences'){drawDaylilyReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='iridReferenceSpikes'){drawIridReferenceSpikes(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='somekawaIris'){drawSomekawaIris(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='irisReferenceForms'){drawIrisReferenceForms(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='retailLilyReferences'){drawRetailLilyReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='freesiaReferences'){drawFreesiaReferences(b,{info,s,detail,rand},kit);return;}
