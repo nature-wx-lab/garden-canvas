@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.411';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.412';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.411';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.412';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16047,8 +16047,9 @@ function drawCoumCrowns(b,{info,s,detail,rand},kit){
   const yaw=j*2.399,R=w*.15*Math.sqrt((j+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],L=Math.min(.014,h*.18),height=h*(.70+rand()*.12),axis=t=>[root[0]+Math.sin(yaw)*L*.5*t, height*t,root[2]+Math.cos(yaw)*L*.5*t],top=axis(1);let from=root;
   for(let k=1;k<=15;k++){const to=axis(k/15);b.branch(from,to,.00065,'#795365','peduncle-coum');from=to;}
   let end;for(let k=1;k<=10;k++){const t=k/10,theta=t*Math.PI;end=[top[0]+Math.sin(yaw)*L*.35*(1-Math.cos(theta)),top[1]+L*.35*Math.sin(theta),top[2]+Math.cos(yaw)*L*.35*(1-Math.cos(theta))];b.branch(from,end,.00055,'#795365','neck-coum');from=end;}
-  const f=flowerFrame(b,[end[0],end[1]-L*.25,end[2]],0,yaw),plain=palette.white&&j%4===0,color=palette.white?(j%3===0&&!plain?'#e6d7e5':'#eeede8'):j%3===0?'#d2a4d0':j%3===1?'#c484ba':'#b86baa';
+  const f=flowerFrame(b,[end[0],end[1]-L*.25,end[2]],0,yaw),plain=palette.white&&j%4===0,color=palette.white?(j%3===0&&!plain?'#e6d7e5':'#eeede8'):palette.retail?['#e3a6c4','#d475a9','#ca4b96'][j%3]:j%3===0?'#d2a4d0':j%3===1?'#c484ba':'#b86baa';
   if(j>=n-2){f.add(kit.bud,'bud-coum',palette.white?'#d6c9d0':'#9e6389',0,0,0,L*.18,L*.48,L*.18,.65,0,0);continue;}
+  if(j===0)f.flower([0,L*.06,0],L*.95,1.70,0);
   f.add('coumTube',plain?'corolla-tube-coum-plain':'corolla-tube-coum-nose',plain?'#e9e8df':'#6b2d58',0,0,0,L,L,L);
   for(let k=0;k<5;k++)f.add('coumPetal',plain?'petal-coum-plain':'petal-coum-nose',kit.shade(rand,color,.02),0,0,0,L,L,L,.08,k*TAU/5,0);
   // Cultivar-specific androecium, style and fruiting coils are not resolved here.
