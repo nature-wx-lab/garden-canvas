@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.353';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.354';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.353';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.354';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,10 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function acaenaPoint(type,x,y){
+ const blue=type==='acaenaToothed';return [x,y,.055*y*y+(blue?.13:.07)*Math.abs(x)+.006*Math.cos(y*30-Math.abs(x)*7)*Math.abs(x)];
+}
+
 export function chloranthusPoint(type,t,u){
  if(type==='chloranthusConnective')return [u*.5*Math.pow(Math.max(0,Math.sin(Math.PI*t)),.35),t,.30*t*t-.12*Math.pow(t,4)];
  if(type==='chloranthusBract')return [u*.5*Math.pow(Math.max(0,Math.sin(Math.PI*t)),.55),t,.15*t*t+.08*u*u];
@@ -14321,6 +14325,8 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
    const t=(j+.5)/n,an=j*2.399,yy=1-2*t,rr=Math.sqrt(1-yy*yy),fl=flowerFrame(f,[Math.sin(an)*rr*r*.85,yy*r*.85,Math.cos(an)*rr*r*.85],Math.acos(yy),an),size=r*(palette.blue?.22:.32);
    for(let k=0;k<4;k++)fl.add('narrow','sepal','#9b9682',0,0,0,size,size,size,1.2,k*TAU/4,0);
    for(const side of [-1,1]){const at=[side*size*.25,size*.75,0];fl.branch([side*size*.08,0,0],at,size*.025,'#dfd7c7','filament');fl.add(bud,'anther',palette.anther,...at,size*.20,size*.15,size*.11);}
+   fl.add(bud,'ovary-acaena','#a2aa80',0,.0002,0,.00025,.0004,.00025);fl.branch([0,.0004,0],[0,.0017,0],.000055,'#eeece2','style-acaena');
+   for(const side of [-1,0,1])fl.branch([0,.0015,0],[side*.0003,.0020,0],.000035,'#eeece2','stigma-acaena');
   }return;
  }
  if(shape==='resedaFlower'){
@@ -15716,19 +15722,21 @@ function drawChloranthus(b,{info,s,detail,rand},kit){
 }
 
 function drawAcaena(b,{info,s,detail,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,blue=a.leafletShape==='acaenaToothed',green=s.leafColor,n=Math.max(12,Math.round(24*detail)),heads=[];
+ const a=info.appearance,h=s.height,w=s.spread,blue=a.leafletShape==='acaenaToothed',green=s.leafColor,n=Math.max(12,Math.round(34*detail)),heads=[];
  for(let i=0;i<n;i++){
-  const angle=rand()*TAU,rootAngle=i*2.399,rootRadius=w*.27*Math.sqrt((i+.5)/n),root=[Math.sin(rootAngle)*rootRadius,.004,Math.cos(rootAngle)*rootRadius],reach=w*(.10+rand()*.12),curve=(rand()-.5)*1.2;let prev=root;
+  const angle=rand()*TAU,rootAngle=i*2.399,rootRadius=w*.24*Math.sqrt((i+.5)/n),root=[Math.sin(rootAngle)*rootRadius,.004,Math.cos(rootAngle)*rootRadius],reach=w*(.06+rand()*.08),curve=(rand()-.5)*1.2;let prev=root;
   for(let j=1;j<=12;j++){
-   const t=j/12,node=[root[0]+Math.sin(angle+t*curve)*reach*t,.008+h*.06*Math.sin(t*3.7),root[2]+Math.cos(angle+t*curve)*reach*t];b.branch(prev,node,.0006,'#855f63','stolon');prev=node;
-   for(const side of [-1,1]){
+   const t=j/12,node=[root[0]+Math.sin(angle+t*curve)*reach*t,.008+h*.06*Math.sin(t*3.7),root[2]+Math.cos(angle+t*curve)*reach*t];b.branch(prev,node,.0006,'#855f63',blue?'stolon':'creeping-shoot-acaena');prev=node;
+   for(const side of [j%2?-1:1]){
     const yaw=angle+side*(1.0+rand()*.7),length=Math.min(a.leafLength,w*.17)*(.65+rand()*.35),f=flowerFrame(b,node,1.13+rand()*.12,yaw);
-    f.branch([0,0,0],[0,length,0],.00025,'#85646a','rachis');
+    f.branch([0,0,0],[0,length*.84,0],.00025,'#85646a','rachis');
+    for(const direction of [-1,1])for(let k=0;k<(blue?5:1);k++)f.add('narrow','stipule-acaena',green,0,.001,0,.0008,.003,.003,.2,0,direction*(.55+k*.16));
+    const leaflet=(at,size,roll)=>{const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(.08,0,roll,'YXZ'));f.add(a.leafletShape,blue?'leaf-acaena-blue':'leaf-acaena-purple',green,...at,size,size,size,.08,0,roll);const point=(x,y)=>new THREE.Vector3(...acaenaPoint(a.leafletShape,x,y).map(v=>v*size)).applyQuaternion(q).add(new THREE.Vector3(...at)).toArray();let prev=point(0,0);for(let j=1;j<=4;j++){const to=point(0,j/4);f.branch(prev,to,.000045,'#89968b','vein-leaf-acaena');prev=to;}};
     for(let k=0;k<6;k++)for(const direction of [-1,1]){
      const q=.15+k*.12,size=length*(.08+k*.025),at=[direction*.0003,length*q,0];
-     f.add(a.leafletShape,foliageKind(info),green,...at,size,size,size,.08,0,direction*(.95+rand()*.12));
+     leaflet(at,size,direction*(.95+rand()*.12));
     }
-    const size=length*.23;f.add(a.leafletShape,foliageKind(info),green,0,length*.87,0,size,size,size,.03,0,0);
+    leaflet([0,length*.78,0],length*.23,0);
    }
    if(j===9&&i%2===0)heads.push({base:node,at:[node[0]+Math.sin(angle)*.008,Math.min(.10,h*(.58+rand()*.32)),node[2]+Math.cos(angle)*.008],yaw:angle});
   }

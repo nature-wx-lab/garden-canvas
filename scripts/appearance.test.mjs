@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5844,6 +5844,19 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  for(const id of ['p-565ee45c51d5','p-44f97cf79bf4','p-000781af85b9','p-daa064e003e3','p-f46d74ba4101','p-825e967e9c4a','p-32106ff38f0a','p-91f07ff1c009','p-c8c917cb2b80','p-07ea6016b5e3','p-8a7a81df41f2','p-f18c6641444c','p-69e7e8e3af56','p-5fec2e343923']){
   const c=CATALOG[id];for(const field of ['leafShape','leafPattern','persistence','flowerShape','habit','barkPattern'])if(c.appearance[field])assert.ok(TRAIT_VALUES[c.appearance[field]],`${id} ${field}`);assert.ok(!appearanceSummary(c).includes(c.appearance.leafShape));
  }
+});
+
+test('Acaena mats retain alternate pinnate leaves thirteen relief leaflets and two stamens with one style',()=>{
+ for(const [i,id] of ['p-1b5b5fe5d852','p-20964346be80'].entries())for(const [height,spread] of [[.1,.65],[.05,.25]])for(let month=1;month<=12;month++){
+  const p=makePlant(id,36600+i*10,2,2);Object.assign(p,{height,spread,leafHeight:height*.6});const g=plantModel(p,view(month));try{
+   assert.equal(CATALOG[id].appearance.status,'partial');const count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),leaves=g.children.filter(m=>m.geometry.userData.acaenaLeaflet).reduce((n,m)=>n+m.count,0);
+   assert.ok(leaves>0);assert.equal(leaves,count('rachis')*13);assert.equal(count('stipule-acaena'),count('rachis')*(i===0?2:10));assert.ok(g.children.some(m=>m.geometry.userData.acaenaRelief));assert.ok(count('vein-leaf-acaena')>0);
+   if(month===7){assert.ok(count('style-acaena')>0);assert.equal(count('anther'),count('style-acaena')*2);}else if(month===1)assert.equal(count('style-acaena'),0);
+   assert.equal(g.children.some(m=>m.userData.component==='stolon'),i===1);assert.ok(!g.children.some(m=>m.userData.component==='petal'||m.userData.component==='fruit'));
+   for(const m of g.children)for(const data of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...data].every(Number.isFinite),`${id} month=${month}`);
+  }finally{dispose(g);}
+ }
+ for(const type of ['acaenaRounded','acaenaToothed'])for(let j=0;j<=20;j++)assert.ok(acaenaPoint(type,.3,j/20).every(Number.isFinite));
 });
 
 test('Chloranthus flowers have three connectives but only two basal anthers and winter shoots disappear',()=>{
