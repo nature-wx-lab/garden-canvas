@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.366';
+import {treeProfile} from './tree-profiles.js?v=0.9.367';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -97,6 +97,9 @@ export function seasonAt(info,month){
   phase=density===0?'落葉・枝姿':month===breakMonth?'芽吹き・若葉':autumn?'紅葉・落葉へ':'葉が茂る時期';
  }else if(a.persistence==='springEphemeral'){
   density=[0,0,.5,1,1,.3,0,0,0,0,0,0][m];scale=month===3?.6:1;phase=density===0?'地上部がない休眠期':'春の葉と花（表示目安）';
+ }else if(a.architecture==='coumCrowns'){
+  density=[1,1,1,1,.4,0,0,0,0,.35,.8,1][m];scale=month===10?.55:1;
+  phase=density===0?'塊茎で夏の休眠（境界月は表示目安）':month===10?'秋の葉出し（表示目安）':month===5?'春の葉の黄変（表示目安）':'秋〜春の丸い葉';
  }else if(a.persistence==='summerDormant'||info.form==='cyclamen'){
   density=[1,1,1,.9,.6,.1,0,0,.25,.7,1,1][m];phase=density<.15?'夏の休眠期':'葉のある時期';
  }else if(['tulip','narcissus','globe'].includes(info.form)&&info.genre==='球根植物'){

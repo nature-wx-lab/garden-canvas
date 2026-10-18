@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.366';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.367';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.366';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.367';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15027,6 +15027,34 @@ function drawLilies(b,{info,s,detail,rand},kit){
 }
 
 
+export function coumPoint(type,t,u){
+ if(type==='coumLeaf'){
+  const x=Math.sin(u)*.5,y=.46+.51*Math.cos(u)+.32*Math.exp(-(((u-Math.PI)/.30)**2))-.27;
+  return [t*x,t*y,.035*t*t+.012*Math.sin(u*3)*t];
+ }
+ if(type==='coumTube'){const r=.08+.09*t;return [Math.sin(u)*r,.25*(1-t),Math.cos(u)*r];}
+ const sn=Math.max(0,Math.sin(Math.PI*t)),twist=t*1.10,x=u*.40*sn**.50;
+ return [x*Math.cos(twist),.88*t-.40*sn,.15+.20*sn+.18*t+x*Math.sin(twist)];
+}
+function drawCoumCrowns(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,palette=a.flowerPalette||{},green=s.leafDensity<.5?'#a6ad72':s.leafColor,leaves=Math.max(1,Math.round(14*detail*s.leafDensity));
+ for(let j=0;j<leaves;j++){
+  const yaw=j*2.399,R=w*.22*Math.sqrt((j+.5)/leaves),at=[Math.sin(yaw)*R,s.leafHeight*(.50+rand()*.14),Math.cos(yaw)*R],L=Math.min(.055,w*.32,s.leafHeight*.9)*s.leafScale*(.8+rand()*.2),f=flowerFrame(b,at,1.0+rand()*.15,yaw),kind=palette.silver?'silver':j%4===0?'green':'marbled';
+  b.branch([0,.002,0],at,.00065,'#755363','petiole-coum');f.add('coumLeaf','leaf-coum-'+kind,kit.shade(rand,green,.025),0,0,0,L,L,L);
+ }
+ if(!s.bloom)return;
+ const n=Math.max(3,Math.round(9*detail));
+ for(let j=0;j<n;j++){
+  const yaw=j*2.399,R=w*.15*Math.sqrt((j+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],L=Math.min(.014,h*.18),height=h*(.70+rand()*.12),axis=t=>[root[0]+Math.sin(yaw)*L*.5*t, height*t,root[2]+Math.cos(yaw)*L*.5*t],top=axis(1);let from=root;
+  for(let k=1;k<=15;k++){const to=axis(k/15);b.branch(from,to,.00065,'#795365','peduncle-coum');from=to;}
+  let end;for(let k=1;k<=10;k++){const t=k/10,theta=t*Math.PI;end=[top[0]+Math.sin(yaw)*L*.35*(1-Math.cos(theta)),top[1]+L*.35*Math.sin(theta),top[2]+Math.cos(yaw)*L*.35*(1-Math.cos(theta))];b.branch(from,end,.00055,'#795365','neck-coum');from=end;}
+  const f=flowerFrame(b,[end[0],end[1]-L*.25,end[2]],0,yaw),plain=palette.white&&j%4===0,color=palette.white?(j%3===0&&!plain?'#e6d7e5':'#eeede8'):j%3===0?'#d2a4d0':j%3===1?'#c484ba':'#b86baa';
+  if(j>=n-2){f.add(kit.bud,'bud-coum',palette.white?'#d6c9d0':'#9e6389',0,0,0,L*.18,L*.48,L*.18,.65,0,0);continue;}
+  f.add('coumTube',plain?'corolla-tube-coum-plain':'corolla-tube-coum-nose',plain?'#e9e8df':'#6b2d58',0,0,0,L,L,L);
+  for(let k=0;k<5;k++)f.add('coumPetal',plain?'petal-coum-plain':'petal-coum-nose',kit.shade(rand,color,.02),0,0,0,L,L,L,.08,k*TAU/5,0);
+  // Cultivar-specific androecium, style and fruiting coils are not resolved here.
+ }
+}
 export function convallariaPoint(type,t,u){
  if(type==='convallariaBell'){
   const tip=Math.max(0,(t-.72)/.28),lobe=(1+Math.cos(u*6))*.5,radius=.09+.34*Math.sin(t*2.15)+.12*tip*tip*lobe;
@@ -15626,6 +15654,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='coumCrowns'){drawCoumCrowns(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='convallariaClusters'){drawConvallariaClusters(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='fritillariaShoots'){drawFritillarias(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='spanishBluebellRacemes'){drawSpanishBluebells(b,{info,s,detail,rand},kit);return;}
