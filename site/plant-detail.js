@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.402';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.403';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.402';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.403';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,34 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function slenderTulipPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='slenderTulipLeaf')return [u*.5*sn**.55,.84*Math.sin(t*1.4),.25*t**1.35+.009*u*u*sn];
+ const broad=type.startsWith('annikaRetail'),inner=type.includes('Inner'),half=broad?(inner?.32:.27):(inner?.25:.19);
+ return [u*half*sn**(broad?.56:.86),.42*t-.06*sn+.025*u*u*sn,.025+.975*t];
+}
+function drawSlenderTulipReferences(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.flowerPalette.type,annika=type==='annikaRetail',sylvia=type==='sylvia',h=s.height,w=s.spread,n=Math.max(2,Math.round(3*detail)),L=Math.min(a.flowerRadius,h*.32),green=s.leafDensity<.5?'#afa779':s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.20*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],pose=annika?-.04+(i%3)*.10:a.flowerPalette.pose==='open'?-.25+(i%3)*.18:-.98+(i%3)*.08,top=h*(.94-.025*(i%3))-L,axis=t=>[root[0]+Math.sin(yaw)*h*.025*t*t,top*t,root[2]+Math.cos(yaw)*h*.025*t*t],leaves=Math.max(1,Math.ceil(3*s.leafDensity)),stem=sylvia?'#976c6c':'#7b9773';
+  if(s.leafDensity>0)for(let j=0;j<leaves;j++){
+   const y=s.leafHeight*.25*j/2*s.leafScale,at=axis(y/top),len=Math.min(.26,(s.leafHeight-y)/.84,w*.80)*s.leafScale*(1-j*.07),width=Math.min(annika?.020:.012,len*(annika?.12:.075)),f=flowerFrame(b,at,.035+j*.04,yaw+j*Math.PI);
+   f.add('slenderTulipLeaf','leaf-slender-tulip',kit.shade(rand,green,.02),0,0,0,width,len,len);
+   b.add('singleTulipSheath','sheath-slender-tulip',green,...at,Math.min(.0025,h*.012),Math.min(len*.065,.009),Math.min(.0025,h*.012),0,yaw+j*Math.PI,0);
+   for(const u of [-.6,0,.6]){let p=slenderTulipPoint('slenderTulipLeaf',.02,u),from=[p[0]*width,p[1]*len,p[2]*len+.00004];for(let k=1;k<=16;k++){p=slenderTulipPoint('slenderTulipLeaf',.02+k*.061,u);const to=[p[0]*width,p[1]*len,p[2]*len+.00004];f.branch(from,to,.000035,'#a0b29e','vein-slender-tulip');from=to;}}
+   if(y>0)b.branch(root,at,Math.min(.0011,h*.006),stem,'lower-stem-slender-tulip');
+  }
+  if(!s.bloom)continue;
+  let from=root;for(let k=1;k<=20;k++){const to=axis(k/20);b.branch(from,to,Math.min(.0017,h*.007),stem,'stem-slender-tulip');from=to;}
+  const f=flowerFrame(b,axis(1),.025,yaw);
+  if(i===0)f.flower([0,L*.36,0],L*1.32);
+  for(let k=0;k<6;k++)f.add(type+(k%2?'Inner':'Outer')+'SlenderTepal','tepal-slender-tulip-'+type+(k%2?'-inner':'-outer'),s.flowerColor,0,k%2?L*.009:0,0,L,L,L,pose,k*TAU/6,0);
+  f.add(kit.bud,'ovary-superior-slender-tulip',annika?'#c5c999':'#aab584',0,L*.10,0,L*.065,L*.11,L*.065);
+  for(let k=0;k<6;k++){const az=k*TAU/6,rr=L*.18,tip=[Math.sin(az)*rr,L*(annika?.31:.34),Math.cos(az)*rr];f.branch([Math.sin(az)*rr*.7,L*.035,Math.cos(az)*rr*.7],tip,L*.011,annika?'#88728f':sylvia?'#d5ceb1':'#c4b98b','filament-slender-tulip');f.add(kit.bud,'anther-slender-tulip',annika?'#655675':sylvia?'#998363':'#8a7554',...tip,L*.023,L*.085,L*.023,.12,az,0);}
+  for(let k=0;k<3;k++){const az=k*TAU/3;f.add(kit.bud,'stigma-slender-tulip',annika?'#c9c88f':'#d5d4b8',Math.sin(az)*L*.030,L*.23,Math.cos(az)*L*.030,L*.041,L*.018,L*.040,0,az,0);}
+ }
+}
+
 export const SINGLE_TULIP_PROFILES={lightBlue:{height:1.20,radius:.46},shinyBlue:{height:1.35,radius:.43},candyPrince:{height:1.04,radius:.50},negrita:{height:1.28,radius:.46},menton:{height:1.42,radius:.45},whiteMarvel:{height:1.16,radius:.49},kikomachi:{height:1.12,radius:.49},lemonChiffon:{height:1.40,radius:.45},ballerina:{height:1.48,radius:.34,flare:.26,pointed:true},dollsMinuet:{height:1.48,radius:.34,flare:.42,pointed:true},purpleDoll:{height:1.50,radius:.35,flare:.36,pointed:true},formosa:{height:1.25,radius:.46,flare:.14,wavy:true}};
 export function singleTulipPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
@@ -16349,6 +16377,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='slenderTulipReferences'){drawSlenderTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='singleTulipReferences'){drawSingleTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='gardenAnemoneReferences'){drawGardenAnemones(b,{info,s,detail,rand},kit);return;}
