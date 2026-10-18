@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.357';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.358';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.357';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.358';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -14034,6 +14034,19 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   for(let j=0;j<3;j++){const an=j*TAU/3;f.add(bud,'stigma','#b3bc78',Math.sin(an)*r*.030,end[1],Math.cos(an)*r*.030,r*.040,r*.024,r*.040);}
   return;
  }
+ if(shape==='earlySquillFlower'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),glory=palette.glory,tube=glory?r*.20:0;
+  if(glory)f.add('squillPerianthTube','perianth-tube-squill','#eeeeeb',0,0,0,r,r,r);
+  for(let j=0;j<6;j++)f.add(glory?'glorySnowTepal':'smallSquillTepal',glory?'petal-squill-eye':'petal-squill-striped',color,0,tube,0,r*(j%2?1:.88),r,r,glory?1.34:1.23,j*TAU/6,0);
+  f.add(bud,'ovary-squill','#87a271',0,r*.10,0,r*.14,r*.18,r*.14);
+  for(let j=0;j<6;j++){
+   const an=j*TAU/6,rr=r*(glory?.18:.21),L=r*(glory?(j%2?.21:.25):.40),f2=flowerFrame(f,[Math.sin(an)*rr,tube,Math.cos(an)*rr],0,an);
+   if(glory)f2.add('squillFlatFilament','filament-squill-flat','#f2f3e7',0,0,0,r*.11,L,L);
+   else f2.branch([0,0,0],[0,L,0],r*.013,'#e3edcf','filament-squill');
+   f2.add(bud,'anther-squill',glory?'#d5b844':'#526d84',0,L*1.08,-(glory?L*.26:0),r*.035,r*(glory?.085:.080),r*.038,.08,0,.05);
+  }
+  f.branch([0,r*.16,0],[0,r*.54,0],r*.014,'#d7dfba','style-squill');f.add(bud,'stigma-squill','#becba1',0,r*.54,0,r*.030,r*.022,r*.030);return;
+ }
  if(shape==='grapeUrn'||shape==='grapeAzure'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),azure=shape==='grapeAzure';
   f.add(azure?'grapeAzure':'grapeUrn',azure?'petal-grape-azure':palette.tipFlower?'petal-grape-tip':'petal-grape-urn',color,0,0,0,r,r,r);
@@ -14936,6 +14949,31 @@ function drawLilies(b,{info,s,detail,rand},kit){
  for(const {at,an} of heads)detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'liliumFlower',palette,tilt:palette.tilt,yaw:an},{...kit,rand});
 }
 
+export function earlySquillPoint(type,t,u){
+ if(type==='squillPerianthTube'){const r=.15+.035*t;return [Math.sin(u)*r,t*.20,Math.cos(u)*r];}
+ if(type==='squillFlatFilament')return [u*.50*(.80+.20*Math.sin(Math.PI*t)),t,-.26*t];
+ const leaf=type==='smallSquillLeaf',width=leaf?.5*Math.pow(Math.max(0,1-t),.35)*Math.min(1,.55+t*4):(type==='glorySnowTepal'?.28:.22)*Math.sin(Math.PI*t)**.60;
+ return [u*width,t,(leaf?.23:.07)*t*t+.07*u*u*Math.sin(Math.PI*t)+.004*Math.cos(u*25)*Math.sin(Math.PI*t)];
+}
+function drawEarlySquills(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,glory=a.flowerPalette?.glory,n=Math.max(2,Math.round(7*detail)),green=s.leafDensity<.4&&!s.bloom?'#b9ad60':s.leafColor;
+ for(let i=0;i<n;i++){
+  const an=i*2.399,rr=w*.22*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,.001,Math.cos(an)*rr],top=h*(.84+rand()*.13),point=t=>[root[0]+Math.sin(an)*h*.035*t,top*t,root[2]+Math.cos(an)*h*.035*t];
+  if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(2*s.leafDensity));j++){
+   const L=Math.min(h*.84,w*.90)*s.leafScale*(.84+rand()*.16),W=Math.min(glory?.015:.018,L*.22),f=flowerFrame(b,root,.13+rand()*.12,an+j*Math.PI+.15);
+   f.add('smallSquillLeaf','leaf-early-squill',kit.shade(rand,green,.035),0,0,0,W,L,L);
+   for(const u of [-.5,0,.5]){let prev=earlySquillPoint('smallSquillLeaf',.02,u);prev=[prev[0]*W,prev[1]*L,prev[2]*L+.00006];for(let k=1;k<=9;k++){const p=earlySquillPoint('smallSquillLeaf',.02+k*.105,u),to=[p[0]*W,p[1]*L,p[2]*L+.00006];f.branch(prev,to,.00004,'#a2b293','vein-leaf-squill');prev=to;}}
+  }
+  if(!s.bloom)continue;let previous=root;for(let k=1;k<=12;k++){const to=point(k/12);b.branch(previous,to,.00115*(1-k/24),green,'scape-squill');previous=to;}
+  const flowers=a.flowerPalette?.flowers||7;
+  for(let j=0;j<flowers;j++){
+   const t=.28+(j+.5)/flowers*.68,yaw=an+j*2.399,base=point(t),reach=Math.min(.023,w*.13)*(1-j/flowers*.45),at=[base[0]+Math.sin(yaw)*reach,base[1]+reach*.24,base[2]+Math.cos(yaw)*reach],r=Math.min(.012,h*.11);
+   b.branch(base,at,.00040,green,'pedicel-squill');b.add('narrow','bract-squill',green,...base,r*.045,r*.15,r*.08,.75,yaw,0);
+   if(j>=flowers-(glory&&flowers===10?2:1))b.add(kit.bud,'bud-squill',s.flowerColor,...at,r*.17,r*.43,r*.17,.50,yaw,0);
+   else detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'earlySquillFlower',palette:{glory},tilt:.45+rand()*.45,yaw},{...kit,rand});
+  }
+ }
+}
 export function grapeHyacinthPoint(type,t,u){
  if(type.startsWith('grapeLeaf')){const long=type==='grapeLeafArch',wide=.5*Math.pow(Math.max(0,1-t),.35)*Math.min(1,.5+t*5);return [u*wide,long?.82*Math.sin(t*2.6):t,(long?.30:.25)*t*t+.055*u*u*Math.sin(Math.PI*t)+.005*Math.cos(u*24)*Math.sin(Math.PI*t)];}
  const azure=type==='grapeAzure',an=u,edge=t**16,teeth=.5+.5*Math.cos(an*6),rad=azure?.13+.76*Math.sin(t*Math.PI/2)**.85:t<.65?.16+.74*Math.sin(t*Math.PI/.90)**.70:.25+.46*((1-t)/.35)**1.4;
@@ -15305,6 +15343,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='earlySquillRacemes'){drawEarlySquills(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='grapeHyacinthSpikes'){drawGrapeHyacinths(b,{info,s,detail,rand},kit);return;}
  if(['muscari','hyacinth','freesia'].includes(a.architecture)){drawSpringRacemes(b,{info,s,detail,rand},kit);return;}
  if(['miniIris','beardedIris','snakeIris','dietes','blackberryLily'].includes(a.architecture)){drawIrises(b,{info,s,detail,rand},kit);return;}
