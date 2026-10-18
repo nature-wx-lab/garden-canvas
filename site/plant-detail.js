@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.362';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.363';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.362';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.363';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -14034,6 +14034,19 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   for(let j=0;j<3;j++){const an=j*TAU/3;f.add(bud,'stigma','#b3bc78',Math.sin(an)*r*.030,end[1],Math.cos(an)*r*.030,r*.040,r*.024,r*.040);}
   return;
  }
+ if(shape==='englishBluebellFlower'){
+  const f=flowerFrame(b,[x,y,z],Math.PI+tilt,yaw),L=r;
+  f.add('bluebellBasalTube','perianth-base-bluebell',color,0,0,0,L,L,L);
+  for(let j=0;j<6;j++){
+   const an=j*TAU/6,tepal=flowerFrame(f,[0,0,0],0,an);
+   tepal.add('bluebellReflexedTepal','petal-bluebell',shade(rand,color,.022),0,0,0,L,L,L);
+   let p=englishBluebellPoint('bluebellReflexedTepal',.02,0),from=p.map(v=>v*L);
+   for(let k=1;k<=14;k++){p=englishBluebellPoint('bluebellReflexedTepal',.02+k*.069,0);const to=p.map(v=>v*L);tepal.branch(from,to,L*.0018,'#65539e','vein-tepal-bluebell');from=to;}
+   const rr=L*.08,at=[Math.sin(an)*rr,L*(j%2?.12:.57),Math.cos(an)*rr],end=[at[0],L*(j%2?.63:.72),at[2]];
+   f.branch(at,end,L*.006,'#eee5cc','filament-bluebell');f.add(bud,'anther-bluebell','#e9dfb8',end[0],end[1],end[2],L*.016,L*.070,L*.022,.10,an,0);
+  }
+  f.add(bud,'ovary-bluebell','#91a870',0,L*.07,0,L*.075,L*.10,L*.075);f.branch([0,L*.13,0],[0,L*.74,0],L*.008,'#d9e0bd','style-bluebell');f.add(bud,'stigma-bluebell','#d8dfbd',0,L*.74,0,L*.018,L*.015,L*.018);return;
+ }
  if(shape==='tecoFunnel'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),tube=r*.85,white=palette.whiteEnd||.28;
   f.add('tecoTube','perianth-tube-teco','#e9ede1',0,0,0,r,tube,r);
@@ -14984,6 +14997,37 @@ function drawLilies(b,{info,s,detail,rand},kit){
  for(const {at,an} of heads)detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'liliumFlower',palette,tilt:palette.tilt,yaw:an},{...kit,rand});
 }
 
+export function englishBluebellPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='bluebellBasalTube'){const radius=.10+.015*t;return [Math.sin(u)*radius,.08*t,Math.cos(u)*radius];}
+ if(type==='bluebellReflexedTepal'){
+  const curl=Math.max(0,(t-.76)/.24),radius=.115+.025*sn+.24*curl**1.4;
+  return [u*(.065*(1-t)+.090*sn**.65),.07+.93*t-.34*curl*curl,radius+.018*u*u*sn];
+ }
+ return [u*.5*(.62+.38*sn)*Math.max(0,1-t)**.22,.80*Math.sin(t*1.4),.60*t**1.4+.025*u*u*sn];
+}
+function drawEnglishBluebells(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,n=Math.max(2,Math.round(5*detail)),green=s.leafDensity<.4?'#b7ad72':s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,rr=w*.25*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*rr,.001,Math.cos(yaw)*rr];
+  if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(4*s.leafDensity));j++){
+   const L=Math.min(a.leafLength||.35,s.leafHeight/.80,h*1.6,w*.90)*s.leafScale*(.86+rand()*.14),W=Math.min(.015,L*.06),f=flowerFrame(b,root,.04+j*.035,yaw+j*2.399);
+   f.add('bluebellStrapLeaf','leaf-bluebell',kit.shade(rand,green,.03),0,0,0,W,L,L);
+   for(const u of [-.5,0,.5]){let p=englishBluebellPoint('bluebellStrapLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005];for(let k=1;k<=11;k++){p=englishBluebellPoint('bluebellStrapLeaf',.02+k*.087,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(from,to,.000045,'#92a17c','vein-leaf-bluebell');from=to;}}
+  }
+  if(!s.bloom)continue;
+  const axis=t=>[root[0]+Math.sin(yaw)*w*.20*t**4,h*1.17*(t-.25*t**6),root[2]+Math.cos(yaw)*w*.20*t**4];let previous=root;
+  for(let j=1;j<=22;j++){const to=axis(j/22);b.branch(previous,to,.00085,'#648951','scape-bluebell');previous=to;}
+  for(let j=0;j<6;j++){
+   const t=.46+j*.096,at=axis(t),an=yaw+(j%2?.20:-.20),reach=Math.min(.0095,h*.065)*(1-j*.035),end=[at[0]+Math.sin(an)*reach,at[1]-reach*.26,at[2]+Math.cos(an)*reach],control=[at[0]+Math.sin(an)*reach*.55,at[1]+reach*.55,at[2]+Math.cos(an)*reach*.55];let from=at;
+   for(let k=1;k<=9;k++){const u=k/9,to=at.map((v,ax)=>(1-u)**2*v+2*(1-u)*u*control[ax]+u*u*end[ax]);b.branch(from,to,.00035,'#82936a','pedicel-bluebell');from=to;}
+   for(let k=0;k<2;k++)b.add('narrow','bract-bluebell','#8a9b7a',...at,.001,reach*(k?.65:1.10),.001,.55+k*.2,an+(k?-.2:.2),0);
+   const L=Math.min(a.flowerLength||.018,h*.16)*(1-j*.015);
+   if(j===5)b.add(kit.bud,'bud-bluebell','#8879ad',end[0],end[1]+L*.34,end[2],L*.13,L*.43,L*.13,-.18,an,0);
+   else detailedFlower(b,{x:end[0],y:end[1],z:end[2],r:L,color:s.flowerColor,shape:'englishBluebellFlower',tilt:.10+rand()*.12,yaw:an},{...kit,rand});
+  }
+ }
+}
 export function tecophilaeaPoint(type,t,u){
  if(type==='tecoTube'){const radius=.10+.17*t**1.7;return [Math.sin(u)*radius,t,Math.cos(u)*radius];}
  if(type==='tecoStaminode')return [u*.20*Math.sin(Math.PI*t)**.55,t-.07*Math.exp(-u*u*18)*t**14,.10*t*t];
@@ -15448,6 +15492,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='englishBluebellArches'){drawEnglishBluebells(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tecophilaeaClumps'){drawTecophilaea(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='acisAutumnScapes'){drawAcis(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='reflexedFawnLilies'){drawFawnLilies(b,{info,s,detail,rand},kit);return;}

@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5844,6 +5844,23 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  for(const id of ['p-565ee45c51d5','p-44f97cf79bf4','p-000781af85b9','p-daa064e003e3','p-f46d74ba4101','p-825e967e9c4a','p-32106ff38f0a','p-91f07ff1c009','p-c8c917cb2b80','p-07ea6016b5e3','p-8a7a81df41f2','p-f18c6641444c','p-69e7e8e3af56','p-5fec2e343923']){
   const c=CATALOG[id];for(const field of ['leafShape','leafPattern','persistence','flowerShape','habit','barkPattern'])if(c.appearance[field])assert.ok(TRAIT_VALUES[c.appearance[field]],`${id} ${field}`);assert.ok(!appearanceSummary(c).includes(c.appearance.leafShape));
  }
+});
+
+test('English bluebell reference keeps narrow recurved tepals six cream anthers and seasonal leaf veins together',()=>{
+ const id='p-9a306d5f65f2';
+ for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,37400+(small?1:0),2,2),height:small?.08:.15,spread:small?.20:.30,leafHeight:small?.06:.10},g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),label=`small=${small} month=${month}`;
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(g.scale.x,1,label);assert.equal(count('vein-leaf-bluebell'),count('leaf-bluebell')*33,label);
+   if([3,4].includes(month)){assert.ok(count('ovary-bluebell')>0,label);assert.equal(count('petal-bluebell'),count('ovary-bluebell')*6,label);assert.equal(count('anther-bluebell'),count('ovary-bluebell')*6,label);assert.equal(count('stigma-bluebell'),count('ovary-bluebell'),label);assert.ok(count('bud-bluebell')>0,label);assert.ok(count('bract-bluebell')>0,label);}
+   if([1,7,8,9,10,11,12].includes(month))assert.equal(g.children.length,0,label);
+   for(const m of g.children)for(const values of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...values].every(Number.isFinite),label);
+  }finally{dispose(g);}
+ }
+ const tip=englishBluebellPoint('bluebellReflexedTepal',1,0),near=englishBluebellPoint('bluebellReflexedTepal',.93,0),middle=englishBluebellPoint('bluebellReflexedTepal',.5,0);assert.ok(tip[1]<near[1],'tips turn back toward the pedicel');assert.ok(tip[2]>middle[2]*1.8,'tips flare out beyond the narrow tube');
+ const pieces=[],segments=[];detailedFlower({add:(shape,kind,c,x,y,z)=>pieces.push({shape,kind,c,x,y,z}),branch:(from,to,r,c,kind)=>segments.push({from,to,kind})},{x:0,y:0,z:0,color:'#7865bc',shape:'englishBluebellFlower',r:.018},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});assert.equal(pieces.filter(p=>p.shape==='bluebellReflexedTepal').length,6);assert.equal(pieces.filter(p=>p.kind==='anther-bluebell').length,6);assert.equal(segments.filter(p=>p.kind==='style-bluebell').length,1);assert.equal(pieces.filter(p=>p.kind==='stigma-bluebell').length,1);assert.ok(!pieces.some(p=>p.kind==='staminode'||p.kind==='corona'));
+ assert.match(CATALOG[id].appearance.unconfirmed.join(' '),/純系/);assert.deepEqual(CATALOG[id].height,[.15,.15]);assert.deepEqual(CATALOG[id].bloom,[3,4]);
+ for(const type of ['bluebellStrapLeaf','bluebellBasalTube','bluebellReflexedTepal'])for(let t=0;t<=20;t++)for(const u of [-1,0,1])assert.ok(englishBluebellPoint(type,t/20,u).every(Number.isFinite));
 });
 
 test('four Tecophilaea retain three anterior fertile stamens three posterior staminodes and protected winter leaves',()=>{
