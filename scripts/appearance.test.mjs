@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5855,6 +5855,20 @@ test('woody climbers lose winter leaves without losing their supporting stems; p
  const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,r:.075,color:'#fff',shape:'singleSepalCorymb'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
  assert.equal(parts.filter(p=>p.kind==='sepal').length,12);assert.equal(parts.filter(p=>p.kind==='anther').length,1200);assert.ok(!parts.some(p=>p.kind==='petal'));
  assert.equal(seasonAt(CATALOG['p-69e7e8e3af56'],8).bloom,false);assert.equal(seasonAt(CATALOG['p-69e7e8e3af56'],8).fruitStage,'early');
+});
+
+test('refined eryngos retain scaled palmate leaves long filaments and imbricate silver bracts',()=>{
+ for(const [i,id] of ['p-c8c917cb2b80','p-07ea6016b5e3'].entries())for(const [height,spread] of [[.7,.4],[.25,.22]])for(let month=1;month<=12;month++){
+  const p=makePlant(id,36000+i*10,2,2);p.height=height;p.spread=spread;p.leafHeight=height*.45;const g=plantModel(p,view(month));assert.equal(CATALOG[id].appearance.status,'partial');
+  for(const m of g.children)assert.ok([...m.instanceMatrix.array].every(Number.isFinite),`${id} month${month}`);
+  if(month===7){assert.ok(g.children.some(m=>m.userData.component==='vein-leaf-eryngo'));assert.ok(g.children.some(m=>m.geometry.userData[i===0?'eryngoPalm':'eryngoStrap']));assert.ok(g.children.some(m=>m.userData.component===(i===0?'petal-wing-eryngo':'bract-inner-eryngo')));}
+  if(month===12&&i===0){assert.ok(g.children.some(m=>m.userData.component==='seed'));assert.ok(!g.children.some(m=>m.userData.component==='petal'));}dispose(g);
+ }
+ const parts=[],segments=[];detailedFlower({add:(shape,kind,c,x,y,z,sx,sy,sz)=>parts.push({shape,kind,sy}),branch:(from,to,r,c,kind)=>segments.push({from,to,kind})},{x:0,y:0,z:0,color:'#8039a0',shape:'eryngoPineapple'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
+ assert.equal(parts.filter(p=>p.kind==='anther').length,750);assert.equal(segments.filter(p=>p.kind==='style').length,300);assert.ok(segments.filter(p=>p.kind==='filament').every(p=>Math.hypot(...p.to.map((v,k)=>v-p.from[k]))>.0074));
+ assert.equal(parts.filter(p=>p.kind==='petal-wing-eryngo').length,1500);parts.length=0;
+ detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,color:'#687583',shape:'eryngoProtea'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});assert.equal(parts.filter(p=>p.kind==='bract-silver-eryngo').length,13);assert.equal(parts.filter(p=>p.kind==='bract-inner-eryngo').length,11);
+ for(const type of ['eryngoPalm','eryngoStrap','eryngoPetal'])for(let t=0;t<=20;t++)assert.ok(eryngoSurfacePoint(type,.03,t/20).every(Number.isFinite));
 });
 
 test('purple eryngo dies after flowering while protea eryngo retains neighbouring evergreen rosettes',()=>{

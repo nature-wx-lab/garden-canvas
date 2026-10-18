@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.338';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.341';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.338';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.341';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,12 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function eryngoSurfacePoint(type,x,y){
+ if(type==='eryngoStrap')return [x,Math.sin(y*1.7)/1.7,(1-Math.cos(y*1.7))*.43+.015*x*x];
+ if(type==='eryngoPetal')return [x,y*.65-.30*Math.pow(y,8),.25*Math.sin(y*Math.PI)+.05*x*x];
+ return [x,y,.045*y*y+.035*x*x+.008*Math.sin(y*28)*Math.abs(x)];
+}
+
 export function soapwortPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='cowherbCalyx'||type==='soapwortCalyx'){
@@ -14181,16 +14187,23 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   return;
  }
  if(shape==='eryngoPineapple'||shape==='eryngoProtea'){
-  const f=flowerFrame(b,[x,y,z],tilt,yaw),purple=shape==='eryngoPineapple',dry=palette.dry,bract=dry?'#a09479':purple?'#9258a5':'#c0c8bb',head=dry?'#95856e':purple?'#733191':'#59617b',length=purple?.030:.035,rad=purple?.009:.012,outer=purple?9:20;
-  for(let j=0;j<outer;j++){const an=j*TAU/outer,len=purple?.033:.085*(.8+.2*Math.cos(j));f.add('eryngoBract','bract',bract,0,0,0,len*.5,len,len,purple?1.25:1.1+(j%2)*.18,an,0);}
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),purple=shape==='eryngoPineapple',dry=palette.dry,bract=dry?'#a09479':purple?'#9258a5':'#c0c8bb',head=dry?'#95856e':purple?'#733191':'#59617b',length=palette.headLength||(purple?.030:.035),rad=palette.headRadius||(purple?.009:.012),outer=purple?9:13;
+  for(let j=0;j<outer;j++){const an=j*TAU/outer,len=purple?.033:.085*(.86+.14*Math.cos(j));f.add('eryngoBract',purple?'bract':'bract-silver-eryngo',bract,0,0,0,len*.5,len,len,purple?1.25:1.0+(j%2)*.16,an,0);}
+  if(!purple)for(let j=0;j<11;j++){const len=.061*(.9+.1*Math.sin(j));f.add('eryngoBract','bract-inner-eryngo',bract,0,.004,0,len*.40,len,len,.78,j*TAU/11+.22,0);}
   f.add(bud,dry?'seed':'receptacle',head,0,length*.5,0,rad,length*.54,rad);
   if(purple)for(let j=0;j<7;j++){const len=.027*(.7+rand()*.3);f.add('eryngoBract','bract',bract,0,length,0,len*.47,len,len,.15+rand()*.5,j*TAU/7,0);}
   for(let j=0;j<150;j++){
    const t=(j+.5)/150,an=j*2.399,rr=rad*Math.sqrt(1-Math.pow(2*t-1,2)),fl=flowerFrame(f,[Math.sin(an)*rr,length*t,Math.cos(an)*rr],Math.PI/2,an),size=.002;
-   fl.add('eryngoBract',dry?'seed':'bract',bract,0,0,0,size*.28,size*(purple?3:1.5),size,.15,0,0);
+   fl.add('eryngoSmallBract',dry?'seed':'bract',bract,0,0,0,.0012,purple?.012:.006,.0012,.15,0,0);
    if(dry)continue;
-   for(let k=0;k<5;k++){const aa=k*TAU/5,end=[Math.sin(aa)*size*.55,size*(purple?2.0:.75),Math.cos(aa)*size*.55];fl.add('petal','petal',head,0,0,0,size*.32,size*.65,size,1.1,aa,0);fl.branch([0,0,0],end,.000045,head,'filament');fl.add(bud,'anther',head,...end,.00019,.0003,.00015);}
-   for(const side of [-1,1])fl.branch([0,0,0],[side*.00035,.0025,0],.00004,head,'style');
+   for(let k=0;k<5;k++){
+    const aa=k*TAU/5,fr=purple?.0012:.0008,fil=purple?.0075:.0015,end=[Math.sin(aa)*fr,fil,Math.cos(aa)*fr];
+    fl.add(purple?'eryngoSmallBract':'petal','sepal-eryngo',purple?'#82519b':'#9dad85',0,0,0,.00045,purple?.004:.0025,.00045,.32,aa,0);
+    fl.add(purple?'eryngoPetal':'petal','petal',head,0,.0004,0,purple?.005:.00065,purple?.005:.002,purple?.005:.002,1.1,aa,0);
+    if(purple)for(const side of [-1,1])fl.add('narrow','petal-wing-eryngo','#e2ddd7',Math.sin(aa)*.0005,.0006,Math.cos(aa)*.0005,.00035,.0028,.0006,.65,aa+side*.20,0);
+    fl.branch([0,0,0],end,.000045,head,'filament');fl.add(bud,'anther',head,...end,purple?.00022:.00019,purple?.001:.0003,.00015);
+   }
+   for(const side of [-1,1]){const tip=[side*.00035,purple?.0043:.0032,0];fl.branch([0,0,0],tip,.00005,head,'style');fl.add(bud,'stigma-eryngo',head,...tip,.00009,.00012,.00009);if(purple)fl.add('petal','stylopodium-eryngo','#8da178',side*.00035,.00015,0,.00065,.0013,.00065,.5,side*.6,0);}
   }return;
  }
  if(shape==='ampelopsisFlower'){
@@ -15463,16 +15476,25 @@ function drawSoapworts(b,{info,s,detail,rand},kit){
 
 function drawDistinctEryngiums(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,purple=a.architecture==='purpleEryngo',dry=s.seedHeads,green=dry?a.seedColor:s.leafColor,leaves=[],heads=[];
+ const leaf=(at,pitch,yaw,len,type,color)=>{
+  const f=flowerFrame(b,at,pitch,yaw),palm=type==='eryngoPalm',scale=palm?.5:1;f.add(type,'leaf',color,0,0,0,len*scale,len,len);
+  const point=(x,y)=>{const p=eryngoSurfacePoint(type,x,y);return [p[0]*len*scale,p[1]*len,p[2]*len-.00015];};
+  for(let k=0;k<(palm?7:type==='eryngoStrap'?5:1);k++){
+   const an=(k-3)*.40,end=palm?[Math.sin(an)*(.5+.5*Math.cos(an)),Math.cos(an)*(.5+.5*Math.cos(an))]:[type==='eryngoStrap'?(k-2)*.016:0,1];let prev=point(0,0);
+   for(let q=1;q<=8;q++){const t=q/8,to=palm?point(end[0]*t,end[1]*t):point(end[0]*Math.sin(t*Math.PI),t);f.branch(prev,to,.00012,purple?'#925c9a':'#99a681','vein-leaf-eryngo');prev=to;}
+   if(palm){const last=point(end[0],end[1]),start=point(end[0]*.97,end[1]*.97);f.branch(start,last,.00013,'#bca57c','spine-tip-eryngo');}
+  }
+ };
  if(!purple){
   // The flowering crown is replaced by neighbouring evergreen rosettes after flowering.
   for(let i=0;i<4;i++){
    const an=i*2.399,root=i===0?[0,.009,0]:[Math.sin(an)*w*.20,.009,Math.cos(an)*w*.20];
-   for(let j=0;j<18;j++){const angle=j*2.399+i,len=Math.min(.30,w*.62)*(.65+rand()*.35),color=kit.shade(rand,green,.06),tilt=.50+rand()*.80;if(i!==0||!s.flowerFinished)b.add('eryngoStrap','leaf',color,...root,len,len,len,tilt,angle,0);}
+   for(let j=0;j<18;j++){const angle=j*2.399+i,len=Math.min(a.leafLength,w*.62)*(.65+rand()*.35)*s.leafScale,color=kit.shade(rand,green,.06),tilt=.50+rand()*.80;if((i!==0||!s.flowerFinished)&&(j===0||rand()<s.leafDensity))leaf(root,tilt,angle,len,'eryngoStrap',color);}
   }
   if(!s.bloom)return;
  }
  const base=[0,.015,0],fork=[w*.018,h*.43,0];b.branch(base,fork,purple?.003:.004,green,'petiole');
- for(let j=0;j<8;j++){const t=(j+.5)/8,at=base.map((v,k)=>v+(fork[k]-v)*t);leaves.push({at,yaw:j*2.399,size:Math.min(purple?.10:.20,w*.35),upper:false});}
+ for(let j=0;j<8;j++){const t=(j+.5)/8,at=base.map((v,k)=>v+(fork[k]-v)*t);leaves.push({at,yaw:j*2.399,size:Math.min(purple?a.leafLength:.20,w*.35),upper:false,lower:j<2});}
  const count=purple?Math.max(5,Math.round(9*detail)):3;
  for(let i=0;i<count;i++){
   const an=i*2.399,spread=w*(.22+rand()*.18),at=[fork[0],h*(.40+i/count*.15),0],joint=[Math.sin(an)*spread*.6,h*(.61+rand()*.12),Math.cos(an)*spread*.6],tip=[Math.sin(an)*spread,h*(.82+rand()*.12),Math.cos(an)*spread];
@@ -15482,8 +15504,8 @@ function drawDistinctEryngiums(b,{info,s,detail,rand},kit){
   heads.push({at:tip,yaw:an});
   if(purple&&i%2===0){const side=[joint[0]+Math.sin(an+.8)*w*.15,joint[1]+h*.10,joint[2]+Math.cos(an+.8)*w*.15];b.branch(joint,side,.0012,green,'petiole');heads.push({at:side,yaw:an+.8});}
  }
- if(!dry)for(const l of leaves){const color=purple&&l.upper&&s.bloom?'#8d6991':green;b.add(purple?'eryngoPalm':'eryngoStrap','leaf',color,...l.at,l.size,l.size,l.size,1.03,l.yaw,0);}
- if(s.bloom||dry)for(const {at,yaw} of heads)detailedFlower(b,{x:at[0],y:at[1],z:at[2],color:s.flowerColor,shape:a.flowerShape,palette:{dry},tilt:0,yaw},{...kit,rand});
+ if(!dry)for(const l of leaves){if(rand()>s.leafDensity||purple&&l.lower&&s.bloom)continue;const color=purple&&l.upper&&s.bloom?'#8d6991':green;leaf(l.at,1.03,l.yaw,l.size*s.leafScale,purple?(l.lower?'eryngoLower':'eryngoPalm'):'eryngoStrap',color);}
+ if(s.bloom||dry)for(const {at,yaw} of heads)detailedFlower(b,{x:at[0],y:at[1],z:at[2],color:s.flowerColor,shape:a.flowerShape,palette:{...a.flowerPalette,dry},tilt:0,yaw},{...kit,rand});
 }
 
 function drawDetailedVines(b,{info,s,detail,rand},kit){
