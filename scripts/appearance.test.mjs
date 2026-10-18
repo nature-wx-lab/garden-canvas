@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5844,6 +5844,21 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  for(const id of ['p-565ee45c51d5','p-44f97cf79bf4','p-000781af85b9','p-daa064e003e3','p-f46d74ba4101','p-825e967e9c4a','p-32106ff38f0a','p-91f07ff1c009','p-c8c917cb2b80','p-07ea6016b5e3','p-8a7a81df41f2','p-f18c6641444c','p-69e7e8e3af56','p-5fec2e343923']){
   const c=CATALOG[id];for(const field of ['leafShape','leafPattern','persistence','flowerShape','habit','barkPattern'])if(c.appearance[field])assert.ok(TRAIT_VALUES[c.appearance[field]],`${id} ${field}`);assert.ok(!appearanceSummary(c).includes(c.appearance.leafShape));
  }
+});
+
+test('Reseda connected lobed petals keep true petal counts while winter rosettes and postflower annual leaves differ',()=>{
+ for(const [i,id] of ['p-44c9558101f1','p-24490dd2b2df'].entries())for(const [height,spread] of i===0?[[.4,.3],[.16,.18]]:[[.6,.35],[.2,.20]])for(let month=1;month<=12;month++){
+  const p=makePlant(id,36700+i*10,2,2);Object.assign(p,{height,spread,leafHeight:height*.5});const g=plantModel(p,view(month));try{
+   assert.equal(CATALOG[id].appearance.status,'partial');const count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+   if(month===6){assert.ok(count('petal-reseda')>0);assert.equal(count('petal-reseda'),count('ovary-reseda')*(i===0?6:5));assert.equal(count('anther'),count('ovary-reseda')*(i===0?16:12));assert.equal(count('stigma-reseda'),count('ovary-reseda')*(i===0?3:4));assert.ok(g.children.some(m=>m.geometry.userData[i===0?'resedaThreeLobed':'resedaPinnatifid']));}
+   if(month===1&&i===0){assert.ok(count('leaf-reseda')>0);assert.equal(count('stem'),0);assert.ok(g.children.some(m=>m.geometry.userData.resedaBasal));}
+   if(month===9&&i===0){assert.equal(count('leaf-reseda'),0);assert.equal(count('petal-reseda'),0);assert.equal(count('stem'),0);}
+   for(const m of g.children)for(const values of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...values].every(Number.isFinite),`${id} month=${month}`);
+  }finally{dispose(g);}
+ }
+ const p=makePlant('p-44c9558101f1',1,2,2);assert.equal(stateAt(p,{...view(6),year:1}).present,false);
+ for(const white of [false,true]){const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,r:.0045,color:'#fff',shape:'resedaFlower',petals:white?5:6,stamenCount:white?12:16,palette:{white}},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});assert.equal(parts.filter(p=>p.kind==='petal-reseda').length,white?5:6);assert.equal(parts.filter(p=>p.shape==='resedaPetal3').length,white?5:2);assert.equal(parts.filter(p=>p.kind==='ovary-reseda').length,1);}
+ for(const type of ['resedaPinnatifid','resedaThreeLobed','resedaBasal','resedaPetal3'])for(let t=0;t<=20;t++)assert.ok(resedaPoint(type,.2,t/20).every(Number.isFinite));
 });
 
 test('Acaena mats retain alternate pinnate leaves thirteen relief leaflets and two stamens with one style',()=>{

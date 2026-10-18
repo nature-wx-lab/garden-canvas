@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.354';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.355';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.354';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.355';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,10 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function resedaPoint(type,x,y){
+ const petal=type.startsWith('resedaPetal');return [x,y,(petal?.15:.055)*y*y+(petal?.06:.10)*x*x+.008*Math.sin(y*29-Math.abs(x)*6)*Math.abs(x)];
+}
+
 export function acaenaPoint(type,x,y){
  const blue=type==='acaenaToothed';return [x,y,.055*y*y+(blue?.13:.07)*Math.abs(x)+.006*Math.cos(y*30-Math.abs(x)*7)*Math.abs(x)];
 }
@@ -14332,12 +14336,13 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  if(shape==='resedaFlower'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),white=palette.white;
   for(let j=0;j<petals;j++){
-   const angle=j*TAU/petals,length=r*(white?1:j<2?1:.68),lobes=white||j<2?3:j<4?2:1,base=flowerFrame(f,[0,0,0],1.15,angle);
-   base.add('narrow','petal',color,0,0,0,length*.32,length*.42,length,.05,0,0);
-   for(let k=0;k<lobes;k++)base.add('narrow','petal',color,0,length*.27,0,length*.42,length*.72,length,0,0,(k-(lobes-1)/2)*.42);
-   f.add('narrow','sepal','#8ca46b',0,-r*.08,0,r*.55,r*.6,r,1.4,angle,0);
+   const angle=j*TAU/petals,length=r*(white?1:j<2?1:.68),lobes=white||j<2?3:j<4?2:1;
+   f.add('resedaPetal'+lobes,'petal-reseda',color,0,0,0,length,length,length,1.15,angle,0);
+   f.add('resedaSepal','sepal','#8ca46b',0,-r*.08,0,.0015,.003,.003,1.4,angle,0);
   }
-  f.add(bud,'ovary','#99aa74',0,0,0,r*.23,r*.27,r*.23);
+  f.add(white?'resedaOvary4':'resedaOvary3','ovary-reseda','#99aa74',0,0,0,r*.23,r*.27,r*.23);
+  f.add(bud,'nectary-reseda','#9ca97a',0,-.0002,-r*.10,r*.32,r*.08,r*.22);
+  for(let j=0;j<(white?4:3);j++){const an=j*TAU/(white?4:3);f.add('tube','stigma-reseda','#a5ad7d',Math.sin(an)*r*.12,r*.28,Math.cos(an)*r*.12,.00018,.00028,.00018);}
   for(let j=0;j<stamenCount;j++){const an=j*2.399,tip=[Math.sin(an)*r*.39,r*.5,Math.cos(an)*r*.39];f.branch([Math.sin(an)*r*.12,0,Math.cos(an)*r*.12],tip,r*.016,color,'filament');f.add(bud,'anther','#c7c289',...tip,r*.09,r*.055,r*.06);}return;
  }
  if(shape==='smallMallow'){
@@ -15746,22 +15751,23 @@ function drawAcaena(b,{info,s,detail,rand},kit){
 
 function drawReseda(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,white=a.architecture==='whiteMignonette',green=s.leafColor,n=Math.max(6,Math.round(12*detail)),heads=[];
- const leaf=(at,yaw,size,pitch)=>{
-  const f=flowerFrame(b,at,pitch,yaw),pairs=white?7:1;
-  f.add('narrow','leaf',green,0,0,0,size*.42,size,size,.04,0,0);
-  for(let k=0;k<pairs;k++)for(const side of [-1,1]){
-   const q=white?.13+k*.11:.39,lobe=size*(white?.30:.47)*(1-q*.25);f.add('narrow','leaf',green,0,size*q,0,lobe*(white?.65:.80),lobe,lobe,.06,0,side*(1.05+rand()*.14));
-  }
+ const leaf=(at,yaw,size,pitch,basal=false)=>{
+  if(rand()>s.leafDensity||s.leafScale===0)return;
+  const type=white?'resedaPinnatifid':basal?'resedaBasal':'resedaThreeLobed',L=size*s.leafScale,f=flowerFrame(b,at,pitch,yaw);f.add(type,'leaf-reseda',green,0,0,0,L,L,L);
+  const point=(x,y)=>resedaPoint(type,x,y).map(v=>v*L);let prev=point(0,0);for(let j=1;j<=10;j++){const to=point(0,j/10);to[2]-=.00005;f.branch(prev,to,.00010,'#9ca88b','vein-leaf-reseda');prev=to;}
+  if(!basal||white)for(let k=0;k<(white?7:1);k++)for(const side of [-1,1]){const q=white?.12+k*.115:.42,end=[side*(white?.30*(1-q*.5):.27),q+.05];f.branch(point(0,q),point(...end),.00007,'#9ca88b','vein-leaf-reseda');}
  };
+ if(!white&&s.shootScale<.4){for(let i=0;i<n;i++){const yaw=i*2.399;leaf([Math.sin(yaw)*w*.025,.004,Math.cos(yaw)*w*.025],yaw,Math.min(.10,w*.31),1.25,true);}return;}
+
  for(let i=0;i<n;i++){
-  const angle=i*2.399,rr=w*.27*Math.sqrt((i+.5)/n),top=h*(.55+rand()*.18),base=[Math.sin(angle)*rr*.22,0,Math.cos(angle)*rr*.22];let prev=base;
-  leaf(base,angle,Math.min(.10,w*.31),1.22);
+  const angle=i*2.399,rr=w*.27*Math.sqrt((i+.5)/n),top=h*s.shootScale*(.55+rand()*.18),base=[Math.sin(angle)*rr*.22,0,Math.cos(angle)*rr*.22];let prev=base;
+  leaf(base,angle,Math.min(.10,w*.31),1.22,true);
   for(let j=1;j<=9;j++){
-   const t=j/9,node=[base[0]+Math.sin(angle)*rr*t,top*t,base[2]+Math.cos(angle)*rr*t];b.branch(prev,node,.0013,green,'stem');prev=node;
+   const t=j/9,node=[base[0]+Math.sin(angle)*rr*t,top*t,base[2]+Math.cos(angle)*rr*t];b.branch(prev,node,.0013,s.leafDensity===0?'#8b7c61':green,'stem');prev=node;
    if(j<8)leaf(node,angle+j*2.399,Math.min(.10,w*.32)*(1-t*.53),.73);
-   if(j===5||j===7){const yaw=angle+j*2.399,tip=[node[0]+Math.sin(yaw)*w*.14,node[1]+h*.15,node[2]+Math.cos(yaw)*w*.14];b.branch(node,tip,.0008,green,'stem');leaf(node,yaw,.052,.69);heads.push({at:tip,yaw,length:h*.23});}
+   if(j===5||j===7){const yaw=angle+j*2.399,tip=[node[0]+Math.sin(yaw)*w*.14,node[1]+h*s.shootScale*.15,node[2]+Math.cos(yaw)*w*.14];b.branch(node,tip,.0008,s.leafDensity===0?'#8b7c61':green,'stem');leaf(node,yaw,.052,.69);heads.push({at:tip,yaw,length:h*s.shootScale*.23});}
   }
-  heads.push({at:prev,yaw:angle,length:h*.34});
+  heads.push({at:prev,yaw:angle,length:h*s.shootScale*.34});
  }
  if(!s.bloom)return;
  for(const {at:base,yaw,length} of heads){
