@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.349';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.353';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.349';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.353';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,13 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function chloranthusPoint(type,t,u){
+ if(type==='chloranthusConnective')return [u*.5*Math.pow(Math.max(0,Math.sin(Math.PI*t)),.35),t,.30*t*t-.12*Math.pow(t,4)];
+ if(type==='chloranthusBract')return [u*.5*Math.pow(Math.max(0,Math.sin(Math.PI*t)),.55),t,.15*t*t+.08*u*u];
+ const groove=Math.pow(Math.max(0,Math.cos((t-Math.abs(u)*.42)*Math.PI*14)),14)*Math.abs(u);
+ return [u,t,.10*t*t+.08*u*u-.025*groove-.012*Math.exp(-u*u*1000)];
+}
+
 export function berzeliaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),needle=type==='berzeliaNeedle',sepal=type==='berzeliaSepal';
  const w=(needle?.5:sepal?.36:.5)*Math.pow(sn,needle?.25:.55);
@@ -14296,9 +14303,15 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  if(shape==='chloranthusSpike'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw);f.branch([0,0,0],[0,r,0],r*.035,'#aab77a','rachis');
   for(let j=0;j<21;j++){
-   const t=j/21,an=j*2.399,root=[Math.sin(an)*r*.035,r*t,Math.cos(an)*r*.035],unit=flowerFrame(f,root,.75,an),length=r*(.25+.07*Math.sin(t*Math.PI));
-   unit.add(bud,'ovary','#b4bd83',0,0,0,r*.045,r*.065,r*.045);
-   for(const side of [-1,0,1]){const tip=[side*length*.24,length,length*.14];unit.branch([0,0,0],tip,r*.013,color,'filament');unit.add(bud,'filament',color,...tip,r*.018,r*.027,r*.018);}
+   const t=j/21,an=j*2.399,root=[Math.sin(an)*r*.035,r*t,Math.cos(an)*r*.035],unit=flowerFrame(f,root,.75,an);
+   unit.add(bud,'ovary-chloranthus','#b4bd83',0,0,0,.0008,.0012,.0008);unit.add(bud,'stigma-chloranthus','#e4dfb5',0,.0011,0,.00055,.00010,.00055);
+   unit.add('chloranthusBract','bract-chloranthus','#9caa70',0,-.0008,-.0004,.0018,.0015,.0015,.45,0,0);
+   unit.add(bud,'connective-base-chloranthus',color,0,.0009,-.0008,.0006,.00035,.00035);
+   for(const side of [-1,0,1]){
+    unit.add('chloranthusConnective','connective-chloranthus',color,side*.0002,.0010,-.0008,.00065,.005,.005,.50,0,-side*.62);
+    let prev=[side*.0002,.0010,-.0008];for(let k=1;k<=6;k++){const p=chloranthusPoint('chloranthusConnective',k/6,0),to=new THREE.Vector3(p[0]*.00065,p[1]*.005,p[2]*.005).applyEuler(new THREE.Euler(.50,0,-side*.62,'YXZ')).add(new THREE.Vector3(side*.0002,.0010,-.0008)).toArray();unit.branch(prev,to,.00018,color,'connective-core-chloranthus');prev=to;}
+    if(side!==0)unit.add(bud,'anther-basal-chloranthus','#e2d9ae',side*.00045,.0012,-.0010,.00020,.00035,.00018);
+   }
   }return;
  }
  if(shape==='acaenaHead'){
@@ -15687,15 +15700,18 @@ function drawBerzelias(b,{info,s,detail,rand},kit){
 }
 
 function drawChloranthus(b,{info,s,detail,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,n=Math.max(5,Math.round(14*detail)),green=s.leafColor;
+ const a=info.appearance,h=s.height,w=s.spread,n=Math.max(5,Math.round(10*detail)),green=s.leafColor;
  for(let i=0;i<n;i++){
   const yaw=i*2.399,rr=w*.29*Math.sqrt((i+.5)/n),base=[Math.sin(yaw)*rr,0,Math.cos(yaw)*rr],height=h*(.60+rand()*.30),top=[base[0]+Math.sin(yaw)*.006,height,base[2]+Math.cos(yaw)*.006];
   b.branch(base,top,.0014,a.stemColor,'stem');
   for(let j=0;j<4;j++){
-   const angle=yaw+j*Math.PI/2,at=[top[0],height-(j%2)*.007,top[2]],size=Math.min(.085,h*.32)*(.83+rand()*.24),tip=[at[0]+Math.sin(angle)*.007,at[1]+.003,at[2]+Math.cos(angle)*.007];
-   b.branch(at,tip,.00055,a.stemColor,'petiole');b.add('chloranthusLeaf',foliageKind(info),green,...tip,size,size,size,s.bloom?.45:1.28,angle,(rand()-.5)*.10);
+   const angle=yaw+Math.floor(j/2)*Math.PI/2+(j%2)*Math.PI,at=[top[0],height-Math.floor(j/2)*.006,top[2]],size=Math.min(a.leafLength||.10,h*.55)*(.88+rand()*.12)*(s.bloom?Math.min(.45,s.leafScale):s.leafScale),tip=[at[0]+Math.sin(angle)*.012,at[1]+.003,at[2]+Math.cos(angle)*.012];
+   b.branch(at,tip,.00055,a.stemColor,'petiole');const f=flowerFrame(b,tip,s.bloom?1.20:1.28,angle),kind=foliageKind(info)+'-chloranthus-underside-98ab72';f.add('chloranthusLeaf',kind,green,0,0,0,size,size,size);
+   const point=(t,u)=>chloranthusPoint('chloranthusLeaf',t,u).map(v=>v*size);
+   let prev=point(0,0);for(let k=1;k<=16;k++){const to=point(k/16,0);to[2]-=.00008;f.branch(prev,to,.00013,green,'vein-leaf-chloranthus');prev=to;}
+   for(let k=0;k<7;k++)for(const side of [-1,1]){const base=.13+k*.10;let prev=point(base,0);for(let j=1;j<=6;j++){const t=j/6,to=point(base+.15*t,side*.39*Math.sin(Math.PI*(base+.15))*t);to[2]-=.00008;f.branch(prev,to,.00009,green,'vein-leaf-chloranthus');prev=to;}}
   }
-  if(s.bloom){const rise=Math.min(.055,h*.25),at=[top[0],top[1]+rise,top[2]];b.branch(top,at,.0012,'#9ea756','peduncle');detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.inflorescenceLength,color:s.flowerColor,shape:'chloranthusSpike',yaw},{...kit,rand});}
+  if(s.bloom){const rise=Math.min(.02,h*.12),at=[top[0],top[1]+rise,top[2]];b.branch(top,at,.0012,'#9ea756','peduncle');detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.inflorescenceLength,color:s.flowerColor,shape:'chloranthusSpike',yaw},{...kit,rand});}
  }
 }
 
