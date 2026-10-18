@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5786,6 +5786,24 @@ test('ericaceous cultivar details do not confuse flower rims, leaf margins or wi
  assert.equal(parts.filter(p=>p.kind==='anther').length,10);assert.equal(parts.filter(p=>p.shape==='kalmiaCup').length,1);
 });
 
+test('refined balloon flowers retain source conflicts leaf veins and unfurled corolla clefts',()=>{
+ const ids=['p-565ee45c51d5','p-44f97cf79bf4','p-000781af85b9','p-daa064e003e3','p-f46d74ba4101'];
+ for(const [i,id] of ids.entries()){
+  const a=CATALOG[id].appearance;assert.equal(a.status,'partial');assert.equal(a.leafShape,'balloonLeaf');assert.ok(a.unconfirmed.length>=5);
+  for(const [height,spread] of [[i===2||i===3?.30:.85,.42],[.18,.18]])for(let month=1;month<=12;month++){
+   const p=makePlant(id,35800+i*10,2,2);p.height=height;p.spread=spread;p.leafHeight=height*.55;const g=plantModel(p,view(month));
+   for(const m of g.children)assert.ok([...m.instanceMatrix.array].every(Number.isFinite),`${id} month${month}`);
+   const parts=g.children.map(m=>m.userData.component);if(month===1)assert.equal(parts.length,0);if(month===7){assert.ok(g.children.some(m=>m.geometry.userData.balloonLeaf));assert.ok(parts.includes('vein-leaf-balloon'));assert.ok(parts.includes('vein-corolla-balloon'));}
+   if(i===4){assert.ok(!parts.includes('anther'));assert.ok(!parts.includes('stigma'));assert.equal(a.stamenCount,undefined);}dispose(g);
+  }
+ }
+ assert.equal(CATALOG[ids[3]].height,null);assert.deepEqual(CATALOG[ids[2]].height,[.3,.3]);
+ assert.equal(seasonAt(CATALOG[ids[2]],9).bloom,false);assert.equal(seasonAt(CATALOG[ids[3]],9).bloom,true);
+ for(const u of [0,Math.PI/5,Math.PI/10]){let previous=0;for(let j=1;j<=60;j++){const p=balloonPoint('balloonCorolla',j/60,u),r=Math.hypot(p[0],p[2]);assert.ok(r>previous);previous=r;}}
+ const tip=balloonPoint('balloonCorolla',1,0),cleft=balloonPoint('balloonCorolla',1,Math.PI/5);assert.ok(Math.hypot(cleft[0],cleft[2])<Math.hypot(tip[0],tip[2])*.6);
+ for(const type of ['balloonLeaf','balloonCorolla','balloonBud'])for(let t=0;t<=20;t++)assert.ok(balloonPoint(type,t/20,type==='balloonLeaf'?.7:1.4).every(Number.isFinite));
+});
+
 test('balloon flowers have connected five-lobed corollas, inflated buds and complete winter dieback',()=>{
  for(const id of ['p-565ee45c51d5','p-44f97cf79bf4','p-000781af85b9','p-daa064e003e3','p-f46d74ba4101']){
   const p=makePlant(id,541,2,2),winter=plantModel(p,view(1)),summer=plantModel(p,view(7));
@@ -5794,7 +5812,9 @@ test('balloon flowers have connected five-lobed corollas, inflated buds and comp
   for(const m of summer.children)assert.ok([...m.instanceMatrix.array].every(Number.isFinite));dispose(summer);
  }
  const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch:(a,b,r,c,kind)=>parts.push({kind})},{x:0,y:0,z:0,r:.028,color:'#7767aa',shape:'balloonCorolla',layers:2},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
- assert.equal(parts.filter(p=>p.shape==='balloonCorolla').length,2);assert.equal(parts.filter(p=>p.kind==='anther').length,5);assert.equal(parts.filter(p=>p.kind==='stigma').length,5);
+ assert.equal(parts.filter(p=>p.shape==='balloonCorolla').length,2);assert.equal(parts.filter(p=>p.kind==='anther').length,0);assert.equal(parts.filter(p=>p.kind==='stigma').length,0);
+ parts.length=0;detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch:(a,b,r,c,kind)=>parts.push({kind})},{x:0,y:0,z:0,r:.028,color:'#7767aa',shape:'balloonCorolla',layers:1},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
+ assert.equal(parts.filter(p=>p.kind==='anther').length,5);assert.equal(parts.filter(p=>p.kind==='stigma').length,5);
 });
 
 test('soapworts preserve domestic winter distinctions and do not turn cowherb into a perennial',()=>{
