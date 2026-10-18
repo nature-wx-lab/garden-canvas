@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.410';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.411';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.410';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.411';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,62 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function meadowTrifoliumPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type.endsWith('MeadowLeaf')){const camp=type==='campestreMeadowLeaf',dent=1-.018*(.5+.5*Math.cos(t*92))*(camp?t>.35:1);return [u*.5*sn**(camp?.50:.70)*dent,.035*sn+.016*u*u*sn,t-(camp?.04*Math.exp(-u*u*36)*t**14:0)];}
+ if(type==='meadowStipule')return [u*.17*sn**.55,.95*t,.12*t*t];
+ if(type==='meadowFineHair')return [u*.5*Math.max(0,1-t)**.65,t,.15*sn];
+ if(type==='meadowLongTooth')return [u*.025*sn**.65,t,.065*t*t];
+ if(type==='meadowShortTooth')return [u*.12*Math.max(0,1-t),t,.02*sn];
+ if(type.endsWith('MeadowCalyx')||type==='meadowPeaClaws'){
+  const a=u*Math.PI,claws=type==='meadowPeaClaws',r=claws?.07+.01*t:.10+.06*t,ribs=type==='rubensMeadowCalyx'?16:type==='campestreMeadowCalyx'?5:10;
+  return [Math.sin(a)*r*(claws?1:1+.035*Math.cos(a*ribs)),(claws?.28:.30)*t,Math.cos(a)*r*(claws?1:1+.035*Math.cos(a*ribs))];
+ }
+ const standard=type.endsWith('Standard'),wing=type==='meadowPeaWing',camp=type==='campestreMeadowStandard';
+ if(standard)return [u*(camp?.32:.26)*sn**.55,.94*t,.06+(camp?.24:.18)*sn+.08*u*u*sn];
+ if(wing)return [u*.15*sn**.60,.74*t,.03+.13*sn+.05*u*u*sn];
+ return [u*.095*sn**.55,.63*t,.12+.10*sn+.05*u*u*sn];
+}
+function drawMeadowTrifolium(b,{info,s,detail,rand,month},kit){
+ const type=info.appearance.flowerPalette.type,red=type==='rubens',camp=type==='campestre',arv=type==='arvense',h=s.height,w=s.spread,growth=month<=3?.20:month===4?.58:1,HL=Math.min(red?.062:camp?.007:.019,h*.18),HR=Math.min(red?.0075:camp?.003:.0018,w*.04),L=Math.min(red?.0080:camp?.0040:.0032,h*.065),n=Math.max(red?5:camp?5:4,Math.round((red?8:camp?7:5)*detail)),LF=Math.min(red?.065:camp?.012:.020,h*.14,w*.18)*s.leafScale,green=s.leafColor,stem=red?'#799569':camp?'#8c9e72':'#98a18b';
+ const leaf=(node,az)=>{
+  const P=Math.max(.0007,Math.min(red?.015:camp?.010:.006,LF*.65)),tip=[node[0]+Math.sin(az)*P,node[1]+P*.35,node[2]+Math.cos(az)*P];b.branch(node,tip,Math.min(.00040,LF*.025),stem,'petiole-meadow-trifolium');
+  const stipLen=red?LF*.48:camp?LF*.40:LF*.30;for(const side of [-1,1]){const f=flowerFrame(b,node,.20,az+side*.55);f.add('meadowStipule','stipule-meadow-trifolium',green,side*LF*.03,0,0,stipLen,stipLen,stipLen);}
+  for(let k=0;k<3;k++){
+   const an=az+(k-1)*1.18,pLen=camp?(k===1?.003:.0006):arv?.0005:.0008,origin=[tip[0]+Math.sin(an)*pLen,tip[1]+pLen*.12,tip[2]+Math.cos(an)*pLen],f=flowerFrame(b,origin,-.15+(k-1)*.04,an),shape=type+'MeadowLeaf',len=LF*(.86+rand()*.14),width=len*(red?.27:camp?.68:.20);b.branch(tip,origin,Math.min(.00020,LF*.012),stem,'petiolule-meadow-trifolium');f.add(shape,'leaflet-meadow-trifolium-'+type,kit.shade(rand,green,.025),0,0,0,width,len,len);
+   const point=(t,u)=>{const p=meadowTrifoliumPoint(shape,t,u);return [p[0]*width,p[1]*len+.000035,p[2]*len];};let prev=point(.02,0);for(let q=1;q<=12;q++){const to=point(.02+q*.079,0);f.branch(prev,to,.000022,'#a5b299','vein-meadow-trifolium');prev=to;}
+   for(let q=0;q<6;q++)for(const side of [-1,1]){const t=.12+q*.12,p0=point(t,0),p1=point(t+.04,side*.52),p2=point(t+.08,side*.89);f.branch(p0,p1,.000017,'#9eae94','vein-meadow-trifolium');f.branch(p1,p2,.000015,'#9eae94','vein-meadow-trifolium');}
+  }
+ };
+ const head=(base,yaw)=>{
+  const florets=red?144:camp?40:96;
+  for(let q=0;q<florets;q++){
+   const t=(q+.5)/florets,az=yaw+q*2.399,R=HR*Math.max(.25,Math.sin(Math.PI*t)**.40),at=[base[0]+Math.sin(az)*R,base[1]+HL*t,base[2]+Math.cos(az)*R],pitch=camp?Math.acos((2*t-1)*.75):red?1.20-.55*t:1.18-.35*t,f=flowerFrame(b,at,pitch,az),open=camp||red?q<florets*(camp?1:.62):q%5===0,calyx=red?'#8b9772':camp?'#a9b178':'#adb298',toothColor=red?'#a876a0':camp?'#a6af79':'#bec1aa';
+   f.add(type+'MeadowCalyx','calyx-meadow-trifolium-'+type,calyx,0,0,0,L,L,L);
+   for(let k=0;k<5;k++){
+    const an=k*TAU/5,mult=red?(k===0?1.45:.75):camp?(k<2?.25:.55):1.20,tooth=camp&&k<2?'meadowShortTooth':'meadowLongTooth',tf=flowerFrame(f,[Math.sin(an)*L*.15,L*.27,Math.cos(an)*L*.15],red?.16:arv?.20:.10,an);tf.add(tooth,'calyx-tooth-meadow-trifolium-'+type,toothColor,0,0,0,L,L*mult,L);
+    if(!camp)for(let z=0;z<(arv?5:2);z++)for(const side of [-1,1]){
+     const tt=.15+z*(arv?.17:.35),p=meadowTrifoliumPoint(tooth,tt,0);tf.add('meadowFineHair','calyx-hair-meadow-trifolium-'+type,arv?'#d4d4c3':'#cbbecd',side*L*.020,p[1]*L*mult,p[2]*L,L*(arv?.035:.012),L*(arv?.40:.22),L*(arv?.40:.22),.15,an+z*.8,side*.95);
+    }
+   }
+   if(!open){f.add(kit.bud,'bud-meadow-trifolium-'+type,red?'#a584a1':'#d7d1cb',0,L*.36,0,L*.11,L*.25,L*.11);continue;}
+   if(q===(camp?florets-2:red?Math.floor(florets*.25):Math.floor(florets/10)*5))f.flower([0,L*.42,0],L*(red?1.2:1.4));f.add('meadowPeaClaws','claws-meadow-trifolium',s.flowerColor,0,0,0,L,L,L);f.add(type+'MeadowStandard','standard-meadow-trifolium-'+type,kit.shade(rand,s.flowerColor,.025),0,0,0,L,L,L);
+   for(const side of [-1,1]){f.add('meadowPeaWing','wing-meadow-trifolium-'+type,s.flowerColor,side*L*.06,0,0,L,L,L,.08,side*.32,side*.08);f.add('meadowPeaKeel','keel-meadow-trifolium-'+type,s.flowerColor,side*L*.018,0,0,L,L,L,.08,side*.10,0);}
+  }
+ };
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*(red?.16:.12)*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],top=Math.max(.010,h*(red?.91:camp?.76:.80)*growth-HL),reach=w*(red?.025:camp?.25:.20),axis=t=>[root[0]+Math.sin(yaw)*reach*t*t,top*t,root[2]+Math.cos(yaw)*reach*t*t];let prev=root;
+  for(let j=1;j<=24;j++){const to=axis(j/24);b.branch(prev,to,Math.min(red?.0018:camp?.00065:.0011,h*.007),stem,'stem-meadow-trifolium');prev=to;}
+  const leafTop=Math.min(s.leafHeight,top*.96);for(let j=0;j<6;j++){const y=leafTop*(.12+.17*j);leaf(axis(y/top),yaw+j*2.399);}
+  if(s.bloom)head(axis(1),yaw);
+  if(!red)for(let j=0;j<(camp?3:2);j++){
+   const t=camp?.30+j*.22:.42+j*.27,at=axis(t),an=yaw+(j?1:-1)*.95,end=[at[0]+Math.sin(an)*w*.17,top*(camp?.78+j*.08:.78+j*.12),at[2]+Math.cos(an)*w*.17];let from=at;
+   for(let k=1;k<=8;k++){const z=k/8,to=[at[0]+(end[0]-at[0])*z,at[1]+(end[1]-at[1])*z,at[2]+(end[2]-at[2])*z];b.branch(from,to,Math.min(.0007,h*.0045),stem,'branch-meadow-trifolium');if(k===3||k===6)leaf(to,an+k*2.399);from=to;}
+   if(s.bloom)head(end,an);
+  }
+ }
+}
+
 export function bronzeArmeriaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='armeriaFineLeaf')return [u*.5*Math.max(0,1-t)**.48,.93*Math.sin(t*1.5)-.12*t**3,.22*t**1.4+.010*u*u*sn];
@@ -16597,6 +16653,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='nonRepensTrifolium'){drawMeadowTrifolium(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='bronzeArmeria'){drawBronzeArmeria(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='asclepiasReferences'){drawAsclepiasReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='parrotBranchTulips'){drawParrotBranchTulips(b,{info,s,detail,rand},kit);return;}

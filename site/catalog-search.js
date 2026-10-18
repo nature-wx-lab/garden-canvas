@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.410';
+import {treeProfile} from './tree-profiles.js?v=0.9.411';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -134,6 +134,7 @@ export function seasonAt(info,month){
  else if(a.dormantMonths?.includes(month===1?12:month-1)){density=.35;scale=.55;phase='休眠後の葉の展開（表示目安）';}
  if(a.emergenceMonths?.includes(month)&&!a.dormantMonths?.includes(month)){density=.3;scale=.45;phase='資料の芽出し期';}
  if(a.monthlyLeafDensity?.[m]!==undefined)density=a.monthlyLeafDensity[m];
+ if(a.architecture==='nonRepensTrifolium'){phase=density===0?'地上部のない冬の参考（残葉・越年性と発芽月は未確認）':a.flowerPalette.type==='rubens'?'立ち上がる多年草の3出複葉と長い花穂（冬姿・季節の伸長は参考）':'一年草の現在の株を参考表示（翌年の発芽・こぼれ種の更新は未予測）';}
  if(a.architecture==='asclepiasReferences'){scale=month===3?.3:month===4?.7:1;phase=density===0?'寒冷地で地上部を整理した休眠株の参考（冬の残葉・越冬は地域差）':bloom?'種・品種別の葉と副花冠をもつ小花（季節表記からの参考花期）':month<=4?'春の伸長の参考（芽出しと月境界は未確認）':'花後も残る葉の参考（冬の残葉と地域差は未確認）';}
  if(a.architecture==='pinkRainLily'){density=1;scale=1;phase=[12,1,2].includes(month)?'冬の残葉は未確認のため葉姿を保持（常緑・露地越冬の保証ではありません）':bloom?'細い根生葉と1本の花茎に1輪の花（降雨による一斉開花は未予測）':'細い根生葉の参考（冬の残葉と月別の葉量は未確認）';}
  if(['nativeLilyReferences','martagonReferences'].includes(a.architecture))phase=density===0?'球根で冬の越冬（境界月は表示目安）':bloom?(a.architecture==='martagonReferences'?'輪生葉と下向きの花（資料の地域での参考）':'互生葉と6枚の花被（資料の地域での参考）'):month<5?'春の茎葉の伸長（表示目安）':month>=10?'茎葉が黄変して枯れる時期（表示目安）':'花後も残る茎と葉（表示目安）';
