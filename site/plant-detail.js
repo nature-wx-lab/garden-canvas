@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.374';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.376';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.374';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.376';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15028,6 +15028,37 @@ function drawLilies(b,{info,s,detail,rand},kit){
 }
 
 
+export function nativeLilyPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type.endsWith('Leaf'))return [u*.5*sn**(type==='regaleLinearLeaf'?.45:.70),.065*sn-.12*t*t+.016*u*u*sn,t];
+ const regale=type.startsWith('regale'),auratum=type.startsWith('auratum'),inner=type.includes('Inner'),angle=u*(auratum?(inner?.46:.38):(inner?.66:.52))*sn**(regale?(inner?.65:1.05):(inner?.85:1.40)),r=auratum?.045+.90*t:regale?.025+.55*t**3.1:.025+.65*t**2.2,y=auratum?.55*t-.45*t**5:regale?1.15*t-.10*t**8:t-.25*t**5,wave=(auratum?.028:.008)*Math.sin(t*32)*u*u*sn;
+ return [Math.sin(angle)*r,y+wave,Math.cos(angle)*r];
+}
+function drawNativeLilyReferences(b,{info,s,detail,rand},kit){
+ const type=info.appearance.flowerPalette.type,rub=type==='rubellum',sasa=type==='japonicum',yama=type==='auratum',regale=type==='regale',growth=s.shootScale||1,h=s.height*growth,w=s.spread,leafH=Math.min(s.leafHeight*growth,h*.80),green=s.leafDensity<.5?'#b0a17b':s.leafColor,axis=t=>[Math.sin(t*1.4)*Math.min(.030,h*.03),h*.94*t,Math.min(.015,h*.012)*t*t],stemR=Math.min(regale?.004:.0035,h*.009);
+ for(let j=0;j<28;j++)b.branch(axis(j/28),axis((j+1)/28),stemR*(1-j/44),'#6e8c5b','stem-native-lily');
+ if(s.leafDensity>0)for(let j=0;j<(rub?12:sasa?18:yama?28:52);j++){
+  const n=rub?12:sasa?18:yama?28:52,y=leafH*(.08+j/n*.90),at=axis(y/(h*.94)),yaw=j*2.399,L=Math.min(rub?.08:sasa?.15:yama?.15:.0762,leafH*.48,w*.44)*(.8+rand()*.2),W=Math.min(rub?.018:sasa?.013:yama?.034:.005,L*(regale?.09:.25)),petiole=sasa?Math.min(.005,L*.06):.001,end=[at[0]+Math.sin(yaw)*petiole,at[1],at[2]+Math.cos(yaw)*petiole],f=flowerFrame(b,end,-.05+rand()*.035,yaw),shape=regale?'regaleLinearLeaf':'nativeLanceLeaf';
+  if(petiole>.001)b.branch(at,end,.00045,'#7d9267','petiole-native-lily');f.add(shape,'leaf-native-lily-'+type,kit.shade(rand,green,.025),0,0,0,W,L,L);
+  for(const u of [-.55,0,.55]){let p=nativeLilyPoint(shape,.02,u),from=[p[0]*W,p[1]*L+.00005,p[2]*L];for(let k=1;k<=14;k++){p=nativeLilyPoint(shape,.02+k*.069,u);const to=[p[0]*W,p[1]*L+.00005,p[2]*L];f.branch(from,to,.000045,'#a0ad83','vein-leaf-native-lily');from=to;}}
+ }
+ if(!s.bloom)return;
+ const n=rub?2:sasa?3:yama?4:6,L=Math.min(rub?.060:sasa?.085:yama?.110:.120,h*(yama?.26:.35)),pitch=rub?1.85:sasa?1.60:yama?1.85:1.50,anther=rub||regale?'#c39140':'#9b4435';
+ for(let j=0;j<n;j++){
+  const t=.70+j/n*.24,root=axis(t),yaw=j*2.399+.35,reach=Math.min(w*.25,h*.18)*(1-j/n*.3),end=[root[0]+Math.sin(yaw)*reach,root[1]+L*.04,root[2]+Math.cos(yaw)*reach],bend=[root[0]+Math.sin(yaw)*reach*.5,root[1]+L*.30,root[2]+Math.cos(yaw)*reach*.5];let from=root;
+  for(let k=1;k<=14;k++){const v=k/14,to=root.map((x,i)=>(1-v)*(1-v)*x+2*(1-v)*v*bend[i]+v*v*end[i]);b.branch(from,to,stemR*.50,'#7f986d','pedicel-native-lily');from=to;}
+  const f=flowerFrame(b,end,pitch,yaw);
+  if(n>=4&&j===n-1){f.add(kit.bud,'bud-native-lily',regale?'#c995ad':rub||sasa?'#d4b8c8':'#d1d6b5',0,L*.48,0,L*.12,L*.50,L*.12);continue;}
+  b.flower?.(end,L*1.25,pitch,yaw);f.add(kit.bud,'ovary-native-lily','#8caa5e',0,L*.09,0,L*.055,L*.15,L*.055);
+  for(let k=0;k<6;k++){
+   const inner=k%2===1,petal=flowerFrame(f,[0,inner?L*.006:0,0],0,k*TAU/6);petal.add(type+(inner?'InnerLilyTepal':'OuterLilyTepal'),'petal-native-lily-'+type,s.flowerColor,0,0,0,L,L,L);
+   const an=k*TAU/6,r=L*(yama?.25:.13),base=[Math.sin(an)*L*.035,L*.05,Math.cos(an)*L*.035],tip=[Math.sin(an)*r,L*(regale?.97:1.04),Math.cos(an)*r];let prev=base;
+   for(let q=1;q<=12;q++){const v=q/12,to=[base[0]+(tip[0]-base[0])*v,L*.05+(tip[1]-L*.05)*v,base[2]+(tip[2]-base[2])*v];f.branch(prev,to,L*.0085,'#cbbf91','filament-native-lily');prev=to;}
+   f.add(kit.bud,'anther-native-lily',anther,...tip,L*.025,L*(yama?.105:.080),L*.025,.68,an,0);
+  }
+  f.branch([0,L*.18,0],[0,L*1.17,0],L*.014,'#a8b777','style-native-lily');f.add(kit.bud,'stigma-native-lily','#a7b56a',0,L*1.19,0,L*.040,L*.025,L*.040);
+ }
+}
 export function martagonReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='martagonBlade')return [u*.5*sn**.66,.06*sn-.14*t*t+.016*u*u*sn,t];
@@ -15860,6 +15891,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='nativeLilyReferences'){drawNativeLilyReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='martagonReferences'){drawMartagonReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='narcissusReferences'){drawNarcissusReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='borderTulipCrowns'){drawBorderTulips(b,{info,s,detail,rand},kit);return;}
