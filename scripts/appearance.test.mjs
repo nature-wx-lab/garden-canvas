@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5846,6 +5846,21 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  }
 });
 
+
+test('three autumn Cyclamen distinguish auricles thin versus thick leaves and domestic flowering calendars',()=>{
+ const ids=['p-3c7c883b5e1e','p-cf04af7c95f9','p-8118e2844435'],types=['confusum','cyprium','cilicium'],sizes=[[.2,.28,.10],[.15,.25,.075],[.15,.22,.07]],smallSizes=[[.08,.15,.045],[.07,.13,.04],[.07,.13,.04]];
+ for(const [ci,id] of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
+  const [height,spread,leafHeight]=(small?smallSizes:sizes)[ci],p={...makePlant(id,38000+ci*10+(small?1:0),2,2),height,spread,leafHeight},g=plantModel(p,view(month)),label=`${id} small=${small} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),tubes=count('corolla-tube-autumn-nose')+count('corolla-tube-autumn-plain'),petals=count('petal-autumn-cyclamen-'+types[ci])+count('petal-autumn-cyclamen-plain');
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(g.scale.x,1,label);assert.equal(petals,tubes*5,label);assert.equal(petals>0,CATALOG[id].bloom.includes(month),label);assert.equal(count('auricle-autumn-cyclamen-'+types[ci]),ci<2?tubes*10:0,label);if([6,7,8,9].includes(month))assert.equal(g.children.length,0,label);else assert.ok(count('leaf-autumn-cyclamen-'+types[ci])>0,label);assert.ok(!g.children.some(m=>/anther|stigma|style|ovary|fruit/.test(m.userData.component)),label);
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const b=m.boundingBox;assert.ok(b.min.y>=-.002&&b.max.y<p.height*1.13,label+' height '+m.userData.component);assert.ok(Math.max(Math.abs(b.min.x),Math.abs(b.max.x),Math.abs(b.min.z),Math.abs(b.max.z))<p.spread*.75,label+' width');}
+  }finally{dispose(g);}
+ }
+ assert.deepEqual(CATALOG[ids[0]].height,[.2,.2]);assert.deepEqual(CATALOG[ids[1]].bloom,[1,10,11,12]);for(const id of ids)assert.equal(CATALOG[id].spread,null);
+ for(const type of ['confusumLeaf','cypriumLeaf','ciliciumLeaf','confusumPetal','cypriumPetal','ciliciumPetal','autumnCyclamenTube','cyclamenAuricle'])for(let i=0;i<=24;i++)for(const u of type.endsWith('Leaf')||type.endsWith('Tube')?[0,Math.PI,Math.PI*2]:[-1,0,1])assert.ok(autumnCyclamenPoint(type,i/24,u).every(Number.isFinite),type);
+ assert.ok(autumnCyclamenPoint('confusumPetal',.5,1)[0]>autumnCyclamenPoint('ciliciumPetal',.5,1)[0],'confusum has broader lobes');
+ const mouth=autumnCyclamenPoint('autumnCyclamenTube',1,0);assert.ok(Math.hypot(mouth[0],mouth[2])*2<.30,'mouth stays narrow relative to reflexed lobe length');for(let t=0;t<=20;t++)assert.ok(Math.hypot(...autumnCyclamenPoint('cyclamenAuricle',t/20,1))<.09,'small curled ears remain smaller than a tepal blade');
+});
 
 test('five coum references keep round patterned leaves short reflexed five-lobed corollas and autumn-winter foliage',()=>{
  const ids=['p-23f96ddcce81','p-667dac04d733','p-8a74ddfb5619','p-b29df262e029','p-3ba3afe2f737'];

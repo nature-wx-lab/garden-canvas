@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.367';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.368';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.367';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.368';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15027,6 +15027,40 @@ function drawLilies(b,{info,s,detail,rand},kit){
 }
 
 
+export function autumnCyclamenPoint(type,t,u){
+ if(type.endsWith('Leaf')){
+  const conf=type==='confusumLeaf',cil=type==='ciliciumLeaf',edge=conf?1+.075*Math.cos(u*5)+.022*Math.cos(u*19):1+.018*Math.cos(u*17),x=Math.sin(u)*(cil?.40:.49)*edge,y=.45+(cil?.52:.58)*Math.cos(u)+.33*Math.exp(-(((u-Math.PI)/.27)**2))-.20;
+  return [t*x,t*y,.035*t*t+(conf?.018:.008)*Math.sin(u*5)*t];
+ }
+ if(type==='autumnCyclamenTube'){const r=.065+.060*t;return [Math.sin(u)*r,.12*(1-t),Math.cos(u)*r];}
+ if(type==='cyclamenAuricle'){
+  const phi=t*Math.PI*1.6;return [u*.035*Math.sin(Math.PI*t)**.5,.035*Math.sin(phi),.035*(1-Math.cos(phi))];
+ }
+ const conf=type==='confusumPetal',cil=type==='ciliciumPetal',sn=Math.max(0,Math.sin(Math.PI*t)),x=u*(conf?.17:cil?.13:.16)*sn**(conf?.64:cil?.80:.55),twist=t*(cil?Math.PI*.65:Math.PI*.5);
+ return [x*Math.cos(twist),.94*t-.29*sn,.12+.23*sn+.07*t+x*Math.sin(twist)];
+}
+function drawAutumnCyclamens(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.flowerPalette.type,conf=type==='confusum',cy=type==='cyprium',h=s.height,w=s.spread,Lleaf=Math.min(conf?.09:cy?.08:.055,w*.32,s.leafHeight*.85),green=s.leafDensity<.5?'#a3a56d':s.leafColor,n=Math.max(1,Math.round((conf?11:14)*detail*s.leafDensity));
+ for(let j=0;j<n;j++){
+  const yaw=j*2.399,R=w*.22*Math.sqrt((j+.5)/n),at=[Math.sin(yaw)*R,s.leafHeight*(.42+rand()*.15),Math.cos(yaw)*R],f=flowerFrame(b,at,.95+rand()*.15,yaw),L=Lleaf*s.leafScale*(.8+rand()*.2);
+  b.branch([0,.002,0],at,conf?.0012:.0007,'#765363','petiole-autumn-cyclamen');f.add(type+'Leaf','leaf-autumn-cyclamen-'+type,kit.shade(rand,green,.03),0,0,0,L,L,L);
+ }
+ if(!s.bloom)return;
+ const flowers=Math.max(3,Math.round((conf?8:10)*detail));
+ for(let j=0;j<flowers;j++){
+  const yaw=j*2.399,R=w*.15*Math.sqrt((j+.5)/flowers),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],L=Math.min(conf?.030:cy?.020:.018,h*.22),height=h*(.68+rand()*.12),top=[root[0],height,root[2]];let from=root;
+  b.branch(root,top,conf?.0009:.00065,'#8b626c','peduncle-autumn-cyclamen');from=top;let end;
+  for(let k=1;k<=12;k++){const theta=k/12*Math.PI;end=[top[0]+Math.sin(yaw)*L*.34*(1-Math.cos(theta)),top[1]+L*.34*Math.sin(theta),top[2]+Math.cos(yaw)*L*.34*(1-Math.cos(theta))];b.branch(from,end,.00055,'#8b626c','neck-autumn-cyclamen');from=end;}
+  const f=flowerFrame(b,[end[0],end[1]-L*.12,end[2]],0,yaw),white=cy||(!conf&&j%3===0),color=white?'#eeeae9':conf?'#cba8d4':'#d6b6da',plain=!conf&&!cy&&j%4===0;
+  if(j>=flowers-2){f.add(kit.bud,'bud-autumn-cyclamen',white?'#d4cdd0':'#aa82a6',0,0,0,L*.11,L*.40,L*.11,.55,0,0);continue;}
+  f.add('autumnCyclamenTube',plain?'corolla-tube-autumn-plain':'corolla-tube-autumn-nose',plain?'#e5deda':'#953e78',0,0,0,L,L,L);
+  for(let k=0;k<5;k++){
+   const petal=flowerFrame(f,[0,0,0],0,k*TAU/5);petal.add(type+'Petal','petal-autumn-cyclamen-'+(plain?'plain':type),kit.shade(rand,color,.02),0,0,0,L,L,L);
+   if(conf||cy)for(const side of [-1,1])petal.add('cyclamenAuricle','auricle-autumn-cyclamen-'+type,white?'#ece8e7':'#ddd0de',side*L*.065,0,L*.11,L,L,L,0,side*.35,0);
+  }
+ }
+}
+
 export function coumPoint(type,t,u){
  if(type==='coumLeaf'){
   const x=Math.sin(u)*.5,y=.46+.51*Math.cos(u)+.32*Math.exp(-(((u-Math.PI)/.30)**2))-.27;
@@ -15654,6 +15688,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='autumnCyclamenCrowns'){drawAutumnCyclamens(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='coumCrowns'){drawCoumCrowns(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='convallariaClusters'){drawConvallariaClusters(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='fritillariaShoots'){drawFritillarias(b,{info,s,detail,rand},kit);return;}
