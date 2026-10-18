@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {hyacinthReferencePoint,narcissusCupPoint,nativeLilyPoint,martagonReferencePoint,narcissusReferencePoint,borderTulipPoint,retailTulipPoint,camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {miniIrisPoint,hyacinthReferencePoint,narcissusCupPoint,nativeLilyPoint,martagonReferencePoint,narcissusReferencePoint,borderTulipPoint,retailTulipPoint,camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5846,6 +5846,19 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  }
 });
 
+
+test('four miniature iris references keep square leaves three falls three standards and three petaloid styles distinct',()=>{
+ const ids=['p-83455ccfe550','p-e07c146d9e20','p-5ab42afe5e28','p-5b3272352a33'],types=['gold','painted','frozen','hodgkin'];
+ for(const [ci,id]of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,39000+ci*10+(small?1:0),2,2),height:small?.06:.15,spread:small?.14:.25,leafHeight:small?.055:.14},g=plantModel(p,view(month)),label=id+' small='+small+' month='+month,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),flowers=count('ovary-inferior-mini-iris-reference');
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(CATALOG[id].bloomKnown,true);assert.equal(CATALOG[id].spread,null);assert.deepEqual(CATALOG[id].height,[.1,.15]);assert.equal(g.scale.x,1,label);assert.equal(flowers>0,[2,3].includes(month),label);assert.equal(count('fall-mini-iris-'+types[ci]),flowers*3,label);assert.equal(count('standard-mini-iris-'+types[ci]),flowers*3,label);assert.equal(count('style-mini-iris-'+types[ci]),flowers*3,label);assert.equal(count('crest-mini-iris-reference'),flowers*6,label);assert.equal(count('anther-mini-iris-reference'),flowers*3,label);if([6,7,8,9,10,11,12].includes(month))assert.equal(g.children.length,0,label);assert.ok(!g.children.some(m=>/beard|fruit|seed/.test(m.userData.component)),label);
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const b=m.boundingBox,within=(x,y,z)=>y>=-.003&&y<Math.max(p.height,p.leafHeight)*1.15&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;if(!within(b.min.x,b.min.y,b.min.z)||!within(b.max.x,b.max.y,b.max.z)){const matrix=new Matrix4(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),label+' actual vertex '+m.userData.component);}}}}
+  }finally{dispose(g);}
+ }
+ for(const type of ['miniIrisSquareLeaf','miniIrisStyle','miniIrisCrest',...types.flatMap(t=>[t+'MiniFall',t+'MiniStandard'])])for(let i=0;i<=24;i++)for(const u of [-1,0,1])assert.ok(miniIrisPoint(type,i/24,u).every(Number.isFinite));
+ const cross=Array.from({length:17},(_,i)=>miniIrisPoint('miniIrisSquareLeaf',0,i/8-1));assert.ok(cross.every(p=>Math.abs(Math.max(Math.abs(p[0]),Math.abs(p[2]))-.5)<1e-12),'square section rather than circular quill');assert.ok(miniIrisPoint('frozenMiniStandard',.5,1)[0]<miniIrisPoint('goldMiniStandard',.5,1)[0],'FrozenPlanet narrower standards');
+});
 
 test('four hyacinth references connect six reflexed lobes to tubes and distinguish color types from named cultivars',()=>{
  const ids=['p-89a52aa63fc6','p-292e2b8d70b9','p-78167af46f86','p-de59451c1ae6'],types=['midnight','pink','purple','red'];
