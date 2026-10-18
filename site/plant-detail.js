@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.418';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.419';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.418';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.419';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -14197,6 +14197,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   f.branch([0,0,0],[0,length*.70,0],r*.013,'#d1d29a','style');f.add(bud,'stigma','#cfcd8d',0,length*.70,0,r*.045,r*.023,r*.045);return;
  }
  if(shape==='dahliaHead'){
+  if(palette.maxi){drawMaxiDahliaHead(b,{x,y,z,r,color,tilt,yaw,type:palette.maxi},kit);return;}
   const f=flowerFrame(b,[x,y,z],tilt,yaw),single=layers<=2||palette.openDisc,disc=r*(single?.23:.055),sector=rand()*TAU;
   for(let j=0;j<8;j++)f.add('leaf','bract','#70804e',0,-r*.06,0,r*.27,r*.34,r,1.9,j*TAU/8,0);
   f.add(bud,'receptacle',palette.disc||'#69412d',0,0,0,r*.26,r*.18,r*.26);
@@ -15627,6 +15628,33 @@ function drawIridReferenceSpikes(b,{info,s,detail,rand},kit){
   }
  }
 }
+export const MAXI_DAHLIA_PROFILES={sonora:{rows:8,count:25,round:true},salinas:{rows:7,count:25},topia:{rows:8,count:24,round:true},mendosa:{rows:6,count:22},emilio:{rows:5,count:20}};
+export function maxiDahliaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='maxiDahliaLeaf'){
+  const tooth=1-.09*Math.pow(.5+.5*Math.cos(t*TAU*11),5);
+  return [u*.5*sn**.70*tooth,t,.12*t*t+.09*u*u*sn+.012*Math.sin(t*8)*u*u*sn];
+ }
+ const round=type==='maxiDahliaRoundRay';
+ return [u*.26*sn**(round?.48:.78),t-.035*t**5,-.13*t*t-.18*u*u*sn+.05*t**6];
+}
+function drawMaxiDahliaHead(b,{x,y,z,r,color,tilt,yaw,type},kit){
+ const profile=MAXI_DAHLIA_PROFILES[type],f=flowerFrame(b,[x,y,z],tilt,yaw),rand=kit.rand;
+ // Two distinct bract series are a genus reference; counts are examples.
+ for(let row=0;row<2;row++)for(let k=0;k<(row?9:6);k++){
+  const L=r*(row?.48:.40);f.add('maxiDahliaLeaf','involucre-maxi-'+(row?'inner':'outer'),row?'#8b9671':'#65784d',0,-r*(row?.05:.10),0,L*(row?.65:.43),L,L,row?2.02:2.25,k*TAU/(row?9:6)+row*.27,0);
+ }
+ f.add(kit.bud,'receptacle-maxi','#7a7c51',0,0,0,r*.23,r*.10,r*.23);
+ for(let row=0;row<profile.rows;row++){
+  const t=row/(profile.rows-1),count=Math.round(profile.count*(1-t*.55)),L=r*(.94-t*.74),angle0=row*.47;
+  for(let k=0;k<count;k++){
+   const angle=k*TAU/count+angle0,rr=r*.055,variation=(rand()-.5)*.07;
+   f.add(profile.round?'maxiDahliaRoundRay':'maxiDahliaPointedRay','petal-maxi-'+type,kit.shade(rand,color,.018),Math.sin(angle)*rr,r*.14*t,Math.cos(angle)*rr,L*.68,L,L,1.60-t*1.13+variation,angle,variation*.30);
+  }
+ }
+ for(let k=0;k<7;k++)f.add('maxiDahliaPointedRay','petal-maxi-'+type,color,0,r*.23,0,r*.075,r*.14,r*.14,.28,k*TAU/7,0);
+}
+
 export function rudyPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='rudyLeaf')return [u*.5*sn**.32,.95*t-.25*t**3,.46*t*t+.01*u*u*sn];
@@ -16545,7 +16573,7 @@ function drawNarcissus(b,{info,s,detail,rand},kit){
 }
 
 function drawDahlias(b,{info,s,detail,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,tree=a.architecture==='treeDahlia',compact=a.architecture==='compactDahlia',green=s.leafColor,kind=foliageKind(info),stem=a.stemColor||'#77885a',growth=s.shootScale||1;
+ const a=info.appearance,h=s.height,w=s.spread,tree=a.architecture==='treeDahlia',compact=a.architecture==='compactDahlia',maxi=!!a.flowerPalette?.maxi,green=s.leafColor,kind=maxi?'leaf-maxi-dahlia':foliageKind(info),stem=a.stemColor||'#77885a',growth=s.shootScale||1;
  const leaf=(at,angle,size,n=5)=>{
   const length=size*.76,end=[at[0]+Math.sin(angle)*length,at[1]+length*.20,at[2]+Math.cos(angle)*length],shape=a.leafletShape||'dahliaLeaf';
   b.branch(at,end,Math.min(.0014,size*.012),stem,'petiole');
@@ -16577,7 +16605,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
   heads.push({at:[tip[0],top,tip[2]],from:tip,angle:an});
  }
  for(let i=0;i<heads.length;i++){
-  const {at,from,angle}=heads[i],r=Math.min(a.flowerRadius||(compact?.042:.065),h*.30),root=from||[at[0]*.94,at[1]-h*.10,at[2]*.94];
+  const {at:rawAt,from,angle}=heads[i],r=Math.min(a.flowerRadius||(compact?.042:.065),h*(maxi?.18:.30)),at=maxi?[rawAt[0],Math.min(rawAt[1],h-r*.60),rawAt[2]]:rawAt,root=from||[at[0]*.94,at[1]-h*.10,at[2]*.94];
   if(!s.bloom)continue;
   const flower=i%4!==1;
   b.branch(root,at,Math.min(.003,h*.004),stem,'peduncle');

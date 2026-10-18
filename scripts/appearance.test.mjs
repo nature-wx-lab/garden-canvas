@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulipPoint,pinkRainLilyPoint,DOUBLE_TULIP_PROFILES,doubleTulipPoint,MINOR_TULIP_TYPES,minorTulipPoint,slenderTulipPoint,SINGLE_TULIP_PROFILES,singleTulipPoint,cannaReferencePoint,gardenAnemonePoint,alliumReferencePoint,daylilyReferencePoint,iridSpikePoint,irisReferencePoint,retailLilyPoint,freesiaReferencePoint,miniIrisPoint,hyacinthReferencePoint,narcissusCupPoint,nativeLilyPoint,martagonReferencePoint,narcissusReferencePoint,borderTulipPoint,retailTulipPoint,camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,rudyPoint,eucomisPoint,paraneePoint,somekawaPoint,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulipPoint,pinkRainLilyPoint,DOUBLE_TULIP_PROFILES,doubleTulipPoint,MINOR_TULIP_TYPES,minorTulipPoint,slenderTulipPoint,SINGLE_TULIP_PROFILES,singleTulipPoint,cannaReferencePoint,gardenAnemonePoint,alliumReferencePoint,daylilyReferencePoint,iridSpikePoint,irisReferencePoint,retailLilyPoint,freesiaReferencePoint,miniIrisPoint,hyacinthReferencePoint,narcissusCupPoint,nativeLilyPoint,martagonReferencePoint,narcissusReferencePoint,borderTulipPoint,retailTulipPoint,camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,maxiDahliaPoint,MAXI_DAHLIA_PROFILES,rudyPoint,eucomisPoint,paraneePoint,somekawaPoint,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5755,7 +5755,7 @@ test('dahlias distinguish frost dieback, summer rest and late tree-dahlia flower
  for(const id of ['p-71dc3b33c599','p-1cdcecfd96de','p-a6871a1f89cd','p-0c809fb897d3','p-04e6395e6b6f']){
   const p=makePlant(id,571,2,2);assert.equal(plantModel(p,view(1)).children.length,0);assert.equal(plantModel(p,view(3)).children.length,0);
   const young=plantModel(p,view(4)),summer=plantModel(p,view(id==='p-a6871a1f89cd'?11:7));assert.ok(young.scale.y<summer.scale.y);assert.ok(summer.children.some(m=>m.userData.component==='node'));
-  assert.ok(summer.children.some(m=>m.geometry.userData.dahliaLeaf||m.geometry.userData.dahliaCutLeaf));
+  assert.ok(summer.children.some(m=>m.geometry.userData.dahliaLeaf||m.geometry.userData.dahliaCutLeaf||m.geometry.userData.maxiDahliaLeaf));
   for(const g of [young,summer]){for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);}
  }
 });
@@ -7209,4 +7209,20 @@ test('Rudy triteleia has connate six lobed striped funnels two stamen levels and
   }finally{dispose(g);}
  }
  for(const type of ['rudyLeaf','rudyTube','rudyBud','rudyOuter','rudyInner'])for(let t=0;t<=24;t++)for(const u of ['rudyTube','rudyBud'].includes(type)?[0,Math.PI,Math.PI*2]:[-1,0,1])assert.ok(rudyPoint(type,t/24,u).every(Number.isFinite));assert.ok(rudyPoint('rudyTube',1,0)[1]===rudyPoint('rudyOuter',0,0)[1],'tube and lobe share throat height');
+});
+
+
+test('five Maxi dahlias keep individual colours cupped double ray heads and textured compound leaves without fixed cultivar petal counts',()=>{
+ const ids=['p-71dc3b33c599','p-aab84f2012fb','p-254c69c3be59','p-6a192cb6f5e0','p-262ced85f06d'],types=['sonora','salinas','topia','mendosa','emilio'];
+ for(const [ci,id] of ids.entries()){
+  const info=CATALOG[id],a=info.appearance,type=types[ci],profile=MAXI_DAHLIA_PROFILES[type];assert.equal(info.height,null);assert.equal(info.spread,null);assert.equal(info.latin,'Dahlia hybrid');assert.equal(a.status,'partial');assert.equal(a.petals,undefined);assert.equal(a.flowerLayers,undefined);assert.equal(a.leaflets,undefined);assert.equal(a.flowerPalette.maxi,type);assert.equal(a.inflorescence,'head');assert.equal(a.arrangement,'opposite');assert.equal(a.leafletShape,'maxiDahliaLeaf');assert.deepEqual(a.flowerMonths,[6,7,9,10,11]);assert.equal(a.flowerTiming,'months');
+  for(const small of [false,true])for(let month=1;month<=12;month++){
+   const p={...makePlant(id,41900+ci*10+(small?1:0),2,2),height:small?.20:.45,spread:small?.30:.50,leafHeight:small?.16:.35},g=plantModel(p,view(month)),label=`Maxi ${type} small=${small} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+   try{
+    const heads=count('receptacle-maxi'),rays=count('petal-maxi-'+type),rayCount=Array.from({length:profile.rows},(_,j)=>Math.round(profile.count*(1-j/(profile.rows-1)*.55))).reduce((n,x)=>n+x,7);assert.equal(heads>0,[6,7,9,10,11].includes(month),label);assert.equal(rays,heads*rayCount,label+'illustrative ray count');assert.equal(count('involucre-maxi-inner'),heads*9,label);assert.equal(count('involucre-maxi-outer'),heads*6,label);assert.equal((g.userData.flowerTargets?.length||0)>0,heads>0,label);if([12,1,2,3].includes(month))assert.equal(g.children.length,0,label);if(month===8){assert.ok(count('leaf-maxi-dahlia')>0,label);assert.equal(heads,0,label+'summer heat break');}assert.ok(!g.children.some(m=>/anther|stigma|ovary|fruit|seed|discFloret/.test(m.userData.component)),label);
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const b=m.boundingBox.clone();if(b.min.y<-.002&&['leaf-maxi-dahlia','stem'].includes(m.userData.component)){b.makeEmpty();const matrix=new Matrix4(),v=new Vector3(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);for(let j=0;j<pos.count;j++)b.expandByPoint(v.fromBufferAttribute(pos,j).applyMatrix4(matrix));}}assert.ok(b.min.y>=-.002&&b.max.y<p.height*1.13,label+' height '+m.userData.component+' '+b.max.y);assert.ok(Math.max(Math.abs(b.min.x),Math.abs(b.max.x),Math.abs(b.min.z),Math.abs(b.max.z))<p.spread*.75,label+' width '+m.userData.component);}
+   }finally{dispose(g);}
+  }
+ }
+ for(const type of ['maxiDahliaLeaf','maxiDahliaRoundRay','maxiDahliaPointedRay'])for(let t=0;t<=24;t++)for(const u of [-1,0,1])assert.ok(maxiDahliaPoint(type,t/24,u).every(Number.isFinite));assert.ok(maxiDahliaPoint('maxiDahliaRoundRay',.5,1)[2]<maxiDahliaPoint('maxiDahliaRoundRay',.5,0)[2],'cupped lateral edges');
 });
