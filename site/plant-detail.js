@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.379';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.381';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.379';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.381';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,41 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function hyacinthReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='hyacinthThickLeaf')return [u*.5*sn**.38,.88*Math.sin(t*1.30),.22*t**1.4+.10*u*u*sn];
+ if(type==='hyacinthFusedTube'){
+  const a=u*Math.PI,r=.15+.065*Math.sin(Math.PI*t)+.015*t;return [Math.sin(a)*r,.65*t,Math.cos(a)*r];
+ }
+ const arc=t*Math.PI*1.30,angle=u*Math.PI/6*Math.max(0,1-t)**.5,r=.165+.31*(1-Math.cos(arc));
+ return [Math.sin(angle)*r,.65+.31*Math.sin(arc),Math.cos(angle)*r];
+}
+function drawHyacinthReferences(b,{info,s,detail,rand},kit){
+ const type=info.appearance.flowerPalette.type,h=s.height,w=s.spread,n=Math.max(2,Math.round(3*detail)),green=s.leafDensity<.5?'#ada676':s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.26*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R];
+  if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(5*s.leafDensity));j++){
+   const L=Math.min(.28,s.leafHeight/.85,w*.95)*s.leafScale*(.88+rand()*.12),W=Math.min(.030,L*.19),f=flowerFrame(b,root,.05+j*.025,yaw+j*2.399);
+   f.add('hyacinthThickLeaf','leaf-hyacinth-reference',kit.shade(rand,green,.025),0,0,0,W,L,L);
+   for(const u of [-.6,-.3,0,.3,.6]){let p=hyacinthReferencePoint('hyacinthThickLeaf',.025,u),from=[p[0]*W,p[1]*L,p[2]*L+.00007];for(let k=1;k<=14;k++){p=hyacinthReferencePoint('hyacinthThickLeaf',.025+k*.068,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00007];f.branch(from,to,.000045,'#9ab08b','vein-leaf-hyacinth-reference');from=to;}}
+  }
+  if(!s.bloom)continue;
+  const top=h*(.90+rand()*.04),axis=t=>[root[0]+Math.sin(yaw)*h*.015*t*t,top*t,root[2]+Math.cos(yaw)*h*.015*t*t],L=Math.min(.021,h*.135);
+  let from=root;for(let j=1;j<=18;j++){const to=axis(j/18);b.branch(from,to,Math.min(.004,h*.02),'#789568','scape-hyacinth-reference');from=to;}
+  const flowers=32,buds=4;
+  for(let j=0;j<flowers+buds;j++){
+   const an=yaw+j*2.399,frac=j/(flowers+buds-1),at=axis(.39+.58*frac),end=[at[0]+Math.sin(an)*L*.43,at[1]+L*.05,at[2]+Math.cos(an)*L*.43];b.branch(at,end,L*.045,'#91a06c','pedicel-hyacinth-reference');
+   b.add('narrow','bract-hyacinth-reference','#8eaa75',...at,L*.06,L*.24,L*.24,.65,an,0);
+   if(j>=flowers){b.add(kit.bud,'bud-hyacinth-reference',s.flowerColor,...end,L*.16,L*.34,L*.16,.15,an,0);continue;}
+   const pitch=1.38+(1-frac)*.26,fl=flowerFrame(b,end,pitch,an);if(j===24)b.flower?.(end,L*.98,pitch,an);
+   fl.add('hyacinthFusedTube','tube-hyacinth-reference-'+type,s.flowerColor,0,0,0,L,L,L);
+   for(let k=0;k<6;k++)fl.add('hyacinthReflexLobe','lobe-hyacinth-reference-'+type,s.flowerColor,0,0,0,L,L,L,0,k*TAU/6,0);
+   fl.add(kit.bud,'ovary-superior-hyacinth-reference','#8ca16b',0,L*.10,0,L*.085,L*.08,L*.085);
+   for(let k=0;k<6;k++){const az=k*TAU/6,end=[Math.sin(az)*L*.10,L*.48,Math.cos(az)*L*.10];fl.branch([Math.sin(az)*L*.13,L*.32,Math.cos(az)*L*.13],end,L*.008,'#c1b6a1','filament-hyacinth-reference');fl.add(kit.bud,'anther-hyacinth-reference','#c2a467',...end,L*.017,L*.036,L*.018,.05,az,0);}
+   fl.branch([0,L*.15,0],[0,L*.36,0],L*.008,'#b9b99a','style-hyacinth-reference');
+  }
+ }
+}
 export function narcissusCupPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='cumLaudeSplitCorona'){
@@ -15929,6 +15964,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='hyacinthReferences'){drawHyacinthReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='narcissusCupReferences'){drawNarcissusCupReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='nativeLilyReferences'){drawNativeLilyReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='martagonReferences'){drawMartagonReferences(b,{info,s,detail,rand},kit);return;}
