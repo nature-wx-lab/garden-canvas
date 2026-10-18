@@ -116,7 +116,7 @@ test('maple uses broad palmate blades and preserves input dimensions',()=>{
     g.updateMatrixWorld(true);const actual=new Box3().setFromObject(g);assert.ok(Math.abs(actual.max.y-height)<.001);assert.ok(actual.max.x<=spread/2+.001&&actual.min.x>=-spread/2-.001&&actual.max.z<=spread/2+.001&&actual.min.z>=-spread/2-.001);disposeModel(g);
   }
 });
-import {Box3,PerspectiveCamera,Vector3} from '../site/vendor/three.module.js';
+import {Box3,PerspectiveCamera,Vector3,Group} from '../site/vendor/three.module.js';
 import {OrbitControls} from '../site/vendor/OrbitControls.js';
 
 test('water zones preserve old soil plans and strictly validate new surface kinds',()=>{
@@ -127,7 +127,21 @@ test('water zones preserve old soil plans and strictly validate new surface kind
  const bad=clone(d);bad.plans.A.zones[0].depth=3;assert.throws(()=>validateDocument(bad));
 });
 
-import {pondMaskCode,CAMERA_FLOOR,CAMERA_MAX_POLAR,keepCameraAboveGround} from '../site/scene.js';
+import {pondMaskCode,CAMERA_FLOOR,CAMERA_MAX_POLAR,keepCameraAboveGround,flowerInspectionView} from '../site/scene.js';
+test('flower observation fits upright hanging and low anchors above ground without changing saved gardens',()=>{
+ for(const aspect of [.6,1,2])for(const [height,axis]of [[.025,[0,1,0]],[.40,[0,-1,0]],[1.2,[0,-.8,.6]]]){
+  const group=new Group();group.position.set(2,.012,-3);group.rotation.y=.6;group.scale.setScalar(.7);group.userData.flowerTargets=[{origin:[.02,height,.01],axis,radius:.04}];const before=JSON.stringify(group.userData.flowerTargets),pose=flowerInspectionView(group,aspect),camera=new PerspectiveCamera(40,aspect,.01,650);assert.ok(pose);assert.ok(pose.position.every(Number.isFinite));assert.ok(pose.target.every(Number.isFinite));assert.ok(pose.position[1]>=CAMERA_FLOOR);assert.equal(JSON.stringify(group.userData.flowerTargets),before);camera.position.fromArray(pose.position);camera.lookAt(new Vector3(...pose.target));camera.updateMatrixWorld();const target=new Vector3(...pose.target).project(camera);assert.ok(Math.abs(target.x)<1e-8&&Math.abs(target.y)<1e-8,'flower target remains centered after ground clamping');assert.ok(target.z>-1&&target.z<1,'target stays inside camera clipping');
+  const doc=fixture(),saved=clone(doc);doc.view.camera=pose;assert.deepEqual(validateDocument(clone(doc)).view.camera,pose);assert.deepEqual(doc.plans,saved.plans,'observation changes no garden plants or dimensions');
+ }
+ for(const anchors of [undefined,{},[],[null],[{}],[{origin:[0,1],axis:[0,1,0],radius:.04}],[{origin:[0,NaN,0],axis:[0,1,0],radius:.04}],[{origin:[0,1,0],axis:[0,0,0],radius:.04}],[{origin:[0,1,0],axis:[0,1,0],radius:0}]]){const group=new Group();group.userData.flowerTargets=anchors;assert.equal(flowerInspectionView(group),null);}
+ assert.equal(flowerInspectionView(null),null);
+});
+test('flower observation uses visible geometry anchors and never offers dormant or absent flowers',()=>{
+ for(const [id,month,off]of [['p-766ad87ba1b2',8,1],['p-e1e2a401d139',6,9],['p-b2237cff2e6a',2,8],['p-c02feba517e0',5,7],['p-dcf9b2106055',4,7],['p-f6e75c6600bc',4,8]]){
+  const p=makePlant(id,39100,2,2),before=clone(p),g=plantModel(p,view(0,month)),rest=plantModel(p,view(0,off));try{assert.ok(g.userData.flowerTargets?.length>0,id);assert.ok(g.userData.flowerTargets.length<=16,id);assert.ok(flowerInspectionView(g),id);assert.equal(flowerInspectionView(rest),null,id);assert.deepEqual(p,before,id);}finally{for(const group of [g,rest])for(const m of group.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}}
+ }
+});
+
 test('flower inspection retains an above-ground look-up camera and floor clamping keeps its target in view',()=>{
  const doc=fixture();doc.view.camera={position:[.20,.18,.10],target:[0,.40,0]};assert.deepEqual(validateDocument(clone(doc)),doc);
  const camera=new PerspectiveCamera(40,1,.01,650),controls=new OrbitControls(camera,null);controls.maxPolarAngle=CAMERA_MAX_POLAR;controls.minDistance=.12;controls.addEventListener('change',()=>keepCameraAboveGround(camera,controls.target));

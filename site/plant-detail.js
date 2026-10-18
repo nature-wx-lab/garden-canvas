@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.373';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.374';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.373';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.374';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -13312,13 +13312,14 @@ function flowerFrame(b,origin,pitch,yaw){
    const q=rotation.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ');
    b.add(shape,kind,color,...point([x,y,z]),sx,sy,sz,e.x,e.y,e.z);
   },
-  branch(from,to,r,color,kind){b.branch(point(from),point(to),r,color,kind);}
+  branch(from,to,r,color,kind){b.branch(point(from),point(to),r,color,kind);},
+  flower(origin,r,pitch=0,yaw=0,roll=0){const q=rotation.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,roll,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ');b.flower?.(point(origin),r,e.x,e.y,e.z);}
  };
 }
 
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
 export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
- const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);
+ const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);b.flower?.([x,y,z],r*1.6,tilt,yaw);
  if(shape==='vincaPinwheel'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length;
   f.add('vincaTube','tube-vinca',color,0,0,0,r,L,r);
@@ -15054,6 +15055,7 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   const bract=flowerFrame(b,root,.4,yaw);bract.add('martagonBlade','bract-martagon-reference',green,0,0,0,L*.12,L*.75,L*.75);
   const f=flowerFrame(b,end,pink?2.50:Math.PI-.08,yaw);
   if(!wild&&j>=n-2){f.add(kit.bud,'bud-martagon-reference',type==='snowy'?'#d8ddc6':type==='claude'?'#aa758c':'#d2b6bc',0,L*.45,0,L*.17,L*.55,L*.17);continue;}
+  b.flower?.(end,L*1.6,pink?2.50:Math.PI-.08,yaw);
   f.add(kit.bud,'ovary-martagon-reference','#8a9c62',0,L*.08,0,L*.075,L*.13,L*.075);
   for(let k=0;k<6;k++){
    const inner=k%2===1,petal=flowerFrame(f,[0,inner?L*.006:0,0],0,k*TAU/6);petal.add(type+(inner?'InnerMartagonTepal':'OuterMartagonTepal'),'petal-martagon-'+type,s.flowerColor,0,0,0,L,L,L);
@@ -15091,7 +15093,7 @@ function drawNarcissusReferences(b,{info,s,detail,rand},kit){
   for(let j=0;j<n;j++){
    const an=yaw+j*TAU/n,reach=hoop?L*.25:thalia?L*1.0:L*(1.3+.3*(j%2)),at=[head[0]+Math.sin(an)*reach,head[1]+L*(j%3)*.18,head[2]+Math.cos(an)*reach];b.branch(head,at,Math.min(.0007,h*.004),'#8ba378','pedicel-narcissus-reference');
    if(n>2&&j===n-1){b.add(kit.bud,'bud-narcissus-reference','#d2d5b4',...at,L*.15,L*.45,L*.15,.8,an,0);continue;}
-   const f=flowerFrame(b,at,hoop?.85+rand()*.25:thalia?1.92+rand()*.10:1.12+rand()*.22,an),tubeTop=(hoop?.32:.90)*L,corona=hoop?'goldenHoopCorona':thalia?'thaliaCupCorona':minnow?'minnowShortCorona':'paperwhiteShortCorona',petal=hoop?'goldenNarrowTepal':thalia?'thaliaReflexTepal':minnow?'minnowRoundedTepal':'paperwhiteTepal',color=hoop?'#e7d04a':minnow&&j%2===0?'#e8e1ac':'#eeeae3';
+   const flowerPitch=hoop?.85+rand()*.25:thalia?1.92+rand()*.10:1.12+rand()*.22;b.flower?.(at,L*1.6,flowerPitch,an);const f=flowerFrame(b,at,flowerPitch,an),tubeTop=(hoop?.32:.90)*L,corona=hoop?'goldenHoopCorona':thalia?'thaliaCupCorona':minnow?'minnowShortCorona':'paperwhiteShortCorona',petal=hoop?'goldenNarrowTepal':thalia?'thaliaReflexTepal':minnow?'minnowRoundedTepal':'paperwhiteTepal',color=hoop?'#e7d04a':minnow&&j%2===0?'#e8e1ac':'#eeeae3';
    if(!thalia)f.add(kit.bud,'ovary-inferior-narcissus-reference','#8e9d68',0,L*.04,0,L*.085,L*.12,L*.085);f.branch([0,thalia?0:L*.12,0],[0,tubeTop,0],L*.065,hoop?'#bec168':'#d8dfb7','perianth-tube-narcissus-reference');
    f.add(corona,'corona-narcissus-'+type,hoop?'#e7d04a':minnow?'#e6c449':'#eeeae3',0,tubeTop,0,L,L,L);
    for(let k=0;k<6;k++)f.add(petal,'tepal-narcissus-'+type,color,0,tubeTop+(k%2)*L*.008,0,L,L,L,0,k*TAU/6,0);
@@ -15123,7 +15125,7 @@ function drawBorderTulips(b,{info,s,detail,rand},kit){
   }
   if(!s.bloom)continue;
   let from=root;for(let k=1;k<=24;k++){const to=axis(k/24);b.branch(from,to,.0015,type==='queen'?'#646c60':'#7c9872','stem-border-tulip');from=to;}
-  const f=flowerFrame(b,axis(1),.03,yaw);
+  const f=flowerFrame(b,axis(1),.03,yaw);b.flower?.(axis(1),L*1.2,.03,yaw);
   for(let j=0;j<6;j++){
    const inner=j%2===1,petal=flowerFrame(f,[0,inner?L*.014:0,0],0,j*TAU/6);
    petal.add(type+(inner?'InnerCupTepal':'OuterCupTepal'),'petal-border-tulip-'+type+(inner?'-inner':'-outer'),s.flowerColor,0,0,0,L,L,L,-.04+(i%3)*.035,0,0);
@@ -15148,7 +15150,7 @@ function drawRetailTulips(b,{info,s,detail,rand},kit){
   }
   if(!s.bloom)continue;
   let from=root;for(let k=1;k<=20;k++){const to=axis(k/20);b.branch(from,to,annika?.0012:.0009,'#729367','stem-retail-tulip');from=to;}
-  const f=flowerFrame(b,axis(1),.02,yaw),opening=i%3===0?-.48:i%3===1?-.12:.10;
+  b.flower?.(axis(1),L*1.6,.02,yaw);const f=flowerFrame(b,axis(1),.02,yaw),opening=i%3===0?-.48:i%3===1?-.12:.10;
   for(let j=0;j<6;j++){
    const inner=j%2===1,type=(annika?'annika':'oculata')+(inner?'InnerTepal':'OuterTepal'),petal=flowerFrame(f,[0,inner?L*.014:0,0],0,j*TAU/6);
    petal.add(type,'petal-retail-tulip-'+(annika?'annika':'oculata')+(inner?'-inner':'-outer'),annika?'#ecd4b6':'#e9ece7',0,0,0,L,L,L,opening,0,0);
