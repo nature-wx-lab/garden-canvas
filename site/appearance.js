@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.358';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.359';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -471,3 +471,5 @@ Object.assign(TRAIT_VALUES,{snowdropConvolute:'葉元で一方が他方を巻く
 Object.assign(TRAIT_VALUES,{grapeArchLeaf:'溝と平行脈があり、先が弓状に下がる細長い根出葉',grapeGutterLeaf:'平行な脈と浅い溝のある半直立の根出葉',grapeUrn:'6浅裂する小さな花口がくびれた壺形の合着花被',grapeAzure:'開口がくびれず、青い縦線と6浅裂のある鐘形の合着花被'});
 
 Object.assign(TRAIT_VALUES,{squillGutterLeaf:'全縁で浅い溝と平行脈のある帯状の根出葉',earlySquillFlower:'星形に開く6枚の花被と6雄しべ・品種別の中央線や白い花心'});
+
+Object.assign(TRAIT_VALUES,{erythroniumOvate:'浅い波と平行脈・立体的な溝をもつ一対の広い卵形葉',erythroniumFaintMottle:'写真の控えめな葉斑を参考にした不規則な色むら',reflexFawnLily:'反り返る6枚の花被と、下向きに伸びる6雄しべ・花柱'});
