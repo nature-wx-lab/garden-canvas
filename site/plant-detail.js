@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.359';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.360';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.359';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.360';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -14034,6 +14034,13 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   for(let j=0;j<3;j++){const an=j*TAU/3;f.add(bud,'stigma','#b3bc78',Math.sin(an)*r*.030,end[1],Math.cos(an)*r*.030,r*.040,r*.024,r*.040);}
   return;
  }
+ if(shape==='acisAutumnBell'){
+  const f=flowerFrame(b,[x,y,z],Math.PI+tilt,yaw),ratio=r/.006;
+  f.add(bud,'ovary-acis','#9fb26f',0,-r*.16,0,r*.20,r*.22,r*.20);
+  for(let j=0;j<6;j++)f.add(j%2?'acisInnerTepal':'acisOuterTepal','petal-acis-white','#f2f2e9',0,0,0,r,r,r,0,j*TAU/6,0);
+  for(let j=0;j<6;j++){const an=j*TAU/6,xx=Math.sin(an)*.00065*ratio,zz=Math.cos(an)*.00065*ratio;f.branch([xx,0,zz],[xx,.0012*ratio,zz],.00008*ratio,'#e8e1bc','filament-acis');f.add(bud,'anther','#dcc66e',xx,.0022*ratio,zz,.00022*ratio,.0010*ratio,.00022*ratio);}
+  f.branch([0,0,0],[0,.0042*ratio,0],.00009*ratio,'#efebce','style-acis');f.add(bud,'stigma-acis','#d6dbbb',0,.0042*ratio,0,.00017*ratio,.00013*ratio,.00017*ratio);return;
+ }
  if(shape==='reflexFawnLily'){
   const f=flowerFrame(b,[x,y,z],Math.PI+tilt,yaw),white=palette.white,ratio=r/.0275;
   for(let j=0;j<6;j++)f.add('fawnReflexedTepal',white?'petal-fawn-white':'petal-fawn-yellow',color,0,0,0,r*(j%2?1:.88),r,r,0,j*TAU/6,0);
@@ -14959,6 +14966,32 @@ function drawLilies(b,{info,s,detail,rand},kit){
  for(const {at,an} of heads)detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'liliumFlower',palette,tilt:palette.tilt,yaw:an},{...kit,rand});
 }
 
+export function acisPoint(type,t,u){
+ if(type==='acisFiliformLeaf'){
+  const taper=Math.pow(Math.max(0,1-t),.22),a=u<=.75?u/.75*Math.PI:0,x=u<=.75?Math.cos(a)*.0035:(-.5+(u-.75)/.25)*.007,z=u<=.75?Math.sin(a)*.0035:0;
+  return [x*taper,t,.16*t*t+z*taper];
+ }
+ const inner=type==='acisInnerTepal',width=Math.max(inner?.055:0,.29*Math.sin(Math.PI*t)**.52),notch=inner?.07*Math.exp(-u*u*12)*t**12:0;
+ return [u*width,t*1.55-notch,.95*t+.04*u*u*Math.sin(Math.PI*t)];
+}
+function drawAcis(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,n=Math.max(2,Math.round(7*detail)),green=s.leafDensity<.4&&!s.bloom?'#b6b075':'#648148';
+ for(let i=0;i<n;i++){
+  const an=i*2.399,rr=w*.22*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,.001,Math.cos(an)*rr],top=h*(.83+rand()*.14);
+  if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(4*s.leafDensity));j++){
+   const L=Math.min(a.leafLength||.22,s.leafHeight,h*.90,w*1.5)*(1-rand()*.18)*s.leafScale;b.add('acisFiliformLeaf','leaf-acis',kit.shade(rand,green,.025),...root,L,L,L,.06+rand()*.18,an+j*2.399,0);
+  }
+  if(!s.bloom)continue;const point=t=>[root[0]+Math.sin(an)*h*.025*t,top*t,root[2]+Math.cos(an)*h*.025*t];let from=root;
+  for(let j=1;j<=14;j++){const t=j/14,to=point(t);b.branch(from,to,.00055,t<.8?'#708951':'#9a8278','scape-acis');from=to;}
+  for(let j=0;j<3;j++){
+   const yaw=an+j*2.399,reach=Math.min(.035,w*.17)*(1-j*.17),at=[from[0]+Math.sin(yaw)*reach,top-h*(.05+j*.035),from[2]+Math.cos(yaw)*reach],arch=[from[0]+Math.sin(yaw)*reach*.7,top+h*.055,from[2]+Math.cos(yaw)*reach*.7];let previous=from;
+   for(let k=1;k<=14;k++){const t=k/14,to=from.map((v,axis)=>(1-t)**2*v+2*(1-t)*t*arch[axis]+t*t*at[axis]);b.branch(previous,to,.00030,'#82915e','pedicel-acis');previous=to;}
+   const r=Math.min(a.flowerRadius||.006,h*.055);
+   if(j===2)b.add(kit.bud,'bud-acis','#e6e9ce',...at,r*.27,r*.60,r*.27,2.8,yaw,0);
+   else detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'acisAutumnBell',tilt:.10,yaw},{...kit,rand});
+  }
+ }
+}
 export function fawnLilyPoint(type,t,u){
  if(type==='fawnReflexedTepal')return [u*.20*Math.sin(Math.PI*t)**.65,.28*Math.sin(Math.PI*t)-.46*t**3+.055*u*u*Math.sin(Math.PI*t),t];
  const wide=.5*Math.sin(Math.PI*t)**.60*(1+.025*Math.cos(t*34));return [u*wide,.80*Math.sin(t*1.3),.55*t+.050*u*u*Math.sin(Math.PI*t)+.010*Math.cos(u*19)*Math.sin(Math.PI*t)];
@@ -15377,6 +15410,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='acisAutumnScapes'){drawAcis(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='reflexedFawnLilies'){drawFawnLilies(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='earlySquillRacemes'){drawEarlySquills(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='grapeHyacinthSpikes'){drawGrapeHyacinths(b,{info,s,detail,rand},kit);return;}

@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5846,10 +5846,28 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  }
 });
 
+test('mignonette local winter rosettes and divided leaves retain their veins without repeated seasonal thinning or shoot scaling',()=>{
+ for(const [ci,id] of ['p-44c9558101f1','p-24490dd2b2df'].entries())for(const month of [1,3,6,11]){
+  const p={...makePlant(id,36700,2,2),height:ci?.6:.4,spread:.3,leafHeight:.20},g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);try{
+   const basal=g.children.filter(m=>m.geometry.userData.resedaBasal).reduce((n,m)=>n+m.count,0),leaves=count('leaf-reseda');if(stateAt(p,view(month)).groundDormant)assert.equal(leaves,0,`${id} month=${month}`);else assert.ok(leaves>0,`${id} month=${month}`);assert.equal(count('vein-leaf-reseda'),ci?leaves*24:basal*10+(leaves-basal)*12,`${id} month=${month}: no orphan veins`);assert.equal(g.scale.x,1,`${id} month=${month}: local shoot scale already applied`);
+  }finally{dispose(g);}
+ }
+});
+
+test('autumn Acis follows domestic flowering-with-leaves photographs and keeps unmarked six-tepal bells separate from spring snowflakes',()=>{
+ for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant('p-35f78064f6e3',37200+(small?1:0),2,2),height:small?.10:.25,spread:small?.10:.18,leafHeight:small?.06:.16},g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),label=`small=${small} month=${month}`;
+  try{if([9,10].includes(month)){assert.ok(count('leaf-acis')>0,label);assert.ok(count('ovary-acis')>0,label);assert.equal(count('petal-acis-white'),count('ovary-acis')*6,label);assert.equal(count('anther'),count('ovary-acis')*6,label);assert.equal(count('stigma-acis'),count('ovary-acis'),label);assert.equal(g.scale.x,1,label);}if(month===1){assert.ok(count('leaf-acis')>0,label);assert.equal(count('anther'),0,label);}if(month===7)assert.equal(g.children.length,0,label);for(const m of g.children)for(const values of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...values].every(Number.isFinite),label);
+  }finally{dispose(g);}
+ }
+ const leafExtent=leafHeight=>{const p={...makePlant('p-35f78064f6e3',37200,2,2),height:.25,spread:.18,leafHeight},g=plantModel(p,view(1)),m=g.children.find(m=>m.userData.component==='leaf-acis'),matrix=new Matrix4();try{m.getMatrixAt(0,matrix);return new Vector3().setFromMatrixColumn(matrix,1).length();}finally{dispose(g);}};assert.ok(Math.abs(leafExtent(.06)/leafExtent(.16)-.375)<.00001,'leaf height control affects leaves independently of flower height');
+ assert.equal(CATALOG['p-35f78064f6e3'].appearance.leaflessBloom,undefined);for(const u of [0,.25,.5,.75,1])assert.ok(acisPoint('acisFiliformLeaf',.5,u).every(Number.isFinite));
+});
+
 test('new small bulb leaf blades and veins are not thinned or scaled a second time by the shared foliage filter',()=>{
  for(const [id,leaf,vein,segments] of [['p-aac0769c3974','leaf-snowdrop','vein-leaf-snowdrop',21],['p-0ee7dee3eb63','leaf-grape','vein-leaf-grape',27],['p-db9489e27120','leaf-early-squill','vein-leaf-squill',27],['p-4df8a087cdeb','leaf-fawn-white','vein-leaf-fawn',55]])for(const month of [1,3,5,6,9]){
   const p={...makePlant(id,37111,2,2),height:.14,spread:.15,leafHeight:.05},g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
-  try{assert.equal(count(vein),count(leaf)*segments,`${id} month=${month}: orphan veins or repeated leaf sampling`);if(stateAt(p,view(month)).leafDensity>0)assert.ok(count(leaf)>0,`${id} month=${month}`);}finally{dispose(g);}
+  try{assert.equal(count(vein),count(leaf)*segments,`${id} month=${month}: orphan veins or repeated leaf sampling`);if(stateAt(p,view(month)).leafDensity>0){assert.ok(count(leaf)>0,`${id} month=${month}`);assert.equal(g.scale.x,1,`${id} month=${month}: do not shrink locally scaled leaves again`);}}finally{dispose(g);}
  }
 });
 
@@ -6102,7 +6120,7 @@ test('small bulbs distinguish spring dormancy, autumn flowers and recurved or un
   if(id==='p-8f8cd8c0c33d')assert.ok(spring.children.some(m=>m.geometry.userData.recurvedTepal));dispose(spring);
  }
  const p=makePlant('p-35f78064f6e3',432,2,2),autumn=plantModel(p,view(9)),winter=plantModel(p,view(1));
- assert.ok(autumn.children.some(m=>m.userData.component==='anther'));assert.ok(!autumn.children.some(m=>m.userData.component.startsWith('leaf')));
+ assert.ok(autumn.children.some(m=>m.userData.component==='anther'));assert.ok(autumn.children.some(m=>m.userData.component==='leaf-acis'));
  assert.ok(winter.children.some(m=>m.userData.component.startsWith('leaf')));assert.ok(!winter.children.some(m=>m.userData.component==='anther'));assert.equal(plantModel(p,view(7)).children.length,0);dispose(autumn);dispose(winter);
  const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,color:'#749dd1',shape:'azureBell'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});assert.deepEqual(parts,[{shape:'bell6',kind:'petal'}]);
 });
