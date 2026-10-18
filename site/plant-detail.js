@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.408';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.409';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.408';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.409';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,52 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function asclepiasPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='milkweedBroadLeaf'||type==='milkweedNarrowLeaf')return [u*.5*sn**(type==='milkweedBroadLeaf'?.66:.80),.055*sn-.09*t*t+.026*u*u*sn,t];
+ if(type==='milkweedCorollaBase'||type==='milkweedColumn'){const a=u*Math.PI,r=type==='milkweedColumn'?.20*(1+.055*Math.cos(a*5)):.16+.04*t;return [Math.sin(a)*r,(type==='milkweedColumn'?.11+.24*t:.11*t),Math.cos(a)*r];}
+ if(type.endsWith('Horn')){
+  const spec=type==='milkweedSpeciosaHorn',tub=type==='milkweedTuberosaHorn',A=spec||tub?.40:.66,B=spec?.75:tub?.74:.72,a=u*Math.PI,r=.023*Math.max(0,1-t)**.65,dy=A*Math.PI*B*Math.cos(t*Math.PI*B),dr=-.27,len=Math.hypot(dy,dr);
+  return [Math.sin(a)*r,.24+A*Math.sin(t*Math.PI*B)+Math.cos(a)*r*(-dr)/len,.28*(1-t)+.01*t+Math.cos(a)*r*dy/len];
+ }
+ if(type==='milkweedSpeciosaHood'){const width=.16*sn**.60;return [u*width,.17+1.02*t,.25+.78*t+.10*u*u*sn];}
+ if(type.endsWith('Hood')){const tub=type==='milkweedTuberosaHood',a=u*Math.PI*.80,r=.11+.03*sn;return [Math.sin(a)*r,.14+(tub?.65:.51)*t+.024*Math.cos(a)*t,.26+Math.cos(a)*r];}
+ const sepal=type==='milkweedSepal',spec=type==='milkweedSpeciosaPetal';return [u*(sepal?.10:spec?.24:.29)*sn**(sepal?.85:.65),.08-(sepal?.30:spec?.61:.55)*t+.035*u*u*sn,.16+(sepal?.34:spec?.76:.69)*Math.sin(t*Math.PI*.62)];
+}
+function drawAsclepiasReferences(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,type=a.flowerPalette.type,spec=type==='speciosa',tub=type==='tuberosa',ice=type==='iceBallet',h=s.height,w=s.spread,n=Math.max(2,Math.round(3*detail)),elongation=month<=3?.20:month===4?.58:1,stemH=h*.92*elongation,green=s.leafDensity<.5?'#a0a083':s.leafColor,stem=spec?'#91aa9c':ice?'#6f8e5c':tub?'#718c58':'#84697a',L=Math.min(spec?.0105:tub?.0048:.0045,h*.025),HR=Math.min(spec?.028:tub?.020:.019,w*.14,h*.12);
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.16*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],axis=t=>[root[0]+Math.sin(yaw)*stemH*.025*t*t,stemH*t,root[2]+Math.cos(yaw)*stemH*.025*t*t];let from=root;
+  for(let k=1;k<=24;k++){const to=axis(k/24);b.branch(from,to,Math.min(spec?.0038:.0030,h*.006),stem,'stem-asclepias');from=to;}
+  const nodes=6,lh=Math.min(s.leafHeight,stemH*.88),leafLen=Math.min(spec?.23:tub?.14:.18,h*(spec?.23:.18),w*.43)*s.leafScale;
+  for(let j=0;j<nodes;j++){
+   const y=lh*(.13+.135*j),at=axis(y/stemH),leaves=tub?1:2,az=yaw+j*(tub?2.399:Math.PI/2),len=leafLen*(.84+.16*Math.sin(Math.PI*(j+.5)/nodes)),width=len*(spec?.48:tub?.24:.22);
+   for(let k=0;k<leaves;k++){
+    const an=az+k*Math.PI,petiole=Math.min(.011,len*.05),origin=[at[0]+Math.sin(an)*petiole,at[1],at[2]+Math.cos(an)*petiole],f=flowerFrame(b,origin,-.12+(j%3)*.035,an),shape=spec?'milkweedBroadLeaf':'milkweedNarrowLeaf';b.branch(at,origin,.00045,stem,'petiole-asclepias');f.add(shape,'leaf-asclepias-'+type,kit.shade(rand,green,.023),0,0,0,width,len,len);
+    const point=(t,u)=>{const p=asclepiasPoint(shape,t,u);return [p[0]*width,p[1]*len+.00006,p[2]*len];};let prev=point(.01,0);
+    for(let q=1;q<=20;q++){const to=point(.01+q*.048,0);f.branch(prev,to,spec?.00012:.000055,spec?'#b7c8bc':'#94a68a','vein-asclepias');prev=to;}
+    for(let q=0;q<8;q++)for(const side of [-1,1]){const t=.09+q*.093,p0=point(t,0),p1=point(t+.05,side*.55),p2=point(t+.10,side*.90);f.branch(p0,p1,.000035,spec?'#acbeb2':'#8fa384','vein-asclepias');f.branch(p1,p2,.000030,spec?'#acbeb2':'#8fa384','vein-asclepias');}
+   }
+  }
+  if(!s.bloom)continue;
+  const heads=spec?3:tub?4:3;
+  for(let j=0;j<heads;j++){
+   const az=yaw+j*2.399,attach=axis(spec?.58+j*.15:.66),reach=Math.min(w*.17,h*.13),head=spec?[attach[0]+Math.sin(az)*reach,attach[1]+HR*.45,attach[2]+Math.cos(az)*reach]:[axis(1)[0]+Math.sin(az)*reach*(j?1:.18),h*(tub?.84:.90)-j*HR*.40,axis(1)[2]+Math.cos(az)*reach*(j?1:.18)];b.branch(attach,head,Math.min(.0018,h*.004),stem,'peduncle-asclepias');
+   const florets=spec?28:tub?42:45;
+   for(let q=0;q<florets;q++){
+    const v=(q+.5)/florets,yy=spec?1-2*v:.20+.80*v,ring=Math.sqrt(Math.max(0,1-yy*yy)),phi=q*2.399+az,at=[head[0]+Math.sin(phi)*ring*HR,head[1]+yy*HR*(spec?1:.55),head[2]+Math.cos(phi)*ring*HR],pitch=Math.acos(yy),f=flowerFrame(b,at,pitch,phi);b.branch(head,at,Math.min(.00045,L*.055),'#90a481','pedicel-asclepias');
+    if(q%6===5){f.add(kit.bud,'bud-asclepias-'+type,spec?'#beb9b4':ice?'#e0e1c5':tub?'#d59b55':'#af668f',0,L*.28,0,L*.31,L*.36,L*.31);continue;}
+    if(i===0&&j===0&&q===(spec?0:florets-2))f.flower([0,L*.25,0],L*(spec?1.55:1.25));
+    f.add('milkweedCorollaBase','corolla-base-asclepias',s.flowerColor,0,0,0,L,L,L);f.add('milkweedColumn','gynostegium-asclepias',spec?'#a28c90':ice?'#d9d1b5':tub?'#cdb77c':'#c0a6ae',0,0,0,L,L,L);
+    for(let k=0;k<5;k++){
+     const an=k*TAU/5,petal=spec?'milkweedSpeciosaPetal':'milkweedPetal',hood=spec?'milkweedSpeciosaHood':tub?'milkweedTuberosaHood':'milkweedIncarnataHood',crown=spec?'#dfcbd8':ice?'#e9e4d2':tub?'#ffb13c':'#e8dedc';f.add('milkweedSepal','sepal-asclepias','#91a17b',0,-L*.015,0,L,L,L,0,an+Math.PI/5,0);f.add(petal,'corolla-lobe-asclepias-'+type,kit.shade(rand,s.flowerColor,.015),0,0,0,L,L,L,0,an,0);f.add(hood,'hood-asclepias-'+type,crown,0,0,0,L,L,L,0,an,0);
+     f.add(spec?'milkweedSpeciosaHorn':tub?'milkweedTuberosaHorn':'milkweedIncarnataHorn','horn-asclepias-'+type,crown,0,0,0,L,L,L,0,an,0);
+    }
+   }
+  }
+ }
+}
+
 export function parrotBranchTulipPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='specialTulipBud'){const a=u*Math.PI,r=.18*sn**.78;return [Math.sin(a)*r,t*1.12,Math.cos(a)*r];}
@@ -16515,6 +16561,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='asclepiasReferences'){drawAsclepiasReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='parrotBranchTulips'){drawParrotBranchTulips(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='pinkRainLily'){drawPinkRainLily(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='doubleTulipReferences'){drawDoubleTulipReferences(b,{info,s,detail,rand},kit);return;}
