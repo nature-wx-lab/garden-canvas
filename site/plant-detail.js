@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.332';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.335';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.332';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.335';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,55 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function gardenBellPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type.endsWith('Cup')||type==='gardenBellIrisStar'){
+  const iris=type==='gardenBellIrisStar',amethyst=type==='gardenBellAmethystCup',lobe=.5+.5*Math.cos(u*5),rim=Math.pow(t,7),r=(.06+.94*Math.pow(Math.sin(t*Math.PI/2),iris?1.5:.72))*(1-(iris?.52:.10)*(1-lobe)*rim);
+  if(iris){const radius=(.03+.97*t)*(.43+.57*lobe);return [Math.sin(u)*radius,t*(.34+.66*lobe),Math.cos(u)*radius];}
+  return [Math.sin(u)*r,t*(1-(amethyst?.49:.25)*(1-lobe)*rim),Math.cos(u)*r];
+ }
+ const iris=type==='gardenBellIrisLeaf',tall=type==='gardenBellAmethystLeaf',width=(iris?.40:tall?.23:.30)*Math.pow(sn,iris?.45:.62)*(.94+.06*Math.cos(t*(iris?39:61)));
+ return [u*width,t-(iris?.15:0)*Math.abs(u)*Math.pow(sn,.30)*Math.pow(1-t,3),.08*t*t+.08*u*u*sn+.012*Math.cos((t-Math.abs(u)*.18)*35)*Math.abs(u)*sn];
+}
+function drawGardenBellFlower(b,at,r,L,color,pitch,yaw,{a,rand,kit}){
+ const f=flowerFrame(b,at,pitch,yaw),tag='garden-bell',iris=a.shootProfile==='iris',shape=iris?'gardenBellIrisStar':a.shootProfile==='amethyst'?'gardenBellAmethystCup':'gardenBellMajesticCup';f.add(shape,'petal-cup-'+tag,color,0,0,0,r,L,r);
+ f.add(kit.bud,'inferior-ovary-'+tag,'#6c8847',0,-.002,0,r*.15,.003,r*.15);
+ for(let k=0;k<5;k++){const an=k*TAU/5;f.add('narrow','calyx-lobe-'+tag,'#648344',0,-.001,0,r*.07,L*.35,r*.12,.38,an,0);const tip=[Math.sin(an)*r*.10,L*.16,Math.cos(an)*r*.10];f.branch([tip[0],0,tip[2]],tip,.00008,'#b9ac82','filament-relict-'+tag);f.add(kit.bud,'anther-relict-'+tag,'#ab986e',...tip,.00020,.00045,.00015);}
+ const tip=[0,L*(iris?.68:.78),0];f.branch([0,0,0],tip,.00024,iris?'#e6dfdf':'#d8deb6','style-'+tag);for(let k=0;k<3;k++){const an=k*TAU/3;f.branch(tip,[Math.sin(an)*r*.17,L*(iris?1.02:.98),Math.cos(an)*r*.17],.00024,iris?'#e8e0e2':'#e2e5c4','stigma-'+tag);}
+}
+function drawGardenBellShoots(b,{info,s,rand,month,detail},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,tall=a.shootProfile==='amethyst',iris=a.shootProfile==='iris',tag='garden-bell',L=Math.min(a.leafLength,w*(tall?.26:.15))*s.leafScale,shape=tall?'gardenBellAmethystLeaf':iris?'gardenBellIrisLeaf':'gardenBellMajesticLeaf',stem=a.stemColor,n=tall?(w<.3?3:6):(w<.25?7:13);
+ const leaf=(at,len,pitch,yaw,kind='leaf-')=>{
+  const f=flowerFrame(b,at,pitch,yaw);f.add(shape,kind+tag,kit.shade(rand,s.leafColor,.04),0,0,0,len,len,len);let prev=[0,0,-.0002];for(let k=1;k<=5;k++){const p=gardenBellPoint(shape,k/5,0).map(v=>v*len);p[2]-=.0002;f.branch(prev,p,.00012,'#8fa56b','vein-'+tag);prev=p;}
+ };
+ for(let j=0;j<n;j++){
+  const an=j*2.399+rand()*.3,rad=w*(tall?.15:.30)*Math.sqrt((j+.5)/n),base=[Math.sin(an)*rad,.012,Math.cos(an)*rad];if(!tall)b.branch([0,.008,0],base,.00065,stem,'short-shoot-'+tag);
+  for(let k=0;k<(tall?9:6);k++)if((j===0&&k===0)||rand()<s.leafDensity)leaf(base,L*(.76+rand()*.24),.96+rand()*.20,an+k*2.399,'leaf-basal-');
+  if(tall){
+   if(![4,5,6,7,8,9].includes(month))continue;
+   const nodes=h<.35?6:9,first=Math.ceil(nodes*.48),sh=h*(month===4?.45+rand()*.09:.80+rand()*.13);let prev=base;
+   for(let k=1;k<=nodes;k++){
+    const t=k/nodes,to=[base[0]+Math.sin(an)*w*.025*t,base[1]+(sh-base[1])*t,base[2]+Math.cos(an)*w*.025*t];b.branch(prev,to,.0016*(1-t*.35),stem,'stem-'+tag);
+    if(k<nodes&&rand()<s.leafDensity)leaf(to,L*(.9-t*.45),.62,an+k*2.399,'leaf-stem-');
+    if(s.bloom&&k>=first){const yaw=an+k*2.399,reach=Math.min(.026,w*.08),at=[to[0]+Math.sin(yaw)*reach,to[1]+.005,to[2]+Math.cos(yaw)*reach];b.branch(to,at,.0006,stem,'pedicel-'+tag);if(k===nodes||rand()>s.flowerDensity){const f=flowerFrame(b,at,.5,yaw);f.add(kit.bud,'bud-'+tag,'#9cae82',0,.010,0,.004,.012,.004);}else drawGardenBellFlower(b,at,Math.min(a.flowerRadius,w*.09),Math.min(a.flowerLength,h*.20),kit.shade(rand,s.flowerColor,.035),1.65+rand()*.4,yaw,{a,rand,kit});}
+    prev=to;
+   }
+  }else{
+   if(!s.bloom)continue;
+   const top=[base[0]+Math.sin(an)*w*.035,h*(.58+rand()*.22),base[2]+Math.cos(an)*w*.035];let prev=base;
+   for(let k=1;k<=4;k++){
+    const t=k/4,to=base.map((v,d)=>v+(top[d]-v)*t);b.branch(prev,to,.00065*(1-t*.25),stem,'stem-'+tag);if(k<4&&rand()<s.leafDensity)leaf(to,L*(.80-k*.10),.70,an+k*2.399,'leaf-stem-');
+    if(k>=2){const yaw=an+k*2.399,rr=w*(.04+rand()*.03),at=[to[0]+Math.sin(yaw)*rr,to[1]+.002,to[2]+Math.cos(yaw)*rr];b.branch(to,at,.00045,stem,'pedicel-'+tag);if(k===4&&j%3===0){const f=flowerFrame(b,at,.6,yaw);f.add(kit.bud,'bud-'+tag,'#a5b18b',0,.005,0,.0025,.008,.0025);}else if(j===0||rand()<s.flowerDensity)drawGardenBellFlower(b,at,Math.min(a.flowerRadius,w*.075),Math.min(a.flowerLength,h*.25),kit.shade(rand,s.flowerColor,.03),iris?.35+rand()*.45:.85+rand()*.75,yaw,{a,rand,kit});}
+    prev=to;
+   }
+  }
+ }
+ if(a.shootProfile==='majestic'&&[12,1,2].includes(month))for(let j=0;j<14;j++){
+  const an=j*2.399,reach=w*(.12+rand()*.12),root=[0,.005,0],at=[Math.sin(an)*reach,.005,Math.cos(an)*reach],mid=[at[0]*.55,.010,at[2]*.55],f=flowerFrame(b,at,1.12+rand()*.15,an+.3),len=Math.min(a.winterLeafLength,w*.18);b.branch(root,mid,.00035,a.winterStemColor,'dead-petiole-'+tag);b.branch(mid,at,.00030,a.winterStemColor,'dead-petiole-'+tag);f.add('gardenBellMajesticLeaf','leaf-dead-'+tag,a.winterStemColor,0,0,0,len,len,len);
+ }
+}
+
 export function lanternBellPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='lanternBellCup'){
@@ -15006,6 +15055,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='gardenBellShoots'){drawGardenBellShoots(b,{info,s,rand,month,detail},kit);return;}
  if(info.appearance?.architecture==='lanternBellCrowns'){drawLanternBellCrowns(b,{info,s,rand,month,detail},kit);return;}
  if(info.appearance?.architecture==='noddingBellRacemes'){drawNoddingBellRacemes(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='alpineBellMats'){drawAlpineBellMats(b,{info,s,rand,detail},kit);return;}
