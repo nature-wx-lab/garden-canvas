@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.415';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.416';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.415';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.416';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15627,6 +15627,42 @@ function drawIridReferenceSpikes(b,{info,s,detail,rand},kit){
   }
  }
 }
+export function eucomisPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='eucomisStrap')return [u*.5*sn**.30,.96*t-.13*t**5+.018*Math.sin(t*43+u*4)*Math.abs(u)**3*sn,.14*t*t+.020*u*u*sn];
+ if(type==='eucomisTepal')return [u*.15*sn**.55,.08*sn-.02*t*t,.05+.95*t];
+ const r=.10+.015*t;return [Math.sin(u)*r,.075*t,Math.cos(u)*r];
+}
+function drawBronzeEucomis(b,{info,s,detail,rand},kit){
+ const h=s.height,w=s.spread,n=Math.max(1,Math.round(3*detail)),green=s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.16*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.002,Math.cos(yaw)*R];
+  for(let j=0;j<9;j++){
+   if(j/9>=s.leafDensity)continue;
+   const angle=j*2.399+yaw,L=Math.min(s.leafHeight/.83,w*.95)*s.leafScale*(.80+rand()*.20),W=Math.min(.065,L*.18),f=flowerFrame(b,root,.30+rand()*.65,angle);
+   f.add('eucomisStrap','leaf-eucomis-bronze',kit.shade(rand,green,.025),0,0,0,W,L,L);
+  }
+  if(!s.bloom)continue;
+  const top=h*(.88+rand()*.04),axis=t=>[root[0]+Math.sin(yaw)*h*.015*t,top*t,root[2]+Math.cos(yaw)*h*.015*t];let from=root;
+  for(let k=1;k<=18;k++){const to=axis(k/18);b.branch(from,to,Math.min(.006,h*.012)*(1-k*.012),'#814652','scape-eucomis');from=to;}
+  const tuft=flowerFrame(b,axis(1),0,yaw),TL=Math.min(.055,h*.075);
+  for(let k=0;k<12;k++)tuft.add('eucomisStrap','coma-bract-eucomis',kit.shade(rand,'#82956d',.02),0,0,0,TL*.25,TL*(.7+rand()*.3),TL,1.10+k%3*.12,k*2.399,0);
+  const count=Math.max(40,Math.round(160*detail)),L=Math.min(.015,h*.04);
+  for(let q=0;q<count;q++){
+   const t=(q+.5)/count,at=axis(.46+.50*t),angle=q*2.399+yaw,radius=Math.min(.024,w*.07)*(.90-.55*t),end=[at[0]+Math.sin(angle)*radius,at[1]+L*.14,at[2]+Math.cos(angle)*radius],f=flowerFrame(b,end,1.10,angle);
+   b.branch(at,end,L*.027,'#86505b','pedicel-eucomis');
+   if(t>.35||q%11===7){f.add(kit.bud,'bud-eucomis','#88616b',0,0,0,L*.29,L*.32,L*.29);continue;}
+   if(i===0&&q===2)f.flower([0,L*.04,0],L*1.20,0,0);
+   f.add('eucomisTube','tube-eucomis',s.flowerColor,0,0,0,L,L,L);
+   for(let k=0;k<6;k++){
+    const angle=k*TAU/6,part=flowerFrame(f,[0,0,0],0,angle);part.add('eucomisTepal','tepal-eucomis',kit.shade(rand,s.flowerColor,.015),0,0,0,L,L,L);
+    const tip=[Math.sin(angle)*L*.29,L*.28,Math.cos(angle)*L*.29];f.branch([tip[0]*.5,L*.07,tip[2]*.5],tip,L*.009,'#d5c8af','filament-eucomis');f.add(kit.bud,'anther-eucomis','#c8b394',...tip,L*.032,L*.020,L*.022,0,angle,0);
+   }
+   f.add(kit.bud,'ovary-superior-eucomis','#866c70',0,L*.12,0,L*.13,L*.15,L*.13);f.branch([0,L*.20,0],[0,L*.39,0],L*.012,'#d4c7b7','style-eucomis');f.add(kit.bud,'stigma-eucomis','#e0d3bc',0,L*.39,0,L*.022,L*.015,L*.022);
+  }
+ }
+}
+
 export function paraneePoint(type,t,u){
  if(type==='paraneeLeaf'){
   const notch=1-.94*Math.exp(-(((u-Math.PI)/.20)**2)),r=t*notch;
@@ -16735,6 +16771,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='alliumReferences'){drawAlliumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='daylilyReferences'){drawDaylilyReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='iridReferenceSpikes'){drawIridReferenceSpikes(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='bronzeEucomis'){drawBronzeEucomis(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='paraneeWaterlily'){drawParanee(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='somekawaIris'){drawSomekawaIris(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='irisReferenceForms'){drawIrisReferenceForms(b,{info,s,detail,rand},kit);return;}
