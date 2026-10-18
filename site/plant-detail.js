@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.360';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.361';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.360';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.361';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -14034,6 +14034,24 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   for(let j=0;j<3;j++){const an=j*TAU/3;f.add(bud,'stigma','#b3bc78',Math.sin(an)*r*.030,end[1],Math.cos(an)*r*.030,r*.040,r*.024,r*.040);}
   return;
  }
+ if(shape==='tecoFunnel'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),tube=r*.85,white=palette.whiteEnd||.28;
+  f.add('tecoTube','perianth-tube-teco','#e9ede1',0,0,0,r,tube,r);
+  for(let j=0;j<6;j++)f.add('tecoTepal','petal-teco-'+Math.round(white*100),color,0,tube,0,r,r,r,0,j*TAU/6,0);
+  f.add(bud,'ovary-teco','#8ba86f',0,0,0,r*.12,r*.12,r*.12);
+  // Three anterior fertile stamens, three posterior staminodes; never a six-anther ring.
+  for(const an of [-Math.PI/3,0,Math.PI/3]){
+   const xx=Math.sin(an)*r*.14,zz=Math.cos(an)*r*.14;
+   f.branch([xx,tube,zz],[xx,tube+r*.12,zz],r*.009,'#e6e4ca','filament-teco');f.add(bud,'anther','#e2dfc1',xx,tube+r*.20,zz,r*.040,r*.12,r*.044,.15,an,0);
+   f.add('tecoStaminode','caudate-anther-teco','#dedcc3',xx,tube+r*.12,zz,r*.22,r*.18,r*.18,2.5,an,0);
+  }
+  for(const an of [Math.PI*2/3,Math.PI,Math.PI*4/3])f.add('tecoStaminode','staminode','#edf0e0',Math.sin(an)*r*.14,tube,Math.cos(an)*r*.14,r*.23,r*.23,r*.23,.18,an,0);
+  f.branch([0,0,0],[0,tube+r*.40,0],r*.011,'#e9e8d7','style-teco');f.add(bud,'stigma-teco','#e6e5cc',0,tube+r*.40,0,r*.019,r*.014,r*.019);
+  for(let j=0;j<36;j++){
+   const an=j*TAU/36,rr=r*(.25+(j%3)*.025),at=[Math.sin(an)*rr,tube,Math.cos(an)*rr];f.branch(at,[at[0]+Math.sin(an)*r*.012,tube+r*(.035+(j%4)*.012),at[2]+Math.cos(an)*r*.012],r*.0011,'#e7ece3','hair-throat-teco');
+  }
+  return;
+ }
  if(shape==='acisAutumnBell'){
   const f=flowerFrame(b,[x,y,z],Math.PI+tilt,yaw),ratio=r/.006;
   f.add(bud,'ovary-acis','#9fb26f',0,-r*.16,0,r*.20,r*.22,r*.20);
@@ -14966,6 +14984,26 @@ function drawLilies(b,{info,s,detail,rand},kit){
  for(const {at,an} of heads)detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'liliumFlower',palette,tilt:palette.tilt,yaw:an},{...kit,rand});
 }
 
+export function tecophilaeaPoint(type,t,u){
+ if(type==='tecoTube'){const radius=.10+.17*t**1.7;return [Math.sin(u)*radius,t,Math.cos(u)*radius];}
+ if(type==='tecoStaminode')return [u*.20*Math.sin(Math.PI*t)**.55,t-.07*Math.exp(-u*u*18)*t**14,.10*t*t];
+ if(type==='tecoTepal')return [u*(.14*(1-t)+.30*Math.sin(Math.PI*t)**.60),.70*t-.20*t*t+.055*u*u*Math.sin(Math.PI*t),.27+.73*t];
+ return [u*.5*Math.pow(Math.max(0,1-t),.28)*Math.min(1,.55+t*5),t,.22*t*t+.065*u*u*Math.sin(Math.PI*t)+.006*Math.cos(u*22)*Math.sin(Math.PI*t)];
+}
+function drawTecophilaea(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,n=Math.max(2,Math.round(7*detail)),green=s.leafDensity<.4&&!s.bloom?'#b8ad70':s.leafColor;
+ for(let i=0;i<n;i++){
+  const an=i*2.399,rr=w*.34*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,.001,Math.cos(an)*rr];
+  if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round((2+i%2)*s.leafDensity));j++){
+   const L=Math.min(a.leafLength||.10,s.leafHeight,h*.90,w*.8)*s.leafScale*(.85+rand()*.15),W=Math.min(.010,L*.14),f=flowerFrame(b,root,.14+j*.07,an+j*2.399);
+   f.add('tecoGutterLeaf','leaf-teco',kit.shade(rand,green,.03),0,0,0,W,L,L);
+   for(const u of [-.5,0,.5]){let p=tecophilaeaPoint('tecoGutterLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005];for(let k=1;k<=9;k++){p=tecophilaeaPoint('tecoGutterLeaf',.02+k*.105,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(from,to,.00004,'#9eae8c','vein-leaf-teco');from=to;}}
+  }
+  if(!s.bloom)continue;const r=Math.min(a.flowerRadius||.0175,h*.26),base=[root[0],Math.max(.006,h*(.72+rand()*.18)-r),root[2]];b.branch(root,base,.00085,'#728b53','scape-teco');
+  b.add('narrow','bract-teco',green,base[0],base[1]*.54,base[2],.0018,h*.20,.0018,.22,an,0);b.add('narrow','bracteole-teco',green,base[0],base[1]*.88,base[2],.0012,h*.10,.0012,.23,an+Math.PI,0);
+  detailedFlower(b,{x:base[0],y:base[1],z:base[2],r,color:s.flowerColor,shape:'tecoFunnel',palette:a.flowerPalette,tilt:.20+rand()*.35,yaw:an},{...kit,rand});
+ }
+}
 export function acisPoint(type,t,u){
  if(type==='acisFiliformLeaf'){
   const taper=Math.pow(Math.max(0,1-t),.22),a=u<=.75?u/.75*Math.PI:0,x=u<=.75?Math.cos(a)*.0035:(-.5+(u-.75)/.25)*.007,z=u<=.75?Math.sin(a)*.0035:0;
@@ -15410,6 +15448,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='tecophilaeaClumps'){drawTecophilaea(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='acisAutumnScapes'){drawAcis(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='reflexedFawnLilies'){drawFawnLilies(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='earlySquillRacemes'){drawEarlySquills(b,{info,s,detail,rand},kit);return;}
