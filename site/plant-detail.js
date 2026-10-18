@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.392';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.394';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.392';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.394';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,46 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function daylilyReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),yuu=type.startsWith('yuu'),chicago=type.startsWith('chicago'),blueberry=type.startsWith('blueberry'),gold=type.startsWith('zebra'),wide=chicago||blueberry||gold,T=yuu?.55:.26;
+ if(type==='daylilyArchLeaf')return [u*.5*sn**.26,Math.sin(t*2.85),.95*t**1.4+.006*Math.abs(u)*sn];
+ if(type.endsWith('DaylilyTube')){const a=u*Math.PI,r=.035+.105*t**1.4;return [Math.sin(a)*r,T*t,Math.cos(a)*r];}
+ const inner=type.includes('Inner'),half=wide?(inner?(chicago?.48:.44):.28):(inner?(yuu?.25:.29):.17),angle=u*(Math.PI/6*(1-t)**2+half*sn**(wide?.35:.65)),r=.14+.86*t**(wide?.90:.95),edge=(chicago?.035:blueberry?.023:gold?.018:.008)*Math.sin(t*27+u*6)*Math.abs(u)**3*sn;
+ return [Math.sin(angle)*r,T+.46*t-(yuu?.31:.38)*t**4+edge,Math.cos(angle)*r];
+}
+function drawDaylilyReferences(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,type=a.flowerPalette.type,gold=type==='zebra',yuu=type==='yuu',h=s.height,w=s.spread,n=Math.max(2,Math.round(2*detail)),L=Math.min(a.flowerRadius,h*.23),T=yuu?.55:.26,green=s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.10*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R];
+  if(s.leafDensity>0)for(let j=0;j<9;j++){
+   if(j/9>=s.leafDensity)continue;
+   const rank=Math.floor(j/2),len=Math.min(s.leafHeight,w*.65)*s.leafScale*(1-rank*.06)*(.84+rand()*.16),width=Math.min(gold?.013:yuu?.017:type==='nikko'?.021:.029,len*.10),f=flowerFrame(b,[root[0]+rank*.0015,.001+rank*.001,root[2]],(rand()-.5)*.20,yaw+j%2*Math.PI+rank*.045+(rand()-.5)*.16);
+   f.add('daylilyArchLeaf','leaf-daylily-reference-'+type,kit.shade(rand,green,.025),0,0,0,width,len,len);
+   for(const u of [-.60,-.30,0,.30,.60]){let p=daylilyReferencePoint('daylilyArchLeaf',.02,u),from=[p[0]*width,p[1]*len,p[2]*len+.00005];for(let k=1;k<=18;k++){p=daylilyReferencePoint('daylilyArchLeaf',.02+k*.053,u);const to=[p[0]*width,p[1]*len,p[2]*len+.00005];f.branch(from,to,.000045,gold?'#c9cda1':'#a4b88b','vein-daylily-reference');from=to;}}
+  }
+  if(!s.bloom)continue;
+  const base=[root[0],h*.72,root[2]],stemR=Math.min(.003,h*.008);b.branch(root,base,stemR,'#718e63','scape-daylily-reference');
+  for(let cluster=0;cluster<2;cluster++){
+   const az=yaw+(cluster?1.0:-.65),reach=Math.min(w*.20,h*.18),fork=[base[0],base[1]-h*cluster*.08,base[2]],head=[fork[0]+Math.sin(az)*reach,fork[1]+h*.12,fork[2]+Math.cos(az)*reach];b.branch(fork,head,stemR*.65,'#849b6c','branch-daylily-reference');
+   b.add('iridSpikeBract','bract-daylily-reference','#a3ad7e',...fork,L*.08,L*.35,L*.35,.35,az,0);
+   for(let j=0;j<3;j++){
+    const angle=az+j*.65,end=[head[0]+Math.sin(angle)*L*(.25+j*.35),head[1]+L*(j===0?.20:j===1?.35:.0),head[2]+Math.cos(angle)*L*(.25+j*.35)];b.branch(head,end,stemR*.40,'#8a9f71','pedicel-daylily-reference');
+    if(j>0||gold&&month>=7&&cluster===1){b.add(kit.bud,'bud-daylily-reference',j===2?'#9daf7b':gold?'#d6b16d':type==='chicago'?'#a97864':type==='blueberry'?'#b8b593':'#d0c879',...end,L*.10,L*(j===2?.26:.55),L*.10,.45,angle,0);continue;}
+    const pitch=yuu?1.0:1.15,f=flowerFrame(b,end,pitch,angle);if(i===n-1&&cluster===0)f.flower([0,L*(T+.25),0],L*1.35);
+    f.add(kit.bud,'ovary-superior-daylily-reference','#8b9d61',0,L*.08,0,L*.07,L*.10,L*.07);f.add(type+'DaylilyTube','tube-daylily-reference-'+type,s.flowerColor,0,0,0,L,L,L);
+    for(let k=0;k<6;k++)f.add(type+(k%2?'Inner':'Outer')+'DaylilyTepal','tepal-daylily-reference-'+type,s.flowerColor,0,0,0,L,L,L,0,k*TAU/6,0);
+    for(let k=0;k<6;k++){
+     const a=k*TAU/6,base=[Math.sin(a)*L*.10,T*L*.65,Math.cos(a)*L*.10],reach=(type==='chicago'?.72:type==='blueberry'?.88:1.02)+(k%2)*.07,tip=[Math.sin(a)*L*.16,reach*L,-L*.19+Math.cos(a)*L*.09];let from=base;
+     for(let q=1;q<=14;q++){const t=q/14,to=[base[0]+(tip[0]-base[0])*t,base[1]+(tip[1]-base[1])*t,base[2]+(tip[2]-base[2])*t-L*.17*Math.sin(t*Math.PI)];f.branch(from,to,L*.008,'#d2bd65','filament-daylily-reference');from=to;}
+     f.add(kit.bud,'anther-daylily-reference',type==='chicago'?'#b49b4e':yuu?'#7e6142':'#927341',...tip,L*.021,L*.020,L*.095,.18,a,0);
+    }
+    const styleEnd=[L*.035,L*(type==='chicago'?.94:type==='blueberry'?1.08:1.26),-L*.26];let from=[0,T*L*.55,0];
+    for(let q=1;q<=16;q++){const t=q/16,to=[styleEnd[0]*t,T*L*.55+(styleEnd[1]-T*L*.55)*t,styleEnd[2]*t-L*.12*Math.sin(t*Math.PI)];f.branch(from,to,L*.009,'#d0c57a','style-daylily-reference');from=to;}
+    f.add(kit.bud,'stigma-daylily-reference','#d2ca91',...styleEnd,L*.020,L*.017,L*.021);
+   }
+  }
+ }
+}
 export function iridSpikePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),glad=type.startsWith('communis');
  if(type.endsWith('SpikeLeaf'))return [u*.5*sn**.40,.98*Math.sin(t*1.46),.22*t*t+(type.startsWith('lucifer')?.0035*Math.cos(u*Math.PI*3):.002*u*u)*sn];
@@ -16164,6 +16204,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='daylilyReferences'){drawDaylilyReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='iridReferenceSpikes'){drawIridReferenceSpikes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='irisReferenceForms'){drawIrisReferenceForms(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='retailLilyReferences'){drawRetailLilyReferences(b,{info,s,detail,rand},kit);return;}
