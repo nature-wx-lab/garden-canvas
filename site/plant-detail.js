@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.335';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.336';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.335';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.336';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,51 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function adenophoraPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='adenophoraBellCup'||type==='adenophoraSmallCup'){
+  const small=type==='adenophoraSmallCup',lobe=.5+.5*Math.cos(u*5),rim=Math.pow(t,8),r=small?(.10+.90*Math.pow(Math.sin(t*Math.PI*.65),.75)):(.06+.94*Math.pow(Math.sin(t*Math.PI/2),.68));
+  return [Math.sin(u)*r,t*(1-(small?.16:.20)*(1-lobe)*rim),Math.cos(u)*r];
+ }
+ const heart=type==='adenophoraHeartLeaf',linear=type==='adenophoraLinearLeaf',width=(heart?.38:linear?.032:.14)*Math.pow(sn,heart?.48:.66)*(.96+.04*Math.cos(t*57));
+ return [u*width,t-(heart?.17:0)*Math.abs(u)*Math.pow(sn,.3)*Math.pow(1-t,3),.055*t*t+.055*u*u*sn+.006*Math.cos(t*37-Math.abs(u)*6)*Math.abs(u)*sn];
+}
+function drawAdenophoraFlower(b,at,r,L,color,pitch,yaw,{a,whorled,double,open},kit){
+ const f=flowerFrame(b,at,pitch,yaw),tag='adenophora';f.add(kit.bud,'inferior-ovary-'+tag,'#71904e',0,-.0015,0,.0015,.002,.0015);
+ for(let k=0;k<5;k++)f.add('narrow','calyx-lobe-'+tag,'#66854a',0,-.001,0,whorled?.00035:.00045,whorled?.003:.006,whorled?.00055:.00085,.25,k*TAU/5,0);
+ if(!open){f.add(kit.bud,'bud-'+tag,'#a1b187',0,L*.35,0,r*.28,L*.42,r*.28);return;}
+ f.add(whorled?'adenophoraSmallCup':'adenophoraBellCup','petal-outer-'+tag,color,0,0,0,r,L,r);
+ if(double)f.add('adenophoraBellCup','petal-inner-'+tag,color,0,0,0,r*.76,L*1.08,r*.76,0,.24,0);
+ if(!double){
+  f.add('tube','nectary-disk-'+tag,'#b5c699',0,.0005,0,.00055,(whorled?.003:.0018)/1.09,.00055);
+  for(let k=0;k<5;k++){const an=k*TAU/5,tip=[Math.sin(an)*r*.12,L*.18,Math.cos(an)*r*.12];f.add('narrow','filament-base-'+tag,'#c8cdb1',Math.sin(an)*r*.09,0,Math.cos(an)*r*.09,.00055,L*.15,.00075,0,an,0);f.branch([tip[0],0,tip[2]],tip,.00007,'#c8cdb1','filament-relict-'+tag);f.add(kit.bud,'anther-relict-'+tag,'#ab9c73',...tip,.00015,.0004,.00012);}
+ }
+ const style=whorled?L*1.8:L*(double?.78:.68),tip=[0,style,0];f.branch([0,0,0],tip,.00018,'#dfe1bf',double?'style-plain-double-'+tag:'style-'+tag);
+ if(!double)for(let k=0;k<3;k++){const an=k*TAU/3;f.branch(tip,[Math.sin(an)*.0007,style-.00045,Math.cos(an)*.0007],.00016,'#e6e7ce','stigma-'+tag);}
+}
+function drawAdenophoraArches(b,{info,s,rand,month},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,whorled=a.shootProfile==='triphylla',double=a.shootProfile==='double',n=whorled?(w<.3?2:4):(w<.18?3:7),tag='adenophora',L=Math.min(a.leafLength,w*(whorled?.23:.40))*s.leafScale;
+ const leaf=(at,len,pitch,yaw,basal)=>{
+  const shape=basal?'adenophoraHeartLeaf':whorled?'adenophoraLanceLeaf':'adenophoraLinearLeaf',f=flowerFrame(b,at,pitch,yaw);f.add(shape,(basal?'leaf-basal-':whorled?'leaf-whorl-':'leaf-stem-')+tag,kit.shade(rand,s.leafColor,.04),0,0,0,len,len,len);f.branch([0,0,-.0001],[0,len*.94,len*.05],.00009,'#8ca66c','vein-'+tag);
+ };
+ for(let j=0;j<n;j++){
+  const an=j*2.399+rand()*.30,rad=w*(whorled?.10:.08)*Math.sqrt((j+.5)/n),base=[Math.sin(an)*rad,.008,Math.cos(an)*rad];
+  for(let k=0;k<6;k++)if((j===0&&k===0)||rand()<s.leafDensity){const aa=an+k*2.399,end=[base[0]+Math.sin(aa)*.004,base[1]+.003,base[2]+Math.cos(aa)*.004];b.branch(base,end,.0003,a.stemColor,'petiole-basal-'+tag);leaf(end,Math.min(.025,w*.15)*s.leafScale,1.0,aa,true);}
+  if(!whorled&&![4,5,6,7,8,9,10,11].includes(month))continue;
+  const nodes=whorled?10:9,sh=h*(month===4&&!whorled?.45+rand()*.08:.80+rand()*.13),reach=w*(whorled?.035:.24);let prev=base;
+  for(let k=1;k<=nodes;k++){
+   const t=k/nodes,to=[base[0]+Math.sin(an)*reach*t*t,base[1]+(sh-base[1])*t,base[2]+Math.cos(an)*reach*t*t];b.branch(prev,to,whorled?.0013:.0005,a.stemColor,'stem-'+tag);
+   if(k<=7&&rand()<s.leafDensity){if(whorled)for(let q=0;q<4;q++)leaf(to,L*(1-k*.055),.75,an+q*TAU/4+k*.25,false);else{const aa=an+k*2.399,pet=Math.min(.008,w*.06),end=[to[0]+Math.sin(aa)*pet,to[1]+.002,to[2]+Math.cos(aa)*pet];b.branch(to,end,.00022,a.stemColor,'petiole-stem-'+tag);leaf(end,L*(1-k*.06),.55+rand()*.15,aa,false);}}
+   if(s.bloom&&k>=(whorled?6:4))for(let q=0;q<(whorled?4:1);q++){
+    const yaw=whorled?an+q*TAU/4+k*.25:an+k*2.399,rr=Math.min(whorled?.035:.030,w*.12),at=[to[0]+Math.sin(yaw)*rr,to[1]+(whorled?.006:.003),to[2]+Math.cos(yaw)*rr],arch=[to[0]+Math.sin(yaw)*rr*.55,to[1]+.012,to[2]+Math.cos(yaw)*rr*.55];b.branch(to,arch,whorled?.00045:.00025,a.stemColor,'pedicel-'+tag);b.branch(arch,at,whorled?.0004:.00023,a.stemColor,'pedicel-'+tag);
+    drawAdenophoraFlower(b,at,Math.min(a.flowerRadius,w*.055),Math.min(a.flowerLength,h*.14),kit.shade(rand,s.flowerColor,.025),2.65+rand()*.24,yaw,{a,whorled,double,open:k<nodes&&(k===(whorled?6:4)||rand()<s.flowerDensity)},kit);
+   }
+   prev=to;
+  }
+ }
+}
+
 export function gardenBellPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type.endsWith('Cup')||type==='gardenBellIrisStar'){
@@ -15055,6 +15100,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='adenophoraArches'){drawAdenophoraArches(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='gardenBellShoots'){drawGardenBellShoots(b,{info,s,rand,month,detail},kit);return;}
  if(info.appearance?.architecture==='lanternBellCrowns'){drawLanternBellCrowns(b,{info,s,rand,month,detail},kit);return;}
  if(info.appearance?.architecture==='noddingBellRacemes'){drawNoddingBellRacemes(b,{info,s,rand,month},kit);return;}
