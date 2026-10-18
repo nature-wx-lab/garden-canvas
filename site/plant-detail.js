@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.363';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.364';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.363';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.364';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -14034,6 +14034,17 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   for(let j=0;j<3;j++){const an=j*TAU/3;f.add(bud,'stigma','#b3bc78',Math.sin(an)*r*.030,end[1],Math.cos(an)*r*.030,r*.040,r*.024,r*.040);}
   return;
  }
+ if(shape==='spanishBluebellFlower'){
+  const f=flowerFrame(b,[x,y,z],Math.PI+tilt,yaw),tepal=palette.white?'spanishWhiteTepal':palette.pink?'spanishPinkTepal':palette.curled?'spanishCurledTepal':'spanishBroadTepal',L=r;
+  f.add('spanishBasalTube','perianth-base-spanish-bluebell',color,0,0,0,L,L,L);
+  for(let j=0;j<6;j++){
+   const petal=flowerFrame(f,[0,0,0],0,j*TAU/6);petal.add(tepal,'petal-spanish-bluebell',shade(rand,color,.020),0,0,0,L,L,L);
+   let p=spanishBluebellPoint(tepal,.02,0),from=p.map(v=>v*L);
+   for(let k=1;k<=14;k++){p=spanishBluebellPoint(tepal,.02+k*.069,0);const to=p.map(v=>v*L);petal.branch(from,to,L*.0018,palette.white?'#d7dfc8':palette.pink?'#c49ab5':'#8870b0','vein-tepal-spanish-bluebell');from=to;}
+  }
+  // Domestic photographs do not resolve the cultivar/retail stock's reproductive organs.
+  return;
+ }
  if(shape==='englishBluebellFlower'){
   const f=flowerFrame(b,[x,y,z],Math.PI+tilt,yaw),L=r;
   f.add('bluebellBasalTube','perianth-base-bluebell',color,0,0,0,L,L,L);
@@ -14997,6 +15008,38 @@ function drawLilies(b,{info,s,detail,rand},kit){
  for(const {at,an} of heads)detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'liliumFlower',palette,tilt:palette.tilt,yaw:an},{...kit,rand});
 }
 
+
+export function spanishBluebellPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),curl=Math.max(0,(t-.80)/.20);
+ if(type==='spanishBasalTube'){const rr=.10+.02*t;return [Math.sin(u)*rr,.07*t,Math.cos(u)*rr];}
+ if(type!=='spanishStrapLeaf'){
+  const curled=type==='spanishCurledTepal',pink=type==='spanishPinkTepal',white=type==='spanishWhiteTepal',radius=.12+(white?.48:curled?.23:pink?.29:.38)*t**1.35+(curled?.15:pink?.14:0)*curl**1.4;
+  return [u*(.065*(1-t)+.20*sn**.42),.06+(white?.82:.92)*t-(curled?.21:pink?.18:0)*curl*curl,radius+.022*u*u*sn];
+ }
+ return [u*.5*(.72+.28*sn)*Math.max(0,1-t)**.60,.82*Math.sin(t*1.5),.60*t**1.25+.008*u*u*sn];
+}
+function drawSpanishBluebells(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,n=Math.max(2,Math.round(4*detail)),green=s.leafDensity<.4?'#b7ac70':s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,rr=w*.26*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*rr,.001,Math.cos(yaw)*rr],top=h*(.86+rand()*.10);
+  if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round((5+i%2)*s.leafDensity));j++){
+   const L=Math.min(a.leafLength||.35,s.leafHeight/.82,h*1.2,w*.90)*s.leafScale*(.85+rand()*.15),W=Math.min(.035,L*.09),f=flowerFrame(b,root,.05+j*.025,yaw+j*2.399);
+   f.add('spanishStrapLeaf','leaf-spanish-bluebell',kit.shade(rand,green,.03),0,0,0,W,L,L);
+   for(const u of [-.66,-.33,0,.33,.66]){let p=spanishBluebellPoint('spanishStrapLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00006];for(let k=1;k<=11;k++){p=spanishBluebellPoint('spanishStrapLeaf',.02+k*.087,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00006];f.branch(from,to,.000055,'#91a17e','vein-leaf-spanish-bluebell');from=to;}}
+  }
+  if(!s.bloom)continue;const axis=t=>[root[0]+Math.sin(yaw)*h*.045*t*t,top*t,root[2]+Math.cos(yaw)*h*.045*t*t];let previous=root;
+  for(let j=1;j<=18;j++){const to=axis(j/18);b.branch(previous,to,.0012,'#65884d','scape-spanish-bluebell');previous=to;}
+  for(let j=0;j<8;j++){
+   const t=.59+j*.055,an=yaw+j*2.399,at=axis(t),reach=Math.min(.012,h*.045)*(1-j*.045),end=[at[0]+Math.sin(an)*reach,at[1]+(j>=6?.003:-reach*.12),at[2]+Math.cos(an)*reach],control=[at[0]+Math.sin(an)*reach*.6,at[1]+reach*.45,at[2]+Math.cos(an)*reach*.6];let from=at;
+   for(let k=1;k<=9;k++){const u=k/9,to=at.map((v,ax)=>(1-u)**2*v+2*(1-u)*u*control[ax]+u*u*end[ax]);b.branch(from,to,.00045,'#82986e','pedicel-spanish-bluebell');from=to;}
+   for(let k=0;k<2;k++)b.add('narrow','bract-spanish-bluebell','#8a9b83',...at,.0014,reach*(k?.7:1.2),.0014,.40+k*.3,an+(k?-.3:.3),0);
+   const L=Math.min(a.flowerLength||.018,h*.15)*(1-j*.012);
+   if(j>=6)b.add(kit.bud,'bud-spanish-bluebell',a.flowerPalette?.white?'#c5d1a1':s.flowerColor,end[0],end[1]+L*.26,end[2],L*.17,L*.46,L*.17,-.22,an,0);
+   else detailedFlower(b,{x:end[0],y:end[1],z:end[2],r:L,color:s.flowerColor,shape:'spanishBluebellFlower',palette:a.flowerPalette,tilt:(a.flowerPalette?.white?.85:.38)+rand()*.25,yaw:an},{...kit,rand});
+  }
+ }
+}
+
 export function englishBluebellPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='bluebellBasalTube'){const radius=.10+.015*t;return [Math.sin(u)*radius,.08*t,Math.cos(u)*radius];}
@@ -15004,7 +15047,7 @@ export function englishBluebellPoint(type,t,u){
   const curl=Math.max(0,(t-.76)/.24),radius=.115+.025*sn+.24*curl**1.4;
   return [u*(.065*(1-t)+.090*sn**.65),.07+.93*t-.34*curl*curl,radius+.018*u*u*sn];
  }
- return [u*.5*(.62+.38*sn)*Math.max(0,1-t)**.22,.80*Math.sin(t*1.4),.60*t**1.4+.025*u*u*sn];
+ return [u*.5*(.62+.38*sn)*Math.max(0,1-t)**.60,.80*Math.sin(t*1.4),.60*t**1.4+.004*u*u*sn];
 }
 function drawEnglishBluebells(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,n=Math.max(2,Math.round(5*detail)),green=s.leafDensity<.4?'#b7ad72':s.leafColor;
@@ -15492,6 +15535,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='spanishBluebellRacemes'){drawSpanishBluebells(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='englishBluebellArches'){drawEnglishBluebells(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tecophilaeaClumps'){drawTecophilaea(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='acisAutumnScapes'){drawAcis(b,{info,s,detail,rand},kit);return;}

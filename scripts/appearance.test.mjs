@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5846,6 +5846,24 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  }
 });
 
+
+test('Spanish bluebells keep broad all-around bells distinct from English bluebells and omit unresolved retail reproductive organs',()=>{
+ const ids=['p-b6a4a3c45984','p-beb009710b2c','p-bcdfcecbd6ab','p-133d41b402ad'],types=['spanishCurledTepal','spanishBroadTepal','spanishPinkTepal','spanishWhiteTepal'];
+ for(const [ci,id] of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,37500+ci*10+(small?1:0),2,2),height:small?.15:ci===0?.3:.4,spread:small?.18:.3,leafHeight:small?.09:.22},g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),label=`${id} small=${small} month=${month}`;
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(g.scale.x,1,label);assert.equal(count('vein-leaf-spanish-bluebell'),count('leaf-spanish-bluebell')*55,label);const bloom=(ci===0?[5,6]:[4,5]).includes(month);assert.equal(count('perianth-base-spanish-bluebell')>0,bloom,label);
+   if(bloom){assert.equal(count('petal-spanish-bluebell'),count('perianth-base-spanish-bluebell')*6,label);assert.ok(g.children.some(m=>m.geometry.userData[types[ci]]),label);assert.ok(count('bud-spanish-bluebell')>0,label);assert.ok(count('bract-spanish-bluebell')>0,label);}
+   assert.ok(!g.children.some(m=>/anther|ovary|style|stigma/.test(m.userData.component)),label);if([1,7,8,9,10,11,12].includes(month))assert.equal(g.children.length,0,label);
+   for(const m of g.children)for(const values of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...values].every(Number.isFinite),label);
+  }finally{dispose(g);}
+ }
+ assert.ok(spanishBluebellPoint('spanishBroadTepal',1,0)[1]>spanishBluebellPoint('spanishBroadTepal',.93,0)[1]);assert.ok(spanishBluebellPoint('spanishPinkTepal',1,0)[1]<spanishBluebellPoint('spanishPinkTepal',.93,0)[1]);assert.ok(spanishBluebellPoint('spanishWhiteTepal',1,0)[2]>spanishBluebellPoint('spanishCurledTepal',1,0)[2]);
+ const leafCentre=spanishBluebellPoint('spanishStrapLeaf',.5,0),leafEdge=spanishBluebellPoint('spanishStrapLeaf',.5,1);assert.ok((leafEdge[2]-leafCentre[2])*.28<leafEdge[0]*2*.024*.15,'reference strap leaf is shallowly channelled rather than a rolled tube');
+ for(const type of ['spanishStrapLeaf','spanishBasalTube',...types])for(let t=0;t<=20;t++)for(const u of [-1,0,1])assert.ok(spanishBluebellPoint(type,t/20,u).every(Number.isFinite));
+ for(const id of ids.slice(1)){assert.deepEqual(CATALOG[id].height,[.25,.4]);assert.deepEqual(CATALOG[id].spread,[.2,.3]);}assert.deepEqual(CATALOG[ids[0]].height,[.3,.3]);assert.equal(CATALOG[ids[0]].spread,null);
+});
+
 test('English bluebell reference keeps narrow recurved tepals six cream anthers and seasonal leaf veins together',()=>{
  const id='p-9a306d5f65f2';
  for(const small of [false,true])for(let month=1;month<=12;month++){
@@ -5858,6 +5876,7 @@ test('English bluebell reference keeps narrow recurved tepals six cream anthers 
   }finally{dispose(g);}
  }
  const tip=englishBluebellPoint('bluebellReflexedTepal',1,0),near=englishBluebellPoint('bluebellReflexedTepal',.93,0),middle=englishBluebellPoint('bluebellReflexedTepal',.5,0);assert.ok(tip[1]<near[1],'tips turn back toward the pedicel');assert.ok(tip[2]>middle[2]*1.8,'tips flare out beyond the narrow tube');
+ for(const [point,type] of [[englishBluebellPoint,'bluebellStrapLeaf'],[spanishBluebellPoint,'spanishStrapLeaf']])assert.ok(point(type,.97,1)[0]<point(type,.70,1)[0]*.36,'leaf blade tapers gradually before its point');
  const pieces=[],segments=[];detailedFlower({add:(shape,kind,c,x,y,z)=>pieces.push({shape,kind,c,x,y,z}),branch:(from,to,r,c,kind)=>segments.push({from,to,kind})},{x:0,y:0,z:0,color:'#7865bc',shape:'englishBluebellFlower',r:.018},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});assert.equal(pieces.filter(p=>p.shape==='bluebellReflexedTepal').length,6);assert.equal(pieces.filter(p=>p.kind==='anther-bluebell').length,6);assert.equal(segments.filter(p=>p.kind==='style-bluebell').length,1);assert.equal(pieces.filter(p=>p.kind==='stigma-bluebell').length,1);assert.ok(!pieces.some(p=>p.kind==='staminode'||p.kind==='corona'));
  assert.match(CATALOG[id].appearance.unconfirmed.join(' '),/純系/);assert.deepEqual(CATALOG[id].height,[.15,.15]);assert.deepEqual(CATALOG[id].bloom,[3,4]);
  for(const type of ['bluebellStrapLeaf','bluebellBasalTube','bluebellReflexedTepal'])for(let t=0;t<=20;t++)for(const u of [-1,0,1])assert.ok(englishBluebellPoint(type,t/20,u).every(Number.isFinite));
