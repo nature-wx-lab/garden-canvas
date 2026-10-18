@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.385';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.387';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.385';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.387';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,36 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function retailLilyPoint(type,t,u){
+ if(type==='retailLilyLeaf')return nativeLilyPoint('nativeLanceLeaf',t,u);
+ const sn=Math.max(0,Math.sin(Math.PI*t)),inner=type.includes('Inner'),proposal=type.startsWith('proposal'),kaveri=type.startsWith('kaveri'),candy=type.startsWith('candy'),conca=type.startsWith('conca'),half=proposal?(inner?.46:.34):kaveri?(inner?.31:.23):candy?(inner?.39:.29):conca?(inner?.40:.30):(inner?.40:.30),angle=u*(Math.PI/6*(1-t)**3+half*sn**(inner?.95:1.45)),r=.025+.975*t**1.25,depth=conca?.90:proposal?.70:kaveri?.62:.80,curl=conca?.65:proposal?.44:kaveri?.37:.62,wave=(kaveri?.012:proposal?.043:type.startsWith('frontera')?.040:.018)*Math.sin(t*30+u*6)*Math.abs(u)**3*sn;
+ return [Math.sin(angle)*r,depth*t-curl*t**5+wave,Math.cos(angle)*r];
+}
+function drawRetailLilyReferences(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.flowerPalette.type,growth=s.shootScale||1,h=s.height*growth,w=s.spread,leafH=Math.min(s.leafHeight*growth,h*.77),green=s.leafDensity<.5?'#afa17c':s.leafColor,axis=t=>[Math.sin(t*1.4)*Math.min(.028,h*.025),h*.88*t,Math.min(.012,h*.01)*t*t],stemR=Math.min(.0035,h*.009),leafCount=type==='kaveri'?38:type==='conca'?34:32;
+ for(let j=0;j<28;j++)b.branch(axis(j/28),axis((j+1)/28),stemR*(1-j/44),'#6e8b5c','stem-retail-lily');
+ if(s.leafDensity>0)for(let j=0;j<leafCount;j++){
+  const y=leafH*(.07+j/leafCount*.92),at=axis(y/(h*.88)),yaw=j*2.399,L=Math.min(type==='kaveri'?.13:.16,leafH*.45,w*.43)*(.82+rand()*.18),W=Math.min(type==='kaveri'?.027:type==='proposal'?.040:.035,L*.28),f=flowerFrame(b,at,-.045+rand()*.035,yaw);
+  f.add('retailLilyLeaf','leaf-retail-lily-'+type,kit.shade(rand,green,.025),0,0,0,W,L,L);
+  for(const u of [-.55,0,.55]){let p=retailLilyPoint('retailLilyLeaf',.02,u),from=[p[0]*W,p[1]*L+.00005,p[2]*L];for(let k=1;k<=14;k++){p=retailLilyPoint('retailLilyLeaf',.02+k*.069,u);const to=[p[0]*W,p[1]*L+.00005,p[2]*L];f.branch(from,to,.000045,'#a0af8a','vein-leaf-retail-lily');from=to;}}
+ }
+ if(!s.bloom)return;
+ const n=type==='frontera'?4:type==='kaveri'?6:5,L=Math.min(a.flowerRadius,h*.22),pitch=type==='proposal'?.20:type==='kaveri'?.85:1.35;
+ for(let j=0;j<n;j++){
+  const root=axis(.68+j/n*.26),yaw=j*2.399+.35,reach=Math.min(w*.25,h*.17)*(1-j/n*.30),end=[root[0]+Math.sin(yaw)*reach,root[1]+L*.04,root[2]+Math.cos(yaw)*reach],bend=[root[0]+Math.sin(yaw)*reach*.50,root[1]+L*.24,root[2]+Math.cos(yaw)*reach*.50];let from=root;
+  for(let k=1;k<=14;k++){const q=k/14,to=root.map((x,i)=>(1-q)*(1-q)*x+2*(1-q)*q*bend[i]+q*q*end[i]);b.branch(from,to,stemR*.50,'#7e986c','pedicel-retail-lily');from=to;}
+  const f=flowerFrame(b,end,pitch,yaw);
+  if(j===n-1){f.add(kit.bud,'bud-retail-lily',type==='frontera'||type==='candy'?'#caa9ba':'#c7d4ae',0,L*.44,0,L*.11,L*.46,L*.11);continue;}
+  b.flower?.(end,L*1.30,pitch,yaw);f.add(kit.bud,'ovary-superior-retail-lily','#8ea961',0,L*.09,0,L*.060,L*.15,L*.060);
+  for(let k=0;k<6;k++){
+   const inner=k%2===1,p=flowerFrame(f,[0,inner?L*.006:0,0],0,k*TAU/6);p.add(type+(inner?'InnerRetailLilyTepal':'OuterRetailLilyTepal'),'petal-retail-lily-'+type,s.flowerColor,0,0,0,L,L,L);
+   const az=k*TAU/6,base=[Math.sin(az)*L*.035,L*.05,Math.cos(az)*L*.035],tip=[Math.sin(az)*L*.23,L*.87,Math.cos(az)*L*.23];let prev=base;
+   for(let q=1;q<=10;q++){const tt=q/10,to=[base[0]+(tip[0]-base[0])*tt,L*.05+(tip[1]-L*.05)*tt,base[2]+(tip[2]-base[2])*tt];f.branch(prev,to,L*.008,'#c7c492','filament-retail-lily');prev=to;}
+   f.add(kit.bud,'anther-retail-lily',type==='kaveri'?'#654139':'#914d3c',...tip,L*.027,L*.095,L*.026,.70,az,0);
+  }
+  f.branch([0,L*.15,0],[0,L*1.06,0],L*.013,'#b0bd79','style-retail-lily');f.add(kit.bud,'stigma-retail-lily',type==='proposal'?'#a4b86b':type==='kaveri'?'#b3a3a1':'#805773',0,L*1.08,0,L*.042,L*.025,L*.042);
+ }
+}
 export function freesiaReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='freesiaFanLeaf')return [u*.5*sn**.50,.92*Math.sin(t*1.40),.24*t**1.40+.016*u*u*sn];
@@ -16035,6 +16065,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='retailLilyReferences'){drawRetailLilyReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='freesiaReferences'){drawFreesiaReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='miniIrisReferences'){drawMiniIrisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='hyacinthReferences'){drawHyacinthReferences(b,{info,s,detail,rand},kit);return;}
