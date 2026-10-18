@@ -15,3 +15,5 @@
 label.inline{display:flex;align-items:center;gap:.45rem}label.inline input{margin:0;width:1rem;height:1rem}#tree-gallery{font-size:.75rem;padding:.4rem}
 
 .specimen-nav{display:flex;flex-wrap:wrap;gap:.35rem;margin:.45rem 0}.specimen-nav:empty{display:none}.specimen-nav button{font-size:.72rem;padding:.25rem .5rem;background:#f1f3e8}.specimen-nav button[aria-pressed=true]{background:#416a51;color:white}
+
+.reference-notes{margin:.6rem 0;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:.5rem}.reference-notes summary{cursor:pointer;color:var(--ink);font-weight:600}.reference-notes ul{padding-left:1.2rem;margin:.5rem 0}.reference-notes li{line-height:1.6;overflow-wrap:anywhere}.reference-notes li+li{margin-top:.35rem}
