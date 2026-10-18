@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.371';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.372';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.371';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.372';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15027,6 +15027,47 @@ function drawLilies(b,{info,s,detail,rand},kit){
 }
 
 
+export function narcissusReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='goldenTereteLeaf'){const a=u*Math.PI,r=.5*Math.max(0,1-t)**.45;return [Math.sin(a)*r,.94*Math.sin(t*1.25),.24*t**1.3+Math.cos(a)*r*.012];}
+ if(type==='daffodilKeeledLeaf')return [u*.5*(.72+.28*sn)*Math.max(0,1-t)**.48,.94*Math.sin(t*1.28),.24*t**1.3+.016*u*u*sn];
+ if(type.endsWith('Corona')){
+  const hoop=type==='goldenHoopCorona',thalia=type==='thaliaCupCorona',a=u*Math.PI,r=hoop?.075+.65*t**1.18:thalia?.24+.12*t:.15+.055*t,length=hoop?1.10:thalia?.55:.20;
+  return [Math.sin(a)*r*(1+.025*Math.cos(a*18)*t**8),length*t+.016*Math.sin(a*18)*t**10,Math.cos(a)*r*(1+.025*Math.cos(a*18)*t**8)];
+ }
+ if(type==='goldenNarrowTepal')return [u*.045*sn**.8,.25*t,.075+.70*t];
+ const thalia=type==='thaliaReflexTepal',wide=type==='minnowRoundedTepal',x=u*(thalia?.18:wide?.35:.29)*sn**(thalia?.8:.52),twist=thalia?t*.40:0;
+ return [x*Math.cos(twist),-(thalia?.38*t*t:.045*sn)+x*Math.sin(twist),.12+.88*t];
+}
+function drawNarcissusReferences(b,{info,s,detail,rand},kit){
+ const type=info.appearance.flowerPalette.type,hoop=type==='golden',thalia=type==='thalia',minnow=type==='minnow',paper=!hoop&&!thalia&&!minnow,h=s.height,w=s.spread,bulbs=Math.max(2,Math.round((hoop?7:thalia?5:3)*detail)),green=s.leafDensity<.5?'#ada674':s.leafColor;
+ for(let i=0;i<bulbs;i++){
+  const yaw=i*2.399,R=w*.30*Math.sqrt((i+.5)/bulbs),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],leaves=Math.max(1,Math.round((hoop?6:4)*s.leafDensity));
+  if(s.leafDensity>0)for(let j=0;j<leaves;j++){
+   const L=Math.min(hoop?.22:paper?.40:.38,s.leafHeight/.90,w*(hoop?1.6:1.3))*s.leafScale*(.85+rand()*.15),W=Math.min(hoop?.0028:paper?.013:.010,L*(hoop?.025:.055)),f=flowerFrame(b,[root[0]+(j-(leaves-1)/2)*W*.12,.001,root[2]],.04+j*.02,yaw+j*2.399),shape=hoop?'goldenTereteLeaf':'daffodilKeeledLeaf';
+   f.add(shape,'leaf-narcissus-reference',kit.shade(rand,green,.025),0,0,0,W,L,L);
+   if(!hoop)for(const u of [-.6,0,.6]){let p=narcissusReferencePoint(shape,.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005];for(let k=1;k<=16;k++){p=narcissusReferencePoint(shape,.02+k*.06,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(from,to,.00004,'#9eae99','vein-leaf-narcissus-reference');from=to;}}
+  }
+  if(!s.bloom)continue;
+  const top=h*((hoop?.65:.76)+rand()*.15),head=[root[0]+Math.sin(yaw)*h*.025,top,root[2]+Math.cos(yaw)*h*.025],n=hoop?1:thalia?2:minnow?4:7,L=Math.min(hoop?.022:thalia?.025:minnow?.014:.016,h*.23);b.branch(root,head,hoop?.0007:Math.min(.002,h*.007),'#7c9567','scape-narcissus-reference');
+  b.add('narrow','spathe','#b9ac89',...head,hoop?.002:.005,Math.min(.030,h*.10),Math.min(.030,h*.10),.7,yaw+.4,0);
+  for(let j=0;j<n;j++){
+   const an=yaw+j*TAU/n,reach=hoop?L*.25:thalia?L*1.0:L*(1.3+.3*(j%2)),at=[head[0]+Math.sin(an)*reach,head[1]+L*(j%3)*.18,head[2]+Math.cos(an)*reach];b.branch(head,at,Math.min(.0007,h*.004),'#8ba378','pedicel-narcissus-reference');
+   if(n>2&&j===n-1){b.add(kit.bud,'bud-narcissus-reference','#d2d5b4',...at,L*.15,L*.45,L*.15,.8,an,0);continue;}
+   const f=flowerFrame(b,at,hoop?.85+rand()*.25:thalia?1.92+rand()*.10:1.12+rand()*.22,an),tubeTop=(hoop?.32:.90)*L,corona=hoop?'goldenHoopCorona':thalia?'thaliaCupCorona':minnow?'minnowShortCorona':'paperwhiteShortCorona',petal=hoop?'goldenNarrowTepal':thalia?'thaliaReflexTepal':minnow?'minnowRoundedTepal':'paperwhiteTepal',color=hoop?'#e7d04a':minnow&&j%2===0?'#e8e1ac':'#eeeae3';
+   if(!thalia)f.add(kit.bud,'ovary-inferior-narcissus-reference','#8e9d68',0,L*.04,0,L*.085,L*.12,L*.085);f.branch([0,thalia?0:L*.12,0],[0,tubeTop,0],L*.065,hoop?'#bec168':'#d8dfb7','perianth-tube-narcissus-reference');
+   f.add(corona,'corona-narcissus-'+type,hoop?'#e7d04a':minnow?'#e6c449':'#eeeae3',0,tubeTop,0,L,L,L);
+   for(let k=0;k<6;k++)f.add(petal,'tepal-narcissus-'+type,color,0,tubeTop+(k%2)*L*.008,0,L,L,L,0,k*TAU/6,0);
+   if(thalia)continue;
+   for(let k=0;k<6;k++){
+    const az=k*TAU/6,long=k%2===0,endY=hoop?tubeTop+L*(1.13+.07*(k%2)):tubeTop+L*(paper?(long?.18:-.04):.12),rr=L*(hoop?.19:.08),base=[Math.sin(az)*rr*.6,tubeTop*.50,Math.cos(az)*rr*.6],end=[Math.sin(az)*rr,endY,Math.cos(az)*rr];
+    let from=base;for(let q=1;q<=8;q++){const t=q/8,bow=Math.sin(t*Math.PI)*L*(hoop?.10:.01),to=[base[0]+(end[0]-base[0])*t+Math.sin(az)*bow,base[1]+(end[1]-base[1])*t,base[2]+(end[2]-base[2])*t+Math.cos(az)*bow];f.branch(from,to,L*.007,hoop?'#d4c45f':'#d8c991','filament-narcissus-reference');from=to;}
+    f.add(kit.bud,paper?(long?'anther-long-narcissus-reference':'anther-short-narcissus-reference'):'anther-narcissus-reference','#c5a657',...end,L*.018,L*.045,L*.020,.1,az,0);
+   }
+   const sy=hoop?tubeTop+L*1.28:tubeTop+L*.16;f.branch([0,L*.08,0],[0,sy,0],L*.008,'#c9cd8f','style-narcissus-reference');for(let k=0;k<3;k++){const az=k*TAU/3;f.add(kit.bud,'stigma-narcissus-reference','#d4d3a1',Math.sin(az)*L*.012,sy,Math.cos(az)*L*.012,L*.012,L*.009,L*.012);}
+  }
+ }
+}
 export function borderTulipPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='borderTulipLeaf')return [u*.5*sn**.52*(1+.025*Math.sin(t*22)),.86*Math.sin(t*1.37),.32*t**1.3+.014*u*u*sn];
@@ -15780,6 +15821,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='narcissusReferences'){drawNarcissusReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='borderTulipCrowns'){drawBorderTulips(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='retailTulipCrowns'){drawRetailTulips(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='camassiaRacemes'){drawCamassiaRacemes(b,{info,s,detail,rand},kit);return;}
