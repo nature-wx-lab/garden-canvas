@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.355';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.356';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.355';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.356';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -14707,9 +14707,14 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   return;
  }
  if(shape==='snowdrop'){
-  b.add(bud,'leaf','#719054',x,y+r*.07,z,r*.24,r*.28,r*.24);
-  for(let j=0;j<3;j++)b.add('petal',outerPattern==='greenTip'?'petal-snowdrop-outer':'petal','#f4f4e9',x,y,z,r*.78,r*1.70,r,Math.PI-.39,j*TAU/3,0);
-  for(let layer=0;layer<layers;layer++)for(let j=0;j<3;j++)b.add('petal','petal-snowdrop-inner','#f0f1db',x,y-r*.05,z,r*(.52-layer*.06),r*(.94-layer*.1),r,Math.PI-.10-layer*.12,j*TAU/3+1.05+layer*.43,0);
+  const f=flowerFrame(b,[x,y,z],Math.PI,yaw),double=layers>1,ovary=r*.30;
+  f.add(bud,'ovary-snowdrop','#6d914c',0,-ovary*.50,0,r*.105,ovary*.50,r*.105);
+  for(let j=0;j<3;j++)f.add('snowdropOuter','petal','#f4f4ed',0,0,0,r*.63,r,r,palette.large?.12:.49,j*TAU/3,0);
+  if(double){for(let layer=0;layer<3;layer++)for(let j=0;j<6;j++)f.add('snowdropDouble','petal-snowdrop-inner','#f1f2e7',0,.0002,0,r*(.29-layer*.035),r*(.64-layer*.085),r*.50,.25+layer*.10,j*TAU/6+layer*.37,0);}
+  else{
+   for(let j=0;j<3;j++)f.add('snowdropInner','petal-snowdrop-inner','#f0f2e8',0,0,0,r*.29,r*.48,r*.48,.04,j*TAU/3+Math.PI/3,0);
+   if(palette.sex){for(let j=0;j<6;j++){const an=j*TAU/6,xx=Math.sin(an)*r*.085,zz=Math.cos(an)*r*.085;f.branch([xx,0,zz],[xx,r*.11,zz],r*.008,'#e5e5cc','filament-snowdrop');f.add(bud,'anther-snowdrop','#d8bc5d',xx,r*.22,zz,r*.026,r*.11,r*.026);}f.branch([0,0,0],[0,r*.38,0],r*.010,'#e8edce','style-snowdrop');f.add(bud,'stigma-snowdrop','#a4b78a',0,r*.38,0,r*.018,r*.014,r*.018);}
+  }
   return;
  }
  if(shape==='squill'){
@@ -17325,16 +17330,27 @@ function drawNakedScapes(b,{info,s,detail,rand},kit){
  }
 }
 
+// Leaf bases roll in G. elwesii; Hippolyta has pleated leaves. These are not interchangeable.
+export function snowdropPoint(type,x,y){
+ const leaf=type.startsWith('snowdropLeaf'),pleat=type==='snowdropLeafPleated';
+ if(leaf){const roll=type==='snowdropLeafConvolute'?Math.exp(-y*9):0,angle=x*4.6*roll;return [roll>.001?Math.sin(angle)/4.6:x,y,.045*y*y+.065*Math.abs(x)+roll*(1-Math.cos(angle))/4.6+(pleat?.030*Math.cos(x*25)*Math.sin(Math.PI*y):0)];}
+ return [x,y,(type==='snowdropDouble'?.065:.12)*y*y+.50*x*x+(type==='snowdropDouble'?.018*Math.cos(x*32)*y:0)];
+}
 function drawSnowdrops(b,{info,s,detail,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,green=s.leafColor,n=Math.max(3,Math.round(9*detail));
+ const a=info.appearance,h=s.height,w=s.spread,double=a.flowerLayers>1,large=a.leafShape==='snowdropBroad',green=s.leafDensity<.4&&!s.bloom?'#b3ad65':s.leafColor,n=Math.max(2,Math.round(7*detail));
+ const type=a.leafShape==='snowdropPleated'?'snowdropLeafPleated':large?'snowdropLeafBroad':'snowdropLeafConvolute';
  for(let i=0;i<n;i++){
-  const angle=i*2.399,rr=w*.26*Math.sqrt((i+.5)/n),x=Math.sin(angle)*rr,z=Math.cos(angle)*rr,top=h*(.79+rand()*.14),length=top*.78;
-  for(const side of [-1,1])b.add('strap',foliageKind(info),kit.shade(rand,green,.04),x,.008,z,length*.53,length,length,.15+rand()*.1,angle+side*Math.PI/2,0);
-  const bend=[x,top-h*.05,z],neck=[x+Math.sin(angle)*h*.09,top,z+Math.cos(angle)*h*.09],tip=[x+Math.sin(angle)*h*.15,top-h*.07,z+Math.cos(angle)*h*.15];
+  const angle=i*2.399,rr=w*.23*Math.sqrt((i+.5)/n),x=Math.sin(angle)*rr,z=Math.cos(angle)*rr,top=h*(.84+rand()*.10),length=Math.min(h*.78,s.leafHeight*1.40)*s.leafScale;
+  if(s.leafDensity>0)for(const side of [-1,1]){
+   const L=length*(.87+rand()*.13),W=Math.min(.022,L*.20),at=[x+Math.sin(angle)*side*.0013,.001,z+Math.cos(angle)*side*.0013],f=flowerFrame(b,at,.18+(1-s.leafDensity)*.30,angle+(side<0?Math.PI:0));
+   f.add(type,'leaf-snowdrop',kit.shade(rand,green,.035),0,0,0,W,L,L);
+   for(const q of [-.27,0,.27]){let prev=snowdropPoint(type,q,.02);prev=[prev[0]*W,prev[1]*L,prev[2]*L+.00005];for(let j=1;j<=7;j++){const t=.02+j*.13,p=snowdropPoint(type,q*(1-t*.65),t),to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(prev,to,.000045,'#a6b4a3','vein-leaf-snowdrop');prev=to;}}
+  }
   if(!s.bloom)continue;
-  b.branch([x,0,z],bend,.0014,green,'petiole');b.branch(bend,neck,.0011,green,'petiole');b.branch(neck,tip,.0009,green,'petiole');
-  b.add('narrow','leaf',green,...bend,h*.08,h*.15,h*.08,.8,angle,0);
-  detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:Math.min(.025,h*.095),shape:'snowdrop',color:'#f5f4e9',layers:a.flowerLayers||1,outerPattern:a.outerFlowerPattern},{...kit,rand});
+  const curve=t=>[x+Math.sin(angle)*h*.13*Math.sin(t*Math.PI/2),top-h*.10+Math.sin(t*Math.PI)*h*.12,z+Math.cos(angle)*h*.13*Math.sin(t*Math.PI/2)],bend=curve(0);
+  b.branch([x,0,z],bend,.0011,green,'scape-snowdrop');let from=bend;for(let j=1;j<=14;j++){const to=curve(j/14);b.branch(from,to,.00065,green,'pedicel-snowdrop');from=to;}
+  const spathe=Math.min(.035,h*.20);for(const side of [-1,1])b.add('snowdropSpathe','spathe-snowdrop','#b9c3a0',...bend,spathe*.20,spathe,spathe,.65,angle+side*.16,side*.05);
+  detailedFlower(b,{x:from[0],y:from[1],z:from[2],r:Math.min(large?.028:.023,h*.16),shape:'snowdrop',layers:double?3:1,palette:{large,sex:!large&&!double}},{...kit,rand});
  }
 }
 

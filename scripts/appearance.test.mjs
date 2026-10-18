@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5844,6 +5844,19 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  for(const id of ['p-565ee45c51d5','p-44f97cf79bf4','p-000781af85b9','p-daa064e003e3','p-f46d74ba4101','p-825e967e9c4a','p-32106ff38f0a','p-91f07ff1c009','p-c8c917cb2b80','p-07ea6016b5e3','p-8a7a81df41f2','p-f18c6641444c','p-69e7e8e3af56','p-5fec2e343923']){
   const c=CATALOG[id];for(const field of ['leafShape','leafPattern','persistence','flowerShape','habit','barkPattern'])if(c.appearance[field])assert.ok(TRAIT_VALUES[c.appearance[field]],`${id} ${field}`);assert.ok(!appearanceSummary(c).includes(c.appearance.leafShape));
  }
+});
+
+test('refined snowdrops separate convolute and pleated leaves single flower anatomy double petaloids and summer dormancy',()=>{
+ const ids=['p-aac0769c3974','p-51376e6758ea','p-f4f491ff7a88','p-6ca95760490f','p-1cc7a931f3d8'];
+ for(const [i,id] of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,36800+i*10+(small?1:0),2,2),height:small?.08:i===0?.25:i===3?.15:.2,spread:small?.1:i===3?.1:.15,leafHeight:small?.045:.13},g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),label=`${id} small=${small} month=${month}`;
+  try{assert.equal(CATALOG[id].appearance.status,'partial');assert.ok(TRAIT_VALUES[CATALOG[id].appearance.leafShape]);if(month===2){assert.ok(count('petal')>0,label);assert.equal(count('petal'),count('ovary-snowdrop')*3,label);assert.equal(count('petal-snowdrop-inner'),count('ovary-snowdrop')*(i===4?18:3),label);assert.equal(count('anther-snowdrop'),count('ovary-snowdrop')*([0,1,3].includes(i)?6:0),label);assert.equal(count('style-snowdrop'),[0,1,3].includes(i)?count('ovary-snowdrop')*1:0,label);assert.ok(g.children.some(m=>m.geometry.userData[i===4?'snowdropLeafPleated':i===2?'snowdropLeafBroad':'snowdropLeafConvolute']),label);}
+   if(month===7)assert.equal(g.children.length,0,label);if(month===5){assert.equal(count('petal'),0,label);assert.ok(count('leaf-snowdrop')>0,label);}
+   for(const m of g.children)for(const v of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...v].every(Number.isFinite),label);
+  }finally{dispose(g);}
+ }
+ assert.equal(CATALOG[ids[2]].latin,'');assert.equal(CATALOG[ids[4]].appearance.petals,undefined);assert.equal(CATALOG[ids[4]].appearance.outerFlowerPattern,undefined);assert.deepEqual(CATALOG[ids[1]].height,[.1,.2]);assert.deepEqual(CATALOG[ids[3]].spread,[.05,.1]);
+ assert.notDeepEqual(snowdropPoint('snowdropLeafPleated',.3,.05),snowdropPoint('snowdropLeafConvolute',.3,.05));
 });
 
 test('Reseda connected lobed petals keep true petal counts while winter rosettes and postflower annual leaves differ',()=>{
