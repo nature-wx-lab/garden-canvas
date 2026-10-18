@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.394';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.396';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.394';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.396';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,42 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function alliumReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='alliumRoundLeaf'){const a=u*Math.PI,r=.5*(1-t)**.24;return [Math.cos(a)*r,.99*t,9*t*t+Math.sin(a)*r];}
+ if(type==='alliumStrapLeaf'||type==='alliumWavyLeaf')return [u*.5*sn**.35,.95*Math.sin(t*1.5),.25*t*t+.003*u*u*sn+(type==='alliumWavyLeaf'?.015*Math.sin(t*25+u*4)*Math.abs(u)**3*sn:0)];
+ const bell=type==='alliumBellTepal',chive=type==='alliumChiveTepal';
+ if(bell||chive){const r=.025+(chive?.29:.40)*Math.sin(t*Math.PI*.55),az=u*Math.PI/6*(1-t)**.65;return [Math.sin(az)*r,(chive?1.0:.75)*t-(chive?.025:.08)*t*t*t,Math.cos(az)*r];}
+ return [u*.14*sn**.65,.10*Math.sin(t*Math.PI),.025+.975*t];
+}
+function drawAlliumReferences(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.flowerPalette.type,firework=type==='schubertii',blue=type==='caeruleum',chive=type==='chive',summer=!firework&&!blue,h=s.height,w=s.spread,n=firework?1:Math.max(2,Math.round((chive?5:3)*detail)),HR=Math.min(a.headRadius,h*.36,w*.32),L=Math.min(a.flowerRadius,h*.045),green=s.leafDensity<.3?'#aaa47b':s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=firework?0:w*.18*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R];
+  if(s.leafDensity>0)for(let j=0;j<(chive?2:blue?3:firework?4:5);j++){
+   if(j/(chive?2:blue?3:firework?4:5)>=s.leafDensity)continue;
+   const at=[root[0],blue?h*(.03+j*.07):.001,root[2]],len=Math.min(s.leafHeight/(chive?.99:.94),w*(firework?1.0:.95))*s.leafScale*(.86+rand()*.14),width=Math.min(chive?.0032:blue?.005:firework?.050:type==='little'?.006:type==='summerBeauty'?.009:.010,len*(chive?.018:blue?.035:.18)),f=flowerFrame(b,at,.02+rand()*.07,yaw+j*2.399);
+   f.add(chive?'alliumRoundLeaf':firework?'alliumWavyLeaf':'alliumStrapLeaf','leaf-allium-reference-'+type,kit.shade(rand,green,.025),0,0,0,width,len,chive?width:len);
+  }
+  if(!s.bloom)continue;
+  const center=[root[0]+Math.sin(yaw)*h*.012,h-HR*1.05,root[2]+Math.cos(yaw)*h*.012];b.branch(root,center,Math.min(firework?.004:blue?.0014:chive?.0014:.0020,h*.009),'#6f8e5b','scape-allium-reference');
+  for(let k=0;k<2;k++){const bract=Math.min(HR*.60,.025,h*.08);b.add('iridSpikeBract','spathe-allium-reference',chive?'#c5c2a4':'#b5ac86',center[0],center[1]-HR*.12,center[2],Math.min(HR*.24,.007),bract,bract,2.0,yaw+k*Math.PI,0);}
+  if(i===n-1)b.flower?.(center,HR*1.4,1.0,yaw);
+  const sites=firework?72:chive?40:type==='isabelle'?144:type==='summerBeauty'?144:type==='little'?96:80;
+  for(let j=0;j<sites;j++){
+   const long=firework&&j%3===0,bud=long||!firework&&j%11===0,v=firework&&long?.10+.85*(j+.5)/sites:chive?.05+.95*(1-(j+.5)/sites):1-2*(j+.5)/sites,az=j*2.399,rr=Math.sqrt(1-v*v),dir=[Math.cos(az)*rr,v,Math.sin(az)*rr],ped=firework?HR*(long?.76+.20*((j*7)%13)/12:.24+.26*((j*11)%17)/16):Math.max(HR*.25,HR-L*(chive?1.02:1.30)),end=center.map((x,k)=>x+dir[k]*ped);
+   b.branch(center,end,Math.min(firework?.00065:.00036,L*(firework?.09:.055)),firework?'#9e6c80':'#83a16e','pedicel-allium-reference');
+   const pitch=Math.acos(v),flowerYaw=Math.atan2(dir[0],dir[2]),f=flowerFrame(b,end,pitch,flowerYaw);
+   if(bud){f.add(kit.bud,'bud-allium-reference',firework?'#c59da7':blue?'#8fa3b8':type==='isabelle'||chive?'#d2d9be':'#b39bb1',0,L*.40,0,L*.15,L*.40,L*.15);continue;}
+   for(let k=0;k<6;k++)f.add(chive?'alliumChiveTepal':summer?'alliumBellTepal':'alliumStarTepal','tepal-allium-reference-'+type,s.flowerColor,0,0,0,L,L,L,0,k*TAU/6,0);
+   for(let k=0;k<3;k++){const az=k*TAU/3;f.add(kit.bud,'ovary-superior-allium-reference','#9daf75',Math.sin(az)*L*.05,L*.12,Math.cos(az)*L*.05,L*.065,L*.10,L*.065);}
+   for(let k=0;k<6;k++){
+    const az=k*TAU/6,height=chive?.55:firework?.46:blue?.67:1.18,tip=[Math.sin(az)*L*.22,L*height,Math.cos(az)*L*.22];f.branch([Math.sin(az)*L*.07,L*.08,Math.cos(az)*L*.07],tip,L*.014,'#e2dfce','filament-allium-reference');f.add(kit.bud,'anther-allium-reference',blue?'#a4b6bd':chive?'#b7b99e':'#c7c0b2',...tip,L*.045,L*.025,L*.030,0,az,0);
+   }
+   const style=chive?.56:firework?.55:blue?.72:1.21;f.branch([0,L*.04,0],[0,L*style,0],L*.016,'#d5d9b8','style-allium-reference');f.add(kit.bud,'stigma-allium-reference','#d4d9b6',0,L*style,0,L*.032,L*.018,L*.032);
+  }
+ }
+}
 export function daylilyReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),yuu=type.startsWith('yuu'),chicago=type.startsWith('chicago'),blueberry=type.startsWith('blueberry'),gold=type.startsWith('zebra'),wide=chicago||blueberry||gold,T=yuu?.55:.26;
  if(type==='daylilyArchLeaf')return [u*.5*sn**.26,Math.sin(t*2.85),.95*t**1.4+.006*Math.abs(u)*sn];
@@ -16204,6 +16240,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='alliumReferences'){drawAlliumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='daylilyReferences'){drawDaylilyReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='iridReferenceSpikes'){drawIridReferenceSpikes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='irisReferenceForms'){drawIrisReferenceForms(b,{info,s,detail,rand},kit);return;}
