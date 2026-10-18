@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.365';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.366';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -483,3 +483,5 @@ Object.assign(TRAIT_VALUES,{bluebellStrapLeaf:'株元から出る光沢のある
 Object.assign(TRAIT_VALUES,{spanishStrapLeaf:'株元から出る幅のある帯状葉と平行脈',spanishBluebellFlower:'茎の周囲に付く6枚の花被の鐘形花・掲載写真を参考にした花先'});
 
 Object.assign(TRAIT_VALUES,{fritWideLeaf:'茎に付く幅のある披針形の葉',fritLanceLeaf:'茎に付く先の尖る細い披針形の葉',fritCirroseLeaf:'対生〜輪生する細葉と、巻く上部の葉先',fritillariaBell:'6枚の花被でできた下向きの鐘形花・種ごとの花色と模様'});
+
+Object.assign(TRAIT_VALUES,{branchedRaceme:'小花のまとまりが片側に並ぶ分枝した花序',convallariaElliptic:'株元に対になって出る楕円形の葉と平行脈',convallariaClusterBell:'小さな鐘形花が密集して八重に見える花'});

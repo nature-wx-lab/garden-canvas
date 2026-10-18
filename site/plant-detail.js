@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.365';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.366';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.365';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.366';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15027,6 +15027,44 @@ function drawLilies(b,{info,s,detail,rand},kit){
 }
 
 
+export function convallariaPoint(type,t,u){
+ if(type==='convallariaBell'){
+  const tip=Math.max(0,(t-.72)/.28),lobe=(1+Math.cos(u*6))*.5,radius=.09+.34*Math.sin(t*2.15)+.12*tip*tip*lobe;
+  return [Math.sin(u)*radius,t-.14*tip*tip*lobe,Math.cos(u)*radius];
+ }
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ return [u*.5*sn**.64,t-.10*t*t*t,.16*t*t+.012*u*u*sn];
+}
+function drawConvallariaClusters(b,{info,s,detail,rand},kit){
+ const h=s.height,w=s.spread,n=Math.max(2,Math.round(5*detail)),green=s.leafDensity<.4?'#aaa46e':s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,rr=w*.26*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*rr,.001,Math.cos(yaw)*rr],petiole=Math.min(h*.26,s.leafHeight*.28),top=[root[0],petiole,root[2]];
+  if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(2*s.leafDensity));j++){
+   const angle=yaw+j*Math.PI,L=Math.min(.13,Math.max(.006,s.leafHeight-petiole)/.88,w*.65)*s.leafScale*(.90+j*.10),W=Math.min(.047,L*.40),f=flowerFrame(b,top,.17+j*.17,angle);
+   b.branch(root,top,.0012,green,'petiole-convallaria');
+   f.add('convallariaLeaf','leaf-convallaria',kit.shade(rand,green,.025),0,0,0,W,L,L);
+   for(const u of [-.65,-.32,0,.32,.65]){
+    let p=convallariaPoint('convallariaLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00004];
+    for(let k=1;k<=15;k++){p=convallariaPoint('convallariaLeaf',.02+k*.065,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00004];f.branch(from,to,.000035,'#8f9c7a','vein-leaf-convallaria');from=to;}
+   }
+  }
+  if(!s.bloom)continue;
+  const axis=t=>[root[0]+Math.sin(yaw)*w*.16*t**4,h*1.10*(t-.25*t**6),root[2]+Math.cos(yaw)*w*.16*t**4];let previous=root;
+  for(let k=1;k<=22;k++){const to=axis(k/22);b.branch(previous,to,.0008,'#789452','scape-convallaria');previous=to;}
+  for(let j=0;j<6;j++){
+   const at=axis(.48+j*.082),reach=Math.min(.020,h*.12)*(1-j*.035),cluster=[at[0]+Math.sin(yaw)*reach,at[1]+reach*.05,at[2]+Math.cos(yaw)*reach];
+   b.branch(at,cluster,.00045,'#8e9f64','cluster-branch-convallaria');
+   b.add('narrow','bract-convallaria','#afbd8b',...at,.0015,h*.035,.0015,.40,yaw+Math.PI,0);
+   for(let k=0;k<3;k++){
+    const an=yaw+(k-1)*.85,offset=reach*.38,end=[cluster[0]+Math.sin(an)*offset,cluster[1]-offset*(.1+k*.12),cluster[2]+Math.cos(an)*offset],control=[cluster[0]+Math.sin(an)*offset*.5,cluster[1]+offset*.6,cluster[2]+Math.cos(an)*offset*.5];let from=cluster;
+    for(let q=1;q<=8;q++){const t=q/8,to=cluster.map((v,a)=>(1-t)**2*v+2*(1-t)*t*control[a]+t*t*end[a]);b.branch(from,to,.00025,'#97a96f','pedicel-convallaria');from=to;}
+    const L=Math.min(.008,h*.07)*(1-j*.02);
+    if(j===5)b.add(kit.bud,'bud-convallaria','#cbd5a5',...end,L*.22,L*.42,L*.22,.25,an,0);
+    else {const f=flowerFrame(b,end,Math.PI+.18+k*.32,an);f.add('convallariaBell','perianth-convallaria',s.flowerColor,0,0,0,L,L,L);}
+   }
+  }
+ }
+}
 export function fritillariaPoint(type,t,u){
  if(type==='fritUvaBody')return fritillariaPoint('fritUvaTepal',t*.82,u);
  if(type==='fritUvaHem')return fritillariaPoint('fritUvaTepal',.82+t*.18,u);
@@ -15588,6 +15626,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='convallariaClusters'){drawConvallariaClusters(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='fritillariaShoots'){drawFritillarias(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='spanishBluebellRacemes'){drawSpanishBluebells(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='englishBluebellArches'){drawEnglishBluebells(b,{info,s,detail,rand},kit);return;}

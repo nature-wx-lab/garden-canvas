@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.365';
+import {treeProfile} from './tree-profiles.js?v=0.9.366';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -104,6 +104,9 @@ export function seasonAt(info,month){
   density=month>=Math.max(1,(flowerMonths[0]||4)-2)&&month<=last+1?(month===last+1?.4:1):0;scale=month===(flowerMonths[0]||4)-2?.4:1;phase=density===0?'地中で休眠':month===last+1?'葉が黄変する時期':'葉の展開期';
  }else if(a.persistence==='semiDormant'&&[12,1,2].includes(month)){
   density=.35;scale=.65;phase='冬芽・株元の葉（寒さで変化）';
+ }else if(a.architecture==='convallariaClusters'){
+  density=[0,0,.35,1,1,1,1,1,1,.7,.2,0][m];scale=month===3?.5:1;
+  phase=density===0?'地下茎で越冬（境界月は表示目安）':month>=10?'秋の葉の黄変（表示目安）':month===3?'春の葉出し（表示目安）':'春〜秋に残る葉（表示目安）';
  }else if(leaf==='herb'){
   density=a.dormantMonths?a.dormantMonths.includes(month)?0:1:[0,0,.15,.65,1,1,1,1,1,.75,.25,0][m];scale=month===3?.3:month===4?.7:1;phase=density===0?'地上部の休眠':month<5?'芽出し・葉の展開':month>10?'地上部が枯れる時期':'葉が茂る時期';
  }else if(leaf==='grass'){
