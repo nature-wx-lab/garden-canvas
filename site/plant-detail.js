@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.398';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.400';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.398';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.400';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,52 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function cannaReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='cannaPaddleLeaf')return [u*.5*sn**.66,.055*sn+.035*u*u*sn-.15*t**4+.012*Math.sin(t*19+u*4)*Math.abs(u)**3*sn,t];
+ if(type==='cannaRolledLeaf'){const a=u*Math.PI*1.7,r=.12*(1-t*.65)*sn**.25;return [Math.cos(a)*r,t,Math.sin(a)*r];}
+ if(type==='cannaShortTube'){const a=u*Math.PI,r=.06+.025*t;return [Math.sin(a)*r,.09*t,Math.cos(a)*r];}
+ if(type==='cannaTruePetal')return [u*.070*sn**.55,.09+.23*t,.02+.88*t+.025*u*u*sn];
+ if(type==='cannaSepal')return [u*.045*sn**.5,.36*t,.05*t*t];
+ if(type==='cannaPetaloidFilament')return [u*.10*sn**.6+.055*t,.09+.32*t,.015+.72*t];
+ if(type==='cannaFlatStyle')return [u*.045*(.35+.65*sn),.09+.34*t,.035+.85*t];
+ const broad=type==='cannaBroadStaminode',lip=type==='cannaReflexedLip',width=lip?.18:broad?.36:.15;
+ return [u*width*sn**.60+.08*t*t,.09+(lip?.50:.22)*sn-(lip?.72:.15)*t**3,.04+(lip?.78:1.0)*t+.035*u*u*sn+.015*Math.sin(t*27+u*6)*Math.abs(u)**3*sn];
+}
+function drawCannaReferences(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.flowerPalette.type,broad=['viewYellow','futurity'].includes(type),h=s.height,w=s.spread,n=Math.max(2,Math.round(2*detail)),L=Math.min(a.flowerRadius,h*.11,w*.11),stem=type==='futurity'||type==='redStripe'?'#79515b':'#8a9d73',green=s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.085,root=[Math.sin(yaw)*R,.002,Math.cos(yaw)*R],top=Math.min(h*.73,s.leafHeight*.90)*s.leafScale,stemR=Math.min(.013,h*.016,w*.028);
+  b.branch(root,[root[0],top,root[2]],stemR,stem,'pseudostem-canna');
+  const leaves=Math.max(1,Math.ceil(8*s.leafDensity));
+  for(let j=0;j<leaves;j++){
+   const az=yaw+j*2.399,rank=j/8,node=[root[0],top*(.14+rank*.76),root[2]],len=Math.min(h*.46,w*.51)*s.leafScale*(.78+.22*Math.sin((j+1)*Math.PI/9)),width=Math.min(len*.54,w*.25),f=flowerFrame(b,node,-.50-rank*.35,az),variant=(i*3+j)%4;
+   b.branch([node[0],Math.max(.002,node[1]-top*.15),node[2]],node,stemR*1.10,stem,'sheath-canna');
+   f.add('cannaPaddleLeaf','leaf-canna-'+type+'-'+variant,kit.shade(rand,green,.015),0,0,0,width,len,len);
+   let from=[0,0,0];for(let k=1;k<=20;k++){const p=cannaReferencePoint('cannaPaddleLeaf',k/20,0),to=[0,p[1]*len+.0003,p[2]*len];f.branch(from,to,Math.min(.0011,len*.003),type==='futurity'||type==='redStripe'?'#9a5a67':type==='viewYellow'?'#c9cd70':'#a9bc92','midrib-canna');from=to;}
+  }
+  const rolled=Math.min(h*.15,w*.16)*s.leafScale;b.add('cannaRolledLeaf','rolled-leaf-canna',green,root[0],top*.91,root[2],rolled,rolled,rolled,.12,yaw,0);
+  if(!s.bloom)continue;
+  const head=[root[0],h*.64,root[2]];b.branch([root[0],top,root[2]],head,stemR*.52,stem,'scape-canna');
+  for(let j=0;j<7;j++){
+   const az=yaw+(j%2?-.55:.55),at=[head[0]+Math.sin(az)*L*(j%2?.40:.05),head[1]+h*j*.045,head[2]+Math.cos(az)*L*(j%2?.40:.05)],end=[at[0]+Math.sin(az)*L*.15,at[1],at[2]+Math.cos(az)*L*.15];
+   b.branch(j?[head[0],at[1]-h*.045,head[2]]:head,at,stemR*.32,stem,'rachis-canna');b.branch(at,end,stemR*.22,stem,'pedicel-canna');
+   b.add('cannaSepal','bract-canna',stem,...at,L*.85,L*.85,L*.85,.13,az,0);
+   if(j>=3){b.add(kit.bud,'bud-canna',j>=5?stem:s.flowerColor,...end,L*.09,L*(j>=5?.25:.47),L*.09,.25,az,0);continue;}
+   const f=flowerFrame(b,end,.94,az),color=s.flowerColor;
+   if(i===0&&j===0)f.flower([0,L*.20,0],L*1.22);
+   f.add(kit.bud,'ovary-inferior-canna','#80936b',0,-L*.10,0,L*.095,L*.10,L*.085);
+   f.add('cannaShortTube','tube-canna',color,0,0,0,L,L,L);
+   for(let k=0;k<3;k++){f.add('cannaSepal','sepal-canna',stem,0,-L*.04,0,L,L,L,0,k*TAU/3,0);f.add('cannaTruePetal','true-petal-canna',type==='stuttgart'?'#e79854':color,0,0,0,L,L,L,0,k*TAU/3+.2,0);}
+   for(let k=0;k<3;k++)f.add(broad?'cannaBroadStaminode':'cannaNarrowStaminode','staminode-canna-'+type,kit.shade(rand,color,.025),0,0,0,L,L,L,-.05,Math.PI+(k-1)*1.02,0);
+   f.add('cannaReflexedLip','labellum-canna-'+type,color,0,0,0,L*(broad?1.20:.70),L,L);
+   f.add('cannaPetaloidFilament','petaloid-filament-canna',color,0,0,0,L,L,L,0,-.24,0);
+   f.add(kit.bud,'half-anther-canna','#dfb66d',L*.10,L*.39,L*.66,L*.018,L*.15,L*.025,.04,0,-.14);
+   f.add('cannaFlatStyle','flat-style-canna','#d2ba88',-L*.06,0,L*.03,L,L,L);
+  }
+ }
+}
+
 export function gardenAnemonePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='gardenAnemoneCutLeaf')return [u*.28*sn**.45*(.06+.94*Math.abs(Math.sin(t*Math.PI*4+.20))**1.6),.025*sn+.012*u*u*sn,t];
@@ -16273,6 +16319,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='gardenAnemoneReferences'){drawGardenAnemones(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='alliumReferences'){drawAlliumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='daylilyReferences'){drawDaylilyReferences(b,{info,s,detail,rand,month},kit);return;}
