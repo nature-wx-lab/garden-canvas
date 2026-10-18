@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.409';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.410';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.409';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.410';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,42 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function bronzeArmeriaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='armeriaFineLeaf')return [u*.5*Math.max(0,1-t)**.48,.93*Math.sin(t*1.5)-.12*t**3,.22*t**1.4+.010*u*u*sn];
+ if(type==='armeriaScapeSheath'){const a=u*Math.PI;return [Math.sin(a)*.5,t,Math.cos(a)*.5];}
+ if(type==='armeriaPaperyCalyx'||type==='armeriaCorollaBase'){const a=u*Math.PI,calyx=type==='armeriaPaperyCalyx',r=calyx?.10+.16*t:.12+.015*t;return [Math.sin(a)*r*(calyx?1+.025*Math.cos(a*10):1),(calyx?.32:.19)*t+(calyx?.035*Math.cos(a*5)*t**10:0),Math.cos(a)*r*(calyx?1+.025*Math.cos(a*10):1)];}
+ if(type==='armeriaBract')return [u*.22*sn**.52,-.15*t,.06+.65*t];
+ return [u*.30*sn**.56,.19+.10*sn+.035*u*u*sn,.13+.77*t];
+}
+function drawBronzeArmeria(b,{info,s,detail,rand},kit){
+ const h=s.height,w=s.spread,crowns=Math.max(20,Math.round(28*detail)),green=s.leafColor;
+ for(let i=0;i<crowns;i++){
+  const yaw=i*2.399,R=w*.24*Math.sqrt((i+.5)/crowns),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],leaves=Math.max(12,Math.round(30*s.leafDensity));
+  for(let j=0;j<leaves;j++){
+   const len=Math.min(.13,s.leafHeight/.81,w*.75)*s.leafScale*(.78+rand()*.22),width=Math.min(.0024,len*.025),f=flowerFrame(b,root,.025+rand()*.15,yaw+j*2.399);f.add('armeriaFineLeaf','leaf-bronze-armeria',kit.shade(rand,green,.035),0,0,0,width,len,len);
+  }
+ }
+ if(!s.bloom)return;
+ const heads=Math.max(8,Math.round(16*detail)),HR=Math.min(.011,w*.07,h*.08),L=Math.min(.0048,h*.045);
+ for(let i=0;i<heads;i++){
+  const yaw=i*2.399,R=w*.27*Math.sqrt((i+.5)/heads),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],top=h*(.91-.12*(i%3))-HR,head=[root[0]+Math.sin(yaw)*h*.025,top,root[2]+Math.cos(yaw)*h*.025];b.branch(root,head,Math.min(.00085,h*.005),'#8a8274','scape-bronze-armeria');b.add('armeriaScapeSheath','sheath-bronze-armeria','#9e807c',head[0],top-HR*1.8,head[2],HR*.30,HR*1.8,HR*.30);
+  const frame=flowerFrame(b,head,0,yaw);
+  for(let k=0;k<12;k++)frame.add('armeriaBract','bract-bronze-armeria',k%2?'#b49391':'#9b747c',0,-HR*.16,0,HR,HR,HR,-.15,k*TAU/12,0);
+  const florets=23;
+  for(let j=0;j<florets;j++){
+   const y=.20+.80*(j+.5)/florets,ring=Math.sqrt(1-y*y),az=j*2.399+yaw,at=[head[0]+Math.sin(az)*ring*HR,head[1]+y*HR*.75,head[2]+Math.cos(az)*ring*HR],pitch=Math.acos(y),f=flowerFrame(b,at,pitch,az);b.branch(head,at,L*.040,'#b99f9e','pedicel-bronze-armeria');
+   if(j%8===5){f.add(kit.bud,'bud-bronze-armeria','#bf6d99',0,L*.20,0,L*.23,L*.28,L*.23);continue;}
+   if(i===0&&j===florets-3)f.flower([0,L*.20,0],L*1.15);
+   f.add('armeriaPaperyCalyx','calyx-bronze-armeria','#be9ca7',0,-L*.12,0,L,L,L);f.add('armeriaCorollaBase','corolla-base-bronze-armeria',s.flowerColor,0,0,0,L,L,L);f.add(kit.bud,'ovary-superior-bronze-armeria','#c7b28f',0,L*.04,0,L*.055,L*.07,L*.055);
+   for(let k=0;k<5;k++){
+    const az=k*TAU/5,rr=L*.10,tip=[Math.sin(az)*rr,L*.33,Math.cos(az)*rr];f.add('armeriaPinkPetal','petal-bronze-armeria',kit.shade(rand,s.flowerColor,.022),0,0,0,L,L,L,0,az,0);f.branch([Math.sin(az)*rr*.7,L*.18,Math.cos(az)*rr*.7],tip,L*.010,'#dfb7cb','filament-bronze-armeria');f.add(kit.bud,'anther-bronze-armeria','#d9ba9e',...tip,L*.020,L*.033,L*.020);
+    const sty=[Math.sin(az)*L*.04,L*.35,Math.cos(az)*L*.04];f.branch([Math.sin(az)*L*.018,L*.04,Math.cos(az)*L*.018],sty,L*.008,'#e6ccd3','style-bronze-armeria');f.add(kit.bud,'stigma-bronze-armeria','#ead9db',...sty,L*.010,L*.024,L*.010,.2,az,0);
+   }
+  }
+ }
+}
+
 export function asclepiasPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='milkweedBroadLeaf'||type==='milkweedNarrowLeaf')return [u*.5*sn**(type==='milkweedBroadLeaf'?.66:.80),.055*sn-.09*t*t+.026*u*u*sn,t];
@@ -16561,6 +16597,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='bronzeArmeria'){drawBronzeArmeria(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='asclepiasReferences'){drawAsclepiasReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='parrotBranchTulips'){drawParrotBranchTulips(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='pinkRainLily'){drawPinkRainLily(b,{info,s,detail,rand},kit);return;}
