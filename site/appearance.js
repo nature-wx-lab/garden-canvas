@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.414';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.415';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -533,3 +533,5 @@ Object.assign(TRAIT_VALUES,{mat:'低いマット状に広がる',armeriaFine:'�
 Object.assign(TRAIT_VALUES,{meadowTrifoliumNarrow:'細長い3枚の小葉からなる複葉',meadowTrifoliumObovate:'先が丸い倒卵形の3枚の小葉',meadowPeaSpike:'蝶形花と長い萼の歯をもつ円柱状の花穂',hopPeaHead:'黄色い蝶形花が松かさ状に集まる小花房',silkyCalyxHead:'小さな白桃色の蝶形花と、長い毛のある萼の穂'});
 
 Object.assign(TRAIT_VALUES,{somekawaSword:'目立つ中脈のない剣状の根出葉',somekawaThreeFalls:'赤紫に濃い砂子模様の外花被片3枚と、立ち上がる内花被片3枚・花柱の枝'});
+
+Object.assign(TRAIT_VALUES,{paraneeFloating:'基部に深い切れ込みがある丸い浮葉',paraneeMottle:'緑の浮葉に入る暗紫色の不規則な斑',paraneeYellowStreaks:'黄色に紅色の筋・斑が入り、多数の花弁が重なる花'});

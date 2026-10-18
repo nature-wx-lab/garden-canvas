@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.414';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.415';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.414';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.415';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15627,6 +15627,37 @@ function drawIridReferenceSpikes(b,{info,s,detail,rand},kit){
   }
  }
 }
+export function paraneePoint(type,t,u){
+ if(type==='paraneeLeaf'){
+  const notch=1-.94*Math.exp(-(((u-Math.PI)/.20)**2)),r=t*notch;
+  return [Math.sin(u)*.49*r,.006*r*r*Math.sin(u*4),Math.cos(u)*.50*r-.025*r];
+ }
+ const sn=Math.max(0,Math.sin(Math.PI*t)),sepal=type==='paraneeSepal';
+ return [u*(sepal?.20:.26)*sn**.85,.20*t+.045*sn+.045*u*u*sn,.015+.985*t];
+}
+function drawParanee(b,{info,s,detail,rand},kit){
+ const h=s.height,w=s.spread,n=Math.max(3,Math.round(10*detail*s.leafDensity)),surface=Math.min(.008,h*.10);
+ if(s.leafDensity>0)for(let j=0;j<n;j++){
+  const yaw=j*2.399,R=w*.30*Math.sqrt((j+.5)/n),L=Math.min(.24,w*.25)*(.76+rand()*.24)*s.leafScale;
+  b.add('paraneeLeaf','leaf-paranee',kit.shade(rand,s.leafColor,.025),Math.sin(yaw)*R,surface+rand()*.001,Math.cos(yaw)*R,L,L,L,0,yaw,0);
+ }
+ if(!s.bloom)return;
+ const flowers=Math.max(1,Math.round(2*detail*s.flowerDensity));
+ for(let j=0;j<flowers;j++){
+  const yaw=j*2.399+.5,R=w*.16,at=[Math.sin(yaw)*R,Math.min(.030,h*.20),Math.cos(yaw)*R],L=Math.min(.075,h*.60,w*.16),f=flowerFrame(b,at,0,yaw);
+  if(j===0)f.flower([0,L*.20,0],L*1.15,.60,0);
+  for(let k=0;k<4;k++)f.add('paraneeSepal','sepal-paranee','#839255',0,-L*.020,0,L*.91,L*.91,L*.91,.04,k*TAU/4,0);
+  for(let row=0;row<4;row++){
+   const count=[10,9,7,5][row],size=L*(1-row*.15);
+   for(let k=0;k<count;k++)f.add('paraneePetal','petal-paranee-'+row,kit.shade(rand,'#efcf67',.018),0,row*L*.032,0,size,size,size,-row*.24,k*TAU/count+row*.37,0);
+  }
+  for(let k=0;k<48;k++){
+   const yaw=k*2.399,R=L*(.035+.16*Math.sqrt((k+.5)/48)),base=[Math.sin(yaw)*R,L*.055,Math.cos(yaw)*R],tip=[Math.sin(yaw)*R*1.12,L*(.27+.18*(1-k/48)),Math.cos(yaw)*R*1.12];
+   f.branch(base,tip,L*.008,'#e6bc32','filament-paranee');f.add(kit.bud,'anther-paranee','#f2c73c',...tip,L*.020,L*.048,L*.016,.15,yaw,0);
+  }
+ }
+}
+
 export function somekawaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='somekawaSword')return [u*.5*sn**.32,.995*t,.09*t*t+.003*u*u*sn];
@@ -16704,6 +16735,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='alliumReferences'){drawAlliumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='daylilyReferences'){drawDaylilyReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='iridReferenceSpikes'){drawIridReferenceSpikes(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='paraneeWaterlily'){drawParanee(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='somekawaIris'){drawSomekawaIris(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='irisReferenceForms'){drawIrisReferenceForms(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='retailLilyReferences'){drawRetailLilyReferences(b,{info,s,detail,rand},kit);return;}
