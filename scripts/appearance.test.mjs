@@ -5763,7 +5763,7 @@ test('dahlia single flowers expose disc florets; decorative flowers have cupped 
  const collect=layers=>{const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,r:.05,color:'#d56',shape:'dahliaHead',petals:layers===1?8:16,layers},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});return parts;};
  const single=collect(1),double=collect(6);assert.equal(single.filter(p=>p.shape==='dahliaRay').length,8);assert.equal(single.filter(p=>p.kind==='discFloret').length,84);assert.ok(double.filter(p=>p.shape==='dahliaRay').length>60);assert.equal(double.filter(p=>p.kind==='discFloret').length,0);
  const noble=plantModel(makePlant('p-2f4cd5c4df5b',572,2,2),view(7)),prima=plantModel(makePlant('p-04e6395e6b6f',573,2,2),view(7));
- assert.ok(noble.children.some(m=>m.geometry.userData.dahliaTwistedRay&&m.userData.component.includes('outside-844985')));assert.ok(prima.children.some(m=>m.geometry.userData.dahliaSplitRay));dispose(noble);dispose(prima);
+ assert.ok(noble.children.some(m=>m.geometry.userData.dahliaTwistedRay&&m.userData.component.includes('outside-844985')));assert.ok(prima.children.some(m=>m.geometry.userData.decorativeDahliaSplitRay));dispose(noble);dispose(prima);
 });
 
 test('ericaceous shrubs keep their individual wood across winter and spring and distinguish five floral structures',()=>{
@@ -7266,4 +7266,18 @@ test('six dark leaved dahlias separate narrow rays semi double heads tubular dis
   }
  }
  for(const type of ['darkDahliaCutLeaf','darkDahliaRoundRay','darkDahliaNarrowRay'])for(let i=0;i<=64;i++)for(const u of [-1,0,1])assert.ok(darkDahliaPoint(type,i/64,u).every(Number.isFinite));
+});
+
+test('three retail double dahlias keep variable bicolour heads warm yellow cups and red basal rays without turning a maximum into a height range',()=>{
+ const ids=['p-1cdcecfd96de','p-0be9f80af5ba','p-e11b0ce510c0'],types=['berrycream','apricotstar','juho'],hs=[.45,.7,.75],ws=[.5,.6,.6];
+ for(const [ci,id] of ids.entries()){
+  const info=CATALOG[id],a=info.appearance,type=types[ci];assert.equal(a.status,'partial');assert.equal(info.spread,null);assert.equal(info.bloomKnown,ci===0);assert.equal(a.petals,undefined);assert.equal(a.flowerLayers,undefined);assert.equal(a.leaflets,undefined);assert.equal(a.flowerPalette.retailDahlia,type);assert.equal(a.inflorescence,'head');assert.equal(a.arrangement,'opposite');if(ci===0){assert.equal(info.height,null);assert.match(info.care,/50cm以下.*下限/);}else assert.match(info.bloomText,/8月.*一例/);
+  for(const small of [false,true])for(let month=1;month<=12;month++){
+   const p={...makePlant(id,42300+ci*10+(small?1:0),2,2),height:small?.22:hs[ci],spread:small?.32:ws[ci],leafHeight:small?.17:hs[ci]*.75},g=plantModel(p,view(month)),label=`retail dahlia ${type} small=${small} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+   try{
+    const bloom=(ci===0?[5,6,7,8,9,10]:[5,6,7,9,10,11]).includes(month),heads=count('receptacle-retail-dahlia'),rays=g.children.filter(m=>m.userData.component.startsWith('petal-retail-dahlia-'));assert.equal(heads>0,bloom,label);assert.equal(rays.length>0,bloom,label);assert.equal(count('involucre-retail-dahlia-inner')>0,bloom,label);assert.equal(count('involucre-retail-dahlia-outer')>0,bloom,label);assert.equal((g.userData.flowerTargets?.length||0)>0,bloom,label);if([12,1,2,3].includes(month))assert.equal(g.children.length,0,label);else assert.ok(count('leaf-maxi-dahlia')>0,label);for(const m of rays)assert.equal(m.geometry.userData.maxiDahliaRoundRay,true,label);assert.ok(!g.children.some(m=>/anther|stigma|ovary|fruit|seed|discFloret/.test(m.userData.component)),label);
+    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const b=m.boundingBox.clone();if(b.min.y<-.002&&['leaf-maxi-dahlia','stem'].includes(m.userData.component)){b.makeEmpty();const matrix=new Matrix4(),v=new Vector3(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);for(let j=0;j<pos.count;j++)b.expandByPoint(v.fromBufferAttribute(pos,j).applyMatrix4(matrix));}}assert.ok(b.min.y>=-.002&&b.max.y<p.height*1.13,label+' height '+m.userData.component+' '+b.min.y+' '+b.max.y);assert.ok(Math.max(Math.abs(b.min.x),Math.abs(b.max.x),Math.abs(b.min.z),Math.abs(b.max.z))<p.spread*.75,label+' width '+m.userData.component);}
+   }finally{dispose(g);}
+  }
+ }
 });
