@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.423';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.424';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.423';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.424';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15684,7 +15684,7 @@ export function decorativeDahliaPoint(type,t,u){
  return [u*width*(wave?1+.07*Math.sin(t*18+u*3):1),t-.025*t**5-(split?.10*t**8*(1-u*u)**3:0),-.13*t*t-.18*u*u*sn+(wave?.105*Math.sin(t*15)*u*sn:.04*t**6)];
 }
 function drawDecorativeDahliaHead(b,{x,y,z,r,color,tilt,yaw,type},kit){
- const f=flowerFrame(b,[x,y,z],tilt,yaw),rows=type==='kokoro'?6:type==='uwaki'?8:type==='lalala'?6:7,outer=type==='kokoro'?22:type==='uwaki'?26:type==='lalala'?22:24,phase=kit.rand()*TAU,mode=kit.rand();
+ const profile={kokoro:{rows:6,count:22,shape:'decorativeDahliaRay',width:.95,jitter:.045},lalala:{rows:6,count:22,shape:'decorativeDahliaWaveRay',width:1.02,jitter:.24},uwaki:{rows:8,count:26,shape:'decorativeDahliaWaveRay',width:1.02,jitter:.20},primadonna:{rows:7,count:24,shape:'decorativeDahliaSplitRay',width:1.02,jitter:.20},tenshi:{rows:7,count:22,shape:'maxiDahliaPointedRay',width:1.15,jitter:.045,bud:'#d7a7c9'},noble:{rows:7,count:24,shape:'decorativeDahliaWaveRay',width:1.12,jitter:.24,bud:'#a16ca8'},shugyo:{rows:7,count:23,shape:'decorativeDahliaWaveRay',width:1.20,jitter:.26,bud:'#ce6d50'}}[type],f=flowerFrame(b,[x,y,z],tilt,yaw),rows=profile.rows,outer=profile.count,phase=kit.rand()*TAU,mode=kit.rand();
  for(let row=0;row<2;row++)for(let k=0;k<(row?9:6);k++){
   const L=r*(row?.42:.34);f.add('maxiDahliaLeaf','involucre-decorative-'+(row?'inner':'outer'),row?'#8e9975':'#61764d',0,-r*(row?.05:.10),0,L*(row?.63:.45),L,L,row?2.02:2.25,k*TAU/(row?9:6)+row*.27,0);
  }
@@ -15692,16 +15692,16 @@ function drawDecorativeDahliaHead(b,{x,y,z,r,color,tilt,yaw,type},kit){
  for(let row=0;row<rows;row++){
   const t=row/(rows-1),count=Math.round(outer*(1-t*.53)),L=r*(.95-t*.74);
   for(let k=0;k<count;k++){
-   const an=k*TAU/count+row*.39,rr=r*.05,variation=(kit.rand()-.5)*(type==='kokoro'?.045:type==='lalala'?.24:.20),shape=type==='primadonna'?'decorativeDahliaSplitRay':type==='kokoro'?'decorativeDahliaRay':'decorativeDahliaWaveRay';
+   const an=k*TAU/count+row*.39,rr=r*.05,variation=(kit.rand()-.5)*profile.jitter,shape=profile.shape;
    let col=color,kind='petal-decorative-'+type;
    if(type==='uwaki'){
     const sector=(an-phase+TAU)%TAU,white=mode>.22&&(mode>.88||sector<1.35+.55*Math.sin(row*1.7+k*.37)||sector>5.8&&row<3||kit.rand()<.035);
     col=white?(row%3===0?'#edbdcc':'#eee2e3'):row%4===0?'#bd536a':color;kind=white?'petal-decorative-uwaki-pale':'petal-decorative-uwaki-red';
    }
-   f.add(shape,kind,kit.shade(kit.rand,col,.022),Math.sin(an)*rr,r*.13*t,Math.cos(an)*rr,L*(type==='kokoro'?.95:1.02),L,L,1.61-t*1.08+variation,an,variation*.45);
+   f.add(shape,kind,kit.shade(kit.rand,col,.022),Math.sin(an)*rr,r*.13*t,Math.cos(an)*rr,L*profile.width,L,L,1.61-t*1.08+variation,an,variation*.45);
   }
  }
- for(let k=0;k<7;k++)f.add('decorativeDahliaRay','rayBud-decorative-'+type,type==='uwaki'?color:type==='lalala'?'#e7c7c8':'#d69286',0,r*.23,0,r*.09,r*.16,r*.16,.27,k*TAU/7,0);
+ for(let k=0;k<7;k++)f.add('decorativeDahliaRay','rayBud-decorative-'+type,profile.bud||(type==='uwaki'?color:type==='lalala'?'#e7c7c8':'#d69286'),0,r*.23,0,r*.09,r*.16,r*.16,.27,k*TAU/7,0);
 }
 
 function drawSmilePeachHead(b,{x,y,z,r,color,tilt,yaw},kit){
