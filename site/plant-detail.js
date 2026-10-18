@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.347';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.349';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.347';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.349';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,12 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function berzeliaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),needle=type==='berzeliaNeedle',sepal=type==='berzeliaSepal';
+ const w=(needle?.5:sepal?.36:.5)*Math.pow(sn,needle?.25:.55);
+ return [u*w,t,.08*t*t+(needle?.15:.12)*u*u*sn+(sepal?-.08:.08)*Math.pow(t,4)];
+}
+
 export function asteliaPoint(type,t,u){
  const tepal=type==='asteliaTepal',spathe=type==='asteliaSpathe';
  if(tepal){const w=.50*Math.pow(Math.max(0,Math.sin(Math.PI*t)),.65),turn=t*t*.28;return [u*w*Math.cos(turn),t-.22*Math.pow(t,5),.30*t*t+u*w*Math.sin(turn)];}
@@ -14274,14 +14280,17 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
  if(shape==='berzeliaHead'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),n=palette.small?65:90,dry=palette.dry,closed=palette.closed;
-  f.add(bud,closed?'bud':dry?'seed':'receptacle',closed?'#a3b478':dry?'#8f7b5d':'#c5c795',0,0,0,r*.86,r*.86,r*.86);
+  const seedColor=palette.seedColor||'#9d8767';f.add(bud,closed?'bud':dry?'seed':'receptacle',closed?'#a3b478':dry?seedColor:'#c5c795',0,0,0,r*.86,r*.86,r*.86);
   for(let j=0;j<n;j++){
    const t=(j+.5)/n,an=j*2.399,yy=1-2*t,rr=Math.sqrt(1-yy*yy),fl=flowerFrame(f,[Math.sin(an)*rr*r*.86,yy*r*.86,Math.cos(an)*rr*r*.86],Math.acos(yy),an),size=r*.21;
-   if(closed||dry){fl.add(bud,closed?'bud':'seed',closed?'#b1be83':'#9d8767',0,0,0,size*.40,size*.45,size*.40);continue;}
+   fl.add('berzeliaSepal','bract-berzelia',closed?'#9ca970':dry?seedColor:'#a5b57b',0,-.0002,0,.00045,.0012,.0012,.9,an,0);
+   if(closed||dry){fl.add(bud,closed?'bud':'seed',closed?'#b1be83':seedColor,0,0,0,size*.40,size*.45,size*.40);continue;}
+   fl.add(bud,'hypanthium-berzelia','#a6b47e',0,.0002,0,.00035,.00045,.00035);
    for(let k=0;k<5;k++){
-    const a=k*TAU/5,end=[Math.sin(a)*size*.32,size*.9,Math.cos(a)*size*.32];
-    fl.add('petal','petal',color,0,0,0,size*.45,size*.63,size,.6,a,0);fl.branch([0,0,0],end,size*.035,color,'filament');fl.add(bud,'anther',color,...end,size*.07,size*.08,size*.06);
-   }fl.branch([0,0,0],[0,size,0],size*.028,color,'style');
+    const a=k*TAU/5,end=[Math.sin(a)*.00065,.0025,Math.cos(a)*.00065];
+    fl.add('berzeliaSepal','sepal','#a8b681',0,0,0,.00036,.0007,.0007,.6,a,0);
+    fl.add('berzeliaPetal','petal',color,0,.0003,0,.00055,.0013,.0013,.85,a,0);fl.branch([0,.0003,0],end,.000055,color,'filament');fl.add(bud,'anther',color,...end,.00015,.00018,.00012);
+   }fl.branch([0,.0003,0],[0,.0021,0],.000045,color,'style');fl.add(bud,'stigma-berzelia',color,0,.0021,0,.00010,.00010,.00010);
   }return;
  }
  if(shape==='chloranthusSpike'){
@@ -15665,12 +15674,14 @@ function drawBerzelias(b,{info,s,detail,rand},kit){
    if(j>0){const mid=at.map((v,k)=>v+(tip[k]-v)*.5),end=[mid[0]+Math.sin(aa+.8)*w*.05,mid[1]+h*.09,mid[2]+Math.cos(aa+.8)*w*.05];spray(mid,end,.0008,aa+.8,false);}
   }
  }
- for(const l of leaves)b.add('needle','leaf',kit.shade(rand,green,.035),...l.at,l.length*1.7,l.length,l.length,.63,l.yaw,0);
+ for(const l of leaves){const f=flowerFrame(b,l.at,.63,l.yaw);f.add('berzeliaNeedle','leaf',kit.shade(rand,green,.035),0,0,0,.0008,l.length,l.length);let prev=[0,0,-.00002];for(let j=1;j<=5;j++){const to=berzeliaPoint('berzeliaNeedle',j/5,0).map((v,k)=>v*[.0008,l.length,l.length][k]);to[2]-=.00002;f.branch(prev,to,.000045,'#91a167','vein-leaf-berzelia');prev=to;}}
  for(const {at,yaw} of heads){
   const count=small?4:3;
   for(let j=0;j<count;j++){
    const aa=yaw+j*2.399,reach=j===0?0:Math.min(.022,w*.025),tip=[at[0]+Math.sin(aa)*reach,at[1]+.013+(j===0?.012:0),at[2]+Math.cos(aa)*reach];b.branch(at,tip,.00075,a.stemColor,'peduncle');
-   detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:small?.005:.0075,color:s.flowerColor,shape:'berzeliaHead',palette:{small,closed:s.headPhase==='bud',dry:s.headPhase==='dry'},yaw:aa},{...kit,rand});
+   b.add(kit.bud,'peduncle-node-berzelia',a.stemColor,tip[0],tip[1]-.004,tip[2],.0016,.0023,.0016);
+   const seedColor=s.month<8?'#8c9c60':s.month<10?'#a57066':'#8f7b5d';
+   detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:small?.005:.0075,color:s.flowerColor,shape:'berzeliaHead',palette:{small,closed:s.headPhase==='bud',dry:s.headPhase==='dry',seedColor},yaw:aa},{...kit,rand});
   }
  }
 }
