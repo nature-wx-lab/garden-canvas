@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {retailTulipPoint,camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5846,6 +5846,22 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  }
 });
 
+
+test('two retail tulips separate tepal interiors from exteriors and preserve unresolved cultivar organs and identity',()=>{
+ const ids=['p-dcf9b2106055','p-c4d06319b026'],sizes=[[.3,.30,.18],[.15,.22,.10]],smallSizes=[[.12,.18,.08],[.06,.13,.04]];
+ for(const [ci,id] of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
+  const [height,spread,leafHeight]=(small?smallSizes:sizes)[ci],p={...makePlant(id,38200+ci*10+(small?1:0),2,2),height,spread,leafHeight},g=plantModel(p,view(month)),label=`${id} small=${small} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),kind=ci?'oculata':'annika',petals=count('petal-retail-tulip-'+kind+'-inner')+count('petal-retail-tulip-'+kind+'-outer'),leaves=count('leaf-retail-tulip');
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(CATALOG[id].bloomKnown,false);assert.equal(g.scale.x,1,label);assert.equal(petals>0,CATALOG[id].bloom.includes(month),label);assert.equal(count('petal-retail-tulip-'+kind+'-inner'),count('petal-retail-tulip-'+kind+'-outer'),label);assert.equal(petals%6,0,label);assert.equal(count('vein-leaf-retail-tulip'),leaves*39,label);if([1,7,8,9,10,11,12].includes(month))assert.equal(g.children.length,0,label);
+   if(ci){assert.equal(count('anther-oculata'),petals,label);assert.equal(count('ovary-oculata'),petals/6,label);assert.equal(count('stigma-oculata'),petals/2,label);assert.equal(count('style-oculata'),0,label);}else assert.ok(!g.children.some(m=>/anther|stigma|style|ovary/.test(m.userData.component)),label);
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const b=m.boundingBox,within=(x,y,z)=>y>=-.002&&y<p.height*1.13&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;if(!within(b.min.x,b.min.y,b.min.z)||!within(b.max.x,b.max.y,b.max.z)){const matrix=new Matrix4(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),label+' actual vertex '+m.userData.component);}}}
+    if(m.userData.component.startsWith('petal-retail-tulip')){const normal=m.geometry.attributes.normal;assert.ok(normal.getY(28*25+12)>0,'front face points into the flower for side-specific paint');}
+   }
+  }finally{dispose(g);}
+ }
+ assert.deepEqual(CATALOG[ids[0]].bloom,[3,4]);assert.deepEqual(CATALOG[ids[1]].bloom,[3,4,5]);assert.equal(CATALOG[ids[1]].latin,'');for(const id of ids)assert.equal(CATALOG[id].spread,null);
+ for(const type of ['clusianaNarrowLeaf','oculataNarrowLeaf','annikaOuterTepal','annikaInnerTepal','oculataOuterTepal','oculataInnerTepal'])for(let i=0;i<=24;i++)for(const u of [-1,0,1])assert.ok(retailTulipPoint(type,i/24,u).every(Number.isFinite));
+});
 
 test('Caerulea Camassia has basal keeled leaves six radial tepals and stamens with a single three-lobed style',()=>{
  const id='p-b97cacc25ab1',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'basal');assert.equal(info.bloomKnown,false);assert.deepEqual(info.height,[1,1]);assert.equal(info.spread,null);

@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.369';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.370';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.369';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.370';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15027,6 +15027,38 @@ function drawLilies(b,{info,s,detail,rand},kit){
 }
 
 
+export function retailTulipPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type.endsWith('Leaf'))return [u*.5*sn**.55,.84*Math.sin(t*1.4),.25*t**1.35+.004*u*u*sn];
+ const annika=type.startsWith('annika'),inner=type.includes('Inner'),half=annika?(inner?.29:.24):(inner?.43:.34),notch=!annika&&inner?.038*Math.exp(-u*u*25)*t**14:0;
+ return [u*half*sn**(inner?.5:.65),.55*t-.07*sn+.025*u*u*sn-notch,.06+.94*t];
+}
+function drawRetailTulips(b,{info,s,detail,rand},kit){
+ const annika=info.appearance.flowerPalette.type==='annika',h=s.height,w=s.spread,n=Math.max(2,Math.round((annika?4:5)*detail)),green=s.leafDensity<.5?'#b0a875':s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.22*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],L=Math.min(annika?.030:.028,h*(annika?.25:.35)),top=h*(.92+rand()*.06)-L,axis=t=>[root[0]+Math.sin(yaw)*h*.018*t*t,top*t,root[2]+Math.cos(yaw)*h*.018*t*t],leaves=Math.max(1,Math.round((annika?4:3)*s.leafDensity));
+  if(s.leafDensity>0)for(let j=0;j<leaves;j++){
+   const y=s.leafHeight*.24*j/Math.max(1,leaves-1),at=axis(y/top),length=Math.min(annika?.20:.14,(s.leafHeight-y)/.82,w*.70)*s.leafScale*(.9+rand()*.1),width=Math.min(annika?.012:.014,length*.10),f=flowerFrame(b,at,.06+j*.03,yaw+j*2.399),type=annika?'clusianaNarrowLeaf':'oculataNarrowLeaf';
+   f.add(type,'leaf-retail-tulip',kit.shade(rand,green,.025),0,0,0,width,length,length);
+   for(const u of [-.5,0,.5]){let p=retailTulipPoint(type,.02,u),from=[p[0]*width,p[1]*length,p[2]*length+.00005];for(let k=1;k<=13;k++){p=retailTulipPoint(type,.02+k*.074,u);const to=[p[0]*width,p[1]*length,p[2]*length+.00005];f.branch(from,to,.00004,'#98ad96','vein-leaf-retail-tulip');from=to;}}
+   if(y>0)b.branch(root,at,.0008,green,'lower-stem-retail-tulip');
+  }
+  if(!s.bloom)continue;
+  let from=root;for(let k=1;k<=20;k++){const to=axis(k/20);b.branch(from,to,annika?.0012:.0009,'#729367','stem-retail-tulip');from=to;}
+  const f=flowerFrame(b,axis(1),.02,yaw),opening=i%3===0?-.48:i%3===1?-.12:.10;
+  for(let j=0;j<6;j++){
+   const inner=j%2===1,type=(annika?'annika':'oculata')+(inner?'InnerTepal':'OuterTepal'),petal=flowerFrame(f,[0,inner?L*.014:0,0],0,j*TAU/6);
+   petal.add(type,'petal-retail-tulip-'+(annika?'annika':'oculata')+(inner?'-inner':'-outer'),annika?'#ecd4b6':'#e9ece7',0,0,0,L,L,L,opening,0,0);
+  }
+  if(!annika){
+   f.add(kit.bud,'ovary-oculata','#545571',0,L*.10,0,L*.070,L*.080,L*.070);
+   for(let j=0;j<6;j++){
+    const an=j*TAU/6,rr=L*.16,tip=[Math.sin(an)*rr,L*.24,Math.cos(an)*rr];f.branch([Math.sin(an)*rr*.7,L*.04,Math.cos(an)*rr*.7],tip,L*.014,'#404963','filament-oculata');f.add(kit.bud,'anther-oculata','#393547',...tip,L*.028,L*.065,L*.028,.1,an,0);
+   }
+   for(let j=0;j<3;j++){const an=j*TAU/3;f.add(kit.bud,'stigma-oculata','#8d899d',Math.sin(an)*L*.030,L*.20,Math.cos(an)*L*.030,L*.028,L*.012,L*.045,0,an,0);}
+  }
+ }
+}
 export function camassiaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='camassiaStrapLeaf')return [u*.5*(.70+.30*sn)*Math.max(0,1-t)**.55,.82*Math.sin(t*1.42),.20*t**1.3+.004*u*u*sn];
@@ -15723,6 +15755,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='retailTulipCrowns'){drawRetailTulips(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='camassiaRacemes'){drawCamassiaRacemes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='autumnCyclamenCrowns'){drawAutumnCyclamens(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='coumCrowns'){drawCoumCrowns(b,{info,s,detail,rand},kit);return;}

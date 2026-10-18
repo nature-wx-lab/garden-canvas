@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.369';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.370';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -491,3 +491,5 @@ Object.assign(TRAIT_VALUES,{coumRounded:'丸形〜弱い心形の葉',coumSilver
 Object.assign(TRAIT_VALUES,{confusumThickHeart:'厚く光沢があり、角ばった切れ込みのある心形葉',cypriumHeart:'浅い波状の縁と銀斑のある心形葉',ciliciumOval:'卵形〜心形の小葉と淡い斑',cyclamenMottle:'緑地に淡緑〜銀色の不規則な斑（個体差あり）',cyclamenWithAuricles:'5裂片が反り返り、花口に耳状の部分がある花',cyclamenWithoutAuricles:'細い5裂片が反り返り、花口に耳状の部分がない花'});
 
 Object.assign(TRAIT_VALUES,{camassiaKeel:'株元から出る細長い葉と浅い溝・平行脈',camassiaRegularStar:'6枚の花被が放射状に開く花と6本の雄しべ'});
+
+Object.assign(TRAIT_VALUES,{retailTulipNarrow:'下部の茎に互生する細長い葉と平行脈',annikaBicolor:'外側が濃いピンク、内側がアプリコット色の6枚の花被',oculataBlueEye:'白い6枚の花被の内側に青い基部と黒い雄しべ'});
