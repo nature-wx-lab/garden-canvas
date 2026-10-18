@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.372';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.373';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -497,3 +497,5 @@ Object.assign(TRAIT_VALUES,{retailTulipNarrow:'下部の茎に互生する細長
 Object.assign(TRAIT_VALUES,{borderTulipBroad:'下部の茎に互生する幅広い灰緑色の葉と平行脈',queenDarkCup:'深い黒紫色のカップ状の花',springGreenCup:'クリーム白の花被の中央に緑の帯が入る花',slawaOrangeEdge:'紫の花被にオレンジの縁が入る花'});
 
 Object.assign(TRAIT_VALUES,{bulbocodiumTerete:'株元から出る細い半円柱状の葉',narcissusKeel:'株元から出る細長い葉と浅い折れ・平行脈',goldenHoopFlower:'細い6枚の花被と大きく開く黄色のラッパ',thaliaNoddingFlower:'2輪ずつうつむく白花と後ろへ反る細い花被',minnowSmallCup:'白〜淡レモン色の花被と小さな黄色のカップが房咲きになる花',paperwhiteSmallCup:'白い花被と小さな白いカップが房咲きになる花'});
+
+Object.assign(TRAIT_VALUES,{martagonParallel:'茎を囲む輪生葉と上部のまばらな葉・平行脈',martagonRecurved:'下向きの6枚の花被が強く巻き返り、6本の雄しべが垂れる花',pinkMorningOpen:'淡い縁と斑点のあるピンクの花被が、やや下向きに開く花'});

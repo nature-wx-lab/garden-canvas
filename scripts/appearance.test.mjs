@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {narcissusReferencePoint,borderTulipPoint,retailTulipPoint,camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {martagonReferencePoint,narcissusReferencePoint,borderTulipPoint,retailTulipPoint,camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5677,7 +5677,7 @@ test('lilies keep post-bloom stems and leaves, disappear in winter and distingui
  const ids=['p-392c5c138700','p-94f40439ccf6','p-f9c4c1d9516c','p-93b32f544b95','p-7dee70379f12','p-02278595e2b4','p-4fd5c4cf997f','p-766ad87ba1b2','p-eb357ca3a902','p-f51b46ab9078','p-e1e2a401d139','p-0f9140ebfaaa','p-e60d3f1b54fd'];
  for(const id of ids){
   const p=makePlant(id,611,2,2);assert.equal(plantModel(p,view(1)).children.length,0,id);
-  const after=plantModel(p,view(9));assert.ok(after.children.some(m=>m.geometry.userData.liliumLeaf),id);assert.ok(!after.children.some(m=>m.userData.component.startsWith('petal-lilium')),id);dispose(after);
+  const after=plantModel(p,view(9));assert.ok(after.children.some(m=>m.geometry.userData.liliumLeaf||m.geometry.userData.martagonBlade),id);assert.ok(!after.children.some(m=>m.userData.component.startsWith('petal-lilium')),id);dispose(after);
   for(let month=1;month<=12;month++){const g=plantModel(p,view(month));for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}dispose(g);}
  }
  assert.equal(seasonAt(CATALOG['p-f9c4c1d9516c'],6).bloom,true);assert.equal(seasonAt(CATALOG['p-f9c4c1d9516c'],8).bloom,false);
@@ -5691,7 +5691,7 @@ test('lilium tepals and six stamens follow upward, outward and downward flower a
   const center=stamens.reduce((n,p)=>n+p.y,0)/6;
   if(direction)assert.equal(Math.sign(center),direction);else assert.ok(Math.abs(center)<a.flowerRadius*.06);
  }
- const leaves=id=>{const out=[],info=CATALOG[id],p=makePlant(id,612,2,2),s=stateAt(p,view(6));drawDetailedHerb({add:(shape,kind,color,x,y,z)=>{if(shape==='liliumLeaf')out.push({y});},branch(){}},{info,p,s,detail:1,rand:()=>.5},{bud:'bud',shade:(_,c)=>c});return out;};
+ const leaves=id=>{const out=[],info=CATALOG[id],p=makePlant(id,612,2,2),s=stateAt(p,view(6));drawDetailedHerb({add:(shape,kind,color,x,y,z)=>{if(shape==='liliumLeaf'||shape==='martagonBlade'&&kind==='leaf-martagon-reference')out.push({y});},branch(){}},{info,p,s,detail:1,rand:()=>.5},{bud:'bud',shade:(_,c)=>c});return out;};
  const whorled=leaves('p-e1e2a401d139'),alternate=leaves('p-392c5c138700');assert.ok(whorled.filter(p=>p.y===whorled[0].y).length>=6);assert.equal(alternate.filter(p=>p.y===alternate[0].y).length,1);
 });
 
@@ -5846,6 +5846,21 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  }
 });
 
+
+test('four martagon references connect nodding flowers preserve whorls and distinguish retail from wild flowering',()=>{
+ const ids=['p-766ad87ba1b2','p-e1e2a401d139','p-0f9140ebfaaa','p-e60d3f1b54fd'],types=['kuruma','claude','snowy','pink'];
+ for(const [ci,id] of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
+  const height=small?(ci?.55:.30):ci?1.8:.8,spread=small?(ci?.28:.23):ci?.50:.40,leafHeight=small?(ci?.32:.18):ci?1.1:.48,p={...makePlant(id,38500+ci*10+(small?1:0),2,2),height,spread,leafHeight},g=plantModel(p,view(month)),label=`${id} small=${small} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),flowers=count('ovary-martagon-reference'),leaves=count('leaf-martagon-reference');
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(CATALOG[id].bloomKnown,ci===0);assert.equal(CATALOG[id].spread,null);assert.equal(g.scale.x,1,label);assert.equal(flowers>0,CATALOG[id].bloom.includes(month),label);assert.equal(count('petal-martagon-'+types[ci]),flowers*6,label);assert.equal(count('anther-martagon-reference'),flowers*6,label);assert.equal(count('style-martagon-reference'),flowers,label);assert.equal(count('stigma-martagon-reference'),flowers,label);assert.equal(count('vein-leaf-martagon-reference'),leaves*70,label);if([1,2,12].includes(month))assert.equal(g.children.length,0,label);if(month===9)assert.ok(leaves>0,label);assert.ok(!g.children.some(m=>/fruit|seed|bulbil|calyx|corona/.test(m.userData.component)),label);
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const b=m.boundingBox,within=(x,y,z)=>y>=-.003&&y<p.height*1.12&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;if(!within(b.min.x,b.min.y,b.min.z)||!within(b.max.x,b.max.y,b.max.z)){const matrix=new Matrix4(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),label+' actual vertex '+m.userData.component);}}}
+    if(m.userData.component==='anther-martagon-reference'){const mat=new Matrix4();m.getMatrixAt(0,mat);const axis=new Vector3().setFromMatrixColumn(mat,1);assert.ok(axis.y<0,'exserted stamens follow downward flower axis');}
+   }
+  }finally{dispose(g);}
+ }
+ for(const type of ['martagonBlade',...types.flatMap(t=>[t+'InnerMartagonTepal',t+'OuterMartagonTepal'])])for(let i=0;i<=24;i++)for(const u of [-1,0,1])assert.ok(martagonReferencePoint(type,i/24,u).every(Number.isFinite));
+ assert.ok(martagonReferencePoint('kurumaInnerMartagonTepal',1,0)[1]<0,'tip recurves behind opening');assert.ok(martagonReferencePoint('pinkInnerMartagonTepal',1,0)[2]>martagonReferencePoint('kurumaInnerMartagonTepal',1,0)[2]*3,'Pink Morning is more open in domestic photos');
+});
 
 test('five Narcissus references distinguish terete leaves reflexed tepals and separate hollow coronas',()=>{
  const ids=['p-05ede9b738cf','p-461a3f1117fe','p-7515ad4e3b8e','p-b2237cff2e6a','p-13c5bffcd7a5'],types=['golden','thalia','minnow','paperwhite','retailPaperwhite'],sizes=[[.15,.28,.12],[.40,.32,.30],[.20,.25,.16],[.30,.32,.25],[.45,.38,.33]],smallSizes=[[.07,.15,.07],[.16,.18,.12],[.08,.15,.06],[.12,.18,.09],[.18,.22,.13]];
