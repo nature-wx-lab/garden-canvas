@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {miniIrisPoint,hyacinthReferencePoint,narcissusCupPoint,nativeLilyPoint,martagonReferencePoint,narcissusReferencePoint,borderTulipPoint,retailTulipPoint,camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {freesiaReferencePoint,miniIrisPoint,hyacinthReferencePoint,narcissusCupPoint,nativeLilyPoint,martagonReferencePoint,narcissusReferencePoint,borderTulipPoint,retailTulipPoint,camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5707,7 +5707,7 @@ test('urns, reflexed hyacinth tepals and one-sided freesia sprays are anatomical
  const collect=(shape,palette={})=>{const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,r:.02,color:'#ddd',shape,palette},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});return parts;};
  const muscari=collect('muscariUrn'),hyacinth=collect('hyacinthFlower'),freesia=collect('freesiaFlower'),double=collect('freesiaFlower',{style:'double',throat:'#ddccaa'});
  assert.equal(muscari.filter(p=>p.shape==='muscariUrn').length,1);assert.equal(hyacinth.filter(p=>p.shape==='hyacinthReflex').length,6);assert.equal(freesia.filter(p=>p.shape==='freesiaLobe').length,6);assert.equal(double.filter(p=>p.shape==='freesiaLobe').length,12);assert.equal(freesia.filter(p=>p.kind==='anther').length,3);
- for(const [id,shape] of [['p-0ee7dee3eb63','muscariUrn'],['p-89a52aa63fc6','hyacinthReflex'],['p-718a3437316d','freesiaLobe']]){const g=plantModel(makePlant(id,602,2,2),view(4));assert.ok(g.children.some(m=>m.geometry.userData[shape]||(shape==='hyacinthReflex'&&m.geometry.userData.hyacinthReflexLobe)));dispose(g);}
+ for(const [id,shape] of [['p-0ee7dee3eb63','muscariUrn'],['p-89a52aa63fc6','hyacinthReflex'],['p-718a3437316d','freesiaLobe']]){const g=plantModel(makePlant(id,602,2,2),view(4));assert.ok(g.children.some(m=>m.geometry.userData[shape]||(shape==='hyacinthReflex'&&m.geometry.userData.hyacinthReflexLobe)||(shape==='freesiaLobe'&&m.geometry.userData.freesiaLowerLobe)));dispose(g);}
  assert.equal(CATALOG['p-22edb96199c8'].appearance.flowerPalette.tip,'#eeeade');assert.ok(CATALOG['p-0ee7dee3eb63'].aliases.includes('ムスカリ ジェニーロビンソン'));
 });
 
@@ -5846,6 +5846,19 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  }
 });
 
+
+test('four freesia references join unequal lobes to curved tubes and separate unilateral stamens from bifid styles',()=>{
+ const ids=['p-21250dff15b3','p-1b6da361575a','p-718a3437316d','p-e19de18723c1'],types=['blueSky','sandra','peachQueen','white'];
+ for(const [ci,id]of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,39100+ci*10+(small?1:0),2,2),height:small?.15:ci===2?.50:.4,spread:small?.22:.38,leafHeight:small?.10:.26},g=plantModel(p,view(month)),label=id+' small='+small+' month='+month,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),flowers=count('tube-freesia-reference-'+types[ci]),leaves=count('leaf-freesia-reference');
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(CATALOG[id].bloomKnown,true);assert.equal(CATALOG[id].spread,null);assert.equal(g.scale.x,1,label);assert.equal(flowers>0,[3,4].includes(month),label);assert.equal(count('tepal-freesia-reference-'+types[ci]+'-lower'),flowers*3,label);assert.equal(count('tepal-freesia-reference-'+types[ci]+'-upper'),flowers*3,label);assert.equal(count('anther-freesia-reference'),ci===2?0:flowers*3,label);assert.equal(count('style-branch-freesia-reference'),flowers*3,label);assert.equal(count('stigma-tip-freesia-reference'),flowers*6,label);assert.equal(count('ovary-inferior-freesia-reference'),flowers,label);assert.equal(count('vein-leaf-freesia-reference'),leaves*45,label);assert.equal(count('inner-petal-freesia-reference')>0,ci===2&&flowers>0,label);if([7,8].includes(month))assert.equal(g.children.length,0,label);assert.ok(!g.children.some(m=>/fruit|seed|bulbil/.test(m.userData.component)),label);
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const b=m.boundingBox,within=(x,y,z)=>y>=-.003&&y<Math.max(p.height,p.leafHeight)*1.15&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;if(!within(b.min.x,b.min.y,b.min.z)||!within(b.max.x,b.max.y,b.max.z)){const matrix=new Matrix4(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),label+' actual vertex '+m.userData.component);}}}}
+  }finally{dispose(g);}
+ }
+ for(const type of ['freesiaFanLeaf','freesiaCurvedTube','freesiaUpperLobe','freesiaLowerLobe','freesiaInnerLobe'])for(let i=0;i<=24;i++)for(const u of [-1,0,1])assert.ok(freesiaReferencePoint(type,i/24,u).every(Number.isFinite));
+ const tube=freesiaReferencePoint('freesiaCurvedTube',1,0),lobe=freesiaReferencePoint('freesiaLowerLobe',0,0);assert.ok(Math.abs(tube[1]-lobe[1])<1e-12&&Math.abs(tube[2]-(lobe[2]+.14))<1e-12,'tube joins lobe ring at bent throat');assert.ok(freesiaReferencePoint('freesiaUpperLobe',.8,0)[1]>freesiaReferencePoint('freesiaLowerLobe',.8,0)[1],'upper tepal creates a larger hood');assert.equal(seasonAt(CATALOG[ids[0]],11).groundDormant,false);assert.match(CATALOG[ids[3]].latin,/white single flower type/);
+});
 
 test('four miniature iris references keep square leaves three falls three standards and three petaloid styles distinct',()=>{
  const ids=['p-83455ccfe550','p-e07c146d9e20','p-5ab42afe5e28','p-5b3272352a33'],types=['gold','painted','frozen','hodgkin'];

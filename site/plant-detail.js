@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.383';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.385';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.383';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.385';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,46 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function freesiaReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='freesiaFanLeaf')return [u*.5*sn**.50,.92*Math.sin(t*1.40),.24*t**1.40+.016*u*u*sn];
+ if(type==='freesiaCurvedTube'){
+  const az=u*Math.PI,r=t<.35?.04+.03*Math.sin(t*Math.PI):.067+.263*((t-.35)/.65)**1.5;return [Math.sin(az)*r,1.15*t,.14*t*t+Math.cos(az)*r];
+ }
+ const upper=type==='freesiaUpperLobe',inner=type==='freesiaInnerLobe',az=u*Math.PI/6*Math.max(0,1-t)**.48,r=.33+(upper?.60:inner?.42:.52)*Math.sin(t*Math.PI*.60);
+ return [Math.sin(az)*r,1.15+(upper?.56:inner?.60:.42)*t-(upper?.04:inner?.03:.12)*t*t*t,Math.cos(az)*r];
+}
+function drawFreesiaReferences(b,{info,s,detail,rand},kit){
+ const type=info.appearance.flowerPalette.type,double=type==='peachQueen',h=s.height,w=s.spread,n=Math.max(2,Math.round(4*detail)),green=s.leafDensity<.5?'#aba674':s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.21*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R];
+  if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(5*s.leafDensity));j++){
+   const rank=Math.floor(j/2),ang=yaw+(j%2)*Math.PI,L=Math.min(.36,s.leafHeight/.90,w)*s.leafScale*(1-rank*.08),W=Math.min(.014,L*.055),f=flowerFrame(b,[root[0]+Math.sin(yaw)*rank*.0015,.001+rank*.001,root[2]+Math.cos(yaw)*rank*.0015],.035+rank*.075,ang);
+   f.add('freesiaFanLeaf','leaf-freesia-reference',kit.shade(rand,green,.025),0,0,0,W,L,L);
+   for(const u of [-.6,0,.6]){let p=freesiaReferencePoint('freesiaFanLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00006];for(let k=1;k<=15;k++){p=freesiaReferencePoint('freesiaFanLeaf',.02+k*.065,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00006];f.branch(from,to,.000045,'#9ab18d','vein-leaf-freesia-reference');from=to;}}
+  }
+  if(!s.bloom)continue;
+  const L=Math.min(.026,h*.15),base=[root[0],h*(.70+rand()*.035),root[2]],spike=t=>[base[0]+Math.sin(yaw)*w*.30*t*t,base[1]+h*.10*t,base[2]+Math.cos(yaw)*w*.30*t*t];b.branch(root,base,Math.min(.0018,h*.008),'#7e9b6d','scape-freesia-reference');let prev=base;
+  for(let j=0;j<6;j++){
+   const at=spike(j/5);b.branch(prev,at,L*.035,'#8ba573','rachis-freesia-reference');prev=at;b.add('narrow','bract-freesia-reference','#8ba475',...at,L*.16,L*.45,L*.45,.45,yaw,0);
+   const end=[at[0]+Math.sin(yaw)*L*.20,at[1]+L*.12,at[2]+Math.cos(yaw)*L*.20];b.branch(at,end,L*.025,'#9bad7c','pedicel-freesia-reference');
+   if(j>=4){b.add(kit.bud,'bud-freesia-reference',j===5?'#9fb17b':s.flowerColor,...end,L*.15,L*(j===5?.40:.62),L*.15,.45,yaw,0);continue;}
+   const pitch=.50+j*.07,f=flowerFrame(b,end,pitch,yaw),innerCount=double?3+((i+j)%2)*3:0;if(j===3)f.flower([0,L*.85,L*.14],L*1.25);
+   f.add(kit.bud,'ovary-inferior-freesia-reference','#91a578',0,-L*.04,0,L*.075,L*.09,L*.075);f.add('freesiaCurvedTube','tube-freesia-reference-'+type,s.flowerColor,0,0,0,L,L,L);
+   for(let k=0;k<6;k++){
+    const lower=[0,1,5].includes(k),upper=k===3;f.add(upper?'freesiaUpperLobe':'freesiaLowerLobe','tepal-freesia-reference-'+type+(lower?'-lower':'-upper'),s.flowerColor,0,0,L*.14,L,L,L,0,k*TAU/6,0);
+   }
+   for(let k=0;k<innerCount;k++)f.add('freesiaInnerLobe','inner-petal-freesia-reference',s.flowerColor,0,L*.05,L*.14,L*.78,L*.94,L*.78,0,k*TAU/innerCount+.25,0);
+   if(!double)for(let k=0;k<3;k++){
+    const tip=[(k-1)*L*.085,L*1.23,-L*.025],start=[(k-1)*L*.05,L*.55,-L*.025];let from=start;for(let q=1;q<=8;q++){const tt=q/8,to=[start[0]+(tip[0]-start[0])*tt,start[1]+(tip[1]-start[1])*tt,-L*.025-L*.06*Math.sin(tt*Math.PI)];f.branch(from,to,L*.008,'#e3dac8','filament-freesia-reference');from=to;}f.add(kit.bud,'anther-freesia-reference','#e1d6b4',...tip,L*.020,L*.075,L*.020,.04,0,0);
+   }
+   let from=[0,L*.10,-L*.04];for(let q=1;q<=10;q++){const tt=q/10,to=[0,L*(.10+1.23*tt),-L*(.04+.09*Math.sin(tt*Math.PI))];f.branch(from,to,L*.009,'#e5e1cf','style-freesia-reference');from=to;}
+   for(let k=0;k<3;k++){
+    const az=(k-1)*.8,tip=[Math.sin(az)*L*.13,L*1.48,-L*.05+Math.cos(az)*L*.05];f.branch(from,tip,L*.009,'#eee9d9','style-branch-freesia-reference');for(const side of [-1,1]){const end=[tip[0]+side*L*.045,tip[1]+L*.035,tip[2]+L*.035];f.branch(tip,end,L*.008,'#eee9d9','stigma-tip-freesia-reference');}
+   }
+  }
+ }
+}
 export function miniIrisPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='miniIrisSquareLeaf'){
@@ -15995,6 +16035,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='freesiaReferences'){drawFreesiaReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='miniIrisReferences'){drawMiniIrisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='hyacinthReferences'){drawHyacinthReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='narcissusCupReferences'){drawNarcissusCupReferences(b,{info,s,detail,rand},kit);return;}
