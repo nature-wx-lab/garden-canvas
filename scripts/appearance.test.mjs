@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5844,6 +5844,20 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  for(const id of ['p-565ee45c51d5','p-44f97cf79bf4','p-000781af85b9','p-daa064e003e3','p-f46d74ba4101','p-825e967e9c4a','p-32106ff38f0a','p-91f07ff1c009','p-c8c917cb2b80','p-07ea6016b5e3','p-8a7a81df41f2','p-f18c6641444c','p-69e7e8e3af56','p-5fec2e343923']){
   const c=CATALOG[id];for(const field of ['leafShape','leafPattern','persistence','flowerShape','habit','barkPattern'])if(c.appearance[field])assert.ok(TRAIT_VALUES[c.appearance[field]],`${id} ${field}`);assert.ok(!appearanceSummary(c).includes(c.appearance.leafShape));
  }
+});
+
+test('Astelia cultivar blades retain keeled three-ranked leaves veins and protected winter colour without invented sex organs',()=>{
+ for(const [i,id] of ['p-81879c76470e','p-928f3f1df9b2'].entries())for(const [height,spread] of [[.5,.4],[.18,.20]])for(let month=1;month<=12;month++){
+  const p=makePlant(id,36300+i*10,2,2);Object.assign(p,{height,spread,leafHeight:height});const g=plantModel(p,view(month));try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.ok(g.children.some(m=>m.geometry.userData.asteliaBlade));assert.ok(g.children.some(m=>m.geometry.userData.asteliaYoung));assert.ok(g.children.some(m=>m.userData.component==='vein-leaf-astelia'));
+   assert.equal(g.children.some(m=>m.geometry.userData.asteliaTepal),[5,6].includes(month));assert.equal(g.children.some(m=>m.geometry.userData.asteliaSpathe),[5,6].includes(month));
+   assert.ok(!g.children.some(m=>['anther','ovary','style','fruit'].includes(m.userData.component)));
+   for(const m of g.children)for(const values of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...values].every(Number.isFinite),`${id} month=${month}`);
+  }finally{dispose(g);}
+ }
+ for(const type of ['asteliaBlade','asteliaYoung','asteliaTepal','asteliaSpathe'])for(let j=0;j<=20;j++)for(let k=0;k<=20;k++)assert.ok(asteliaPoint(type,j/20,k/10-1).every(Number.isFinite));
+ for(const id of ['p-81879c76470e','p-928f3f1df9b2'])assert.notEqual(stateAt(makePlant(id,1,2,2),view(1)).leafColor,stateAt(makePlant(id,1,2,2),view(7)).leafColor);
+ const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,r:.004,color:'#bbb',shape:'asteliaSmall'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});assert.equal(parts.filter(p=>p.shape==='asteliaTepal').length,6);assert.ok(!parts.some(p=>p.kind==='anther'||p.kind==='ovary'));
 });
 
 test('Convolvulus reference models retain distinct silver leaves finite seasonal geometry and conservative winter states',()=>{

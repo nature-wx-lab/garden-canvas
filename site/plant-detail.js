@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.345';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.347';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.345';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.347';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,14 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function asteliaPoint(type,t,u){
+ const tepal=type==='asteliaTepal',spathe=type==='asteliaSpathe';
+ if(tepal){const w=.50*Math.pow(Math.max(0,Math.sin(Math.PI*t)),.65),turn=t*t*.28;return [u*w*Math.cos(turn),t-.22*Math.pow(t,5),.30*t*t+u*w*Math.sin(turn)];}
+ if(spathe){const w=.5*Math.pow(Math.max(0,Math.sin(Math.PI*t)),.55);return [u*w,t,.18*t*t+.23*Math.abs(u)*w];}
+ const young=type==='asteliaYoung',a=t*(young?1.15:2.2),w=.5*Math.pow(1-t,.58);
+ return [u*w,Math.sin(a)*(young?1.095:1),(1-Math.cos(a))*(young?.30:.45)+Math.abs(u)*.024*w+.0015*Math.cos(u*26)*Math.sin(Math.PI*t)];
+}
+
 export function convolvulusPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='bindweedFunnel'){
@@ -14259,8 +14267,10 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
  if(shape==='asteliaSmall'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw);
-  for(let j=0;j<6;j++)f.add('petal','petal',color,0,0,0,r*.35,r,r,1.10,j*TAU/6,0);
-  f.add(bud,'nectary','#948466',0,r*.10,0,r*.18,r*.12,r*.18);return;
+  const L=palette.length||.004,W=palette.width||.002;
+  f.add('tube','perianth-tube-astelia',color,0,.00035,0,.00065,.0007,.00065);
+  for(let j=0;j<6;j++)f.add('asteliaTepal','petal',color,0,.0007+(j%2)*.0001,0,W*(j%2?.78:1),L,L,1.10,j*TAU/6,0);
+  return;
  }
  if(shape==='berzeliaHead'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),n=palette.small?65:90,dry=palette.dry,closed=palette.closed;
@@ -15622,13 +15632,16 @@ function drawAstelias(b,{info,s,detail,rand},kit){
   const an=i*2.399,reach=i===0?0:w*.10,root=[Math.sin(an)*reach,.006,Math.cos(an)*reach],rotation=rand()*TAU;
   for(let j=0;j<15;j++){
    const age=j/14,angle=rotation+(j%3)*TAU/3+Math.sin(j*2)*.11,length=h*(.55+Math.sin(age*Math.PI)*.38+rand()*.08),pitch=.04+age*Math.atan(w*.23/h);
-   b.add(j<3?'asteliaYoung':'asteliaBlade','leaf-astelia',kit.shade(rand,green,.08),root[0],root[1]+(1-age)*h*.035,root[2],length*.8,length,w*.45,pitch,angle,(rand()-.5)*.12);
+   const type=j<3?'asteliaYoung':'asteliaBlade',f=flowerFrame(b,[root[0],root[1]+(1-age)*h*.035,root[2]],pitch,angle),W=Math.min(a.leafWidth||.02,length*.055),D=w*.45;
+   f.add(type,'leaf-astelia',kit.shade(rand,green,.045),0,0,0,W,length,D);
+   for(const side of [-.52,0,.52]){let prev=asteliaPoint(type,0,side).map((v,k)=>v*[W,length,D][k]);for(let k=1;k<=16;k++){const to=asteliaPoint(type,k/16,side).map((v,k)=>v*[W,length,D][k]);to[2]-=.00014;f.branch(prev,to,.00013,side===0?'#a5ad8c':'#b9beae','vein-leaf-astelia');prev=to;}}
   }
   if(!s.bloom||i>1)continue;
   const end=[root[0],h*.46,root[2]];b.branch(root,end,.0032,'#94907c','peduncle');
   for(let j=0;j<7;j++){
    const t=j/7,aa=an+j*2.399,axis=[root[0],h*(.20+t*.24),root[2]],tip=[axis[0]+Math.sin(aa)*w*.14*(1-t*.5),axis[1]+h*.09,axis[2]+Math.cos(aa)*w*.14*(1-t*.5)];b.branch(axis,tip,.0012,'#979475','rachis');
-   for(let k=0;k<9;k++){const v=k/9,ang=aa+k*2.399,at=axis.map((x,l)=>x+(tip[l]-x)*v),out=[at[0]+Math.sin(ang)*.006,at[1]+.002,at[2]+Math.cos(ang)*.006];b.branch(at,out,.0003,'#949276','pedicel');detailedFlower(b,{x:out[0],y:out[1],z:out[2],r:.004,color:s.flowerColor,shape:'asteliaSmall',tilt:1.2,yaw:ang},{...kit,rand});}
+   b.add('asteliaSpathe','spathe-astelia',green,...axis,.010,h*.16,h*.16,.55,aa,0);
+   for(let k=0;k<9;k++){const v=k/9,ang=aa+k*2.399,at=axis.map((x,l)=>x+(tip[l]-x)*v),out=[at[0]+Math.sin(ang)*.006,at[1]+.002,at[2]+Math.cos(ang)*.006];b.branch(at,out,.0003,'#949276','pedicel');detailedFlower(b,{x:out[0],y:out[1],z:out[2],r:.004,color:s.flowerColor,shape:'asteliaSmall',palette:a.flowerPalette,tilt:1.2,yaw:ang},{...kit,rand});}
   }
  }
 }
