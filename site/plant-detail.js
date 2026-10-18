@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.343';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.345';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.343';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.345';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11198,6 +11198,19 @@ export function brunneraLeafPoint(t,u){
  return [u*width,t-.24*Math.pow(Math.sin(Math.abs(u)*Math.PI/2),.8)*Math.pow(1-t,3),.14*t*t+.105*Math.abs(u)*Math.sin(Math.PI*t)+rib+.018*u*Math.sin(t*7+2)+.012*Math.sin(t*16+u*7)*u*u];
 }
 
+export function convolvulusPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='bindweedFunnel'){
+  const r=(.07+.93*Math.pow(t,1.9))*(1+.022*Math.cos(5*u)*t);return [Math.sin(u)*r,t+.035*Math.cos(5*u)*t*t+.008*Math.sin(35*u)*t*t,Math.cos(u)*r];
+ }
+ if(type==='bindweedTwistBud'){
+  const an=u+t*.65,r=Math.pow(sn,.72)*(1-.10*t)*(1+.08*Math.cos(5*u));return [Math.sin(an)*r,t,Math.cos(an)*r];
+ }
+ if(type==='bindweedDivided')return [u,t,.07*t*t+.045*u*u+.007*Math.cos(t*34)*Math.abs(u)];
+ const basal=type==='bindweedBasalLeaf',sepal=type==='bindweedSepal',width=(basal?.35:sepal?.45:.16)*Math.pow(sn,basal?.55:sepal?.5:.35)*(basal?.94+.06*Math.cos(t*33):1);
+ return [u*width,t-(basal?.15:0)*Math.abs(u)*Math.pow(sn,.4)*Math.pow(1-t,4),.055*t*t+.04*u*u*sn];
+}
+
 export function trainedVineSurfacePoint(type,x,y){
  const sepal=type==='trainedVineSepal';return [x,y,(sepal?.025:.060)*y*y+.055*x*x+.010*Math.cos((y-Math.abs(x)*.20)*36)*Math.abs(x)*Math.sin(Math.PI*y)];
 }
@@ -14230,14 +14243,19 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   return;
  }
  if(shape==='bindweedFunnel'){
-  const f=flowerFrame(b,[x,y-r*.65,z],tilt,yaw);
-  f.add('bindweedFunnel',patternKind('petal','base',palette.eye),color,0,0,0,r,r,r);
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length||.026,calyx=palette.calyxLength||.007;
   for(let j=0;j<5;j++){
-   const an=j*TAU/5,tip=[Math.sin(an)*r*.10,r*.35,Math.cos(an)*r*.10];
-   f.add('narrow','sepal','#82905c',0,0,0,r*.44,r*.30,r,.15,an,0);
-   f.branch([0,r*.06,0],tip,r*.012,'#ded8ac','filament');f.add(bud,'anther','#d8cd9a',...tip,r*.035,r*.06,r*.025);
+   const an=j*TAU/5;f.add('bindweedSepal','sepal','#82905c',0,0,0,.004*(j>2?1.12:1),calyx,.004,.2,an,0);
   }
-  f.branch([0,r*.06,0],[0,r*.43,0],r*.015,'#e8debd','style');return;
+  for(const side of [-1,1])f.add('narrow','bracteole-bindweed','#8c9d7a',side*.0008,-.003,0,.00055,.005,.0007,.6,side*.7,0);
+  if(palette.closed){f.add('bindweedTwistBud','bud',palette.budColor||'#c5a7b2',0,0,0,.003,palette.budLength||.017,.003);return;}
+  f.add('bindweedFunnel',patternKind('petal','bindweed-base',palette.eye),color,0,0,0,r,L,r);
+  f.add(bud,'ovary-bindweed','#a4ad7c',0,.0012,0,.0010,.0013,.0010);f.add('tube','nectary-bindweed','#b4bc88',0,.0007,0,.00125,.0005,.00125);
+  for(let j=0;j<5;j++){
+   const an=j*TAU/5,tip=[Math.sin(an)*r*.10,L*(j%2?.37:.31),Math.cos(an)*r*.10];f.branch([0,.002,0],tip,.00011,'#ded8ac','filament');f.add(bud,'anther','#d8cd9a',...tip,.00035,.0007,.00025);
+  }
+  const split=palette.styleSplit||.008;f.branch([0,.001,0],[0,split,0],.00014,'#e8debd','style');
+  for(const side of [-1,1])f.branch([0,split,0],[side*.0012,split+.0035,0],.00012,'#e8debd','stigma-bindweed');return;
  }
  if(shape==='asteliaSmall'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw);
@@ -15570,31 +15588,31 @@ function drawDetailedVines(b,{info,s,detail,rand},kit){
 
 function drawSilverBindweeds(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,creep=a.architecture==='silveryBindweed',green=s.leafColor,leaves=[],flowers=[],n=Math.round((creep?18:26)*detail);
- const leaf=(at,yaw,size)=>{
+ const leaf=(at,yaw,size,basal=false)=>{
   const end=[at[0]+Math.sin(yaw)*size*.23,at[1]+size*.10,at[2]+Math.cos(yaw)*size*.23];b.branch(at,end,.00035,green,'petiole');
-  if(creep){
-   b.add('bindweedDivided','leaf-woolly',green,...end,size,size,size,1.25,yaw,0);
-  }else b.add('leaf','leaf-woolly',kit.shade(rand,green,.04),...end,size*.35,size,size,.58+rand()*.7,yaw,0);
+  const type=basal?'bindweedBasalLeaf':a.leafShape,f=flowerFrame(b,end,creep?1.25:.58+rand()*.7,yaw);f.add(type,'leaf-woolly',kit.shade(rand,green,.035),0,0,0,size,size,size);
+  const point=(t,u)=>{const p=convolvulusPoint(type,t,u).map(v=>v*size);p[2]-=.00012;return p;};
+  if(creep&&!basal)for(let j=0;j<5;j++){const an=(j-2)*.55,len=[.65,.86,1,.86,.65][j],tip=[Math.sin(an)*len,Math.cos(an)*len];let prev=point(0,0);for(let k=1;k<=7;k++){const t=k/7,to=point(tip[1]*t,tip[0]*t);f.branch(prev,to,.00009,'#ced3be','vein-leaf-bindweed');prev=to;}}
+  else{let prev=point(0,0);for(let k=1;k<=7;k++){const to=point(k/7,0);f.branch(prev,to,.00010,'#d1d6c7','vein-leaf-bindweed');prev=to;}}
  };
  for(let i=0;i<n;i++){
   const an=i*2.399,reach=w*(.06+rand()*.34),root=[Math.sin(an)*w*.035,.008,Math.cos(an)*w*.035],height=h*(.93-.40*Math.pow(reach/(w*.4),2));let prev=root;
   for(let j=1;j<=14;j++){
-   const t=j/14,aa=an+Math.sin(t*5+i)*.17,at=[root[0]+Math.sin(aa)*reach*t,creep?.009+Math.sin(t*Math.PI)*h*.28:height*t,root[2]+Math.cos(aa)*reach*t];
+   const t=j/14,aa=an+Math.sin(t*5+i)*.17,at=[root[0]+Math.sin(aa)*reach*t,creep?.009+Math.sin(t*Math.PI)*h*.55:height*t,root[2]+Math.cos(aa)*reach*t];
    b.branch(prev,at,(creep?.0012:.0032)*(1-t*.72),creep?'#8f9a7c':'#9b927b',creep?'runner':'wood');
-   if(j>2)leaves.push({at,yaw:aa+j*2.399,size:Math.min(creep?.055:.07,h*.23)});
+   if(j>2||creep)leaves.push({at,yaw:aa+j*2.399,size:Math.min(creep?(j<=2?.035:a.leafLength):a.leafLength,h*(creep&&j<=2?.35:.30)),basal:creep&&j<=2});
    if(j>6&&j%3===0){
-    const side=aa+(j%2?1.4:-1.4),tip=[at[0]+Math.sin(side)*w*.105,at[1]+h*(creep?.15:.16),at[2]+Math.cos(side)*w*.105];b.branch(at,tip,creep?.0007:.0015,green,creep?'runner':'wood');
-    for(let k=1;k<=8;k++){const v=k/8,pt=at.map((x,l)=>x+(tip[l]-x)*v);leaves.push({at:pt,yaw:side+k*2.399,size:Math.min(creep?.042:.058,h*.21)});}
+    const side=aa+(j%2?1.4:-1.4),tip=[at[0]+Math.sin(side)*w*.105,at[1]+h*(creep?.25:.16),at[2]+Math.cos(side)*w*.105];b.branch(at,tip,creep?.0007:.0015,green,creep?'runner':'wood');
+    for(let k=1;k<=8;k++){const v=k/8,pt=at.map((x,l)=>x+(tip[l]-x)*v);leaves.push({at:pt,yaw:side+k*2.399,size:Math.min(a.leafLength,h*(creep?.40:.21))});}
     flowers.push({at:tip,yaw:side});
    }prev=at;
   }flowers.push({at:prev,yaw:an});
  }
- for(const l of leaves)leaf(l.at,l.yaw,l.size);
+ for(const l of leaves)if(rand()<s.leafDensity)leaf(l.at,l.yaw,l.size*s.leafScale,l.basal);
  if(s.bloom)for(const {at,yaw} of flowers){
   if(rand()>.70*s.flowerDensity)continue;
   const tip=[at[0]+Math.sin(yaw)*.009,at[1]+Math.min(.045,h*.18),at[2]+Math.cos(yaw)*.009];b.branch(at,tip,.00055,green,'peduncle');
-  if(rand()<.17){b.add(kit.bud,'bud',creep?'#b7658f':'#d2b8b4',...tip,.003,.009,.003,.2,yaw,0);continue;}
-  detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:a.flowerRadius||.018,color:s.flowerColor,shape:'bindweedFunnel',palette:{eye:a.flowerEyeColor},tilt:.1+rand()*.75,yaw},{...kit,rand});
+  detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:a.flowerRadius||.018,color:s.flowerColor,shape:'bindweedFunnel',palette:{...a.flowerPalette,eye:a.flowerEyeColor,closed:rand()<.17},tilt:.1+rand()*.75,yaw},{...kit,rand});
  }
 }
 

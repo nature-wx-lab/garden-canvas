@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5844,6 +5844,25 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  for(const id of ['p-565ee45c51d5','p-44f97cf79bf4','p-000781af85b9','p-daa064e003e3','p-f46d74ba4101','p-825e967e9c4a','p-32106ff38f0a','p-91f07ff1c009','p-c8c917cb2b80','p-07ea6016b5e3','p-8a7a81df41f2','p-f18c6641444c','p-69e7e8e3af56','p-5fec2e343923']){
   const c=CATALOG[id];for(const field of ['leafShape','leafPattern','persistence','flowerShape','habit','barkPattern'])if(c.appearance[field])assert.ok(TRAIT_VALUES[c.appearance[field]],`${id} ${field}`);assert.ok(!appearanceSummary(c).includes(c.appearance.leafShape));
  }
+});
+
+test('Convolvulus reference models retain distinct silver leaves finite seasonal geometry and conservative winter states',()=>{
+ for(const [i,id] of ['p-2b334e413f89','p-c12c4f2a095b'].entries())for(const [height,spread] of i===0?[[.6,.8],[.18,.35]]:[[.2,.7],[.1,.3]])for(let month=1;month<=12;month++){
+  const p=makePlant(id,36200+i*10,2,2);Object.assign(p,{height,spread,leafHeight:height*.6});const g=plantModel(p,view(month)),a=CATALOG[id].appearance;
+  try{assert.equal(a.status,'partial');assert.ok(TRAIT_VALUES[a.leafShape]);for(const m of g.children)for(const data of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...data].every(Number.isFinite),`${id} month=${month}`);
+   assert.ok(g.children.some(m=>m.geometry.userData[a.leafShape]));assert.ok(g.children.some(m=>m.userData.component==='vein-leaf-bindweed'));
+   if(month===5){assert.ok(g.children.some(m=>m.geometry.userData.bindweedFunnel));assert.ok(g.children.some(m=>m.geometry.userData.bindweedTwistBud));assert.ok(g.children.some(m=>m.userData.component==='stigma-bindweed'));if(i===1)assert.ok(g.children.some(m=>m.geometry.userData.bindweedBasalLeaf));}
+   if(month===1)assert.ok(!g.children.some(m=>m.geometry.userData.bindweedFunnel));
+  }finally{dispose(g);}
+ }
+ const cneorum=CATALOG['p-2b334e413f89'],mary=CATALOG['p-c12c4f2a095b'];assert.match(cneorum.appearance.unconfirmed.join(' '),/10cm/);assert.equal(cneorum.appearance.flowerRadius,.02);assert.equal(mary.leaf,'unknown');assert.equal(mary.appearance.persistence,undefined);
+ for(const type of ['bindweedFunnel','bindweedTwistBud','silverBushLeaf','bindweedBasalLeaf','bindweedSepal'])for(let t=0;t<=20;t++)for(let j=0;j<=20;j++)assert.ok(convolvulusPoint(type,t/20,j/20*(type.includes('bindweedFunnel')||type.includes('TwistBud')?Math.PI*2:2)-1).every(Number.isFinite));
+});
+
+test('Convolvulus fused corolla has five included stamens and a single style with two stigma arms; closed bud omits open organs',()=>{
+ const parts=[],segments=[],b={add:(shape,kind)=>parts.push({shape,kind}),branch:(from,to,r,c,kind)=>segments.push({from,to,kind})},f={x:0,y:0,z:0,r:.02,color:'#ffffff',shape:'bindweedFunnel'},kit={bud:'bud',rand:()=>.5,shade:(_,c)=>c};
+ detailedFlower(b,f,kit);assert.equal(parts.filter(p=>p.shape==='bindweedFunnel').length,1);assert.equal(parts.filter(p=>p.kind==='sepal').length,5);assert.equal(parts.filter(p=>p.kind==='anther').length,5);assert.equal(segments.filter(p=>p.kind==='style').length,1);assert.equal(segments.filter(p=>p.kind==='stigma-bindweed').length,2);assert.ok(segments.filter(p=>p.kind==='filament').every(p=>p.to[1]<.026));
+ parts.length=0;segments.length=0;detailedFlower(b,{...f,palette:{closed:true}},kit);assert.equal(parts.filter(p=>p.shape==='bindweedTwistBud').length,1);assert.ok(!parts.some(p=>p.kind==='anther'||p.shape==='bindweedFunnel'));assert.equal(segments.length,0);
 });
 
 test('refined trained vines retain leaf veins single sterile sepals and forked flower to fruit clusters',()=>{

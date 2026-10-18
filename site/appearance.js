@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.343';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.345';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -461,3 +461,5 @@ Object.assign(TRAIT_VALUES,{gardenBellAmethystLeaf:'鋸歯と葉脈の起伏を�
 Object.assign(TRAIT_VALUES,{adenophoraLinearLeaf:'短い葉柄と低い鋸歯をもつ細長い互生茎葉',adenophoraLanceLeaf:'3〜6枚の輪生を参考に一節4枚で描く披針形の葉',adenophoraHeartLeaf:'属の資料を参考にした心形の根元の葉',adenophoraBellCup:'下を向く5浅裂の釣鐘形花冠と、花冠内の花柱',adenophoraSmallCup:'小さい筒状の5裂花冠から長く突き出す花柱',adenophoraDoubleBell:'外側と内側の花冠を重ねた八重咲きの参考'});
 
 Object.assign(TRAIT_VALUES,{balloonLeaf:'短い葉柄と鋸歯をもち、葉脈が目立つ卵形〜披針形の葉',rockSoapwortLeaf:'小さい全縁の対生葉',tallSoapwortLeaf:'3本の主脈が目立つ幅広い対生の単葉',cowherbLeaf:'茎を抱く青緑色の対生葉',trainedVineHeart:'細かい鋸歯と葉脈の起伏がある心形〜卵形の対生葉',trainedVineShallow:'浅く裂け、基部から5本の葉脈が広がる互生葉',trainedVineDivided:'深く裂け、基部から葉脈が広がる互生葉'});
+
+Object.assign(TRAIT_VALUES,{silverBushLeaf:'絹毛に覆われた細長い銀葉',bindweedBasalLeaf:'種の下葉を参考にした幅広い基部の葉'});
