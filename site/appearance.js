@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.390';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.392';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -501,3 +501,5 @@ Object.assign(TRAIT_VALUES,{bulbocodiumTerete:'株元から出る細い半円柱
 Object.assign(TRAIT_VALUES,{martagonParallel:'茎を囲む輪生葉と上部のまばらな葉・平行脈',martagonRecurved:'下向きの6枚の花被が強く巻き返り、6本の雄しべが垂れる花',pinkMorningOpen:'淡い縁と斑点のあるピンクの花被が、やや下向きに開く花'});
 
 Object.assign(TRAIT_VALUES,{nativeLanceolate:'茎に互生する披針形の葉と平行脈',regaleLinear:'茎にまばらに互生する細長い線形葉',rubellumFunnel:'淡い桃色の6枚の花被が開く小型の漏斗形の花',japonicumFunnel:'横向きの淡い桃色の漏斗形花と赤褐色の葯',auratumReflex:'白地に黄色い筋と赤褐色の斑点、先が反る大輪の花',regaleTrumpet:'内側の黄色いのどと、外側に桃色の筋が入る長い白いラッパ花'});
+
+Object.assign(TRAIT_VALUES,{pleatedIrisSword:'縦ひだと平行脈のある扇状の剣形葉'});

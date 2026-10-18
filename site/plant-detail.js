@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.390';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.392';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.390';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.392';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,47 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function iridSpikePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),glad=type.startsWith('communis');
+ if(type.endsWith('SpikeLeaf'))return [u*.5*sn**.40,.98*Math.sin(t*1.46),.22*t*t+(type.startsWith('lucifer')?.0035*Math.cos(u*Math.PI*3):.002*u*u)*sn];
+ if(type==='iridSpikeBract')return [u*.5*sn**.45,.98*t,.065*t*t+.035*u*u*sn];
+ if(type.endsWith('SpikeTube')){const a=u*Math.PI,r=glad?.035+.095*t*t:.035+.155*t*t;return [Math.sin(a)*r,(glad?.32:.80)*t,(glad?.10:.14)*t*t+Math.cos(a)*r];}
+ const upper=type.includes('Upper'),lower=type.includes('Lower'),hell=type.startsWith('hellfire'),half=glad?(upper?.30:lower?.20:.23):hell?.20:upper?.13:.18,angle=u*(Math.PI/6*(1-t)**2+half*sn**.65),r=(glad?.13:.19)+(glad?(upper?.98:lower?.61:.78):hell?(upper?.69:lower?.56:.63):upper?.90:lower?.50:.67)*Math.sin(t*Math.PI*.57);
+ return [Math.sin(angle)*r,(glad?.32:.80)+(upper?.21:lower?.06:.14)*t-(lower?.16:upper?.07:.10)*t*t*t,Math.cos(angle)*r];
+}
+function drawIridReferenceSpikes(b,{info,s,detail,rand},kit){
+ const type=info.appearance.flowerPalette.type,glad=type==='communis',hell=type==='hellfire',h=s.height,w=s.spread,n=Math.max(2,Math.round((glad?3:2)*detail)),L=Math.min(info.appearance.flowerRadius,h*.13),leafType=type+'SpikeLeaf',green=s.leafColor,stem=glad?'#78945e':hell?'#674b58':'#7f5c60';
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.22*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R];
+  if(s.leafDensity>0)for(let j=0;j<(glad?5:7);j++){
+   if(j/(glad?5:7)>=s.leafDensity)continue;
+   const rank=Math.floor(j/2),len=Math.min(s.leafHeight/.96,w*1.4)*s.leafScale*(1-rank*.08),width=Math.min(glad?.019:.032,len*.10),f=flowerFrame(b,[root[0]+rank*.0015,.001+rank*.001,root[2]],.025+rank*.09,yaw+j%2*Math.PI);
+   f.add(leafType,'leaf-irid-spike-'+type,kit.shade(rand,green,.025),0,0,0,width,len,len);
+   for(const u of [-.75,-.5,-.25,0,.25,.5,.75]){let p=iridSpikePoint(leafType,.02,u),from=[p[0]*width,p[1]*len,p[2]*len+.00005];for(let k=1;k<=16;k++){p=iridSpikePoint(leafType,.02+k*.060,u);const to=[p[0]*width,p[1]*len,p[2]*len+.00005];f.branch(from,to,.00004,'#9bad7e','vein-irid-spike');from=to;}}
+  }
+  if(!s.bloom)continue;
+  const base=[root[0],h*(glad?.51:.62),root[2]];b.branch(root,base,Math.min(.0026,h*.007),stem,'scape-irid-spike');
+  for(let branch=0;branch<(glad?1:3);branch++){
+   const az=yaw+(branch-1)*.65,origin=glad?base:[base[0],base[1]-h*branch*.06,base[2]],reach=glad?Math.min(w*.055,h*.04):Math.min(w*.38,h*.24)*(1-branch*.12),sites=glad?12:hell?8:10,open=glad?7:4,axis=t=>[origin[0]+Math.sin(az)*(reach*(glad?t:t*.45+t*t*.55)),origin[1]+h*(glad?.40*t:.24*Math.sin(t*Math.PI*.85)),origin[2]+Math.cos(az)*(reach*(glad?t:t*.45+t*t*.55))];let prev=origin;
+   for(let j=0;j<sites;j++){
+    const t=j/(sites-1),at=axis(t);b.branch(prev,at,Math.min(.0018,h*.005),stem,'rachis-irid-spike');prev=at;
+    const flowerYaw=az+(j%2?-.22:.22),bract=Math.min(glad?.030:.009,h*.08),end=[at[0]+Math.sin(flowerYaw)*L*.08,at[1],at[2]+Math.cos(flowerYaw)*L*.08];
+    for(let k=0;k<2;k++)b.add('iridSpikeBract','bract-irid-spike','#829668',...at,bract*(glad?.25:.38),bract*(k?.67:1),bract*(k?.67:1),.13+k*.09,flowerYaw+k*Math.PI,0);
+    if(j>=open){b.add(kit.bud,'bud-irid-spike',j>=sites-2?'#99a575':hell?'#8d454c':glad?'#b25791':'#bd4c3d',...end,L*.105,L*(j>=sites-2?.20:.47),L*.105,.90,flowerYaw,0);continue;}
+    const pitch=glad?1.22:1.05+.10*(j%2),f=flowerFrame(b,end,pitch,flowerYaw);if(i===n-1&&branch===(glad?0:2)&&j===open-1)f.flower([0,L*(glad?.40:.70),L*(glad?.10:.14)],L*(glad?1.30:1.2));
+    f.add(kit.bud,'ovary-inferior-irid-spike','#8b9c6b',0,-L*.05,0,L*.07,L*.07,L*.07);f.add(type+'SpikeTube','tube-irid-spike-'+type,s.flowerColor,0,0,0,L,L,L);
+    for(let k=0;k<6;k++){const part=k===3?'Upper':k===0||k===1||k===5?'Lower':'Side',lower=glad?k%2===0:[0,1,5].includes(k);f.add(type+part+'SpikeLobe','tepal-irid-spike-'+type+(lower?'-guide':'-plain'),s.flowerColor,0,0,L*(glad?.10:.14),L,L,L,0,k*TAU/6,0);}
+    for(let k=0;k<3;k++){
+     const tip=[(k-1)*L*.075,L*(glad?.85:1.29),-L*.035],start=[(k-1)*L*.035,L*(glad?.18:.40),-L*.035];let from=start;
+     for(let q=1;q<=9;q++){const tt=q/9,to=[start[0]+(tip[0]-start[0])*tt,start[1]+(tip[1]-start[1])*tt,-L*(.035+.055*Math.sin(tt*Math.PI))];f.branch(from,to,L*.008,'#d7c2a0','filament-irid-spike');from=to;}
+     f.add(kit.bud,'anther-irid-spike',glad?'#d4cdb9':'#d9b175',...tip,L*.018,L*(glad?.15:.12),L*.018,.07,0,0);
+    }
+    let from=[0,L*.10,-L*.06];for(let q=1;q<=12;q++){const tt=q/12,to=[0,L*(.10+(glad?.91:1.34)*tt),-L*(.06+.10*Math.sin(tt*Math.PI))];f.branch(from,to,L*.0085,'#e4d2b6','style-irid-spike');from=to;}
+    for(let k=0;k<3;k++){const a=(k-1)*.9,tip=[Math.sin(a)*L*.08,L*(glad?1.08:1.54),-L*.06+Math.cos(a)*L*.055];f.branch(from,tip,L*.0085,'#e9ddc3','style-branch-irid-spike');f.add(kit.bud,'stigma-irid-spike','#e8dbc2',...tip,L*(glad?.017:.012),L*.018,L*.010,.45,a,0);}
+   }
+  }
+ }
+}
 export function irisReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='referenceIrisSword')return [u*.5*sn**.35,.98*Math.sin(t*1.47),.22*t*t+.009*u*u*sn];
@@ -16123,6 +16164,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='iridReferenceSpikes'){drawIridReferenceSpikes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='irisReferenceForms'){drawIrisReferenceForms(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='retailLilyReferences'){drawRetailLilyReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='freesiaReferences'){drawFreesiaReferences(b,{info,s,detail,rand},kit);return;}
