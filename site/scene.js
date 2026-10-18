@@ -1,9 +1,13 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.364';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.364';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.365';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.365';
 
 const BACKDROP_COLOR='#65755a';
+export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
+export function keepCameraAboveGround(camera,target){
+ if(camera.position.y<CAMERA_FLOOR+1e-7){camera.position.y=CAMERA_FLOOR+1e-7;camera.lookAt(target);}
+}
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
 function mat(color){if(!sceneMaterials.has(color))sceneMaterials.set(color,new THREE.MeshStandardMaterial({color,roughness:.92}));return sceneMaterials.get(color);}
 const sphere=new THREE.SphereGeometry(1,8,6),box=new THREE.BoxGeometry(1,1,1);sharedGeometry.add(sphere);sharedGeometry.add(box);
@@ -48,7 +52,7 @@ export function createScene(container,onPick){
   const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.setSize(container.clientWidth,container.clientHeight,false);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
   renderer.domElement.setAttribute('aria-label','風に揺れる庭の3Dキャンバス');container.append(renderer.domElement);
-  const controls=new OrbitControls(camera,renderer.domElement);controls.maxPolarAngle=Math.PI/2-.025;controls.minDistance=.12;controls.maxDistance=400;controls.enableDamping=false;
+  const controls=new OrbitControls(camera,renderer.domElement);controls.maxPolarAngle=CAMERA_MAX_POLAR;controls.minDistance=.12;controls.maxDistance=400;controls.enableDamping=false;
   const hemisphere=new THREE.HemisphereLight('#e6efff','#77704b',.95);scene.add(hemisphere);
   const sun=new THREE.DirectionalLight('#fff0d2',2.8);sun.position.set(-7,12,8);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0002;sun.shadow.normalBias=.013;sun.shadow.radius=2.5;sun.shadow.intensity=.72;sun.shadow.camera.near=.5;sun.shadow.camera.far=350;scene.add(sun);
   const sunDirection=new THREE.Vector3(-7,12,8).normalize();scene.add(sun.target);
@@ -84,7 +88,7 @@ export function createScene(container,onPick){
   const visibilityObserver=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;dirty=true;lastTick=0;},{threshold:0});visibilityObserver.observe(container);
   document.addEventListener('visibilitychange',()=>{lastTick=0;dirty=true;});
   reduced.addEventListener('change',e=>{if(e.matches){setWind(0);container.dispatchEvent(new CustomEvent('wind-reduced'));}});
-  controls.addEventListener('change',()=>{camera.position.y=Math.max(.1,camera.position.y);fitShadow();dirty=true;});
+  controls.addEventListener('change',()=>{keepCameraAboveGround(camera,controls.target);fitShadow();dirty=true;});
   function dispose(group){if(!group)return;group.traverse(o=>{if(o.geometry&&!sharedGeometry.has(o.geometry))o.geometry.dispose();if(o.isInstancedMesh)o.dispose();if(o.material&&!sharedMaterials.has(o.material)&&!Array.from(sceneMaterials.values()).includes(o.material))o.material.dispose();});scene.remove(group);}
   function line(points,color,group=root,opacity=1){const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color,transparent:opacity<1,opacity}));group.add(l);return l;}
   function pondClip(base,mode='ground',owner=-1){

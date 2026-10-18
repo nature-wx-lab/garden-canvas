@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.364';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.365';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.364';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.365';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -14034,6 +14034,24 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   for(let j=0;j<3;j++){const an=j*TAU/3;f.add(bud,'stigma','#b3bc78',Math.sin(an)*r*.030,end[1],Math.cos(an)*r*.030,r*.040,r*.024,r*.040);}
   return;
  }
+ if(shape==='fritillariaBell'){
+  const type=palette.type||'palli',tepal=type==='acmo'?'fritAcmoTepal':type==='uva'?'fritUvaTepal':type==='baimo'?'fritBaimoTepal':'fritPalliTepal',f=flowerFrame(b,[x,y,z],Math.PI+tilt,yaw),L=r;
+  for(let j=0;j<6;j++){
+   const y=(j%2)*L*.008;
+   if(type==='uva'){
+    f.add('fritUvaBody','petal-frit-uva-body',color,0,y,0,L,L,L,0,j*TAU/6,0);f.add('fritUvaHem','petal-frit-uva-hem','#ddc265',0,y,0,L,L,L,0,j*TAU/6,0);
+   }else f.add(tepal,'petal-frit-'+type+(type==='acmo'?(j%2?'-inner':'-outer'):''),type==='acmo'&&j%2?'#8f6b54':color,0,y,0,L,L,L,0,j*TAU/6,0);
+  }
+  if(type!=='palli')return;
+  const scale=L/.04;f.add(bud,'ovary-frit-palli','#adc480',0,L*.04,0,.0005*scale,.005*scale,.0005*scale);
+  for(let j=0;j<6;j++){
+   const an=j*TAU/6,xx=Math.sin(an)*.003*scale,zz=Math.cos(an)*.003*scale;
+   f.branch([xx,L*.03,zz],[xx,.015*scale,zz],.00022*scale,'#d8d59b','filament-frit-palli');f.add(bud,'anther-frit-palli','#d4b754',xx,.021*scale,zz,.00095*scale,.0056*scale,.0010*scale,.10,an,0);
+  }
+  f.branch([0,.0066*scale,0],[0,.0196*scale,0],.00025*scale,'#b3c48e','style-frit-palli');
+  for(let j=0;j<3;j++){const an=j*TAU/3;f.branch([0,.0196*scale,0],[Math.sin(an)*.0015*scale,.0216*scale,Math.cos(an)*.0015*scale],.00018*scale,'#b3c48e','stigma-frit-palli');}
+  return;
+ }
  if(shape==='spanishBluebellFlower'){
   const f=flowerFrame(b,[x,y,z],Math.PI+tilt,yaw),tepal=palette.white?'spanishWhiteTepal':palette.pink?'spanishPinkTepal':palette.curled?'spanishCurledTepal':'spanishBroadTepal',L=r;
   f.add('spanishBasalTube','perianth-base-spanish-bluebell',color,0,0,0,L,L,L);
@@ -15009,6 +15027,41 @@ function drawLilies(b,{info,s,detail,rand},kit){
 }
 
 
+export function fritillariaPoint(type,t,u){
+ if(type==='fritUvaBody')return fritillariaPoint('fritUvaTepal',t*.82,u);
+ if(type==='fritUvaHem')return fritillariaPoint('fritUvaTepal',.82+t*.18,u);
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type.endsWith('Tepal')){
+  const uva=type==='fritUvaTepal',acmo=type==='fritAcmoTepal',baimo=type==='fritBaimoTepal',curl=Math.max(0,(t-.78)/.22);
+  const radius=uva?.10+.18*sn**.65+.07*t:acmo?.08+.20*sn+.18*t+.09*curl**1.4:baimo?.09+.48*t**1.3:.08+.50*Math.sin(t*1.4),tip=Math.max(0,Math.min(1,(t-.86)/.14)),smooth=tip*tip*(3-2*tip),half=uva?.56-.10*t**12:.58-(acmo?.38:.46)*smooth,angle=u*half,nectary=type==='fritPalliTepal'?.035*Math.exp(-((t-.27)**2/.0035+u*u*18)):0;
+  return [Math.sin(angle)*radius,t-(acmo?.08*curl*curl:.025*u*u*t**10),Math.cos(angle)*radius+nectary];
+ }
+ const cirrose=type==='fritCirroseLeaf',broad=type==='fritWideLeaf',q=Math.max(0,(t-.68)/.32),theta=q*TAU;
+ return [u*.5*sn**(broad?.48:.75)*(cirrose&&t>.68?(1-q)**.7:1),cirrose&&t>.68?.68+.12*Math.sin(theta):t,.075*t*t+(cirrose&&t>.68?.12*(1-Math.cos(theta)):0)+.010*u*u*sn];
+}
+function drawFritillarias(b,{info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,type=a.flowerPalette?.type||'palli',palli=type==='palli',uva=type==='uva',baimo=type==='baimo',n=Math.max(2,Math.round(3*detail)),green=s.leafDensity<.4?'#b4ad72':s.leafColor,leafTop=Math.min(s.leafHeight,h*.86),scale=s.bloom?1:s.shootScale;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,rr=w*.16*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*rr,.001,Math.cos(yaw)*rr],top=h*(.90+rand()*.07)*scale,axis=t=>[root[0]+Math.sin(yaw)*h*.025*t*t,top*t,root[2]+Math.cos(yaw)*h*.025*t*t];let previous=root;
+  for(let j=1;j<=20;j++){const to=axis(j/20);b.branch(previous,to,baimo?.0017:palli?.0015:.0012,a.stemColor||'#739257','stem-fritillaria');previous=to;}
+  const nodes=baimo?[{t:.12,n:2},{t:.28,n:2},{t:.44,n:3},{t:.60,n:3},{t:.74,n:3},{t:.88,n:3}]:Array.from({length:uva?4:palli?10:8},(_,j)=>({t:.1+j*(uva?.23:palli?.084:.108),n:1}));
+  if(s.leafDensity>0)for(const [ni,node] of nodes.entries())for(let j=0;j<Math.max(1,Math.round(node.n*s.leafDensity));j++){
+   if(node.n===1&&ni>0&&ni%Math.max(1,Math.round(1/s.leafDensity))!==0)continue;
+   const y=leafTop*node.t*scale,at=axis(y/top),angle=yaw+(baimo?j*TAU/node.n:ni*2.399),upper=baimo&&ni>=3,geometry=upper?'fritCirroseLeaf':palli?'fritWideLeaf':'fritLanceLeaf',L=Math.min(a.leafLength||.10,h*(palli?.5:.34),w*.65,Math.max(.006,leafTop*scale-y)*1.75)*s.leafScale*(.85+rand()*.15),W=Math.min(palli?.028:uva?.014:.011,L*(palli?.34:uva?.15:.11)),f=flowerFrame(b,at,.88+rand()*.15,angle);
+   f.add(geometry,'leaf-frit-'+(palli?'palli':upper?'cirrose':'linear'),kit.shade(rand,green,.03),0,0,0,W,L,L);
+   for(const u of [-.5,0,.5]){let p=fritillariaPoint(geometry,.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005];for(let k=1;k<=15;k++){p=fritillariaPoint(geometry,.02+k*.065,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(from,to,.000045,'#98aa83','vein-leaf-fritillaria');from=to;}}
+  }
+  if(!s.bloom)continue;
+  const count=baimo?4:palli?3:2,L=Math.min(palli?.04:type==='acmo'?.035:uva?.025:.028,h*.24);
+  for(let j=0;j<count;j++){
+   const t=baimo?.70+j*.075:.81+j*.075,at=axis(t),an=yaw+j*2.399,reach=Math.min(palli?.03:uva?.017:.025,w*.16),end=[at[0]+Math.sin(an)*reach,at[1]-h*.018,at[2]+Math.cos(an)*reach],control=[at[0]+Math.sin(an)*reach*.65,at[1]+h*.05,at[2]+Math.cos(an)*reach*.65];let from=at;
+   for(let k=1;k<=12;k++){const u=k/12,to=at.map((v,ax)=>(1-u)**2*v+2*(1-u)*u*control[ax]+u*u*end[ax]);b.branch(from,to,.00055,'#7d9c65','pedicel-fritillaria');from=to;}
+   b.add('narrow','bract-fritillaria',green,...at,.002,h*.065,.002,.72,an+Math.PI,0);
+   if(!uva&&j===count-1)b.add(kit.bud,'bud-fritillaria',palli?'#b3c37c':s.flowerColor,...end,L*.12,L*.34,L*.12,.25,an,0);
+   else detailedFlower(b,{x:end[0],y:end[1],z:end[2],r:L,color:s.flowerColor,shape:'fritillariaBell',palette:{type},tilt:baimo?.35:.10+rand()*.12,yaw:an},{...kit,rand});
+  }
+ }
+}
 export function spanishBluebellPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),curl=Math.max(0,(t-.80)/.20);
  if(type==='spanishBasalTube'){const rr=.10+.02*t;return [Math.sin(u)*rr,.07*t,Math.cos(u)*rr];}
@@ -15535,6 +15588,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='fritillariaShoots'){drawFritillarias(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='spanishBluebellRacemes'){drawSpanishBluebells(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='englishBluebellArches'){drawEnglishBluebells(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tecophilaeaClumps'){drawTecophilaea(b,{info,s,detail,rand},kit);return;}
