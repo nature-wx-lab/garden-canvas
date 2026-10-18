@@ -6608,13 +6608,12 @@ test('leaf and seedhead colour evidence apply to the correct organs',()=>{
  const briza=named('ブリザ トリロバ');assert.ok(!briza.appearance.seasonalColors?.summer);assert.equal(seasonAt(briza,9).seedHeads,true);
  const olive=named('ロシアンオリーブ');assert.equal(seasonAt(olive,5).leafColor,'#98a996');assert.equal(seasonAt(olive,1).dormant,true);
 });
-test('spring-leaf bulbs keep their flowering scapes when their leaves are absent',()=>{
- const id='p-7df89ac2d223',info=CATALOG[id],p=makePlant(id,316,2,2);
- for(const month of [1,7,10])assert.equal(plantModel(p,view(month)).children.length,0);
- const spring=plantModel(p,view(4));assert.ok(spring.children.some(m=>m.userData.component.startsWith('leaf')));assert.ok(!spring.children.some(m=>m.userData.component.startsWith('petal')));dispose(spring);
- for(const month of [8,9]){
-  const state=seasonAt(info,month),g=plantModel(p,view(month));assert.equal(state.leafDensity,0);assert.equal(state.bloom,true);assert.equal(state.groundDormant,false);
-  assert.ok(g.children.some(m=>m.userData.component==='peduncle'));assert.ok(g.children.some(m=>m.userData.component.startsWith('petal-tip')));assert.ok(!g.children.some(m=>m.userData.component.startsWith('leaf')));dispose(g);
+test('mixed retail lycoris photos and conflicting leaf seasons do not silently identify a sprengeri stock',()=>{
+ const id='p-7df89ac2d223',info=CATALOG[id],a=info.appearance;
+ assert.equal(info.latin,'');assert.equal(info.form,'unmodeled');assert.equal(info.visual,'unmodeled');assert.equal(a.status,'unconfirmed');assert.equal(a.architecture,undefined);assert.equal(a.persistence,undefined);assert.equal(a.foliageMonths,undefined);assert.equal(a.leaflessBloom,undefined);assert.equal(a.leafShape,undefined);assert.equal(a.flowerShape,undefined);assert.equal(a.petals,undefined);assert.deepEqual(a.flowerMonths,[8,9]);assert.deepEqual(info.height,[.3,.5]);assert.equal(info.spread,null);assert.match(info.care,/写真.*別の花姿.*寸法枠/);assert.match(a.phenologyRegion,/不一致.*適用していません/);assert.ok(a.unconfirmed.some(x=>x.includes('種の対応は未確認')));
+ for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,41800+(small?1:0),2,2),height:small?.20:.50,spread:small?.16:.30,leafHeight:small?.10:.20},g=plantModel(p,view(month));
+  try{assert.equal(g.userData.unmodeled,true);assert.equal(g.children.length,1);assert.ok(g.children[0].material.wireframe);assert.equal(g.userData.flowerTargets?.length||0,0);assert.ok([...g.children[0].geometry.attributes.position.array].every(Number.isFinite));assert.equal(seasonAt(info,month).bloom,[8,9].includes(month));}finally{dispose(g);}
  }
 });
 test('documented violet cultivar colours and guide markings remain distinct',()=>{
