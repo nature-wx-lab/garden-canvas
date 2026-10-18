@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.368';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.369';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.368';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.369';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15027,6 +15027,41 @@ function drawLilies(b,{info,s,detail,rand},kit){
 }
 
 
+export function camassiaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='camassiaStrapLeaf')return [u*.5*(.70+.30*sn)*Math.max(0,1-t)**.55,.82*Math.sin(t*1.42),.20*t**1.3+.004*u*u*sn];
+ if(type==='camassiaSpentTepal'){
+  const angle=t*Math.PI*1.4,r=.055+.14*sn;return [Math.sin(angle)*r+u*.05*sn,t*.60,Math.cos(angle)*r];
+ }
+ return [u*.12*sn**.65,.07*sn-.045*t*t+.014*u*u*sn,.05+.95*t];
+}
+function drawCamassiaRacemes(b,{info,s,detail,rand},kit){
+ const h=s.height,w=s.spread,n=Math.max(2,Math.round(3*detail)),month=s.month,green=s.leafDensity<.5?'#b1ac74':s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.21*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R];
+  if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(7*s.leafDensity));j++){
+   const L=Math.min(.60,s.leafHeight/.82,w*1.2)*s.leafScale*(.85+rand()*.15),W=Math.min(.025,L*.045),f=flowerFrame(b,root,.02+j*.010,yaw+j*2.399);
+   f.add('camassiaStrapLeaf','leaf-camassia',kit.shade(rand,green,.03),0,0,0,W,L,L);
+   for(const u of [-.55,0,.55]){let p=camassiaPoint('camassiaStrapLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005];for(let k=1;k<=15;k++){p=camassiaPoint('camassiaStrapLeaf',.02+k*.065,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(from,to,.00005,'#91a28c','vein-leaf-camassia');from=to;}}
+  }
+  if(!s.bloom&&month!==6)continue;
+  const top=h*(.90+rand()*.07),axis=t=>[root[0]+Math.sin(yaw)*h*.015*t*t,top*t,root[2]+Math.cos(yaw)*h*.015*t*t];let previous=root;
+  for(let k=1;k<=24;k++){const to=axis(k/24);b.branch(previous,to,.0015,'#72946d','scape-camassia');previous=to;}
+  for(let j=0;j<18;j++){
+   const at=axis(.60+j*.020),an=yaw+j*2.399,reach=Math.min(.035,w*.11)*(1-j*.02),end=[at[0]+Math.sin(an)*reach,at[1]+reach*.26,at[2]+Math.cos(an)*reach];b.branch(at,end,.0005,'#91a479','pedicel-camassia');b.add('narrow','bract-camassia','#9eae89',...at,.0015,reach*.8,.0015,.8,an,0);
+   const L=Math.min(.025,h*.075),open=s.bloom&&(month===4?j<6:j>=6&&j<12),spent=month===5&&j<6||month===6&&j>=12;
+   if(open){
+    const f=flowerFrame(b,end,.95+rand()*.15,an);f.add(kit.bud,'ovary-camassia','#88a35f',0,L*.07,0,L*.075,L*.12,L*.075);
+    for(let k=0;k<6;k++){
+     const angle=k*TAU/6,petal=flowerFrame(f,[0,k%2?L*.009:0,0],0,angle);petal.add('camassiaTepal','petal-camassia',kit.shade(rand,s.flowerColor,.025),0,0,0,L,L,L);
+     const rr=L*.07,base=[Math.sin(angle)*rr,L*.05,Math.cos(angle)*rr],tip=[Math.sin(angle)*L*.30,L*.57,Math.cos(angle)*L*.30];f.branch(base,tip,L*.009,'#e4e4ce','filament-camassia');f.add(kit.bud,'anther-camassia','#dcc26c',...tip,L*.025,L*.085,L*.025,.70,angle,0);
+    }
+    f.branch([0,L*.12,0],[0,L*.69,0],L*.008,'#c8d1a0','style-camassia');for(let k=0;k<3;k++){const an=k*TAU/3;f.branch([0,L*.69,0],[Math.sin(an)*L*.025,L*.72,Math.cos(an)*L*.025],L*.004,'#d1d8b1','stigma-camassia');}
+   }else if(spent){const f=flowerFrame(b,end,.8,an);for(let k=0;k<6;k++)f.add('camassiaSpentTepal','spent-tepal-camassia','#9b927d',0,0,0,L,L,L,0,k*TAU/6,0);}
+   else if(s.bloom)b.add(kit.bud,'bud-camassia',j>14?'#b2bf86':'#7e7eaf',...end,L*.13,L*.38,L*.13,.3,an,0);
+  }
+ }
+}
 export function autumnCyclamenPoint(type,t,u){
  if(type.endsWith('Leaf')){
   const conf=type==='confusumLeaf',cil=type==='ciliciumLeaf',edge=conf?1+.075*Math.cos(u*5)+.022*Math.cos(u*19):1+.018*Math.cos(u*17),x=Math.sin(u)*(cil?.40:.49)*edge,y=.45+(cil?.52:.58)*Math.cos(u)+.33*Math.exp(-(((u-Math.PI)/.27)**2))-.20;
@@ -15688,6 +15723,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='camassiaRacemes'){drawCamassiaRacemes(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='autumnCyclamenCrowns'){drawAutumnCyclamens(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='coumCrowns'){drawCoumCrowns(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='convallariaClusters'){drawConvallariaClusters(b,{info,s,detail,rand},kit);return;}

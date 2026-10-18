@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5846,6 +5846,19 @@ test('recent refined botanical leaf traits have readable descriptions',()=>{
  }
 });
 
+
+test('Caerulea Camassia has basal keeled leaves six radial tepals and stamens with a single three-lobed style',()=>{
+ const id='p-b97cacc25ab1',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'basal');assert.equal(info.bloomKnown,false);assert.deepEqual(info.height,[1,1]);assert.equal(info.spread,null);
+ for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,38100+(small?1:0),2,2),height:small?.35:1,spread:small?.25:.5,leafHeight:small?.22:.5},g=plantModel(p,view(month)),label=`Camassia small=${small} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),flowers=count('ovary-camassia'),leaves=count('leaf-camassia');
+  try{
+   assert.equal(g.scale.x,1,label);assert.equal(count('petal-camassia'),flowers*6,label);assert.equal(count('anther-camassia'),flowers*6,label);assert.equal(count('style-camassia'),flowers,label);assert.equal(count('stigma-camassia'),flowers*3,label);assert.equal(count('vein-leaf-camassia'),leaves*45,label);assert.equal(flowers>0,[4,5].includes(month),label);assert.equal(count('spent-tepal-camassia')>0,[5,6].includes(month),label);if([1,2,8,9,10,11,12].includes(month))assert.equal(g.children.length,0,label);assert.ok(!g.children.some(m=>/fruit|seed/.test(m.userData.component)),label);
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const b=m.boundingBox,within=(x,y,z)=>y>=-.002&&y<p.height*1.13&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;if(!within(b.min.x,b.min.y,b.min.z)||!within(b.max.x,b.max.y,b.max.z)){const matrix=new Matrix4(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),label+' actual vertex '+m.userData.component);}}}}
+  }finally{dispose(g);}
+ }
+ for(const type of ['camassiaStrapLeaf','camassiaTepal','camassiaSpentTepal'])for(let i=0;i<=24;i++)for(const u of [-1,0,1])assert.ok(camassiaPoint(type,i/24,u).every(Number.isFinite));
+ const tip=camassiaPoint('camassiaTepal',.99,1),wide=camassiaPoint('camassiaTepal',.5,1);assert.ok(Math.abs(tip[0])<Math.abs(wide[0])*.2,'lanceolate tepal tapers to a point');
+});
 
 test('three autumn Cyclamen distinguish auricles thin versus thick leaves and domestic flowering calendars',()=>{
  const ids=['p-3c7c883b5e1e','p-cf04af7c95f9','p-8118e2844435'],types=['confusum','cyprium','cilicium'],sizes=[[.2,.28,.10],[.15,.25,.075],[.15,.22,.07]],smallSizes=[[.08,.15,.045],[.07,.13,.04],[.07,.13,.04]];

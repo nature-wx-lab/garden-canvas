@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.368';
+import {treeProfile} from './tree-profiles.js?v=0.9.369';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -97,6 +97,9 @@ export function seasonAt(info,month){
   phase=density===0?'落葉・枝姿':month===breakMonth?'芽吹き・若葉':autumn?'紅葉・落葉へ':'葉が茂る時期';
  }else if(a.persistence==='springEphemeral'){
   density=[0,0,.5,1,1,.3,0,0,0,0,0,0][m];scale=month===3?.6:1;phase=density===0?'地上部がない休眠期':'春の葉と花（表示目安）';
+ }else if(a.architecture==='camassiaRacemes'){
+  density=[0,0,.4,1,1,.75,.15,0,0,0,0,0][m];scale=month===3?.55:1;
+  phase=density===0?'球根で休眠（境界月は表示目安）':month===3?'春の葉出し（表示目安）':month>=6?'花後に葉が黄変する時期（表示目安）':'春の根生葉と花';
  }else if(a.architecture==='autumnCyclamenCrowns'){
   const type=a.flowerPalette?.type;density=(type==='confusum'?[1,1,1,1,.55,0,0,0,0,.15,.60,1]:type==='cyprium'?[1,1,1,1,.6,0,0,0,0,.4,.75,1]:[1,1,1,1,.5,0,0,0,0,.6,.8,1])[m];scale=month===10?.65:1;
   phase=density===0?'塊茎で夏の休眠（境界月は表示目安）':month===10?'秋の花と葉出し（表示目安）':month===5?'春の葉の黄変（表示目安）':'秋〜春の葉';
