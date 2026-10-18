@@ -7226,3 +7226,14 @@ test('five Maxi dahlias keep individual colours cupped double ray heads and text
  }
  for(const type of ['maxiDahliaLeaf','maxiDahliaRoundRay','maxiDahliaPointedRay'])for(let t=0;t<=24;t++)for(const u of [-1,0,1])assert.ok(maxiDahliaPoint(type,t/24,u).every(Number.isFinite));assert.ok(maxiDahliaPoint('maxiDahliaRoundRay',.5,1)[2]<maxiDahliaPoint('maxiDahliaRoundRay',.5,0)[2],'cupped lateral edges');
 });
+
+test('Smile Peach dahlia keeps a visible tubular centre and pink yellow rays with honest size and seasonal evidence',()=>{
+ const id='p-971c8effc337',info=CATALOG[id],a=info.appearance;assert.deepEqual(info.height,[.25,.35]);assert.equal(info.spread,null);assert.equal(a.status,'partial');assert.match(info.source,/mankai\/857826/);assert.equal(a.petals,undefined);assert.equal(a.flowerLayers,undefined);assert.equal(a.leaflets,undefined);assert.equal(a.flowerPalette.smilePeach,true);assert.equal(a.inflorescence,'head');assert.equal(a.arrangement,'opposite');assert.equal(a.leafletShape,'maxiDahliaLeaf');assert.deepEqual(a.flowerMonths,[5,6,7,8,9,10,11]);assert.match(a.unconfirmed.join(' '),/実測|固定値/);
+ for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,42000+(small?1:0),2,2),height:small?.18:.30,spread:small?.28:.38,leafHeight:small?.14:.24},g=plantModel(p,view(month)),label=`Smile Peach small=${small} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+  try{
+   const bloom=month>=5&&month<=11;assert.equal(count('petal-smile-peach')>0,bloom,label);assert.equal(count('discTube-smile')>0,bloom,label);assert.equal(count('discBud-smile')>0,bloom,label);assert.equal(count('involucre-smile-inner')>0,bloom,label);assert.equal(count('involucre-smile-outer')>0,bloom,label);assert.equal((g.userData.flowerTargets?.length||0)>0,bloom,label);if([12,1,2,3].includes(month))assert.equal(g.children.length,0,label);else assert.ok(count('leaf-maxi-dahlia')>0,label);assert.ok(!g.children.some(m=>/anther|stigma|ovary|fruit|seed/.test(m.userData.component)),label);
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const b=m.boundingBox.clone();if(b.min.y<-.002&&['leaf-maxi-dahlia','stem'].includes(m.userData.component)){b.makeEmpty();const matrix=new Matrix4(),v=new Vector3(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);for(let j=0;j<pos.count;j++)b.expandByPoint(v.fromBufferAttribute(pos,j).applyMatrix4(matrix));}}assert.ok(b.min.y>=-.002&&b.max.y<p.height*1.13,label+' height '+m.userData.component+' '+b.min.y+' '+b.max.y);assert.ok(Math.max(Math.abs(b.min.x),Math.abs(b.max.x),Math.abs(b.min.z),Math.abs(b.max.z))<p.spread*.75,label+' width '+m.userData.component);}
+  }finally{dispose(g);}
+ }
+});
