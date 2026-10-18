@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.376';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.379';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.376';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.379';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,44 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function narcissusCupPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='cumLaudeSplitCorona'){
+  const r=.10+.68*t+.018*Math.sin(u*13)*t**10,angle=u*.50*Math.sin(t*Math.PI*.5)**.45,frill=.018*Math.sin(u*12+t*7)*u**4*sn+.035*Math.sin(u*13)*t**10;
+  return [Math.sin(angle)*r,.14+.16*sn-.09*t*t+frill+u*u*.10*sn,Math.cos(angle)*r];
+ }
+ if(type.endsWith('CupCorona')){
+  const az=u*Math.PI,mod=type.startsWith('modulation'),pim=type.startsWith('pimpernel'),L=mod?.82:pim?.48:.55,r=.20+(pim?.33:mod?.18:.20)*t**(pim?2.0:1.5),wave=(pim?.018:.012)*t**9*Math.sin(az*(pim?14:16)),rr=r*(1+.025*t**8*Math.cos(az*20));
+  return [Math.sin(az)*rr,L*t+wave,Math.cos(az)*rr];
+ }
+ const cum=type.startsWith('cumLaude'),pim=type.startsWith('pimpernel'),inner=type.includes('Inner'),half=inner?.36:.31;
+ return [u*half*sn**(cum?.48:.57),-.055*sn+.025*u*u*sn+(pim?.015: .010)*Math.sin(t*19+u*8)*sn*u*u,.12+.88*t];
+}
+function drawNarcissusCupReferences(b,{info,s,detail,rand},kit){
+ const type=info.appearance.flowerPalette.type,cum=type==='cumLaude',h=s.height,w=s.spread,n=Math.max(2,Math.round(4*detail)),green=s.leafDensity<.5?'#aaa679':s.leafColor;
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.27*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R];
+  if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(5*s.leafDensity));j++){
+   const L=Math.min(.42,s.leafHeight/.9,w*1.2)*s.leafScale*(.86+rand()*.14),W=Math.min(.016,L*.055),f=flowerFrame(b,[root[0]+(j-2)*W*.12,.001,root[2]],.025+j*.012,yaw+j*2.399);
+   f.add('daffodilKeeledLeaf','leaf-narcissus-cup-reference',kit.shade(rand,green,.025),0,0,0,W,L,L);
+   for(const u of [-.6,0,.6]){let p=narcissusReferencePoint('daffodilKeeledLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00006];for(let k=1;k<=16;k++){p=narcissusReferencePoint('daffodilKeeledLeaf',.02+k*.06,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00006];f.branch(from,to,.000045,'#9daf9d','vein-leaf-narcissus-cup-reference');from=to;}}
+  }
+  if(!s.bloom)continue;
+  const L=Math.min(.040,h*.23),head=[root[0]+Math.sin(yaw)*h*.022,h*(.78+rand()*.10),root[2]+Math.cos(yaw)*h*.022],at=[head[0]+Math.sin(yaw)*L*.45,head[1]-.10*L,head[2]+Math.cos(yaw)*L*.45],pitch=1.20+rand()*.18;
+  b.branch(root,head,Math.min(.0021,h*.008),'#80976c','scape-narcissus-cup-reference');b.branch(head,at,L*.028,'#9baa76','pedicel-narcissus-cup-reference');b.add('narrow','spathe','#c6b896',...head,L*.15,L*.7,L*.7,.9,yaw+.5,0);b.flower?.(at,L*1.65,pitch,yaw);
+  const f=flowerFrame(b,at,pitch,yaw),tube=L*.7,coronaColor=info.appearance.flowerPalette.color,petalColor=type==='pimpernel'?'#e8d445':type==='modulation'?'#e7e2b6':'#eee9d7';
+  f.add(kit.bud,'ovary-inferior-narcissus-cup-reference','#8b9a71',0,L*.06,0,L*.10,L*.12,L*.10);f.branch([0,L*.12,0],[0,tube,0],L*.075,'#d4d8ad','tube-narcissus-cup-reference');
+  for(let k=0;k<6;k++)f.add(type+(k%2?'InnerCupTepal':'OuterCupTepal'),'tepal-narcissus-cup-'+type,petalColor,0,tube+(k%2)*L*.008,0,L,L,L,0,k*TAU/6,0);
+  if(cum){
+   f.add('paperwhiteShortCorona','throat-narcissus-split','#d6d3a0',0,tube,0,L*.65,L*.8,L*.65);
+   for(let k=0;k<6;k++)f.add('cumLaudeSplitCorona','split-corona-narcissus-cumLaude',coronaColor,0,tube+(k%2)*L*.025,0,L,L,L,0,k*TAU/6,0);
+  }else f.add(type+'CupCorona','cup-corona-narcissus-'+type,coronaColor,0,tube,0,L,L,L);
+  for(let k=0;k<6;k++){
+   const az=k*TAU/6,tip=[Math.sin(az)*L*.09,tube+L*(cum?.16:k%2?.22:.12),Math.cos(az)*L*.09];f.branch([Math.sin(az)*L*.06,L*.35,Math.cos(az)*L*.06],tip,L*.009,'#d1c598','filament-narcissus-cup-reference');f.add(kit.bud,'anther-narcissus-cup-reference','#c8a15b',...tip,L*.022,L*.05,L*.023,.1,az,0);
+  }
+  const sy=tube+L*(cum?.24:.20);f.branch([0,L*.15,0],[0,sy,0],L*.009,'#c4c58d','style-narcissus-cup-reference');for(let k=0;k<3;k++){const a=k*TAU/3;f.add(kit.bud,'stigma-narcissus-cup-reference','#d7d5aa',Math.sin(a)*L*.014,sy,Math.cos(a)*L*.014,L*.014,L*.009,L*.014);}
+ }
+}
 export function narcissusReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='goldenTereteLeaf'){const a=u*Math.PI,r=.5*Math.max(0,1-t)**.45;return [Math.sin(a)*r,.94*Math.sin(t*1.25),.24*t**1.3+Math.cos(a)*r*.012];}
@@ -15891,6 +15929,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='narcissusCupReferences'){drawNarcissusCupReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='nativeLilyReferences'){drawNativeLilyReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='martagonReferences'){drawMartagonReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='narcissusReferences'){drawNarcissusReferences(b,{info,s,detail,rand},kit);return;}
