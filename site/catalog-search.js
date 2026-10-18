@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.396';
+import {treeProfile} from './tree-profiles.js?v=0.9.398';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -54,6 +54,9 @@ export function seasonAt(info,month){
   density=bloom?1:month>last&&month<10?0:.60;
   scale=bloom?1:month>=10||month<=2?.22:month<first?.50:1;
   phase=bloom?'資料の開花期（地域差のある参考）':density?'秋播き・春植えの若い葉（植え時で変化）':'花後に枯れる一年草';
+ }else if(a.persistence==='gardenAnemoneTuber'){
+  density=[.75,.95,1,1,.85,.25,0,0,0,.15,.40,.65][m];scale=month===10?.40:month===11?.70:month===12?.80:month===6?.70:1;
+  phase=density===0?'塊茎で夏の休眠（温暖地の秋植えの参考）':month===6?'花後に葉が黄変する時期（境界月は目安）':month>=10?'秋植え後の葉出し（植え時・寒さで変化）':'冬〜春に葉を育てる温暖地の参考';
  }else if(a.persistence==='autumnBulb'){
   // Acis flowers before or with its autumn foliage; summer rest is not winter dieback.
   density=[1,1,1,1,.8,.25,0,0,0,.4,1,1][m];scale=month===10?.65:1;

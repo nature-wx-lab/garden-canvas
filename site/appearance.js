@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.396';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.398';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -507,3 +507,5 @@ Object.assign(TRAIT_VALUES,{pleatedIrisSword:'縦ひだと平行脈のある扇�
 Object.assign(TRAIT_VALUES,{daylilyStrap:'二列の株元から弓なりに広がる帯状葉'});
 
 Object.assign(TRAIT_VALUES,{alliumRound:'細い円筒状の葉',alliumLinear:'株元や茎の下部から出る細長い葉'});
+
+Object.assign(TRAIT_VALUES,{gardenAnemoneLeaf:'三つに分かれ、さらに深く切れ込む株元の葉',gardenAnemoneSepals:'花弁状の萼と多数の雄しべ、中央の雌しべ群',gardenAnemoneTuber:'秋植えの冬〜春の葉と花、夏の休眠（温暖地の参考）'});

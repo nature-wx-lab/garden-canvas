@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.396';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.398';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.396';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.398';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15097,6 +15097,39 @@ function drawMartagonReferences(b,{info,s,detail,rand},kit){
   f.branch([0,L*.15,0],[0,L*1.18,0],L*.014,'#c3bb88','style-martagon-reference');f.add(kit.bud,'stigma-martagon-reference',wild?'#a76b66':'#aa9677',0,L*1.20,0,L*.050,L*.028,L*.050);
  }
 }
+export function gardenAnemonePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='gardenAnemoneCutLeaf')return [u*.28*sn**.45*(.06+.94*Math.abs(Math.sin(t*Math.PI*4+.20))**1.6),.025*sn+.012*u*u*sn,t];
+ const inner=type==='gardenAnemoneInnerPiece',half=inner?.24:.60,angle=u*half*sn**(inner?.60:.35),r=.04+.96*t**(inner?.95:.80),edge=.014*Math.sin(t*29+u*5)*Math.abs(u)**3*sn;
+ return [Math.sin(angle)*r,(inner?.52:.28)*t+.10*sn-.11*t*t*t+edge,Math.cos(angle)*r];
+}
+function drawGardenAnemones(b,{info,s,detail,rand},kit){
+ const type=info.appearance.flowerPalette.type,double=type.startsWith('double'),white=type==='doubleWhite',h=s.height,w=s.spread,n=Math.max(2,Math.round(3*detail)),L=Math.min(info.appearance.flowerRadius,h*.24),green=s.leafDensity<.3?'#a4a477':s.leafColor;
+ const cutLeaf=(at,angle,len,kind)=>{
+  const f=flowerFrame(b,at,-.40,angle);
+  for(let k=0;k<3;k++){const part=flowerFrame(f,[0,0,0],0,(k-1)*.65),length=len*(k===1?1:.82);part.add('gardenAnemoneCutLeaf',kind,kit.shade(rand,green,.025),0,0,0,length,length,length);part.branch([0,0,0],[0,length*.025,length*.92],Math.min(.00035,length*.012),'#92a575','vein-garden-anemone');}
+ };
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*.15*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R];
+  if(s.leafDensity>0)for(let j=0;j<7;j++){
+   if(j/7>=s.leafDensity)continue;
+   const angle=j*2.399+yaw,leafH=Math.min(s.leafHeight,w*.48)*s.leafScale*(.85+rand()*.15),reach=Math.min(leafH*.55,w*.14),at=[root[0]+Math.sin(angle)*reach,leafH*.60,root[2]+Math.cos(angle)*reach];b.branch(root,at,Math.min(.0008,leafH*.018),'#7d9b66','petiole-garden-anemone');cutLeaf(at,angle,leafH*.65,'leaf-garden-anemone');
+  }
+  if(!s.bloom)continue;
+  const head=[root[0]+Math.sin(yaw)*h*.025,h-L*.38-h*.04*(i%3),root[2]+Math.cos(yaw)*h*.025],collar=[head[0],head[1]-Math.min(h*.25,L*1.5),head[2]];b.branch(root,head,Math.min(.0021,h*.008),'#799466','scape-garden-anemone');
+  for(let k=0;k<3;k++)cutLeaf(collar,yaw+k*TAU/3,L*.70,'involucre-garden-anemone');
+  const bud=[root[0]-Math.sin(yaw)*L*.65,head[1]-h*.18,root[2]-Math.cos(yaw)*L*.65];b.branch(root,bud,Math.min(.0015,h*.006),'#8b9c6c','scape-bud-garden-anemone');b.add(kit.bud,'bud-garden-anemone',s.flowerColor,...bud,L*.22,L*.34,L*.22,.35,yaw,0);
+  const f=flowerFrame(b,head,.12+i*.12,yaw),outer=7+i%3,inner=double?(white?24:18)+(i%3)*3:0,center=white?'#a8b882':'#352b3e';if(i===0)f.flower([0,L*.12,0],L*1.22);
+  for(let k=0;k<outer;k++)f.add('gardenAnemoneSepal','sepal-garden-anemone-'+type,kit.shade(rand,s.flowerColor,.018),0,0,0,L,L,L,0,k*TAU/outer,0);
+  for(let k=0;k<inner;k++){const q=k/inner,scale=.86-.48*q;f.add('gardenAnemoneInnerPiece','inner-piece-garden-anemone-'+type,kit.shade(rand,s.flowerColor,.020),0,L*.05,0,L*scale,L*scale,L*scale,0,k*2.399,0);}
+  f.add(kit.bud,'receptacle-garden-anemone',center,0,L*.12,0,L*.19,L*.14,L*.19);
+  for(let k=0;k<54;k++){const v=(k+.5)/54,az=k*2.399,r=L*.175*Math.sqrt(1-v*v);f.add(kit.bud,'carpel-garden-anemone',white?'#c1c999':'#403149',Math.sin(az)*r,L*(.12+.18*v),Math.cos(az)*r,L*.016,L*.025,L*.016);}
+  const stamens=double?72:96;
+  for(let k=0;k<stamens;k++){
+   const az=k*2.399,r=L*(.24+(k%3)*.035),tip=[Math.sin(az)*r,L*(.18+(k%3)*.05),Math.cos(az)*r];f.branch([Math.sin(az)*L*.16,L*.03,Math.cos(az)*L*.16],tip,L*.006,white?'#c9ca9c':'#74647a','filament-garden-anemone');f.add(kit.bud,'anther-garden-anemone',white?'#c8ca91':'#292536',...tip,L*.018,L*.030,L*.016,.25,az,0);
+  }
+ }
+}
 export function alliumReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='alliumRoundLeaf'){const a=u*Math.PI,r=.5*(1-t)**.24;return [Math.cos(a)*r,.99*t,9*t*t+Math.sin(a)*r];}
@@ -16240,6 +16273,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='gardenAnemoneReferences'){drawGardenAnemones(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='alliumReferences'){drawAlliumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='daylilyReferences'){drawDaylilyReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='iridReferenceSpikes'){drawIridReferenceSpikes(b,{info,s,detail,rand},kit);return;}
