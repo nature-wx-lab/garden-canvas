@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.430';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.431';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -553,3 +553,5 @@ Object.assign(TRAIT_VALUES,{arctotisLyrate:'銀毛に覆われ、先の部分が
 Object.assign(TRAIT_VALUES,{tanacetumSilverLobed:'銀灰色で羽状に深く裂ける葉',tanacetumFineDivided:'細かく羽状に分かれる柔らかい緑葉',tanacetumCrispGold:'細かな裂片が縮れて重なる黄金葉',tanacetumSmallHeads:'枝分かれしてドーム状に広がる白い小さな頭花',tanacetumRedHead:'赤い舌状花と盛り上がる黄色い筒状花の頭花',tanacetumRareButtons:'ほとんど開花しない品種（まれな花は未再現）'});
 
 Object.assign(TRAIT_VALUES,{baptisiaTrifoliate:'葉柄の先につく全縁の3小葉',baptisiaPea:'旗弁・左右の翼弁と竜骨弁を分けた蝶形花',baptisiaArchingPea:'直立する葉茎から横へ弓なりに下がる花穂の蝶形花'});
+
+Object.assign(TRAIT_VALUES,{veronicaFourLobed:'短い筒から広がる大小4裂の花冠',veronicaBroadLeaf:'対生する鋸歯のある幅広い長楕円葉',veronicaNarrowLeaf:'対生する細長い鋸歯葉'});
