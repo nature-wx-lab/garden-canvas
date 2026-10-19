@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.428';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.429';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.428';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.429';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15486,6 +15486,56 @@ function drawCannaReferences(b,{info,s,detail,rand},kit){
 // Photo-guided examples; counts and sizes are not measured cultivar constants.
 // Tanacetum foliage and inflorescences remain reference examples, not a
 // same-plant annual record. Golden Fleece is a mostly nonflowering cultivar.
+// Alternate trifoliate leaves and five separate petals follow the genus
+// reference; proportions/branch counts are photographic drawing examples.
+export function baptisiaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='baptisiaLeaf')return [u*.45*sn**.60*(.64+.36*t),.045*sn+.045*u*u*sn+.006*Math.sin(t*16+u*4)*Math.abs(u)**3*sn,t];
+ if(type==='baptisiaCalyx'){const r=.14+.035*t;return [Math.cos(u)*r,Math.sin(u)*r,t*.25-.14];}
+ if(type==='baptisiaBanner')return [u*.38*sn**.56,.08+.72*t,.08-.20*t+.40*u*u*sn+.015*Math.sin(u*13)*t*t];
+ const side=type.endsWith('Left')?-1:1;
+ if(type.startsWith('baptisiaWing'))return [side*(.08+.14*sn)+u*.10*sn**.65,.06+.10*sn-.10*t,.10+.60*t+.03*u*u*sn];
+ return [side*(.035+.055*sn)+u*.055*sn,-.01-.14*sn+.06*t*t,.11+.70*t];
+}
+function drawBaptisiaLeaf(b,node,L,az,color,stem,rand,kit){
+ const end=[node[0]+Math.sin(az)*L*.60,node[1]+L*.23,node[2]+Math.cos(az)*L*.60];b.branch(node,end,Math.min(.001,L*.020),stem,'petiole-baptisia');
+ for(let k=0;k<3;k++){
+  const yaw=az+(k-1)*.84,len=L*(k===1?1:.86),at=[end[0]+Math.sin(yaw)*L*.08,end[1]+L*.015,end[2]+Math.cos(yaw)*L*.08];b.branch(end,at,Math.min(.00055,L*.011),stem,'petiolule-baptisia');const f=flowerFrame(b,at,([.10,-.35,-.13][k])+(rand()-.5)*.18,yaw);f.add('baptisiaLeaf','leaf-baptisia',kit.shade(rand,color,.018),0,0,0,len,len,len);
+  let prev=[0,0,0];for(let j=1;j<=10;j++){const q=baptisiaPoint('baptisiaLeaf',j/10,0),to=[0,q[1]*len+.0001,q[2]*len];f.branch(prev,to,Math.min(.00032,len*.006),'#a5b894','midrib-baptisia');prev=to;}
+ }
+}
+function drawBaptisiaFlower(b,at,L,type,az,rand,kit,observe=false){
+ const f=flowerFrame(b,at,.08,az),color=type==='blue'?'#6652bc':type==='dutch'?'#493447':'#f0efdc',calyx=type==='white'?'#6d697d':'#8a9a6a';
+ if(observe)f.flower([0,L*.15,L*.32],L*.83,Math.PI/2,0,0);
+ f.add('baptisiaCalyx','calyx-baptisia-'+type,calyx,0,0,0,L,L,L);
+ f.add('baptisiaBanner','banner-baptisia-'+type,kit.shade(rand,color,.018),0,0,0,L,L,L);
+ for(const side of ['Left','Right']){f.add('baptisiaWing'+side,'wing-baptisia-'+type,kit.shade(rand,color,.018),0,0,0,L,L,L);f.add('baptisiaKeel'+side,'keel-baptisia-'+type,type==='white'?'#eee8cb':type==='dutch'?'#675268':'#7569c2',0,0,0,L,L,L);}
+}
+function drawBaptisiaReferences(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.flowerPalette.type,scale=s.leafScale,h=s.height*scale,w=s.spread,stem=a.stemColor,floral=type==='white'?'#686879':stem,n=Math.max(4,Math.round(5*detail)),H=Math.min(s.leafHeight*.90,s.height*.66)*scale,L=Math.min(type==='white'?.065:type==='dutch'?.060:.055,h*.085,w*.14),F=Math.min(a.flowerRadius,h*.050,w*.045),radius=Math.min(.005,h*.010,w*.012);
+ const raceme=(base,yaw,order)=>{
+  if(!s.bloom||order>1)return;
+  const length=Math.min(h*(type==='dutch'?.25:.34),Math.max(0,h-F-base[1])),count=type==='white'?26:22;let prev=base;
+  for(let j=1;j<=count+2;j++){
+   const t=j/(count+2),node=[base[0]+Math.sin(yaw)*length*.035*t,base[1]+length*t,base[2]+Math.cos(yaw)*length*.035*t];b.branch(prev,node,radius*.43*(1-t*.70),floral,'raceme-axis-baptisia');prev=node;if(j>count)continue;
+   const az=yaw+j*2.399,reach=F*.38,end=[node[0]+Math.sin(az)*reach,node[1]+F*.10,node[2]+Math.cos(az)*reach];b.branch(node,end,radius*.17,floral,'pedicel-baptisia');
+   if(j>count-3){b.add(kit.bud,'bud-baptisia-'+type,type==='white'?'#d5d4cf':type==='dutch'?'#4e3e51':'#7765ac',...end,F*.15,F*.34,F*.15,.45,az,0);continue;}
+   drawBaptisiaFlower(b,end,F*(.93+.07*Math.sin(t*Math.PI)),type,az,rand,kit,order===0&&j===13);
+  }
+ };
+ const shoot=(root,yaw,rise,reach,order)=>{
+  const nodes=order>1?5:8,path=t=>[root[0]+Math.sin(yaw)*reach*t**1.2+Math.sin(t*Math.PI*4)*radius*.15,root[1]+rise*t,root[2]+Math.cos(yaw)*reach*t**1.2];let prev=root;
+  for(let j=1;j<=nodes;j++){
+   const t=j/nodes,node=path(t);b.branch(prev,node,radius*(order?.48:1)*(1-t*.35),stem,'stem-baptisia');prev=node;
+   if((j-.5)/nodes<s.leafDensity)drawBaptisiaLeaf(b,node,L*(order>1?.68:order?.90:1),yaw+j*2.399,s.leafColor,stem,rand,kit);
+   if(order===0&&[3,5,7].includes(j))shoot(node,yaw+(j===5?-1:1)*(j===7?1.8:1.05),H*(1-t)*.72,w*.15*scale,1);
+   if(order===1&&j===4)shoot(node,yaw-1.35,H*.10,w*.08*scale,2);
+  }
+  raceme(path(1),yaw,order);
+ };
+ for(let i=0;i<n;i++){const az=i*2.399,R=w*.075*scale;shoot([Math.sin(az)*R,Math.min(.002,h*.02),Math.cos(az)*R],az,H*(.88+(i%3)*.05),w*.11*scale,0);}
+}
+
 export function tanacetumPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='tanacetumFloret')return arctotisPoint('arctotisFloret',t,u);
@@ -17112,6 +17162,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='minorTulipReferences'){drawMinorTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='slenderTulipReferences'){drawSlenderTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='singleTulipReferences'){drawSingleTulipReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='baptisiaReferences'){drawBaptisiaReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tanacetumReferences'){drawTanacetumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
