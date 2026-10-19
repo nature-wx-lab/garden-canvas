@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.429';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.430';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.429';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.430';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15488,6 +15488,17 @@ function drawCannaReferences(b,{info,s,detail,rand},kit){
 // same-plant annual record. Golden Fleece is a mostly nonflowering cultivar.
 // Alternate trifoliate leaves and five separate petals follow the genus
 // reference; proportions/branch counts are photographic drawing examples.
+export const BAPTISIA_PROFILES={
+ blue:{banner:'#6652bc',keel:'#7569c2',calyx:'#8a9a6a',bud:'#7765ac',leaflet:.055,raceme:.34,flowers:22,width:1},
+ dutch:{banner:'#493447',keel:'#675268',calyx:'#8a9a6a',bud:'#4e3e51',leaflet:.060,raceme:.25,flowers:22,width:1},
+ white:{banner:'#f0efdc',keel:'#eee8cb',calyx:'#6d697d',axis:'#686879',bud:'#d5d4cf',leaflet:.065,raceme:.34,flowers:26,width:1},
+ moonlight:{banner:'#e2d77e',sampleColor:'#d9d5b8',keel:'#e4d98d',calyx:'#797781',axis:'#797780',bud:'#75737c',leaflet:.058,raceme:.35,flowers:26,width:1.05},
+ twilite:{banner:'#594575',sampleColor:'#887b91',keel:'#d8c55f',calyx:'#84916f',bud:'#685972',leaflet:.060,raceme:.33,flowers:24,width:1.03},
+ vanilla:{banner:'#ece5bb',keel:'#eee5bc',calyx:'#7b7881',axis:'#77757d',bud:'#aaa58f',leaflet:.055,raceme:.30,flowers:24,width:1.14},
+ fall:{banner:'#eee8b8',keel:'#e4d69b',calyx:'#8f9b7f',axis:'#829078',bud:'#cccbb1',leaflet:.065,leafWidth:.84,leafCeiling:.93,leafStemRatio:.98,raceme:.36,flowers:18,width:1.23,pendant:true,flowerPitch:.26},
+ cherries:{banner:'#8d4c44',sampleColor:'#c9ac6b',keel:'#d7bc62',calyx:'#9eaa84',bud:'#afac8e',leaflet:.058,raceme:.32,flowers:24,width:1.10},
+ pink:{banner:'#d39db7',keel:'#c88da5',calyx:'#9aa678',bud:'#9aa681',leaflet:.058,raceme:.34,flowers:24,width:1.12}
+};
 export function baptisiaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='baptisiaLeaf')return [u*.45*sn**.60*(.64+.36*t),.045*sn+.045*u*u*sn+.006*Math.sin(t*16+u*4)*Math.abs(u)**3*sn,t];
@@ -15497,37 +15508,39 @@ export function baptisiaPoint(type,t,u){
  if(type.startsWith('baptisiaWing'))return [side*(.08+.14*sn)+u*.10*sn**.65,.06+.10*sn-.10*t,.10+.60*t+.03*u*u*sn];
  return [side*(.035+.055*sn)+u*.055*sn,-.01-.14*sn+.06*t*t,.11+.70*t];
 }
-function drawBaptisiaLeaf(b,node,L,az,color,stem,rand,kit){
+function drawBaptisiaLeaf(b,node,L,az,color,stem,rand,kit,bladeWidth=1){
  const end=[node[0]+Math.sin(az)*L*.60,node[1]+L*.23,node[2]+Math.cos(az)*L*.60];b.branch(node,end,Math.min(.001,L*.020),stem,'petiole-baptisia');
  for(let k=0;k<3;k++){
-  const yaw=az+(k-1)*.84,len=L*(k===1?1:.86),at=[end[0]+Math.sin(yaw)*L*.08,end[1]+L*.015,end[2]+Math.cos(yaw)*L*.08];b.branch(end,at,Math.min(.00055,L*.011),stem,'petiolule-baptisia');const f=flowerFrame(b,at,([.10,-.35,-.13][k])+(rand()-.5)*.18,yaw);f.add('baptisiaLeaf','leaf-baptisia',kit.shade(rand,color,.018),0,0,0,len,len,len);
+  const yaw=az+(k-1)*.84,len=L*(k===1?1:.86),at=[end[0]+Math.sin(yaw)*L*.08,end[1]+L*.015,end[2]+Math.cos(yaw)*L*.08];b.branch(end,at,Math.min(.00055,L*.011),stem,'petiolule-baptisia');const f=flowerFrame(b,at,([.10,-.35,-.13][k])+(rand()-.5)*.18,yaw);f.add('baptisiaLeaf','leaf-baptisia',kit.shade(rand,color,.018),0,0,0,len*bladeWidth,len,len);
   let prev=[0,0,0];for(let j=1;j<=10;j++){const q=baptisiaPoint('baptisiaLeaf',j/10,0),to=[0,q[1]*len+.0001,q[2]*len];f.branch(prev,to,Math.min(.00032,len*.006),'#a5b894','midrib-baptisia');prev=to;}
  }
 }
-function drawBaptisiaFlower(b,at,L,type,az,rand,kit,observe=false){
- const f=flowerFrame(b,at,.08,az),color=type==='blue'?'#6652bc':type==='dutch'?'#493447':'#f0efdc',calyx=type==='white'?'#6d697d':'#8a9a6a';
+function drawBaptisiaFlower(b,at,L,type,az,rand,kit,observe=false,sample=0){
+ const profile=BAPTISIA_PROFILES[type],f=flowerFrame(b,at,profile.flowerPitch??.08,az),color=profile.sampleColor&&sample%4===0?profile.sampleColor:profile.banner,calyx=profile.calyx;
  if(observe)f.flower([0,L*.15,L*.32],L*.83,Math.PI/2,0,0);
  f.add('baptisiaCalyx','calyx-baptisia-'+type,calyx,0,0,0,L,L,L);
- f.add('baptisiaBanner','banner-baptisia-'+type,kit.shade(rand,color,.018),0,0,0,L,L,L);
- for(const side of ['Left','Right']){f.add('baptisiaWing'+side,'wing-baptisia-'+type,kit.shade(rand,color,.018),0,0,0,L,L,L);f.add('baptisiaKeel'+side,'keel-baptisia-'+type,type==='white'?'#eee8cb':type==='dutch'?'#675268':'#7569c2',0,0,0,L,L,L);}
+ f.add('baptisiaBanner','banner-baptisia-'+type,kit.shade(rand,color,.018),0,0,0,L*profile.width,L,L);
+ for(const side of ['Left','Right']){f.add('baptisiaWing'+side,'wing-baptisia-'+type,kit.shade(rand,color,.018),0,0,0,L*profile.width,L,L);f.add('baptisiaKeel'+side,'keel-baptisia-'+type,profile.keel,0,0,0,L,L,L);}
 }
 function drawBaptisiaReferences(b,{info,s,detail,rand},kit){
- const a=info.appearance,type=a.flowerPalette.type,scale=s.leafScale,h=s.height*scale,w=s.spread,stem=a.stemColor,floral=type==='white'?'#686879':stem,n=Math.max(4,Math.round(5*detail)),H=Math.min(s.leafHeight*.90,s.height*.66)*scale,L=Math.min(type==='white'?.065:type==='dutch'?.060:.055,h*.085,w*.14),F=Math.min(a.flowerRadius,h*.050,w*.045),radius=Math.min(.005,h*.010,w*.012);
+ const a=info.appearance,type=a.flowerPalette.type,profile=BAPTISIA_PROFILES[type],scale=s.leafScale,h=s.height*scale,w=s.spread,stem=a.stemColor,floral=profile.axis||stem,n=Math.max(4,Math.round(5*detail)),H=Math.min(s.leafHeight*(profile.leafStemRatio||.90),s.height*(profile.leafCeiling||.66))*scale,L=Math.min(profile.leaflet,h*.085,w*.14),F=Math.min(a.flowerRadius,h*.050,w*.045),radius=Math.min(.005,h*.010,w*.012);
  const raceme=(base,yaw,order)=>{
-  if(!s.bloom||order>1)return;
-  const length=Math.min(h*(type==='dutch'?.25:.34),Math.max(0,h-F-base[1])),count=type==='white'?26:22;let prev=base;
+  if(!s.bloom||order>1||(profile.pendant&&order!==1))return;
+  // Yellow Fall keeps erect leafy shoots; its lateral flowering axes arch out
+  // below the upper foliage. Curvature is a photo-guided drawing example.
+  const length=profile.pendant?Math.min(h*profile.raceme,w*.22,Math.max(w*.04,w*.48-Math.hypot(base[0],base[2]))):Math.min(h*profile.raceme,Math.max(0,h-F-base[1])),count=profile.flowers,path=t=>profile.pendant?[base[0]+Math.sin(yaw)*length*t,base[1]+h*(.10*Math.sin(Math.PI*t)-.25*t*t),base[2]+Math.cos(yaw)*length*t]:[base[0]+Math.sin(yaw)*length*.035*t,base[1]+length*t,base[2]+Math.cos(yaw)*length*.035*t];let prev=base;
   for(let j=1;j<=count+2;j++){
-   const t=j/(count+2),node=[base[0]+Math.sin(yaw)*length*.035*t,base[1]+length*t,base[2]+Math.cos(yaw)*length*.035*t];b.branch(prev,node,radius*.43*(1-t*.70),floral,'raceme-axis-baptisia');prev=node;if(j>count)continue;
-   const az=yaw+j*2.399,reach=F*.38,end=[node[0]+Math.sin(az)*reach,node[1]+F*.10,node[2]+Math.cos(az)*reach];b.branch(node,end,radius*.17,floral,'pedicel-baptisia');
-   if(j>count-3){b.add(kit.bud,'bud-baptisia-'+type,type==='white'?'#d5d4cf':type==='dutch'?'#4e3e51':'#7765ac',...end,F*.15,F*.34,F*.15,.45,az,0);continue;}
-   drawBaptisiaFlower(b,end,F*(.93+.07*Math.sin(t*Math.PI)),type,az,rand,kit,order===0&&j===13);
+   const t=j/(count+2),node=path(t);b.branch(prev,node,radius*.43*(1-t*.70),floral,'raceme-axis-baptisia');prev=node;if(j>count)continue;
+   const az=yaw+j*2.399,reach=F*.38,end=[node[0]+Math.sin(az)*reach,node[1]+(profile.pendant?-F*.30:F*.10),node[2]+Math.cos(az)*reach];b.branch(node,end,radius*.17,floral,'pedicel-baptisia');
+   if(j>count-3){b.add(kit.bud,'bud-baptisia-'+type,profile.bud,...end,F*.15,F*.34,F*.15,.45,az,0);continue;}
+   drawBaptisiaFlower(b,end,F*(.93+.07*Math.sin(t*Math.PI)),type,az,rand,kit,(profile.pendant?order===1:order===0)&&j===13,j+order*31);
   }
  };
  const shoot=(root,yaw,rise,reach,order)=>{
   const nodes=order>1?5:8,path=t=>[root[0]+Math.sin(yaw)*reach*t**1.2+Math.sin(t*Math.PI*4)*radius*.15,root[1]+rise*t,root[2]+Math.cos(yaw)*reach*t**1.2];let prev=root;
   for(let j=1;j<=nodes;j++){
    const t=j/nodes,node=path(t);b.branch(prev,node,radius*(order?.48:1)*(1-t*.35),stem,'stem-baptisia');prev=node;
-   if((j-.5)/nodes<s.leafDensity)drawBaptisiaLeaf(b,node,L*(order>1?.68:order?.90:1),yaw+j*2.399,s.leafColor,stem,rand,kit);
+   if((j-.5)/nodes<s.leafDensity)drawBaptisiaLeaf(b,node,L*(order>1?.68:order?.90:1),yaw+j*2.399,s.leafColor,stem,rand,kit,profile.leafWidth||1);
    if(order===0&&[3,5,7].includes(j))shoot(node,yaw+(j===5?-1:1)*(j===7?1.8:1.05),H*(1-t)*.72,w*.15*scale,1);
    if(order===1&&j===4)shoot(node,yaw-1.35,H*.10,w*.08*scale,2);
   }
