@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.424';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.425';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.424';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.425';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -14197,6 +14197,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   f.branch([0,0,0],[0,length*.70,0],r*.013,'#d1d29a','style');f.add(bud,'stigma','#cfcd8d',0,length*.70,0,r*.045,r*.023,r*.045);return;
  }
  if(shape==='dahliaHead'){
+  if(palette.emperor){drawEmperorDahliaHead(b,{x,y,z,r,color,tilt,yaw},kit);return;}
   if(palette.retailDahlia){drawRetailDahliaHead(b,{x,y,z,r,color,tilt,yaw,type:palette.retailDahlia},kit);return;}
   if(palette.darkDahlia){drawDarkDahliaHead(b,{x,y,z,r,color,tilt,yaw,type:palette.darkDahlia},kit);return;}
   if(palette.decorative){drawDecorativeDahliaHead(b,{x,y,z,r,color,tilt,yaw,type:palette.decorative},kit);return;}
@@ -16671,6 +16672,93 @@ function drawNarcissus(b,{info,s,detail,rand},kit){
  }
 }
 
+// A pointed leaflet and a shallowly cupped ligule. Counts and proportions below
+// are photographic examples, not measured species-wide constants.
+export function emperorDahliaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='emperorDahliaLeaf'){
+  const tooth=1-.085*(.5+.5*Math.cos(t*TAU*12))**6;
+  return [u*.31*sn**.68*(1-.48*t*t)*tooth,t,.075*t*t+.075*u*u*sn];
+ }
+ return [u*.36*sn**.62*(1-.40*t),t,-.10*t*t-.10*u*u*sn+.025*t**5];
+}
+function drawEmperorDahliaHead(b,{x,y,z,r,color,tilt,yaw},kit){
+ const f=flowerFrame(b,[x,y,z],tilt,yaw);
+ for(let row=0;row<2;row++)for(let k=0;k<(row?8:5);k++){
+  const L=r*(row?.40:.45);
+  f.add('emperorDahliaLeaf','involucre-emperor-'+(row?'inner':'outer'),row?'#8a9871':'#637d4e',0,-r*(row?.05:.12),0,L*.50,L,L,row?2.04:2.34,k*TAU/(row?8:5)+row*.28,0);
+ }
+ f.add(kit.bud,'receptacle-emperor','#a89755',0,0,0,r*.21,r*.10,r*.21);
+ // RHS describes eight ligules; this is one eight-ray example, not a promise
+ // that every head has this count. Fine reproductive organs are not inferred.
+ for(let k=0;k<8;k++){
+  const an=k*TAU/8,rr=r*.14,L=r*.86;
+  f.add('emperorDahliaRay','petal-emperor-dahlia',kit.shade(kit.rand,color,.024),Math.sin(an)*rr,r*.025,Math.cos(an)*rr,L,L,L,1.37+(kit.rand()-.5)*.07,an,0);
+ }
+ f.add(kit.bud,'disc-emperor-unopened','#b88f32',0,r*.048,0,r*.19,r*.083,r*.19);
+ for(let k=0;k<48;k++){
+  const t=(k+.5)/48,an=k*2.399963,rr=r*.19*Math.sqrt(t),L=r*.066;
+  f.add('tube','discFloret-emperor',t>.32?'#d9b744':'#bd9032',Math.sin(an)*rr,r*.075+r*.055*Math.sqrt(1-t),Math.cos(an)*rr,L*.24,L,L*.24,.15*Math.sin(an),an,0);
+ }
+}
+function drawEmperorDahlia(b,{info,s,rand},kit){
+ const h=s.height,w=s.spread,green=s.leafColor,juvenile=s.shootScale<.5||h<1.2,
+  stem=juvenile?info.appearance.springShootColor:info.appearance.stemColor,caneCount=h>1.5&&w>.95?2:1,
+  leafTop=Math.min(s.leafHeight,h*.80),stemR=Math.min(.018,h*.008);
+ const point=(at,yaw,length,rise=0)=>[at[0]+Math.sin(yaw)*length,at[1]+rise,at[2]+Math.cos(yaw)*length];
+ const blade=(at,yaw,L)=>b.add('emperorDahliaLeaf','leaf-emperor-dahlia',kit.shade(rand,green,.04),...at,L,L,L,1.38+rand()*.10,yaw,(rand()-.5)*.08);
+ const leaf=(at,yaw,L,simple)=>{
+  const petiole=point(at,yaw,L*.19,L*.025),tip=point(at,yaw,L,L*.10);
+  b.branch(at,petiole,Math.min(.003,L*.014),stem,'petiole-emperor');
+  b.branch(petiole,tip,Math.min(.0024,L*.010),stem,'rachis-emperor');
+  for(const [pair,t] of (simple?[[0,.46]]:[[0,.36],[1,.68]]))for(const side of [-1,1]){
+   const root=at.map((v,k)=>v+(tip[k]-v)*t),az=yaw+side*(1.05+pair*.10),axisL=L*(simple?.17:pair?.25:.34),end=point(root,az,axisL,L*.025);
+   b.branch(root,end,Math.min(.0018,L*.008),stem,simple?'petiolule-emperor':'pinna-axis-emperor');
+   if(!simple)for(const sign of [-1,1]){
+    const sub=root.map((v,k)=>v+(end[k]-v)*.48),a=az+sign*1.03,to=point(sub,a,L*.045,L*.006);
+    b.branch(sub,to,Math.min(.0013,L*.005),stem,'petiolule-emperor');blade(to,a,L*(pair?.25:.29));
+   }
+   blade(end,az,L*(simple?.55:pair?.33:.39));
+  }
+  blade(tip,yaw,L*(simple?.65:.44));
+ };
+ const clusters=[];
+ for(let i=0;i<caneCount;i++){
+  const az=i*2.399963+.36,offset=i?w*.055:0,top=h*(i?.84:.94),
+   root=[Math.sin(az)*offset,0,Math.cos(az)*offset],
+   axis=t=>[root[0]+Math.sin(az)*w*.035*t*t,top*t,root[2]+Math.cos(az)*w*.035*t*t];
+  let previous=root;
+  for(let j=0;j<9;j++){
+   const t=.095+j*.10+(rand()-.5)*.014,at=axis(t);
+   b.branch(previous,at,stemR*(1-t*.55),stem,'stem-emperor');previous=at;
+   b.add(kit.bud,'node',stem,...at,stemR*(1-t*.45)*1.28,Math.min(.012,h*.004),stemR*(1-t*.45)*1.28);
+   if(at[1]<leafTop&&j<8){
+    const L=Math.min(.52,w*.33,h*.45)*(1-t*.24)*(.94+rand()*.12),leafYaw=az+j*Math.PI/2+(rand()-.5)*.22;
+    for(const side of [0,1])if(j<5||rand()<s.leafDensity)leaf(at,leafYaw+side*Math.PI,L,juvenile||j>5);
+   }
+   if(j===6){
+    for(const side of [-1,1]){
+     const a=az+side*1.25,end=point(at,a,w*.21,top*.18);
+     b.branch(at,end,stemR*.44,stem,'branch-emperor');
+     const middle=at.map((v,k)=>v+(end[k]-v)*.48);
+     if(middle[1]<leafTop)for(const flip of [0,1])leaf(middle,a+flip*Math.PI,Math.min(.25,w*.18,h*.32),true);
+     clusters.push({at:end,az:a});
+    }
+   }
+  }
+  const end=axis(1);b.branch(previous,end,stemR*.38,stem,'stem-emperor');clusters.push({at:end,az});
+ }
+ if(!s.bloom)return;
+ const r=Math.min(info.appearance.flowerRadius,h*.11);
+ for(const [ci,c] of clusters.entries())for(let k=0;k<3;k++){
+  const yaw=c.az+(k-1)*1.18+(rand()-.5)*.25,neck=point(c.at,yaw,Math.min(w*.10,r*1.9)*(.78+rand()*.38),h*(k===1?.026:.012)*(.8+rand()*.4)),
+   end=point(neck,yaw,r*.34,-r*.26);
+  b.branch(c.at,neck,Math.min(.0028,h*.006),stem,'peduncle-emperor');b.branch(neck,end,Math.min(.0024,h*.005),stem,'pedicel-emperor');
+  if((ci+k)%4===1){b.add(kit.bud,'bud-emperor','#91a272',...end,r*.18,r*.23,r*.18,.35,yaw,0);continue;}
+  detailedFlower(b,{x:end[0],y:end[1],z:end[2],r,color:s.flowerColor,shape:'dahliaHead',palette:{emperor:true},tilt:1.94+rand()*.22,yaw},{...kit,rand});
+ }
+}
+
 function drawDahlias(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,tree=a.architecture==='treeDahlia',compact=a.architecture==='compactDahlia',maxi=!!(a.flowerPalette?.maxi||a.flowerPalette?.smilePeach||a.flowerPalette?.decorative||a.flowerPalette?.darkDahlia||a.flowerPalette?.retailDahlia),green=s.leafColor,kind=a.flowerPalette?.darkDahlia?'leaf-dark-dahlia':maxi?'leaf-maxi-dahlia':foliageKind(info),stem=a.stemColor||'#77885a',growth=s.shootScale||1;
  const leaf=(at,angle,size,n=5)=>{
@@ -16965,7 +17053,8 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='grapeHyacinthSpikes'){drawGrapeHyacinths(b,{info,s,detail,rand},kit);return;}
  if(['muscari','hyacinth','freesia'].includes(a.architecture)){drawSpringRacemes(b,{info,s,detail,rand},kit);return;}
  if(['miniIris','beardedIris','snakeIris','dietes','blackberryLily'].includes(a.architecture)){drawIrises(b,{info,s,detail,rand},kit);return;}
- if(['compactDahlia','tallDahlia','treeDahlia'].includes(a.architecture)){drawDahlias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='treeDahlia'){drawEmperorDahlia(b,{info,s,rand},kit);return;}
+ if(['compactDahlia','tallDahlia'].includes(a.architecture)){drawDahlias(b,{info,s,detail,rand},kit);return;}
  if(a.architecture?.startsWith('celosia')){drawCelosias(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='beeBalm'||a.architecture==='tieredMonarda'){drawMonardas(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='airyGaillardia'||a.architecture==='compactGaillardia'){drawGaillardias(b,{info,s,detail,rand},kit);return;}

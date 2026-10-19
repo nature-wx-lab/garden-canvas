@@ -7,7 +7,7 @@ import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
 import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
-import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulipPoint,pinkRainLilyPoint,DOUBLE_TULIP_PROFILES,doubleTulipPoint,MINOR_TULIP_TYPES,minorTulipPoint,slenderTulipPoint,SINGLE_TULIP_PROFILES,singleTulipPoint,cannaReferencePoint,gardenAnemonePoint,alliumReferencePoint,daylilyReferencePoint,iridSpikePoint,irisReferencePoint,retailLilyPoint,freesiaReferencePoint,miniIrisPoint,hyacinthReferencePoint,narcissusCupPoint,nativeLilyPoint,martagonReferencePoint,narcissusReferencePoint,borderTulipPoint,retailTulipPoint,camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,darkDahliaPoint,decorativeDahliaPoint,maxiDahliaPoint,MAXI_DAHLIA_PROFILES,rudyPoint,eucomisPoint,paraneePoint,somekawaPoint,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
+import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulipPoint,pinkRainLilyPoint,DOUBLE_TULIP_PROFILES,doubleTulipPoint,MINOR_TULIP_TYPES,minorTulipPoint,slenderTulipPoint,SINGLE_TULIP_PROFILES,singleTulipPoint,cannaReferencePoint,gardenAnemonePoint,alliumReferencePoint,daylilyReferencePoint,iridSpikePoint,irisReferencePoint,retailLilyPoint,freesiaReferencePoint,miniIrisPoint,hyacinthReferencePoint,narcissusCupPoint,nativeLilyPoint,martagonReferencePoint,narcissusReferencePoint,borderTulipPoint,retailTulipPoint,camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,emperorDahliaPoint,darkDahliaPoint,decorativeDahliaPoint,maxiDahliaPoint,MAXI_DAHLIA_PROFILES,rudyPoint,eucomisPoint,paraneePoint,somekawaPoint,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
@@ -5755,7 +5755,7 @@ test('dahlias distinguish frost dieback, summer rest and late tree-dahlia flower
  for(const id of ['p-71dc3b33c599','p-1cdcecfd96de','p-a6871a1f89cd','p-0c809fb897d3','p-04e6395e6b6f']){
   const p=makePlant(id,571,2,2);assert.equal(plantModel(p,view(1)).children.length,0);assert.equal(plantModel(p,view(3)).children.length,0);
   const young=plantModel(p,view(4)),summer=plantModel(p,view(id==='p-a6871a1f89cd'?11:7));assert.ok(young.scale.y<summer.scale.y);assert.ok(summer.children.some(m=>m.userData.component==='node'));
-  assert.ok(summer.children.some(m=>m.geometry.userData.dahliaLeaf||m.geometry.userData.dahliaCutLeaf||m.geometry.userData.darkDahliaCutLeaf||m.geometry.userData.maxiDahliaLeaf));
+  assert.ok(summer.children.some(m=>m.geometry.userData.dahliaLeaf||m.geometry.userData.dahliaCutLeaf||m.geometry.userData.darkDahliaCutLeaf||m.geometry.userData.maxiDahliaLeaf||m.geometry.userData.emperorDahliaLeaf));
   for(const g of [young,summer]){for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);}
  }
 });
@@ -7280,6 +7280,25 @@ test('three retail double dahlias keep variable bicolour heads warm yellow cups 
    }finally{dispose(g);}
   }
  }
+});
+
+test('emperor dahlia keeps connected compound leaf axes nodding eight-ray examples and frost boundaries',()=>{
+ const id='p-a6871a1f89cd',info=CATALOG[id],a=info.appearance;
+ assert.equal(a.status,'partial');assert.equal(a.inflorescence,'head');assert.equal(a.leaflets,undefined);assert.equal(a.compoundType,undefined);assert.equal(a.petals,undefined);assert.equal(a.flowerLayers,undefined);assert.match(a.unconfirmed.join(' '),/固定値|固定数/);assert.deepEqual(info.height,[3,4]);assert.deepEqual(info.spread,[1,1.5]);
+ for(const small of [false,true])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,42500+(small?1:0),2,2),height:small?.7:3.5,spread:small?.65:1.3,leafHeight:small?.52:2.8},g=plantModel(p,view(month)),label=`emperor small=${small} month=${month}`,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+  try{
+   if([12,1,2,3].includes(month)){assert.equal(g.children.length,0,label);assert.equal(stateAt(p,view(month)).bloom,false,label);continue;}
+   assert.equal(g.userData.architecture,'treeDahlia',label);assert.ok(count('stem-emperor')>0,label);assert.ok(count('node')>0,label);assert.ok(count('leaf-emperor-dahlia')>0,label);assert.equal(count('pinna-axis-emperor')>0,!small&&month!==4,label);
+   const heads=count('receptacle-emperor'),bloom=[10,11].includes(month);assert.equal(heads>0,bloom,label);assert.equal(count('petal-emperor-dahlia'),heads*8,label);assert.equal(count('discFloret-emperor'),heads*48,label);assert.equal(count('involucre-emperor-inner'),heads*8,label);assert.equal(count('involucre-emperor-outer'),heads*5,label);
+   for(const target of g.userData.flowerTargets||[])assert.ok(target.axis[1]<-.3,label+' nodding head');
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();let box=m.boundingBox.clone();if(box.min.y<-.002){box.makeEmpty();const matrix=new Matrix4(),v=new Vector3(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);for(let j=0;j<pos.count;j++)box.expandByPoint(v.fromBufferAttribute(pos,j).applyMatrix4(matrix));}}assert.ok(box.min.y>=-.002&&box.max.y<p.height*1.13,label+' vertical '+m.userData.component+' '+box.min.y+' '+box.max.y);assert.ok(Math.max(Math.abs(box.min.x),Math.abs(box.max.x),Math.abs(box.min.z),Math.abs(box.max.z))<p.spread*.75,label+' horizontal '+m.userData.component);}
+  }finally{dispose(g);}
+ }
+ const p={...makePlant(id,42500,2,2),height:3.5,spread:1.3,leafHeight:2.8},branches=[],leaves=[];
+ drawDetailedHerb({branch:(from,to,r,color,kind)=>branches.push({from,to,kind}),add:(shape,kind,color,x,y,z)=>{if(kind==='leaf-emperor-dahlia')leaves.push([x,y,z]);}},{info,s:stateAt(p,view(11)),p,detail:1,rand:()=>.5,month:11},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
+ assert.ok(leaves.length>0);for(const at of leaves)assert.ok(branches.some(b=>b.to.every((v,i)=>Math.abs(v-at[i])<1e-8)),'every leaflet starts at a connected axis endpoint');
+ for(const type of ['emperorDahliaLeaf','emperorDahliaRay'])for(let t=0;t<=40;t++)for(const u of [-1,0,1])assert.ok(emperorDahliaPoint(type,t/40,u).every(Number.isFinite));
 });
 
 test('three large dahlias distinguish formal pink white heads purple reverses and apricot waved rays with honest source months',()=>{
