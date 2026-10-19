@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.427';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.428';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.427';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.428';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15484,6 +15484,60 @@ function drawCannaReferences(b,{info,s,detail,rand},kit){
 }
 
 // Photo-guided examples; counts and sizes are not measured cultivar constants.
+// Tanacetum foliage and inflorescences remain reference examples, not a
+// same-plant annual record. Golden Fleece is a mostly nonflowering cultivar.
+export function tanacetumPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='tanacetumFloret')return arctotisPoint('arctotisFloret',t,u);
+ if(type==='tanacetumBract')return [u*.18*sn**.60,.08*sn-.08*t*t,t];
+ if(type==='tanacetumSmallRay')return [u*.25*sn**.43,.09*sn-.06*t**3+.015*u*u*sn,t];
+ if(type==='tanacetumRedRay')return [u*.18*sn**.6,.08*sn-.35*t**3+.018*Math.sin(t*28+u*4)*Math.abs(u)**3*sn,t];
+ if(type==='tanacetumJackLeaf')return [u*.32*sn**.65*(.14+.86*Math.abs(Math.sin(t*Math.PI*3.6+.2))**.8),.06*sn+.02*u*u*sn,t];
+ const gold=type==='tanacetumGoldPinna',lobes=.13+.87*Math.abs(Math.sin(t*Math.PI*(gold?5.6:4.2)+.2))**.8;
+ return [u*(gold?.26:.15)*sn**.6*lobes,(gold?.07:.025)*sn+(gold?.065:.012)*Math.sin(t*22+u*4)*Math.abs(u)**2*sn,t];
+}
+function drawTanacetumLeaf(b,at,L,az,pitch,type,color,kit){
+ const f=flowerFrame(b,at,pitch,az),vein=type==='golden'?'#c4cc76':type==='jackpot'?'#afb69d':'#7d9b59';
+ if(type==='jackpot'){
+  f.add('tanacetumJackLeaf','leaf-tanacetum-jackpot',color,0,0,0,L,L,L);
+  let prev=[0,0,0];for(let k=1;k<=12;k++){const q=tanacetumPoint('tanacetumJackLeaf',k/12,0),end=[0,q[1]*L+.0001,q[2]*L];f.branch(prev,end,Math.min(.0004,L*.006),vein,'leaf-axis-tanacetum');prev=end;}return;
+ }
+ let prev=[0,0,0];for(let k=1;k<=12;k++){const t=k/12,node=[0,.045*Math.sin(t*Math.PI)*L,t*L];f.branch(prev,node,Math.min(.0005,L*.007),vein,'leaf-axis-tanacetum');prev=node;
+  if(k<2||k>11)continue;
+  for(const side of [-1,1]){
+   const pin=flowerFrame(f,node,-.08,side*1.14),P=L*(type==='golden'?.27:.25)*Math.sin(t*Math.PI)**.65,shape=type==='golden'?'tanacetumGoldPinna':'tanacetumFinePinna';pin.add(shape,'leaf-pinna-tanacetum-'+type,color,0,0,0,P,P,P);
+   let from=[0,0,0];for(let j=1;j<=6;j++){const q=tanacetumPoint(shape,j/6,0),end=[0,q[1]*P+.00008,q[2]*P];pin.branch(from,end,Math.min(.00022,P*.009),vein,'pinna-axis-tanacetum');from=end;}
+  }
+ }
+}
+function drawTanacetumHead(b,at,r,type,index,rand,kit){
+ const red=type==='robinson',f=flowerFrame(b,at,.18+(index%3)*.09,index*2.399),rays=(red?20:14)+(index%3)*2,disc=red?.30:.34;
+ f.flower([0,0,0],r*1.05);
+ for(let row=0;row<3;row++)for(let k=0;k<8+row*2;k++){const L=r*(.36-row*.045);f.add('tanacetumBract','involucre-tanacetum-'+row,row===2?'#c6bc91':'#8d9b68',0,-r*(.09-row*.015),0,L,L,L,2.18-row*.15,k*TAU/(8+row*2)+row*.21,0);}
+ f.add(kit.bud,'receptacle-tanacetum','#9d9c57',0,0,0,r*disc,r*.07,r*disc);
+ for(let k=0;k<rays;k++){const yaw=k*TAU/rays,L=r*(red?.83:.76);f.add(red?'tanacetumRedRay':'tanacetumSmallRay','ray-tanacetum-'+type,kit.shade(rand,red?'#b72c46':'#f0ede5',.02),Math.sin(yaw)*r*.20,r*.02,Math.cos(yaw)*r*.20,L,L,L,0,yaw,0);}
+ const count=red?192:64;
+ for(let j=0;j<count;j++){const q=Math.sqrt((j+.5)/count),az=j*2.399,R=r*disc*q,L=r*(red?.11:.16);f.add('tanacetumFloret','disc-floret-tanacetum-'+type,kit.shade(rand,q>.88?'#d1a63e':'#dcc451',.02),Math.sin(az)*R,r*(.035+(red?.16:.07)*(1-q*q)),Math.cos(az)*R,L,L,L,0,az,0);}
+}
+function drawTanacetumReferences(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.flowerPalette.type,golden=type==='golden',jack=type==='jackpot',h=s.height,w=s.spread,n=Math.max(3,Math.round((golden||jack?5:4)*detail)),scale=s.leafScale,stem=a.stemColor,leafLen=Math.min(s.leafHeight*.8,w*.43,h*.48)*scale,r=Math.min(a.flowerRadius||0,h*(jack?.028:.12),w*.10),stemR=Math.min(.0028,h*.006,w*.007);
+ for(let i=0;i<n;i++){
+  const az=i*2.399,R=w*(golden?.09:.10),root=[Math.sin(az)*R,Math.min(.0015,h*.03),Math.cos(az)*R],leafTop=[root[0],Math.min(s.leafHeight*(golden?.45:jack?.60:.48),h*.35)*scale,root[2]];b.branch(root,leafTop,stemR,stem,'leaf-stem-tanacetum');
+  const leaves=Math.max(1,Math.ceil((golden?8:jack?6:7)*s.leafDensity));
+  for(let j=0;j<leaves;j++){
+   const yaw=az+j*2.399,t=(j+1)/(leaves+1),node=root.map((v,k)=>v+(leafTop[k]-v)*t),L=leafLen*(.82+.18*Math.sin(t*Math.PI)),reach=L*.10,end=[node[0]+Math.sin(yaw)*reach,node[1]+L*.04,node[2]+Math.cos(yaw)*reach];b.branch(node,end,stemR*.5,stem,'petiole-tanacetum');drawTanacetumLeaf(b,end,L,yaw,-.30-j*.08,type,s.leafColor,kit);
+  }
+  if(golden||!s.bloom)continue;
+  const top=[root[0],h*(jack?.57:.91)-r*.12,root[2]];b.branch(leafTop,top,stemR*.75,stem,'flower-stem-tanacetum');
+  for(let j=0;j<3;j++){const t=.15+j*.18,node=leafTop.map((v,k)=>v+(top[k]-v)*t);drawTanacetumLeaf(b,node,leafLen*(.56-j*.12),az+j*2.399,-.16,type,s.leafColor,kit);}
+  if(!jack){drawTanacetumHead(b,top,r,type,i,rand,kit);continue;}
+  for(let j=0;j<7;j++){
+   const yaw=az+j*2.399,reach=w*.20*Math.sqrt((j+.5)/7),at=[root[0]+Math.sin(yaw)*reach,h*(.96-.20*(reach/(w*.20))**2)-r*.2,root[2]+Math.cos(yaw)*reach];b.branch(top,at,stemR*.42,stem,'corymb-branch-tanacetum');
+   for(let k=0;k<5;k++){const angle=yaw+k*2.399,end=[at[0]+Math.sin(angle)*w*.047,at[1]-h*.025*(k%2),at[2]+Math.cos(angle)*w*.047];b.branch(at,end,stemR*.18,stem,'pedicel-tanacetum');drawTanacetumHead(b,end,r,type,i*35+j*5+k,rand,kit);}
+  }
+ }
+}
+
 export function arctotisPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='arctotisFloret'){const r=(.17+.17*t**3)*(1+.18*Math.cos(u*5)*t**6);return [Math.cos(u)*r,t-.06*(1-Math.cos(u*5))*t**8,Math.sin(u)*r];}
@@ -17058,6 +17112,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='minorTulipReferences'){drawMinorTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='slenderTulipReferences'){drawSlenderTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='singleTulipReferences'){drawSingleTulipReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='tanacetumReferences'){drawTanacetumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='gardenAnemoneReferences'){drawGardenAnemones(b,{info,s,detail,rand},kit);return;}
