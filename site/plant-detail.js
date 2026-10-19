@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.425';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.426';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.425';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.426';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15450,27 +15450,27 @@ export function cannaReferencePoint(type,t,u){
  return [u*width*sn**.60+.08*t*t,.09+(lip?.50:.22)*sn-(lip?.72:.15)*t**3,.04+(lip?.78:1.0)*t+.035*u*u*sn+.015*Math.sin(t*27+u*6)*Math.abs(u)**3*sn];
 }
 function drawCannaReferences(b,{info,s,detail,rand},kit){
- const a=info.appearance,type=a.flowerPalette.type,broad=['viewYellow','futurity'].includes(type),h=s.height,w=s.spread,n=Math.max(2,Math.round(2*detail)),L=Math.min(a.flowerRadius,h*.11,w*.11),stem=type==='futurity'||type==='redStripe'?'#79515b':'#8a9d73',green=s.leafColor;
+ const a=info.appearance,type=a.flowerPalette.type,broad=['viewYellow','futurity','bengal','bronzeScarlet','durban','pretoria'].includes(type),copper=['futurity','redStripe','bronzeScarlet','durban'].includes(type),striped=['bengal','pretoria'].includes(type),leafProfile={bengal:{width:.62,pitch:.70},bronzeScarlet:{width:.48,pitch:.78},durban:{width:.48,pitch:.75},pretoria:{width:.64,pitch:.68}}[type],h=s.height,w=s.spread,n=Math.max(2,Math.round(2*detail)),L=Math.min(a.flowerRadius,h*.11,w*.11),stem=a.stemColor||(copper?'#79515b':'#8a9d73'),green=s.leafColor;
  for(let i=0;i<n;i++){
-  const yaw=i*2.399,R=w*.085,root=[Math.sin(yaw)*R,.002,Math.cos(yaw)*R],top=Math.min(h*.73,s.leafHeight*.90)*s.leafScale,stemR=Math.min(.013,h*.016,w*.028);
+  const yaw=i*2.399,R=w*.085,root=[Math.sin(yaw)*R,.002,Math.cos(yaw)*R],top=Math.min(h*(leafProfile?.60:.73),s.leafHeight*(leafProfile?.62:.90))*s.leafScale,stemR=Math.min(.013,h*.016,w*.028);
   b.branch(root,[root[0],top,root[2]],stemR,stem,'pseudostem-canna');
   const leaves=Math.max(1,Math.ceil(8*s.leafDensity));
   for(let j=0;j<leaves;j++){
-   const az=yaw+j*2.399,rank=j/8,node=[root[0],top*(.14+rank*.76),root[2]],len=Math.min(h*.46,w*.51)*s.leafScale*(.78+.22*Math.sin((j+1)*Math.PI/9)),width=Math.min(len*.54,w*.25),f=flowerFrame(b,node,-.50-rank*.35,az),variant=(i*3+j)%4;
+   const az=yaw+j*2.399,rank=j/8,node=[root[0],top*(.14+rank*.76),root[2]],len=Math.min(h*.46,w*.51)*s.leafScale*(.78+.22*Math.sin((j+1)*Math.PI/9)),width=Math.min(len*(leafProfile?.width||.54),w*(leafProfile?.29:.25)),f=flowerFrame(b,node,leafProfile?-(leafProfile.pitch+rank*.38):-.50-rank*.35,az),variant=(i*3+j)%4;
    b.branch([node[0],Math.max(.002,node[1]-top*.15),node[2]],node,stemR*1.10,stem,'sheath-canna');
    f.add('cannaPaddleLeaf','leaf-canna-'+type+'-'+variant,kit.shade(rand,green,.015),0,0,0,width,len,len);
-   let from=[0,0,0];for(let k=1;k<=20;k++){const p=cannaReferencePoint('cannaPaddleLeaf',k/20,0),to=[0,p[1]*len+.0003,p[2]*len];f.branch(from,to,Math.min(.0011,len*.003),type==='futurity'||type==='redStripe'?'#9a5a67':type==='viewYellow'?'#c9cd70':'#a9bc92','midrib-canna');from=to;}
+   let from=[0,0,0];for(let k=1;k<=20;k++){const p=cannaReferencePoint('cannaPaddleLeaf',k/20,0),to=[0,p[1]*len+.0003,p[2]*len];f.branch(from,to,Math.min(.0011,len*.003),copper?'#9a5a67':striped?'#d1cb81':type==='viewYellow'?'#c9cd70':'#a9bc92','midrib-canna');from=to;}
   }
   const rolled=Math.min(h*.15,w*.16)*s.leafScale;b.add('cannaRolledLeaf','rolled-leaf-canna',green,root[0],top*.91,root[2],rolled,rolled,rolled,.12,yaw,0);
   if(!s.bloom)continue;
-  const head=[root[0],h*.64,root[2]];b.branch([root[0],top,root[2]],head,stemR*.52,stem,'scape-canna');
+  const head=[root[0],h*(leafProfile?.76:.64),root[2]];b.branch([root[0],top,root[2]],head,stemR*.52,stem,'scape-canna');
   for(let j=0;j<7;j++){
-   const az=yaw+(j%2?-.55:.55),at=[head[0]+Math.sin(az)*L*(j%2?.40:.05),head[1]+h*j*.045,head[2]+Math.cos(az)*L*(j%2?.40:.05)],end=[at[0]+Math.sin(az)*L*.15,at[1],at[2]+Math.cos(az)*L*.15];
-   b.branch(j?[head[0],at[1]-h*.045,head[2]]:head,at,stemR*.32,stem,'rachis-canna');b.branch(at,end,stemR*.22,stem,'pedicel-canna');
+   const az=yaw+(j%2?-.55:.55),at=[head[0]+Math.sin(az)*L*(j%2?.40:.05),head[1]+h*j*(leafProfile?.026:.045),head[2]+Math.cos(az)*L*(j%2?.40:.05)],end=[at[0]+Math.sin(az)*L*.15,at[1],at[2]+Math.cos(az)*L*.15];
+   b.branch(j?[head[0],at[1]-h*(leafProfile?.026:.045),head[2]]:head,at,stemR*.32,stem,'rachis-canna');b.branch(at,end,stemR*.22,stem,'pedicel-canna');
    b.add('cannaSepal','bract-canna',stem,...at,L*.85,L*.85,L*.85,.13,az,0);
    if(j>=3){b.add(kit.bud,'bud-canna',j>=5?stem:s.flowerColor,...end,L*.09,L*(j>=5?.25:.47),L*.09,.25,az,0);continue;}
    const f=flowerFrame(b,end,.94,az),color=s.flowerColor;
-   if(i===0&&j===0)f.flower([0,L*.20,0],L*1.22);
+   if(i===0&&j===(leafProfile?2:0))f.flower([0,L*.20,0],L*1.22);
    f.add(kit.bud,'ovary-inferior-canna','#80936b',0,-L*.10,0,L*.095,L*.10,L*.085);
    f.add('cannaShortTube','tube-canna',color,0,0,0,L,L,L);
    for(let k=0;k<3;k++){f.add('cannaSepal','sepal-canna',stem,0,-L*.04,0,L,L,L,0,k*TAU/3,0);f.add('cannaTruePetal','true-petal-canna',type==='stuttgart'?'#e79854':color,0,0,0,L,L,L,0,k*TAU/3+.2,0);}
