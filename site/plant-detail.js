@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.426';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.427';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.426';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.427';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15483,6 +15483,45 @@ function drawCannaReferences(b,{info,s,detail,rand},kit){
  }
 }
 
+// Photo-guided examples; counts and sizes are not measured cultivar constants.
+export function arctotisPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='arctotisFloret'){const r=(.17+.17*t**3)*(1+.18*Math.cos(u*5)*t**6);return [Math.cos(u)*r,t-.06*(1-Math.cos(u*5))*t**8,Math.sin(u)*r];}
+ if(type==='arctotisBract')return [u*.17*sn**.65,.10*sn-.20*t*t,t];
+ if(type==='arctotisRay')return [u*.19*sn**.48*(1-.09*Math.cos(t*22)*Math.abs(u)**3),.14*sn-.055*t**4+.015*Math.sin(t*23+u*3)*Math.abs(u)**3*sn,t];
+ const grandis=type==='arctotisLyrateLeaf',lobes=grandis?(.20+.80*Math.abs(Math.sin(t*Math.PI*3.6+.3))**1.3):(.88+.12*Math.cos(t*Math.PI*8)),width=grandis?.28:.39;
+ return [u*width*sn**.65*lobes*(.55+.45*t),.065*sn+.045*u*u*sn+.014*Math.sin(t*24+u*5)*Math.abs(u)**3*sn,t];
+}
+function drawArctotisHead(b,at,r,type,head,rand,kit){
+ const f=flowerFrame(b,at,.36+(head%3)*.13,head*2.399),rayN=24+(head%3)*2,color=type==='grandis'?'#edece7':type==='burgundy'?'#b93263':'#ce6b9e';
+ f.flower([0,0,0],r*1.06);
+ for(let row=0;row<3;row++)for(let j=0;j<8+row*2;j++){const L=r*(.43-row*.055);f.add('arctotisBract','involucre-arctotis-'+row,row===2?'#c1b9a2':'#9aa28b',0,-r*(.10-row*.02),0,L,L,L,2.10-row*.16,j*TAU/(8+row*2)+row*.26,0);}
+ f.add(kit.bud,'receptacle-arctotis','#928d67',0,-r*.03,0,r*.31,r*.075,r*.31);
+ for(let j=0;j<rayN;j++){const az=j*TAU/rayN,L=r*(.78+(j%3)*.025);f.add('arctotisRay','ray-arctotis-'+type,kit.shade(rand,color,.017),Math.sin(az)*r*.19,r*.015,Math.cos(az)*r*.19,L,L,L,0,az,0);}
+ // Five-lobed disc florets. Pigment differences are photo examples, not stages.
+ for(let j=0;j<128;j++){const q=Math.sqrt((j+.5)/128),az=j*2.399,R=r*.31*q,outer=q>(type==='grandis'?.82:type==='burgundy'?.67:head%2?.28:.67),c=outer?(type==='grandis'?'#cfb34d':'#bf9e3e'):type==='grandis'?'#394b73':type==='burgundy'?'#5b4c56':'#61585c',L=r*.12;f.add('arctotisFloret','disc-floret-arctotis-'+type,c,Math.sin(az)*R,r*(.025+.045*(1-q*q)),Math.cos(az)*R,L,L,L,0,az,0);}
+}
+function drawArctotisReferences(b,{info,s,detail,rand},kit){
+ const a=info.appearance,type=a.flowerPalette.type,h=s.height,w=s.spread,leafShape=type==='grandis'?'arctotisLyrateLeaf':'arctotisWavyLeaf',stem=a.stemColor,n=Math.max(2,Math.round(3*detail)),r=Math.min(a.flowerRadius,h*.20,w*.17),leafLen=Math.min(s.leafHeight*1.25,w*.35,h*.65)*s.leafScale;
+ const leaf=(at,az,L,pitch,kind)=>{const f=flowerFrame(b,at,pitch,az);f.add(leafShape,kind,s.leafColor,0,0,0,L,L,L);let prev=[0,0,0];for(let k=1;k<=10;k++){const v=arctotisPoint(leafShape,k/10,0),end=[v[0]*L,v[1]*L+.0002,v[2]*L];f.branch(prev,end,Math.min(.00045,L*.006),'#bec2af','midrib-arctotis');prev=end;}};
+ for(let i=0;i<n;i++){
+  const yaw=i*2.399,R=w*(type==='grandis'?.07:.14),root=[Math.sin(yaw)*R,.0015,Math.cos(yaw)*R],tip=[root[0],Math.min(s.leafHeight*.20,h*.10),root[2]],stemR=Math.min(.0019,h*.008,w*.008);
+  b.branch(root,tip,stemR*1.5,stem,'crown-arctotis');
+  for(let j=0;j<8;j++){
+   if(j/8>=s.leafDensity)continue;
+   const az=yaw+j*2.399,reach=leafLen*.12,at=[tip[0]+Math.sin(az)*reach,tip[1]+leafLen*.08,tip[2]+Math.cos(az)*reach];b.branch(tip,at,stemR*.65,stem,'petiole-arctotis');leaf(at,az,leafLen*(.82+.18*Math.sin((j+1)*Math.PI/9)),-.42-(j%3)*.13,'leaf-arctotis-'+type);
+  }
+  if(!s.bloom)continue;
+  for(let j=0;j<2;j++){
+   const az=yaw+j*2.10,head=i*2+j,at=[root[0]+Math.sin(az)*Math.min(w*.10,h*.15),h-r*.25-h*.10*(head%3),root[2]+Math.cos(az)*Math.min(w*.10,h*.15)];
+   b.branch(tip,at,stemR,stem,'peduncle-arctotis');
+   for(let k=0;k<2;k++){const t=.18+k*.18,node=tip.map((v,d)=>v+(at[d]-v)*t),an=az+k*2.399,end=[node[0]+Math.sin(an)*leafLen*.08,node[1]+leafLen*.025,node[2]+Math.cos(an)*leafLen*.08];b.branch(node,end,stemR*.45,stem,'petiole-arctotis');leaf(end,an,leafLen*(.48-k*.12),-.20-k*.12,'cauline-leaf-arctotis-'+type);}
+   if(head===n*2-1){b.add(kit.bud,'bud-arctotis',type==='grandis'?'#9a8c9e':'#937b85',...at,r*.20,r*.37,r*.20,.20,az,0);continue;}
+   drawArctotisHead(b,at,r,type,head,rand,kit);
+  }
+ }
+}
+
 export function gardenAnemonePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='gardenAnemoneCutLeaf')return [u*.28*sn**.45*(.06+.94*Math.abs(Math.sin(t*Math.PI*4+.20))**1.6),.025*sn+.012*u*u*sn,t];
@@ -17019,6 +17058,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='minorTulipReferences'){drawMinorTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='slenderTulipReferences'){drawSlenderTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='singleTulipReferences'){drawSingleTulipReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='gardenAnemoneReferences'){drawGardenAnemones(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='alliumReferences'){drawAlliumReferences(b,{info,s,detail,rand},kit);return;}

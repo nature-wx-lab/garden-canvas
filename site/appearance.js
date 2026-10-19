@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.426';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.427';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -547,3 +547,5 @@ Object.assign(TRAIT_VALUES,{darkDahliaCutLeaf:"銅葉の深い切れ込みと粗
 Object.assign(TRAIT_VALUES,{emperorDahliaLeaf:'長く尖る鋸歯のある小葉と、若株・成株で異なる複葉の参考例'});
 
 Object.assign(TRAIT_VALUES,{cannaBronzeSolid:'深い銅色の単葉（光や葉齢による見え方は参考）',cannaBronzeStripes:'銅色の単葉に入る赤〜橙色の細い縞'});
+
+Object.assign(TRAIT_VALUES,{arctotisLyrate:'銀毛に覆われ、先の部分が広く深く切れ込む葉',arctotisWavy:'銀毛に覆われ、縁が波打つ幅広いへら形の葉',arctotisHead:'1列の舌状花と、5裂する筒状花の花芯・数列の総苞'});
