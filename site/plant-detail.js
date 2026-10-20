@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.456';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.457';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.456';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.457';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='stipoidReferences'){drawStipoidReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='calamagrostisReferences'){drawCalamagrostisReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='panicumReferences'){drawPanicumReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='softSucculents'){drawSoftSucculents(b,{info,s,rand},kit);return;}
@@ -20444,6 +20445,83 @@ function drawTallEupatorieae(b,{info,s,detail,month},kit){
     const count=Math.max(4,Math.round((whorled?12:9)*detail));for(let j=0;j<count;j++){
      const phi=yaw+j*2.399963,rad=Math.min(whorled?.025:.019,w*.045,h*.035)*Math.sqrt((j+.4)/count),at=[node[0]+Math.sin(phi)*rad,h*(.94-.020*i+(ivory?.022*(1-(j+.4)/count):0))-F*1.78,node[2]+Math.cos(phi)*rad];b.branch(node,at,R*.035,stem,'head-pedicel-tallEupa');head(at,phi,budding||j===count-1&&group===2&&k===2);
     }
+   }
+  }
+ }
+}
+
+export function stipoidHairGeometry(type){
+ const p=[],uv=[],ix=[];
+ const ribbon=(a,b,width)=>{
+  const va=new THREE.Vector3(...a),vb=new THREE.Vector3(...b),dir=vb.clone().sub(va).normalize(),axis=Math.abs(dir.y)>.9?new THREE.Vector3(1,0,0):new THREE.Vector3(0,1,0),right=new THREE.Vector3().crossVectors(dir,axis).normalize(),other=new THREE.Vector3().crossVectors(dir,right).normalize();
+  for(const unit of [right,other]){const offset=unit.multiplyScalar(width/2),vertices=[va.clone().sub(offset),va.clone().add(offset),vb.clone().add(offset),vb.clone().sub(offset)],k=p.length/3;for(const v of vertices)p.push(...v.toArray());uv.push(0,0,1,0,1,1,0,1);ix.push(k,k+1,k+2,k,k+2,k+3);}
+ };
+ if(type==='allgau'){
+  for(const row of [.25,.65])for(let q=0;q<12;q++){const yaw=q*TAU/12+row,start=[Math.sin(yaw)*.10,row,Math.cos(yaw)*.10];let prev=start;for(let j=1;j<=2;j++){const t=j/2,next=[start[0]+Math.sin(yaw)*.45*t*t,start[1]+.90*t,start[2]+Math.cos(yaw)*.45*t*t];ribbon(prev,next,.016*(1-t*.5));prev=next;}}
+ }else{
+  for(let q=0;q<18;q++){const yaw=q*TAU/18;let prev=[0,1,0];for(let j=1;j<=2;j++){const t=j/2,next=[Math.sin(yaw)*.60*t*t,1+1.05*t,Math.cos(yaw)*.60*t*t];ribbon(prev,next,.016*(1-t*.5));prev=next;}}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.stipoidHairLocation=type==='allgau'?'lemmaBody':'lemmaApex';g.userData.illustrativeStrands=type==='allgau'?24:18;return g;
+}
+
+export function stipoidPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='stipoidGlume')return [u*.13*sn**.70,t,.07*(1-u*u)*sn];
+ if(type==='stipoidLemma'){const az=u*Math.PI*.94,r=.13*sn**.72;return[Math.sin(az)*r,t,Math.cos(az)*r];}
+ if(type==='stipoidPalea')return[u*.10*sn**.70,t,-.05*(1-u*u)*sn];
+ const ichu=type==='stipoidFoldedLeaf',allgau=type==='stipoidRolledLeaf',fold=ichu?.00035:allgau?.0015:.00020;
+ return[u*.35*(.7+.3*sn)*(1-t)**.65,Math.sin(Math.PI*(ichu?.58:allgau?.76:.73)*t)+fold*u*u*sn,t];
+}
+const STIPOID_LEAF_TOP=Object.fromEntries(['stipoidNeedleLeaf','stipoidRolledLeaf','stipoidFoldedLeaf'].map(type=>{
+ let top=0;for(let i=0;i<=80;i++)for(let j=0;j<=8;j++)top=Math.max(top,stipoidPoint(type,i/80,j/4-1)[1]);return[type,top];
+}));
+function drawStipoidReferences(b,{info,s,detail,month},kit){
+ const type=info.appearance.shootProfile,nassella=type==='nassella',allgau=type==='allgau',ichu=type==='ichu',dry=!!s.seedHeads&&!s.bloom,heads=s.bloom||dry,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.92)*s.leafScale,rootY=Math.min(.0003,h*.004,LH*.08),R=Math.min(nassella?.00065:.001,h*.0018,w*.003,LH*.020),shape=nassella?'stipoidNeedleLeaf':allgau?'stipoidRolledLeaf':'stipoidFoldedLeaf',stem=dry||[11,12,1,2].includes(month)?'#a69775':'#81916b',winter=[11,12,1,2].includes(month);
+ if(s.leafDensity===0)return;
+ const rotate=(p,az)=>[Math.sin(az)*p[2]+Math.cos(az)*p[0],p[1],Math.cos(az)*p[2]-Math.sin(az)*p[0]];
+ const blade=(at,az,basal,index)=>{
+  const fy=Math.min(LH*(basal?.97:.55)*(.48+.52*(.5+.5*Math.sin(index*7.11))),Math.max(0,LH*.987-at[1])/STIPOID_LEAF_TOP[shape]),reach=Math.min(w*(nassella?.34:ichu?.25:.32),fy*(ichu?.43:nassella?.78:.70)),width=Math.min(nassella?.00085:ichu?.0013:.0045,h*.008,w*.012,LH*.06);
+  if(nassella){
+   const radius=Math.min(.00024,h*.004,w*.006,LH*.020),scaleY=Math.min(fy,Math.max(0,LH*.987-at[1]-radius)/STIPOID_LEAF_TOP[shape]);
+   const point=t=>{const p=stipoidPoint(shape,t,0),q=rotate([0,p[1]*scaleY,p[2]*reach],az);return q.map((v,k)=>v+at[k]);};
+   let prev=point(0);for(let j=1;j<=16;j++){const next=point(j/16);const from=new THREE.Vector3(...prev),to=new THREE.Vector3(...next),dir=to.clone().sub(from),length=dir.length(),r=radius*Math.max(.08,(1-(j-1)/16)**.65);if(length>.000001){const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ'),mid=from.add(to).multiplyScalar(.5);b.add('stipoidNeedleSegment','leaf-stipoid-nassella-'+(j===1?(basal?'basal':'cauline'):'needle'),s.leafColor,...mid.toArray(),r,length,r,e.x,e.y,e.z);}prev=next;}
+   return;
+  }
+  b.add(shape,'leaf-stipoid-'+type+(basal?'-basal':'-cauline'),s.leafColor,...at,width,fy,reach,0,az,0);
+  const get=(t,u)=>{const p=stipoidPoint(shape,t,u),q=rotate([p[0]*width,p[1]*fy+.000002,p[2]*reach],az);return q.map((v,k)=>v+at[k]);};
+  for(const u of nassella?[0]:[-.55,0,.55]){let prev=get(0,u);for(let j=1;j<=10;j++){const next=get(j/10,u);b.branch(prev,next,Math.min(width*.010,LH*.00004),s.leafColor,'parallel-vein-stipoid');prev=next;}}
+ };
+ const basalCount=Math.max(8,Math.round((nassella?420:ichu?150:110)*detail*s.leafDensity));let serial=0;
+ for(let i=0;i<basalCount;i++){const az=i*2.399963,rr=w*.10*Math.sqrt((i+.5)/basalCount),at=[Math.sin(az)*rr,rootY,Math.cos(az)*rr];blade(at,az,true,serial++);}
+ const culms=Math.max(3,Math.round((nassella?128:allgau?24:28)*detail)),F=Math.min(nassella?.0080:allgau?.0085:.010,h*.015,w*.025),L=Math.min(allgau?.0035:.003,h*.005,w*.008,F*.48),awn=Math.min(nassella?.070:allgau?.010:.012,h*(nassella?.11:.025),w*(nassella?.12:.04)),panicleColor=dry?(allgau?'#bca882':'#dddcca'):s.flowerColor;
+ const spikelet=(at,az,pitch,inspect,index)=>{
+  const f=flowerFrame(b,at,pitch,az),co=nassella?panicleColor:ichu?s.flowerColor:dry?'#cab68f':'#d5d0b6';
+  for(const side of [-1,1])f.add('stipoidGlume','glume-stipoid-'+type,co,side*F*.025,0,-side*F*.02,F,F,F,side*.08,side*Math.PI/2,0);
+  const lemmaY=F*.08,lemmaColor=ichu?'#685847':nassella?'#8a7e5d':dry?'#a7926b':'#b9ad87';
+  f.add('stipoidLemma','lemma-stipoid-'+type,lemmaColor,0,lemmaY,0,L,L,L);
+  const pr=nassella?.25:ichu?.30:.60;f.add('stipoidPalea','palea-stipoid-'+type,lemmaColor,0,lemmaY+L*.03,-L*.02,L*.75,L*pr,L*.75,0,Math.PI,0);
+  const hairLength=Math.min(.0035,h*.006,w*.012),hairColor=dry&&allgau?'#d0bd95':ichu?'#e5e5d6':'#dedbc9';
+  if(allgau)f.add('stipoidLemmaHairTuft','lemma-hair-stipoid-allgau',hairColor,0,lemmaY,0,L,L,L);
+  if(ichu)f.add('stipoidApicalHairTuft','apical-hair-stipoid-ichu',month===6?'#cbd3b9':hairColor,0,lemmaY,0,L,L,L);
+  const base=[0,lemmaY+L,0],points=allgau?[[0,0,0],[awn*.06,awn*.33,0],[awn*.18,awn*.67,0],[awn*.32,awn,awn*.02]]:[[0,0,0],[0,awn*.35,0],[awn*.12,awn*.52,0],[awn*.43,awn*.95,awn*.03]];
+  let prev=base;for(let j=1;j<points.length;j++){const next=points[j].map((v,k)=>v+base[k]);f.branch(prev,next,Math.min(nassella?.000080:.000055,h*(nassella?.00014:.00010),w*(nassella?.00020:.00015)),co,'lemma-awn-stipoid-'+type);prev=next;}
+  if(!dry&&inspect)f.flower([awn*.18,lemmaY+L+awn*.45,0],Math.max(F*1.6,awn*.70));
+ };
+ let spikeIndex=0;
+ for(let i=0;i<culms;i++){
+  const az=i*2.399963,q=(i+.5)/culms,rr=w*.075*Math.sqrt(q),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=heads?h*(nassella?.95:allgau?.94:.95)*(1-.28*q):LH*.88,drift=Math.min(w*(heads?(nassella?.24:.25):.055),heads?h*.22:LH*.25),raw=t=>[root[0]+Math.sin(az)*drift*t**1.7,rootY+(top-rootY)*(heads?(nassella?(t-.26*t**8)/.83:(t-.08*t**6)/.92):t),root[2]+Math.cos(az)*drift*t**1.7],points=Array.from({length:17},(_,j)=>raw(j/16));
+  const along=t=>{const k=Math.min(15,Math.max(0,Math.floor(t*16))),f=t*16-k;return points[k].map((v,j)=>v+(points[k+1][j]-v)*f);};
+  for(let j=1;j<points.length;j++)b.branch(points[j-1],points[j],R,stem,'culm-stipoid');
+  const atY=y=>{for(let j=1;j<points.length;j++)if(points[j][1]>=y&&points[j-1][1]<=y){const t=(y-points[j-1][1])/Math.max(.000001,points[j][1]-points[j-1][1]);return points[j-1].map((v,k)=>v+(points[j][k]-v)*t);}return root;};
+  const nodes=Math.max(1,Math.round((nassella?3:allgau?4:3)*s.leafDensity));
+  for(let j=0;j<nodes;j++){const y=rootY+(LH*.50-rootY)*(j+1)/(nodes+1),joint=atY(y);blade(joint,az+(j%2)*Math.PI,false,serial++);b.branch(atY(Math.max(rootY,y-Math.min(.014,LH*.08))),joint,R*1.08,stem,'leaf-sheath-stipoid');}
+  if(!heads)continue;
+  const sample=Math.sqrt(Math.max(.01,detail)),levels=nassella?4:Math.max(4,Math.round(14*sample)),rays=nassella?2:detail<.8?2:allgau?4:3,grains=nassella?2:Math.max(2,Math.round(5*sample)),base=nassella?.50:ichu?.55:.60;
+  for(let j=0;j<levels;j++){
+   const t=(j+.35)/levels,start=along(base+(1-base)*t),env=Math.min(w*(nassella?.045:ichu?.065:.13),h*(nassella?.05:ichu?.05:.10))*Math.sin(Math.PI*(.12+.85*t));
+   for(let k=0;k<rays;k++){
+    const yaw=az+j*1.31+k*TAU/rays,end=[start[0]+Math.sin(yaw)*env,start[1]+h*.010*(1-t),start[2]+Math.cos(yaw)*env];b.branch(start,end,R*.15,panicleColor,'primary-panicle-branch-stipoid');
+    for(let q=0;q<grains;q++){const frac=(q+.6)/grains,joint=start.map((v,n)=>v+(end[n]-v)*frac),side=yaw+(q%2?1:-1)*.65,reach=Math.min(h*.008,w*.016)*(1-t*.65),tip=[joint[0]+Math.sin(side)*reach,joint[1]+h*.004,joint[2]+Math.cos(side)*reach];b.branch(joint,tip,R*.075,panicleColor,'spikelet-pedicel-stipoid');spikelet(tip,side,nassella?.65+q*.07:.08+q*.08,i===0&&j===Math.floor(levels*.5)&&k===0&&q===grains-1,spikeIndex++);}
    }
   }
  }
