@@ -5616,7 +5616,22 @@ test('sedges, Hakone grass, pampas and dichondra preserve distinct blades and wi
   assert.ok(g.children.some(m=>m.userData.component?.startsWith('leaf')),id);
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}dispose(g);
  }
- for(const [id,pattern] of [['p-c19433cc1905','center'],['p-b519b598a40b','margin']]){const g=plantModel(makePlant(id,2825,2,2),view(1));assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-grass-'+pattern)));dispose(g);}
+ for(const [id,pattern,component] of [['p-c19433cc1905','center','leaf-grass-center'],['p-b519b598a40b','margin','leaf-other-carex-morrow-winter']]){
+  const g=plantModel(makePlant(id,2825,2,2),view(1));
+  try{
+   assert.equal(CATALOG[id].appearance.leafPattern,pattern);assert.ok(seasonAt(CATALOG[id],1).leafDensity>0,'winter foliage remains');
+   const leaves=g.children.filter(m=>m.userData.component.startsWith(component));assert.ok(leaves.length>0,id+' winter patterned blades');
+   for(const mesh of leaves){
+    assert.ok(mesh.count>0&&mesh.geometry.attributes.position.count>0,'pattern is on real blades');
+    if(pattern==='margin'){
+     assert.match(mesh.geometry.userData.otherCarexOrgan,/^otherCarexStrap(?:Outer|Upright)Ref$/);
+     const shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};mesh.material.onBeforeCompile(shader,{});
+     assert.ok(shader.fragmentShader.includes('float ocMargin=smoothstep(.68,.80,abs(vUv.x*2.0-1.0))'),'pale pattern follows both blade margins');
+     assert.ok(shader.fragmentShader.includes('ocMargin*.96'),'margin mask colours the rendered blade');
+    }
+   }
+  }finally{dispose(g);}
+ }
  const hakone=makePlant('p-451586f34e64',2826,2,2);
  for(const [month,red] of [[5,true],[6,true],[8,false],[10,true],[1,false]]){const g=plantModel(hakone,view(month));assert.equal(g.children.some(m=>m.userData.component.startsWith('leaf-grass-tip')),red);assert.ok(g.children.some(m=>m.geometry.userData.hakoneBlade));dispose(g);}
  const pampas=makePlant('p-4df4fbfb85eb',2827,2,2);
