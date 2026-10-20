@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.465';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.466';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.465';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.466';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='pennisetumReferences'){drawPennisetumReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.shootProfile?.startsWith('fescue')){drawFescueReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='otherCarexReferences'){drawOtherCarexReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='blueCarexReferences'){drawBlueCarexReferences(b,{info,s,detail,month},kit);return;}
@@ -22226,6 +22227,56 @@ function drawFloatingAquatics(b,{info,s,detail,rand},kit){
    f.add(kit.bud,'throat',poppy?'#765339':'#c6b647',0,r*.10,0,r*.24,r*.02,r*.24);
    for(let k=0;k<(poppy?24:5);k++){const aa=k*2.399,rrr=r*(poppy?.16:.12);const tip=[Math.sin(aa)*rrr,r*(poppy?.22:.16),Math.cos(aa)*rrr];f.branch([0,0,0],tip,r*.007,poppy?'#71513d':'#c4b554','filament');f.add(kit.bud,'anther',poppy?'#8a7048':'#d7c461',...tip,r*.025,r*.032,r*.016);}
    f.add(kit.bud,'stigma','#c5c28a',0,r*.22,0,r*.058,r*.022,r*.058);
+  }
+ }
+}
+
+// Retail photographs support the exterior silhouette, not exact bristle/floret counts.
+export function pennisetumReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='pennisetumBrushEnvelopeRef'){const ph=(u+1)*Math.PI;return[Math.sin(ph)*.5*sn**.55,t,Math.cos(ph)*.5*sn**.55];}
+ if(type==='pennisetumScaleRef')return[u*.23*sn**.6,t,.10*(1-u*u)*sn];
+ if(type==='pennisetumBristleRef')return[u*.008*(1-.9*t),t,.06*sn];
+ const upright=type==='pennisetumUprightRef',y=upright?Math.sin(Math.PI*.63*t):Math.sin(Math.PI*.90*t)-Math.sin(Math.PI*.90)*t;
+ return[u*.5*sn**.42*(1-.14*t),y+.0008*u*u*sn,t];
+}
+const PENNI_REFERENCE_TOP=Object.fromEntries(['pennisetumOuterRef','pennisetumUprightRef'].map(type=>{let top=0;for(let i=0;i<=72;i++)for(let j=0;j<=8;j++)top=Math.max(top,pennisetumReferencePoint(type,i/72,j/4-1)[1]);return[type,top];}));
+function drawPennisetumReferences(b,{info,s,detail,month,rand},kit){
+ const type=info.appearance.shootProfile,red=type==='redButtons',dance=type==='danceWithMe',winter=[12,1,2].includes(month),h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0004,h*.003,LH*.02),R=Math.min(.0009,h*.003,w*.003,LH*.04),leafKind='leaf-pennisetum-'+type+(winter?'-winter':'-green');
+ if(!s.leafDensity)return;
+ const line=(a,z,r,c,k)=>{const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('pennisetumRoundCulmRef',k,c,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);};
+ const crowns=Math.max(4,Math.round((dance?20:red?14:18)*detail)),leaves=Math.max(3,Math.round((red?13:18)*s.leafDensity));
+ for(let c=0;c<crowns;c++){
+  const az=c*2.399963,rr=w*.09*Math.sqrt((c+.5)/crowns),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr];
+  for(let j=0;j<leaves;j++){
+   const upright=(j+c)%4===0,shape=upright?'pennisetumUprightRef':'pennisetumOuterRef',fy=(LH*.985-rootY)/PENNI_REFERENCE_TOP[shape]*(.58+.42*(.5+.5*Math.sin(c*5.17+j*3.71))),reach=Math.min(w*(upright?.15:.39),fy*(upright?.32:1.8)),width=Math.min(dance?.0045:red?.0055:.007,h*.05,w*.04,LH*.09);
+   b.add(shape,leafKind,kit.shade(rand,s.leafColor,.035),...root,width,fy,reach,0,az+j*2.399963,0);
+  }
+ }
+ if(!s.bloom&&!s.seedHeads)return;
+ const scapes=Math.max(1,Math.round((dance?24:red?8:16)*detail*(s.bloom?Math.max(.65,s.flowerDensity):.8))),L=Math.min(red?.065:dance?.12:.13,h*.22,w*.27),W=Math.min(red?.010:dance?.018:.013,h*.04,w*.05),bristleL=Math.min(dance?.015:red?.006:.012,h*.035,w*.035),stem=winter?'#a99470':'#8c9b66';
+ for(let i=0;i<scapes;i++){
+  const az=i*2.399963,rr=w*(i===0?.32:.11*Math.sqrt((i+.5)/scapes)),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=h*(.985-.14*i/scapes),drift=Math.min(w*.08,h*.10),at=t=>[root[0]+Math.sin(az)*drift*t*t,rootY+(top-L-rootY)*t,root[2]+Math.cos(az)*drift*t*t];
+  let prev=at(0);for(let j=1;j<=14;j++){const next=at(j/14);line(prev,next,R,stem,'culm-pennisetum');prev=next;}
+  for(let node=0;node<2;node++){
+   const t=.25+.28*node,p=at(t);b.add('pennisetumRoundCulmRef','node-pennisetum',stem,...p,R*1.4,Math.min(.002,h*.007),R*1.4,0,0,0);
+   if(p[1]>=LH*.6)continue;const shape='pennisetumOuterRef',fy=(LH*.85-p[1])/PENNI_REFERENCE_TOP[shape],width=Math.min(.004,h*.035,w*.025,LH*.065);b.add(shape,leafKind,s.leafColor,...p,width,fy,Math.min(w*.15,fy*1.1),0,az+node*Math.PI,0);
+  }
+  const stage=i%3,co=winter?'#b6a27a':red?(stage===0?'#9c4053':stage===1?'#bd6b77':'#c8b996'):dance?(stage===0?'#dab8c4':'#e8e4d4'):(stage===0?'#c897b4':stage===1?'#a9749d':'#c7b49b'),f=flowerFrame(b,at(1),red?.08:i===0?.10:.25+.30*(i/scapes),az),centre=t=>[0,L*t,0],tiers=Math.max(8,Math.round((red?24:30)*Math.sqrt(detail))),around=Math.max(5,Math.round(12*Math.sqrt(detail))),bristleColor=new THREE.Color(co).lerp(new THREE.Color(winter?'#d4c5a4':'#eadbd5'),.26);
+  f.add('pennisetumBrushEnvelopeRef','brush-surface-pennisetum-exterior',co,0,0,0,W,L,W);
+  let axis=centre(0);for(let j=1;j<=12;j++){const next=centre(j/12);f.branch(axis,next,R*.55,co,'spike-axis-pennisetum-exterior');axis=next;}
+  for(let j=0;j<tiers;j++)for(let k=0;k<around;k++){
+   const t=(j+.35)/tiers,theta=k*TAU/around+j*.28,rad=W*.5*Math.sin(Math.PI*t)**(red?.55:.35),c=centre(t),base=[c[0]+Math.sin(theta)*rad,c[1],Math.cos(theta)*rad],scale=Math.min(.0009,h*.006,w*.008);
+   f.add('pennisetumScaleRef','spike-scale-pennisetum-exterior',co,...base,scale,scale*1.7,scale,-.20,theta,0);
+   for(let n=0;n<(red?2:3);n++){
+    const yaw=theta+(n-1)*.22,bl=bristleL*(.65+.35*(.5+.5*Math.sin(j*5.1+k*3.7+n))),dir=new THREE.Vector3(Math.sin(yaw)*.85,.6,Math.cos(yaw)*.85).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir),'YXZ');
+    f.add('pennisetumBristleRef','bristle-pennisetum-exterior',bristleColor,...base,bl,bl,bl,e.x,e.y,e.z);
+    if(i===0&&j===Math.floor(tiers*.5)&&k===((Math.round((Math.atan2(.8,1)-j*.28)/TAU*around)%around)+around)%around&&n===1){
+     // Aim at the interior of a rendered bristle triangle. The shared camera
+     // adds .30 radii along the axis, so compensate without enlarging the organ.
+     const points=[[.5,0],[7/12,0],[.5,1/3]].map(([t,u])=>pennisetumReferencePoint('pennisetumBristleRef',t,u)),surface=new THREE.Vector3(...points[0]).add(new THREE.Vector3(...points[1])).add(new THREE.Vector3(...points[2])).multiplyScalar(bl/3).applyEuler(e).add(new THREE.Vector3(...base)),radius=Math.max(L*.50,W*1.8);surface.y-=radius*.30;f.flower(surface.toArray(),radius);
+    }
+   }
   }
  }
 }

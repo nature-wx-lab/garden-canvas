@@ -1,4 +1,4 @@
-import {flowerInspectionDistanceFloor,flowerInspectionView} from '../site/scene.js';
+import {pennisetumFoliageInspectionView,flowerInspectionDistanceFloor,flowerInspectionView} from '../site/scene.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Matrix4,Vector3,Line3,Color,PerspectiveCamera,Vector2,Raycaster,SRGBColorSpace} from '../site/vendor/three.module.js';
@@ -8318,4 +8318,39 @@ test('Fescue terminal panicle inspection reaches external spikelets above the le
  for(const [id,size]of [['p-2ce7f0a29812',[.3,.23,.22]],['p-afcd828c7088',[.3,.55,.24]],['p-f88addcb82b1',[.15,.18,.11]],['p-80a1da062f36',[.18,.26,.10]]]){
   const p={...makePlant(id,46599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6));try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);assert.ok(cv.target[1]>.012+size[2]*.985,id+' terminal head above foliage');const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&hit.object.userData.component.endsWith('-fescue-exterior'),id+' external spikelets visible at centre');}finally{dispose(g);}
  }
+});
+
+test('Pennisetum references preserve domestic dimensions stage-mixed exterior spikes and unpruned brown winter foliage',()=>{
+ const ids=['p-fc3dcafb5f1d','p-375df451fb05','p-b04f60c03d5d'],heights=[[.5,.9],[.6,.8],[.5,.8]],spreads=[null,[.8,1],[.4,.6]];
+ for(const [ci,id]of ids.entries())for(const [si,size]of [[.7,.8,.4],[.2,.3,.08]].entries())for(let month=1;month<=12;month++){
+  const p={...makePlant(id,46600+ci*10+si,2,2),height:size[0],spread:size[1],leafHeight:size[2]},before=structuredClone(p),s=seasonAt(CATALOG[id],month),g=plantModel(p,view(month)),label=id+' '+si+' '+month,bloom=(ci===0?[5,9,10,11]:[6,7,8,9,10,11]).includes(month),winter=[12,1,2].includes(month),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.deepEqual(CATALOG[id].height,heights[ci]);assert.deepEqual(CATALOG[id].spread,spreads[ci]);assert.equal(CATALOG[id].bloomKnown,false);assert.equal(g.userData.architecture,'pennisetumReferences');assert.equal(s.bloom,bloom,label);assert.equal(s.groundDormant,false,label);assert.equal(s.seedHeads,winter,label);assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-pennisetum-')),label);assert.equal(count('culm-pennisetum')>0,bloom||winter,label);assert.equal(count('bristle-pennisetum-exterior')>0,bloom||winter,label);assert.equal(!!g.userData.flowerTargets?.length,bloom||winter,label);
+   if(bloom){const colors=new Set(),color=new Color();for(const mesh of g.children.filter(m=>m.userData.component==='bristle-pennisetum-exterior'))for(let i=0;i<mesh.count;i++){mesh.getColorAt(i,color);colors.add(color.getHexString());}assert.ok(colors.size>=2,'different flowering stages coexist');}if(winter){const c=new Color(s.leafColor).getHSL({},SRGBColorSpace);assert.ok(c.h>.05&&c.h<.2&&c.s>.1,'brown winter foliage');assert.match(s.label,/未剪定/);}
+   assert.ok(!g.children.some(m=>/anther.*pennisetum|pollen.*pennisetum|grain.*pennisetum|ovary.*pennisetum|seed-fruit.*pennisetum/.test(m.userData.component)),label);
+   for(const mesh of g.children){assert.ok(mesh.instanceMatrix.array.every(Number.isFinite),label);assert.ok(mesh.geometry.attributes.position.array.every(Number.isFinite),label);assert.ok(mesh.geometry.attributes.normal.array.every(Number.isFinite),label);}assert.deepEqual(p,before);
+  }finally{dispose(g);}
+ }
+ assert.match(CATALOG[ids[0]].appearance.sourceConflict,/5月.*RHS/);assert.match(CATALOG[ids[1]].appearance.sourceConflict,/インチ.*不一致/);assert.match(CATALOG[ids[2]].appearance.sourceConflict,/同一クローン.*未確認/);
+});
+test('Pennisetum physical vertices stay within entered dimensions with independent five millimetre foliage',()=>{
+ for(const id of ['p-fc3dcafb5f1d','p-375df451fb05','p-b04f60c03d5d'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]]){
+  const p={...makePlant(id,46699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(id==='p-fc3dcafb5f1d'?5:8)),matrix=new Matrix4(),point=new Vector3(),label=id+' '+size;
+  try{let maxLeaf=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite),label);assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,label+' height '+mesh.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,label+' footprint '+mesh.userData.component+' '+Math.hypot(point.x,point.z));if(mesh.userData.component.startsWith('leaf-pennisetum-'))maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=.005001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+ }
+});
+test('Pennisetum flower inspection reaches a visible bristled exterior instead of the leaf canopy',()=>{
+ for(const id of ['p-fc3dcafb5f1d','p-375df451fb05','p-b04f60c03d5d'])for(const size of [[.7,.8,.4],[.2,.3,.08],[.7,.8,.005]]){
+  const p={...makePlant(id,46699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(id==='p-fc3dcafb5f1d'?5:8));
+  try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&/^(bristle|spike-scale)-pennisetum-exterior$/.test(hit.object.userData.component),id+' '+size+' visible exterior '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
+
+
+test('Pennisetum spring foliage focus centres the rendered young leaves without enlarging the plant',()=>{
+ for(const id of ['p-fc3dcafb5f1d','p-375df451fb05','p-b04f60c03d5d'])for(const month of [3,4]){
+  const p={...makePlant(id,46699,5,2),height:.2,spread:.35,leafHeight:.12},before=structuredClone(p),g=plantModel(p,view(month));
+  try{g.position.set(1,.012,-1);g.updateMatrixWorld(true);const pose=pennisetumFoliageInspectionView(g,349/388);assert.ok(pose);assert.ok(pose.target[1]>=.012&&pose.target[1]<.012+.12*.5,'target follows low visible foliage rather than the full input height');assert.ok(pose.position[1]>=.1);assert.deepEqual(p,before);assert.ok(!g.userData.flowerTargets?.length);}finally{dispose(g);}
+ }
+ const previous=plantModel(makePlant('p-c19433cc1905',46698,2,2),view(3));assert.equal(pennisetumFoliageInspectionView(previous),null);dispose(previous);
 });
