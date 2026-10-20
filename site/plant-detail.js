@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.434';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.435';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.434';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.435';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15566,6 +15566,53 @@ function drawVeronicaReferences(b,{info,s,detail,month},kit){
 // same-plant annual record. Golden Fleece is a mostly nonflowering cultivar.
 // Alternate trifoliate leaves and five separate petals follow the genus
 // reference; proportions/branch counts are photographic drawing examples.
+
+// Cultivar proportions and counts are photo-guided drawing examples.
+// Retained Challenger winter stems differ from the cleared examples for the others.
+export function veronicastrumPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='veronicastrumLeaf')return [u*.16*sn**.70*(1+.10*Math.sin(t*Math.PI*22)**2),.035*sn+.025*u*u*sn,t];
+ const wave=.55+.45*(.5+.5*Math.cos(4*u))**.7,lip=Math.max(0,(t-.78)/.22),r=.105+.05*t+.13*lip*wave;
+ return [Math.sin(u)*r,Math.cos(u)*r,t*(1-.11*(1-wave)*t**6)];
+}
+function drawVeronicastrumReferences(b,{info,s,detail,month},kit){
+ const a=info.appearance,type=a.flowerPalette.type,profile={
+ fascination:{leaf:.14,spike:.36,cap:.37,flowers:300,branches:4,curve:.035},
+ diana:{leaf:.14,spike:.39,cap:.44,flowers:300,branches:4,curve:.025},
+ challenger:{leaf:.14,spike:.36,cap:.40,flowers:300,branches:4,curve:.025},
+ ezo:{leaf:.13,spike:.30,cap:.40,flowers:300,branches:2,curve:.13,whorls:7},
+ japonicum:{leaf:.14,spike:.32,cap:.25,flowers:220,branches:2,curve:.17},
+ erica:{leaf:.13,spike:.35,cap:.34,flowers:280,branches:4,curve:.055},
+ cupid:{leaf:.12,spike:.27,cap:.20,flowers:150,branches:4,curve:.035,width:1.15},
+ lavendel:{leaf:.15,spike:.39,cap:.46,flowers:340,branches:4,curve:.10}
+ }[type],winter=[12,1,2].includes(month),dry=type==='challenger'&&winter,scale=dry?1:s.leafScale,h=s.height,w=s.spread,stem=dry?'#78634e':a.stemColor,L=Math.min(profile.leaf,h*.12,w*.26)*scale,R=Math.min(.0032,h*.006,w*.010),F=Math.min(a.flowerLength,h*.035,w*.035)*(dry?1:Math.max(.15,scale)),n=Math.max(3,Math.round(5*detail)),H=Math.min(s.leafHeight*.94,h*.65)*scale;
+ const leaf=(at,az,len)=>{
+  const pet=Math.min(len*.04,h*.004),base=[at[0]+Math.sin(az)*pet,at[1],at[2]+Math.cos(az)*pet],f=flowerFrame(b,base,-.12,az);b.branch(at,base,Math.min(R*.15,len*.009),stem,'petiole-veronicastrum');f.add('veronicastrumLeaf','leaf-veronicastrum-'+type,s.leafColor,0,0,0,len*(type==='cupid'?1.3:1.05),len,len);
+  let previous=[0,0,0];for(let j=1;j<=10;j++){const q=veronicastrumPoint('veronicastrumLeaf',j/10,0),end=[0,q[1]*len+.00007,q[2]*len];f.branch(previous,end,Math.min(R*.08,len*.005),'#a5b491','midrib-veronicastrum');previous=end;}
+ };
+ const spike=(base,az,length,order,observe)=>{
+  if(!s.bloom&&!dry)return;const count=Math.round(profile.flowers*(order?.60:1)),path=t=>[base[0]+Math.sin(az)*length*profile.curve*t*t,base[1]+length*(t-.07*profile.curve*t**5),base[2]+Math.cos(az)*length*profile.curve*t*t];let previous=base;
+  for(let j=1;j<=count+2;j++){
+   const t=j/(count+2),at=path(t);b.branch(previous,at,R*.34*(1-.85*t),stem,dry?'dry-axis-veronicastrum':'raceme-veronicastrum-'+type);previous=at;if(j>count)continue;
+   const yaw=az+j*2.399,ped=F*(dry?.30:.12),end=[at[0]+Math.sin(yaw)*ped,at[1],at[2]+Math.cos(yaw)*ped];b.branch(at,end,R*.10,stem,dry?'dry-pedicel-veronicastrum':'pedicel-veronicastrum');
+   if(dry){b.add(kit.bud,'dry-head-veronicastrum','#785d45',...end,F*.30,F*.45,F*.30,0,yaw,0);continue;}
+   if(t>.63){b.add(kit.bud,'bud-veronicastrum-'+type,'#8f9c70',...end,F*.24,F*.65,F*.24,.25,yaw,0);continue;}
+   const f=flowerFrame(b,end,-.25,yaw),width=profile.width||1;if(observe&&j===15)f.flower([0,F*.1,F*.75],F*1.1);f.add('veronicastrumCorolla','corolla-veronicastrum-'+type,s.flowerColor,0,0,0,F*width,F*width,F);
+   for(let k=0;k<5;k++){const yaw=k*TAU/5;f.add(kit.bud,'calyx-lobe-veronicastrum',stem,Math.sin(yaw)*F*.10,Math.cos(yaw)*F*.10,F*.1,F*.035,F*.035,F*.24);}
+   for(const side of [-1,1]){const base=[side*F*.06,F*.04,F*.67],mid=[side*F*.12,F*.11,F*1.15],tip=[side*F*.17,F*.13,F*1.75];f.branch(base,mid,F*.012,'#eeecdf','filament-veronicastrum');f.branch(mid,tip,F*.012,'#eeecdf','filament-tip-veronicastrum');f.add(kit.bud,'anther-veronicastrum','#c9b57d',...tip,F*.045,F*.027,F*.050);}
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399,rr=w*.19*Math.sqrt(i/n)*scale,root=[Math.sin(az)*rr,Math.min(.002,h*.02),Math.cos(az)*rr],rise=H*(.86+.14*Math.cos(i*.9)**2),reach=w*.035*scale;let previous=root;
+  for(let j=1;j<=8;j++){
+   const t=j/8,node=[root[0]+Math.sin(az)*reach*t,root[1]+rise*t,root[2]+Math.cos(az)*reach*t];b.branch(previous,node,R*(1-.35*t),stem,dry?'dry-stem-veronicastrum':'stem-veronicastrum-'+type);previous=node;
+   if(!dry&&(j-.5)/8<s.leafDensity){const whorls=profile.whorls||5;for(let k=0;k<whorls;k++)leaf(node,az+j*.3+k*TAU/whorls,L*(1-.45*t));}
+   if(j===7&&(s.bloom||dry))for(let k=0;k<profile.branches;k++){const yaw=az+k*TAU/profile.branches,base=[node[0]+Math.sin(yaw)*w*.10*scale,node[1]+h*.075*scale,node[2]+Math.cos(yaw)*w*.10*scale];b.branch(node,base,R*.5,stem,dry?'dry-lateral-veronicastrum':'lateral-veronicastrum');spike(base,yaw,Math.min(profile.cap*.62,h*profile.spike*.65*scale,h-base[1]-F*2),1,false);}
+  }
+  spike(previous,az,Math.min(profile.cap,h*profile.spike*scale,h-previous[1]-F*2),0,i===0);
+ }
+}
+
 export const BAPTISIA_PROFILES={
  blue:{banner:'#6652bc',keel:'#7569c2',calyx:'#8a9a6a',bud:'#7765ac',leaflet:.055,raceme:.34,flowers:22,width:1},
  dutch:{banner:'#493447',keel:'#675268',calyx:'#8a9a6a',bud:'#4e3e51',leaflet:.060,raceme:.25,flowers:22,width:1},
@@ -17253,6 +17300,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='minorTulipReferences'){drawMinorTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='slenderTulipReferences'){drawSlenderTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='singleTulipReferences'){drawSingleTulipReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='veronicastrumReferences'){drawVeronicastrumReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='veronicaMatReferences'){drawVeronicaMats(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='veronicaReferences'){drawVeronicaReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='baptisiaReferences'){drawBaptisiaReferences(b,{info,s,detail,rand},kit);return;}
