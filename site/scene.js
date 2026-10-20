@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.464';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.464';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.465';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.465';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -10,14 +10,14 @@ export function keepCameraAboveGround(camera,target){
 }
 // Flower anchors belong to the visible generated plant, so dormant/hidden flowers
 // cannot be focused and a reference-size change is reflected in the camera fit.
-export function flowerInspectionDistanceFloor(group){return ['otherCarexReferences','blueCarexReferences','fineCarexReferences','oshimensisReferences','eupatorieaeReferences','muhlenbergiaPanicles','tallEupatorieae','panicumReferences','calamagrostisReferences','hakonechloaReferences','liriopeReferences','ophiopogonReferences'].includes(group?.userData?.architecture)?.045:.14;}
+export function flowerInspectionDistanceFloor(group){return ['fescueReferences','blueFescue','otherCarexReferences','blueCarexReferences','fineCarexReferences','oshimensisReferences','eupatorieaeReferences','muhlenbergiaPanicles','tallEupatorieae','panicumReferences','calamagrostisReferences','hakonechloaReferences','liriopeReferences','ophiopogonReferences'].includes(group?.userData?.architecture)?.045:.14;}
 export function flowerInspectionView(group,aspect=1,fov=40){
  const anchors=group?.userData?.flowerTargets;
  if(!Array.isArray(anchors))return null;
  const anchor=anchors.find(a=>a&&typeof a==='object'&&Array.isArray(a.origin)&&a.origin.length===3&&a.origin.every(Number.isFinite)&&Array.isArray(a.axis)&&a.axis.length===3&&a.axis.every(Number.isFinite)&&Math.hypot(...a.axis)>.00001&&Number.isFinite(a.radius)&&a.radius>0&&a.radius<10);
  if(!anchor)return null;
  group.updateWorldMatrix(true,false);
- const nodding=group.userData.architecture==='ophiopogonReferences',sedgeExterior=['oshimensisReferences','fineCarexReferences','blueCarexReferences','otherCarexReferences'].includes(group.userData.architecture);
+ const nodding=group.userData.architecture==='ophiopogonReferences',sedgeExterior=['fescueReferences','blueFescue','oshimensisReferences','fineCarexReferences','blueCarexReferences','otherCarexReferences'].includes(group.userData.architecture);
  const radius=Math.max(.004,anchor.radius*group.matrixWorld.getMaxScaleOnAxis()),axis=new THREE.Vector3(...anchor.axis).transformDirection(group.matrixWorld),target=group.localToWorld(new THREE.Vector3(...anchor.origin)).addScaledVector(axis,radius*.30),direction=axis.clone().multiplyScalar(nodding?.45:sedgeExterior?.20:.90).add(new THREE.Vector3(.8,.18,1).multiplyScalar(nodding?.75:sedgeExterior?.90:.45)).normalize(),ratio=Number.isFinite(aspect)&&aspect>0?Math.min(1,aspect):1,angle=Math.atan(Math.tan((Number.isFinite(fov)&&fov>5&&fov<100?fov:40)*Math.PI/360)*ratio),distance=Math.max(flowerInspectionDistanceFloor(group),radius*1.20/Math.sin(angle)),position=target.clone().addScaledVector(direction,distance);
  position.y=Math.max(CAMERA_FLOOR+1e-7,position.y);
  return {position:position.toArray(),target:target.toArray()};

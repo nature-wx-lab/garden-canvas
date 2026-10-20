@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.464';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.465';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.464';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.465';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.shootProfile?.startsWith('fescue')){drawFescueReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='otherCarexReferences'){drawOtherCarexReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='blueCarexReferences'){drawBlueCarexReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='fineCarexReferences'){drawFineCarexReferences(b,{info,s,detail,month},kit);return;}
@@ -20477,6 +20478,51 @@ export function stipoidHairGeometry(type){
 
 
 
+
+
+export function fescueReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='fescueScaleRef')return[u*.22*sn**.65,t,.10*(1-u*u)*sn];
+ const upright=type==='fescueUprightRef',cushion=type==='fescueCushionRef',y=upright?Math.sin(Math.PI*.62*t):cushion?Math.sin(Math.PI*.70*t)-Math.sin(Math.PI*.70)*t+.24*t:Math.sin(Math.PI*.88*t)-Math.sin(Math.PI*.88)*t+.10*t;
+ return[u*.5*sn**.35*(1-.20*t),y+.0007*u*u*sn,t];
+}
+const FESCUE_REFERENCE_TOP=Object.fromEntries(['fescueOuterRef','fescueUprightRef','fescueCushionRef'].map(type=>{let top=0;for(let i=0;i<=72;i++)for(let j=0;j<=8;j++)top=Math.max(top,fescueReferencePoint(type,i/72,j/4-1)[1]);return[type,top];}));
+function drawFescueReferences(b,{info,s,detail,month,rand},kit){
+ const profile=info.appearance.shootProfile,type=profile.replace('fescue','').toLowerCase(),intense=type==='intense',gold=type==='golden',cushion=type==='scoparia',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0004,h*.003,LH*.02),R=Math.min(.0006,h*.003,w*.003,LH*.025);
+ if(!s.leafDensity)return;
+ const line=(a,z,r,c,k)=>{const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('fescueRoundCulmRef',k,c,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);};
+ const crowns=Math.max(4,Math.round((cushion?22:18)*detail)),leaves=Math.max(3,Math.round((gold?24:cushion?32:30)*s.leafDensity)),winter=[12,1,2].includes(month),kind='leaf-fescue-'+type+(winter?'-winter':'-green');
+ for(let c=0;c<crowns;c++){
+  const az=c*2.399963,rr=w*(cushion?.12:.075)*Math.sqrt((c+.5)/crowns),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr];
+  for(let j=0;j<leaves;j++){
+   const upright=(j+c)%(cushion?4:intense?5:3)===0,shape=upright?'fescueUprightRef':cushion?'fescueCushionRef':'fescueOuterRef',fy=(LH*.985-rootY)/FESCUE_REFERENCE_TOP[shape]*(.60+.40*(.5+.5*Math.sin(c*5.17+j*3.71))),reach=Math.min(w*(upright?.14:cushion?.34:.40),fy*(upright?.30:cushion?.9:intense?1.9:1.45)),width=Math.min(cushion?.00075:.001,h*.035,w*.030,LH*.10);
+   b.add(shape,kind,kit.shade(rand,s.leafColor,.035),...root,width,fy,reach,0,az+j*2.399963,0);
+  }
+ }
+ if(!s.bloom)return;
+ const scapes=Math.max(1,Math.round((gold?5:cushion?9:intense?8:12)*detail)),panicle=Math.min(cushion?.065:gold?.08:.12,h*.31,w*.28),spikeL=Math.min(cushion?.005:.008,h*.035,w*.025),spikeW=Math.min(.0017,h*.012,w*.008),culm='#8e9c79';
+ const spikelet=(at,yaw,inspect)=>{
+  const f=flowerFrame(b,at,-.12,yaw);f.add('fescueRoundCulmRef','spike-axis-fescue-exterior',s.flowerColor,0,spikeL*.50,0,R*.30,spikeL,R*.30);
+  for(let j=0;j<5;j++){
+   const az=(j%2)*Math.PI+j*.12,yy=spikeL*(j+.3)/5,gl=spikeL*.47;
+   f.add('fescueScaleRef','spike-scale-fescue-exterior',s.flowerColor,Math.sin(az)*spikeW*.36,yy,Math.cos(az)*spikeW*.36,spikeW*2.2,gl,spikeW*1.8,-.30,az,0);
+   const base=[Math.sin(az)*spikeW*.38,yy+gl*.88,Math.cos(az)*spikeW*.38],tip=[base[0]+Math.sin(az)*gl*.23,base[1]+gl*.40,base[2]+Math.cos(az)*gl*.23];f.branch(base,tip,Math.min(.00007,h*.0004),s.flowerColor,'awn-fescue-exterior');
+  }
+  if(inspect)f.flower([0,spikeL*.58,0],spikeL*.63);
+ };
+ for(let i=0;i<scapes;i++){
+  const az=i*2.399963,rr=w*(i===0?.23:.085*Math.sqrt((i+.5)/scapes)),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=h*(.97-.11*i/scapes),drift=Math.min(w*.075,h*.11),at=t=>[root[0]+Math.sin(az)*drift*t*t,rootY+(top-spikeL-rootY)*t,root[2]+Math.cos(az)*drift*t*t],start=Math.max(.15,1-panicle/(top-rootY));
+  let prev=at(0);for(let j=1;j<=14;j++){const next=at(j/14);line(prev,next,R,culm,'culm-fescue');prev=next;}
+  for(let n=0;n<5;n++){
+   const t=start+(1-start)*n/6,from=at(t),ray=Math.min(w*.12,h*.14)*(1-n/6);
+   for(let side=0;side<2;side++){
+    const yaw=az+n*2.399963+side*Math.PI,to=[from[0]+Math.sin(yaw)*ray,from[1]+panicle*.13,from[2]+Math.cos(yaw)*ray];line(from,to,R*.38,culm,'panicle-branch-fescue');
+    for(let k=0;k<2;k++){const q=.54+k*.46,sp=from.map((v,j)=>v+(to[j]-v)*q);spikelet(sp,yaw,false);}
+   }
+  }
+  spikelet(at(1),az,i===0);
+ }
+}
 
 export function otherCarexPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
