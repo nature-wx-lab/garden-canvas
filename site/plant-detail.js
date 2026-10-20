@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.447';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.448';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.447';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.448';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17312,6 +17312,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='tanacetumReferences'){drawTanacetumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='oxypetalumReferences'){drawOxypetalumReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='patriniaReferences'){drawPatriniaReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='heleniumReferences'){drawHeleniumReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='heliopsisReferences'){drawHeliopsisReferences(b,{info,s,detail},kit);return;}
@@ -20383,6 +20384,59 @@ function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
 // All repeated counts and mixed opening stages are illustrative samples.
 
 // Component counts and mixed flower stages are illustrative, not a flower-age clock.
+export function oxypetalumPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='oxypetalumCorolla'){
+  const v=Math.max(0,(t-.25)/.75),lobes=(.5+.5*Math.cos(5*u))**.95,r=t<=.25?.10+.06*t/.25:.16+v*(.86*lobes+.015);
+  return [Math.sin(u)*r,t<=.25?t*.45:.1125+.045*v+.025*Math.sin(5*u)*v*v,Math.cos(u)*r];
+ }
+ if(type==='oxypetalumBud'){const r=.29*sn**.65*(1+.06*Math.cos(5*u));return [Math.sin(u)*r,t,Math.cos(u)*r];}
+ if(type==='oxypetalumCorona')return [u*.19*sn**.65,t,.22*sn+.05*u*u*sn];
+ if(type==='oxypetalumSepal')return [u*.13*sn**.7,.035*sn,t];
+ const width=.32*Math.max(0,Math.sin(Math.PI*(.12+.88*t)))**.68*(1-t)**.12;
+ return [u*width,.045*sn+.055*u*u*sn,t-.14*u*u*(1-t)**4];
+}
+const OXYPETALUM_REFERENCE_PROFILES={
+ blue:{radius:.010,leaf:.105,n:3,corona:'#6996ba',bud:'#b7afc2'},
+ white:{radius:.010,leaf:.105,n:3,corona:'#e3e7d5',bud:'#cbd2b9'},
+ majorPink:{radius:.007,leaf:.075,n:4,corona:'#e8d8d3',bud:'#b96b95',trailing:true},
+ rose:{radius:.008,leaf:.095,n:3,corona:'#ecdbd4',bud:'#c77b9b'}
+};
+function drawOxypetalumReferences(b,{info,s,detail,month},kit){
+ const a=info.appearance,type=a.flowerPalette.type,P=OXYPETALUM_REFERENCE_PROFILES[type],winter=[12,1,2].includes(month),h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(P.leaf,h*.22,w*.27,s.leafHeight*.65)*scale,R=Math.min(P.trailing?.0015:.0022,h*.004,w*.006),F=Math.min(P.radius,h*.10,w*.035)*scale,n=Math.max(2,Math.round(P.n*detail)),stem=a.stemColor;let idx=0;
+ const leaf=(at,az,len)=>{
+  const pet=len*.15,joint=[at[0]+Math.sin(az)*pet,at[1]+pet*.10,at[2]+Math.cos(az)*pet],f=flowerFrame(b,joint,-.10,az);b.branch(at,joint,R*.27,stem,'petiole-oxypetalum');f.add('oxypetalumLeaf','leaf-oxypetalum-'+type,s.leafColor,0,0,0,len,len,len);
+  let prev=[0,0,0];for(let j=1;j<=10;j++){const p=oxypetalumPoint('oxypetalumLeaf',j/10,0).map(v=>v*len);p[1]+=.000035;f.branch(prev,p,Math.min(R*.09,len*.003),'#b5c29e','midrib-oxypetalum');prev=p;}
+  for(let j=1;j<=4;j++)for(const side of [-1,1]){const p=oxypetalumPoint('oxypetalumLeaf',j/6,0).map(v=>v*len),q=oxypetalumPoint('oxypetalumLeaf',j/6+.12,side*.90).map(v=>v*len);p[1]+=.000025;q[1]+=.000025;f.branch(p,q,Math.min(R*.05,len*.002),'#a9b994','side-vein-oxypetalum');}
+  for(let j=0;j<12;j++)for(const side of [-1,1]){const p=oxypetalumPoint('oxypetalumLeaf',(j+.5)/12,side*(j%2?.96:.58)).map(v=>v*len),hair=Math.min(.0015,len*.022);f.branch(p,[p[0]+side*hair*.35,p[1]+hair,p[2]+hair*.24],Math.min(.000035,hair*.045),'#c6cfb4','hair-leaf-oxypetalum');}
+ };
+ const flower=(at,az,bud=false)=>{
+  const f=flowerFrame(b,at,.75+(idx%3)*.16,az),col=type==='blue'&&idx%3===1?'#a2a8d2':s.flowerColor;
+  for(let j=0;j<5;j++){const yaw=j*TAU/5,len=F*(bud?.90:.43);f.add('oxypetalumSepal','sepal-oxypetalum','#8a9d68',Math.sin(yaw)*F*.10,-F*.03,Math.cos(yaw)*F*.10,len,len,len,bud?-.95:-1.35,yaw,0);}
+  if(bud){f.add('oxypetalumBud','bud-oxypetalum',P.bud,0,0,0,F*.65,F*1.05,F*.65);return;}
+  if(idx===1)f.flower([0,F*.16,0],F*1.12);idx++;
+  f.add('oxypetalumCorolla','corolla-oxypetalum-'+type,col,0,0,0,F,F,F);
+  for(let j=0;j<5;j++){const yaw=j*TAU/5;f.add('oxypetalumCorona','corona-lobe-oxypetalum',P.corona,Math.sin(yaw)*F*.12,F*.09,Math.cos(yaw)*F*.12,F*.25,F*.32,F*.25,0,yaw+Math.PI,0);}
+  f.add(kit.bud,'gynostegium-reference-oxypetalum','#e3e5d4',0,F*.18,0,F*.075,F*.10,F*.075);
+ };
+ const cyme=(at,az)=>{
+  for(let j=0;j<3;j++){const yaw=az+(j-1)*.90,r=F*(j===0?.7:1.55),end=[at[0]+Math.sin(yaw)*r,at[1]+F*(j===2?.55:.9),at[2]+Math.cos(yaw)*r];b.branch(at,end,R*.24,stem,'pedicel-oxypetalum');flower(end,yaw,j===2);}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399,rad=w*.07*Math.sqrt(i/n)*scale,root=[Math.sin(az)*rad,Math.min(.001,h*.02),Math.cos(az)*rad],H=Math.min(s.leafHeight*.88,h*.70)*scale*(winter?.32:1);let prev=root;
+  for(let j=1;j<=6;j++){
+   const t=j/6,node=[root[0]+Math.sin(az)*w*.045*t*scale,root[1]+H*t,root[2]+Math.cos(az)*w*.045*t*scale];b.branch(prev,node,R*(1-t*.25),stem,'stem-oxypetalum');
+   if(winter?j===2:(j-.4)/6<s.leafDensity)for(let k=0;k<2;k++)leaf(node,az+j*Math.PI/2+k*Math.PI,L*(winter?.55:1-t*.30));
+   for(let k=0;k<4;k++){const yaw=az+k*TAU/4,p=[node[0]+Math.sin(yaw)*R,node[1],node[2]+Math.cos(yaw)*R],hair=Math.min(.0014,H*.025);b.branch(p,[p[0]+Math.sin(yaw)*hair,p[1]+hair*.15,p[2]+Math.cos(yaw)*hair],Math.min(.000035,hair*.045),'#b8c5a5','hair-stem-oxypetalum');}prev=node;
+  }
+  if(!s.bloom)continue;
+  for(let j=0;j<3;j++){
+   const yaw=az+(j-1)*.95,reach=w*(P.trailing?.32:.23)*scale,start=prev,p1=[start[0]+Math.sin(yaw)*reach*.22,h*.65*scale,start[2]+Math.cos(yaw)*reach*.22],p2=[start[0]+Math.sin(yaw)*reach*.60,h*(j===0?(P.trailing?1.34:1.16):.94)*scale,start[2]+Math.cos(yaw)*reach*.60],end=[start[0]+Math.sin(yaw)*reach,h*(P.trailing?.68:j===0?.90:.75)*scale,start[2]+Math.cos(yaw)*reach];
+   let prevPoint=start;for(let k=1;k<=8;k++){const t=k/8,u=1-t,q=start.map((v,axis)=>u*u*u*v+3*u*u*t*p1[axis]+3*u*t*t*p2[axis]+t*t*t*end[axis]);b.branch(prevPoint,q,R*(P.trailing?.45:.58),stem,'arching-peduncle-oxypetalum');if(k===5||k===8)cyme(q,yaw);prevPoint=q;}
+  }
+ }
+}
+
 export function patriniaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='patriniaCorolla'){

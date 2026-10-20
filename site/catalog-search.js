@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.447';
+import {treeProfile} from './tree-profiles.js?v=0.9.448';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -289,6 +289,7 @@ export function seasonAt(info,month){
  const headPhase=a.architecture==='berzelia'?bloom?'flower':[11,12,1,2].includes(month)?'bud':'dry':null;
  const retainedSummerLeaves=!!a.winterLeafLength&&[11,12,1,2,3].includes(month);
  if(retainedSummerLeaves)phase='春葉が落ち、小さな夏葉が冬を越す時期（地域差あり）';
+ if(a.architecture==='oxypetalumReferences'&&[12,1,2].includes(month))phase='保護・剪定後に少ない葉を残す冬の管理例（凍害・自然な残葉量は未予測）';
  if(a.architecture==='patriniaReferences'&&a.standingWinter&&[12,1,2].includes(month))phase='冬の枯れ茎と乾いた集散花序を残す管理例（残存期間・結実は未確認）';
  if(a.architecture==='veronicastrumReferences'&&a.standingWinter&&[12,1,2].includes(month))phase='冬の枯れ茎と花後の穂を残した管理例（暦月は目安）';
  if(a.persistence==='winterSubmerged')phase=groundDormant?'水上葉のない時期（水中葉で越冬）':'水上葉と水中葉のある時期';

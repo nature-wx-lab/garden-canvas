@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.447';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.448';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -585,3 +585,5 @@ Object.assign(TRAIT_VALUES,{heliopsisReferences:'対生の鋸歯葉・分枝花�
 Object.assign(TRAIT_VALUES,{heleniumReferences:'互生する葉・翼のある茎と品種別のヘレニウム頭花',heleniumLanceolateLeaf:'互生する披針形の単葉',heleniumShortRayHead:'短い舌状花と丸い花芯',heleniumDomedHead:'切れ込みのある舌状花と盛り上がる花芯',heleniumRolledRayHead:'筒状と開いた舌状花・表裏の色を分けた花芯'});
 
 Object.assign(TRAIT_VALUES,{patriniaReferences:'対生する葉と細かく分枝するオミナエシ類の集散花序',patriniaFiveLobedCorolla:'短い筒で合着した小さな5裂の花冠',patriniaDividedLeaf:'5～7裂を参考にした羽状に深く裂ける葉',patriniaBroadLeaf:'粗い鋸歯のある幅広い葉と下部の裂ける葉'});
+
+Object.assign(TRAIT_VALUES,{oxypetalumReferences:'毛のある対生葉・細い枝とオキシペタラムの星形花',oxypetalumStarCorolla:'基部で合着する5裂花冠と中央の副花冠',oxypetalumCordateLeaf:'細かな毛のある卵形～心形の対生葉',oxypetalumWeakTwining:'やや巻きつく細い枝（支え方は未再現）'});
