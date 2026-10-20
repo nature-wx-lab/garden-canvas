@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.454';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.454';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.455';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.455';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -10,7 +10,7 @@ export function keepCameraAboveGround(camera,target){
 }
 // Flower anchors belong to the visible generated plant, so dormant/hidden flowers
 // cannot be focused and a reference-size change is reflected in the camera fit.
-export function flowerInspectionDistanceFloor(group){return ['eupatorieaeReferences','muhlenbergiaPanicles','tallEupatorieae'].includes(group?.userData?.architecture)?.045:.14;}
+export function flowerInspectionDistanceFloor(group){return ['eupatorieaeReferences','muhlenbergiaPanicles','tallEupatorieae','panicumReferences'].includes(group?.userData?.architecture)?.045:.14;}
 export function flowerInspectionView(group,aspect=1,fov=40){
  const anchors=group?.userData?.flowerTargets;
  if(!Array.isArray(anchors))return null;

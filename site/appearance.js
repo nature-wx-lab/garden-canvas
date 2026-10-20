@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.454';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.455';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -593,3 +593,5 @@ Object.assign(TRAIT_VALUES,{ligulariaReferences:'長い葉柄の葉と品種別�
 Object.assign(TRAIT_VALUES,{aegopodiumCompound:'3小葉または2回3出の複葉・側小葉の切れ込みと鋸歯',aegopodiumUmbel:'主軸から小花房へ二段に分かれる白い複散形花序・5花弁と5雄しべ'});
 
 Object.assign(TRAIT_VALUES,{chocolateReferenceLeaf:'春の銅紫色から夏の淡い葉、初冬の黄葉へ変わる対生の鋸歯葉',mistflowerReferenceLeaf:'基部が広く、葉脈が目立つ三角状～卵形の対生する鋸歯葉',eupatorieaeDiscHeads:'舌状花を持たない筒状小花のみの頭花・5裂花冠と長く分かれる花柱枝'});
+
+Object.assign(TRAIT_VALUES,{panicumReferenceBlade:'茎の節に互生する平行脈の線形葉と基部の葉',twoFloretPanicumSpikelets:'不等長の苞穎に包まれる2小花の小穂（下位は不稔・雄性、上位は稔性の参考）'});

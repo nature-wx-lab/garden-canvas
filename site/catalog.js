@@ -1,7 +1,7 @@
-import { EXPANDED_CATALOG, BASE_POPULARITY, RETIRED_GARDEN_PLANTS } from './catalog-data.js?v=0.9.454';
-import {attachAppearance} from './appearance.js?v=0.9.454';
+import { EXPANDED_CATALOG, BASE_POPULARITY, RETIRED_GARDEN_PLANTS } from './catalog-data.js?v=0.9.455';
+import {attachAppearance} from './appearance.js?v=0.9.455';
 // Public botanical facts; monthly boundaries and procedural geometry are display conventions.
-export const CATALOG_VERSION='2026-10-20.24';
+export const CATALOG_VERSION='2026-10-20.25';
 const nc='https://plants.ces.ncsu.edu/plants/';
 const mo='https://plantfinder.mobot.org/PlantFinderDetails.aspx?taxonid=';
 const BASE_CATALOG={
@@ -13,11 +13,12 @@ const BASE_CATALOG={
  echinacea:{label:'エキナセア マグナス',latin:"Echinacea purpurea 'Magnus'",form:'daisy',group:'宿根草',leaf:'herb',height:[.76,.91],spread:[.30,.46],bloom:[6,7,8],flower:'#c87c9d',sun:['sun','part'],moisture:['drained','moist'],growth:'RHSの成株到達目安2〜5年。年ごとの寸法は未確認',season:'ピンクの花・冬の種子頭',care:'混み合った株は分割を検討。種子頭を残す冬景色と花がら摘みの両方を選べます。',source:mo+'245977',publisher:'Missouri Botanical Garden',growthSource:'https://www.rhs.org.uk/plants/97560/echinacea-purpurea-magnus/details',bloomText:'資料で6〜8月。花後の種子頭を冬まで残す表現。'},
  lavender:{label:'ラベンダー ヒドコート',latin:"Lavandula angustifolia 'Hidcote'",form:'botanical',group:'小低木',leaf:'evergreen',height:[.30,.46],spread:[.30,.46],bloom:[6,7],flower:'#63468e',leafColor:'#81927b',sun:['sun'],moisture:['drained'],growth:'年次の株幅データは未確認',season:'紫の花穂・灰緑の細葉',care:'排水のよい土と日なたを好みます。高温多湿や冬の過湿に注意。暖地では常緑ですが、冬の状態は地域差があります。',source:mo+'249421',publisher:'Missouri Botanical Garden',bloomText:'国内販売元では自然環境下6〜7月。温室で5月開花の促成株とは分けます。寸法は既存のMissouri Botanical Garden掲載表による。'},
  hosta:{label:'ギボウシ エレガンス',latin:"Hosta sieboldiana 'Elegans'",form:'hosta',group:'宿根草',leaf:'herb',height:[.61,.91],spread:[.91,1.22],bloom:[5,6,7],flower:'#ece8ee',sun:['part','shade'],moisture:['moist'],growth:'ゆっくり成株へ（複数年。年ごとの寸法は未確認）',season:'青緑の大きな葉・白い花',care:'半日陰〜日陰で適度な湿りを好みます。株分けは春または秋、春の展葉前が扱いやすいとされます。',source:mo+'248947',publisher:'Missouri Botanical Garden',bloomText:'資料で5〜7月。冬は地上部休眠の参考表現。'},
- grass:{label:'パニカム ヘビーメタル',latin:"Panicum virgatum 'Heavy Metal'",form:'grass',group:'グラス',leaf:'grass',height:[1.22,1.52],spread:[.30,.61],bloom:[7,8,9],flower:'#bb9f9d',sun:['sun','part'],moisture:['moist','drained'],growth:'株立ちし、地下茎で緩やかに広がる。年次数値なし',season:'青灰色の葉・秋冬の穂',care:'冬の終わり〜早春に地際で切り戻す方法。日陰が強いと倒れやすくなります。',source:mo+'251778',publisher:'Missouri Botanical Garden',bloomText:'資料の7〜2月は穂の観賞期を含む。開花表示7〜9月、枯れ穂10〜2月。'},
+ grass:{"label":"パニカム ヘビーメタル","latin":"Panicum virgatum 'Heavy Metal'","form":"grass","group":"グラス","leaf":"grass","height":[1.22,1.52],"spread":[0.3,0.61],"bloom":[7,8,9],"flower":"#bb9f9d","sun":["sun","part"],"moisture":["moist","drained"],"growth":"株立ちする暖地型グラス。地下茎・年次の拡大速度は未予測。","season":"青灰色の直立葉、夏の淡い穂、秋の黄葉と冬の枯れ穂","care":"日なたで育つ姿を参考表示。冬は刈り込まず枯れた葉と穂を残す例です。3月は冬の終わりに地際で整理した参考例で、実際の剪定時期や再生は自動予測しません。","source":"https://plantfinder.mobot.org/PlantFinderDetails.aspx?taxonid=251778","publisher":"Missouri Botanical Garden","bloomText":"夏の開花を7〜9月の目安として表示。掲載の7〜2月は枯れ穂を含む観賞期で、10〜2月は開花ではありません。","bloomKnown":false,"bloomBasis":"季節記述と写真の出穂時期を月へ換算した参考","life":"perennial","leafColor":"#6d8c87","sourceChecked":"2026-10-20"},
  sedum:{label:'オータムジョイ',latin:"Hylotelephium 'Herbstfreude'",form:'sedum',group:'宿根草',leaf:'herb',height:[.46,.61],spread:[.46,.61],bloom:[9,10],flower:'#b66b7c',sun:['sun'],moisture:['drained'],growth:'年次の株幅データは未確認',season:'多肉質の葉・秋の平たい花房',care:'排水のよい土と日なたを好みます。多肥や日陰では倒れやすくなります。株分けは春が参考時期。',source:mo+'249042',publisher:'Missouri Botanical Garden',bloomText:'資料で9〜10月。冬は枯れた花房を残す参考表現。'}
 };
 const baseGenres={maple:'庭木',olive:'庭木',rose:'バラ',hydrangea:'庭木',salvia:'宿根草',echinacea:'宿根草',lavender:'宿根草',hosta:'カラーリーフ',grass:'カラーリーフ',sedum:'多肉'};
 for(const [key,p] of Object.entries(BASE_CATALOG))Object.assign(p,{genre:baseGenres[key],aliases:[],colors:[key==='rose'?'pink':'unknown'],visual:'reference',bloomKnown:!!p.bloom.length,sourceChecked:'2026-10-09'});
+BASE_CATALOG.grass.bloomKnown=false;BASE_CATALOG.grass.sourceChecked='2026-10-20';
 BASE_CATALOG.lavender.colors=['purple'];
 BASE_CATALOG.sedum.gardenUse={climate:'frost-lowland',basis:'NC State Extensionが耐寒性区分3a〜10bの宿根草として記載。',conditions:'日なたと排水のよい土。湿りすぎる土と多肥を避けます。',source:'https://plants.ces.ncsu.edu/plants/hylotelephium-spectabile-autumn-joy/',checked:'2026-10-11'};
 export const CATALOG=attachAppearance({...BASE_CATALOG,...EXPANDED_CATALOG});
