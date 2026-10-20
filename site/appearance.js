@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.460';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.461';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -605,3 +605,5 @@ Object.assign(TRAIT_VALUES,{hakoneCaulineBlade:'弓状の茎の節に交互に�
 Object.assign(TRAIT_VALUES,{liriopeBasalStrap:'根元に束生する帯状葉の種・品種参考',liriopeSixFreeTepals:'小花の房と6枚の離れた花被片・6本の雄しべの参考'});
 
 Object.assign(TRAIT_VALUES,{ophioRetailStrap:'黒葉・細い白斑葉の販売株の参考',ophioNoddingSixTepals:'下向きの6枚の花被片と短い花糸の属参考',ophioSnowFoliageOnly:'花期・花姿が未確認のため葉だけを表示'});
+
+Object.assign(TRAIT_VALUES,{oshimensisShortSpikes:'短い褐色の穂の集まりの外観参考',oshimensisArchingBlades:'新葉が立ち、成葉が弓状に地際へ垂れる常緑葉の参考',oshimensisSpikesExterior:'褐色の穂と淡い糸状部の外観参考（内部構造は未再現）',oshimensisCreamCenter:'緑の縁とクリーム色の中央斑',oshimensisWhiteMargin:'緑の中央と白い覆輪の参考',oshimensisGoldCenter:'暗緑の縁と黄色の中央斑'});

@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.460';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.461';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.460';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.461';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='oshimensisReferences'){drawOshimensisReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='ophiopogonReferences'){drawOphiopogonReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='liriopeReferences'){drawLiriopeReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='hakonechloaReferences'){drawHakonechloaReferences(b,{info,s,detail,month},kit);return;}
@@ -20469,6 +20470,52 @@ export function stipoidHairGeometry(type){
 
 
 
+
+
+export function oshimensisPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='oshimensisSpikeScaleRef')return[u*.20*sn**.65,t,.12*(1-u*u)*sn];
+ const upright=type==='oshimensisUprightBladeRef',y=upright?Math.sin(Math.PI*.62*t):Math.sin(Math.PI*.95*t)-Math.sin(Math.PI*.95)*t;
+ return[u*.5*sn**.45*(1-.10*t),y+.005*u*u*sn,t];
+}
+export function oshimensisThreadGeometry(){
+ const pos=[],uv=[],idx=[];const ribbon=(a,z,width)=>{for(const plane of [0,1]){const base=pos.length/3,side=plane?[width,0,0]:[0,0,width];for(const[p,s]of [[a,-1],[a,1],[z,-1],[z,1]]){pos.push(...p.map((v,k)=>v+side[k]*s));uv.push(s<0?0:1,p===a?0:1);}idx.push(base,base+1,base+2,base+2,base+1,base+3);}};
+ for(let q=0;q<8;q++){const az=q*TAU/8;let prev=[Math.sin(az)*.08,0,Math.cos(az)*.08];for(let j=1;j<=3;j++){const t=j/3,next=[Math.sin(az)*.45*t*t,t,Math.cos(az)*.45*t*t];ribbon(prev,next,.010*(1-t*.5));prev=next;}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData.oshimensisExteriorTexture=true;return g;
+}
+const OSHIMENSIS_LEAF_TOP=Object.fromEntries(['oshimensisOuterBladeRef','oshimensisUprightBladeRef'].map(type=>{let top=0;for(let i=0;i<=80;i++)for(let j=0;j<=12;j++)top=Math.max(top,oshimensisPoint(type,i/80,j/6-1)[1]);return[type,top];}));
+function drawOshimensisReferences(b,{info,s,detail,month},kit){
+ const type=info.appearance.shootProfile,gold=type==='evergold',retail=type==='goldRetail',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0004,h*.003,LH*.020),R=Math.min(.0006,h*.003,w*.003,LH*.030),winter=[12,1,2].includes(month),summer=gold&&[7,8].includes(month),rotate=(p,az)=>[Math.cos(az)*p[0]+Math.sin(az)*p[2],p[1],-Math.sin(az)*p[0]+Math.cos(az)*p[2]];
+ if(s.leafDensity===0)return;
+ const branch=(a,z,r,c,k)=>{const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<.0000001)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('oshimensisTriStemRef',k,c,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);};
+ const crowns=Math.max(3,Math.round((gold||type==='everest'?14:type==='everoro'?12:retail?8:10)*detail)),leaves=Math.max(3,Math.round((gold||type==='everest'?13:type==='everoro'?11:9)*s.leafDensity)),nominalWidth=retail?.010:type==='everillo'?.0053:gold?.0042:.0045;
+ for(let c=0;c<crowns;c++){
+  const q=(c+.5)/crowns,az=c*2.399963,root=[Math.sin(az)*w*.085*Math.sqrt(q),rootY,Math.cos(az)*w*.085*Math.sqrt(q)];
+  for(let j=0;j<leaves;j++){
+   const upright=(j+c)%5===0,shape=upright?'oshimensisUprightBladeRef':'oshimensisOuterBladeRef',yaw=az+j*2.399963,fy=(LH*.985-rootY)/OSHIMENSIS_LEAF_TOP[shape]*(.68+.32*(.5+.5*Math.sin(c*5.23+j*3.89))),reach=Math.min(w*(upright?.16:.39),fy*(upright?.35:2.0)),width=Math.min(nominalWidth,h*.045,w*.035,LH*.09),at=[root[0]+Math.sin(yaw)*R*.5,rootY,root[2]+Math.cos(yaw)*R*.5],kind=(gold?'leaf-grass-center-oshimensis-':'leaf-oshimensis-')+type+(winter?'-winter':summer?'-summer':'-green');
+   b.add(shape,kind,s.leafColor,...at,width,fy,reach,0,yaw,0);
+   const get=(t,u)=>{const p=oshimensisPoint(shape,t,u),q=rotate([p[0]*width,p[1]*fy+.000001,p[2]*reach],yaw);return q.map((v,k)=>v+at[k]);};
+   for(const u of [-.50,0,.50]){let prev=get(0,u);for(let k=1;k<=8;k++){const next=get(k/8,u);branch(prev,next,Math.min(width*.004,LH*.00003),s.leafColor,'parallel-vein-oshimensis');prev=next;}}
+  }
+ }
+ if(!s.bloom)return;
+ const scapes=Math.max(2,Math.round(6*detail)),headLength=Math.min(.028,h*.18,w*.10),headWidth=Math.min(.004,h*.025,w*.020),unit=Math.min(.0018,h*.012,w*.010),thread=Math.min(.0015,h*.010,w*.018),co=s.flowerColor;
+ for(let i=0;i<scapes;i++){
+  const az=i*2.399963,rr=w*(i===0?.14:.07*Math.sqrt((i+.5)/scapes)),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=h*.95*(1-.15*i/scapes),baseY=top-headLength,drift=Math.min(w*.10,h*.15),points=Array.from({length:13},(_,j)=>{const t=j/12;return[root[0]+Math.sin(az)*drift*t*t,rootY+(baseY-rootY)*t,root[2]+Math.cos(az)*drift*t*t];});
+  for(let j=1;j<points.length;j++)branch(points[j-1],points[j],R*.65,'#92946d','culm-oshimensis');
+  const base=points.at(-1),f=flowerFrame(b,base,.07,az);f.add('oshimensisTriStemRef','head-axis-oshimensis','#8b896b',0,headLength*.5,0,R*.32,headLength,R*.32);
+  const rings=Math.max(5,Math.round(12*Math.sqrt(detail))),around=7;
+  for(let j=0;j<rings;j++){
+   const t=(j+.30)/rings,radius=headWidth*.5*Math.sin(Math.PI*(.10+.85*t));
+   for(let k=0;k<around;k++){
+    const yaw=k*TAU/around+j*.65,at=[Math.sin(yaw)*radius,headLength*t,Math.cos(yaw)*radius],shade=t<.30?'#766b55':co;
+    f.add('oshimensisSpikeScaleRef','spike-scale-oshimensis-exterior',shade,...at,unit*2.4,unit*1.4,unit,-.20,yaw,0);
+    if(j>=Math.floor(rings*.35)&&k%2===0)f.add('oshimensisThreadRef','pale-thread-oshimensis-exterior','#d5d3b6',at[0],at[1]+unit*.65,at[2],thread,thread,thread,0,yaw,.12);
+   }
+  }
+  if(i===0)f.flower([0,headLength*.56,0],Math.max(headLength*.58,headWidth*1.4));
+ }
+}
 
 export function ophiopogonPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
