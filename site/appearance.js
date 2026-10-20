@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.441';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.442';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -573,3 +573,5 @@ Object.assign(TRAIT_VALUES,{echinaceaAngustifoliaLeaf:'細い全縁葉と3本の
 Object.assign(TRAIT_VALUES,{echinaceaAvalancheLeaf:'長い葉柄に続く細い卵形の鋸歯葉'});
 
 Object.assign(TRAIT_VALUES,{swanAnemoneReferences:'スワン系アネモネの分枝・複葉・花の表裏を分けた参考3D',basalWhorled:'根生葉と分枝点の総苞葉の輪生',swanAnemoneSepals:'花弁状の萼片と多数の雄しべ・雌しべ'});
+
+Object.assign(TRAIT_VALUES,{oreganoBractReferences:'対生葉・重なる苞葉・小さな唇形花を分けた花オレガノの参考3D',oreganoBilabiate:'筒につながる上2・下3裂の唇形花',oreganoRoundLeaf:'丸い～卵円形の全縁葉',oreganoSmallLeaf:'小さな卵形の全縁葉'});
