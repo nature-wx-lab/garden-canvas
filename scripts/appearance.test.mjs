@@ -7590,3 +7590,21 @@ test('four further Echinacea references preserve black stems, semidouble and sin
  assert.deepEqual(CATALOG[ids[2]].height,[.3,.5]);assert.deepEqual(CATALOG[ids[2]].spread,[.3,.4]);assert.deepEqual(CATALOG[ids[2]].colors,['white','green']);
  assert.deepEqual(CATALOG[ids[3]].height,[.4,.6]);assert.deepEqual(CATALOG[ids[3]].spread,[.3,.5]);
 });
+
+test('Prairie Green, Mini Belle and E. angustifolia distinguish broad rays, petaloid centres and narrow three-veined leaves',()=>{
+ const ids=['p-490f15faaa6a','p-267dbb1dcc50','p-bd7052cb25e3'],types=['prairieGreen','miniBelle','angustifolia'],adult=[[.45,.35,.27],[.6,.5,.35],[.5,.35,.14]],small=[[.18,.2,.10],[.22,.25,.12],[.20,.20,.055]];
+ for(const [ci,id]of ids.entries())for(const tiny of [false,true])for(let month=1;month<=12;month++){
+  const d=(tiny?small:adult)[ci],p={...makePlant(id,43900+ci*10+(tiny?1:0),2,2),height:d[0],spread:d[1],leafHeight:d[2]},g=plantModel(p,view(month)),label=id+' '+month+' '+tiny,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),heads=count('receptacle-echinacea-'+types[ci]),leaves=count('leaf-echinacea-'+types[ci]);
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(heads>0,CATALOG[id].bloom.includes(month),label);assert.equal(count('petiole-echinacea'),leaves,label);assert.equal(count('midrib-echinacea'),leaves*10,label);
+   if([12,1,2].includes(month)){assert.equal(g.children.length,0,label);assert.equal(g.userData.groundDormant,true,label);}else{assert.ok(leaves>0,label);assert.equal(g.userData.architecture,'echinaceaReferences',label);}
+   if(ci===2){assert.equal(count('basal-vein-echinacea'),leaves*20,label+' two extra longitudinal veins');assert.equal(count('side-vein-echinacea'),0,label);assert.equal(count('lateral-peduncle-echinacea'),0,label+' one head per unbranched shoot');}
+   if(heads){assert.ok(g.userData.flowerTargets?.length,label);if(ci===1){assert.equal(count('petaloid-disc-echinacea-miniBelle'),heads*180,label);assert.equal(count('disc-floret-echinacea')+count('disc-bud-echinacea'),0,label);}else assert.equal(count('disc-floret-echinacea')+count('disc-bud-echinacea'),count('palea-echinacea'),label);}
+   for(const m of g.children)assert.ok([...m.instanceMatrix.array,...m.geometry.attributes.position.array,...m.geometry.attributes.normal.array].every(Number.isFinite),label);
+  }finally{dispose(g);}
+ }
+ assert.deepEqual(CATALOG[ids[0]].height,[.4,.5]);assert.equal(CATALOG[ids[0]].spread,null);assert.equal(CATALOG[ids[0]].bloomKnown,true);assert.deepEqual(CATALOG[ids[0]].bloom,[6,7,8,9]);assert.deepEqual(CATALOG[ids[0]].colors,['green','white']);
+ assert.deepEqual(CATALOG[ids[1]].height,[.5,.7]);assert.deepEqual(CATALOG[ids[1]].spread,[.4,.6]);assert.equal(CATALOG[ids[1]].bloomKnown,false);assert.deepEqual(CATALOG[ids[1]].colors,['pink']);
+ assert.equal(CATALOG[ids[2]].height,null);assert.equal(CATALOG[ids[2]].spread,null);assert.equal(CATALOG[ids[2]].appearance.leafMargin,'entire');assert.equal(CATALOG[ids[2]].appearance.leafShape,'echinaceaAngustifoliaLeaf');assert.deepEqual(CATALOG[ids[2]].bloom,[6,7,8,9,10]);
+ for(const shape of ['echinaceaAngustifoliaLeaf','echinaceaBroadRay','echinaceaNarrowRay','echinaceaPetaloid'])for(let i=0;i<=48;i++)for(const u of [-1,0,1])assert.ok(echinaceaPoint(shape,i/48,u).every(Number.isFinite));
+});

@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.438';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.439';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.438';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.439';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20377,7 +20377,9 @@ export function echinaceaPoint(type,t,u){
  if(type==='echinaceaDome')return [Math.sin(u)*t,Math.max(0,1-t*t)**.62,Math.cos(u)*t];
  if(type==='echinaceaDisc'){const lips=.5+.5*Math.cos(5*u),r=.10+.035*t+.04*t**6*lips;return [Math.sin(u)*r,t-.055*(1-lips)*t**10,Math.cos(u)*r];}
  if(type==='echinaceaPalea')return [u*.16*sn**.72,t,.055*sn+.02*u*u*sn];
- if(type==='echinaceaRay'){const width=.17*Math.max(0,Math.sin(Math.PI*t*.85))**.60;return [u*width,.035*sn+.025*u*u*sn-.045*t*t+.008*Math.sin(u*14)*t**6,t-.08*u*u*t**8+.035*Math.cos(u*Math.PI*3)*t**12];}
+ if(type==='echinaceaAngustifoliaLeaf')return [u*.095*sn**.72,.035*sn+.025*u*u*sn,t];
+ if(type==='echinaceaPetaloid')return [u*.12*sn**.65,.16*sn+.20*t*t+.035*u*u*sn,t-.06*u*u*t**8];
+ if(['echinaceaRay','echinaceaBroadRay','echinaceaNarrowRay'].includes(type)){const width=(type==='echinaceaBroadRay'?.27:type==='echinaceaNarrowRay'?.10:.17)*Math.max(0,Math.sin(Math.PI*t*.85))**.60;return [u*width,.035*sn+.025*u*u*sn-.045*t*t+.008*Math.sin(u*14)*t**6,t-.08*u*u*t**8+.035*Math.cos(u*Math.PI*3)*t**12];}
  const upper=type==='echinaceaUpperLeaf',bract=type==='echinaceaPhyllary',half=bract?.11:upper?.15:.22,teeth=1+(upper?.018:bract?0:.065)*Math.sin(t*Math.PI*18)**2;
  return [u*half*sn**(upper?.82:.66)*teeth,.045*sn+.035*u*u*sn+.025*t*t,t];
 }
@@ -20390,29 +20392,34 @@ const ECHINACEA_REFERENCE_PROFILES={
  limoncello:{rays:24,cone:.36,inner:'#5f7e2c',outer:'#809633',tip:'#bfaa4d',ray:'#e9e3a7',pitch:.01,rows:3},
  jsStiletto:{rays:26,cone:.48,inner:'#3c2532',outer:'#65362a',tip:'#c77a2a',ray:'#ce398c',pitch:.01},
  appleGreen:{rays:24,cone:.43,inner:'#5c7d30',outer:'#7d9236',tip:'#b2b95b',ray:'#e6ead0',pitch:.02,rows:3},
- sunseekersSalmon:{rays:24,cone:.43,inner:'#4c642b',outer:'#763731',tip:'#b25739',ray:'#dea6a1',pitch:.01,rows:3}
+ sunseekersSalmon:{rays:24,cone:.43,inner:'#4c642b',outer:'#763731',tip:'#b25739',ray:'#dea6a1',pitch:.01,rows:3},
+ prairieGreen:{rays:14,cone:.38,inner:'#5d7d27',outer:'#799b36',tip:'#b9cf56',ray:'#c8d86a',pitch:.02,rayShape:'echinaceaBroadRay'},
+ miniBelle:{rays:22,cone:.27,inner:'#9a486e',outer:'#b54c7b',tip:'#c45e91',ray:'#c768a0',pitch:.12,petaloid:true,shoots:7},
+ angustifolia:{rays:16,cone:.48,inner:'#5d3e34',outer:'#8a5135',tip:'#bf933b',ray:'#c88eae',pitch:.58,rayShape:'echinaceaNarrowRay',narrowLeaves:true,unbranched:true}
 };
 function drawEchinaceaReferences(b,{info,s,detail,month},kit){
- const a=info.appearance,type=a.flowerPalette.type,profile=ECHINACEA_REFERENCE_PROFILES[type],h=s.height,w=s.spread,scale=s.leafScale,stem=a.stemColor,L=Math.min(.13,h*.28,w*.26,s.leafHeight*1.1)*scale,R=Math.min(.0035,h*.010,w*.012),F=Math.min(a.flowerRadius,h*.10,w*.13)*scale,H=Math.max(0,Math.min(s.leafHeight*.88,h*.78))*scale,n=Math.max(3,Math.round(5*detail));let headIndex=0;
+ const a=info.appearance,type=a.flowerPalette.type,profile=ECHINACEA_REFERENCE_PROFILES[type],h=s.height,w=s.spread,scale=s.leafScale,stem=a.stemColor,L=Math.min(.13,h*.28,w*.26,s.leafHeight*1.1)*scale,R=Math.min(.0035,h*.010,w*.012),F=Math.min(a.flowerRadius,h*.10,w*.13)*scale,H=Math.max(0,Math.min(s.leafHeight*.88,h*.78))*scale,n=Math.max(3,Math.round((profile.shoots||5)*detail));let headIndex=0;
  const leaf=(node,az,len,upper=false)=>{
-  const pet=Math.min(len*(upper?.10:.30),h*.035),end=[node[0]+Math.sin(az)*pet,node[1]+pet*.12,node[2]+Math.cos(az)*pet],f=flowerFrame(b,end,-.12,az),shape=upper?'echinaceaUpperLeaf':'echinaceaLeaf';b.branch(node,end,Math.min(R*.25,len*.016),stem,'petiole-echinacea');f.add(shape,'leaf-echinacea-'+type,s.leafColor,0,0,0,len,len,len);
+  const pet=Math.min(len*(upper?.10:.30),h*.035),end=[node[0]+Math.sin(az)*pet,node[1]+pet*.12,node[2]+Math.cos(az)*pet],f=flowerFrame(b,end,-.12,az),shape=profile.narrowLeaves?'echinaceaAngustifoliaLeaf':upper?'echinaceaUpperLeaf':'echinaceaLeaf';b.branch(node,end,Math.min(R*.25,len*.016),stem,'petiole-echinacea');f.add(shape,'leaf-echinacea-'+type,s.leafColor,0,0,0,len,len,len);
   let prev=[0,0,0];for(let j=1;j<=10;j++){const q=echinaceaPoint(shape,j/10,0).map(v=>v*len);q[1]+=.00005;f.branch(prev,q,Math.min(R*.07,len*.004),'#a0b18a','midrib-echinacea');prev=q;}
-  for(let j=2;j<=7;j++)for(const side of [-1,1]){const t=j/10,from=echinaceaPoint(shape,t,0).map(v=>v*len),to=echinaceaPoint(shape,t+.07,side*.82).map(v=>v*len);from[1]+=.00004;to[1]+=.00004;f.branch(from,to,Math.min(R*.05,len*.0025),'#91a37c','side-vein-echinacea');}
+  if(profile.narrowLeaves){for(const side of [-1,1]){let prev=echinaceaPoint(shape,0,0).map(v=>v*len);for(let j=1;j<=10;j++){const q=echinaceaPoint(shape,j/10,side*.72).map(v=>v*len);q[1]+=.00004;f.branch(prev,q,Math.min(R*.06,len*.003),'#b1b998','basal-vein-echinacea');prev=q;}}}
+  else for(let j=2;j<=7;j++)for(const side of [-1,1]){const t=j/10,from=echinaceaPoint(shape,t,0).map(v=>v*len),to=echinaceaPoint(shape,t+.07,side*.82).map(v=>v*len);from[1]+=.00004;to[1]+=.00004;f.branch(from,to,Math.min(R*.05,len*.0025),'#91a37c','side-vein-echinacea');}
  };
  const head=(at,az)=>{
-  const idx=headIndex++,extra=['limoncello','jsStiletto','appleGreen','sunseekersSalmon'].includes(type),stage=extra?idx%3:0,ep=type==='limoncello'&&stage?{...profile,outer:stage===1?'#a49b35':'#a87731',tip:stage===1?'#c5b144':'#d3933d'}:profile,sample=type==='pinkPearl'?idx%3:type==='greenJewel'?idx%3:type==='pinkEye'&&idx%4===3?1:type==='whitePerfection'&&idx%3===2?1:0,young=type==='greenJewel'&&sample===1,faded=type==='greenJewel'&&sample===2||type==='pinkEye'&&sample===1,cone=young?.24:type==='greenJewel'&&sample===2?.44:profile.cone,pitch=young?-.50:faded&&type==='pinkEye'?.38:profile.pitch,rayColour=type==='pinkPearl'?['#d695b0','#e7ce8d','#dfaa88'][sample]:type==='greenJewel'&&faded?'#e3e5c9':extra?type==='jsStiletto'?['#ce398c','#ce599b','#dc6aa5'][stage]:type==='sunseekersSalmon'?['#dea6a1','#e8d49b','#e1b5b6'][stage]:profile.ray:profile.ray,f=flowerFrame(b,at,.08*Math.sin(idx*.8),az),C=F*.38;
+  const idx=headIndex++,extra=['limoncello','jsStiletto','appleGreen','sunseekersSalmon'].includes(type),stage=extra?idx%3:0,ep=type==='limoncello'&&stage?{...profile,outer:stage===1?'#a49b35':'#a87731',tip:stage===1?'#c5b144':'#d3933d'}:profile,sample=type==='pinkPearl'?idx%3:type==='greenJewel'?idx%3:type==='pinkEye'&&idx%4===3?1:type==='whitePerfection'&&idx%3===2?1:0,young=type==='greenJewel'&&sample===1,faded=type==='greenJewel'&&sample===2||type==='pinkEye'&&sample===1,cone=young?.24:type==='greenJewel'&&sample===2?.44:profile.cone,pitch=young?-.50:faded&&type==='pinkEye'?.38:profile.pitch,rayColour=type==='prairieGreen'?(idx%3===2?'#e8ead3':idx%3===1?'#d6df9b':profile.ray):type==='pinkPearl'?['#d695b0','#e7ce8d','#dfaa88'][sample]:type==='greenJewel'&&faded?'#e3e5c9':extra?type==='jsStiletto'?['#ce398c','#ce599b','#dc6aa5'][stage]:type==='sunseekersSalmon'?['#dea6a1','#e8d49b','#e1b5b6'][stage]:profile.ray:profile.ray,f=flowerFrame(b,at,.08*Math.sin(idx*.8),az),C=F*.38;
   if(idx===0)f.flower([0,F*cone*.40,0],F*1.1);f.add('echinaceaDome','receptacle-echinacea-'+type,profile.inner,0,0,0,C,F*cone,C);
   const rows=type==='sunseekersSalmon'&&idx%3===2?1:profile.rows||1;
   for(let row=0;row<rows;row++){
    const rays=profile.rays-row*4,len=F*(young?.55:.68)*(1-row*.14),rad=C*(1-row*.05),kind='ray-echinacea-'+type+(faded?'-faded':sample&&type==='whitePerfection'?'-greenOuter':'');
-   for(let j=0;j<rays;j++){const yaw=j*TAU/rays+row*.17,at=[Math.sin(yaw)*rad,F*(row*.045-.02),Math.cos(yaw)*rad];f.add('echinaceaRay',kind,rayColour,...at,len,len,len,pitch-row*.13,yaw,0);}
+   for(let j=0;j<rays;j++){const yaw=j*TAU/rays+row*.17,at=[Math.sin(yaw)*rad,F*(row*.045-.02),Math.cos(yaw)*rad];f.add(profile.rayShape||'echinaceaRay',kind,rayColour,...at,len,len,len,pitch-row*.13,yaw,0);}
   }
   for(let row=0;row<3;row++)for(let j=0;j<12;j++){const yaw=j*TAU/12+row*.23,rad=F*(.22+row*.035),len=F*(.23-row*.025);f.add('echinaceaPhyllary','phyllary-echinacea',stem,Math.sin(yaw)*rad,-F*(.10+row*.015),Math.cos(yaw)*rad,len,len,len,.20+row*.12,yaw,0);}
-  const cells=300;
+  const cells=profile.petaloid?180:300;
   for(let j=0;j<cells;j++){
    const rn=Math.sqrt((j+.5)/cells),yaw=j*2.399,rad=C*rn,y=F*cone*Math.max(0,1-rn*rn)**.62,at=[Math.sin(yaw)*rad,y,Math.cos(yaw)*rad],tilt=Math.atan(1.24*cone/.38*rn*Math.max(.015,1-rn*rn)**(-.38)),g=flowerFrame(f,at,tilt,yaw),palea=rn<.57?ep.inner:ep.outer;
    g.add('echinaceaPalea','palea-echinacea',palea,0,0,0,F*.10,F*.10,F*.10);
-   if(rn>.62){g.add('echinaceaDisc','disc-floret-echinacea',ep.tip,F*.013,0,0,F*.055,F*.055,F*.055);}
+   if(profile.petaloid){const len=F*(.33+.14*rn);g.add('echinaceaPetaloid','petaloid-disc-echinacea-'+type,j%3?'#c768a0':'#d880b1',0,F*.015,0,len,len,len,-.78+(j%5)*.13,yaw,0);}
+   else if(rn>.62){g.add('echinaceaDisc','disc-floret-echinacea',ep.tip,F*.013,0,0,F*.055,F*.055,F*.055);}
    else g.add(kit.bud,'disc-bud-echinacea',profile.inner,F*.013,F*.018,0,F*.012,F*.022,F*.012);
   }
  };
@@ -20425,7 +20432,7 @@ function drawEchinaceaReferences(b,{info,s,detail,month},kit){
   }
   if(!s.bloom)continue;
   const top=[prev[0]+Math.sin(az)*w*.018*scale,h*(.89+.065*Math.cos(i*.9)**2)*scale-F*.48,prev[2]+Math.cos(az)*w*.018*scale];b.branch(prev,top,R*.60,stem,'peduncle-echinacea');head(top,az);
-  if(i%2===0){const yaw=az+.85,base=[root[0]+Math.sin(az)*reach*.70,root[1]+rise*.70,root[2]+Math.cos(az)*reach*.70],end=[base[0]+Math.sin(yaw)*w*.14*scale,h*(.68+.04*Math.cos(i))*scale-F*.48,base[2]+Math.cos(yaw)*w*.14*scale];b.branch(base,end,R*.48,stem,'lateral-peduncle-echinacea');head(end,yaw);}
+  if(!profile.unbranched&&i%2===0){const yaw=az+.85,base=[root[0]+Math.sin(az)*reach*.70,root[1]+rise*.70,root[2]+Math.cos(az)*reach*.70],end=[base[0]+Math.sin(yaw)*w*.14*scale,h*(.68+.04*Math.cos(i))*scale-F*.48,base[2]+Math.cos(yaw)*w*.14*scale];b.branch(base,end,R*.48,stem,'lateral-peduncle-echinacea');head(end,yaw);}
  }
 }
 
