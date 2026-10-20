@@ -7682,3 +7682,24 @@ test('ornamental oregano minimum leaf-height control changes actual foliage with
   const base={...makePlant(id,44200,2,2),height:.25,spread:.3},capture=leafHeight=>{const p={...base,leafHeight},g=plantModel(p,view(month));let top=-Infinity;for(const m of g.children){if(m.userData.component.startsWith('leaf-oregano-')){m.computeBoundingBox();top=Math.max(top,m.boundingBox.max.y);}m.geometry.dispose();m.dispose();}const roots=[];drawDetailedHerb({branch:(from,to,r,c,k)=>{if(k.startsWith('stem-oregano-'))roots.push(from);},add:()=>{}},{info:CATALOG[id],s:stateAt(p,view(month)),p,detail:1,rand:()=>.5,month},{bud:'bud',shade:(_,c)=>c});return {top,root:roots[0]};},low=capture(.005),high=capture(.15);assert.ok(low.top<.010,id+' actual minimum foliage');assert.ok(high.top>low.top*10,id+' actual foliage responds across the 30-fold control range in both seasonal states');assert.deepEqual(low.root,high.root,id+' ground root fixed');assert.ok(low.root[1]>=0&&low.root[1]<.002,id+' root on soil');
  }
 });
+
+test('four remaining oregano entries preserve retailer ranges and distinguish branched cymes from felted upright shoots',()=>{
+ const ids=['p-530f90269022','p-4fb1522b3f57','p-e5129f458763','p-233b7cad0cfb'],types=['herrenhausen','rotundifolium','kentBeauty','dictamnus'],sizes=[[[.65,.45,.30],[.25,.25,.11]],[[.30,.30,.17],[.12,.18,.065]],[[.125,.25,.075],[.05,.16,.03]],[[.15,.175,.095],[.06,.13,.04]]];
+ for(const [ci,id]of ids.entries())for(const [si,size]of sizes[ci].entries())for(let month=1;month<=12;month++){
+  const p={...makePlant(id,44300+ci*10+si,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),label=id+' '+si+' '+month,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),leaves=count('leaf-oregano-'+types[ci]),flowers=count('corolla-oregano-'+types[ci]),winter=[12,1,2].includes(month);
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(g.userData.architecture,'oreganoBractReferences',label);assert.equal(flowers>0,CATALOG[id].bloom.includes(month),label);assert.ok(leaves>0,label);assert.equal(count('petiole-oregano'),leaves,label);assert.equal(count('midrib-oregano'),leaves*8,label);assert.equal(count('pubescence-oregano'),ci===3?leaves*12:0,label);
+   if(ci===0){assert.equal(count('cyme-branch-oregano'),flowers/2,label+' branched cymes');assert.equal(count('bract-oregano-herrenhausen'),flowers*3,label+' small bract pairs');assert.equal(count('winter-bud-oregano'),0,label);}
+   if(ci===3){assert.ok(count('stem-oregano-dictamnus')>0,label+' retained shoots');assert.equal(count('winter-bud-oregano'),0,label+' not replaced by underground buds');assert.equal(g.children.find(m=>m.userData.component==='leaf-oregano-dictamnus').geometry.userData.oreganoFeltLeaf,true);}
+   if(flowers){assert.equal(count('calyx-oregano'),flowers,label);assert.equal(count('anther-oregano'),flowers*4,label);assert.equal(count('stigma-oregano'),flowers*2,label);assert.ok(g.userData.flowerTargets?.length,label);}if(winter)assert.equal(flowers,0,label);
+   for(const m of g.children)assert.ok([...m.instanceMatrix.array,...m.geometry.attributes.position.array,...m.geometry.attributes.normal.array].every(Number.isFinite),label);
+  }finally{dispose(g);}
+ }
+ assert.deepEqual(CATALOG[ids[0]].height,[.5,.8]);assert.deepEqual(CATALOG[ids[1]].height,[.15,.6]);assert.deepEqual(CATALOG[ids[2]].height,[.1,.15]);assert.deepEqual(CATALOG[ids[3]].height,[.1,.2]);assert.deepEqual(CATALOG[ids[3]].spread,[.15,.2]);for(const id of ids.slice(0,3))assert.equal(CATALOG[id].spread,null);assert.deepEqual(CATALOG[ids[1]].bloom,[4,5,6,7,8,9]);assert.deepEqual(CATALOG[ids[2]].bloom,[6,7]);
+});
+
+test('Dictamnus felt material compiles independently and the oregano leaf-height control moves its actual foliage',()=>{
+ for(const [ci,id]of ['p-530f90269022','p-4fb1522b3f57','p-e5129f458763','p-233b7cad0cfb'].entries())for(const month of [4,7]){
+  const capture=leafHeight=>{const p={...makePlant(id,44300+ci*10,2,2),height:.3,spread:.3,leafHeight},g=plantModel(p,view(month));let top=-Infinity;try{for(const m of g.children)if(m.userData.component.startsWith('leaf-oregano-')){m.computeBoundingBox();top=Math.max(top,m.boundingBox.max.y);if(ci===3){const shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};m.material.onBeforeCompile(shader,{});assert.ok(shader.fragmentShader.includes('orFelt'));}}return top;}finally{dispose(g);}};const low=capture(.005),high=capture(.15);assert.ok(low<.010,id+' minimum leaf ceiling');assert.ok(high>low*10,id+' real foliage responds to leaf control');
+ }
+});
