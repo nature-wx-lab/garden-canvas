@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.461';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.462';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.461';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.462';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='fineCarexReferences'){drawFineCarexReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='oshimensisReferences'){drawOshimensisReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='ophiopogonReferences'){drawOphiopogonReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='liriopeReferences'){drawLiriopeReferences(b,{info,s,detail,month},kit);return;}
@@ -20471,6 +20472,56 @@ export function stipoidHairGeometry(type){
 
 
 
+
+
+export function fineCarexPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='fineCarexScaleRef')return[u*.20*sn**.65,t,.12*(1-u*u)*sn];
+ const upright=type==='fineCarexUprightRef',curl=type==='fineCarexCurlRef',loop=curl?Math.max(0,(t-.72)/.28)*TAU:0;
+ const y=upright?Math.sin(Math.PI*.68*t):Math.sin(Math.PI*.96*t)-Math.sin(Math.PI*.96)*t+(curl?.045*(1-Math.cos(loop)):0);
+ return[u*.5*sn**.4,y+.0004*u*u*sn,t-(curl?.085*Math.sin(loop):0)];
+}
+const FINE_CAREX_TOP=Object.fromEntries(['fineCarexUprightRef','fineCarexCurlRef','fineCarexArchRef'].map(type=>{let top=0;for(let i=0;i<=80;i++)for(let j=0;j<=8;j++)top=Math.max(top,fineCarexPoint(type,i/80,j/4-1)[1]);return[type,top];}));
+function drawFineCarexReferences(b,{info,s,detail,month},kit){
+ const type=info.appearance.shootProfile,jen=type==='jenneke',comans=type==='frosted'||type==='bronze',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0004,h*.003,LH*.018),R=Math.min(.00055,h*.003,w*.003,LH*.025),stem=comans?'fineCarexRoundStemRef':'fineCarexTriStemRef';
+ if(!s.leafDensity)return;
+ const branch=(a,z,r,c,k)=>{const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<.0000001)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add(stem,k,c,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);};
+ const rotate=(p,az)=>[Math.cos(az)*p[0]+Math.sin(az)*p[2],p[1],-Math.sin(az)*p[0]+Math.cos(az)*p[2]],crowns=Math.max(3,Math.round((comans?15:12)*detail)),leaves=Math.max(3,Math.round((comans?16:14)*s.leafDensity)),winter=[12,1,2].includes(month),summer=[7,8].includes(month);
+ for(let c=0;c<crowns;c++){
+  const az=c*2.399963,root=[Math.sin(az)*w*.085*Math.sqrt((c+.5)/crowns),rootY,Math.cos(az)*w*.085*Math.sqrt((c+.5)/crowns)];
+  for(let j=0;j<leaves;j++){
+   const upright=(j+c)%((jen||type==='kiwi')?3:6)===0,shape=upright?'fineCarexUprightRef':comans?'fineCarexCurlRef':'fineCarexArchRef',yaw=az+j*2.399963,fy=(LH*.985-rootY)/FINE_CAREX_TOP[shape]*(.65+.35*(.5+.5*Math.sin(c*5.13+j*3.91))),reach=Math.min(w*(upright?.17:jen?.36:.38),fy*(upright?.32:jen?1.35:2.0)),width=Math.min(jen?.0014:comans?.0010:.0025,h*.04,w*.03,LH*.065),kind='leaf-fine-carex-'+type+(winter?'-winter':summer?'-summer':'-green');
+   b.add(shape,kind,s.leafColor,...root,width,fy,reach,0,yaw,0);
+   const get=t=>{const p=fineCarexPoint(shape,t,0),q=rotate([0,p[1]*fy+.000001,p[2]*reach],yaw);return q.map((v,k)=>v+root[k]);};
+   let prev=get(0);for(let k=1;k<=8;k++){const next=get(k/8);branch(prev,next,Math.min(width*.004,LH*.000025),s.leafColor,'midrib-fine-carex');prev=next;}
+  }
+ }
+ if(!s.bloom||type==='bronze')return;
+ const scapes=Math.max(1,Math.round(3*detail)),headLength=Math.min(jen?.022:type==='kiwi'?.030:.023,h*.15,w*.11),headWidth=Math.min(jen?.0030:type==='kiwi'?.004:.0035,h*.025,w*.020),unit=Math.min(.0012,h*.008,w*.006);
+ const spike=(base,pitch,yaw,inspect,short=false)=>{
+  const L=headLength*(short?.62:1),W=headWidth*(short?.55:1),f=flowerFrame(b,base,pitch,yaw);f.add(stem,'spike-axis-fine-carex-exterior','#857b5c',0,L*.5,0,R*.45,L,R*.45);
+  const rings=Math.max(6,Math.round(20*Math.sqrt(detail))),around=7;
+  for(let j=0;j<rings;j++)for(let k=0;k<around;k++){
+   const t=(j+.3)/rings,az=k*TAU/around+j*.63,r=W*.5*Math.sin(Math.PI*(.10+.85*t));
+   f.add('fineCarexScaleRef','spike-scale-fine-carex-exterior',j<rings*.25?'#7f7258':s.flowerColor,Math.sin(az)*r,L*t,Math.cos(az)*r,unit*2.4,unit*1.4,unit,-.15,az,0);
+  }
+  if(inspect)f.flower([0,L*.56,0],Math.max(L*.58,W*1.5));
+ };
+ for(let i=0;i<scapes;i++){
+  const az=i*2.399963,rr=w*(i===0?.14:.065*Math.sqrt((i+.5)/scapes)),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=h*(jen?.95:comans?.86:.96)*(1-.10*i/scapes),drift=Math.min(w*.085,h*.12),at=t=>[root[0]+Math.sin(az)*drift*t*t,rootY+(top-headLength-rootY)*t,root[2]+Math.cos(az)*drift*t*t];
+  let prev=at(0);for(let j=1;j<=12;j++){const next=at(j/12);branch(prev,next,R*.6,'#858c62','culm-fine-carex');prev=next;}
+  const nodes=jen?5:4;
+  for(let n=0;n<nodes;n++){
+   const t=.40+.48*n/Math.max(1,nodes-1),from=at(t),yaw=az+n*2.399963,arms=jen?2:1;
+   for(let q=0;q<arms;q++){
+    const a=yaw+q*.72,len=Math.min(w*.08,h*.10)*(jen?.7:1),to=[from[0]+Math.sin(a)*len,from[1]+(comans?-.018:headLength*.10),from[2]+Math.cos(a)*len];
+    to[1]=Math.max(rootY*2,to[1]);branch(from,to,R*.35,'#929574','peduncle-fine-carex');spike(to,comans?.44:.10,a,false);
+   }
+   if(jen){const a=yaw,bractLen=Math.min(w*.10,h*.16);b.add('fineCarexUprightRef','bract-fine-carex','#7f9a54',...from,Math.min(.0018,w*.012,LH*.05),bractLen*.55,bractLen,0,a,0);}
+  }
+  spike(at(1),.08,az,i===0,!jen);
+ }
+}
 
 export function oshimensisPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
