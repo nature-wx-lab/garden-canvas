@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.466';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.467';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.466';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.467';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -22242,6 +22242,7 @@ export function pennisetumReferencePoint(type,t,u){
 }
 const PENNI_REFERENCE_TOP=Object.fromEntries(['pennisetumOuterRef','pennisetumUprightRef'].map(type=>{let top=0;for(let i=0;i<=72;i++)for(let j=0;j<=8;j++)top=Math.max(top,pennisetumReferencePoint(type,i/72,j/4-1)[1]);return[type,top];}));
 function drawPennisetumReferences(b,{info,s,detail,month,rand},kit){
+ if(['rubrumEngei','rubrumOgis','villosum'].includes(info.appearance.shootProfile)){drawTenderPennisetumReferences(b,{info,s,detail,month,rand},kit);return;}
  const type=info.appearance.shootProfile,red=type==='redButtons',dance=type==='danceWithMe',winter=[12,1,2].includes(month),h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0004,h*.003,LH*.02),R=Math.min(.0009,h*.003,w*.003,LH*.04),leafKind='leaf-pennisetum-'+type+(winter?'-winter':'-green');
  if(!s.leafDensity)return;
  const line=(a,z,r,c,k)=>{const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('pennisetumRoundCulmRef',k,c,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);};
@@ -22275,6 +22276,53 @@ function drawPennisetumReferences(b,{info,s,detail,month,rand},kit){
      // Aim at the interior of a rendered bristle triangle. The shared camera
      // adds .30 radii along the axis, so compensate without enlarging the organ.
      const points=[[.5,0],[7/12,0],[.5,1/3]].map(([t,u])=>pennisetumReferencePoint('pennisetumBristleRef',t,u)),surface=new THREE.Vector3(...points[0]).add(new THREE.Vector3(...points[1])).add(new THREE.Vector3(...points[2])).multiplyScalar(bl/3).applyEuler(e).add(new THREE.Vector3(...base)),radius=Math.max(L*.50,W*1.8);surface.y-=radius*.30;f.flower(surface.toArray(),radius);
+    }
+   }
+  }
+ }
+}
+
+export function tenderPennisetumCurve(white,t){
+ const th=Math.PI*.65*t;return white?{c:[0,t,0],tangent:[0,1,0],normal:[1,0,0]}:{c:[.58*(1-Math.cos(th)),.58*Math.sin(th),0],tangent:[Math.sin(th),Math.cos(th),0],normal:[Math.cos(th),-Math.sin(th),0]};
+}
+export function tenderPennisetumPoint(type,t,u){
+ if(type==='tenderPennisetumBristleRef')return[u*.006*(1-.9*t),t,.045*Math.sin(Math.PI*t)];
+ const white=type==='tenderPennisetumWhiteSurfaceRef',{c,normal}=tenderPennisetumCurve(white,t),ph=(u+1)*Math.PI,r=(white?.14:.025)*Math.max(0,Math.sin(Math.PI*t))**.45;
+ return[c[0]+normal[0]*r*Math.sin(ph),c[1]+normal[1]*r*Math.sin(ph),r*Math.cos(ph)];
+}
+function drawTenderPennisetumReferences(b,{info,s,detail,month,rand},kit){
+ const type=info.appearance.shootProfile,white=type==='villosum',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0004,h*.003,LH*.02),R=Math.min(.0008,h*.003,w*.003,LH*.04),leafKind='leaf-pennisetum-'+type;
+ if(!s.leafDensity)return;
+ const line=(a,z,r,c,k)=>{const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('pennisetumRoundCulmRef',k,c,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);};
+ const crowns=Math.max(4,Math.round((white?22:18)*detail)),leaves=Math.max(3,Math.round((white?20:18)*s.leafDensity));
+ for(let c=0;c<crowns;c++){
+  const az=c*2.399963,rr=w*(white?.30:.08)*Math.sqrt((c+.5)/crowns),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr];
+  for(let j=0;j<leaves;j++){
+   const upright=(j+c)%4===0,shape=upright?'pennisetumUprightRef':'pennisetumOuterRef',fy=(LH*.985-rootY)/PENNI_REFERENCE_TOP[shape]*(.60+.40*(.5+.5*Math.sin(c*4.73+j*3.91))),reach=Math.min(w*(white?(upright?.07:.16):(upright?.15:.39)),fy*(upright?.30:white?1.3:1.8)),width=Math.min(white?.004:.009,h*.045,w*.04,LH*.09);
+   b.add(shape,leafKind,kit.shade(rand,s.leafColor,.04),...root,width,fy,reach,0,az+j*2.399963,0);
+  }
+ }
+ if(!s.bloom)return;
+ const scapes=Math.max(1,Math.round((white?18:14)*detail*Math.max(.65,s.flowerDensity))),L=Math.min(white?.035:.18,h*(white?.12:.30),w*(white?.18:.35)),BL=Math.min(white?.035:.018,h*(white?.075:.040),w*(white?.070:.045)),headRise=white?L+BL*.9:L*.66+BL*.9,stem=white?'#8a9b6b':'#79555e',surface=white?'tenderPennisetumWhiteSurfaceRef':'tenderPennisetumPurpleSurfaceRef';
+ for(let i=0;i<scapes;i++){
+  const az=i*2.399963,rr=w*(i===0?.18:white?.23:.08*Math.sqrt((i+.5)/scapes)),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=Math.max(rootY*2,h*(.965-.12*i/scapes)-headRise),drift=Math.min(w*.06,h*.075),at=t=>[root[0]+Math.sin(az)*drift*t*t,rootY+(top-rootY)*t,root[2]+Math.cos(az)*drift*t*t];
+  let prev=at(0);for(let j=1;j<=14;j++){const next=at(j/14);line(prev,next,R,stem,'culm-tender-pennisetum');prev=next;}
+  for(let node=0;node<2;node++){const p=at(.27+.29*node);b.add('pennisetumRoundCulmRef','node-tender-pennisetum',stem,...p,R*1.4,Math.min(.0015,h*.006),R*1.4,0,0,0);if(p[1]<LH*.6){const fy=(LH*.85-p[1])/PENNI_REFERENCE_TOP.pennisetumOuterRef;b.add('pennisetumOuterRef',leafKind,s.leafColor,...p,Math.min(.004,h*.035,w*.025,LH*.065),fy,Math.min(w*.12,fy),0,az+node*Math.PI,0);}}
+  const stage=i%3,co=white?(stage===2?'#b6b0a4':'#a7b07e'):(stage===0?'#ae6d8d':stage===1?'#c18e9b':'#cbbb9f'),hair=white?(stage===2?'#d9cfd6':'#ecebdd'):(stage===0?'#d7aabc':stage===1?'#d9b8be':'#e0d3bb'),pitch=white?.18+i/scapes*.55:.10+i/scapes*.40,f=flowerFrame(b,at(1),pitch,az),tiers=Math.max(8,Math.round((white?14:24)*Math.sqrt(detail))),around=Math.max(5,Math.round((white?6:10)*Math.sqrt(detail)));
+  f.add(surface,white?'brush-surface-white-pennisetum-exterior':'brush-surface-purple-pennisetum-exterior',co,0,0,0,L,L,L);
+  for(let j=0;j<tiers;j++){
+   const t=(j+.3)/tiers,curve=tenderPennisetumCurve(white,t),centre=curve.c.map(x=>x*L),T=new THREE.Vector3(...curve.tangent),N=new THREE.Vector3(...curve.normal),radius=(white?.14:.025)*Math.sin(Math.PI*t)**.45*L;
+   if(j){const prevC=tenderPennisetumCurve(white,(j-.7)/tiers).c.map(x=>x*L);f.branch(prevC,centre,R*.45,co,'spike-axis-tender-pennisetum-exterior');}
+   for(let k=0;k<around;k++){
+    const ph=k*TAU/around+j*.29,radial=N.clone().multiplyScalar(Math.sin(ph)).add(new THREE.Vector3(0,0,Math.cos(ph))),base=new THREE.Vector3(...centre).addScaledVector(radial,radius),unit=Math.min(white?.0015:.001,h*.006,w*.008);f.add('pennisetumScaleRef','spike-scale-tender-pennisetum-exterior',co,...base.toArray(),unit,unit*1.7,unit,-.20,ph,0);
+    const rays=white?7:3;
+    for(let n=0;n<rays;n++){
+     const yaw=ph+(n-(rays-1)/2)*(white?.11:.19),out=N.clone().multiplyScalar(Math.sin(yaw)).add(new THREE.Vector3(0,0,Math.cos(yaw))),dir=T.clone().multiplyScalar(white?.72:.55).addScaledVector(out,white?.68:.85).normalize(),bl=BL*(white?(.18+.82*Math.sin(Math.PI*t)**.6):1)*(.65+.35*(.5+.5*Math.sin(j*4.73+k*2.91+n*1.3))),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir),'YXZ');
+     f.add('tenderPennisetumBristleRef','bristle-tender-pennisetum-exterior',hair,...base.toArray(),bl,bl,bl,e.x,e.y,e.z);
+     const desired=Math.atan2(.8*T.y-(.18*Math.cos(pitch)+Math.sin(pitch))*T.x,Math.cos(pitch)-.18*Math.sin(pitch)),inspectK=((Math.round((desired-j*.29)/TAU*around)%around)+around)%around;
+     if(i===0&&j===Math.floor(tiers*.55)&&k===inspectK&&n===Math.floor(rays/2)){
+      const points=[[.5,0],[7/12,0],[.5,1/3]].map(([t,u])=>tenderPennisetumPoint('tenderPennisetumBristleRef',t,u)),target=new THREE.Vector3(...points[0]).add(new THREE.Vector3(...points[1])).add(new THREE.Vector3(...points[2])).multiplyScalar(bl/3).applyEuler(e).add(base),featureRadius=white?(L+BL)*.53:L*.60,axisEuler=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),T),'YXZ');target.addScaledVector(T,-featureRadius*.30);f.flower(target.toArray(),featureRadius,axisEuler.x,axisEuler.y,axisEuler.z);
+     }
     }
    }
   }

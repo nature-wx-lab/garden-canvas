@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.466';
+import {treeProfile} from './tree-profiles.js?v=0.9.467';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -289,7 +289,7 @@ export function seasonAt(info,month){
  const headPhase=a.architecture==='berzelia'?bloom?'flower':[11,12,1,2].includes(month)?'bud':'dry':null;
  const retainedSummerLeaves=!!a.winterLeafLength&&[11,12,1,2,3].includes(month);
  if(retainedSummerLeaves)phase='春葉が落ち、小さな夏葉が冬を越す時期（地域差あり）';
- if(a.architecture==='pennisetumReferences'){scale=month===3?.35:month===4?.7:1;phase=[12,1,2].includes(month)?'未剪定で褐色の葉・穂を残す冬の参考（低温管理で切り戻した販売苗とは別条件）':month===3||month===4?'早春に古葉・古穂を整理した管理例と新葉の参考（再生量・月境界は未予測）':bloom?'開花段階の異なる穂が混在する外観参考（微細器官・種子形成は未再現）':'弓状の細葉と株立ちの参考（葉数・草姿・年次拡大は近似）';}
+ if(a.architecture==='pennisetumReferences'){scale=month===3?.35:month===4?.7:1;phase=groundDormant?'国内の寒冷地・低温管理苗の地上部なしの参考（暖地・未剪定成株の残穂は別条件）':[12,1,2].includes(month)?'未剪定で褐色の葉・穂を残す冬の参考（低温管理で切り戻した販売苗とは別条件）':month===3||month===4?'早春に古葉・古穂を整理した管理例と新葉の参考（再生量・月境界は未予測）':bloom?'開花段階の異なる穂が混在する外観参考（微細器官・種子形成は未再現）':'弓状の細葉と株立ちの参考（葉数・草姿・年次拡大は近似）';}
  if(a.shootProfile?.startsWith('fescue')){scale=1;phase=bloom?'細い花茎から枝分かれする小穂の外観参考（小花・果実内部は未再現）':[12,1,2].includes(month)?a.shootProfile==='fescueIntense'?'枯葉が少ない常緑の青銀葉の参考（低温応答・地域差は未校正）':'冬も葉を残し古葉が混ざる未剪定株の参考（枯葉量・切戻し後は未校正）':a.shootProfile==='fescueScoparia'?'短い緑葉が密生する低い半球形の参考（流通名の同定は未確認）':a.shootProfile==='fescueGolden'?'黄色と銀灰色が混ざる細葉の参考（真夏の緑がかり・発色は近似）':'青銀色の細葉の参考（夏の発色・葉数と曲がりは近似）';}
  if(a.architecture==='otherCarexReferences'){const cold=['aurea','banana'].includes(a.shootProfile);scale=groundDormant?0:cold?(month===3?.55:month===4?.8:1):1;phase=groundDormant?'寒冷地の冬の地上部休眠の参考（暖地の残葉・未剪定の残茎・境界月は未校正）':a.shootProfile==='remota'&&[12,1,2].includes(month)?'英国販売園の褐色の葉を残す冬姿の参考（好条件の緑葉・日本の冬は未校正）':a.shootProfile==='morrow'?(bloom?'常緑の覆輪葉と春の小穂の参考（既存名とRHS資料名の同定差は未確認）':'常緑の覆輪葉の参考（既存名とRHS資料名の同定差は未確認）'):cold&&month===3?'春の展葉の参考（芽出し日・葉量・月の境界は未校正）':bloom?a.shootProfile==='aurea'?'直立する褐色の穂と淡い糸状部の外観参考':a.shootProfile==='remota'?'大きく間隔を空けた淡黄緑色の小穂の外観参考':'広い黄中斑の葉と疎らな小穂の外観参考':'品種・販売株の葉姿の参考（葉数・発色・年次拡大は未校正）';}
  if(a.architecture==='blueCarexReferences'){scale=1;phase=[12,1,2].includes(month)?'寒冷地で葉が少なくなる未剪定株の冬の参考（霜の少ない地域では常緑、葉量は未校正）':bloom?a.shootProfile==='bunny'?'葉の間に斜めに付く黄白〜淡褐色の小さな穂の外観参考':'細い上部の穂と、柄を分ける暗褐色の穂の外観参考（性器官・果実内部は未再現）':[7,8].includes(month)?'真夏にやや緑がかる青葉の参考（発色・気象応答は未校正）':'青緑〜青銀色の株立ちの参考（葉幅・株の拡大は近似）';}

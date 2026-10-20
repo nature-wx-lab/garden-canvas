@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.466';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.467';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -617,3 +617,5 @@ Object.assign(TRAIT_VALUES,{otherCarexFringedSpikes:'直立する褐色の穂と
 Object.assign(TRAIT_VALUES,{fescueReferenceNeedle:'細く内側へ折れた針状の葉の参考',fescueReferencePanicle:'細い直立茎の先で枝分かれする小穂の外観参考',fescueReferenceSpikelets:'細い分枝に付く小穂の表面参考（花粉・果実内部は未再現）'});
 
 Object.assign(TRAIT_VALUES,{pennisetumArchingBlades:'株元と茎の節に付き、立ち上がって弓状に垂れる線形葉の参考',pennisetumBristledSpikes:'細い花茎の先で色と開き方が異なる、ブラシ状の穂の外観参考'});
+
+Object.assign(TRAIT_VALUES,{tenderPennisetumBlades:'株元と茎の節に付く、紫銅色または緑の細い弓状の葉の参考',curvedRubrumBrush:'弓状に垂れる長い赤紫〜淡褐色の穂の外観参考',villosumPlumoseBrush:'細い小穂から長い柔らかな毛を広げる白い穂の外観参考'});
