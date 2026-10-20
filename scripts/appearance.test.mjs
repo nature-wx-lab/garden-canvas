@@ -7608,3 +7608,18 @@ test('Prairie Green, Mini Belle and E. angustifolia distinguish broad rays, peta
  assert.equal(CATALOG[ids[2]].height,null);assert.equal(CATALOG[ids[2]].spread,null);assert.equal(CATALOG[ids[2]].appearance.leafMargin,'entire');assert.equal(CATALOG[ids[2]].appearance.leafShape,'echinaceaAngustifoliaLeaf');assert.deepEqual(CATALOG[ids[2]].bloom,[6,7,8,9,10]);
  for(const shape of ['echinaceaAngustifoliaLeaf','echinaceaBroadRay','echinaceaNarrowRay','echinaceaPetaloid'])for(let i=0;i<=48;i++)for(const u of [-1,0,1])assert.ok(echinaceaPoint(shape,i/48,u).every(Number.isFinite));
 });
+
+test('Avalanche uses contextual breeder flower samples and upright long-petioled leaves without a domestic size claim',()=>{
+ const id='p-6bc5a6711b17',info=CATALOG[id];
+ assert.equal(info.height,null);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[7,8,9]);assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.leafLength,.194);
+ for(const small of [false,true])for(let month=1;month<=12;month++){
+  const d=small?[.17,.22,.11]:[.405,.425,.28],p={...makePlant(id,44000+(small?1:0),2,2),height:d[0],spread:d[1],leafHeight:d[2]},g=plantModel(p,view(month)),label=month+' '+small,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),heads=count('receptacle-echinacea-avalanche'),leaves=count('leaf-echinacea-avalanche');
+  try{
+   assert.equal(heads>0,info.bloom.includes(month),label);assert.equal(count('petiole-echinacea'),leaves,label);assert.equal(count('midrib-echinacea'),leaves*10,label);assert.equal(count('side-vein-echinacea'),leaves*12,label);
+   if([12,1,2].includes(month)){assert.equal(g.children.length,0,label);assert.equal(g.userData.groundDormant,true,label);}else{assert.ok(leaves>0,label);assert.equal(g.userData.architecture,'echinaceaReferences',label);}
+   if(heads){assert.equal(count('ray-echinacea-avalanche'),heads*20,label+' breeder ray sample');assert.equal(count('disc-floret-echinacea')+count('disc-bud-echinacea'),heads*500,label+' contextual disk sample');assert.equal(count('palea-echinacea'),heads*500,label+' separate spine per floret');assert.equal(count('phyllary-echinacea'),heads*70,label);}
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array,...m.geometry.attributes.position.array,...m.geometry.attributes.normal.array].every(Number.isFinite),label);if(m.userData.component==='leaf-echinacea-avalanche'){m.computeBoundingBox();assert.ok(m.boundingBox.max.y<=p.leafHeight+.003,label+' actual foliage respects input canopy');}}
+  }finally{dispose(g);}
+ }
+ for(let i=0;i<=48;i++)for(const u of [-1,0,1])assert.ok(echinaceaPoint('echinaceaAvalancheLeaf',i/48,u).every(Number.isFinite));
+});

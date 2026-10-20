@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.439';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.440';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -569,3 +569,5 @@ Object.assign(TRAIT_VALUES,{hollyhockReferences:'互生葉と杯状の花を持�
 Object.assign(TRAIT_VALUES,{echinaceaReferences:'舌状花・円錐形の花芯と互生葉を持つエキナセアの参考3D',echinaceaHeadReference:'舌状花と筒状花・尖った鱗片のある頭花',echinaceaLeaf:'粗い鋸歯のある卵形～披針形の葉'});
 
 Object.assign(TRAIT_VALUES,{echinaceaAngustifoliaLeaf:'細い全縁葉と3本の主脈'});
+
+Object.assign(TRAIT_VALUES,{echinaceaAvalancheLeaf:'長い葉柄に続く細い卵形の鋸歯葉'});
