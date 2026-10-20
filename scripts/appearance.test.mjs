@@ -7454,3 +7454,29 @@ test('four additional Veronica cultivars retain white leaf edges and source-spec
  const groups=new Map();for(const b of branches.filter(b=>b.kind==='petiole-veronica')){const k=b.from.join(',');groups.set(k,(groups.get(k)||0)+1);}assert.ok([...groups.values()].some(n=>n===3),'some nodes have three connected leaves');for(const at of leaves)assert.ok(branches.some(b=>b.kind==='petiole-veronica'&&b.to.every((v,i)=>Math.abs(v-at[i])<1e-8)),'each leaf starts on its petiole');
  assert.equal(CATALOG[ids[1]].appearance.leafPattern,'veronicaCreamEdge');assert.equal(CATALOG[ids[1]].variegated,true);assert.equal(CATALOG[ids[1]].spread,null);assert.equal(CATALOG[ids[3]].spread,null);assert.deepEqual(CATALOG[ids[0]].height,[.4,.45]);assert.equal(CATALOG[ids[0]].bloomKnown,false);assert.equal(CATALOG[ids[1]].bloomKnown,true);assert.notEqual(CATALOG[ids[2]].flower,CATALOG[ids[3]].flower);
 });
+
+
+test('three creeping Veronica references connect leaf mats and flower axes while Ulster stays compact and Waterperry changes only its conditional winter colour',()=>{
+ const ids=['p-d49db6e485d5','p-408aaa66aab7','p-41ac598e7e94','p-5b2e2f0d47bc'],types=['aztec','tidal','ulster','waterperry'],adult=[[.20,.4,.07],[.08,.25,.035],[.25,.25,.145],[.125,.4,.05]],young=[[.08,.22,.035],[.035,.16,.015],[.12,.18,.07],[.06,.22,.025]];
+ for(const [ci,id]of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
+  const dims=(small?young:adult)[ci],p={...makePlant(id,43300+ci*10+(small?1:0),2,2),height:dims[0],spread:dims[1],leafHeight:dims[2]},info=CATALOG[id],g=plantModel(p,view(month)),label=id+' small='+small+' month='+month,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),flowers=count('corolla-veronica-'+types[ci]),leaves=count(ci===2?'leaf-veronica-ulster':'leaf-veronica-mat-'+types[ci]),winter=[12,1,2].includes(month);
+  try{
+   assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.petals,4);assert.equal(info.appearance.stamenCount,2);assert.equal(g.scale.x,1,label);assert.equal(flowers>0,info.bloom.includes(month),label);assert.equal(count(ci===2?'filament-veronica':'filament-veronica-mat'),flowers*2,label);assert.equal(count(ci===2?'anther-veronica':'anther-veronica-mat'),flowers*2,label);assert.equal(leaves,count(ci===2?'petiole-veronica':'petiole-veronica-mat'),label);assert.equal(count(ci===2?'midrib-veronica':'midrib-veronica-mat'),leaves*10,label);assert.ok(leaves>0,label);
+   assert.equal(g.userData.architecture,ci===2?'veronicaReferences':'veronicaMatReferences');if(winter&&ci!==3){assert.equal(count(ci===2?'winter-bud-veronica':'winter-bud-veronica-mat'),9,label);assert.equal(count(ci===2?'stem-veronica-ulster':'runner-veronica-'+types[ci]),0,label);}else if(ci!==2)assert.ok(count('runner-veronica-'+types[ci])>0,label);
+   if(flowers)assert.ok(g.userData.flowerTargets?.length>0,label+' flower inspection anchor');
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.003&&y<p.height*1.15&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z)){const matrix=new Matrix4(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),label+' '+m.userData.component);}}}}
+  }finally{dispose(g);}
+ }
+ for(const ci of [0,1,3]){
+  const p={...makePlant(ids[ci],43300+ci*10,2,2),height:adult[ci][0],spread:adult[ci][1],leafHeight:adult[ci][2]},branches=[],leaves=[];
+  drawDetailedHerb({branch:(from,to,r,c,kind)=>branches.push({from,to,kind}),add:(shape,kind,c,x,y,z)=>{if(kind==='leaf-veronica-mat-'+types[ci])leaves.push([x,y,z]);}},{info:CATALOG[ids[ci]],s:stateAt(p,view(5)),p,detail:1,rand:()=>.5,month:5},{bud:'bud',shade:(_,c)=>c});for(const at of leaves)assert.ok(branches.some(b=>b.kind==='petiole-veronica-mat'&&b.to.every((v,i)=>Math.abs(v-at[i])<1e-8)),'each mat leaf is attached');
+ }
+ for(const type of ['veronicaMatLeaf','veronicaPectinateLeaf'])for(let i=0;i<=48;i++)for(const u of [-1,0,1])assert.ok(veronicaPoint(type,i/48,u).every(Number.isFinite));const water=makePlant(ids[3],43330,2,2);assert.notEqual(stateAt(water,view(1)).leafColor,stateAt(water,view(5)).leafColor);assert.equal(stateAt(water,view(1)).groundDormant,false);assert.deepEqual(CATALOG[ids[3]].bloom,[4,5,6]);assert.equal(CATALOG[ids[3]].bloomKnown,true);assert.equal(CATALOG[ids[0]].spread,null);assert.equal(CATALOG[ids[3]].spread,null);assert.deepEqual(CATALOG[ids[2]].height,[.2,.3]);
+});
+
+
+test('creeping Veronica leaf-height input changes the actual foliage canopy without moving its ground connection',()=>{
+ for(const id of ['p-d49db6e485d5','p-408aaa66aab7','p-5b2e2f0d47bc']){
+  const base={...makePlant(id,43310,2,2),height:.1,spread:.3},top=leafHeight=>{const p={...base,leafHeight},leaves=[],roots=[];drawDetailedHerb({branch:(from,to,r,c,k)=>{if(k.startsWith('runner-veronica-'))roots.push(from);},add:(shape,k,c,x,y,z)=>{if(k.startsWith('leaf-veronica-mat-'))leaves.push(y);}},{info:CATALOG[id],s:stateAt(p,view(5)),p,detail:1,rand:()=>.5,month:5},{bud:'bud',shade:(_,c)=>c});return {top:Math.max(...leaves),root:roots[0]};},low=top(.02),high=top(.07);assert.ok(high.top>low.top+.015,id+' leaf input affects foliage height');assert.deepEqual(high.root,low.root,id+' soil connection fixed');assert.ok(high.root[1]<.003,id+' runners start near soil');
+ }
+});

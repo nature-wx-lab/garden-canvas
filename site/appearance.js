@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.432';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.433';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -557,3 +557,5 @@ Object.assign(TRAIT_VALUES,{baptisiaTrifoliate:'葉柄の先につく全縁の3�
 Object.assign(TRAIT_VALUES,{veronicaFourLobed:'短い筒から広がる大小4裂の花冠',veronicaBroadLeaf:'対生する鋸歯のある幅広い長楕円葉',veronicaNarrowLeaf:'対生する細長い鋸歯葉'});
 
 Object.assign(TRAIT_VALUES,{veronicaCreamEdge:'灰緑の葉に細い乳白色の縁取り',veronicaPairsThrees:'対生を基に一部の節で3枚を輪生する参考例'});
+
+Object.assign(TRAIT_VALUES,{veronicaMatLeaf:'対生する小さな丸みのある鋸歯葉',veronicaPectinateLeaf:'深い切れ込みをもつ灰緑の小さな単葉'});
