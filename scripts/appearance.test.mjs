@@ -3925,11 +3925,12 @@ test('Late garden herbs distinguish protected winter, evergreen winter flowers, 
   if(st.groundDormant)assert.equal(g.children.length,0,id+':'+month);else assert.ok(has('leaf'),id+':'+month);
   if(i===0){assert.equal(has('petal'),false);assert.equal(st.groundDormant,false);}
   else if(i===4)assert.equal(has('bract-late-sennichi'),[9,10,11].includes(month));
+  else if([5,6].includes(i))assert.equal(has('corolla-veronica-'),CATALOG[id].bloom.includes(month),id+':bloom '+month);
   else assert.equal(has('petal'),CATALOG[id].bloom.includes(month),id+':bloom '+month);
   if(i===7&&[12,1,2,3].includes(month))assert.equal(g.children.length,0);
   if(i===3&&month===1){assert.ok(has('stolon-late-violet'));assert.ok(has('petal'));}
   if([2,4].includes(i)&&month===1){assert.match(st.phase,/保護場所/);assert.equal(g.children.length,0);}
-  if([5,6].includes(i)&&month===7){assert.ok(has('bud-late-veronica'));assert.ok(has('filament-late-veronica'));}
+  if([5,6].includes(i)&&month===7){assert.ok(has('bud-veronica-'));assert.ok(has('filament-veronica'));}
   dispose(g);
  }
  assert.equal(CATALOG[ids[0]].bloomKnown,false);assert.deepEqual(CATALOG[ids[7]].bloom,[9,10]);
@@ -7514,4 +7515,25 @@ test('eight Veronicastrum references join whorled leaves and tubular florets wit
  }
  for(let i=0;i<=48;i++)for(const u of [-1,0,1])assert.ok(veronicastrumPoint('veronicastrumLeaf',i/48,u).every(Number.isFinite));for(let i=0;i<=48;i++)for(let j=0;j<=48;j++)assert.ok(veronicastrumPoint('veronicastrumCorolla',i/48,j/48*Math.PI*2).every(Number.isFinite));
  assert.equal(CATALOG[ids[3]].bloomKnown,true);assert.deepEqual(CATALOG[ids[3]].bloom,[7,8]);assert.deepEqual(CATALOG[ids[1]].bloom,[7,8]);assert.equal(CATALOG[ids[1]].bloomKnown,false);assert.equal(CATALOG[ids[3]].spread,null);assert.equal(CATALOG[ids[5]].spread,null);assert.ok(stateAt(makePlant(ids[2],1,2,2),view(1)).phase.includes('枯れ茎'));
+});
+
+test('three Hollyhock references preserve single and near-single flowers, alternate attached leaves and managed winter buds',()=>{
+ const ids=['p-31ac7748896c','p-5ac6696fc8df','p-7c441131aff8'],types=['halo','polar','cassis'],adult=[[1.65,1,1.15],[1.65,1,1.15],[1.65,1,1.15]],young=[[.55,.45,.36],[.55,.45,.36],[.55,.45,.36]];
+ for(const [ci,id]of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
+  const dims=(small?young:adult)[ci],p={...makePlant(id,43600+ci*10+(small?1:0),2,2),height:dims[0],spread:dims[1],leafHeight:dims[2]},info=CATALOG[id],g=plantModel(p,view(month)),label=id+' small='+small+' month='+month,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),petals=count('petal-hollyhock-'+types[ci]),flowers=petals/5,leaves=count('leaf-hollyhock-'+types[ci]),winter=[12,1,2].includes(month);
+  try{
+   assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'alternate');assert.equal(info.bloomKnown,false);assert.equal(g.scale.x,1,label);assert.equal(g.userData.architecture,'hollyhockReferences');assert.equal(flowers>0,info.bloom.includes(month),label);assert.equal(count('calyx'),flowers*5,label);assert.equal(count('epicalyx'),flowers*7,label);assert.equal(count('staminalColumn'),flowers,label);assert.equal(count('petiole-hollyhock'),leaves,label);assert.equal(count('palmate-vein-hollyhock'),leaves*40,label);
+   if(winter){assert.equal(count('winter-bud-hollyhock'),9,label);assert.equal(leaves,0,label);assert.equal(count('stem-hollyhock-'+types[ci]),0,label);}else assert.ok(leaves>0,label);
+   if(flowers){assert.ok(g.userData.flowerTargets?.length>0,label+' flower inspection');if(ci===2){assert.ok(count('petal-hollyhock-cassis-inner')>0&&count('petal-hollyhock-cassis-inner')<flowers*4,label+' a few additional inner petals');assert.equal(info.appearance.petals,undefined);}else{assert.equal(info.appearance.petals,5);assert.equal(count('petal-hollyhock-cassis-inner'),0,label);}}
+   for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite),label);m.computeBoundingBox();const box=m.boundingBox,within=(x,y,z)=>y>=-.003&&y<p.height*1.15&&Math.max(Math.abs(x),Math.abs(z))<p.spread*.75;if(!within(box.min.x,box.min.y,box.min.z)||!within(box.max.x,box.max.y,box.max.z)){const matrix=new Matrix4(),pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);const e=matrix.elements;for(let j=0;j<pos.count;j++){const x=pos.getX(j),y=pos.getY(j),z=pos.getZ(j);assert.ok(within(e[0]*x+e[4]*y+e[8]*z+e[12],e[1]*x+e[5]*y+e[9]*z+e[13],e[2]*x+e[6]*y+e[10]*z+e[14]),label+' '+m.userData.component);}}}}
+  }finally{dispose(g);}
+ }
+ const p={...makePlant(ids[0],43600,2,2),height:1.65,spread:1,leafHeight:1.15},leaves=[],branches=[];drawDetailedHerb({branch:(from,to,r,c,kind)=>branches.push({from,to,kind}),add:(shape,kind,c,x,y,z)=>{if(kind==='leaf-hollyhock-halo')leaves.push([x,y,z]);}},{info:CATALOG[ids[0]],s:stateAt(p,view(6)),p,detail:1,rand:()=>.5,month:6},{bud:'bud',shade:(_,c)=>c});for(const at of leaves)assert.ok(branches.some(b=>b.kind==='petiole-hollyhock'&&b.to.every((v,i)=>Math.abs(v-at[i])<1e-8)),'each leaf is attached to its petiole');
+ for(const id of ids){assert.deepEqual(CATALOG[id].height,[1.5,1.8]);assert.deepEqual(CATALOG[id].spread,[.8,1.2]);assert.deepEqual(CATALOG[id].bloom,[5,6,7,8]);}
+});
+
+test('Hollyhock minimum leaf height controls the actual canopy while its soil connection stays fixed',()=>{
+ for(const id of ['p-31ac7748896c','p-5ac6696fc8df','p-7c441131aff8'])for(const month of [4,6]){
+  const base={...makePlant(id,43600,2,2),height:1.65,spread:1},capture=leafHeight=>{const p={...base,leafHeight},g=plantModel(p,view(month));let top=-Infinity;for(const m of g.children){if(m.userData.component.startsWith('leaf-hollyhock-')){m.computeBoundingBox();top=Math.max(top,m.boundingBox.max.y);}m.geometry.dispose();m.dispose();}const roots=[];drawDetailedHerb({branch:(from,to,r,c,k)=>{if(k.startsWith('stem-hollyhock-'))roots.push(from);},add:()=>{}},{info:CATALOG[id],s:stateAt(p,view(month)),p,detail:1,rand:()=>.5,month},{bud:'bud',shade:(_,c)=>c});return {top,root:roots[0]};},low=capture(.005),high=capture(.7);assert.ok(low.top<.010,id+' low leaf canopy');assert.ok(high.top>low.top+.20,id+' actual leaf canopy changes');assert.deepEqual(low.root,high.root,id+' ground connection fixed');assert.ok(low.root[1]>=0&&low.root[1]<.002,id+' rooted at soil');
+ }
 });

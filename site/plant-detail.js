@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.435';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.436';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.435';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.436';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -13510,19 +13510,22 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   f.add(bud,'antherCap','#eae5db',0,-r*.42,r*.15,r*.09,r*.055,r*.09);
   return;
  }
- if(shape==='alceaRuffled'){
-  const f=flowerFrame(b,[x,y,z],tilt,yaw),single=layers===1,frill=palette.frilled,pk=palette.ripple?'petal-alcea-ripple':'petal-alcea-veins';
+ if(shape==='alceaRuffled'||shape==='hollyhockReference'){
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),single=layers===1,frill=palette.frilled,ref=palette.referenceType,pk=ref?'petal-hollyhock-'+ref:palette.ripple?'petal-alcea-ripple':'petal-alcea-veins';
   for(let j=0;j<7;j++)f.add('monocotNarrowTepal','epicalyx','#839471',0,-r*.12,0,r*.58,r*.41,r*.41,1.12,j*TAU/7,0);
   for(let j=0;j<5;j++)f.add('monocotBroadTepal','calyx','#8b9b76',0,-r*.06,0,r*.45,r*.48,r*.48,.66,j*TAU/5,0);
-  for(let j=0;j<5;j++)f.add(frill?'alceaFrilledPetal':'alceaBroadPetal',pk,shade(rand,color,.025),0,0,0,r,r,r,1.15+(rand()-.5)*.08,j*TAU/5,0);
+  for(let j=0;j<5;j++)f.add(ref?'hollyhockPetal':frill?'alceaFrilledPetal':'alceaBroadPetal',pk,shade(rand,color,.025),0,0,0,r,r,r,1.15+(rand()-.5)*.08,j*TAU/5,0);
   if(!single)for(let l=0;l<5;l++)for(let j=0;j<9;j++){
    const an=j*TAU/9+l*.61+(rand()-.5)*.13,len=r*(.71-l*.095)*(1+(rand()-.5)*.16),rr=r*(.18-l*.027);
    f.add(frill?'alceaFrilledPetal':'alceaBroadPetal',pk,shade(rand,color,.035),Math.sin(an)*rr,r*(.055+l*.048),Math.cos(an)*rr,len*(.62+rand()*.15),len,len,.85-l*.13+(rand()-.5)*.26,an,(rand()-.5)*.20);
   }
+  if(ref==='cassis'&&palette.referenceExtra)for(let j=0;j<palette.referenceExtra;j++){
+   const az=j*2.399+.35,len=r*(.45+.08*(j%2));f.add('hollyhockPetal','petal-hollyhock-cassis-inner',shade(rand,color,.02),Math.sin(az)*r*.08,r*.04,Math.cos(az)*r*.08,len*.68,len,len,.70,az,0);
+  }
   if(single){
-   f.branch([0,0,0],[0,r*.56,0],r*.057,'#d7cd91','staminalColumn');
-   for(let j=0;j<55;j++){const an=j*2.399,yy=r*(.10+j/55*.39),at=[Math.sin(an)*r*.095,yy,Math.cos(an)*r*.095];f.branch([0,yy*.95,0],at,r*.008,'#dad098','filament');f.add(bud,'anther','#cfb76b',...at,r*.033,r*.020,r*.027);}
-   for(let j=0;j<20;j++){const an=j*TAU/20;f.branch([0,r*.49,0],[Math.sin(an)*r*.06,r*.63,Math.cos(an)*r*.06],r*.008,'#d8d1ab','styleBranch');}
+   f.branch([0,0,0],[0,r*(ref?.44:.56),0],r*(ref?.044:.057),'#d7cd91','staminalColumn');
+   for(let j=0;j<55;j++){const an=j*2.399,yy=r*(ref?.20+j/55*.22:.10+j/55*.39),at=[Math.sin(an)*r*.095,yy,Math.cos(an)*r*.095];f.branch([0,yy*.95,0],at,r*.008,'#dad098','filament');f.add(bud,'anther','#cfb76b',...at,r*.033,r*.020,r*.027);}
+   for(let j=0;j<20;j++){const an=j*TAU/20;f.branch([0,r*(ref?.42:.49),0],[Math.sin(an)*r*.06,r*(ref?.52:.63),Math.cos(an)*r*.06],r*.008,'#d8d1ab','styleBranch');}
   }return;
  }
  if(['libertiaWhite','anthericumStar','tofieldiaStar','ornithogalumStar','rhodoxisStar','siculumBell','aristeaBlue'].includes(shape)){
@@ -17300,6 +17303,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='minorTulipReferences'){drawMinorTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='slenderTulipReferences'){drawSlenderTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='singleTulipReferences'){drawSingleTulipReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='hollyhockReferences'){drawHollyhockReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='veronicastrumReferences'){drawVeronicastrumReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='veronicaMatReferences'){drawVeronicaMats(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='veronicaReferences'){drawVeronicaReferences(b,{info,s,detail,month},kit);return;}
@@ -20359,6 +20363,35 @@ function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
      detailedFlower(b,{x:end[0],y:end[1],z:end[2],shape:a.flowerShape,color:s.flowerColor,r:a.flowerRadius,tilt:1.25+(rand()-.5)*.2,yaw:turn},{...kit,rand});
     }
    }
+  }
+ }
+}
+
+
+export function hollyhockPoint(t,u){
+ const width=.75*t**.80*(.78+.22*t),notch=.045*Math.exp(-((u/.22)**2))*t**12;
+ return [u*width,t-.16*u*u*t**6-notch,-.12*Math.sin(Math.PI*t)+.018*Math.sin(u*23+t*4)*t**5+.008*Math.sin(u*47)*t**7];
+}
+function drawHollyhockReferences(b,{info,s,detail,rand,month},kit){
+ const a=info.appearance,type=a.flowerPalette.referenceType,h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(.16,h*.14,w*.24,s.leafHeight*.90)*scale,R=Math.min(.006,h*.008,w*.009),F=Math.min(a.flowerRadius,h*.07,w*.08)*scale,stem=a.stemColor,n=Math.max(2,Math.round(3*detail)),winter=[12,1,2].includes(month);
+ if(winter){for(let i=0;i<9;i++){const az=i*2.399,rr=w*.10*Math.sqrt(i/9),len=Math.min(.020,h*.08,w*.035),at=[Math.sin(az)*rr,Math.min(.001,h*.015)+len*.34,Math.cos(az)*rr];b.add(kit.bud,'winter-bud-hollyhock',stem,...at,len*.18,len*.34,len*.18);}return;}
+ const leaf=(node,az,len,pitch=1.25)=>{
+  const pet=Math.min(len*.70,h*.07),end=[node[0]+Math.sin(az)*pet,node[1]+pet*(pitch>1.6?.02:.15),node[2]+Math.cos(az)*pet],f=flowerFrame(b,end,pitch,az);b.branch(node,end,Math.min(R*.27,len*.015),stem,'petiole-hollyhock');f.add('roseaPalm','leaf-hollyhock-'+type,s.leafColor,0,0,0,len,len,len);
+  const center=alceaLeafPoint('roseaPalm',0,0).map(v=>v*len);center[2]+=.00004;f.branch([0,0,0],center,Math.min(R*.10,len*.005),'#a2ae88','blade-base-hollyhock');
+  for(let j=-2;j<=2;j++){let prev=center;const az=j*TAU/5;for(let k=1;k<=8;k++){const q=alceaLeafPoint('roseaPalm',k/8,az).map(v=>v*len);q[2]+=.00004;f.branch(prev,q,Math.min(R*.07,len*.0035),'#9caa82','palmate-vein-hollyhock');prev=q;}}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399,rr=w*.20*Math.sqrt(i/n)*scale,root=[Math.sin(az)*rr,Math.min(.001,h*.02),Math.cos(az)*rr],rise=(s.bloom?h*.95:Math.max(0,Math.min(s.leafHeight-L*.40,h*.60)))*scale*(i===0?1:.86+.06*Math.cos(i)),reach=w*.025*scale;
+  for(let j=0;j<6;j++)if((j+.2)/6<s.leafDensity)leaf([root[0],root[1]+L*.14,root[2]],az+j*2.399,L*(.82+.18*Math.cos(j)**2),1.16);
+  let prev=root;
+  for(let j=1;j<=18;j++){
+   const t=j/18,node=[root[0]+Math.sin(az)*reach*t*t,root[1]+rise*t,root[2]+Math.cos(az)*reach*t*t],yaw=az+j*2.399;b.branch(prev,node,R*(1-.65*t),stem,'stem-hollyhock-'+type);prev=node;
+   if(j<15&&node[1]+L*.42<=s.leafHeight*scale&&(j-.4)/18<s.leafDensity)leaf(node,yaw,L*(1-.5*t),1.78);
+   if(!s.bloom||j<5)continue;const end=[node[0]+Math.sin(yaw)*F*.25,node[1]+F*.08,node[2]+Math.cos(yaw)*F*.25];b.branch(node,end,R*.20,stem,'pedicel-hollyhock');
+   if(j>14){const f=flowerFrame(b,end,.25,yaw);f.add(kit.bud,'flower-bud-hollyhock',stem,0,0,0,F*.24,F*.32,F*.24);for(let k=0;k<5;k++)f.add('monocotBroadTepal','bud-calyx-hollyhock',stem,0,-F*.12,0,F*.18,F*.37,F*.30,.2,k*TAU/5,0);continue;}
+   const extra=type==='cassis'?(j%3===0?0:2+(i+j)%2):0;
+   const flowerBuilder={add:(...args)=>b.add(...args),branch:(...args)=>b.branch(...args),flower:(...args)=>{if(i===0&&j===13)b.flower?.(...args);}};
+   detailedFlower(flowerBuilder,{x:end[0],y:end[1],z:end[2],r:F*(.93+.07*Math.cos(j)**2),color:s.flowerColor,shape:'hollyhockReference',layers:1,palette:{referenceType:type,referenceExtra:extra},tilt:Math.PI/2-.20,yaw},{...kit,rand});
   }
  }
 }
