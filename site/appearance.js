@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.463';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.464';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -611,3 +611,5 @@ Object.assign(TRAIT_VALUES,{oshimensisShortSpikes:'短い褐色の穂の集ま�
 Object.assign(TRAIT_VALUES,{fineCarexGroupedSpikes:'葉状苞のある枝に短い穂を分けて付ける外観参考',fineCarexSeparatedSpikes:'細い柄に間隔を空ける褐色の穂の外観参考',fineCarexUprightBlades:'細葉が立ち上がり先で広がる常緑株の参考',fineCarexArchingBlades:'細い緑葉が弓状に広がる常緑株の参考',fineCarexCurledBlades:'細く柔らかい葉と巻く葉先の参考',fineCarexCreamCenter:'暗緑の縁とクリーム色の中央斑',fineCarexExteriorSpikes:'小さな褐色の穂の外観参考（性器官・果実内部は未再現）'});
 
 Object.assign(TRAIT_VALUES,{blueCarexSeparatedSpikes:'細長い上部の穂と、柄を分けた褐色の穂の外観参考',blueCarexLaxSpikes:'斜めに広がる細い花茎の小穂の外観参考',blueCarexNarrowBlades:'幅2〜3mmを参考にした青緑の細葉',blueCarexBroadBlades:'幅約1/2インチを参考にした青銀色の広い葉',blueCarexDarkExterior:'柄を分ける暗褐色の穂の外観参考（性器官・果実内部は未再現）',blueCarexPaleExterior:'葉の間に斜めに付く黄白〜淡褐色の小穂の外観参考'});
+
+Object.assign(TRAIT_VALUES,{otherCarexFringedSpikes:'直立する褐色の穂と淡い糸状部の外観参考',otherCarexRemoteSpikes:'細い茎に大きく間隔を空ける小穂の外観参考',otherCarexSpringSpikes:'春の小さな黄緑〜淡褐色の穂の外観参考',otherCarexSparseSpikes:'直立する細い軸と疎らな小穂の外観参考',otherCarexBroadLanceolate:'短い葉のある茎に付く黄中斑の幅広い披針形葉の参考',otherCarexFineArches:'細く柔らかく広がる緑の葉の参考',otherCarexStrapArches:'立ち上がって先が弓状に曲がる細長い葉の参考',otherCarexBrownPaleFringe:'褐色の穂と淡い糸状の外観参考（性器官・果実内部は未再現）',otherCarexPaleRemote:'大きく離れた淡黄緑色の小穂の外観参考',otherCarexSparseExterior:'小さな穂と表面の疎らな細片の外観参考'});

@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.463';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.464';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.463';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.464';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='otherCarexReferences'){drawOtherCarexReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='blueCarexReferences'){drawBlueCarexReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='fineCarexReferences'){drawFineCarexReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='oshimensisReferences'){drawOshimensisReferences(b,{info,s,detail,month},kit);return;}
@@ -20475,6 +20476,72 @@ export function stipoidHairGeometry(type){
 
 
 
+
+
+export function otherCarexPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='otherCarexScaleRef')return[u*.21*sn**.65,t,.12*(1-u*u)*sn];
+ const fine=type.includes('Fine'),upright=type.includes('Upright'),banana=type==='otherCarexBananaLeafRef',y=upright?Math.sin(Math.PI*.65*t):Math.sin(Math.PI*.91*t)-Math.sin(Math.PI*.91)*t;
+ return[u*.5*sn**(banana?.70:fine?.35:.42)*(1-.10*t),y+(banana?.004:fine?.00035:.0012)*u*u*sn,t];
+}
+const OTHER_CAREX_TOP=Object.fromEntries(['otherCarexStrapOuterRef','otherCarexStrapUprightRef','otherCarexFineOuterRef','otherCarexFineUprightRef','otherCarexBananaLeafRef'].map(type=>{let top=0;for(let i=0;i<=80;i++)for(let j=0;j<=12;j++)top=Math.max(top,otherCarexPoint(type,i/80,j/6-1)[1]);return[type,top];}));
+function drawOtherCarexReferences(b,{info,s,detail,month},kit){
+ const type=info.appearance.shootProfile,banana=type==='banana',aurea=type==='aurea',fine=type==='remota',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0004,h*.003,LH*.020),R=Math.min(.0007,h*.003,w*.004,LH*.025);
+ if(!s.leafDensity)return;
+ const branch=(a,z,r,c,k)=>{const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<.0000001)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('otherCarexTriStemRef',k,c,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);};
+ const rotate=(p,az)=>[Math.cos(az)*p[0]+Math.sin(az)*p[2],p[1],-Math.sin(az)*p[0]+Math.cos(az)*p[2]],winter=[12,1,2].includes(month),kind='leaf-other-carex-'+type+(winter?'-winter':([7,8].includes(month)?'-summer':'-green'));
+ const blade=(shape,at,yaw,width,fy,reach)=>{
+  b.add(shape,kind,s.leafColor,...at,width,fy,reach,0,yaw,0);
+  const get=(t,u)=>{const p=otherCarexPoint(shape,t,u),q=rotate([p[0]*width,p[1]*fy+.000001,p[2]*reach],yaw);return q.map((v,k)=>v+at[k]);};
+  for(const u of banana?[-.55,0,.55]:fine?[0]:[-.50,0,.50]){let prev=get(0,u);for(let k=1;k<=8;k++){const next=get(k/8,u);branch(prev,next,Math.min(width*.003,LH*.00003),s.leafColor,'parallel-vein-other-carex');prev=next;}}
+ };
+ if(banana){
+  const shoots=Math.max(3,Math.round(10*detail*s.leafDensity));
+  for(let c=0;c<shoots;c++){
+   const az=c*2.399963,rr=w*.20*Math.sqrt((c+.5)/shoots),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=[root[0],Math.max(rootY*2,LH*.36),root[2]];
+   branch(root,top,R*.7,'#8d9d56','leafy-shoot-other-carex-banana');
+   for(let j=0;j<3;j++){
+    const nodeY=rootY+(LH*.28-rootY)*(j+.5)/3,at=[root[0],nodeY,root[2]],yaw=az+j*TAU/3,shape='otherCarexBananaLeafRef',fy=(LH*.985-nodeY)/OTHER_CAREX_TOP[shape]*(.75+.25*(.5+.5*Math.sin(c*4.17+j*3.71))),reach=Math.min(w*.27,h*.80),width=Math.min(.032,h*.25,w*.20,LH*.32);
+    blade(shape,at,yaw,width,fy,reach);
+   }
+  }
+ }else{
+  const crowns=Math.max(3,Math.round(12*detail)),leaves=Math.max(2,Math.round((fine?12:aurea?10:12)*s.leafDensity));
+  for(let c=0;c<crowns;c++){
+   const az=c*2.399963,root=[Math.sin(az)*w*.085*Math.sqrt((c+.5)/crowns),rootY,Math.cos(az)*w*.085*Math.sqrt((c+.5)/crowns)];
+   for(let j=0;j<leaves;j++){
+    const upright=(j+c)%(aurea?2:4)===0,shape='otherCarex'+(fine?'Fine':'Strap')+(upright?'Upright':'Outer')+'Ref',yaw=az+j*2.399963,fy=(LH*.985-rootY)/OTHER_CAREX_TOP[shape]*(.65+.35*(.5+.5*Math.sin(c*5.13+j*3.91))),reach=Math.min(w*(upright?.16:.38),fy*(upright?.30:fine?1.9:1.6)),width=Math.min(fine?.0015:aurea?.0065:.007,h*.06,w*.05,LH*.10);
+    blade(shape,root,yaw,width,fy,reach);
+   }
+  }
+ }
+ if(!s.bloom)return;
+ const scapes=Math.max(1,Math.round((aurea?7:fine?5:3)*detail)),L=Math.min(aurea?.040:fine?.006:banana?.024:.022,h*(fine?.035:.15),w*.12),W=Math.min(aurea?.005:fine?.0025:banana?.0016:.0035,h*.025,w*.020),unit=Math.min(fine?.00065:banana?.0017:.0012,h*.008,w*.006),thread=Math.min(.0018,h*.006,w*.012);
+ const spike=(base,pitch,yaw,inspect,pale=false,narrow=false)=>{
+  const len=L*(narrow?.85:1),wid=W*(narrow?.42:1),f=flowerFrame(b,base,pitch,yaw);f.add('otherCarexTriStemRef','spike-axis-other-carex-exterior',pale?'#a7ad75':'#88815c',0,len*.5,0,R*.35,len,R*.35);
+  const rings=banana?5:fine?6:Math.max(6,Math.round(20*Math.sqrt(detail))),around=banana?1:narrow?5:fine?5:7;
+  for(let j=0;j<rings;j++)for(let k=0;k<around;k++){
+   const t=(j+.3)/rings,az=banana?j*TAU/3:k*TAU/around+j*.63,r=wid*.5*Math.sin(Math.PI*(.10+.85*t)),at=[Math.sin(az)*r,len*t,Math.cos(az)*r],co=pale?'#b6bc8d':s.flowerColor;
+   f.add('otherCarexScaleRef','spike-scale-other-carex-exterior',co,...at,unit*2.4,unit*(banana?1.8:1.4),unit,banana?-.65:-.12,az,0);
+   if(pale&&aurea&&j>=Math.floor(rings*.20)&&k%2===0)f.add('otherCarexThreadRef','pale-fringe-other-carex-exterior','#e1dfbc',at[0],at[1]+unit*.7,at[2],thread,thread,thread,0,az,.15);
+  }
+  if(inspect)f.flower([0,len*.56,0],Math.max(len*.58,wid*1.5));
+ };
+ for(let i=0;i<scapes;i++){
+  const az=i*2.399963,rr=w*(i===0?(banana?.30:type==='morrow'?.22:.14):.065*Math.sqrt((i+.5)/scapes)),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=h*(aurea?.97:fine?.95:banana?.96:.86)*(1-.10*i/scapes),drift=Math.min(w*(fine?.15:.075),h*(fine?.25:.11)),at=t=>[root[0]+Math.sin(az)*drift*t*t,rootY+(top-L-rootY)*t,root[2]+Math.cos(az)*drift*t*t];
+  let prev=at(0);for(let j=1;j<=12;j++){const next=at(j/12);branch(prev,next,R*.6,aurea?'#aaba64':'#8c9b69','culm-other-carex');prev=next;}
+  if(fine){
+   for(const [n,t]of [.28,.54,.73,.88,.99].entries())spike(at(t),.55,az+n*.65,i===0&&n===3);
+  }else{
+   const nodes=3;
+   for(let n=0;n<nodes;n++){
+    const t=.40+.43*n/(nodes-1),from=at(t),yaw=az+n*2.399963,len=Math.min(w*.085,h*.11),to=[from[0]+Math.sin(yaw)*len,from[1]+L*.1,from[2]+Math.cos(yaw)*len];
+    branch(from,to,R*.35,'#9da66d','peduncle-other-carex');spike(to,.10,yaw,!banana&&i===0&&n===nodes-1,aurea,false);
+   }
+   spike(at(1),.05,az,banana&&i===0,false,aurea);
+  }
+ }
+}
 
 export function blueCarexPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
