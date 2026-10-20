@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.436';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.437';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.436';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.437';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17303,6 +17303,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='minorTulipReferences'){drawMinorTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='slenderTulipReferences'){drawSlenderTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='singleTulipReferences'){drawSingleTulipReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='echinaceaReferences'){drawEchinaceaReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='hollyhockReferences'){drawHollyhockReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='veronicastrumReferences'){drawVeronicastrumReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='veronicaMatReferences'){drawVeronicaMats(b,{info,s,detail,month},kit);return;}
@@ -20367,6 +20368,62 @@ function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
  }
 }
 
+
+
+// Flower-stage samples and component counts are drawing examples, not clocks
+// or measured cultivar constants. Disc florets and paleae are separate parts.
+export function echinaceaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='echinaceaDome')return [Math.sin(u)*t,Math.max(0,1-t*t)**.62,Math.cos(u)*t];
+ if(type==='echinaceaDisc'){const lips=.5+.5*Math.cos(5*u),r=.10+.035*t+.04*t**6*lips;return [Math.sin(u)*r,t-.055*(1-lips)*t**10,Math.cos(u)*r];}
+ if(type==='echinaceaPalea')return [u*.16*sn**.72,t,.055*sn+.02*u*u*sn];
+ if(type==='echinaceaRay'){const width=.17*Math.max(0,Math.sin(Math.PI*t*.85))**.60;return [u*width,.035*sn+.025*u*u*sn-.045*t*t+.008*Math.sin(u*14)*t**6,t-.08*u*u*t**8+.035*Math.cos(u*Math.PI*3)*t**12];}
+ const upper=type==='echinaceaUpperLeaf',bract=type==='echinaceaPhyllary',half=bract?.11:upper?.15:.22,teeth=1+(upper?.018:bract?0:.065)*Math.sin(t*Math.PI*18)**2;
+ return [u*half*sn**(upper?.82:.66)*teeth,.045*sn+.035*u*u*sn+.025*t*t,t];
+}
+const ECHINACEA_REFERENCE_PROFILES={
+ greenJewel:{rays:24,cone:.36,inner:'#4e742c',outer:'#739333',tip:'#bed16a',ray:'#b6c976',pitch:-.22},
+ virgin:{rays:26,cone:.37,inner:'#4e722b',outer:'#7b9837',tip:'#b8c963',ray:'#efeee6',pitch:-.02},
+ pinkPearl:{rays:24,cone:.43,inner:'#4f692e',outer:'#873c38',tip:'#a25a48',ray:'#d695b0',pitch:.10},
+ pinkEye:{rays:24,cone:.48,inner:'#4a4f2c',outer:'#75412a',tip:'#9e6239',ray:'#ece9e7',pitch:.18},
+ whitePerfection:{rays:24,cone:.40,inner:'#668a31',outer:'#879836',tip:'#c5cc65',ray:'#e9e7c8',pitch:.01,rows:3}
+};
+function drawEchinaceaReferences(b,{info,s,detail,month},kit){
+ const a=info.appearance,type=a.flowerPalette.type,profile=ECHINACEA_REFERENCE_PROFILES[type],h=s.height,w=s.spread,scale=s.leafScale,stem=a.stemColor,L=Math.min(.13,h*.28,w*.26,s.leafHeight*1.1)*scale,R=Math.min(.0035,h*.010,w*.012),F=Math.min(a.flowerRadius,h*.10,w*.13)*scale,H=Math.max(0,Math.min(s.leafHeight*.88,h*.78))*scale,n=Math.max(3,Math.round(5*detail));let headIndex=0;
+ const leaf=(node,az,len,upper=false)=>{
+  const pet=Math.min(len*(upper?.10:.30),h*.035),end=[node[0]+Math.sin(az)*pet,node[1]+pet*.12,node[2]+Math.cos(az)*pet],f=flowerFrame(b,end,-.12,az),shape=upper?'echinaceaUpperLeaf':'echinaceaLeaf';b.branch(node,end,Math.min(R*.25,len*.016),stem,'petiole-echinacea');f.add(shape,'leaf-echinacea-'+type,s.leafColor,0,0,0,len,len,len);
+  let prev=[0,0,0];for(let j=1;j<=10;j++){const q=echinaceaPoint(shape,j/10,0).map(v=>v*len);q[1]+=.00005;f.branch(prev,q,Math.min(R*.07,len*.004),'#a0b18a','midrib-echinacea');prev=q;}
+  for(let j=2;j<=7;j++)for(const side of [-1,1]){const t=j/10,from=echinaceaPoint(shape,t,0).map(v=>v*len),to=echinaceaPoint(shape,t+.07,side*.82).map(v=>v*len);from[1]+=.00004;to[1]+=.00004;f.branch(from,to,Math.min(R*.05,len*.0025),'#91a37c','side-vein-echinacea');}
+ };
+ const head=(at,az)=>{
+  const idx=headIndex++,sample=type==='pinkPearl'?idx%3:type==='greenJewel'?idx%3:type==='pinkEye'&&idx%4===3?1:type==='whitePerfection'&&idx%3===2?1:0,young=type==='greenJewel'&&sample===1,faded=type==='greenJewel'&&sample===2||type==='pinkEye'&&sample===1,cone=young?.24:type==='greenJewel'&&sample===2?.44:profile.cone,pitch=young?-.50:faded&&type==='pinkEye'?.38:profile.pitch,rayColour=type==='pinkPearl'?['#d695b0','#e7ce8d','#dfaa88'][sample]:type==='greenJewel'&&faded?'#e3e5c9':profile.ray,f=flowerFrame(b,at,.08*Math.sin(idx*.8),az),C=F*.38;
+  if(idx===0)f.flower([0,F*cone*.40,0],F*1.1);f.add('echinaceaDome','receptacle-echinacea-'+type,profile.inner,0,0,0,C,F*cone,C);
+  const rows=profile.rows||1;
+  for(let row=0;row<rows;row++){
+   const rays=profile.rays-row*4,len=F*(young?.55:.68)*(1-row*.14),rad=C*(1-row*.05),kind='ray-echinacea-'+type+(faded?'-faded':sample&&type==='whitePerfection'?'-greenOuter':'');
+   for(let j=0;j<rays;j++){const yaw=j*TAU/rays+row*.17,at=[Math.sin(yaw)*rad,F*(row*.045-.02),Math.cos(yaw)*rad];f.add('echinaceaRay',kind,rayColour,...at,len,len,len,pitch-row*.13,yaw,0);}
+  }
+  for(let row=0;row<3;row++)for(let j=0;j<12;j++){const yaw=j*TAU/12+row*.23,rad=F*(.22+row*.035),len=F*(.23-row*.025);f.add('echinaceaPhyllary','phyllary-echinacea',stem,Math.sin(yaw)*rad,-F*(.10+row*.015),Math.cos(yaw)*rad,len,len,len,.20+row*.12,yaw,0);}
+  const cells=300;
+  for(let j=0;j<cells;j++){
+   const rn=Math.sqrt((j+.5)/cells),yaw=j*2.399,rad=C*rn,y=F*cone*Math.max(0,1-rn*rn)**.62,at=[Math.sin(yaw)*rad,y,Math.cos(yaw)*rad],tilt=Math.atan(1.24*cone/.38*rn*Math.max(.015,1-rn*rn)**(-.38)),g=flowerFrame(f,at,tilt,yaw),palea=rn<.57?profile.inner:profile.outer;
+   g.add('echinaceaPalea','palea-echinacea',palea,0,0,0,F*.10,F*.10,F*.10);
+   if(rn>.62){g.add('echinaceaDisc','disc-floret-echinacea',profile.tip,F*.013,0,0,F*.055,F*.055,F*.055);}
+   else g.add(kit.bud,'disc-bud-echinacea',profile.inner,F*.013,F*.018,0,F*.012,F*.022,F*.012);
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399,rr=w*.16*Math.sqrt(i/n)*scale,root=[Math.sin(az)*rr,Math.min(.001,h*.02),Math.cos(az)*rr],rise=H*(.86+.14*Math.cos(i*.8)**2),reach=w*.025*scale;let prev=root;
+  for(let j=0;j<4;j++)if((j+.15)/4<s.leafDensity)leaf(root,az+j*2.399,L*(.85+.15*Math.cos(j)**2));
+  for(let j=1;j<=6;j++){
+   const t=j/6,node=[root[0]+Math.sin(az)*reach*t,root[1]+rise*t,root[2]+Math.cos(az)*reach*t];b.branch(prev,node,R*(1-.38*t),stem,'stem-echinacea-'+type);prev=node;
+   const len=L*(1-.38*t);if((j-.4)/6<s.leafDensity&&node[1]+len*.25<=s.leafHeight*scale)leaf(node,az+j*2.399,len,j>3);
+  }
+  if(!s.bloom)continue;
+  const top=[prev[0]+Math.sin(az)*w*.018*scale,h*(.89+.065*Math.cos(i*.9)**2)*scale-F*.48,prev[2]+Math.cos(az)*w*.018*scale];b.branch(prev,top,R*.60,stem,'peduncle-echinacea');head(top,az);
+  if(i%2===0){const yaw=az+.85,base=[root[0]+Math.sin(az)*reach*.70,root[1]+rise*.70,root[2]+Math.cos(az)*reach*.70],end=[base[0]+Math.sin(yaw)*w*.14*scale,h*(.68+.04*Math.cos(i))*scale-F*.48,base[2]+Math.cos(yaw)*w*.14*scale];b.branch(base,end,R*.48,stem,'lateral-peduncle-echinacea');head(end,yaw);}
+ }
+}
 
 export function hollyhockPoint(t,u){
  const width=.75*t**.80*(.78+.22*t),notch=.045*Math.exp(-((u/.22)**2))*t**12;
