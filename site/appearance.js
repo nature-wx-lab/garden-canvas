@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.458';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.459';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -601,3 +601,5 @@ Object.assign(TRAIT_VALUES,{featherReedReferenceBlade:'茎の節と株元から�
 Object.assign(TRAIT_VALUES,{stipoidBladeReference:'株元と茎の節に付く針状・巻き込み・折れた細葉の種別参考',stipoidSingleFloret:'1小花の小穂と種ごとに異なる芒・護穎の毛の参考'});
 
 Object.assign(TRAIT_VALUES,{hakoneCaulineBlade:'弓状の茎の節に交互に付く笹状の葉の参考',hakoneMultiFloretSpikelet:'対になる枝と5〜10小花・短い芒をもつ小穂の種参考'});
+
+Object.assign(TRAIT_VALUES,{liriopeBasalStrap:'根元に束生する帯状葉の種・品種参考',liriopeSixFreeTepals:'小花の房と6枚の離れた花被片・6本の雄しべの参考'});

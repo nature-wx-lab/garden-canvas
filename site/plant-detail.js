@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.458';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.459';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.458';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.459';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='liriopeReferences'){drawLiriopeReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='hakonechloaReferences'){drawHakonechloaReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='stipoidReferences'){drawStipoidReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='calamagrostisReferences'){drawCalamagrostisReferences(b,{info,s,detail,month},kit);return;}
@@ -20465,6 +20466,60 @@ export function stipoidHairGeometry(type){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.stipoidHairLocation=type==='allgau'?'lemmaBody':'lemmaApex';g.userData.illustrativeStrands=type==='allgau'?24:18;return g;
 }
 
+
+
+export function liriopePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='liriopeTepal')return[u*.225*sn**.65,t*.80,t*.56+.07*sn*(1-u*u)];
+ if(type==='liriopeBract')return[u*.12*sn,t,.05*sn];
+ return[u*.5*sn**.38*(1-.20*t),Math.sin(Math.PI*.70*t)+.006*u*u*sn,t];
+}
+const LIRIOPE_LEAF_TOP=(()=>{let top=0;for(let i=0;i<=80;i++)for(let j=0;j<=12;j++)top=Math.max(top,liriopePoint('liriopeBlade',i/80,j/6-1)[1]);return top;})();
+function drawLiriopeReferences(b,{info,s,detail,month},kit){
+ const type=info.appearance.shootProfile,silver=type==='silver',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,winter=[12,1,2].includes(month),rootY=Math.min(.00045,h*.003,LH*.025),R=Math.min(.001,h*.003,w*.004,LH*.04),rotate=(p,az)=>[Math.cos(az)*p[0]+Math.sin(az)*p[2],p[1],-Math.sin(az)*p[0]+Math.cos(az)*p[2]];
+ if(s.leafDensity===0)return;
+ const branch=(a,z,r,c,k)=>{const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<.0000001)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('liriopeStemSegment',k,c,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);};
+ const crowns=Math.max(3,Math.round((silver?10:8)*detail)),leaves=Math.max(2,Math.round((silver?13:11)*s.leafDensity));
+ for(let c=0;c<crowns;c++){
+  const q=(c+.5)/crowns,az=c*2.399963,root=[Math.sin(az)*w*.09*Math.sqrt(q),rootY,Math.cos(az)*w*.09*Math.sqrt(q)];
+  for(let j=0;j<leaves;j++){
+   const yaw=az+j*2.399963,fy=(LH*.985-rootY)/LIRIOPE_LEAF_TOP*(.65+.35*(.5+.5*Math.sin(c*5.23+j*3.89))),reach=Math.min(w*.34,fy*1.50)*(.7+.3*(.5+.5*Math.sin(j*5.71+c))),width=Math.min(silver?.0065:.018,h*.07,w*.06,LH*.10),at=[root[0]+Math.sin(yaw)*R*.5,rootY,root[2]+Math.cos(yaw)*R*.5],kind='leaf-liriope-'+type+(winter?'-winter':'-green');
+   b.add('liriopeBlade',kind,s.leafColor,...at,width,fy,reach,0,yaw,0);
+   const get=(t,u)=>{const p=liriopePoint('liriopeBlade',t,u),q=rotate([p[0]*width,p[1]*fy+.000001,p[2]*reach],yaw);return q.map((v,k)=>v+at[k]);};
+   for(const u of silver?[-.5,0,.5]:[-.7,-.35,0,.35,.7]){let prev=get(0,u);for(let k=1;k<=10;k++){const next=get(k/10,u);branch(prev,next,Math.min(width*.005,LH*.000035),s.leafColor,'parallel-vein-liriope');prev=next;}}
+  }
+ }
+ if(!s.bloom)return;
+ const T=Math.min(silver?.0045:.0038,h*.016,w*.025),scapeColor='#677742',scapes=Math.max(2,Math.round((type==='monroe'?7:silver?4:5)*detail)),levels=Math.max(6,Math.round((silver?10:20)*Math.sqrt(detail))),cluster=silver?3:4;
+ const flower=(at,yaw,pitch,open,inspect)=>{
+  const f=flowerFrame(b,at,pitch,yaw),co=s.flowerColor;
+  if(!open){f.add('liriopeBud','closed-flower-bud-liriope',co,0,T*.42,0,T*.26,T*.52,T*.26);return;}
+  for(let k=0;k<6;k++){const a=k*TAU/6;f.add('liriopeTepal','tepal-liriope',co,0,0,0,T,T,T,0,a,0);}
+  f.add('liriopeBud','superior-ovary-liriope','#9caa67',0,T*.14,0,T*.14,T*.18,T*.14);
+  for(let k=0;k<6;k++){
+   const a=k*TAU/6,tip=[Math.sin(a)*T*.20,T*.50,Math.cos(a)*T*.20];
+   f.branch([Math.sin(a)*T*.08,T*.07,Math.cos(a)*T*.08],tip,T*.018,'#e0d695','filament-liriope');
+   f.add('liriopeBud','anther-liriope','#d8c56c',...tip,T*.075,T*.20,T*.075,0,a,.10);
+  }
+  f.branch([0,T*.20,0],[0,T*.75,0],T*.026,'#c4c6a0','style-liriope');
+  for(let k=0;k<3;k++){const a=k*TAU/3;f.add('liriopeBud','stigma-lobe-liriope','#dad7bb',Math.sin(a)*T*.036,T*.76,Math.cos(a)*T*.036,T*.032,T*.028,T*.032);}
+  if(inspect)f.flower([0,T*.42,0],T*1.05);
+ };
+ for(let i=0;i<scapes;i++){
+  const az=i*2.399963,rr=w*.045*Math.sqrt((i+.5)/scapes),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=(silver?Math.min(h*.82,Math.max(LH*.85,h*.55)):h*.94)*(1-.15*i/scapes),drift=Math.min(w*.08,h*.13),points=Array.from({length:17},(_,j)=>{const t=j/16;return[root[0]+Math.sin(az)*drift*t*t,rootY+(top-rootY)*t,root[2]+Math.cos(az)*drift*t*t];});
+  const along=t=>{const k=Math.min(15,Math.max(0,Math.floor(t*16))),f=t*16-k;return points[k].map((v,n)=>v+(points[k+1][n]-v)*f);};
+  for(let j=1;j<points.length;j++)branch(points[j-1],points[j],R*.65,scapeColor,'naked-scape-liriope');
+  for(let j=0;j<levels;j++){
+   const frac=(j+.35)/levels,stem=along((silver?.68:.52)+(silver?.30:.46)*frac),groupAz=az+j*2.399963,bract=Math.min(.0035,h*.009);
+   b.add('liriopeBract','flower-cluster-bract-liriope',scapeColor,...stem,bract,bract,bract,0,groupAz,.3);
+   for(let k=0;k<cluster;k++){
+    const yaw=groupAz+k*TAU/cluster,pedicel=Math.min(.0045,h*.015,w*.025),end=[stem[0]+Math.sin(yaw)*pedicel*.85,stem[1]+pedicel*.45+k*T*.12,stem[2]+Math.cos(yaw)*pedicel*.85],mid=stem.map((v,n)=>v+(end[n]-v)*.55);
+    branch(stem,mid,R*.14,scapeColor,'jointed-flower-pedicel-liriope');branch(mid,end,R*.13,scapeColor,'jointed-flower-pedicel-liriope');
+    const open=frac<.74||k===0&&j===Math.floor(levels*.45);flower(end,yaw,.25+.45*(k/cluster),open,i===0&&j===Math.floor(levels*.45)&&k===0);
+   }
+  }
+ }
+}
 
 export function hakonechloaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
