@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.440';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.441';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.440';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.441';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17312,6 +17312,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='tanacetumReferences'){drawTanacetumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='swanAnemoneReferences'){drawSwanAnemones(b,{info,s,detail},kit);return;}
  if(a.architecture==='gardenAnemoneReferences'){drawGardenAnemones(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='alliumReferences'){drawAlliumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='daylilyReferences'){drawDaylilyReferences(b,{info,s,detail,rand,month},kit);return;}
@@ -20372,6 +20373,46 @@ function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
 
 // Flower-stage samples and component counts are drawing examples, not clocks
 // or measured cultivar constants. Disc florets and paleae are separate parts.
+export function swanAnemonePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='swanLeaflet'){
+  const lobes=.50+.50*Math.exp(-(((t-.44)/.16)**2))-.35*Math.exp(-(((t-.63)/.055)**2)),teeth=1+.11*Math.sin(t*Math.PI*22)**2;
+  return [u*.48*sn**.66*lobes*teeth,.05*sn+.045*u*u*sn+.025*t*t,t];
+ }
+ const frilled=type!=='swanRoundSepal',width=(frilled?.49:.51)*sn**.54;
+ return [u*width*(1+(frilled?.035:0)*Math.sin(t*18+u*3)),.12*t*t+.045*u*u*sn+(frilled?.075:0)*Math.abs(u)**3*Math.sin(t*23+u*7)*sn,t];
+}
+function drawSwanAnemones(b,{info,s,detail},kit){
+ const a=info.appearance,type=a.flowerPalette.type,dream=type==='dreamingSwan',ruffled=type==='ruffledSwan',regal=type==='regalSwan',h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(.115,h*.26,w*.23,s.leafHeight*.70)*scale,F=Math.min(a.flowerRadius,h*.11,w*.17)*scale,R=Math.min(.0018,h*.005,w*.006),n=Math.max(2,Math.round(4*detail)),stem=a.stemColor,back=regal?'8065ae':dream?'8973b2':'8590c3';let hi=0;
+ const leaflet=(at,az,len,kind)=>{
+  const f=flowerFrame(b,at,-.10,az);f.add('swanLeaflet',kind,s.leafColor,0,0,0,len,len,len);
+  let prev=[0,0,0];for(let j=1;j<=10;j++){const q=swanAnemonePoint('swanLeaflet',j/10,0).map(v=>v*len);q[1]+=.00004;f.branch(prev,q,Math.min(R*.09,len*.004),'#9aac7b','midrib-swan');prev=q;}
+  for(let j=2;j<=5;j++)for(const side of [-1,1]){const p=swanAnemonePoint('swanLeaflet',j/7,0).map(v=>v*len),q=swanAnemonePoint('swanLeaflet',j/7+.06,side*.83).map(v=>v*len);p[1]+=.00004;q[1]+=.00004;f.branch(p,q,Math.min(R*.06,len*.003),'#8da073','side-vein-swan');}
+ };
+ const basal=(root,az)=>{
+  const reach=w*.12*scale,joint=[root[0]+Math.sin(az)*reach,s.leafHeight*.60*scale,root[2]+Math.cos(az)*reach];let prev=root;
+  for(let j=1;j<=3;j++){const t=j/3,q=[root[0]+(joint[0]-root[0])*t,root[1]+(joint[1]-root[1])*t+.005*h*Math.sin(t*Math.PI),root[2]+(joint[2]-root[2])*t];b.branch(prev,q,R*.55,stem,'petiole-swan');prev=q;}
+  for(let k=0;k<3;k++){const yaw=az+(k-1)*.87,pet=L*(k===1?.10:.06),at=[joint[0]+Math.sin(yaw)*pet,joint[1]+pet*.10,joint[2]+Math.cos(yaw)*pet];b.branch(joint,at,R*.22,stem,'petiolule-swan');leaflet(at,yaw,L*(k===1?1:.82),'leaf-swan-'+type);}
+ };
+ const head=(at,az,bud=false)=>{
+  if(bud){b.add(kit.bud,'bud-swan-'+type,'#9896aa',...at,F*.19,F*.24,F*.19,.30,az,0);return;}
+  const idx=hi++,f=flowerFrame(b,at,.24+(idx%4)*.43,az),shape=regal||type==='wildSwan'?'swanRoundSepal':'swanFrilledSepal',inner=dream?(idx%3===2?7:5):ruffled&&idx%4===3?1:0;
+  if(idx===0)f.flower([0,F*.12,0],F*1.18);
+  for(let j=0;j<5;j++){const size=[.96,1.04,.92,1.01,.99][j],kind='sepal-swan-'+type+(j%2===0?'-back-'+back:'');f.add(shape,kind,s.flowerColor,0,0,0,F*size,F*size,F*size,0,j*TAU/5,0);}
+  for(let j=0;j<inner;j++){const len=F*(dream?.78:.67);f.add('swanFrilledSepal','sepal-swan-'+type,s.flowerColor,0,F*.035,0,len,len,len,-.06,j*TAU/inner+.56,0);}
+  f.add(kit.bud,'receptacle-swan','#a5b552',0,F*.11,0,F*.18,F*.08,F*.18);
+  for(let j=0;j<36;j++){const t=(j+.5)/36,y=F*(.15+.07*(1-t)),az2=j*2.399,r=F*.17*Math.sqrt(t);f.add(kit.bud,'carpel-swan','#b0bf61',Math.sin(az2)*r,y,Math.cos(az2)*r,F*.018,F*.025,F*.018);}
+  for(let j=0;j<60;j++){const az2=j*2.399,r=F*(.24+(j%3)*.033),tip=[Math.sin(az2)*r,F*(.15+(j%4)*.025),Math.cos(az2)*r];f.branch([Math.sin(az2)*F*.17,F*.05,Math.cos(az2)*F*.17],tip,F*.006,'#ddbe4d','filament-swan');f.add(kit.bud,'anther-swan','#dfb52e',...tip,F*.022,F*.025,F*.018,.18,az2,0);}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399,rad=w*.10*Math.sqrt(i/n)*scale,root=[Math.sin(az)*rad,Math.min(.001,h*.02),Math.cos(az)*rad];
+  for(let j=0;j<3;j++)if((j+.2)/3<s.leafDensity)basal(root,az+j*2.399);
+  if(!s.bloom)continue;
+  const collar=[root[0]+Math.sin(az)*w*.025*scale,Math.min(s.leafHeight*.78,h*.62)*scale,root[2]+Math.cos(az)*w*.025*scale];b.branch(root,collar,R,stem,'stem-swan-'+type);
+  if(s.leafDensity>0)for(let j=0;j<3;j++){const yaw=az+j*TAU/3,pet=L*.09,at=[collar[0]+Math.sin(yaw)*pet,collar[1]+pet*.08,collar[2]+Math.cos(yaw)*pet];b.branch(collar,at,R*.25,stem,'involucre-stalk-swan');leaflet(at,yaw,L*.48,'involucre-swan-'+type);}
+  for(let j=0;j<3;j++){const yaw=az+(j-1)*.72,reach=w*(j===1?.035:.17)*scale,at=[collar[0]+Math.sin(yaw)*reach,h*(j===1?.93:.71+(j===2?.08:0))*scale-F*.04,collar[2]+Math.cos(yaw)*reach];b.branch(collar,at,R*.55,stem,'peduncle-swan');head(at,yaw,j===2&&i%2===1);}
+ }
+}
 export function echinaceaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='echinaceaDome')return [Math.sin(u)*t,Math.max(0,1-t*t)**.62,Math.cos(u)*t];
