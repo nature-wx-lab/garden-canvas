@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.444';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.445';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.444';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.445';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17312,6 +17312,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='tanacetumReferences'){drawTanacetumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='heliopsisReferences'){drawHeliopsisReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='echinopsReferences'){drawEchinopsReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='oreganoBractReferences'){drawOreganoReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='swanAnemoneReferences'){drawSwanAnemones(b,{info,s,detail},kit);return;}
@@ -20378,6 +20379,58 @@ function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
 
 // Globes are compound heads; every primary involucre represents one floret.
 // All repeated counts and mixed opening stages are illustrative samples.
+
+export function heliopsisPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='heliopsisDome')return [Math.sin(u)*t,Math.max(0,1-t*t)**.65,Math.cos(u)*t];
+ if(type==='heliopsisDiscCorolla'){const lobe=.5+.5*Math.cos(5*u),r=.10+.045*t+.055*t**9*lobe;return [Math.sin(u)*r,t-.055*(1-lobe)*t**10,Math.cos(u)*r];}
+ if(type==='heliopsisAntherTube'){const r=.07+.005*Math.cos(5*u);return [Math.sin(u)*r,.65+.28*t,Math.cos(u)*r];}
+ if(type==='heliopsisPalea')return [u*.12*sn**.65,t,.05*sn];
+ if(type==='heliopsisOuterPhyllary')return [u*.25*Math.max(0,Math.sin(Math.PI*t*.9))**.55,.04*sn,t-.055*u*u*t**9];
+ if(type==='heliopsisInnerPhyllary')return [u*.15*sn**.75,.04*sn,t];
+ if(type==='heliopsisRay'||type==='heliopsisPetaloid'){
+  const narrow=type==='heliopsisPetaloid',width=(narrow?.12:.20)*Math.max(0,Math.sin(Math.PI*t*.88))**.62;
+  return [u*width,.035*sn+.025*u*u*sn+(narrow?.16*t*t:-.035*t*t),t-.055*u*u*t**8+.020*Math.cos(u*Math.PI*3)*t**12];
+ }
+ const curled=type==='heliopsisCurledLeaf',teeth=1+.13*(1-Math.abs(((t*13)%1)-.5)*2),width=.275*sn**.66*teeth;
+ return [u*width,.055*sn+(curled?.80*(u*width)**2:.055*u*u*sn)+.022*t*t,t];
+}
+const HELIOPSIS_REFERENCE_PROFILES={
+ bleedingHearts:{radius:.027,leaf:.13,rays:14,disc:'#7a3a2b',tints:['#b94631','#cb693c','#b77747'],n:4},
+ asahi:{radius:.018,leaf:.10,rays:18,disc:'#b67b2e',double:true,n:5},
+ summerPink:{radius:.030,leaf:.075,rays:14,disc:'#9e5d2c',eye:'cf8a34',pink:true,n:4},
+ burningHearts:{radius:.031,leaf:.13,rays:14,disc:'#76382d',eye:'b84a2e',n:4}
+};
+function drawHeliopsisReferences(b,{info,s,detail},kit){
+ const a=info.appearance,type=a.flowerPalette.type,P=HELIOPSIS_REFERENCE_PROFILES[type],h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(P.leaf,h*.22,w*.24,s.leafHeight*.65)*scale,R=Math.min(.0025,h*.005,w*.006),F=Math.min(P.radius,h*.12,w*.13)*scale,stem=a.stemColor,n=Math.max(2,Math.round(P.n*detail));let headIndex=0;
+ const leaf=(at,az,len)=>{
+  const pet=len*(P.pink?.28:.18),joint=[at[0]+Math.sin(az)*pet,at[1]+pet*.12,at[2]+Math.cos(az)*pet],shape=P.pink?'heliopsisCurledLeaf':'heliopsisSerrateLeaf',f=flowerFrame(b,joint,-.12,az),vein=P.pink?'#536f49':type==='asahi'?'#8b9b6f':'#766966';b.branch(at,joint,R*.30,stem,'petiole-heliopsis');f.add(shape,'leaf-heliopsis-'+type,s.leafColor,0,0,0,len,len,len);
+  let prev=[0,0,0];for(let j=1;j<=12;j++){const q=heliopsisPoint(shape,j/12,0).map(v=>v*len);q[1]+=.000035;f.branch(prev,q,Math.min(R*.09,len*.0035),vein,'midrib-heliopsis');prev=q;}
+  for(let j=1;j<=6;j++)for(const side of [-1,1]){const p=heliopsisPoint(shape,j/8,0).map(v=>v*len),q=heliopsisPoint(shape,j/8+(P.pink?.12:.065),side*.88).map(v=>v*len);p[1]+=.000025;q[1]+=.000025;f.branch(p,q,Math.min(R*.06,len*.0025),vein,'side-vein-heliopsis');}
+ };
+ const head=(at,az,bud=false)=>{
+  if(bud){b.add(kit.bud,'bud-heliopsis',type==='bleedingHearts'||type==='burningHearts'?'#68624b':'#7f915c',...at,F*.25,F*.16,F*.25);return;}
+  const idx=headIndex++,f=flowerFrame(b,at,.12+(idx%3)*.18,az),ray=P.tints?P.tints[idx%P.tints.length]:s.flowerColor,partial=P.double&&idx%3===2,rows=P.double?2:1;
+  if(idx===0)f.flower([0,F*.10,0],F*1.02);
+  for(let row=0;row<2;row++)for(let j=0;j<9;j++){const yaw=j*TAU/9+row*.28,len=F*(row?.22:.30);f.add(row?'heliopsisInnerPhyllary':'heliopsisOuterPhyllary','bract-heliopsis-'+(row?'inner':'outer'),'#6b8754',Math.sin(yaw)*F*.15,-F*(.10+row*.02),Math.cos(yaw)*F*.15,len,len,len,-1.45,yaw,0);}
+  for(let row=0;row<rows;row++)for(let j=0;j<P.rays;j++){const yaw=j*TAU/P.rays+row*.21,len=F*(row?.60:.75),rad=F*(row?.24:.25),kind='petal-ray-heliopsis-'+type+(P.eye?'-eye-'+P.eye:'');f.add('heliopsisRay',kind,ray,Math.sin(yaw)*rad,row*F*.04,Math.cos(yaw)*rad,len,len,len,row?-.10:0,yaw,0);
+   if(!P.double){const node=[Math.sin(yaw)*rad,F*.015,Math.cos(yaw)*rad],tip=[node[0],F*.13,node[2]];f.branch(node,tip,F*.004,'#d8b161','ray-style-heliopsis');for(const side of [-1,1])f.branch(tip,[tip[0]+side*F*.018,tip[1]+F*.025,tip[2]],F*.003,'#d8b161','ray-stigma-heliopsis');}
+  }
+  if(P.double&&!partial){f.add('heliopsisDome','double-receptacle-heliopsis','#c99a35',0,F*.06,0,F*.26,F*.42,F*.26);for(let j=0;j<18;j++){const t=(j+.5)/18,yaw=j*2.399963,rad=F*.075*Math.sqrt(t),len=F*.30;f.add('heliopsisPetaloid','petal-centre-heliopsis-asahi',s.flowerColor,Math.sin(yaw)*rad,F*.45,Math.cos(yaw)*rad,len,len,len,-2.0,yaw,0);}}
+  if(P.double){const N=120;for(let j=0;j<N;j++){const t=(j+.5)/N,yaw=j*2.399963,rad=F*(partial?.18+.25*Math.sqrt(t):.43*Math.sqrt(t)),len=F*(.28+.22*(1-t)),y=F*(.10+.18*(1-t));f.add('heliopsisPetaloid','petal-petaloid-heliopsis-asahi',s.flowerColor,Math.sin(yaw)*rad,y,Math.cos(yaw)*rad,len,len,len,-.35-1.1*(1-t),yaw,0);}}
+  if(!P.double||partial){
+   const N=P.double?50:100,dr=F*(P.double?.17:.25),dh=F*(P.double?.19:.30),size=F*.13;f.add('heliopsisDome','disc-receptacle-heliopsis',P.disc,0,0,0,dr,dh,dr);
+   for(let j=0;j<N;j++){const t=(j+.5)/N,yaw=j*2.399963,rad=dr*Math.sqrt(t),y=dh*(1-t)**.65,pitch=Math.atan(Math.sqrt(t)*.9),x=Math.sin(yaw)*rad,z=Math.cos(yaw)*rad,col=j<N*.22?'#ae762d':P.disc;f.add('heliopsisDiscCorolla','disc-corolla-heliopsis',col,x,y,z,size,size,size,pitch,yaw,0);f.add('heliopsisAntherTube','disc-anther-tube-heliopsis','#9c713b',x,y,z,size,size,size,pitch,yaw,0);f.add('heliopsisPalea','disc-palea-heliopsis','#b19350',x,y,z,size*.65,size*.85,size*.65,pitch,yaw+.3,0);const end=[x+Math.sin(yaw)*size*.35,y+size*1.06,z+Math.cos(yaw)*size*.35];f.branch([x,y+size*.75,z],end,size*.012,'#d6b75d','disc-style-heliopsis');for(const side of [-1,1])f.branch(end,[end[0]+side*size*.07,end[1]+size*.08,end[2]],size*.009,'#d6b75d','disc-stigma-heliopsis');}
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399,rad=w*.10*Math.sqrt(i/n)*scale,root=[Math.sin(az)*rad,Math.min(.001,h*.02),Math.cos(az)*rad],H=Math.min(s.leafHeight*.74,h*.62)*scale,reach=w*.055*scale;let prev=root;
+  for(let j=1;j<=6;j++){const t=j/6,node=[root[0]+Math.sin(az)*reach*t,H*t+root[1],root[2]+Math.cos(az)*reach*t];b.branch(prev,node,R*(1-t*.28),stem,'stem-heliopsis-'+type);prev=node;if((j-.4)/6<s.leafDensity)for(let k=0;k<2;k++)leaf(node,az+j*Math.PI/2+k*Math.PI,L*(1-t*.30));}
+  if(!s.bloom)continue;const collar=[prev[0],h*.63*scale,prev[2]];b.branch(prev,collar,R*.65,stem,'floral-trunk-heliopsis');
+  for(let j=0;j<3;j++){const yaw=az+(j-1)*.83,r=w*(j===0?.035:.16)*scale,at=[collar[0]+Math.sin(yaw)*r,h*(j===0?.94:j===1?.76:.83)*scale-F*.08,collar[2]+Math.cos(yaw)*r];b.branch(collar,at,R*.45,stem,'peduncle-heliopsis');head(at,yaw,j===2&&i%2===0);}
+ }
+}
+
 export function echinopsPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='echinopsCorolla'){
