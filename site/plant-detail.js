@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.448';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.449';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.448';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.449';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17312,6 +17312,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='tanacetumReferences'){drawTanacetumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='ligulariaReferences'){drawLigulariaReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='oxypetalumReferences'){drawOxypetalumReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='patriniaReferences'){drawPatriniaReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='heleniumReferences'){drawHeleniumReferences(b,{info,s,detail},kit);return;}
@@ -20384,6 +20385,60 @@ function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
 // All repeated counts and mixed opening stages are illustrative samples.
 
 // Component counts and mixed flower stages are illustrative, not a flower-age clock.
+export function ligulariaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='ligulariaDome')return [Math.sin(u)*t,Math.sqrt(Math.max(0,1-t*t)),Math.cos(u)*t];
+ if(type==='ligulariaFloret'){const lip=.5+.5*Math.cos(5*u),r=.085+.045*t+.065*t**9*lip;return [Math.sin(u)*r,t-.065*(1-lip)*t**10,Math.cos(u)*r];}
+ if(type==='ligulariaAntherTube'){const r=.065+.005*Math.cos(5*u);return [Math.sin(u)*r,.58+.28*t,Math.cos(u)*r];}
+ if(type==='ligulariaPhyllary')return [u*.29*Math.max(0,Math.sin(Math.PI*t*.93))**.55,.035*sn,t];
+ if(type==='ligulariaRay')return [u*.09*sn**.70,.05*sn-.12*t*t,t];
+ const jagged=type==='ligulariaJaggedLeaf',cup=type==='ligulariaCupLeaf',d=Math.acos(Math.cos(u-Math.PI)),notch=Math.exp(-d*d/.10),tooth=(.5+.5*Math.cos((jagged?11:24)*u+(jagged?.7*Math.sin(3*u):0)))**(jagged?2:1),r=(.55-.35*notch)*(1-(jagged?.24:.055)*(1-tooth)*(1-notch)),x=Math.sin(u)*r*t,z=.20+Math.cos(u)*r*t,y=.045*sn+((cup?.10:.045)*t*t+(cup?.035:.020)*Math.cos((cup?12:7)*u)*t**4)*(1-notch);
+ return [x,y,z];
+}
+const LIGULARIA_REFERENCE_PROFILES={
+ pandora:{r:.017,leaf:.095,leaves:24,scapes:2,shape:'ligulariaCupLeaf',reverse:'#573642',vein:'#725462'},
+ cafeNoir:{r:.024,leaf:.18,leaves:18,scapes:3,shape:'ligulariaJaggedLeaf',reverse:'#643948',vein:'#7d4d59',tints:['#40323e','#6e5946','#58604e'],narrow:true},
+ confetti:{r:.028,leaf:.24,leaves:20,scapes:3,shape:'ligulariaMistLeaf',reverse:'#775364',vein:'#844d68'},
+ brittMarie:{r:.030,leaf:.27,leaves:20,scapes:3,shape:'ligulariaRoundLeaf',reverse:'#5b3544',vein:'#6d4a57'}
+};
+const LIGULARIA_LEAF_PITCHES=[-.42,-.20,.12,.30];
+const LIGULARIA_LEAF_TOP=Object.fromEntries(['ligulariaCupLeaf','ligulariaJaggedLeaf','ligulariaMistLeaf','ligulariaRoundLeaf'].map(type=>{
+ const tops=LIGULARIA_LEAF_PITCHES.map(pitch=>{let top=-Infinity;for(let j=0;j<=72;j++)for(let k=0;k<=96;k++){const p=ligulariaPoint(type,j/72,k/96*TAU);top=Math.max(top,p[1]*Math.cos(pitch)-p[2]*Math.sin(pitch));}return top;});return [type,tops];
+}));
+function ligulariaSurfaceAt(type,x,z){
+ const az=Math.atan2(x,z-.20),edge=ligulariaPoint(type,1,az),r=Math.hypot(edge[0],edge[2]-.20),t=Math.min(1,Math.hypot(x,z-.20)/r);return ligulariaPoint(type,t,az);
+}
+function drawLigulariaReferences(b,{info,s,detail},kit){
+ const a=info.appearance,type=a.flowerPalette.type,P=LIGULARIA_REFERENCE_PROFILES[type],h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(P.leaf,w*.35,s.leafHeight*.58,h*.43)*scale,LH=Math.min(s.leafHeight,h*.90)*scale,R=Math.min(.005,h*.008,w*.012),F=Math.min(P.r,h*.10,w*.06)*scale,stem=a.stemColor,n=Math.max(4,Math.round(P.leaves*detail*s.leafDensity)),root=[0,Math.min(.001,h*.02),0];let headIndex=0;
+ for(let i=0;i<n;i++){
+  const age=i%4,pitchIndex=(i+Math.floor(i/4))%4,pitch=LIGULARIA_LEAF_PITCHES[pitchIndex],az=i*2.399963+.19*Math.sin(i*1.17),rad=w*(.08+.04*age)*scale,len=L*(.78+.22*age/3),target=LH*(.72+.28*(.5+.5*Math.sin(i*1.91))),at=[Math.sin(az)*rad,Math.max(root[1],target-LIGULARIA_LEAF_TOP[P.shape][pitchIndex]*len),Math.cos(az)*rad],f=flowerFrame(b,at,pitch,az),color=P.tints?P.tints[Math.min(2,age)]:s.leafColor;
+  b.branch(root,at,R*.32,stem,'petiole-ligularia');f.add(P.shape,'leaf-ligularia-'+type,color,0,0,0,len,len,len);f.branch([0,0,0],ligulariaPoint(P.shape,1,Math.PI).map(v=>v*len),R*.25,stem,'leaf-base-ligularia');
+  for(let k=-3;k<=3;k++){
+   const angle=k*.65,edge=ligulariaPoint(P.shape,1,angle);let prev=ligulariaSurfaceAt(P.shape,0,0).map(v=>v*len);prev[1]+=.00004;
+   for(let j=1;j<=10;j++){const p=ligulariaSurfaceAt(P.shape,edge[0]*j/10,edge[2]*j/10).map(v=>v*len);p[1]+=.00004;f.branch(prev,p,Math.min(R*.09,len*.003),P.vein,'fan-vein-ligularia');prev=p;}
+   for(let j=1;j<=3;j++)for(const side of [-1,1]){const q=j/4,p=ligulariaSurfaceAt(P.shape,edge[0]*q,edge[2]*q).map(v=>v*len),e=ligulariaPoint(P.shape,1,angle+side*.14),to=ligulariaSurfaceAt(P.shape,e[0]*(q+.08),e[2]*(q+.08)).map(v=>v*len);p[1]+=.00005;to[1]+=.00005;f.branch(p,to,Math.min(R*.05,len*.0017),P.vein,'side-vein-ligularia');}
+  }
+ }
+ if(!s.bloom)return;
+ const head=(at,az,bud=false)=>{
+  const idx=headIndex++,f=flowerFrame(b,at,.30+(idx%3)*.12,az),bract=P.narrow?'#6b4d48':'#665044';
+  for(let row=0;row<2;row++)for(let k=0;k<6;k++){const yaw=k*TAU/6+row*.48,len=F*(P.narrow?.53:.43),rad=F*(P.narrow?.12:.20);f.add('ligulariaPhyllary','phyllary-ligularia',bract,Math.sin(yaw)*rad,-F*(P.narrow?.54:.45),Math.cos(yaw)*rad,len,len,len,-1.24,yaw,0);}
+  if(bud){f.add(kit.bud,'bud-ligularia',bract,0,-F*.17,0,F*.24,F*.30,F*.24);return;}
+  if(idx===0)f.flower([0,F*.12,0],F*1.10);
+  for(let k=0;k<12;k++){const yaw=k*TAU/12,len=F*(.73+.05*(k%3)/2);f.add('ligulariaRay','ray-ligularia',s.flowerColor,Math.sin(yaw)*F*.27,0,Math.cos(yaw)*F*.27,len,len,len,.06+(k%3)*.07,yaw,0);}
+  const dr=F*.26,dh=F*.16,size=F*.13;f.add('ligulariaDome','disc-foundation-ligularia','#bd8d2d',0,0,0,dr,dh,dr);
+  for(let j=0;j<80;j++){
+   const q=(j+.5)/80,yaw=j*2.399963,rad=dr*Math.sqrt(q),x=Math.sin(yaw)*rad,y=dh*Math.sqrt(1-q),z=Math.cos(yaw)*rad,pitch=Math.atan(Math.sqrt(q)*.8);f.add('ligulariaFloret','disc-corolla-ligularia',j%4?'#d7a632':'#e2b33e',x,y,z,size,size,size,pitch,yaw,0);f.add('ligulariaAntherTube','disc-anther-tube-ligularia','#bd8229',x,y,z,size,size,size,pitch,yaw,0);const top=[x,y+size*.98,z];f.branch([x,y+size*.65,z],top,size*.015,'#e5c35c','disc-style-ligularia');for(const side of [-1,1])f.branch(top,[top[0]+side*size*.16,top[1]+size*.10,top[2]],size*.01,'#e5c35c','disc-stigma-ligularia');
+  }
+ };
+ const axes=Math.max(2,Math.round(P.scapes*detail));
+ for(let i=0;i<axes;i++){
+  const az=i*2.399,base=[Math.sin(az)*w*.035,root[1],Math.cos(az)*w*.035],collar=[base[0],h*.67*scale,base[2]];b.branch(base,collar,R*.68,stem,'scape-ligularia');
+  for(let k=0;k<2;k++){const at=[base[0],Math.min(h*(.31+k*.17)*scale,LH*.86),base[2]],f=flowerFrame(b,at,-.2,az+k*2.4),len=Math.min(L*.33,h*.07)*scale;f.add(P.shape,'leaf-ligularia-cauline-'+type,s.leafColor,0,0,0,len,len,len);}
+  for(let k=0;k<4;k++){const yaw=az+(k-1)*.86,rad=w*(k===0?.025:.15)*scale,at=[collar[0]+Math.sin(yaw)*rad,h*(k===0?.96:k===1?.81:k===2?.87:.75)*scale-F*.16,collar[2]+Math.cos(yaw)*rad];b.branch(collar,at,R*.36,stem,'corymb-branch-ligularia');head(at,yaw,k===3);}
+ }
+}
+
 export function oxypetalumPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='oxypetalumCorolla'){
