@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.453';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.454';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.453';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.454';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20457,7 +20457,7 @@ const MUHLY_LEAF_TOP=Object.fromEntries(['muhlyFlatLeaf','muhlyFoldedLeaf','muhl
  let top=0;for(let j=0;j<=64;j++)for(let k=0;k<=8;k++)top=Math.max(top,muhlenbergiaPoint(type,j/64,k/4-1)[1]);return[type,top];
 }));
 function drawMuhlenbergiaPanicles(b,{info,s,detail,month},kit){
- const a=info.appearance,type=a.shootProfile,lind=type==='lindheimeri',rev=type==='reverchonii',white=type==='whiteCloud',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.92),rootY=Math.min(.0003,h*.001,LH*.01),leafType=lind?'muhlyFoldedLeaf':rev?'muhlyRolledLeaf':'muhlyFlatLeaf',winter=[12,1,2].includes(month),n=Math.max(12,Math.round((lind?180:220)*detail*s.leafDensity));
+ const a=info.appearance,type=a.shootProfile,lind=type==='lindheimeri',rev=type==='reverchonii',listed=type==='whiteListing',white=type==='whiteCloud'||listed,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.92),rootY=Math.min(.0003,h*.001,LH*.01),leafType=lind?'muhlyFoldedLeaf':rev?'muhlyRolledLeaf':'muhlyFlatLeaf',winter=[12,1,2].includes(month),n=Math.max(12,Math.round((lind?180:220)*detail*s.leafDensity));
  const rotate=(p,az)=>[Math.sin(az)*p[2]+Math.cos(az)*p[0],p[1],Math.cos(az)*p[2]-Math.sin(az)*p[0]];
  for(let i=0;i<n;i++){
   const az=i*2.399963,rr=w*.12*Math.sqrt((i+.4)/n),at=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],hh=LH*(.40+.57*(.5+.5*Math.sin(i*7.13))),reach=w*(lind?.23:.31)*(.50+.50*(.5+.5*Math.sin(i*2.17))),width=Math.min(lind?.0030:rev?.0015:.0020,w*.008,h*.008),color=winter&&i%5===0?'#adab8a':s.leafColor,fy=hh/MUHLY_LEAF_TOP[leafType];
@@ -20466,10 +20466,11 @@ function drawMuhlenbergiaPanicles(b,{info,s,detail,month},kit){
   for(const u of [-.60,0,.60]){let prev=get(0,u);for(let j=1;j<=12;j++){const next=get(j/12,u);b.branch(prev,next,Math.min(width*.018,h*.00005),u===0?'#99ad87':color,'parallel-vein-muhly');prev=next;}}
  }
  const dry=s.seedHeads&&!s.bloom;if(!s.bloom&&!dry)return;
- const densityScale=Math.min(1,Math.max(.25,Math.sqrt(w/(lind?.65:.8)))),culms=Math.max(4,Math.round((rev?36:lind?28:40)*detail*densityScale)),levels=lind?16:18,rays=lind?3:4,stem=dry?'#a8a080':lind?'#869b83':'#6e8864',panicleColor=dry?'#c1b69a':s.flowerColor,F=Math.min(lind?.0028:rev?.0042:.0040,h*.006,w*.009),awn=dry||s.bloom?Math.min(lind?0:rev?.0030:.0070,h*.012,w*.02):0;
+ const densityScale=Math.min(1,Math.max(.25,Math.sqrt(w/(lind?.65:.8)))),culms=Math.max(4,Math.round((rev?36:lind?28:40)*detail*densityScale)),levels=lind?16:18,rays=lind?3:4,stem=dry?'#a8a080':lind?'#869b83':'#6e8864',panicleColor=dry?'#c1b69a':s.flowerColor,F=Math.min(listed?.0030:lind?.0028:rev?.0042:.0040,h*.006,w*.009),awn=dry||s.bloom?Math.min(lind?0:rev?.0030:.0070,h*.012,w*.02):0;
  let spikeIndex=0;
  const spikelet=(at,az,pitch,inspect)=>{
   const f=flowerFrame(b,at,pitch,az),idx=spikeIndex++,c=dry?panicleColor:lind?'#c4ceba':white?'#d9d8bd':idx%4===0?'#967b70':panicleColor;
+  if(listed){f.add(kit.bud,'spikelet-exterior-reference-muhly',panicleColor,0,F*.45,0,F*.10,F*.45,F*.08);if(!dry&&inspect)f.flower([0,F*.8,0],F*2.0);return;}
   f.add('muhlyLemma','lemma-muhly-'+type,c,0,0,0,F,F,F);
   f.add('muhlyPalea','palea-muhly-'+type,c,0,0,F*.025,F,lind?F*.85:F,F,0,Math.PI,0);
   for(const side of [-1,1])f.add('muhlyGlume','glume-muhly-'+type,dry?'#b1a48c':lind?'#b6c6ad':white?'#c1c6ab':'#9a8c79',side*F*.032,0,-side*F*.030,F,lind?F:F*.35,F,side*.10,side*Math.PI/2,0);
