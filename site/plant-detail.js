@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.449';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.450';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.449';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.450';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17312,6 +17312,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='tanacetumReferences'){drawTanacetumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='aegopodiumReferences'){drawAegopodiumReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='ligulariaReferences'){drawLigulariaReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='oxypetalumReferences'){drawOxypetalumReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='patriniaReferences'){drawPatriniaReferences(b,{info,s,detail,month},kit);return;}
@@ -20385,6 +20386,63 @@ function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
 // All repeated counts and mixed opening stages are illustrative samples.
 
 // Component counts and mixed flower stages are illustrative, not a flower-age clock.
+// Ternate and biternate leaves share connected petioles; repeated counts are
+// illustration samples, not a measured clone or a rhizome-growth simulation.
+export function aegopodiumPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='aegopodiumPetal')return [u*.34*(sn**.50+.18*t**12),.045*sn-.16*t**6,t-.14*(1-u*u)*t**3];
+ const edge=1-.075*(.5+.5*Math.cos(t*Math.PI*30+(u<0?.35:0))),notch=type==='aegopodiumLobedLeaf'&&u<0?1-.34*Math.exp(-(((t-.29)/.065)**2)):1,width=.47*sn**.67*(1+.10*(1-t))*edge*notch;
+ return [u*width+.025*sn,.045*sn*(1-u*u)-.012*u*u*sn+.012*Math.sin(t*Math.PI*5)*u*u*sn,t];
+}
+const AEGO_PITCHES=[-.28,.06,.36];
+const AEGO_TOP=Object.fromEntries(['aegopodiumLeaf','aegopodiumLobedLeaf'].map(type=>[type,AEGO_PITCHES.map(pitch=>{
+ let top=-Infinity;for(let j=0;j<=80;j++)for(let k=0;k<=32;k++){const p=aegopodiumPoint(type,j/80,k/32*2-1);top=Math.max(top,p[1]*Math.cos(pitch)-p[2]*Math.sin(pitch));}return top;
+})]));
+function drawAegopodiumReferences(b,{info,s,detail,month},kit){
+ const h=s.height,w=s.spread,scale=s.leafScale,LH=Math.min(s.leafHeight,h*.85)*scale,L=Math.min(.080,w*.17,LH*.36,h*.28)*scale,R=Math.min(.0023,h*.006,w*.007),rootY=Math.min(.0008,h*.015),stem=info.appearance.stemColor,n=Math.max(3,Math.round(20*detail*s.leafDensity));
+ const leaflet=(joint,yaw,len,index,young=false)=>{
+  const shape=index%3===1?'aegopodiumLobedLeaf':'aegopodiumLeaf',pi=index%3,pitch=AEGO_PITCHES[pi],at=[joint[0],Math.min(joint[1],LH*.99-AEGO_TOP[shape][pi]*len),joint[2]],f=flowerFrame(b,at,pitch,yaw);
+  b.branch(joint,at,R*.14,stem,'petiolule-aegopodium');f.add(shape,young?'leaf-aegopodium-young':'leaf-aegopodium-variegated',young?'#68894c':s.leafColor,0,0,0,len,len,len);
+  let prev=aegopodiumPoint(shape,0,0).map(v=>v*len);prev[1]+=.00002;
+  for(let k=1;k<=8;k++){const p=aegopodiumPoint(shape,k/8,0).map(v=>v*len);p[1]+=.00002;f.branch(prev,p,Math.min(R*.09,len*.003),'#a5b582','midrib-aegopodium');prev=p;}
+  for(let k=1;k<=5;k++)for(const side of [-1,1]){const t=.10+k*.12;let prev=aegopodiumPoint(shape,t,0).map(v=>v*len);prev[1]+=.00002;for(let j=1;j<=4;j++){const p=aegopodiumPoint(shape,t+j*.020,side*j/4*.92).map(v=>v*len);p[1]+=.00002;f.branch(prev,p,Math.min(R*.045,len*.0014),'#a3b480','side-vein-aegopodium');prev=p;}}
+ };
+ const compound=(root,az,size,index,upper=false)=>{
+  const y=LH*(upper?.60:.42+.42*(.5+.5*Math.sin(index*1.91))),joint=[root[0]+Math.sin(az)*size*.18,y,root[2]+Math.cos(az)*size*.18];b.branch(root,joint,R*(upper?.32:.45),stem,upper?'cauline-petiole-aegopodium':'basal-petiole-aegopodium');
+  const twice=!upper&&index%4===0;
+  for(let k=0;k<3;k++){
+   const yaw=az+(k-1)*1.04,main=[joint[0]+Math.sin(yaw)*size*.35,joint[1]+LH*.025,joint[2]+Math.cos(yaw)*size*.35];b.branch(joint,main,R*.22,stem,'rachis-aegopodium');
+   if(twice)for(let q=0;q<3;q++){const angle=yaw+(q-1)*.98,at=[main[0]+Math.sin(angle)*size*.23,main[1]+LH*.018,main[2]+Math.cos(angle)*size*.23];b.branch(main,at,R*.13,stem,'secondary-rachis-aegopodium');leaflet(at,angle,size*.68,index*9+k*3+q,month===3||(month===4&&index%4===0));}
+   else leaflet(main,yaw,size*(k===1?1:.86),index*3+k,month===3||(month===4&&index%4===0));
+  }
+ };
+ for(let i=0;i<n;i++){const az=i*2.399963+.14*Math.sin(i*1.71),radius=w*.27*Math.sqrt((i+.3)/n)*scale,root=[Math.sin(az)*radius,rootY,Math.cos(az)*radius];compound(root,az,L*(.80+.20*(.5+.5*Math.sin(i*2.12))),i);}
+ if(!s.bloom)return;
+ const F=Math.min(.0015,h*.009,w*.007)*scale,axes=Math.max(1,Math.round(3*detail)),rays=Math.max(8,Math.round(14*detail)),headRadius=Math.min(.040,w*.12,h*.12)*scale,umbelletRadius=Math.min(.0070,w*.024,h*.024)*scale;
+ const floret=(at,yaw,register=false)=>{
+  const f=flowerFrame(b,at,.12,yaw);if(register)f.flower([0,0,0],F*4.5);
+  f.add(kit.bud,'inferior-ovary-aegopodium','#91a268',0,-F*.20,0,F*.20,F*.25,F*.16);
+  f.add(kit.bud,'stylopodium-reference-aegopodium','#bcc28e',0,F*.03,0,F*.19,F*.08,F*.19);
+  for(let k=0;k<5;k++){const az=k*TAU/5;f.add('aegopodiumPetal','petal-aegopodium',s.flowerColor,Math.sin(az)*F*.10,0,Math.cos(az)*F*.10,F,F,F,0,az,0);const base=[Math.sin(az+.25)*F*.22,0,Math.cos(az+.25)*F*.22],top=[Math.sin(az+.25)*F*.52,F*.65,Math.cos(az+.25)*F*.52];f.branch(base,top,F*.018,'#e6e6d2','filament-aegopodium');f.add(kit.bud,'anther-aegopodium','#deddb5',...top,F*.10,F*.065,F*.045,0,az,0);}
+ };
+ const umbel=(base,at,az,index,bud=false)=>{
+  b.branch(base,at,R*.40,stem,'peduncle-aegopodium');
+  for(let k=0;k<rays;k++){
+   const yaw=az+k*TAU/rays,radius=headRadius*(.78+.22*(.5+.5*Math.sin(k*1.8+index))),end=[at[0]+Math.sin(yaw)*radius,at[1]+headRadius*(.44+.09*Math.cos(k*1.4)),at[2]+Math.cos(yaw)*radius];b.branch(at,end,R*.14,stem,'primary-ray-aegopodium');
+   for(let j=0;j<21;j++){
+    const phi=j*2.399963+yaw,rad=umbelletRadius*Math.sqrt(j/21),tip=[end[0]+Math.sin(phi)*rad,end[1]+umbelletRadius*(.30+.16*Math.cos(j*1.6)),end[2]+Math.cos(phi)*rad];b.branch(end,tip,R*.055,stem,'umbellet-pedicel-aegopodium');
+    if(bud)b.add(kit.bud,'bud-aegopodium','#b2c38b',...tip,F*.46,F*.50,F*.46);else floret(tip,phi,index===0&&k===0&&j===0);
+   }
+  }
+ };
+ for(let i=0;i<axes;i++){
+  const az=i*2.399963,root=[Math.sin(az)*w*.09*scale,rootY,Math.cos(az)*w*.09*scale],collar=[root[0]+Math.sin(az)*w*.018,h*.61*scale,root[2]+Math.cos(az)*w*.018];b.branch(root,collar,R*.70,stem,'flower-stem-aegopodium');
+  compound([root[0],Math.min(h*.26*scale,LH*.4),root[2]],az+1.0,L*.64,i+20,true);
+  const top=[collar[0]+Math.sin(az)*w*.032,h*(.91-i*.035)*scale,collar[2]+Math.cos(az)*w*.032];umbel(collar,top,az,i*2);
+  const side=[collar[0]+Math.sin(az+1.25)*w*.13*scale,h*(.74-i*.025)*scale,collar[2]+Math.cos(az+1.25)*w*.13*scale];umbel(collar,side,az+1.25,i*2+1,i===axes-1);
+ }
+}
+
 export function ligulariaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='ligulariaDome')return [Math.sin(u)*t,Math.sqrt(Math.max(0,1-t*t)),Math.cos(u)*t];
