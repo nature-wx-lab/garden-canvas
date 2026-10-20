@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.445';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.446';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -581,3 +581,5 @@ Object.assign(TRAIT_VALUES,{oreganoFeltLeaf:'白い綿毛に覆われた丸い�
 Object.assign(TRAIT_VALUES,{echinopsReferences:'深裂した互生葉と1花の小頭花が集まるエキノプスの参考3D',compoundGlobe:'1花ずつの小頭花が球状に集合',echinopsTubularFive:'5裂する筒状花と葯筒・2裂柱頭',echinopsBroadLeaf:'羽状に深く切れ込む棘のある葉',echinopsNarrowLeaf:'細い裂片に深く切れ込む棘のある葉'});
 
 Object.assign(TRAIT_VALUES,{heliopsisReferences:'対生の鋸歯葉・分枝花茎と品種別のヘリオプシス頭花',heliopsisCompositeHead:'舌状花と盛り上がる筒状花の中心',heliopsisPetaloidHead:'多くの花弁状部分を重ねる小輪の八重頭花',heliopsisSerrateLeaf:'鋸歯のある卵形～披針形の対生葉',heliopsisCurledLeaf:'湾曲した鋸歯葉と緑の葉脈が残る白・桃色の斑'});
+
+Object.assign(TRAIT_VALUES,{heleniumReferences:'互生する葉・翼のある茎と品種別のヘレニウム頭花',heleniumLanceolateLeaf:'互生する披針形の単葉',heleniumShortRayHead:'短い舌状花と丸い花芯',heleniumDomedHead:'切れ込みのある舌状花と盛り上がる花芯',heleniumRolledRayHead:'筒状と開いた舌状花・表裏の色を分けた花芯'});

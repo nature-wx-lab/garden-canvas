@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.445';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.446';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.445';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.446';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17312,6 +17312,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='tanacetumReferences'){drawTanacetumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='heleniumReferences'){drawHeleniumReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='heliopsisReferences'){drawHeliopsisReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='echinopsReferences'){drawEchinopsReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='oreganoBractReferences'){drawOreganoReferences(b,{info,s,detail,month},kit);return;}
@@ -20379,6 +20380,64 @@ function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
 
 // Globes are compound heads; every primary involucre represents one floret.
 // All repeated counts and mixed opening stages are illustrative samples.
+
+// Component counts and mixed flower stages are illustrative, not a flower-age clock.
+export function heleniumPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='heleniumDome')return [Math.sin(u)*t,Math.sqrt(Math.max(0,1-t*t)),Math.cos(u)*t];
+ if(type==='heleniumDiscFour'||type==='heleniumDiscFive'){
+  const lobes=type==='heleniumDiscFour'?4:5,lip=.5+.5*Math.cos(lobes*u),r=.10+.04*t+.065*t**8*lip;
+  return [Math.sin(u)*r,t-.08*(1-lip)*t**10,Math.cos(u)*r];
+ }
+ if(type==='heleniumAntherTube'||type==='heleniumAntherFour'){const r=.075+.005*Math.cos((type==='heleniumAntherFour'?4:5)*u);return [Math.sin(u)*r,.65+.25*t,Math.cos(u)*r];}
+ if(type==='heleniumLeaf'){
+  const tooth=1+.045*(1-Math.abs(((t*11)%1)-.5)*2),width=.145*sn**.78*tooth;
+  return [u*width,.035*sn+.055*u*u*sn,t];
+ }
+ if(type==='heleniumWing')return [(u+1)*.05*Math.max(0,sn)**.50,0,t];
+ if(type==='heleniumBract')return [u*.16*sn**.7,.04*sn,t];
+ const rolled=type==='heleniumRolledRay',width=.245*Math.max(0,Math.sin(Math.PI*t*.85))**.62,tip=.055*(.5+.5*Math.cos(u*Math.PI*4))*t**14;
+ if(rolled){const angle=u*2.68;return [Math.sin(angle)*width,.04*sn+width*(1-Math.cos(angle)),t-tip];}
+ return [u*width,.035*sn+.075*u*u*sn,t-tip];
+}
+const HELENIUM_REFERENCE_PROFILES={
+ lollipop:{r:.013,leaf:.12,n:4,short:true,disc:'#754127'},
+ siesta:{r:.025,leaf:.105,n:5,disc:'#672a2b'},
+ tieDye:{r:.025,leaf:.15,n:4,rolled:true,disc:'#8d682d'}
+};
+function drawHeleniumReferences(b,{info,s,detail},kit){
+ const a=info.appearance,type=a.flowerPalette.type,P=HELENIUM_REFERENCE_PROFILES[type],h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(P.leaf,h*.24,w*.30,s.leafHeight*.70)*scale,R=Math.min(.0025,h*.005,w*.007),F=Math.min(P.r,h*.11,w*.12)*scale,n=Math.max(2,Math.round(P.n*detail)),stem=a.stemColor;let idx=0;
+ const leaf=(at,az,len)=>{
+  const f=flowerFrame(b,at,-.10,az);f.add('heleniumLeaf','leaf-helenium-'+type,s.leafColor,0,0,0,len,len,len);
+  let prev=[0,0,0];for(let j=1;j<=12;j++){const p=heleniumPoint('heleniumLeaf',j/12,0).map(v=>v*len);p[1]+=.000035;f.branch(prev,p,Math.min(R*.09,len*.003),'#a0ae73','midrib-helenium');prev=p;}
+  for(let j=1;j<=5;j++)for(const side of [-1,1]){const p=heleniumPoint('heleniumLeaf',j/7,0).map(v=>v*len),q=heleniumPoint('heleniumLeaf',j/7+.10,side*.90).map(v=>v*len);p[1]+=.000025;q[1]+=.000025;f.branch(p,q,Math.min(R*.05,len*.002),'#8e9e67','side-vein-helenium');}
+ };
+ const head=(at,az,bud)=>{
+  if(bud){b.add(kit.bud,'bud-helenium','#8c9b4a',...at,F*.33,F*.33,F*.33);return;}
+  const k=idx++,f=flowerFrame(b,at,.10+(k%3)*.13,az),rolled=P.rolled&&k%2===0,dr=F*(P.short?.70:.40),dh=F*(P.short?.80:.48),N=240,size=F*(P.short?.09:.075);
+  if(k===0)f.flower([0,dh*.6,0],F*1.06);
+  for(let row=0;row<2;row++)for(let j=0;j<8;j++){const yaw=j*TAU/8+row*.31,len=F*(row?.20:.30);f.add('heleniumBract','bract-helenium-'+(row?'inner':'outer'),'#7c914d',Math.sin(yaw)*dr*.7,-F*.08,Math.cos(yaw)*dr*.7,len,len,len,-1.25,yaw,0);}
+  for(let j=0;j<14;j++){const yaw=j*TAU/14,len=F*(P.short?.43:.68),rad=dr*.78;f.add(rolled?'heleniumRolledRay':'heleniumRay','petal-ray-helenium-'+type+(P.rolled?rolled?'-rolled':'-open':''),P.rolled?'#edbc2a':s.flowerColor,Math.sin(yaw)*rad,0,Math.cos(yaw)*rad,len,len,len,P.short?.75:.22,yaw,0);}
+  f.add(P.short?kit.bud:'heleniumDome','disc-foundation-helenium',P.disc,0,0,0,dr,dh,dr);
+  for(let j=0;j<N;j++){
+   const t=(j+.5)/N,yaw=j*2.399963,latitude=P.short?1-1.20*t:1-t,y=dh*latitude,rad=dr*Math.sqrt(Math.max(0,1-latitude*latitude)),x=Math.sin(yaw)*rad,z=Math.cos(yaw)*rad,pitch=Math.acos(Math.max(-1,Math.min(1,latitude))),open=t>.28&&t<.75,col=open?'#d5b233':P.disc;
+   f.add(P.short?'heleniumDiscFour':'heleniumDiscFive','disc-corolla-helenium-'+type,col,x,y,z,size,size,size,pitch,yaw,0);
+   if(!open)continue;
+   f.add(P.short?'heleniumAntherFour':'heleniumAntherTube','disc-anther-tube-helenium','#e3bc39',x,y,z,size,size,size,pitch,yaw,0);
+   const axis=[Math.sin(yaw)*Math.sin(pitch),Math.cos(pitch),Math.cos(yaw)*Math.sin(pitch)],base=[x,y,z],top=base.map((v,i)=>v+axis[i]*size*1.07);f.branch(base.map((v,i)=>v+axis[i]*size*.75),top,size*.012,'#d7bb4f','disc-style-helenium');for(const side of [-1,1])f.branch(top,[top[0]+side*size*.16,top[1]+size*.10,top[2]],size*.008,'#d7bb4f','disc-stigma-helenium');
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399,rad=w*.095*Math.sqrt(i/n)*scale,root=[Math.sin(az)*rad,Math.min(.001,h*.02),Math.cos(az)*rad],H=Math.min(s.leafHeight*.73,h*.63)*scale;let prev=root;
+  for(let j=1;j<=8;j++){
+   const t=j/8,node=[root[0]+Math.sin(az)*w*.05*t*scale,root[1]+H*t,root[2]+Math.cos(az)*w*.05*t*scale],f=flowerFrame(b,prev,-Math.PI/2,az),segment=Math.hypot(...node.map((v,k)=>v-prev[k]));b.branch(prev,node,R*(1-t*.27),stem,'stem-helenium-'+type);
+   for(const side of [-1,1])f.add('heleniumWing','stem-wing-helenium',s.leafColor,side*R,0,0,Math.min(segment,w*.04),segment,segment,0,0,side<0?Math.PI:0);
+   if((j-.3)/8<s.leafDensity)leaf(node,az+j*2.399,L*(1-t*.40));prev=node;
+  }
+  if(!s.bloom)continue;const collar=[prev[0],h*.64*scale,prev[2]];b.branch(prev,collar,R*.65,stem,'flowering-trunk-helenium');
+  for(let j=0;j<(P.short?4:3);j++){const yaw=az+(j-1)*.85,reach=w*(j===0?.025:.17)*scale,at=[collar[0]+Math.sin(yaw)*reach,h*(j===0?.94:j===1?.78:j===2?.84:.70)*scale-F*.45,collar[2]+Math.cos(yaw)*reach];b.branch(collar,at,R*.42,stem,'peduncle-helenium');head(at,yaw,j===2&&i%2===0);}
+ }
+}
 
 export function heliopsisPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
