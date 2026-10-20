@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.450';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.450';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.451';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.451';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -10,13 +10,14 @@ export function keepCameraAboveGround(camera,target){
 }
 // Flower anchors belong to the visible generated plant, so dormant/hidden flowers
 // cannot be focused and a reference-size change is reflected in the camera fit.
+export function flowerInspectionDistanceFloor(group){return group?.userData?.architecture==='eupatorieaeReferences'?.045:.14;}
 export function flowerInspectionView(group,aspect=1,fov=40){
  const anchors=group?.userData?.flowerTargets;
  if(!Array.isArray(anchors))return null;
  const anchor=anchors.find(a=>a&&typeof a==='object'&&Array.isArray(a.origin)&&a.origin.length===3&&a.origin.every(Number.isFinite)&&Array.isArray(a.axis)&&a.axis.length===3&&a.axis.every(Number.isFinite)&&Math.hypot(...a.axis)>.00001&&Number.isFinite(a.radius)&&a.radius>0&&a.radius<10);
  if(!anchor)return null;
  group.updateWorldMatrix(true,false);
- const radius=Math.max(.004,anchor.radius*group.matrixWorld.getMaxScaleOnAxis()),axis=new THREE.Vector3(...anchor.axis).transformDirection(group.matrixWorld),target=group.localToWorld(new THREE.Vector3(...anchor.origin)).addScaledVector(axis,radius*.30),direction=axis.clone().multiplyScalar(.90).add(new THREE.Vector3(.8,.18,1).multiplyScalar(.45)).normalize(),ratio=Number.isFinite(aspect)&&aspect>0?Math.min(1,aspect):1,angle=Math.atan(Math.tan((Number.isFinite(fov)&&fov>5&&fov<100?fov:40)*Math.PI/360)*ratio),distance=Math.max(.14,radius*1.20/Math.sin(angle)),position=target.clone().addScaledVector(direction,distance);
+ const radius=Math.max(.004,anchor.radius*group.matrixWorld.getMaxScaleOnAxis()),axis=new THREE.Vector3(...anchor.axis).transformDirection(group.matrixWorld),target=group.localToWorld(new THREE.Vector3(...anchor.origin)).addScaledVector(axis,radius*.30),direction=axis.clone().multiplyScalar(.90).add(new THREE.Vector3(.8,.18,1).multiplyScalar(.45)).normalize(),ratio=Number.isFinite(aspect)&&aspect>0?Math.min(1,aspect):1,angle=Math.atan(Math.tan((Number.isFinite(fov)&&fov>5&&fov<100?fov:40)*Math.PI/360)*ratio),distance=Math.max(flowerInspectionDistanceFloor(group),radius*1.20/Math.sin(angle)),position=target.clone().addScaledVector(direction,distance);
  position.y=Math.max(CAMERA_FLOOR+1e-7,position.y);
  return {position:position.toArray(),target:target.toArray()};
 }
@@ -153,6 +154,7 @@ export function createScene(container,onPick){
       const contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.rotation.x=-Math.PI/2;contact.position.set(g.position.x,isRaouliaMat(p.kind)?g.position.y-.0006:.012,g.position.z);contact.scale.set(s.spread*.95,s.spread*.95,1);if(zoneAt(plan,p.x,p.z)?.kind!=='water')root.add(contact);
       if(view.footprints)circle(p.x,p.z,s.spread/2,'#9bb9b1');if(p.id===id){circle(p.x,p.z,s.spread/2+.06,'#d2b05f',.018);if(p.management){const low=isRaouliaMat(p.kind),base=low?plantBaseAt(plan,p):0;circle(p.x,p.z,p.management.spread/2,'#7bacad',base+p.management.height);for(const a of [0,Math.PI]){const x=p.x-plan.width/2+Math.cos(a)*p.management.spread/2,z=p.z-plan.depth/2;line([new THREE.Vector3(x,low?base:.04,z),new THREE.Vector3(x,base+p.management.height,z)],'#7bacad');}}}
     }
+    controls.minDistance=Math.min(.12,flowerInspectionDistanceFloor(plants.children.find(g=>g.userData.plantId===selection)));
     tallest=Math.max(1,...plan.plants.map(p=>stateAt(p,view).height),...plan.obstacles.map(o=>o.height));fitShadow();
     container.dataset.plantCount=String(plants.children.length);dirty=true;
   }
@@ -161,10 +163,10 @@ export function createScene(container,onPick){
   function setView(type){
     if(!plan)return;
     if(type==='flower'){
-      const p=plan.plants.find(p=>p.id===selection),group=plants?.children.find(g=>g.userData.plantId===selection),pose=p&&stateAt(p,view).bloom?flowerInspectionView(group,camera.aspect,camera.fov):null;if(!pose)return false;controls.target.fromArray(pose.target);camera.position.fromArray(pose.position);
-    }else if(type==='focus'&&selection){const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view);controls.target.set(p.x-plan.width/2,plantBaseAt(plan,p)+Math.min(s.height,pondDepthAt(plan,p.x,p.z)||s.height)*.52,p.z-plan.depth/2);const d=Math.max(.16,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);camera.position.copy(controls.target).add(new THREE.Vector3(d,d*.48,d));}
+      const p=plan.plants.find(p=>p.id===selection),group=plants?.children.find(g=>g.userData.plantId===selection),pose=p&&stateAt(p,view).bloom?flowerInspectionView(group,camera.aspect,camera.fov):null;if(!pose)return false;controls.minDistance=Math.min(.12,flowerInspectionDistanceFloor(group));controls.target.fromArray(pose.target);camera.position.fromArray(pose.position);
+    }else if(type==='focus'&&selection){controls.minDistance=.12;const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view);controls.target.set(p.x-plan.width/2,plantBaseAt(plan,p)+Math.min(s.height,pondDepthAt(plan,p.x,p.z)||s.height)*.52,p.z-plan.depth/2);const d=Math.max(.16,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);camera.position.copy(controls.target).add(new THREE.Vector3(d,d*.48,d));}
     else{
-      const bounds=new THREE.Box3(new THREE.Vector3(-plan.width/2,0,-plan.depth/2),new THREE.Vector3(plan.width/2,.1,plan.depth/2));
+      controls.minDistance=.12;const bounds=new THREE.Box3(new THREE.Vector3(-plan.width/2,0,-plan.depth/2),new THREE.Vector3(plan.width/2,.1,plan.depth/2));
       for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;for(const sign of [-1,1])bounds.expandByPoint(new THREE.Vector3(p.x-plan.width/2+sign*s.spread/2,s.height,p.z-plan.depth/2+sign*s.spread/2));}
       const center=bounds.getCenter(new THREE.Vector3());controls.target.set(center.x,type==='eye'?.7:center.y*.18,center.z);
       const direction=type==='top'?new THREE.Vector3(0,1,.0001):type==='eye'?new THREE.Vector3(.8,.06,1):new THREE.Vector3(.82,.66,1);direction.normalize();
