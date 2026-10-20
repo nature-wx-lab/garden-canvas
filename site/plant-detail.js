@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.452';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.453';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.452';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.453';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17312,6 +17312,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='tanacetumReferences'){drawTanacetumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='tallEupatorieae'){drawTallEupatorieae(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='muhlenbergiaPanicles'){drawMuhlenbergiaPanicles(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='eupatorieaeReferences'){drawEupatorieaeReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='aegopodiumReferences'){drawAegopodiumReferences(b,{info,s,detail,month},kit);return;}
@@ -20390,6 +20391,62 @@ function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
 // Component counts and mixed flower stages are illustrative, not a flower-age clock.
 // Ternate and biternate leaves share connected petioles; repeated counts are
 // illustration samples, not a measured clone or a rhizome-growth simulation.
+export function tallEupatorieaePoint(type,t,u){
+ if(type==='tallEupaCorolla'){const lip=.5+.5*Math.cos(5*u),r=.035+.045*t+.065*t**8*lip;return [Math.sin(u)*r,t-.055*(1-lip)*t**10,Math.cos(u)*r];}
+ const sn=Math.max(0,Math.sin(Math.PI*t)),hagoromo=type==='tallEupaHagoromo',pink=type==='tallEupaPinkFrost',ivory=type==='tallEupaIvory',tooth=1-Math.abs(((t*11)%1)*2-1),teeth=hagoromo?.12+.88*tooth:1-(pink?.12:.08)*(.5+.5*Math.cos(t*Math.PI*26));
+ const width=(hagoromo?.095:ivory?.16:.23)*sn**(hagoromo?.55:.68)*(1-.15*t)*teeth;
+ return [u*width,.042*sn*(1-u*u)+.007*Math.sin(t*Math.PI*9)*u*u*sn,t];
+}
+const TALL_EUPA_PITCHES=[-.30,.15,.48];
+const TALL_EUPA_LIMITS=Object.fromEntries(['tallEupaHagoromo','tallEupaPinkFrost','tallEupaIvory','tallEupaAtro','tallEupaJaponicum'].map(type=>[type,TALL_EUPA_PITCHES.map(pitch=>{
+ let top=-Infinity,bottom=Infinity;const rows=type==='tallEupaHagoromo'?110:80;for(let j=0;j<=rows;j++)for(let k=0;k<=24;k++){const p=tallEupatorieaePoint(type,j/rows,k/12-1),y=p[1]*Math.cos(pitch)-p[2]*Math.sin(pitch);top=Math.max(top,y);bottom=Math.min(bottom,y);}return {top,bottom};
+})]));
+function drawTallEupatorieae(b,{info,s,detail,month},kit){
+ const a=info.appearance,type=a.shootProfile,ivory=type==='ivory',atro=type==='atropurpureum',pink=type==='pinkFrost',hago=type==='hagoromo',white=type==='japonicumWhite',whorled=ivory||atro,shape=hago?'tallEupaHagoromo':pink?'tallEupaPinkFrost':ivory?'tallEupaIvory':atro?'tallEupaAtro':'tallEupaJaponicum',h=s.height,w=s.spread,scale=s.leafScale,baseLH=Math.min(s.leafHeight,h*.90),LH=baseLH*scale,rootY=Math.min(.0007,h*.001,Math.max(.00001,baseLH*.01)),R=Math.min(whorled?.005:.0035,h*.006,w*.01,baseLH*.025),L=Math.min(hago?.10:pink?.13:.20,w*.25,baseLH*.34,h*.22)*scale,axes=Math.max(1,Math.round((whorled?3:5)*detail)),nodes=Math.max(2,Math.round(6*s.leafDensity)),F=Math.min(.0050,h*.010,w*.012),HR=Math.min(.0025,h*.006,w*.008),dry=!!s.seedHeads&&!s.bloom,budding=!!s.flowerBuds,hasHeads=s.bloom||dry||budding,stem=dry?'#927e69':a.stemColor;
+ const leaf=(joint,az,len,index,divided)=>{
+  const pi=index%3,pitch=TALL_EUPA_PITCHES[pi],limit=TALL_EUPA_LIMITS[shape][pi],at=[joint[0]+Math.sin(az)*len*.11,Math.min(Math.max(joint[1]+LH*.018,rootY-limit.bottom*len+.00002),LH*.99-limit.top*len),joint[2]+Math.cos(az)*len*.11],parts=divided?3:1;
+  b.branch(joint,at,R*.21,stem,'petiole-tallEupa');
+  for(let q=0;q<parts;q++){
+   const yaw=az+(q===1?-.67:q===2?.67:0),ll=len*(q===0?1:.62),f=flowerFrame(b,at,pitch,yaw),season=pink?([3,4].includes(month)?'-spring':month>=11?'-autumn':'-summer'):'',kind='leaf-tallEupa-'+type+season;
+   f.add(shape,kind,s.leafColor,0,0,0,ll,ll,ll);
+   let prev=[0,.00003,0];for(let k=1;k<=10;k++){const p=tallEupatorieaePoint(shape,k/10,0).map(v=>v*ll);p[1]+=.00003;f.branch(prev,p,Math.min(R*.07,ll*.002),'#a0b28b','midrib-tallEupa');prev=p;}
+   for(const side of [-1,1])for(let k=1;k<=7;k++){const t=.08+k*.105,p=tallEupatorieaePoint(shape,t,0).map(v=>v*ll),end=tallEupatorieaePoint(shape,t+.035,side*.90).map(v=>v*ll);p[1]+=.00003;end[1]+=.00003;f.branch(p,end,Math.min(R*.035,ll*.001),pink?'#a9b1a0':'#9caf84','side-vein-tallEupa');}
+  }
+ };
+ let headIndex=0;
+ const head=(at,az,bud)=>{
+  const idx=headIndex++,f=flowerFrame(b,at,.06+(idx%3)*.08,az),florets=ivory?6:atro?12:5,phyllaryColor=dry?'#8e7865':pink?'#997b8d':ivory?'#a7b887':'#8d9e77',PL=Math.min(ivory?.007:.0055,h*.015,w*.016);
+  for(let row=0;row<3;row++)for(let k=0;k<8;k++){const yaw=k*TAU/8+row*.24,rad=HR*(.57+.10*row);f.add('eupatorieaePhyllary','phyllary-tallEupa',phyllaryColor,Math.sin(yaw)*rad,-PL*.85+row*PL*.12,Math.cos(yaw)*rad,PL,PL,PL,-1.40,yaw,0);}
+  f.add('eupatorieaeDome','receptacle-tallEupa',dry?'#8c7765':'#a9b78d',0,-HR*.18,0,HR,HR*.20,HR);
+  if(dry){f.add(kit.bud,'dry-head-tallEupa','#8e7a68',0,HR*.05,0,HR*.78,HR*.35,HR*.78);return;}
+  if(bud){f.add(kit.bud,'bud-head-tallEupa',ivory||white?'#c2cbaa':pink?'#af86a4':'#9e8090',0,HR*.12,0,HR*.82,HR*.58,HR*.82);return;}
+  for(let j=0;j<florets;j++){
+   const q=(j+.5)/florets,phi=j*2.399963,rad=HR*Math.sqrt(q),ff=flowerFrame(f,[Math.sin(phi)*rad,HR*.16*Math.sqrt(1-q)-HR*.18,Math.cos(phi)*rad],q*.35,phi);
+   if(j===0){ff.add(kit.bud,'closed-floret-tallEupa',ivory||white?'#d2d8bd':pink?'#b58caa':'#a28197',0,F*.40,0,F*.10,F*.30,F*.10);continue;}
+   if(idx===0&&j===1)ff.flower([0,F,0],F*2.6);
+   ff.add('tallEupaCorolla','corolla-tallEupa-'+type,s.flowerColor,0,0,0,F,F,F);ff.add('eupatorieaeAntherTube','fused-anthers-tallEupa',ivory||white?'#e0ddc5':'#bba3b4',0,0,0,F,F,F);
+   const top=[0,F*1.18,0];ff.branch([0,F*.69,0],top,F*.024,s.flowerColor,'style-tallEupa');for(const side of [-1,1]){const mid=[side*F*.10,F*1.43,0],end=[side*F*.24,F*1.67,F*.025];ff.branch(top,mid,F*.018,s.flowerColor,'style-branch-base-tallEupa');ff.branch(mid,end,F*.015,s.flowerColor,'stigma-branch-tallEupa');}
+  }
+ };
+ for(let i=0;i<axes;i++){
+  const az=i*2.399963,rr=w*.12*Math.sqrt((i+.3)/axes),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],drift=hasHeads?w*.025:Math.min(w*.025,LH*.10),tip=[root[0]+Math.sin(az)*drift,hasHeads?Math.max(h*.69,baseLH*.96):LH*.95,root[2]+Math.cos(az)*drift];b.branch(root,tip,R*.67,stem,'stem-tallEupa');
+  if(s.leafDensity>0&&LH>0)for(let k=0;k<nodes;k++){
+   const y=LH*(.14+.74*k/(nodes-1)),t=(y-root[1])/(tip[1]-root[1]),joint=root.map((v,j)=>v+(tip[j]-v)*t),count=ivory?5:atro?4:2,len=L*(1-.55*k/(nodes-1));
+   for(let q=0;q<count;q++)leaf(joint,az+k*.7+q*TAU/count,len,i*nodes*count+k*count+q,hago||white&&k<Math.ceil(nodes*.6));
+  }
+  if(!hasHeads)continue;
+  for(let k=0;k<3;k++){
+   const yaw=az+(k-1)*1.03,collar=[tip[0]+Math.sin(yaw)*w*.11,h*(.81-.020*i),tip[2]+Math.cos(yaw)*w*.11];b.branch(tip,collar,R*.37,stem,'corymb-axis-tallEupa');
+   for(let group=0;group<3;group++){
+    const ga=yaw+group*2.399963,node=[collar[0]+Math.sin(ga)*w*.075,h*(.87-.020*i+(ivory&&group===1?.035:0)),collar[2]+Math.cos(ga)*w*.075];b.branch(collar,node,R*.18,stem,'corymb-branch-tallEupa');
+    const count=Math.max(4,Math.round((whorled?12:9)*detail));for(let j=0;j<count;j++){
+     const phi=yaw+j*2.399963,rad=Math.min(whorled?.025:.019,w*.045,h*.035)*Math.sqrt((j+.4)/count),at=[node[0]+Math.sin(phi)*rad,h*(.94-.020*i+(ivory?.022*(1-(j+.4)/count):0))-F*1.78,node[2]+Math.cos(phi)*rad];b.branch(node,at,R*.035,stem,'head-pedicel-tallEupa');head(at,phi,budding||j===count-1&&group===2&&k===2);
+    }
+   }
+  }
+ }
+}
+
 export function muhlenbergiaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='muhlyLemma'||type==='muhlyPalea'||type==='muhlyGlume')return [u*.15*sn**.65,t,(type==='muhlyPalea'?-.065:.085)*(1-u*u)*sn];
