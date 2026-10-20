@@ -7573,3 +7573,20 @@ test('Echinacea ray materials compile their cultivar gradient outside the generi
   }finally{dispose(g);}
  }
 });
+
+test('four further Echinacea references preserve black stems, semidouble and single head examples and source-bounded sizes',()=>{
+ const ids=['p-a7e93cbec294','p-cd4e1392c059','p-8a6a87fe95f9','p-0e0234b69866'],types=['limoncello','jsStiletto','appleGreen','sunseekersSalmon'],adult=[[.6,.4,.35],[.6,.35,.36],[.4,.35,.24],[.5,.4,.30]],small=[[.22,.23,.12],[.22,.22,.12],[.16,.2,.085],[.19,.23,.11]];
+ for(const [ci,id]of ids.entries())for(const tiny of [false,true])for(let month=1;month<=12;month++){
+  const d=(tiny?small:adult)[ci],p={...makePlant(id,43800+ci*10+(tiny?1:0),2,2),height:d[0],spread:d[1],leafHeight:d[2]},info=CATALOG[id],g=plantModel(p,view(month)),label=id+' '+month+' '+tiny,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),heads=count('receptacle-echinacea-'+types[ci]),rays=g.children.filter(m=>m.userData.component?.startsWith('ray-echinacea-'+types[ci])).reduce((n,m)=>n+m.count,0);
+  try{
+   assert.equal(info.appearance.status,'partial');assert.equal(info.bloomKnown,false);assert.equal(info.appearance.petals,undefined);assert.equal(info.appearance.arrangement,'alternate');assert.equal(heads>0,info.bloom.includes(month),label);assert.equal(rays>0,heads>0,label);assert.equal(count('disc-floret-echinacea')+count('disc-bud-echinacea'),count('palea-echinacea'),label);assert.equal(count('petiole-echinacea'),count('leaf-echinacea-'+types[ci]),label);
+   if([12,1,2].includes(month)){assert.equal(g.children.length,0,label);assert.equal(g.userData.groundDormant,true,label);}else{assert.equal(g.userData.architecture,'echinaceaReferences',label);assert.ok(count('leaf-echinacea-'+types[ci])>0,label);}
+   if(heads){assert.ok(g.userData.flowerTargets?.length,label);if(ci===0||ci===2)assert.ok(rays/heads>50,label+' semidouble');if(ci===1)assert.equal(rays/heads,26,label+' single');if(ci===3){assert.ok(rays/heads>26&&rays/heads<60,label+' static semidouble and single mixture');const colours=new Set();for(const m of g.children.filter(m=>m.userData.component?.startsWith('ray-echinacea-'))){const a=m.instanceColor?.array;if(a)for(let j=0;j<a.length;j+=3)colours.add([a[j],a[j+1],a[j+2]].map(v=>Math.round(v*255)).join(','));else colours.add(m.material.color.getHexString());}assert.ok(colours.size>=3,label+' static colour stages');}}
+   for(const m of g.children){assert.ok([...m.instanceMatrix.array,...m.geometry.attributes.position.array,...m.geometry.attributes.normal.array].every(Number.isFinite),label);}
+  }finally{dispose(g);}
+ }
+ assert.deepEqual(CATALOG[ids[0]].height,[.6,.6]);assert.equal(CATALOG[ids[0]].spread,null);
+ assert.deepEqual(CATALOG[ids[1]].height,[.5,.7]);assert.deepEqual(CATALOG[ids[1]].spread,[.3,.4]);assert.equal(CATALOG[ids[1]].appearance.stemColor,'#36232f');
+ assert.deepEqual(CATALOG[ids[2]].height,[.3,.5]);assert.deepEqual(CATALOG[ids[2]].spread,[.3,.4]);assert.deepEqual(CATALOG[ids[2]].colors,['white','green']);
+ assert.deepEqual(CATALOG[ids[3]].height,[.4,.6]);assert.deepEqual(CATALOG[ids[3]].spread,[.3,.5]);
+});
