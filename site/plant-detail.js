@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.457';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.458';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.457';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.458';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='hakonechloaReferences'){drawHakonechloaReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='stipoidReferences'){drawStipoidReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='calamagrostisReferences'){drawCalamagrostisReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='panicumReferences'){drawPanicumReferences(b,{info,s,detail,month},kit);return;}
@@ -20462,6 +20463,62 @@ export function stipoidHairGeometry(type){
   for(let q=0;q<18;q++){const yaw=q*TAU/18;let prev=[0,1,0];for(let j=1;j<=2;j++){const t=j/2,next=[Math.sin(yaw)*.60*t*t,1+1.05*t,Math.cos(yaw)*.60*t*t];ribbon(prev,next,.016*(1-t*.5));prev=next;}}
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.stipoidHairLocation=type==='allgau'?'lemmaBody':'lemmaApex';g.userData.illustrativeStrands=type==='allgau'?24:18;return g;
+}
+
+
+export function hakonechloaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='hakoneGlume')return[u*.16*sn**.65,t,.08*(1-u*u)*sn];
+ if(type==='hakoneLemma'){const az=u*Math.PI*.88,r=.16*sn**.65;return[Math.sin(az)*r,t,Math.cos(az)*r];}
+ if(type==='hakonePalea')return[u*.12*sn**.65,t,-.07*(1-u*u)*sn];
+ return[u*.5*sn**.65*(1-.15*t),Math.sin(Math.PI*.75*t)-.90*t+.015*sn*(1-u*u)+.004*Math.sin(5*Math.PI*t)*u*u*sn,t];
+}
+const HAKONE_LEAF_BOUNDS=(()=>{let min=Infinity,max=-Infinity;for(let i=0;i<=80;i++)for(let j=0;j<=12;j++){const y=hakonechloaPoint('hakoneBlade',i/80,j/6-1)[1];min=Math.min(min,y);max=Math.max(max,y);}return{min,max};})();
+function drawHakonechloaReferences(b,{info,s,detail,month},kit){
+ const type=info.appearance.shootProfile,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.95)*s.leafScale,winter=[12,1,2].includes(month),autumn=month>=10&&month<=11,rootY=Math.min(.0012,h*.005,LH*.08),R=Math.min(.00065,h*.005,w*.004,LH*.02),stem=winter?'#a48a61':autumn?'#a08d50':'#789147',culms=Math.max(4,Math.round(40*detail)),flowerCulms=s.bloom?Math.max(1,Math.round(4*detail)):0;
+ if(s.leafDensity===0)return;
+ const branch=(a,z,r,c,k)=>{const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<.0000001)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('hakoneStemSegment',k,c,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);};
+ const rot=(p,az)=>[Math.cos(az)*p[0]+Math.sin(az)*p[2],p[1],-Math.sin(az)*p[0]+Math.cos(az)*p[2]];
+ const blade=(at,az,ci,ni)=>{
+  const length=Math.min(.16,w*.25,h*.55,LH*.60,(at[1]-rootY+Math.min(rootY*.25,.00001))/(-HAKONE_LEAF_BOUNDS.min),(LH*.985-at[1])/HAKONE_LEAF_BOUNDS.max)*(.82+.18*(.5+.5*Math.sin(ci*9.1+ni*2.3))),width=Math.min(.0105,length*.075,w*.025,h*.035);
+  if(!(length>0&&width>0))return;
+  const kind='leaf-hakone-'+type+(winter?'-winter':autumn?'-autumn':'-green');
+  b.add('hakoneBlade',kind,s.leafColor,...at,width,length,length,0,az,0);
+  const get=(t,u)=>{const p=hakonechloaPoint('hakoneBlade',t,u),q=rot([p[0]*width,p[1]*length+.000001,p[2]*length],az);return q.map((v,k)=>v+at[k]);};
+  for(const u of [-.55,0,.55]){let prev=get(0,u);for(let j=1;j<=10;j++){const next=get(j/10,u);branch(prev,next,Math.min(width*.007,LH*.00004),s.leafColor,'parallel-vein-hakone');prev=next;}}
+ };
+ const F=Math.min(.0065,h*.018,w*.025),step=F*.185,panicleColor=s.flowerColor;
+ const spikelet=(at,az,pitch,inspect)=>{
+  const f=flowerFrame(b,at,pitch,az),glumeColor='#a1ad72';
+  f.add('hakoneGlume','lower-glume-hakone',glumeColor,-F*.04,0,0,F*.55,F*.55,F*.55,0,-.4,0);
+  f.add('hakoneGlume','upper-glume-hakone',glumeColor,F*.04,F*.03,0,F*.70,F*.70,F*.70,0,Math.PI+.4,0);
+  for(let j=0;j<8;j++){
+   const reduced=j===7,size=F*(reduced?.42:1),yaw=j%2?Math.PI:0,y=F*.08+j*step;
+   f.add('hakoneLemma',reduced?'apical-reduced-lemma-hakone':'fertile-lemma-hakone',glumeColor,0,y,0,size,size,size,0,yaw,0);
+   f.add('hakonePalea',reduced?'apical-reduced-palea-hakone':'fertile-palea-hakone','#b2b886',0,y+size*.025,0,size,size*.8,size,0,yaw,0);
+   f.branch([0,y,0],[0,y+step,0],Math.min(size*.025,h*.0002),glumeColor,'rhachilla-hakone');
+   if(!reduced){const a=size*.60;f.branch([0,y+size,0],[Math.sin(yaw)*a*.12,y+size+a,Math.cos(yaw)*a*.12],Math.min(size*.008,h*.00010),'#9eaa74','lemma-awn-hakone');}
+   if(inspect&&j===3){for(let n=0;n<3;n++){const angle=n*TAU/3,end=[Math.sin(angle)*F*.35,y+F*.85,Math.cos(angle)*F*.35];f.branch([0,y+F*.22,0],end,Math.min(F*.012,h*.00008),'#d3cc87','filament-hakone');f.add('hakoneAnther','anther-hakone','#c9bd72',...end,F*.085,F*.18,F*.085,0,angle,.15);}f.flower([0,y+F*.60,0],F*1.45);}
+  }
+ };
+ for(let i=0;i<culms;i++){
+  const az=i*2.399963,q=(i+.5)/culms,lean=az*.35+.42,rr=w*.065*Math.sqrt(q),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=LH*(.64+.18*(.5+.5*Math.sin(i*4.73))),drift=Math.min(w*.15,LH*.43),points=Array.from({length:13},(_,j)=>{const t=j/12;return[root[0]+Math.sin(lean)*drift*t*t,rootY+(top-rootY)*t,root[2]+Math.cos(lean)*drift*t*t];});
+  for(let j=1;j<points.length;j++)branch(points[j-1],points[j],R,stem,'culm-hakone');
+  const atY=y=>{for(let j=1;j<points.length;j++)if(points[j][1]>=y){const t=(y-points[j-1][1])/Math.max(.000001,points[j][1]-points[j-1][1]);return points[j-1].map((v,k)=>v+(points[j][k]-v)*t);}return points.at(-1);};
+  for(let n=0;n<7;n++){
+   const y=rootY+(top-rootY)*(.12+n*.125),at=atY(y);
+   branch(atY(Math.max(rootY,y-Math.min(.009,LH*.035))),at,R*1.08,stem,'node-sheath-hakone');
+   const retain=(n+i*3)%7<Math.max(1,Math.round(7*s.leafDensity));if(retain)blade(at,lean+(n%2?Math.PI:0)+(Math.sin(i*8.1+n)*.18),i,n);
+  }
+  if(i>=flowerCulms)continue;
+  const base=atY(top*.93),panLength=Math.min(.10,h*.25,Math.max(.000001,h*.94-base[1]-F*3.4)),panDrift=Math.min(.035,w*.06,h*.06),axis=t=>[base[0]+Math.sin(lean)*panDrift*t,base[1]+panLength*t,base[2]+Math.cos(lean)*panDrift*t];
+  branch(base,axis(1),R*.45,panicleColor,'panicle-axis-hakone');
+  for(let j=0;j<4;j++)for(let k=0;k<2;k++){
+   const t=.15+j*.21,start=axis(t),yaw=lean+j*.8+k*Math.PI,reach=Math.min(.025,w*.035,h*.06)*(1-t*.75),end=[start[0]+Math.sin(yaw)*reach,start[1]+panLength*.07,start[2]+Math.cos(yaw)*reach];branch(start,end,R*.20,panicleColor,'paired-panicle-branch-hakone');
+   for(let n=0;n<2;n++){const a=(n+.65)/2,tip=start.map((v,c)=>v+(end[c]-v)*a);spikelet(tip,yaw,.30+n*.13,i===0&&j===1&&k===0&&n===1);}
+  }
+  spikelet(axis(1),lean,.12,false);
+ }
 }
 
 export function stipoidPoint(type,t,u){
