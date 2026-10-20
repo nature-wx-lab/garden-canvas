@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.433';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.434';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.433';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.434';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15492,6 +15492,7 @@ export function veronicaPoint(type,t,u){
   const waves=.45+.55*(.5+.5*Math.cos(4*u))**.60,lower=Math.max(0,Math.cos(u)),upper=Math.max(0,-Math.cos(u)),edge=waves*(1-.25*lower+.07*upper),r=t<.20?.13+.07*t/.20:.20+(edge-.20)*((t-.20)/.80);
   return [Math.sin(u)*r,.28*Math.min(1,t/.36)+.05*sn-.035*t*t,Math.cos(u)*r];
  }
+ if(type==='veronicaOrnataLeaf')return [u*.20*sn**.65,.045*sn+.035*u*u*sn+.006*Math.sin(t*Math.PI*6)*u*u,t];
  const broad=type==='veronicaBroadLeaf',teeth=1+(broad?.095:.055)*Math.sin(t*Math.PI*(broad?16:24))**2;
  return [u*(broad?.34:.14)*sn**(broad?.60:.78)*teeth,.035*sn+.025*u*u*sn,t];
 }
@@ -15528,10 +15529,10 @@ function drawVeronicaMats(b,{info,s,detail,month},kit){
 }
 
 function drawVeronicaReferences(b,{info,s,detail,month},kit){
- const a=info.appearance,type=a.flowerPalette.type,profile={ulster:{shoots:13,leafLength:.060,leafWidth:1.1,cluster:.23,rise:.57,spike:.40,cap:.15,flowers:82},whiteWands:{shoots:19,leafLength:.080,leafWidth:1.2,cluster:.25,rise:.58,spike:.43,cap:.23,flowers:110,spent:.22,observe:34},charlotte:{shoots:14,leafLength:.10,leafWidth:1.7,cluster:.22,rise:.65,spike:.32,cap:.28,flowers:84,whorls:true},ever:{shoots:17,leafLength:.080,leafWidth:1.2,cluster:.25,rise:.58,spike:.43,cap:.23,flowers:90},marietta:{shoots:14,leafLength:.12,leafWidth:1.5,cluster:.22,rise:.63,spike:.34,cap:.25,flowers:88,whorls:true}}[type]||{},crater=type==='crater',red=type==='red',h=s.height,w=s.spread,stem=a.stemColor,scale=s.leafScale,L=Math.min(profile.leafLength||(crater?.050:red?.065:.095),h*(crater?.25:.23),w*(crater?.23:.35))*scale,R=Math.min(.003,h*.012,w*.018),winter=[12,1,2].includes(month),autumnLow=crater&&month>=9,n=Math.max(5,Math.round((profile.shoots||(crater?11:red?12:15))*detail));
+ const a=info.appearance,type=a.flowerPalette.type,profile={ornata:{shoots:16,leafLength:.070,leafWidth:1.1,leafShape:'veronicaOrnataLeaf',cluster:.25,rise:.65,spike:.32,cap:.20,flowers:85},hummingBlue:{shoots:13,leafLength:.065,leafWidth:1.2,cluster:.22,rise:.60,spike:.44,cap:.15,flowers:90},hummingPink:{shoots:13,leafLength:.065,leafWidth:1.2,cluster:.22,rise:.60,spike:.44,cap:.15,flowers:90},ulster:{shoots:13,leafLength:.060,leafWidth:1.1,cluster:.23,rise:.57,spike:.40,cap:.15,flowers:82},whiteWands:{shoots:19,leafLength:.080,leafWidth:1.2,cluster:.25,rise:.58,spike:.43,cap:.23,flowers:110,spent:.22,observe:34},charlotte:{shoots:14,leafLength:.10,leafWidth:1.7,cluster:.22,rise:.65,spike:.32,cap:.28,flowers:84,whorls:true},ever:{shoots:17,leafLength:.080,leafWidth:1.2,cluster:.25,rise:.58,spike:.43,cap:.23,flowers:90},marietta:{shoots:14,leafLength:.12,leafWidth:1.5,cluster:.22,rise:.63,spike:.34,cap:.25,flowers:88,whorls:true}}[type]||{},crater=type==='crater',red=type==='red',h=s.height,w=s.spread,stem=a.stemColor,scale=s.leafScale,L=Math.min(profile.leafLength||(crater?.050:red?.065:.095),h*(crater?.25:.23),w*(crater?.23:.35))*scale,R=Math.min(.003,h*.012,w*.018),winter=[12,1,2].includes(month),autumnLow=crater&&month>=9,n=Math.max(5,Math.round((profile.shoots||(crater?11:red?12:15))*detail));
  const blade=(node,az,len,pitch=-.15)=>{
-  const pet=Math.min(len*.13,h*.013),base=[node[0]+Math.sin(az)*pet,node[1]+pet*.15,node[2]+Math.cos(az)*pet],f=flowerFrame(b,base,pitch,az);b.branch(node,base,Math.min(.00035,len*.013),stem,'petiole-veronica');f.add(crater?'veronicaBroadLeaf':'veronicaNarrowLeaf','leaf-veronica-'+type,s.leafColor,0,0,0,len*(profile.leafWidth||(crater?1:red?1.12:1.6)),len,len);
-  let old=[0,0,0];for(let j=1;j<=10;j++){const q=veronicaPoint(crater?'veronicaBroadLeaf':'veronicaNarrowLeaf',j/10,0),end=[0,q[1]*len+.0001,q[2]*len];f.branch(old,end,Math.min(.00020,len*.006),'#a3b686','midrib-veronica');old=end;}
+  const pet=Math.min(len*.13,h*.013),base=[node[0]+Math.sin(az)*pet,node[1]+pet*.15,node[2]+Math.cos(az)*pet],f=flowerFrame(b,base,pitch,az);b.branch(node,base,Math.min(.00035,len*.013),stem,'petiole-veronica');f.add(profile.leafShape||(crater?'veronicaBroadLeaf':'veronicaNarrowLeaf'),'leaf-veronica-'+type,s.leafColor,0,0,0,len*(profile.leafWidth||(crater?1:red?1.12:1.6)),len,len);
+  let old=[0,0,0];for(let j=1;j<=10;j++){const q=veronicaPoint(profile.leafShape||(crater?'veronicaBroadLeaf':'veronicaNarrowLeaf'),j/10,0),end=[0,q[1]*len+.0001,q[2]*len];f.branch(old,end,Math.min(.00020,len*.006),'#a3b686','midrib-veronica');old=end;}
  };
  if(winter){
   for(let i=0;i<9;i++){const az=i*2.399,r=w*.13*Math.sqrt(i/9),at=[Math.sin(az)*r,Math.min(.001,h*.015),Math.cos(az)*r],len=Math.min(L*.40,h*.12,w*.055);for(let k=0;k<3;k++)blade(at,az+k*2.094,len,-.15);b.add(kit.bud,'winter-bud-veronica',stem,at[0],at[1]+len*.23,at[2],len*.12,len*.23,len*.12);}return;
