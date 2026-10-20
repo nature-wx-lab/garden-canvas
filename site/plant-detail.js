@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.446';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.447';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.446';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.447';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17312,6 +17312,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='tanacetumReferences'){drawTanacetumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='patriniaReferences'){drawPatriniaReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='heleniumReferences'){drawHeleniumReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='heliopsisReferences'){drawHeliopsisReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='echinopsReferences'){drawEchinopsReferences(b,{info,s,detail},kit);return;}
@@ -20382,6 +20383,50 @@ function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
 // All repeated counts and mixed opening stages are illustrative samples.
 
 // Component counts and mixed flower stages are illustrative, not a flower-age clock.
+export function patriniaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='patriniaCorolla'){
+  const lobes=(.5+.5*Math.cos(5*u))**.60,v=Math.max(0,(t-.55)/.45),r=t<=.55?.15+.14*t/.55:.29+v*(.65*lobes+.04);
+  return [Math.sin(u)*r,t<=.55?t:.55+.16*v-.06*(1-lobes)*v,Math.cos(u)*r];
+ }
+ if(type==='patriniaCalyx'){const lip=.5+.5*Math.cos(5*u),r=.16+.13*t;return [Math.sin(u)*r,.36*t-.04*(1-lip)*t**9,Math.cos(u)*r];}
+ if(type==='patriniaBract')return [u*.11*sn**.7,.035*sn,t];
+ const upper=type==='patriniaUpperLeaf',broad=upper||type==='patriniaBroadLeaf',five=type==='patriniaFiveLeaf',centers=five?[.29,.52,.82]:[.18,.38,.58,.84],lobes=Math.max(...centers.map(x=>Math.exp(-(((t-x)/(t>.72?.13:.070))**2)))),tooth=1+.08*(1-Math.abs(((t*13)%1)-.5)*2),width=(upper?.15:broad?.29:.31)*sn**.68*(broad?1:.08+.92*lobes)*tooth;
+ return [u*width,.04*sn+.045*u*u*sn,t];
+}
+function drawPatriniaReferences(b,{info,s,detail,month},kit){
+ const a=info.appearance,yellow=a.flowerPalette.type==='yellow',winter=[12,1,2].includes(month),dry=yellow&&winter,h=s.height,w=s.spread,scale=dry?1:s.leafScale,L=Math.min(yellow?.23:.18,h*.24,w*.34,s.leafHeight*.70)*scale,R=Math.min(.0035,h*.0045,w*.007),F=Math.min(yellow?.0022:.0025,h*.035,w*.025)*scale,stem=dry?a.winterStemColor:a.stemColor,n=Math.max(2,Math.round(3*detail));let focused=false;
+ const leaf=(at,az,len,shape,basal=false)=>{
+  const pet=len*(basal?.28:.07),joint=[at[0]+Math.sin(az)*pet,at[1]+pet*.10,at[2]+Math.cos(az)*pet],f=flowerFrame(b,joint,-.12,az);b.branch(at,joint,R*.27,stem,'petiole-patrinia');f.add(shape,'leaf-patrinia-'+(yellow?'yellow':'white'),s.leafColor,0,0,0,len,len,len);
+  let prev=[0,0,0];for(let j=1;j<=12;j++){const p=patriniaPoint(shape,j/12,0).map(v=>v*len);p[1]+=.00004;f.branch(prev,p,Math.min(R*.09,len*.003),'#a2af78','midrib-patrinia');prev=p;}
+  for(let j=1;j<=5;j++)for(const side of [-1,1]){const p=patriniaPoint(shape,j/7,0).map(v=>v*len),q=patriniaPoint(shape,j/7+.055,side*.9).map(v=>v*len);p[1]+=.000025;q[1]+=.000025;f.branch(p,q,Math.min(R*.05,len*.002),'#8a9f6c','side-vein-patrinia');}
+ };
+ const floret=(at,az,depth=2)=>{
+  const f=flowerFrame(b,at,depth===0?.72:depth===1?.45:.18,az);f.add(kit.bud,dry?'dry-remnant-patrinia':'inferior-ovary-patrinia',dry?'#9b8766':'#a0ad66',0,-F*.14,0,F*.19,F*.26,F*.19);f.add('patriniaCalyx','calyx-patrinia',dry?'#a38a68':'#8d9f60',0,0,0,F,F,F);if(dry)return;
+  if(!focused){f.flower([0,F*.5,0],F*5);focused=true;}
+  f.add('patriniaCorolla','corolla-patrinia',s.flowerColor,0,F*.08,0,F,F,F);
+  for(let k=0;k<4;k++){const yaw=k*TAU/4+.3,len=F*(k%2?.98:1.25),from=[Math.sin(yaw)*F*.10,F*.15,Math.cos(yaw)*F*.10],to=[Math.sin(yaw)*F*.30,len,Math.cos(yaw)*F*.30];f.branch(from,to,F*.018,yellow?'#d6c540':'#e1dec7','filament-patrinia');f.add(kit.bud,'anther-patrinia',yellow?'#d8b82a':'#b6af8f',...to,F*.055,F*.10,F*.055,0,yaw,0);}
+  f.branch([0,F*.15,0],[F*.07,F*.96,0],F*.018,'#c5bb72','style-patrinia');f.add(kit.bud,'stigma-patrinia','#d4c786',F*.07,F*.98,0,F*.05,F*.035,F*.05);
+ };
+ const cyme=(origin,az,r)=>{
+  const fork=(at,yaw,reach,depth)=>{
+   const tip=[at[0],at[1]+reach*.24,at[2]];b.branch(at,tip,R*.06,dry?stem:'#9caa75','cyme-axis-patrinia');floret(tip,yaw,depth);
+   if(!depth)return;
+   for(const side of [-1,1]){const turn=yaw+side*1.05,to=[at[0]+Math.sin(turn)*reach,at[1]+reach*.16,at[2]+Math.cos(turn)*reach];b.branch(at,to,R*.05,dry?stem:'#9caa75','cyme-fork-patrinia');fork(to,turn,reach*.54,depth-1);}
+  };
+  for(let k=0;k<5;k++){const yaw=az+k*TAU/5,at=[origin[0]+Math.sin(yaw)*r*.18,origin[1]+r*.08,origin[2]+Math.cos(yaw)*r*.18];b.branch(origin,at,R*.15,dry?stem:'#9caa75','cyme-peduncle-patrinia');fork(at,yaw,r*.30,4);}
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399,rad=w*.09*Math.sqrt(i/n)*scale,root=[Math.sin(az)*rad,Math.min(.001,h*.02),Math.cos(az)*rad],H=Math.min(s.leafHeight*.73,h*.64)*scale;let prev=root;
+  if(!dry&&[3,4,5].includes(month))for(let j=0;j<3;j++)leaf(root,az+j*2.399,L*.85,yellow?'patriniaFiveLeaf':'patriniaBroadLeaf',true);
+  for(let j=1;j<=6;j++){const t=j/6,node=[root[0]+Math.sin(az)*w*.035*t*scale,root[1]+H*t,root[2]+Math.cos(az)*w*.035*t*scale];b.branch(prev,node,R*(1-t*.25),stem,'stem-patrinia');prev=node;if(!dry&&(j-.35)/6<s.leafDensity)for(let k=0;k<2;k++)leaf(node,az+j*Math.PI/2+k*Math.PI,L*(1-t*.40),yellow?(j>=5?'patriniaUpperLeaf':j%2?'patriniaFiveLeaf':'patriniaDividedLeaf'):j===1?'patriniaFiveLeaf':'patriniaBroadLeaf');}
+  if(!s.bloom&&!dry)continue;
+  const collar=[prev[0],h*.64*scale,prev[2]];b.branch(prev,collar,R*.65,stem,'flowering-trunk-patrinia');
+  for(let j=0;j<5;j++){const t=j/4,node=[collar[0],h*(.64+t*.18)*scale,collar[2]];if(j)b.branch([collar[0],h*(.64+(j-1)/4*.18)*scale,collar[2]],node,R*.35,stem,'corymb-axis-patrinia');for(let k=0;k<2;k++){const yaw=az+j*Math.PI/2+k*Math.PI,reach=w*(.18-t*.08)*scale,tip=[node[0]+Math.sin(yaw)*reach,h*(.89+t*.055)*scale,node[2]+Math.cos(yaw)*reach];b.branch(node,tip,R*.16,stem,'corymb-branch-patrinia');cyme(tip,yaw,Math.min(.065,w*.11,h*.06)*scale);}}
+  const top=[collar[0],h*.955*scale,collar[2]];b.branch([collar[0],h*.82*scale,collar[2]],top,R*.16,stem,'corymb-branch-patrinia');cyme(top,az,Math.min(.065,w*.11,h*.06)*scale);
+ }
+}
+
 export function heleniumPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='heleniumDome')return [Math.sin(u)*t,Math.sqrt(Math.max(0,1-t*t)),Math.cos(u)*t];
