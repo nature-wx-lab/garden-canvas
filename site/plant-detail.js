@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.451';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.452';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.451';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.452';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17312,6 +17312,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='tanacetumReferences'){drawTanacetumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='muhlenbergiaPanicles'){drawMuhlenbergiaPanicles(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='eupatorieaeReferences'){drawEupatorieaeReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='aegopodiumReferences'){drawAegopodiumReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='ligulariaReferences'){drawLigulariaReferences(b,{info,s,detail},kit);return;}
@@ -20389,6 +20390,53 @@ function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
 // Component counts and mixed flower stages are illustrative, not a flower-age clock.
 // Ternate and biternate leaves share connected petioles; repeated counts are
 // illustration samples, not a measured clone or a rhizome-growth simulation.
+export function muhlenbergiaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='muhlyLemma'||type==='muhlyPalea'||type==='muhlyGlume')return [u*.15*sn**.65,t,(type==='muhlyPalea'?-.065:.085)*(1-u*u)*sn];
+ const folded=type==='muhlyFoldedLeaf',rolled=type==='muhlyRolledLeaf';
+ return [u*.5*(.70+.30*sn)*(1-t)**.60,Math.sin(Math.PI*.78*t)+(folded?Math.abs(u)*.016:rolled?.012*(1-Math.cos(u*Math.PI)):.005*u*u)*sn,t];
+}
+const MUHLY_LEAF_TOP=Object.fromEntries(['muhlyFlatLeaf','muhlyFoldedLeaf','muhlyRolledLeaf'].map(type=>{
+ let top=0;for(let j=0;j<=64;j++)for(let k=0;k<=8;k++)top=Math.max(top,muhlenbergiaPoint(type,j/64,k/4-1)[1]);return[type,top];
+}));
+function drawMuhlenbergiaPanicles(b,{info,s,detail,month},kit){
+ const a=info.appearance,type=a.shootProfile,lind=type==='lindheimeri',rev=type==='reverchonii',white=type==='whiteCloud',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.92),rootY=Math.min(.0003,h*.001,LH*.01),leafType=lind?'muhlyFoldedLeaf':rev?'muhlyRolledLeaf':'muhlyFlatLeaf',winter=[12,1,2].includes(month),n=Math.max(12,Math.round((lind?180:220)*detail*s.leafDensity));
+ const rotate=(p,az)=>[Math.sin(az)*p[2]+Math.cos(az)*p[0],p[1],Math.cos(az)*p[2]-Math.sin(az)*p[0]];
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.12*Math.sqrt((i+.4)/n),at=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],hh=LH*(.40+.57*(.5+.5*Math.sin(i*7.13))),reach=w*(lind?.23:.31)*(.50+.50*(.5+.5*Math.sin(i*2.17))),width=Math.min(lind?.0030:rev?.0015:.0020,w*.008,h*.008),color=winter&&i%5===0?'#adab8a':s.leafColor,fy=hh/MUHLY_LEAF_TOP[leafType];
+  b.add(leafType,'leaf-muhly-'+type,color,...at,width,fy,reach,0,az,0);
+  const get=(t,u)=>{const p=muhlenbergiaPoint(leafType,t,u),q=rotate([p[0]*width,p[1]*fy+.000005,p[2]*reach],az);return q.map((v,k)=>v+at[k]);};
+  for(const u of [-.60,0,.60]){let prev=get(0,u);for(let j=1;j<=12;j++){const next=get(j/12,u);b.branch(prev,next,Math.min(width*.018,h*.00005),u===0?'#99ad87':color,'parallel-vein-muhly');prev=next;}}
+ }
+ const dry=s.seedHeads&&!s.bloom;if(!s.bloom&&!dry)return;
+ const densityScale=Math.min(1,Math.max(.25,Math.sqrt(w/(lind?.65:.8)))),culms=Math.max(4,Math.round((rev?36:lind?28:40)*detail*densityScale)),levels=lind?16:18,rays=lind?3:4,stem=dry?'#a8a080':lind?'#869b83':'#6e8864',panicleColor=dry?'#c1b69a':s.flowerColor,F=Math.min(lind?.0028:rev?.0042:.0040,h*.006,w*.009),awn=dry||s.bloom?Math.min(lind?0:rev?.0030:.0070,h*.012,w*.02):0;
+ let spikeIndex=0;
+ const spikelet=(at,az,pitch,inspect)=>{
+  const f=flowerFrame(b,at,pitch,az),idx=spikeIndex++,c=dry?panicleColor:lind?'#c4ceba':white?'#d9d8bd':idx%4===0?'#967b70':panicleColor;
+  f.add('muhlyLemma','lemma-muhly-'+type,c,0,0,0,F,F,F);
+  f.add('muhlyPalea','palea-muhly-'+type,c,0,0,F*.025,F,lind?F*.85:F,F,0,Math.PI,0);
+  for(const side of [-1,1])f.add('muhlyGlume','glume-muhly-'+type,dry?'#b1a48c':lind?'#b6c6ad':white?'#c1c6ab':'#9a8c79',side*F*.032,0,-side*F*.030,F,lind?F:F*.35,F,side*.10,side*Math.PI/2,0);
+  if(awn>0){let prev=[0,F,0];for(let j=1;j<=3;j++){const next=[Math.sin(j*.8+idx)*awn*.14,F+awn*j/3,0];f.branch(prev,next,Math.min(F*.012,h*.000018),c,'lemma-awn-muhly');prev=next;}}
+  if(!dry&&inspect)f.flower([0,F*.8,0],F*2.0);
+ };
+ for(let i=0;i<culms;i++){
+  const az=i*2.399963,q=(i+.4)/culms,rr=w*.08*Math.sqrt(q),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],drift=w*(lind?.20:rev?.21:.23)*(.4+.6*Math.sqrt(q)),top=h*(.95-.12*q),base=h*(rev?.28:lind?.52:.51),axis=y=>[root[0]+Math.sin(az)*drift*(y/top)**1.5,y,root[2]+Math.cos(az)*drift*(y/top)**1.5],radius=Math.min(lind?.0010:.00065,h*.0012,w*.003);
+  let prev=root;for(let j=1;j<=10;j++){const next=axis(top*j/10);b.branch(prev,next,radius,stem,'culm-muhly');prev=next;}
+  for(let j=0;j<levels;j++){
+   const t=(j+.3)/levels,start=axis(base+(top-base)*t),envelope=Math.min(lind?.0075:rev?.060:.10,w*(lind?.022:rev?.13:.14))*Math.sin(Math.PI*(.10+.87*t));
+   for(let k=0;k<rays;k++){
+    const yaw=az+j*1.33+k*TAU/rays,end=[start[0]+Math.sin(yaw)*envelope,start[1]+h*(lind?.006:.018)*(1-t),start[2]+Math.cos(yaw)*envelope];
+    b.branch(start,end,Math.min(radius*.16,h*.00010),dry?'#bbb098':lind?'#afbdac':white?'#c8cfb9':panicleColor,'primary-panicle-branch-muhly');
+    const grains=lind?7:5;
+    for(let q=0;q<grains;q++){
+     const frac=(q+.7)/grains,offYaw=yaw+(q%2?1:-1)*.8,branch= Math.min(lind?.003:.014,w*(lind?.006:.035),h*.02)*(1-t*.6),joint=start.map((v,n)=>v+(end[n]-v)*frac),tip=[joint[0]+Math.sin(offYaw)*branch,joint[1]+h*.007,joint[2]+Math.cos(offYaw)*branch];
+     b.branch(joint,tip,Math.min(radius*.085,h*.00005),dry?'#bbb098':lind?'#afbdac':white?'#c8cfb9':panicleColor,'spikelet-pedicel-muhly');spikelet(tip,offYaw,-.22+q*.12,i===0&&j===Math.floor(levels*.45)&&k===0&&q===grains-1);
+    }
+   }
+  }
+ }
+}
+
 export function eupatorieaePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='eupatorieaeCone')return [Math.sin(u)*t,1-t,Math.cos(u)*t];

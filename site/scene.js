@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.451';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.451';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.452';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.452';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -10,7 +10,7 @@ export function keepCameraAboveGround(camera,target){
 }
 // Flower anchors belong to the visible generated plant, so dormant/hidden flowers
 // cannot be focused and a reference-size change is reflected in the camera fit.
-export function flowerInspectionDistanceFloor(group){return group?.userData?.architecture==='eupatorieaeReferences'?.045:.14;}
+export function flowerInspectionDistanceFloor(group){return ['eupatorieaeReferences','muhlenbergiaPanicles'].includes(group?.userData?.architecture)?.045:.14;}
 export function flowerInspectionView(group,aspect=1,fov=40){
  const anchors=group?.userData?.flowerTargets;
  if(!Array.isArray(anchors))return null;
@@ -20,6 +20,12 @@ export function flowerInspectionView(group,aspect=1,fov=40){
  const radius=Math.max(.004,anchor.radius*group.matrixWorld.getMaxScaleOnAxis()),axis=new THREE.Vector3(...anchor.axis).transformDirection(group.matrixWorld),target=group.localToWorld(new THREE.Vector3(...anchor.origin)).addScaledVector(axis,radius*.30),direction=axis.clone().multiplyScalar(.90).add(new THREE.Vector3(.8,.18,1).multiplyScalar(.45)).normalize(),ratio=Number.isFinite(aspect)&&aspect>0?Math.min(1,aspect):1,angle=Math.atan(Math.tan((Number.isFinite(fov)&&fov>5&&fov<100?fov:40)*Math.PI/360)*ratio),distance=Math.max(flowerInspectionDistanceFloor(group),radius*1.20/Math.sin(angle)),position=target.clone().addScaledVector(direction,distance);
  position.y=Math.max(CAMERA_FLOOR+1e-7,position.y);
  return {position:position.toArray(),target:target.toArray()};
+}
+export function restoreCameraPose(camera,controls,pose){
+ if(!pose)return;
+ camera.position.fromArray(pose.position);controls.target.fromArray(pose.target);
+ controls.minDistance=Math.min(.12,Math.max(.04,camera.position.distanceTo(controls.target)));
+ controls.update();
 }
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
 function mat(color){if(!sceneMaterials.has(color))sceneMaterials.set(color,new THREE.MeshStandardMaterial({color,roughness:.92}));return sceneMaterials.get(color);}
@@ -189,5 +195,5 @@ export function createScene(container,onPick){
     if(moving&&lastTick)elapsed+=Math.min(.1,(now-lastTick)/1000);lastTick=now;wind.time.value=elapsed;
     renderer.render(scene,camera);lastDraw=now;dirty=false;container.dataset.frames=String(++frameCount);container.dataset.windTime=elapsed.toFixed(2);
   });
-  return {render,hasFlower:()=>{const p=plan?.plants.find(p=>p.id===selection);return !!(p&&stateAt(p,view).bloom&&flowerInspectionView(plants?.children.find(g=>g.userData.plantId===selection),camera.aspect,camera.fov));},wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(controls.minDistance,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{if(!c)return;camera.position.fromArray(c.position);controls.target.fromArray(c.target);controls.update();dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
+  return {render,hasFlower:()=>{const p=plan?.plants.find(p=>p.id===selection);return !!(p&&stateAt(p,view).bloom&&flowerInspectionView(plants?.children.find(g=>g.userData.plantId===selection),camera.aspect,camera.fov));},wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(controls.minDistance,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{restoreCameraPose(camera,controls,c);dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
 }
