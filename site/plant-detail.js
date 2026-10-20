@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.455';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.456';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.455';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.456';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='calamagrostisReferences'){drawCalamagrostisReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='panicumReferences'){drawPanicumReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='softSucculents'){drawSoftSucculents(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='haworthiaCrowns'){drawHaworthia(b,{info,s,rand},kit);return;}
@@ -20442,6 +20443,53 @@ function drawTallEupatorieae(b,{info,s,detail,month},kit){
     const ga=yaw+group*2.399963,node=[collar[0]+Math.sin(ga)*w*.075,h*(.87-.020*i+(ivory&&group===1?.035:0)),collar[2]+Math.cos(ga)*w*.075];b.branch(collar,node,R*.18,stem,'corymb-branch-tallEupa');
     const count=Math.max(4,Math.round((whorled?12:9)*detail));for(let j=0;j<count;j++){
      const phi=yaw+j*2.399963,rad=Math.min(whorled?.025:.019,w*.045,h*.035)*Math.sqrt((j+.4)/count),at=[node[0]+Math.sin(phi)*rad,h*(.94-.020*i+(ivory?.022*(1-(j+.4)/count):0))-F*1.78,node[2]+Math.cos(phi)*rad];b.branch(node,at,R*.035,stem,'head-pedicel-tallEupa');head(at,phi,budding||j===count-1&&group===2&&k===2);
+    }
+   }
+  }
+ }
+}
+
+export function calamagrostisPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='calaEnvelope')return [u*.15*sn**.76,t,.075*(1-u*u)*sn];
+ const basal=type==='calaBasalLeaf';return [u*.5*(.70+.30*sn)*(1-t)**.72,Math.sin(Math.PI*(basal?.77:.56)*t)+.010*u*u*sn,t];
+}
+const CALA_LEAF_TOP=Object.fromEntries(['calaBasalLeaf','calaCaulineLeaf'].map(type=>{
+ let top=0;for(let i=0;i<=80;i++)for(let j=0;j<=8;j++)top=Math.max(top,calamagrostisPoint(type,i/80,j/4-1)[1]);return[type,top];
+}));
+function drawCalamagrostisReferences(b,{info,s,detail,month},kit){
+ const type=info.appearance.shootProfile,over=type==='overdam',walden=type==='waldenbuch',dry=!!s.seedHeads&&!s.bloom,heads=s.bloom||dry,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.92)*s.leafScale,winter=[11,12,1,2].includes(month),R=Math.min(.0015,h*.0018,w*.004,LH*.022),rootY=Math.min(.0005,h*.003,LH*.03),culms=Math.max(4,Math.round((walden?22:over?28:30)*detail)),stem=dry?'#ac9873':'#7f9165',panicleColor=dry?'#b9a17c':s.flowerColor;
+ const rotate=(p,az)=>[Math.sin(az)*p[2]+Math.cos(az)*p[0],p[1],Math.cos(az)*p[2]-Math.sin(az)*p[0]];
+ const blade=(joint,az,basal,i)=>{
+  const shape=basal?'calaBasalLeaf':'calaCaulineLeaf',fy=Math.min(LH*(basal?.68:.54)*(.60+.40*(.5+.5*Math.sin(i*5.73))),Math.max(0,LH*.986-joint[1])/CALA_LEAF_TOP[shape]),reach=Math.min(w*(basal?.31:.23),fy*(basal?.70:walden?.52:.35)),width=Math.min(over?.010:.008,h*.020,w*.028,LH*.06);
+  b.add(shape,'leaf-cala-'+type+(winter?'-winter':'-green'),s.leafColor,...joint,width,fy,reach,0,az,0);
+  const get=(t,u)=>{const p=calamagrostisPoint(shape,t,u),q=rotate([p[0]*width,p[1]*fy+.000005,p[2]*reach],az);return q.map((v,k)=>v+joint[k]);};
+  for(const u of [-.62,0,.62]){let prev=get(0,u);for(let j=1;j<=12;j++){const next=get(j/12,u);b.branch(prev,next,Math.min(width*.010,LH*.00015),s.leafColor,'parallel-vein-cala');prev=next;}}
+ };
+ let serial=0;
+ const F=Math.min(.006,h*.009,w*.016),hairColor=dry?'#c2b08d':over?'#d4dcc4':walden?'#dce0cc':'#d2bbc9';
+ const spikelet=(at,az,pitch,inspect)=>{
+  const f=flowerFrame(b,at,pitch,az);
+  for(const side of [-1,1])f.add('calaEnvelope','spikelet-envelope-cala',panicleColor,side*F*.026,0,-side*F*.025,F,F,F,side*.07,side*Math.PI/2,0);
+  // Exterior-only reference. Basal hair length/count are illustrative, with no hidden floret or fertility claim.
+  for(let q=0;q<6;q++){const yaw=q*TAU/6,len=F*.45;let prev=[0,F*.035,0];for(let j=1;j<=2;j++){const t=j/2,next=[Math.sin(yaw)*len*.35*t*t,F*.035+len*t,Math.cos(yaw)*len*.35*t*t];f.branch(prev,next,Math.min(F*.007,h*.000035),hairColor,'basal-hair-cala');prev=next;}}
+  if(!dry&&inspect)f.flower([0,F*.55,0],F*1.7);
+ };
+ for(let i=0;i<culms;i++){
+  const az=i*2.399963,q=(i+.5)/culms,rr=w*(walden?.10:.08)*Math.sqrt(q),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=heads?h*(.965-.12*q):LH*.90,drift=Math.min(w*(walden?.13:.055),LH*.28)*(heads?1:.60),axis=y=>{const t=(y-rootY)/Math.max(.000001,top-rootY),k=Math.min(7,Math.max(0,Math.floor(t*8))),f=t*8-k,u0=k/8,u1=(k+1)/8,bend=u0*u0+(u1*u1-u0*u0)*f;return[root[0]+Math.sin(az)*drift*bend,y,root[2]+Math.cos(az)*drift*bend];};
+  let prev=root;for(let j=1;j<=8;j++){const next=axis(rootY+(top-rootY)*j/8);b.branch(prev,next,R,stem,'culm-cala');prev=next;}
+  const nodes=Math.max(1,Math.round(4*s.leafDensity)),leafTop=Math.min(top*.65,LH*.60);
+  for(let j=0;j<nodes;j++){const y=rootY+(leafTop-rootY)*(j+1)/(nodes+1),joint=axis(y);blade(joint,az+(j%2)*Math.PI,false,serial++);b.branch(axis(Math.max(rootY,y-Math.min(.018,LH*.08))),joint,R*1.12,stem,'leaf-sheath-cala');}
+  if(i<Math.round(culms*s.leafDensity))for(let k=0;k<(walden?3:2);k++)blade(root,az+k*2.1,true,serial++);
+  if(!heads)continue;
+  const levels=walden?10:12,rays=walden?4:3,base=h*(walden?.60:.67),contraction=dry?(walden?.45:.22):1,branchRadius=Math.min(R*.17,h*.00012);
+  for(let j=0;j<levels;j++){
+   const t=(j+.30)/levels,start=axis(base+(top-base)*t),envelope=Math.min(h*(walden?.12:.075),w*(walden?.20:.14))*Math.sin(Math.PI*(.12+.86*t))*contraction;
+   for(let k=0;k<rays;k++){
+    const yaw=az+j*1.29+k*TAU/rays,end=[start[0]+Math.sin(yaw)*envelope,start[1]+h*(dry?.014:.028)*(1-t),start[2]+Math.cos(yaw)*envelope];
+    b.branch(start,end,branchRadius,panicleColor,'primary-panicle-branch-cala');
+    for(let q=0;q<4;q++){
+     const frac=(q+.55)/4,joint=start.map((v,n)=>v+(end[n]-v)*frac),side=yaw+(q%2?1:-1)*.65,reach=Math.min(h*.012,w*.022)*contraction*(1-t*.60),tip=[joint[0]+Math.sin(side)*reach,joint[1]+h*.006,joint[2]+Math.cos(side)*reach];b.branch(joint,tip,branchRadius*.48,panicleColor,'spikelet-pedicel-cala');spikelet(tip,side,-.15+q*.10,i===0&&j===5&&k===0&&q===3);
     }
    }
   }

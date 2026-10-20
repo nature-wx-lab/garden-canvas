@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.455';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.455';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.455';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.455';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS } from './model.js?v=0.9.455';
-import { createScene } from './scene.js?v=0.9.455';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.456';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.456';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.456';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.456';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS } from './model.js?v=0.9.456';
+import { createScene } from './scene.js?v=0.9.456';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
@@ -33,6 +33,7 @@ function sourceCard(target,kind){const info=plantInfo(kind),box=$(target);box.re
   if(appearance?.architecture==='submergedShoots')box.append(el('p',appearance.waterSurfaceModel?'水深2cm未満では水上の姿、それ以上では水中の姿を表示します。水中では花を表示しません。変化する水位に応じた新葉の展開速度、水温・結氷の影響は未再現です。':'水中葉の見本です。「庭をつくる」で池の水深を設定すると、水底から描きます。池の外や水深0mでは、形を見るための見本表示になります。水温・結氷・水質による生育変化は未再現です。','hint'));
   if(appearance?.phenologyRegion==='grower-cold')box.append(el('p','冬姿の参考：おぎはら植物園の寒冷地での記載。暖地の実測時期ではありません。','hint'));
   else if(appearance?.phenologyRegion)box.append(el('p',appearance.phenologyRegion,'hint'));
+  if(appearance?.sourceConflict)box.append(el('p',appearance.sourceConflict,'hint'));
   if(appearance?.winterClimateSensitive&&!info.gardenUse)box.append(el('p','冬の葉や花は栽培環境で変わります。寒さへの対処は、育て方と出典の案内を確認してください。','hint'));
   if(appearance?.unconfirmed.length){
    const notes=el('details',undefined,'reference-notes');notes.append(el('summary','参考表示の注意点'));
