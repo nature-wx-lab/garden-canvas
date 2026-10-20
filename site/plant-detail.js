@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.462';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.463';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.462';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.463';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='blueCarexReferences'){drawBlueCarexReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='fineCarexReferences'){drawFineCarexReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='oshimensisReferences'){drawOshimensisReferences(b,{info,s,detail,month},kit);return;}
  if(info.appearance?.architecture==='ophiopogonReferences'){drawOphiopogonReferences(b,{info,s,detail,month},kit);return;}
@@ -20473,6 +20474,52 @@ export function stipoidHairGeometry(type){
 
 
 
+
+
+export function blueCarexPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='blueCarexScaleRef')return[u*.21*sn**.65,t,.12*(1-u*u)*sn];
+ const bunny=type.includes('Bunny'),upright=type.includes('Upright'),curve=upright?Math.sin(Math.PI*.65*t):Math.sin(Math.PI*(bunny?.91:.86)*t)-Math.sin(Math.PI*(bunny?.91:.86))*t;
+ return[u*.5*sn**(bunny?.38:.32)*(1-.12*t),curve+(bunny?.004:.0012)*u*u*sn,t];
+}
+const BLUE_CAREX_TOP=Object.fromEntries(['blueCarexFlaccaOuterRef','blueCarexFlaccaUprightRef','blueCarexBunnyOuterRef','blueCarexBunnyUprightRef'].map(type=>{let top=0;for(let i=0;i<=80;i++)for(let j=0;j<=12;j++)top=Math.max(top,blueCarexPoint(type,i/80,j/6-1)[1]);return[type,top];}));
+function drawBlueCarexReferences(b,{info,s,detail,month},kit){
+ const type=info.appearance.shootProfile,bunny=type==='bunny',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0004,h*.003,LH*.020),R=Math.min(.0007,h*.003,w*.004,LH*.030);
+ if(!s.leafDensity)return;
+ const branch=(a,z,r,c,k)=>{const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<.0000001)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('blueCarexTriStemRef',k,c,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);};
+ const rotate=(p,az)=>[Math.cos(az)*p[0]+Math.sin(az)*p[2],p[1],-Math.sin(az)*p[0]+Math.cos(az)*p[2]],crowns=Math.max(3,Math.round((bunny?8:10)*detail)),leaves=Math.max(2,Math.round((bunny?8:10)*s.leafDensity)),winter=[12,1,2].includes(month);
+ for(let c=0;c<crowns;c++){
+  const az=c*2.399963,root=[Math.sin(az)*w*.085*Math.sqrt((c+.5)/crowns),rootY,Math.cos(az)*w*.085*Math.sqrt((c+.5)/crowns)];
+  for(let j=0;j<leaves;j++){
+   const upright=(j+c)%3===0,shape='blueCarex'+(bunny?'Bunny':'Flacca')+(upright?'Upright':'Outer')+'Ref',yaw=az+j*2.399963,fy=(LH*.985-rootY)/BLUE_CAREX_TOP[shape]*(.66+.34*(.5+.5*Math.sin(c*5.13+j*3.91))),reach=Math.min(w*(upright?.17:.37),fy*(upright?.30:bunny?1.65:1.4)),width=Math.min(bunny?.0127:.0026,h*.07,w*.06,LH*.12),kind='leaf-blue-carex-'+type+(winter?'-winter':([7,8].includes(month)?'-summer':'-green'));
+   b.add(shape,kind,s.leafColor,...root,width,fy,reach,0,yaw,0);
+   const get=(t,u)=>{const p=blueCarexPoint(shape,t,u),q=rotate([p[0]*width,p[1]*fy+.000001,p[2]*reach],yaw);return q.map((v,k)=>v+root[k]);};
+   for(const u of bunny?[-.50,0,.50]:[0]){let prev=get(0,u);for(let k=1;k<=8;k++){const next=get(k/8,u);branch(prev,next,Math.min(width*.003,LH*.00003),s.leafColor,'parallel-vein-blue-carex');prev=next;}}
+  }
+ }
+ if(!s.bloom)return;
+ const scapes=Math.max(1,Math.round((bunny?3:4)*detail)),L=Math.min(bunny?.014:.030,h*.16,w*.12),W=Math.min(bunny?.003:.004,h*.025,w*.020),unit=Math.min(.0012,h*.008,w*.006);
+ const spike=(base,pitch,yaw,inspect,narrow=false)=>{
+  const len=L*(narrow?.85:1),wid=W*(narrow?.40:1),f=flowerFrame(b,base,pitch,yaw);f.add('blueCarexTriStemRef','spike-axis-blue-carex-exterior',bunny?'#a49d77':'#6d6550',0,len*.5,0,R*.35,len,R*.35);
+  const rings=Math.max(6,Math.round(20*Math.sqrt(detail))),around=narrow?5:7;
+  for(let j=0;j<rings;j++)for(let k=0;k<around;k++){
+   const t=(j+.3)/rings,az=k*TAU/around+j*.63,r=wid*.5*Math.sin(Math.PI*(.10+.85*t));
+   f.add('blueCarexScaleRef','spike-scale-blue-carex-exterior',s.flowerColor,Math.sin(az)*r,len*t,Math.cos(az)*r,unit*(narrow?1.4:2.4),unit*1.4,unit,-.15,az,0);
+  }
+  if(inspect)f.flower([0,len*.56,0],Math.max(len*.58,wid*1.5));
+ };
+ for(let i=0;i<scapes;i++){
+  const az=i*2.399963,rr=w*(i===0?.14:.065*Math.sqrt((i+.5)/scapes)),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=h*(bunny?.78:.96)*(1-.10*i/scapes),drift=Math.min(w*(bunny?.16:.075),h*(bunny?.30:.10)),at=t=>[root[0]+Math.sin(az)*drift*t*t,rootY+(top-L-rootY)*t,root[2]+Math.cos(az)*drift*t*t];
+  let prev=at(0);for(let j=1;j<=12;j++){const next=at(j/12);branch(prev,next,R*.6,'#84916f','culm-blue-carex');prev=next;}
+  const nodes=3;
+  for(let n=0;n<nodes;n++){
+   const t=.40+.42*n/(nodes-1),from=at(t),yaw=az+n*2.399963,len=Math.min(w*.09,h*.12),to=[from[0]+Math.sin(yaw)*len,from[1]+(bunny?-.010:L*.10),from[2]+Math.cos(yaw)*len];to[1]=Math.max(rootY*2,to[1]);branch(from,to,R*.35,'#939b77','peduncle-blue-carex');spike(to,bunny?.98:.15,yaw,i===0&&n===nodes-1);
+   if(!bunny){const bractLen=Math.min(w*.09,h*.15);b.add('blueCarexFlaccaUprightRef','leaf-bract-blue-carex','#819f79',...from,Math.min(.0023,w*.012,LH*.05),bractLen*.55,bractLen,0,yaw,0);}
+  }
+  spike(at(1),bunny?.98:.05,az,false,!bunny);
+  if(!bunny){const from=at(.92),yaw=az+.45,to=[from[0]+Math.sin(yaw)*L*.45,from[1],from[2]+Math.cos(yaw)*L*.45];branch(from,to,R*.35,'#8c9474','upper-peduncle-blue-carex');spike(to,.06,yaw,false,true);}
+ }
+}
 
 export function fineCarexPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
