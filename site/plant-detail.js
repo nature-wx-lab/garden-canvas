@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.443';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.444';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.443';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.444';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17312,6 +17312,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='tanacetumReferences'){drawTanacetumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='arctotisReferences'){drawArctotisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='cannaReferences'){drawCannaReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='echinopsReferences'){drawEchinopsReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='oreganoBractReferences'){drawOreganoReferences(b,{info,s,detail,month},kit);return;}
  if(a.architecture==='swanAnemoneReferences'){drawSwanAnemones(b,{info,s,detail},kit);return;}
  if(a.architecture==='gardenAnemoneReferences'){drawGardenAnemones(b,{info,s,detail,rand},kit);return;}
@@ -20374,6 +20375,55 @@ function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
 
 // Flower-stage samples and component counts are drawing examples, not clocks
 // or measured cultivar constants. Disc florets and paleae are separate parts.
+
+// Globes are compound heads; every primary involucre represents one floret.
+// All repeated counts and mixed opening stages are illustrative samples.
+export function echinopsPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='echinopsCorolla'){
+  const lobe=(.5+.5*Math.cos(5*u))**3,v=Math.max(0,(t-.62)/.38),r=t<=.62?.04+.02*t/.62:.06+v*(.15*lobe+.015),y=t<=.62?t:.62+v*(.10*lobe+.02);
+  return [Math.sin(u)*r,y,Math.cos(u)*r];
+ }
+ if(type==='echinopsAntherTube'){const r=.065+.006*Math.cos(5*u);return [Math.sin(u)*r,.52+.13*t,Math.cos(u)*r];}
+ if(type==='echinopsPrimaryBract')return [u*.12*sn**.70,.055*sn+.075*u*u*sn,t];
+ const narrow=type==='echinopsNarrowLeaf',crest=1-Math.abs(((t*6+.16)%1)-.5)*2,lobes=(narrow?.10:.15)+(narrow?.90:.85)*Math.max(0,crest)**1.4,width=(narrow?.24:.36)*sn**.70*lobes;
+ return [u*width,.055*sn+.045*u*u*sn+.025*t*t,t];
+}
+const ECHINOPS_REFERENCE_PROFILES={
+ arcticGlow:{radius:.020,leaf:.20,core:'#5e8157',bract:'#90a482',n:3},
+ starFrost:{radius:.019,leaf:.20,core:'#779279',bract:'#c0ccbb',n:4},
+ blueGlow:{radius:.018,leaf:.20,core:'#5c6e9c',bract:'#959ac4',n:3},
+ platinumBlue:{radius:.020,leaf:.17,core:'#554e8c',bract:'#8986bf',n:3,narrow:true}
+};
+function drawEchinopsReferences(b,{info,s,detail},kit){
+ const a=info.appearance,type=a.flowerPalette.type,P=ECHINOPS_REFERENCE_PROFILES[type],h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(P.leaf,h*.25,w*.30,s.leafHeight*.70)*scale,R=Math.min(.003,h*.005,w*.008),stem=a.stemColor,n=Math.max(2,Math.round(P.n*detail));let first=true;
+ const leaf=(at,az,len,basal=false)=>{
+  const pet=basal?len*.22:len*.025,joint=[at[0]+Math.sin(az)*pet,at[1]+pet*.12,at[2]+Math.cos(az)*pet],shape=P.narrow?'echinopsNarrowLeaf':'echinopsBroadLeaf',f=flowerFrame(b,joint,-.12,az);b.branch(at,joint,R*(basal?.30:.23),stem,basal?'petiole-echinops-basal':'leaf-base-echinops');f.add(shape,'leaf-echinops-'+type,s.leafColor,0,0,0,len,len,len);
+  let prev=[0,0,0];for(let j=1;j<=12;j++){const q=echinopsPoint(shape,j/12,0).map(v=>v*len);q[1]+=.00005;f.branch(prev,q,Math.min(R*.10,len*.004),'#aab69c','midrib-echinops');prev=q;}
+  for(let j=0;j<6;j++)for(const side of [-1,1]){const t=(j+.34)/6,p=echinopsPoint(shape,t,0).map(v=>v*len),q=echinopsPoint(shape,t,side).map(v=>v*len),end=[q[0]+side*len*.045,q[1]+len*.015,q[2]+len*.025];f.branch(p,q,Math.min(R*.07,len*.003),'#8d9d85','side-vein-echinops');f.branch(q,end,Math.min(R*.08,len*.0035),'#c4c5a7','leaf-spine-echinops');}
+ };
+ const globe=(center,rad,mainIndex,side,bud)=>{
+  const core=P.core;b.add(kit.bud,'secondary-receptacle-echinops',core,...center,rad*.35,rad*.35,rad*.35);if(first&&!bud){b.flower?.(center,rad*1.03,0,0,0);first=false;}
+  const N=180,F=rad*.70;
+  for(let j=0;j<N;j++){
+   const y=1-2*(j+.5)/N,az=j*2.399963,rr=Math.sqrt(1-y*y),axis=[Math.sin(az)*rr,y,Math.cos(az)*rr],at=center.map((v,k)=>v+axis[k]*rad*.35),f=flowerFrame(b,at,Math.acos(y),az),open=!bud&&(type==='arcticGlow'?y>(side===0?-.55:.18):side===0?j%5!==0:j%2===0),flowerColor=type==='arcticGlow'&&mainIndex===2&&side===0?'#dfe8ef':s.flowerColor;
+   f.add(kit.bud,'primary-involucre-echinops',core,0,rad*.19,0,rad*.065,rad*.19,rad*.065);
+   for(let row=0;row<3;row++)for(let k=0;k<4;k++){const yaw=k*TAU/4+row*.71,len=rad*(.44-row*.035);f.add('echinopsPrimaryBract','phyllary-echinops-primary',P.bract,Math.sin(yaw)*rad*.04,row*rad*.018,Math.cos(yaw)*rad*.04,len,len,len,-1.35,yaw,0);}
+   for(let k=0;k<6;k++){const yaw=k*TAU/6,from=[Math.sin(yaw)*rad*.06,0,Math.cos(yaw)*rad*.06],to=[Math.sin(yaw)*rad*.12,rad*.23,Math.cos(yaw)*rad*.12];f.branch(from,to,rad*.004,P.bract,'primary-basal-bristle-echinops');}
+   if(!open)continue;
+   f.add('echinopsCorolla','corolla-echinops-'+type,flowerColor,0,rad*.08,0,F,F,F);f.add('echinopsAntherTube','anther-tube-echinops',type==='arcticGlow'||type==='starFrost'?'#b3afbb':'#8a80a5',0,rad*.08,0,F,F,F);f.branch([0,rad*.08+F*.60,0],[0,rad*.08+F*.78,0],F*.012,'#d7d3df','style-echinops');for(const sign of [-1,1])f.branch([0,rad*.08+F*.78,0],[sign*F*.075,rad*.08+F*.83,0],F*.009,'#ded9e7','stigma-echinops');
+  }
+ };
+ for(let i=0;i<n;i++){
+  const az=i*2.399,rad=w*.11*Math.sqrt(i/n)*scale,root=[Math.sin(az)*rad,Math.min(.001,h*.02),Math.cos(az)*rad],H=Math.min(s.leafHeight*.70,h*.58)*scale,reach=w*.045*scale;let prev=root;
+  for(let k=0;k<3;k++)if((k+.15)/3<s.leafDensity)leaf(root,az+k*2.399,L,true);
+  for(let j=1;j<=6;j++){const t=j/6,node=[root[0]+Math.sin(az)*reach*t,H*t+root[1],root[2]+Math.cos(az)*reach*t];b.branch(prev,node,R*(1-t*.25),stem,'stem-echinops-'+type);prev=node;if((j-.4)/6<s.leafDensity)leaf(node,az+j*2.399,L*(1-t*.55));}
+  if(!s.bloom)continue;
+  const collar=[prev[0],h*.61*scale,prev[2]];b.branch(prev,collar,R*.70,stem,'flowering-trunk-echinops');
+  for(let side=0;side<3;side++){const yaw=az+(side-1)*.80,rad=Math.min(P.radius,h*.085,w*.07)*scale*(side===2?.72:side===1?.90:1),reach=w*(side===0?.025:side===1?.19:.13)*scale,center=[collar[0]+Math.sin(yaw)*reach,h*(side===0?.95:side===1?.76:.85)*scale-rad,collar[2]+Math.cos(yaw)*reach],tip=[center[0],center[1]-rad*.36,center[2]];b.branch(collar,tip,R*.46,stem,'peduncle-echinops');globe(center,rad,i,side,side===2);}
+ }
+}
+
 export function oreganoPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='oreganoCalyx'){const r=.11+.085*t,lip=.5+.5*Math.cos(u*5);return [Math.sin(u)*r,t-.14*(1-lip)*t**12,Math.cos(u)*r];}
