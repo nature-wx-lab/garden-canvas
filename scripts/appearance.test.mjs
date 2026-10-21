@@ -7012,12 +7012,13 @@ test('20 spurges and gauras use distinct leaf and reproductive organs through al
 
 test('twelve grasses and sedges preserve leaf apices, heads and winter persistence',()=>{
  const arches=['blueFescue','snowTussock','goldMillet','redMelica','crystalSedge','redHookSedge','goldMatRush','goldDwarfBamboo','sweetFlagFans','whitetopSedge'];
- const entries=Object.entries(CATALOG).filter(([id,p])=>arches.includes(p.appearance?.architecture)||['p-de19f78331f2','p-74ff1805830b','p-43b0f639ca52','p-5dd3a3b2b975','p-96529c6d37e1','p-925157abb909','p-2ebde73aa083','p-b1eb3be4e657','p-7a24f0539c5f'].includes(id));assert.equal(entries.length,12);
+ const entries=Object.entries(CATALOG).filter(([id,p])=>arches.includes(p.appearance?.architecture)||['p-a426b5ddc65f','p-2450337a047a','p-de19f78331f2','p-74ff1805830b','p-43b0f639ca52','p-5dd3a3b2b975','p-96529c6d37e1','p-925157abb909','p-2ebde73aa083','p-b1eb3be4e657','p-7a24f0539c5f'].includes(id));assert.equal(entries.length,12);
  for(const [id,info] of entries)for(let month=1;month<=12;month++){
   const g=plantModel(makePlant(id,3801,2,2),view(month));
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
-  if(month===1){if((['redMelica','whitetopSedge'].includes(info.appearance.architecture)||info.appearance.shootProfile==='melicaRed'))assert.equal(g.children.length,0,id);else if(info.appearance.architecture!=='goldDwarfBamboo')assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf')),id);}
+  if(month===1){if((['redMelica','whitetopSedge','whitetopReferences'].includes(info.appearance.architecture)||info.appearance.shootProfile==='melicaRed'))assert.equal(g.children.length,0,id);else if(!['goldDwarfBamboo','goldenBambooReferences'].includes(info.appearance.architecture))assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf')),id);}
   if(month===6&&info.appearance.architecture==='whitetopSedge'){assert.ok(g.children.some(m=>m.userData.component==='bract-tip-517d46'));assert.ok(!g.children.some(m=>m.userData.component==='petal'));assert.ok(g.children.some(m=>m.userData.component==='culm'&&m.geometry.parameters.radialSegments===3));}
+  if(month===6&&info.appearance.architecture==='whitetopReferences'){assert.ok(g.children.some(m=>m.userData.component==='bract-whitetop-long'));assert.ok(g.children.some(m=>m.userData.component==='spikelet-whitetop-reference'));assert.ok(g.children.some(m=>m.userData.component==='culm-whitetop'&&m.geometry.parameters.radialSegments===3));assert.ok(!g.children.some(m=>/petal|tepal/.test(m.userData.component)));}
   if(month===6&&info.appearance.architecture==='sweetFlagFans')assert.ok(g.children.some(m=>m.userData.component==='spadixFlower'));
   if(month===6&&info.appearance.architecture==='acorusReferences'){assert.ok(g.children.some(m=>m.userData.component==='tepal-acorus'));assert.ok(g.children.some(m=>m.userData.component==='scape-acorus'&&m.geometry.parameters.radialSegments===3));}
   if(info.appearance.architecture==='crystalSedge')assert.ok(g.children.some(m=>m.userData.component==='membranousEdge'));
@@ -8492,5 +8493,32 @@ test('Four tussock reference inspections centre visible organs rather than an ax
  for(const id of ['p-de19f78331f2','p-74ff1805830b','p-43b0f639ca52','p-5dd3a3b2b975'])for(const size of [[.4,.6,.24],[.1,.2,.06]]){
   const p={...makePlant(id,47199,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(7));
   try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&(/tussock.*exterior/.test(hit.object.userData.component)||/^(anther|filament)-tussock-matrush$/.test(hit.object.userData.component)),id+' visible target '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
+
+test('Whitetop and golden bamboo references preserve species structures and distinct winter states',()=>{
+ const ids=['p-a426b5ddc65f','p-2450337a047a'];
+ for(const [ci,id]of ids.entries())for(const size of [[.45,.55,.32],[.10,.20,.07]])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,47200+ci,2,2),height:size[0],spread:size[1],leafHeight:size[2]},before=structuredClone(p),s=stateAt(p,view(month)),bloom=ci===0&&month>=5&&month<=10,label=id+' '+size+' '+month;
+  assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(s.bloom,bloom,label);assert.equal(s.seedHeads,false,label);assert.deepEqual(p,before);if(![1,3,6,11].includes(month))continue;const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+  try{if(!s.groundDormant)assert.equal(g.userData.architecture,ci?'goldenBambooReferences':'whitetopReferences');assert.equal(!!g.userData.flowerTargets?.length,bloom,label);
+   if(ci===0&&month===1)assert.equal(g.children.length,0,label);else if(ci===0){assert.ok(count('leaf-whitetop-reference')>0,label);assert.equal(count('culm-whitetop')>0,bloom,label);if(bloom){const n=count('ovary-whitetop-reference');assert.ok(n>0);assert.equal(count('filament-whitetop-reference'),n*3);assert.equal(count('anther-whitetop-reference'),n*3);assert.equal(count('stigma-whitetop-reference'),n*2);assert.ok(count('bract-whitetop-long')>0);assert.ok(count('spikelet-whitetop-reference')>0);assert.ok(g.children.some(m=>m.userData.component==='culm-whitetop'&&m.geometry.parameters.radialSegments===3));}assert.ok(!g.children.some(m=>/petal|tepal|perianth/.test(m.userData.component)),label);}
+   else{for(const k of ['bambooCulm','bambooNode','bambooTwig'])assert.ok(count(k)>0,label);assert.equal(g.children.some(m=>m.userData.component.startsWith('leaf-golden-bamboo-')),month!==1,label);assert.equal(count('winter-bud-golden-bamboo')>0,month===1,label);assert.ok(!g.children.some(m=>/flower|anther|seed|fruit/.test(m.userData.component)),label);}
+   for(const mesh of g.children)for(const arr of [mesh.instanceMatrix.array,mesh.geometry.attributes.position.array,mesh.geometry.attributes.normal.array])assert.ok(arr.every(Number.isFinite),label);
+   for(const mesh of g.children.filter(m=>m.userData.component.startsWith(ci?'leaf-golden-bamboo-':'bract-whitetop-'))){const shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};mesh.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,ci?/gbGreen/:/wbGreen/);assert.ok(!shader.fragmentShader.includes('${'));}
+  }finally{dispose(g);}
+ }
+ assert.deepEqual(CATALOG[ids[0]].height,[.3,.6]);assert.deepEqual(CATALOG[ids[1]].height,[.2,.4]);assert.equal(CATALOG[ids[0]].spread,null);assert.equal(CATALOG[ids[1]].spread,null);assert.equal(CATALOG[ids[0]].appearance.petals,0);assert.equal(CATALOG[ids[0]].appearance.stamenCount,3);assert.equal(CATALOG[ids[1]].bloomKnown,false);assert.match(CATALOG[ids[1]].appearance.sourceConflict,/下限/);
+});
+test('Whitetop and bamboo references stay within independently tiny physical inputs',()=>{
+ for(const id of ['p-a426b5ddc65f','p-2450337a047a'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]]){
+  const p={...makePlant(id,47299,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),matrix=new Matrix4(),point=new Vector3(),label=id+' '+size;
+  try{let maxLeaf=0,leaves=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite),label);assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,label+' height '+mesh.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,label+' footprint '+mesh.userData.component);if(mesh.userData.component.startsWith('leaf-')){maxLeaf=Math.max(maxLeaf,point.y);leaves++;}}}}assert.ok(leaves>0,label);assert.ok(maxLeaf<=.005001,label+' foliage ceiling '+maxLeaf);}finally{dispose(g);}
+ }
+});
+test('Whitetop observation targets visible small organs and unknown bamboo flowers remain unavailable',()=>{
+ for(const size of [[.45,.55,.32],[.10,.20,.07]]){
+  const p={...makePlant('p-a426b5ddc65f',47299,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6));try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&['anther-whitetop-reference','filament-whitetop-reference','style-whitetop-reference','stigma-whitetop-reference','scale-whitetop-reference'].includes(hit.object.userData.component),'visible small organ '+hit?.object.userData.component);}finally{dispose(g);}
+  const bamboo=makePlant('p-2450337a047a',47298,2,2),bg=plantModel(bamboo,view(6));try{assert.equal(flowerInspectionView(bg),null);assert.equal(stateAt(bamboo,view(6)).bloom,false);}finally{dispose(bg);}
  }
 });

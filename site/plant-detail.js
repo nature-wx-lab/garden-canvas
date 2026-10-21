@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.471';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.472';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.471';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.472';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,8 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='whitetopReferences'){drawWhitetopReferences(b,{info,s,detail,month,rand},kit);return;}
+ if(info.appearance?.architecture==='goldenBambooReferences'){drawGoldenBambooReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='tussockReferences'){drawTussockReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='acorusReferences'){drawAcorusReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='milletMelicaReferences'){drawMilletMelicaReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22562,3 +22564,78 @@ function drawTussockReferences(b,{info,s,detail,month,rand},kit){
   }
  }
 }
+
+export function whitetopReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='wbSpikeletRef'||type==='wbAntherRef'||type==='wbOvaryRef'){const ph=(u+1)*Math.PI,r=sn**(type==='wbSpikeletRef'?.65:.55);return[Math.sin(ph)*r*(type==='wbAntherRef'?.12:.30),t,Math.cos(ph)*r*(type==='wbOvaryRef'?.10:.15)];}
+ if(type==='wbScaleRef')return[u*.48*sn**.55,t,.24*(1-u*u)*sn];
+ if(type==='wbFilamentRef'||type==='wbStyleRef')return[u*.025,t,.06*sn];
+ if(type==='wbBractRef')return[u*.5*(1-t)**.65*(.8+.2*sn),.10*sn-.18*t*t,t];
+ const upright=type==='wbUprightRef';return[u*.5*sn**.35,upright?t:Math.sin(Math.PI*.77*t)-.18*t,t];
+}
+const WHITETOP_LEAF_TOP=Object.fromEntries(['wbUprightRef','wbArchingRef'].map(type=>{let y=0;for(let j=0;j<=72;j++)y=Math.max(y,whitetopReferencePoint(type,j/72,0)[1]);return[type,y];}));
+function drawWhitetopReferences(b,{info,s,detail,rand},kit){
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.96)*s.leafScale,green=s.leafColor,R=Math.min(.0007,h*.004,w*.004),rootY=Math.min(.00015,h*.002,LH*.01);
+ if(!s.leafDensity&&!s.bloom)return;
+ const culms=Math.max(3,Math.round(12*detail)),front=Math.atan2(.8,1);
+ for(let i=0;i<culms;i++){
+  const az=front+i*2.399963,rr=w*.13*Math.sqrt((i+.5)/culms),root=[Math.sin(az)*rr,Math.max(rootY,R*1.1),Math.cos(az)*rr],top=h*(.88+.06*(.5+.5*Math.cos(i*3.7))),head=[root[0]+Math.sin(az)*w*.015,top,root[2]+Math.cos(az)*w*.015],from=new THREE.Vector3(...root),to=new THREE.Vector3(...head),dir=to.clone().sub(from),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize()),'YXZ'),mid=from.add(to).multiplyScalar(.5);
+  if(s.bloom)b.add('wbTriCulmRef','culm-whitetop',green,...mid.toArray(),R,dir.length(),R,e.x,e.y,e.z);
+  const leaves=Math.max(2,Math.round(6*s.leafDensity));
+  for(let j=0;j<leaves;j++){
+   const atY=rootY+LH*.055*(j%3),shape=j%3?'wbArchingRef':'wbUprightRef',fy=Math.max(0,LH*.98-atY)/WHITETOP_LEAF_TOP[shape]*(.65+.35*(.5+.5*Math.cos(i*2.3+j*3.1))),reach=Math.min(w*.22,fy*.9),width=Math.min(.003,h*.035,w*.025,LH*.06);
+   b.add(shape,'leaf-whitetop-reference',kit.shade(rand,green,.035),root[0],atY,root[2],width,fy,reach,0,az+j*TAU/3,0);
+  }
+  if(!s.bloom)continue;
+  const f=flowerFrame(b,head,.03*Math.sin(i),az),bracts=4+i%3,longL=Math.min(.115,h*.25,w*.30),shortL=longL*.43;
+  for(let j=0;j<bracts;j++){
+   const long=j<3,L=long?longL*(.85+.15*Math.cos(j*2)):shortL*(.9+.1*Math.sin(j)),width=Math.min(.005,h*.025,w*.025,L*.08);
+   f.add('wbBractRef',long?'bract-whitetop-long':'bract-whitetop-short','#f0efdf',0,-Math.min(.001,h*.005),0,width,L*.65,L,0,j*TAU/bracts+.14*Math.sin(i+j),.06*Math.sin(j*3));
+  }
+  const SL=Math.min(.006,h*.04,w*.035),HR=Math.min(.006,h*.04,w*.05),unit=Math.min(.004,h*.028,w*.020,SL*.67);
+  for(let j=0;j<15;j++){
+   const ph=j*2.399963,rad=HR*Math.sqrt((j+.5)/15),sf=flowerFrame(f,[Math.sin(ph)*rad,SL*.10*(1-j/15),Math.cos(ph)*rad],.20+rad/HR*.25,ph);
+   sf.add('wbSpikeletRef','spikelet-whitetop-reference','#e9e4cf',0,0,0,SL*.33,SL,SL*.40);
+   for(let k=0;k<9;k++){
+    const a=k*2.399963,rr=SL*.12,y=k*SL*.09,ff=flowerFrame(sf,[Math.sin(a)*rr,y,Math.cos(a)*rr],.10,a);
+    ff.add('wbScaleRef','scale-whitetop-reference','#eee9d7',0,0,0,SL*.38,SL*.60,SL*.21);
+    if(k<2||k>6||!((j+k)%4===0||j===0&&k===4))continue;
+    const gyn=unit*.25;ff.add('wbOvaryRef','ovary-whitetop-reference','#c7d091',0,0,0,unit*.25,gyn,unit*.25);
+    ff.add('wbStyleRef','style-whitetop-reference','#e0dec1',0,gyn,0,unit*.9,unit*.40,unit*.3);
+    for(let n=0;n<2;n++)ff.add('wbStyleRef','stigma-whitetop-reference','#ebe5ca',0,gyn+unit*.40,0,unit*.8,unit*.45,unit*.8,0,n*Math.PI,n?-.65:.65);
+    for(let n=0;n<3;n++){const an=n*TAU/3,x=Math.sin(an)*unit*.17,z=Math.cos(an)*unit*.17;ff.add('wbFilamentRef','filament-whitetop-reference','#e7e4ce',x,0,z,unit,unit,unit*.5);ff.add('wbAntherRef','anther-whitetop-reference','#d8cf9b',x,unit,z,unit*.55,unit*.35,unit*.55);}
+    if(i===0&&j===0&&k===4)ff.flower([0,unit*1.08,unit*.17],unit*.55);
+   }
+  }
+ }
+}
+
+export function goldenBambooPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='gbBudRef'){const ph=(u+1)*Math.PI,r=sn**.65;return[Math.sin(ph)*r*.3,t,Math.cos(ph)*r*.3];}
+ return[u*.5*sn**.62*(1-.25*t),.055*sn-.22*t*t+.035*u*u*sn,t];
+}
+function drawGoldenBambooReferences(b,{info,s,detail,rand,month},kit){
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97),leafCeiling=LH*s.leafScale,R=Math.min(.0014,h*.008,w*.004),rootY=Math.min(.00015,h*.002),n=Math.max(6,Math.round(18*detail)),winter=[12,1,2].includes(month),green=s.leafColor;
+ const line=(a,z,r,kind,color)=>{const f=new THREE.Vector3(...a),q=new THREE.Vector3(...z),d=q.clone().sub(f),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');b.add('gbCulmRef',kind,color,...f.add(q).multiplyScalar(.5).toArray(),r,d.length(),r,e.x,e.y,e.z);};
+ for(let i=0;i<n;i++){
+  const az=i*2.399963,rr=w*.21*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr,Math.max(rootY,R*1.1),Math.cos(az)*rr],top=h*(.88+.08*(.5+.5*Math.cos(i*4.1))),end=[root[0]+Math.sin(az)*w*.025,top,root[2]+Math.cos(az)*w*.025],stem=i%3?'#687b3e':'#71624e';
+  line(root,end,R,'bambooCulm',stem);
+  for(let j=0;j<6;j++){
+   const nodeH=Math.min(.0018,h*.008,w*.008),y=j===0?Math.max(root[1]+nodeH*.6,Math.min(.0005,h*.01)):top*[0,.18,.36,.55,.76,.95][j],q=y/top,base=[root[0]+(end[0]-root[0])*q,y,root[2]+(end[2]-root[2])*q];
+   b.add('gbCulmRef','bambooNode','#87945b',...base,R*1.35,nodeH,R*1.35);
+   const branches=j>3?2:1;
+   for(let k=0;k<branches;k++){
+    const yaw=az+j*2.399963+k*Math.PI,reach=Math.min(.045,w*.085,h*.13),tip=[base[0]+Math.sin(yaw)*reach,base[1]+Math.min(LH*.06,h*.025,reach*.16),base[2]+Math.cos(yaw)*reach];line(base,tip,R*.45,'bambooTwig',stem);
+    if(!s.leafDensity)continue;
+    const len=Math.min(.11,h*.36,w*.17,leafCeiling*.52),width=Math.min(.018,len*.20,w*.05,h*.05,leafCeiling*.2),leaves=Math.max(1,Math.round(3*s.leafDensity));
+    for(let m=0;m<leaves;m++){
+     const at=[base[0]+(tip[0]-base[0])*(.4+m*.25),base[1]+(tip[1]-base[1])*(.4+m*.25),base[2]+(tip[2]-base[2])*(.4+m*.25)],L=Math.min(len*(.80+.1*m),Math.max(0,leafCeiling-at[1])/.10,at[1]/.30),kind='leaf-golden-bamboo-'+((i+j+m)%4===0?'broad':(i+j+m)%4===1?'narrow':'main');
+     if(L>0)b.add('gbLeafRef',kind,kit.shade(rand,green,.025),...at,Math.min(width,L*.20),L,L,0,yaw+(m%2?-.72:.72),.08*Math.sin(i+j+m));
+    }
+   }
+  }
+  if(winter)b.add('gbBudRef','winter-bud-golden-bamboo','#84714b',root[0]+R*1.5,Math.max(rootY,R*.35),root[2],Math.min(.003,h*.025,w*.015),Math.min(.007,h*.06,w*.035),Math.min(.003,h*.025,w*.015));
+ }
+}
+
