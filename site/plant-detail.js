@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.531';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.532';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.531';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.532';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='callistephusReferences'){drawCallistephusReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='gaillardiaSourceReferences'){drawGaillardiaSourceReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='achilleaReferences'){drawAchilleaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='autumnJoyReferences'){drawAutumnJoyReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -24351,5 +24352,52 @@ function drawGaillardiaSourceReferences(b,{info,s,month,rand},kit){
   for(let k=0;k<a.flowerPalette.headsPerStem;k++){
    const ay=yaw+(k-1)*(grape?1.15:.85),reach=Math.min(w*(grape?.16:.12),h*.16),at=[tip[0]+Math.sin(ay)*reach,h*(.98-i/N*.05-k*.065)-(CH+FL)*1.30,tip[2]+Math.cos(ay)*reach],start=root.map((v,j)=>v+(tip[j]-v)*(k===0?1:.65));line(null,start,at,SR*.60,dry?'spent-head-stalk-gaillardia-source-ref':'head-stalk-gaillardia-source-ref',stem);head(at,ay);
   }
+ }
+}
+
+export function callistephusReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),az=u*Math.PI;
+ if(type==='cqLeafRef'){const edge=1+.11*Math.sin(t*Math.PI*14)*Math.sin(Math.PI*t*.9);return[u*.5*sn**.56*(.70+.30*t)*edge,.026*sn*(1-u*u)+.010*u*u*Math.sin(t*Math.PI*4)*sn,t];}
+ if(type==='cqRayRef'){const edge=sn**.44*(.65+.35*t);return[u*.5*edge,.105*u*u*sn+.022*sn*(1-u*u)-.02*t*t,t-.028*(.5+.5*Math.cos(u*Math.PI*2))*t**20];}
+ if(type==='cqCoreRef'){const r=Math.max(.00001,1-t*t)**.52;return[Math.sin(az)*r,t,Math.cos(az)*r];}
+ if(type==='cqDiscRef'){const r=.25+.18*t+.10*t*t;return[Math.sin(az)*r,t-.16*t**8*(.5-.5*Math.cos(az*5)),Math.cos(az)*r];}
+ if(type==='cqAntherRef'){const r=.45+.035*Math.cos(az*5);return[Math.sin(az)*r,t,Math.cos(az)*r];}
+ return[u*.5*sn**.60*(.65+.35*t),t,.055*sn*(1-u*u)];
+}
+function drawCallistephusReferences(b,{info,s,month,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h),tom=a.shootProfile==='tomorrowScarlet',live=!!s.bloom,budding=!!s.flowerBuds,R=Math.min(a.flowerRadius,w*.14,h*.17),DR=Math.min(a.discRadius,R*.38),DH=Math.min(tom?.0013:.002,R*.10,h*.015),FL=Math.min(a.flowerLength,R*.32,h*.035),RL=Math.min(a.rayLength,Math.max(R*.10,R-DR)),RW=Math.min(a.rayWidth,RL*.35),SR=Math.min(.0025,h*.008,w*.010,LH*.010),leafColor=s.leafColor,stem=a.stemColor;
+ if(!s.leafDensity&&!live&&!budding)return;
+ const line=(frame,from,to,r,kind,color)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.8));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('cqStemRef',kind,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const leaf=(node,yaw,len,upper=false)=>{const L=Math.min(len,w*.28,LH*.60,Math.max(0,LH-node[1])/.70),W=L*a.leafWidth/a.leafLength*(upper?.70:1);if(L<1e-10)return;const f=flowerFrame(b,node,-.34,yaw),col=kit.shade(rand,leafColor,.025),eps=Math.min(.00002,L*.002);f.add('cqLeafRef','leaf-callistephus-ref',col,0,0,0,W,L,L);let prev=null;for(let j=0;j<=12;j++){const p=callistephusReferencePoint('cqLeafRef',j/12,0).map((v,k)=>v*(k===0?W:L));p[1]+=eps;if(prev)line(f,prev,p,Math.min(SR*.075,L*.007),'leaf-vein-callistephus-ref','#9eac7d');prev=p;}};
+ let heads=0;
+ const head=(origin,yaw)=>{
+  const index=heads++,closed=budding||live&&index%7===6,target=live&&index===0,f=flowerFrame(b,origin,.035*Math.sin(index),yaw);f.add('cqCoreRef','receptacle-callistephus-ref','#b1ad66',0,0,0,DR,DH,DR);
+  for(let row=0;row<2;row++)for(let j=0;j<20;j++){const aa=j*TAU/20+row*.16,L=Math.min(row?.005:.010,R*(row?.22:.42),h*.05),rad=DR*(row?.98:1.02);f.add('cqBractRef',row?'inner-phyllary-callistephus-ref':'outer-phyllary-callistephus-ref',row?'#baa68d':stem,Math.sin(aa)*rad,-DH*.15,Math.cos(aa)*rad,L*(row?.22:.32),L,L,row?1.95:1.78,aa,0);}
+  if(closed){f.add('cqBudRef','head-bud-callistephus-ref','#8a9a64',0,DH*.4,0,DR*.94,Math.max(DH,FL)*.90,DR*.94);return;}
+  const rays=a.referenceRayFlorets,whorls=a.flowerPalette.rayWhorls,perRing=rays/whorls;
+  for(let j=0;j<rays;j++){
+   const ring=Math.floor(j/perRing),az=(j%perRing)*TAU/perRing+ring*.17,at=[Math.sin(az)*DR*(.96-ring*.08),ring*RL*(tom?.035:.065),Math.cos(az)*DR*(.96-ring*.08)],g=flowerFrame(f,at,(tom?.06:.10)-ring*(tom?.22:.45),az),len=RL*(1-ring*(tom?.12:.16)),width=RW*(1+ring*.05);g.add('cqRayRef','ray-callistephus-ref',kit.shade(rand,a.flowerPalette.ray,.018),0,0,0,width,len,len);
+   const ov=FL*.11;g.add('cqBudRef','ray-inferior-ovary-callistephus-ref','#a6af7b',0,-FL*.14,0,ov*.34,ov,ov*.34);line(g,[0,-FL*.07,0],[0,FL*.20,0],FL*.009,'ray-style-callistephus-ref','#e7d9af');for(const side of [-1,1])line(g,[0,FL*.20,0],[side*FL*.04,FL*.27,0],FL*.007,'ray-stigma-branch-callistephus-ref','#ebdfbd');
+   if(target&&j===0){const rows=40,cols=16,scale=new THREE.Vector3(width,len,len),vs=[[24/rows,0],[25/rows,0],[24/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...callistephusReferencePoint('cqRayRef',t,u)).multiply(scale)),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');g.flower(centre.toArray(),R*.80,pose.x,pose.y,pose.z);}
+  }
+  const cells=a.referenceDiscFlorets;
+  for(let j=0;j<cells;j++){
+   const rn=Math.sqrt((j+.5)/cells),az=j*2.399963,r=DR*rn,y=DH*(1-rn*rn),g=flowerFrame(f,[Math.sin(az)*r,y-FL*.45,Math.cos(az)*r],0,az),FW=FL*.20;
+   if(j<Math.floor(cells*.15)){g.add('cqBudRef','disc-bud-callistephus-ref','#d2c76a',0,FL*.70,0,FW*.65,FL*.30,FW*.65);continue;}
+   g.add('cqDiscRef','disc-corolla-callistephus-ref','#d8c45d',0,0,0,FW,FL,FW);g.add('cqBudRef','disc-inferior-ovary-callistephus-ref','#a6ac72',0,-FL*.12,0,FW*.38,FL*.12,FW*.38);
+   for(let k=0;k<5;k++){const aa=k*TAU/5;line(g,[Math.sin(aa)*FW*.20,FL*.14,Math.cos(aa)*FW*.20],[Math.sin(aa)*FW*.20,FL*.70,Math.cos(aa)*FW*.20],FW*.032,'disc-filament-callistephus-ref','#d5bf68');}
+   g.add('cqAntherRef','disc-anther-tube-callistephus-ref','#d0b459',0,FL*.64,0,FW*.50,FL*.23,FW*.50);line(g,[0,FL*.15,0],[0,FL*1.05,0],FW*.055,'disc-style-callistephus-ref','#ead895');for(const side of [-1,1])line(g,[0,FL*1.05,0],[side*FW*.34,FL*1.18,0],FW*.040,'disc-stigma-branch-callistephus-ref','#eada9c');
+  }
+ };
+ const root=[0,SR*1.3,0],tip=[w*.012,LH*.83,w*.008],nodes=tom?16:14;let prev=root;
+ if(!live&&s.leafDensity)for(let j=0;j<3;j++)if((j+.1)/3<s.leafDensity)leaf(root,j*2.399963,a.leafLength);
+ for(let j=1;j<=nodes;j++){const t=j/nodes,node=root.map((v,k)=>v+(tip[k]-v)*t);line(null,prev,node,SR*(1-.32*t),'main-stem-callistephus-ref',stem);if((j-.2)/nodes<s.leafDensity)leaf(node,j*2.399963,a.leafLength*(1-.45*t),j>nodes*.65);prev=node;}
+ const allowance=Math.max(FL*1.40,RL*(tom?.55:.70))+DH;
+ if(live||budding){const top=[tip[0],h*.98-allowance,tip[2]];line(null,tip,top,SR*.62,'head-stalk-callistephus-ref',stem);head(top,.25);}
+ const branches=a.flowerPalette.branches;
+ for(let i=0;i<branches;i++){
+  const t=tom?.70+i*.037:.16+i*.065,start=root.map((v,k)=>v+(tip[k]-v)*t),yaw=.45+i*2.399963,reach=w*(tom?.16:.23)*(.70+.30*Math.sin(i*1.4)**2),end=[start[0]+Math.sin(yaw)*reach,LH*(.78-i/branches*.10),start[2]+Math.cos(yaw)*reach];line(null,start,end,SR*(tom?.42:.55),'lateral-stem-callistephus-ref',stem);
+  if(s.leafDensity)for(let j=1;j<=3;j++)if((j-.2)/3<s.leafDensity){const at=start.map((v,k)=>v+(end[k]-v)*j/3);leaf(at,yaw+j*2.399963,a.leafLength*(.78-.14*j),j>1);}
+  if(live||budding){const top=[end[0],h*(.95-i/branches*(tom?.09:.15))-allowance,end[2]];line(null,end,top,SR*.40,'head-stalk-callistephus-ref',stem);head(top,yaw);}
  }
 }
