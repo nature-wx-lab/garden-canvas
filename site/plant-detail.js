@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.532';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.533';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.532';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.533';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -24365,7 +24365,7 @@ export function callistephusReferencePoint(type,t,u){
  return[u*.5*sn**.60*(.65+.35*t),t,.055*sn*(1-u*u)];
 }
 function drawCallistephusReferences(b,{info,s,month,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h),tom=a.shootProfile==='tomorrowScarlet',live=!!s.bloom,budding=!!s.flowerBuds,R=Math.min(a.flowerRadius,w*.14,h*.17),DR=Math.min(a.discRadius,R*.38),DH=Math.min(tom?.0013:.002,R*.10,h*.015),FL=Math.min(a.flowerLength,R*.32,h*.035),RL=Math.min(a.rayLength,Math.max(R*.10,R-DR)),RW=Math.min(a.rayWidth,RL*.35),SR=Math.min(.0025,h*.008,w*.010,LH*.010),leafColor=s.leafColor,stem=a.stemColor;
+ const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h),tom=['tomorrowScarlet','tomorrowPurple','tomorrowPink','tomorrowWhite'].includes(a.shootProfile),live=!!s.bloom,budding=!!s.flowerBuds,R=Math.min(a.flowerRadius,w*.14,h*.17),DR=Math.min(a.discRadius,R*.38),DH=Math.min(tom?.0013:.002,R*.10,h*.015),FL=Math.min(a.flowerLength,R*.32,h*.035),RL=Math.min(a.rayLength,Math.max(R*.10,R-DR)),RW=Math.min(a.rayWidth,RL*.35),SR=Math.min(.0025,h*.008,w*.010,LH*.010),leafColor=s.leafColor,stem=a.stemColor;
  if(!s.leafDensity&&!live&&!budding)return;
  const line=(frame,from,to,r,kind,color)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.8));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('cqStemRef',kind,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
  const leaf=(node,yaw,len,upper=false)=>{const L=Math.min(len,w*.28,LH*.60,Math.max(0,LH-node[1])/.70),W=L*a.leafWidth/a.leafLength*(upper?.70:1);if(L<1e-10)return;const f=flowerFrame(b,node,-.34,yaw),col=kit.shade(rand,leafColor,.025),eps=Math.min(.00002,L*.002);f.add('cqLeafRef','leaf-callistephus-ref',col,0,0,0,W,L,L);let prev=null;for(let j=0;j<=12;j++){const p=callistephusReferencePoint('cqLeafRef',j/12,0).map((v,k)=>v*(k===0?W:L));p[1]+=eps;if(prev)line(f,prev,p,Math.min(SR*.075,L*.007),'leaf-vein-callistephus-ref','#9eac7d');prev=p;}};
