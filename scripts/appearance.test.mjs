@@ -2,7 +2,7 @@ import {inspectionSeasonActive,pennisetumFoliageInspectionView,planumRosetteInsp
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Matrix4,Vector3,Line3,Color,PerspectiveCamera,Vector2,Raycaster,SRGBColorSpace} from '../site/vendor/three.module.js';
-import {CATALOG,makePlant,stateAt,annualGalleryDocument,validateDocument} from '../site/model.js';
+import {CATALOG,makePlant,stateAt,annualGalleryDocument,validateDocument,emptyDocument} from '../site/model.js';
 import {CATALOG_VERSION} from '../site/catalog.js';
 import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
@@ -9411,4 +9411,35 @@ test('Large amber and dark Heuchera macro cameras centre visible floral cups',()
  for(const [ci,id]of ['p-1ce7667837bf','p-936c075ab4b9','p-48705fc80c49','p-e19a7419d76f'].entries())for(const size of [[.7,.7,.35],[.15,.2,.08]]){
   const p={...makePlant(id,51799,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(ci===0?8:6));try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&hit.object.userData.component.startsWith('calyx-hu-ref-'),id+' '+size+' first visible '+hit?.object.userData.component);}finally{dispose(g);}
  }
+});
+
+test('Karasuba and dwarf Alchemilla references preserve distinct leaves flowers source months and winter dormancy',()=>{
+ const ids=['p-037294927640','p-28aed74bea0c'];
+ for(const [ci,id]of ids.entries())for(const size of [[.3,.6,.2],[.1,.2,.05]])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,51800+ci,2,2),height:size[0],spread:size[1],leafHeight:size[2]},before=structuredClone(p),s=stateAt(p,view(month)),g=plantModel(p,view(month)),tag=ci===0?'muk-ref':'ery-ref',bloom=(ci===0?[4,5]:[5,6]).includes(month),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),flowers=count('ovary-'+tag),label=id+' '+month;
+  try{assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(CATALOG[id].appearance.compoundType,undefined);assert.equal(s.bloom,bloom,label);assert.equal(s.seedHeads,false);if(g.children.length)assert.equal(g.userData.architecture,ci===0?'mukdeniaReferences':'dwarfAlchemillaReferences');assert.equal(!!g.userData.flowerTargets?.length,bloom);assert.equal(inspectionSeasonActive(p,view(month)),bloom);assert.equal(flowers>0,bloom);
+   for(const [part,n]of [['sepal',ci===0?5:4],['petal',ci===0?5:0],['epicalyx',ci===0?0:4],['filament',ci===0?5:4],['anther',ci===0?5:4],['style',ci===0?2:1],['stigma',ci===0?2:1],['hypanthium',ci===0?0:1]])assert.equal(count(part+'-'+tag),flowers*n,label+' '+part);
+   if([1,2,12].includes(month))assert.ok(!g.children.some(m=>m.userData.component.startsWith('leaf-')),label);else if(month===6)assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-')),label);
+   if(ci===0&&month===4)assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-muk-ref-')),label+' developing leaves during bloom');
+   assert.ok(!g.children.some(m=>/pollen|fruit|seed|raindrop|heuchera|hosta/.test(m.userData.component)),label);for(const mesh of g.children)for(const a of [mesh.instanceMatrix.array,mesh.geometry.attributes.position.array,mesh.geometry.attributes.normal.array])assert.ok(a.every(Number.isFinite),label);assert.deepEqual(p,before);
+   if(month===7){const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-')),shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};leaf.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,ci===0?/mukRedTip/:/eryFuzz/);assert.ok(!shader.fragmentShader.includes('${'));}if(ci===0&&month===8){const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-'));assert.ok(leaf.userData.component.endsWith('-green'));}
+  }finally{dispose(g);}
+ }
+ assert.deepEqual(CATALOG[ids[0]].height,[.2,.3]);assert.deepEqual(CATALOG[ids[0]].spread,[.3,.6]);assert.deepEqual(CATALOG[ids[0]].bloom,[4,5]);assert.deepEqual(CATALOG[ids[1]].height,[.1,.2]);assert.deepEqual(CATALOG[ids[1]].spread,[.2,.3]);assert.equal(CATALOG[ids[1]].appearance.petals,0);assert.equal(CATALOG[ids[1]].appearance.basis.petals,3);for(const id of ids){assert.equal(CATALOG[id].bloomKnown,false);assert.equal(CATALOG[id].appearance.minFloweringYearsAfterPlanting,undefined);}
+});
+test('Karasuba and dwarf Alchemilla independent tiny inputs bound actual leaf and flower vertices',()=>{
+ for(const [ci,id]of ['p-037294927640','p-28aed74bea0c'].entries())for(const size of [[.3,.6,.2],[.1,.2,.05],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
+  const p={...makePlant(id,51899,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(ci===0?5:6)),matrix=new Matrix4(),point=new Vector3(),label=id+' '+size;
+  try{let maxLeaf=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite),label);assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,label+' height '+mesh.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,label+' footprint '+mesh.userData.component);if(mesh.userData.component.startsWith('leaf-'))maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+ }
+});
+test('Karasuba and dwarf Alchemilla macro cameras centre visible sepal surfaces',()=>{
+ for(const [ci,id]of ['p-037294927640','p-28aed74bea0c'].entries())for(const size of [[.3,.6,.2],[.1,.2,.05]]){
+  const p={...makePlant(id,51899,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(ci===0?5:6));try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&hit.object.userData.component.startsWith('sepal-'),id+' '+size+' first visible '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
+test('Recent saved garden catalog versions retain plant dimensions and camera when imported after518',()=>{
+ const doc=emptyDocument(8,6);doc.plans.A.plants=[{...makePlant('p-54fcac98aafb',51881,2,2),height:.40,spread:.50,leafHeight:.24},{...makePlant('p-1ce7667837bf',51882,5,2),height:1,spread:.7,leafHeight:.5}];doc.view.camera={position:[-1.5,.8,-.5],target:[-2,.4,-1]};
+ for(const catalogVersion of ['2026-10-22.1','2026-10-22.2','2026-10-22.3','2026-10-22.4']){const raw={...structuredClone(doc),catalogVersion};assert.deepEqual(validateDocument(raw),doc);assert.equal(raw.catalogVersion,catalogVersion);}
+ assert.throws(()=>validateDocument({...doc,catalogVersion:'2026-10-22.999'}));
 });

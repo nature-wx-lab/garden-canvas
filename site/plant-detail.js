@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.517';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.518';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.517';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.518';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(['mukdeniaReferences','dwarfAlchemillaReferences'].includes(info.appearance?.architecture)){drawKarasubaDwarfAlchemilla(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='heucheraCultivarReferences'){drawHeucheraCultivarReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='rodgersiaCultivarReferences'){drawRodgersiaCultivarReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='peltateHerbReferences'){drawPeltateHerbReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22641,6 +22642,78 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
 
 
 // Domestic nursery examples and genus morphology; dimensions are plan inputs.
+// Species-linked reference organs. The two genera have different floral plans.
+export function karasubaPoint(type,t,u){
+ if(type==='mukLeafRef'){
+  const a=u*Math.PI,base=Math.sqrt(Math.max(0,(1+Math.cos(a))*.5)),lobe=(.62+.38*Math.max(0,Math.cos(a*7))**.48),r=base*lobe*(1+.025*Math.cos(a*56))*t;
+  return [r*Math.sin(a),base*(.035*Math.sin(Math.PI*t)+.06*t*t+.014*Math.cos(a*7)*Math.sin(Math.PI*t)),r*Math.cos(a)];
+ }
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ return [u*.5*sn**(type==='mukSepalRef'?1.05:.50)*(type==='mukSepalRef'?(1-.25*t):1),t,.045*sn];
+}
+export function erythropodaPoint(type,t,u){
+ if(type==='eryLeafRef'){
+  const a=u*Math.PI,base=Math.sqrt(Math.max(0,(1+Math.cos(a))*.5)),r=base*(.90+.10*Math.sqrt(Math.max(0,(1+Math.cos(a*9))*.5)))*(1+.022*Math.cos(a*72))*t;
+  return [r*Math.sin(a),base*(.07*t*t+.026*Math.cos(a*9)*Math.sin(Math.PI*t)),r*Math.cos(a)];
+ }
+ if(type==='eryHypanthiumRef'){const a=u*Math.PI,r=.12+.23*Math.sin(Math.PI*t*.75);return [Math.sin(a)*r,t*.65,Math.cos(a)*r];}
+ return [u*.5*Math.max(0,Math.sin(Math.PI*t))**1.05*(1-.20*t),t,.035*Math.sin(Math.PI*t)];
+}
+function drawKarasubaDwarfAlchemilla(b,{info,s,detail,month,rand},kit){
+ const muk=info.appearance.architecture==='mukdeniaReferences',tag=muk?'muk-ref':'ery-ref',prefix=muk?'muk':'ery',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h)*s.leafScale,R=Math.min(muk?.0014:.0006,h*.004,w*.004,LH*.008),leaf=muk?'mukLeafRef':'eryLeafRef',season=muk?([5,6,7].includes(month)?'redtips':month===4?'spring':month>=10?'autumn':'green'):'hairy';
+ const line=(frame,a,z,r,kind,color)=>{
+  r=Math.min(r,Math.max(0,Math.min(a[1],z[1])*.8));if(r<=1e-12)return;
+  const q=new THREE.Vector3(...a),v=new THREE.Vector3(...z).sub(q);if(v.lengthSq()<1e-20)return;
+  const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');
+  (frame||b).add(prefix+'StemRef',kind,color,...q.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);
+ };
+ if(LH>0&&s.leafDensity>0){
+  const N=Math.max(3,Math.round((muk?26:74)*detail*s.leafDensity)),develop=muk&&month===4?.55:muk&&month===5?.78:1;
+  for(let i=0;i<N;i++){
+   const t=(i+.5)/N,az=.7+i*2.399963,L=Math.min(info.appearance.leafLength*(muk?1:.65),w*.27,LH*.65)*(.40+.60*t)*develop,pitch=-.42+.70*t,reach=w*(muk?.17:.25)*Math.sqrt(t),at=[Math.sin(az)*reach,LH*(.86-.30*t+.05*Math.sin(i*1.7))-L*Math.max(0,Math.sin(-pitch)),Math.cos(az)*reach],f=flowerFrame(b,at,pitch,az),color=muk&&month>=10&&i%3===0?'#b0a05d':s.leafColor;
+   line(null,[0,R*1.25,0],at,R,'petiole-'+tag,muk?info.appearance.stemColor:'#829078');
+   f.add(leaf,'leaf-'+tag+'-'+season,kit.shade(rand,color,.035),0,0,0,L,L*.8,L);
+  }
+ }
+ if(!s.bloom)return;
+ const FL=Math.min(info.appearance.flowerLength,h*.022,w*.018),axisR=Math.min(muk?.0015:.0006,h*.004,w*.003,FL*.24),stems=Math.max(1,Math.round((muk?4:7)*detail)),parts=muk?5:4;
+ const flower=(origin,az,target=false)=>{
+  const f=flowerFrame(b,origin,.10,az),sepal=muk?'mukSepalRef':'erySepalRef',sepalL=FL*(muk?1:.60),sepalW=FL*(muk?.50:.40),rim=muk?0:FL*.65;
+  if(!muk)f.add('eryHypanthiumRef','hypanthium-'+tag,'#a9bb75',0,0,0,FL,FL,FL);
+  f.add(prefix+'BudRef','ovary-'+tag,muk?'#dfdfbd':'#a5b673',0,FL*.25,0,FL*(muk?.16:.10),FL*(muk?.34:.20),FL*(muk?.16:.10));
+  for(let k=0;k<parts;k++){
+   const a=k*TAU/parts,sepEuler=new THREE.Euler(-Math.PI/2,a+Math.PI,0,'YXZ'),base=[Math.sin(a)*FL*.14,rim,Math.cos(a)*FL*.14];
+   f.add(sepal,'sepal-'+tag,muk?'#f5f1e8':'#c4d487',...base,sepalW,sepalL,sepalL,sepEuler.x,sepEuler.y,sepEuler.z);
+   const aa=a+Math.PI/parts;
+   if(muk)f.add('mukPetalRef','petal-'+tag,'#f0eee7',Math.sin(aa)*FL*.13,FL*.07,Math.cos(aa)*FL*.13,FL*.25,FL*.625,FL*.625,-Math.PI/2+.20,aa+Math.PI,0);
+   else f.add('erySepalRef','epicalyx-'+tag,'#8ca46c',Math.sin(aa)*FL*.12,FL*.45,Math.cos(aa)*FL*.12,FL*.24,FL*.43,FL*.43,-Math.PI/2-.15,aa+Math.PI,0);
+   // Alchemilla stamens alternate with sepals; Mukdenia's selected five-part example uses opposite positions.
+   const st=muk?a:aa,to=[Math.sin(st)*FL*.24,FL*(muk?.52:.83),Math.cos(st)*FL*.24];
+   line(f,[to[0]*.5,FL*.27,to[2]*.5],to,FL*.022,'filament-'+tag,muk?'#e9e3d1':'#d5d8a3');f.add(prefix+'BudRef','anther-'+tag,muk?'#c5a765':'#c1b75e',...to,FL*.045,FL*.055,FL*.045);
+   if(target&&k===0){
+    const rows=24,cols=16,vs=[[14/rows,0],[14/rows,.125],[15/rows,0]].map(([t,u])=>new THREE.Vector3(...(muk?karasubaPoint:erythropodaPoint)(sepal,t,u)).multiply(new THREE.Vector3(sepalW,sepalL,sepalL)).applyEuler(sepEuler).add(new THREE.Vector3(...base))),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');
+    f.flower(centre.toArray(),FL*.65,e.x,e.y,e.z);
+   }
+  }
+  for(let k=0;k<(muk?2:1);k++){
+   const to=[muk?(k?1:-1)*FL*.07:FL*.12,FL*(muk?1:.92),0],from=muk?[to[0]*.4,FL*.30,0]:[FL*.09,FL*.10,0];
+   line(f,from,to,FL*.025,'style-'+tag,muk?'#e7ddcd':'#c6ce92');f.add(prefix+'BudRef','stigma-'+tag,muk?'#d4bd96':'#c6ce92',...to,FL*.04,FL*.035,FL*.04);
+  }
+ };
+ for(let i=0;i<stems;i++){
+  const az=.55+i*2.399963,root=[Math.sin(az)*w*.05,axisR*1.25,Math.cos(az)*w*.05],top=[root[0]+Math.sin(az)*w*.055,h*(.95-i/stems*.13),root[2]+Math.cos(az)*w*.055],stemColor=info.appearance.stemColor;
+  line(null,root,top,axisR,'scape-'+tag,stemColor);
+  const clusters=muk?5:4;
+  for(let c=0;c<clusters;c++){
+   const t=(c+.5)/clusters,a=az+c*2.399963,y=h*(.59+.28*t-i/stems*.08),node=[root[0]+(top[0]-root[0])*.7,y,root[2]+(top[2]-root[2])*.7],reach=Math.min(w*.09,h*.15)*Math.sqrt(1-t*.6),end=[node[0]+Math.sin(a)*reach,y+h*.025,node[2]+Math.cos(a)*reach];
+   line(null,node,end,axisR*.35,'branch-'+tag,stemColor);
+   for(let j=0;j<7;j++){const aa=a+j*2.399963,rr=FL*(1.5+1.7*Math.sqrt((j+.5)/7)),at=[end[0]+Math.sin(aa)*rr,end[1]+FL*(j%3)*.45,end[2]+Math.cos(aa)*rr];line(null,end,at,axisR*.15,'pedicel-'+tag,stemColor);flower(at,aa);}
+  }
+  const at=[top[0]+Math.sin(az)*FL*5,h*(.96-i/stems*.13),top[2]+Math.cos(az)*FL*5];line(null,top,at,axisR*.18,'pedicel-'+tag,stemColor);flower(at,az,i===0);
+  if(muk)for(let j=0;j<3;j++){const a=az+j*2.399963,at=[top[0]+Math.sin(a)*FL*3,top[1]+FL*(.3+j*.3),top[2]+Math.cos(a)*FL*3];line(null,top,at,axisR*.13,'pedicel-'+tag,stemColor);b.add('mukBudRef','bud-'+tag,'#cf9caa',...at,FL*.35,FL*.48,FL*.35);}
+ }
+}
+
 export function heucheraCultivarPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='huPetalRef')return [u*.5*sn**.55*(.20+.80*t),t,.05*sn];
