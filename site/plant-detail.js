@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.493';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.494';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.493';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.494';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='crestedEaredFernReferences'){drawCrestedEaredFernReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='paintedFernReferences'){drawPaintedFernReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='athyriumFormReferences'){drawAthyriumFormReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='fernFrondReferences'){drawFernFrondReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22633,6 +22634,42 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
 
 
 
+
+export function crestedEaredFernPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='cfFinePinnuleRef')return[u*.5*sn**.46*(1+.10*Math.sin(t*14*Math.PI)),.035*sn,t];
+ if(type==='cfVictoriaPinnaRef')return[u*.5*sn**.52*(.60+.40*Math.cos(t*18*Math.PI)**2),.05*sn,t];
+ return[u*.5*sn**.52*(1+.095*Math.sin(t*16*Math.PI)),.055*sn+.018*u*u*sn,t];
+}
+function drawCrestedEaredFernReferences(b,{info,s,detail,month,rand},kit){
+ const type=info.appearance.shootProfile,linearis=type==='linearis',victoria=type==='victoriae',okanum=type==='okanum',w=s.spread,LH=Math.min(s.leafHeight,s.height)*s.leafScale,n=Math.max(3,Math.round((linearis?13:victoria?12:14)*detail*s.leafDensity)),front=Math.atan2(.8,1),R=Math.min(linearis?.0018:.0013,s.height*.004,w*.004,LH*.006),col=okanum?([3,4,5].includes(month)?'#b8cc83':'#8eac72'):linearis?'#79a65c':'#86b361',stemCol=okanum?'#975a74':linearis?'#8e9b65':'#8c9c70';
+ if(s.leafDensity<=0||LH<=0)return;
+ const line=(a,z,r,kind,c)=>{r=Math.min(r,Math.max(0,Math.min(a[1],z[1])*.85));if(r<=1e-12)return;const q=new THREE.Vector3(...a),v=new THREE.Vector3(...z).sub(q);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');b.add('cfStemRef',kind,c,...q.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ for(let i=0;i<n;i++){
+  const az=front+i*2.399963,rootY=Math.min(.0001,LH*.001),root=[Math.sin(az)*w*.02,rootY,Math.cos(az)*w*.02],rise=LH*(.75+.15*(i%4)/3),path=t=>[root[0]+Math.sin(az)*w*.29*t,rootY+rise*(1.42*t-.42*t*t),root[2]+Math.cos(az)*w*.29*t],crossed=victoria&&i%3===0;
+  for(let k=1;k<=20;k++)line(path((k-1)/20),path(k/20),R*(1-.7*k/20),'rachis-crested-'+type,stemCol);
+  const rows=okanum?12:14;
+  for(let row=0;row<rows;row++)for(const side of [-1,1]){
+   const t=.24+.68*(row+.5)/rows,at=path(t),frac=(t-.20)/.76,P=w*(okanum?.15:linearis?.13:.15)*Math.sin(Math.PI*Math.min(.99,frac))**.62*(1-.20*frac),yaw=az+side*(crossed?(row%2?.72:1.88):1.18),end=[at[0]+Math.sin(yaw)*P,at[1]+LH*.016,at[2]+Math.cos(yaw)*P];
+   line(at,end,R*.26,'pinna-axis-crested-'+type,stemCol);
+   if(victoria){
+    const W=Math.min(.008,w*.014,LH*.055),f=flowerFrame(b,at,0,yaw),phase=crossed?'crossed':'flat';f.add('cfVictoriaPinnaRef','pinna-victoriae-'+phase,kit.shade(rand,col,.018),0,0,0,W,Math.min(LH*.022,W),P);
+    for(let k=-1;k<=1;k++)f.add('cfFinePinnuleRef','crest-pinna-victoriae',col,0,LH*.014,P*.86,W*.50,Math.min(LH*.014,W),P*.24,0,k*.68,0);
+   }else{
+    const pairs=linearis?7:6;
+    for(let k=0;k<pairs;k++)for(const fl of [-1,1]){
+     const tt=(k+.6)/pairs,node=at.map((v,j)=>v+(end[j]-v)*tt),L=Math.min(okanum?.029:.023,w*(okanum?.030:.025),LH*.13)*(1-.42*tt)*Math.max(.20,Math.sin(Math.PI*frac)**.5),f=flowerFrame(b,node,0,yaw+fl*1.08),W=L*(okanum?.51:.19);
+     f.add(okanum?'cfBroadPinnuleRef':'cfFinePinnuleRef','pinnule-'+type,kit.shade(rand,col,.018),0,0,0,W,Math.min(LH*.022,L),L);
+    }
+    if(linearis){const f=flowerFrame(b,end,0,yaw),L=Math.min(.025,w*.032,LH*.08),W=Math.min(.0025,w*.003,LH*.02);for(let k=-1;k<=1;k++)for(const fl of [-1,1])f.add('cfFinePinnuleRef','fork-pinna-linearis',col,Math.sin(k*.6)*L*.40,LH*.009,Math.cos(k*.6)*L*.40,W,Math.min(LH*.014,W),L*.65,0,k*.6+fl*.28,0);}
+   }
+  }
+  if(!okanum){
+   const at=path(.95),f=flowerFrame(b,at,0,az),L=Math.min(linearis?.05:.035,w*.045,LH*.10),W=Math.min(linearis?.0025:.004,w*.006,LH*.035);
+   for(let k=-1;k<=1;k++)for(const fl of [-1,1])f.add('cfFinePinnuleRef','crest-frond-'+type,col,Math.sin(k*.6)*L*.32,0,Math.cos(k*.6)*L*.32,W,Math.min(LH*.015,W),L*.7,0,k*.6+fl*.30,0);
+  }
+ }
+}
 
 export function paintedFernPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));return[u*.5*sn**.55*(1+.11*Math.sin(t*16*Math.PI)),.04*sn+.018*u*u*sn,t];
