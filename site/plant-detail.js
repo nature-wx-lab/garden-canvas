@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.470';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.471';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.470';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.471';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='tussockReferences'){drawTussockReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='acorusReferences'){drawAcorusReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='milletMelicaReferences'){drawMilletMelicaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='brizaReferences'){drawBrizaReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22485,6 +22486,78 @@ function drawTenderPennisetumReferences(b,{info,s,detail,month,rand},kit){
       const points=[[.5,0],[7/12,0],[.5,1/3]].map(([t,u])=>tenderPennisetumPoint('tenderPennisetumBristleRef',t,u)),target=new THREE.Vector3(...points[0]).add(new THREE.Vector3(...points[1])).add(new THREE.Vector3(...points[2])).multiplyScalar(bl/3).applyEuler(e).add(base),featureRadius=white?(L+BL)*.53:L*.60,axisEuler=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),T),'YXZ');target.addScaledVector(T,-featureRadius*.30);f.flower(target.toArray(),featureRadius,axisEuler.x,axisEuler.y,axisEuler.z);
      }
     }
+   }
+  }
+ }
+}
+
+export function tussockReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='trMatrushBellRef'){const ph=(u+1)*Math.PI,r=.16+.31*Math.sin(Math.PI*.87*t);return[Math.sin(ph)*r,t,Math.cos(ph)*r];}
+ if(type==='trHeadRef'){const ph=(u+1)*Math.PI,r=.5*sn**.40;return[Math.sin(ph)*r,t,Math.cos(ph)*r];}
+ if(type==='trScaleRef'){const ph=(u+1)*Math.PI,r=sn**.62;return[Math.sin(ph)*r*.45,t,Math.cos(ph)*r*.13];}
+ if(type==='trSnowGlumeRef'){const ph=(u+1)*Math.PI,r=sn**1.10;return[Math.sin(ph)*r*.32,t,Math.cos(ph)*r*.09];}
+ if(type==='trAwnRef')return[u*.045,t,.35*Math.sin(Math.PI*.65*t)];
+ if(type==='trMembraneRef')return[u*.5*sn**.3,t,.36*sn*(.8+.2*u)];
+ const crystal=type==='trCrystalLeafRef',upright=type==='trUprightLeafRef',width=crystal?.47:.5*sn**.30*(1-.33*t),y=crystal||upright?t:Math.sin(Math.PI*.83*t)-Math.sin(Math.PI*.83)*t*.90;
+ return[u*width,y+.0003*u*u*sn,t];
+}
+const TUSSOCK_LEAF_TOP=Object.fromEntries(['trCrystalLeafRef','trUprightLeafRef','trArchingLeafRef'].map(type=>{let top=0;for(let i=0;i<=72;i++)top=Math.max(top,tussockReferencePoint(type,i/72,0)[1]);return[type,top];}));
+function drawTussockReferences(b,{info,s,detail,month,rand},kit){
+ const type=info.appearance.shootProfile,hook=type==='hookFiredance',rush=type==='matrushGold',snow=type==='snowFlavicans',crystal=type==='crystalTruncata',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0002,h*.002,LH*.01),R=Math.min(.001,h*.004,w*.003,LH*.04),green=s.leafColor;
+ const segment=(from,to,r,kind,color)=>{const a=new THREE.Vector3(...from),q=new THREE.Vector3(...to),d=q.clone().sub(a),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ'),mid=a.add(q).multiplyScalar(.5);b.add('trCulmRef',kind,color,...mid.toArray(),r,d.length(),r,e.x,e.y,e.z);};
+ if(s.leafDensity){
+  const fans=Math.max(4,Math.round((crystal?16:rush?11:snow?10:9)*detail)),perFan=Math.max(4,Math.round((crystal?10:12)*s.leafDensity));
+  for(let c=0;c<fans;c++){
+   const az=c*2.399963,rr=w*.15*Math.sqrt((c+.5)/fans),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr];
+   for(let j=0;j<perFan;j++){
+    const edge=j/(perFan-1),yaw=az+j*2.399963,shape=crystal?'trCrystalLeafRef':edge<.32?'trUprightLeafRef':'trArchingLeafRef',fy=(LH*.985-rootY)/TUSSOCK_LEAF_TOP[shape]*(.68+.32*(.5+.5*Math.sin(c*3.1+j*2.4))),reach=Math.min(w*(crystal?.18:.29),fy*(crystal?.7:edge<.32?.12:.9)),width=Math.min(crystal?.0035:hook?.0025:rush?.004:.006,h*.06,w*.03,LH*.085),f=flowerFrame(b,root,0,yaw),kind='leaf-tussock-'+type;
+    f.add(shape,kind,kit.shade(rand,green,.045),0,0,0,width,fy,reach);
+    if(crystal)for(const side of [-1,1])for(let k=1;k<=6;k++){
+     const t=(k+.25*Math.sin(c*3+j*2+k))/(7.2),q=tussockReferencePoint(shape,t,side),peel=Math.min(.003,h*.014,w*.01,LH*.025)*(k%2?.9:.5);
+     f.add('trMembraneRef','membrane-tussock-crystal','#d7ddd1',q[0]*width,q[1]*fy,q[2]*reach,peel*.30,peel,peel*.40,.35+side*.2,side*.7,side*1.1);
+    }
+   }
+  }
+ }
+ if(!s.bloom&&!s.seedHeads)return;
+ const count=Math.max(1,Math.round((snow?6:rush?3:crystal?5:4)*detail)),front=Math.atan2(.8,1);
+ for(let i=0;i<count;i++){
+  const az=front+i*2.399963,rr=w*(i===0?(snow?.18:.31):.10),root=[Math.sin(az)*rr,Math.max(rootY,R*1.05),Math.cos(az)*rr],head=[root[0],h*(snow?.91-.10*i/count:rush?.34:.73),root[2]];
+  segment(root,head,R,'culm-tussock-'+type,crystal?'#68765a':hook?'#76523f':'#748354');
+  if(rush){
+   const L=Math.min(.08,h*.28,w*.16),unit=Math.min(.005,h*.035,w*.020),f=flowerFrame(b,head,.12,az);segment(head,[head[0],head[1]+L,head[2]],R*.65,'rachis-tussock-matrush','#8c9253');
+   for(let j=0;j<7;j++){
+    const t=(j+.3)/7,an=j*2.399963,cr=Math.min(.005,w*.012,h*.015),at=[Math.sin(an)*cr,L*t,Math.cos(an)*cr];
+    f.add('trAwnRef','bract-tussock-matrush','#b8ac6f',...at,Math.min(.002,w*.008),Math.min(.012,h*.06,w*.04),Math.min(.005,w*.014),.3,an,0);
+    for(let k=0;k<3;k++){
+     const ph=front-az+k*TAU/3,ff=flowerFrame(f,[at[0]+Math.sin(ph)*unit*.36,at[1]+k*unit*.13,at[2]+Math.cos(ph)*unit*.36],.25,ph);
+     ff.add('trMatrushBellRef','flower-tussock-matrush-exterior','#d6cd9c',0,0,0,unit*.43,unit,unit*.43);
+     for(let n=0;n<6;n++){const a=n*TAU/6;ff.add('trAwnRef','filament-tussock-matrush','#ccc89b',Math.sin(a)*unit*.14,unit*.82,Math.cos(a)*unit*.14,unit*.12,unit*.08,unit*.06);ff.add(kit.bud,'anther-tussock-matrush','#d9c285',Math.sin(a)*unit*.14,unit*.91,Math.cos(a)*unit*.14,unit*.045,unit*.04,unit*.035);}
+     if(i===0&&j===3&&k===0)ff.flower([0,unit*.82,unit*.12],unit*.62);
+    }
+   }
+  }else if(snow){
+   const L=Math.min(.30,h*.27,w*.25),W=Math.min(.030,w*.08,h*.045),axis=t=>[head[0]+Math.sin(az)*L*.65*t,head[1]-L*(.90*t-.12*Math.sin(Math.PI*t)),head[2]+Math.cos(az)*L*.65*t],dry=!s.bloom,col=dry?s.seedColor:i%3===0?'#b3c381':i%3===1?'#d2d0a0':'#becb94';
+   for(let j=0;j<12;j++)segment(axis(j/12),axis((j+1)/12),R*.55,'rachis-tussock-snow',dry?'#b7a77d':'#8f9e63');
+   for(let j=0;j<24;j++)for(let k=0;k<6;k++){
+    const t=(j+.5)/24,ph=az+k*TAU/6+j*.45,r=W*Math.sin(Math.PI*t)**.40,a=axis(t),q=[a[0]+Math.sin(ph)*r,a[1]-.008*Math.sin(Math.PI*t)*Math.min(1,h/.5,w/.4),a[2]+Math.cos(ph)*r];segment(a,q,R*.23,'branch-tussock-snow',dry?'#b7a77d':'#a1ad75');
+    const unit=Math.min(.006,h*.023,w*.025,L*.065),ff=flowerFrame(b,q,Math.PI*.75,ph);
+    for(let n=0;n<3;n++){
+     const at=[(n%2?.16:-.16)*unit,n*unit*.46,0];ff.add('trSnowGlumeRef','spikelet-tussock-snow-exterior',kit.shade(rand,col,.04),...at,unit*.65,unit,unit*.60,0,n*Math.PI,0);
+     ff.add('trAwnRef','awn-tussock-snow',dry?'#d0c5a4':'#c8cf9f',at[0],at[1]+unit*.84,0,unit*.35,Math.min(.012,h*.045,w*.045),unit*1.1,.40,n*Math.PI,0);
+     for(let side of [-1,1])for(let hn=0;hn<3;hn++)ff.add('trMembraneRef','hair-tussock-snow',dry?'#ddd4b9':'#d8dcba',at[0]+side*unit*.16,at[1]+unit*(.12+hn*.18),0,unit*.045,unit*.55,unit*.12,0,ph+hn*.6,side*.6);
+    }
+    if(s.bloom&&i===0&&j===12&&k===0)ff.flower([0,unit*.55,unit*.08],unit*1.1);
+   }
+  }else{
+   const L=Math.min(crystal?.013:.045,h*(crystal?.11:.23),w*(crystal?.09:.14)),D=Math.min(crystal?.012:.004,h*.08,w*.08),f=flowerFrame(b,head,.05,az),col=crystal?'#877155':'#6d4e3c';
+   f.add('trHeadRef','head-tussock-'+type+'-exterior',col,0,0,0,D,L,D);
+   const rows=crystal?7:10,around=crystal?7:3;
+   for(let j=0;j<rows;j++)for(let k=0;k<around;k++){
+    const t=(j+.5)/rows,ph=k*TAU/around+j*.55,r=D*.5*Math.sin(Math.PI*t)**.40,unit=Math.min(crystal?.003:.0035,h*.03,w*.03,L*.26),ff=flowerFrame(f,[Math.sin(ph)*r,L*t,Math.cos(ph)*r],crystal?.05:.10,ph);
+    ff.add('trScaleRef','scale-tussock-'+type+'-exterior',kit.shade(rand,col,.04),0,0,0,unit*.8,unit,unit*.6);
+    const inspectK=((Math.round((front-az-j*.55)/TAU*around)%around)+around)%around;if(i===0&&j===Math.floor(rows*.55)&&k===inspectK)ff.flower([0,unit*.40,unit*.02],unit*.95);
    }
   }
  }

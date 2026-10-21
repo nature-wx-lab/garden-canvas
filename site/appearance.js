@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.470';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.471';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -625,3 +625,5 @@ Object.assign(TRAIT_VALUES,{brizaBlades:'株元と茎に付く細い葉の参考
 Object.assign(TRAIT_VALUES,{broadMilletBlades:'節と株元から弓状に広がる幅広い葉の参考',melicaNarrowBlades:'株元と茎に付く細い葉の参考',denseMilletSpike:'直立する長い紫の穂の外観参考',laxMiliumPanicle:'細かな枝に小穂が疎らにつく参考',redMelicaPanicle:'赤紫色の小穂が並ぶ垂れる穂の参考',silkyMelicaSpike:'小さな絹毛の房が並ぶ短い白穂の参考'});
 
 Object.assign(TRAIT_VALUES,{acorusUnifacialBlade:'2列に重なる、目立つ中肋のない剣状葉（種の参考）',acorusReferenceSpadix:'葉のような苞の脇に出る、細い円柱状の花序',spadix:'肉穂花序・小花が密につく軸'});
+
+Object.assign(TRAIT_VALUES,{hookReferenceBlade:'硬めの細い銅赤色の帯状葉',hookReferenceSpike:'細い褐色の小穂の外観参考（果胞とフックは未再現）',matrushReferenceBlade:'中心が立ち、外周が弓状に垂れる黄金の細葉',matrushMaleReference:'葉の中に房を作る小さな黄白色の雄花の原品種参考',snowReferenceBlade:'株元から広がる、やや幅のある長い細葉',snowReferencePanicle:'密で太さがあり、枝垂れる小穂と反る芒の参考',crystalReferenceBlade:'平行な縁と切形の先、ほつれる白い薄膜のある硬い葉',crystalReferenceHead:'細茎の先に単独で付く小さな丸い褐色の花頭'});
