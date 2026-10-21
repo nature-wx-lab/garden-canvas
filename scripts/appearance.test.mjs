@@ -12,6 +12,24 @@ import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulip
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Coronilla corrects a fern form to a woody compound-leaf yellow pea reference without filling unknown identity fields',()=>{
+ const id='p-0e6e24c69253',info=CATALOG[id];assert.equal(info.form,'shrub');assert.equal(info.latin,'');assert.equal(info.height,null);assert.equal(info.spread,null);assert.equal(info.variegated,true);assert.equal(info.appearance.status,'partial');assert.match(info.appearance.sourceConflict,/常緑/);
+ for(const size of [[.6,.5,.45],[.25,.3,.2]]){let wood=null;for(let month=1;month<=12;month++){
+  const p={...makePlant(id,48900,2,2),height:size[0],spread:size[1],leafHeight:size[2]},old=structuredClone(p),s=stateAt(p,view(month));assert.equal(s.bloom,[3,4,5].includes(month));assert.equal(s.groundDormant,false);assert.deepEqual(p,old);if(![1,4,6,9,11].includes(month))continue;const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);try{assert.equal(g.userData.architecture,'coronillaReferences');assert.equal(!!g.userData.flowerTargets?.length,s.bloom);assert.ok(!g.children.some(m=>/anther|ovary|pollen|fruit|seed|fern|spore/.test(m.userData.component)));assert.ok(count('wood-coronilla')>0);const woods=g.children.filter(m=>/^(wood|twig)-coronilla/.test(m.userData.component)).map(m=>({component:m.userData.component,count:m.count,matrix:Array.from(m.instanceMatrix.array)}));if(wood)assert.deepEqual(woods,wood);else wood=woods;if([1,12].includes(month))assert.equal(count('leaflet-coronilla'),0);else assert.equal(count('leaflet-coronilla'),count('rachis-coronilla')*7);const n=count('banner-coronilla');assert.equal(n>0,s.bloom);assert.equal(count('wing-coronilla'),n*2);assert.equal(count('keel-coronilla'),n*2);assert.equal(count('calyx-coronilla'),n);
+  for(const m of g.children)for(const a of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok(a.every(Number.isFinite));
+  }finally{dispose(g);}
+ }}
+});
+test('Coronilla independent tiny dimensions bound actual woody branches leaflets and pea petals',()=>{
+ for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [4,1]){
+  const p={...makePlant('p-0e6e24c69253',48999,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,size+' '+month+' footprint '+m.userData.component);if(m.userData.component.startsWith('leaflet-'))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+ }
+});
+test('Coronilla macro rays reach an actual banner wing or keel at both input sizes',()=>{
+ for(const size of [[.6,.5,.45],[.25,.3,.2]]){
+  const p={...makePlant('p-0e6e24c69253',48999,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(4));try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&/^(banner|wing|keel)-coronilla/.test(hit.object.userData.component),'visible pea exterior '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
 test('Koeleria and Lagurus keep distinct rolled and velvet leaves with sampled exterior spikelets',()=>{
  const rows=[['p-c27041038aef',[.27,.35,.13],[.15,.22,.07]],['p-b30520347767',[.45,.4,.22],[.25,.25,.12]]];assert.deepEqual(CATALOG[rows[0][0]].height,[.15,.3]);assert.deepEqual(CATALOG[rows[0][0]].spread,[.2,.4]);assert.deepEqual(CATALOG[rows[1][0]].height,[.3,.5]);assert.deepEqual(CATALOG[rows[1][0]].spread,[.2,.5]);assert.equal(CATALOG[rows[1][0]].life,'annual');
  for(const [id,...sizes]of rows)for(const size of sizes)for(let month=1;month<=12;month++){

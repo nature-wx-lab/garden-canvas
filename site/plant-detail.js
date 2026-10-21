@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.488';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.489';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.488';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.489';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='coronillaReferences'){drawCoronillaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['koeleriaReferences','lagurusReferences'].includes(info.appearance?.architecture)){drawKoeleriaLagurusReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['reedFoliageReferences','canaryReferences'].includes(info.appearance?.architecture)){drawReedCanaryReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['sorghastrumReferences','boutelouaReferences'].includes(info.appearance?.architecture)){drawPrairieGrassReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22629,6 +22630,37 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
 
 
 
+
+export function coronillaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='cvLeafletRef')return[u*.5*sn**.48*(.56+.44*t),.045*sn+.04*u*u*sn,t-.035*sn*Math.max(0,1-6*Math.abs(u))*t*t];
+ if(type==='cvBannerRef')return[u*.42*sn**.56,.04+.78*t,.02-.14*t+.30*u*u*sn];
+ if(type==='cvWingLeftRef'||type==='cvWingRightRef'){const side=type.includes('Left')?-1:1;return[side*(.10+.18*sn)+u*.12*sn,.04+.08*sn-.04*t,.12+.84*t];}
+ if(type==='cvKeelLeftRef'||type==='cvKeelRightRef'){const side=type.includes('Left')?-1:1;return[side*(.035+.055*sn)+u*.055*sn,-.04-.12*sn+.08*t*t,.14+.64*t];}
+ const angle=u*Math.PI,r=.11+.055*t;return[Math.cos(angle)*r,Math.sin(angle)*r,.22*t-.13+.025*Math.max(0,Math.cos(angle*5))*t*t];
+}
+function drawCoronillaReferences(b,{info,s,detail,month,rand},kit){
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.94),n=Math.max(3,Math.round(9*detail)),R=Math.min(.003,h*.006,w*.008),front=Math.atan2(.8,1);
+ const line=(a,z,r,kind,col)=>{r=Math.min(r,Math.max(0,Math.min(a[1],z[1])*.85));if(r<=1e-12)return;const q=new THREE.Vector3(...a),v=new THREE.Vector3(...z).sub(q);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');b.add('cvStemRef',kind,col,...q.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ for(let i=0;i<n;i++){
+  const az=front+i*2.399963,rr=w*.04,root=[Math.sin(az)*rr,Math.min(.00015,h*.001),Math.cos(az)*rr],top=[Math.sin(az)*w*(.14+.04*(i%3)),h*(.72+.05*(i%4)),Math.cos(az)*w*(.14+.04*(i%3))],stemCol='#829477';line(root,top,R,'wood-coronilla','#9e9378');
+  for(let branch=0;branch<3;branch++){
+   const t=.35+branch*.17,base=root.map((v,k)=>v+(top[k]-v)*t),yaw=az+(branch%2?-1:1)*.8,end=[base[0]+Math.sin(yaw)*w*.16,Math.min(h*.88,base[1]+h*.22),base[2]+Math.cos(yaw)*w*.16];line(base,end,R*.45,'twig-coronilla',stemCol);
+   if(s.bloom){
+    const L=Math.min(.012,h*.04,w*.028),pedH=Math.min(.045,h*.08,w*.08),umbel=[end[0],Math.min(h*.94-L,end[1]+pedH),end[2]];line(end,umbel,R*.24,'peduncle-coronilla',stemCol);
+    for(let k=0;k<7;k++){const angle=yaw+k*2*Math.PI/7,rad=Math.min(.018,w*.04,h*.035),at=[umbel[0]+Math.sin(angle)*rad,umbel[1],umbel[2]+Math.cos(angle)*rad],f=flowerFrame(b,at,.04,angle);line(umbel,at,R*.12,'pedicel-coronilla',stemCol);f.add('cvCalyxRef','calyx-coronilla','#8b9c61',0,0,0,L,L,L);f.add('cvBannerRef','banner-coronilla','#f3ce27',0,0,0,L,L,L);for(const side of ['Left','Right']){f.add('cvWing'+side+'Ref','wing-coronilla','#edc72b',0,0,0,L,L,L);f.add('cvKeel'+side+'Ref','keel-coronilla','#e8bc23',0,0,0,L,L,L);}
+     if(i===0&&branch===2&&k===0){const verts=[[20/40,0],[21/40,0],[20/40,2/16]].map(([t,u])=>new THREE.Vector3(...coronillaPoint('cvBannerRef',t,u)).multiplyScalar(L)),centre=verts[0].clone().add(verts[1]).add(verts[2]).multiplyScalar(1/3),normal=verts[1].clone().sub(verts[0]).cross(verts[2].clone().sub(verts[0])).normalize().negate(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');f.flower(centre.toArray(),L*.55,pose.x,pose.y,pose.z);}
+    }
+   }
+  }
+  if(s.leafDensity<=0)continue;
+  const count=Math.max(1,Math.round(12*s.leafDensity)),rachis=Math.min(.055,w*.12,LH*.22,h*.12),len=Math.min(.021,w*.055,LH*.14,h*.045);
+  for(let j=0;j<count;j++){
+   const y=Math.min(LH*.87,top[1]*.94)*(j+.6)/count,t=top[1]>root[1]?Math.max(0,Math.min(1,(y-root[1])/(top[1]-root[1]))):0,at=root.map((v,k)=>v+(top[k]-v)*t),angle=az+j*2.399963,f=flowerFrame(b,at,0,angle),tip=[0,rachis*.16,rachis];f.branch([0,0,0],tip,Math.min(.0005,w*.0015,LH*.004),stemCol,'rachis-coronilla');
+   for(let k=0;k<7;k++){const terminal=k===6,pair=Math.floor(k/2),t=terminal?1:.26+pair*.26,side=k%2?1:-1,yaw=terminal?0:side*.95,L=len*(terminal?1.12:1),origin=[0,tip[1]*t,tip[2]*t];f.add('cvLeafletRef','leaflet-coronilla',kit.shade(rand,'#718d7b',.018),...origin,L*.72,L,L,0,yaw,0);}
+  }
+ }
+}
 
 export function koeleriaLagurusPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
