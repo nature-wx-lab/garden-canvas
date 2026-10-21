@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.530';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.531';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.530';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.531';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='gaillardiaSourceReferences'){drawGaillardiaSourceReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='achilleaReferences'){drawAchilleaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='autumnJoyReferences'){drawAutumnJoyReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='milleniumAlliumReferences'){drawMilleniumAlliumReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -24306,5 +24307,49 @@ function drawAchilleaReferences(b,{info,s,detail,month,rand},kit){
   const count=a.flowerPalette.capitulaPerStem;
   for(let j=0;j<count;j++){const az=j*2.399963,rn=Math.sqrt((j+.5)/count),r=HR*rn,point=[Math.sin(az)*r,HR*(white?.65:.035)*(1-rn*rn),Math.cos(az)*r];line(f,[0,-Math.min(HR*.50,h*.08),0],point,Math.min(R*.15,FL*.06),dry?'dry-corymb-branch-achillea-ref':'corymb-branch-achillea-ref',stem);cap(f,point,j);}
   groupCount++;
+ }
+}
+
+export function gaillardiaSourcePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),az=u*Math.PI;
+ if(type==='gqLeafRef'){const margin=1+.07*Math.sin(t*Math.PI*12)*(1-t*.6);return[u*.5*sn**.58*margin,.028*sn*(1-u*u)+.016*u*u*Math.sin(t*Math.PI*5)*sn,t];}
+ if(type==='gqRayRef'){const width=sn**.45*(.50+.50*t);return[u*.5*width,.025*sn*(1-u*u)-.035*t*t,t-.14*(.5+.5*Math.cos(u*Math.PI*3))*t**16];}
+ if(type==='gqCoreRef'){const r=Math.max(.00001,1-t*t)**.52;return[Math.sin(az)*r,t,Math.cos(az)*r];}
+ if(type==='gqDiscLongRef'||type==='gqDiscShortRef'){const long=type==='gqDiscLongRef',lobes=.5+.5*Math.cos(az*5),r=.22+.20*t+.10*t*t;return[Math.sin(az)*r,t-(long?.34:.18)*t**8*(1-lobes),Math.cos(az)*r];}
+ if(type==='gqAntherRef'){const r=.45+.035*Math.cos(az*5);return[Math.sin(az)*r,t,Math.cos(az)*r];}
+ return[u*.5*sn**.65,t,.08*sn*(1-u*u)];
+}
+function drawGaillardiaSourceReferences(b,{info,s,month,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h),grape=a.shootProfile==='grape',live=!!s.bloom,dry=!!s.seedHeads,budding=!!s.flowerBuds,N=a.flowerPalette.stems,R=Math.min(a.flowerRadius,w*.12,h*.18),CR=Math.min(a.coneRadius,R*.43),CH=Math.min(a.coneHeight,R*.50,h*.08),FL=Math.min(a.flowerLength,R*.30,h*.04),RL=Math.min(a.rayLength,Math.max(R*.10,R-CR)),RW=Math.min(a.rayWidth,RL*.57),SR=Math.min(.002,h*.009,w*.010,LH*.020),stem=dry?'#99896f':a.stemColor,cells=a.referenceDiscFlorets;
+ if(!s.leafDensity&&!live&&!dry&&!budding)return;
+ const line=(frame,from,to,r,kind,color)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.8));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('gqStemRef',kind,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const leaf=(node,yaw,len)=>{const spring=month===3,L=Math.min(len,w*.28,LH*.65,Math.max(0,LH-node[1])/.70)*(spring?.45:1),W=L*a.leafWidth/a.leafLength;if(L<1e-10)return;const f=flowerFrame(b,node,-.42,yaw),col=kit.shade(rand,s.leafColor,.025),eps=Math.min(.00002,L*.002);f.add('gqLeafRef','leaf-gaillardia-source-ref',col,0,0,0,W,L,L);let prev=null;for(let j=0;j<=12;j++){const p=gaillardiaSourcePoint('gqLeafRef',j/12,0).map((v,k)=>v*(k===0?W:L));p[1]+=eps;if(prev)line(f,prev,p,Math.min(SR*.065,L*.006),'leaf-vein-gaillardia-source-ref','#a8b49b');prev=p;}};
+ let heads=0;
+ const head=(origin,yaw)=>{
+  const index=heads++,spent=dry||live&&index%7===5,closed=budding||live&&index%7===6,target=live&&index===0,f=flowerFrame(b,origin,.04*Math.sin(index*1.3),yaw),core=spent?'#78604e':a.flowerPalette.disc;
+  f.add('gqCoreRef',spent?'spent-receptacle-gaillardia-source-ref':'receptacle-gaillardia-source-ref',core,0,0,0,CR,CH,CR);
+  for(let j=0;j<(grape?16:20);j++){const aa=j*2.399963,L=Math.min(.013,R*.48,h*.08);f.add('gqBractRef',spent?'spent-phyllary-gaillardia-source-ref':'phyllary-gaillardia-source-ref',spent?'#9b896c':stem,Math.sin(aa)*CR*.72,-CH*.10,Math.cos(aa)*CR*.72,L*.18,L,L,1.80,aa,0);}
+  if(closed&&!spent){f.add('gqBudRef','head-bud-gaillardia-source-ref',grape?'#826576':'#b4a36b',0,CH*.25,0,CR*.93,CH*.90,CR*.93);return;}
+  if(!spent){for(let j=0;j<a.referenceRayFlorets;j++){
+   const aa=j*TAU/a.referenceRayFlorets,at=[Math.sin(aa)*CR*.93,-CH*.02,Math.cos(aa)*CR*.93],g=flowerFrame(f,at,grape?.11:-.06,aa),kind='ray-gaillardia-source-ref-'+a.shootProfile;g.add('gqRayRef',kind,a.flowerPalette.ray,0,0,0,RW,RL,RL);
+   if(target&&j===0){const rows=40,cols=16,scale=new THREE.Vector3(RW,RL,RL),vs=[[16/rows,0],[17/rows,0],[16/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...gaillardiaSourcePoint('gqRayRef',t,u)).multiply(scale)),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');g.flower(centre.toArray(),R*.80,pose.x,pose.y,pose.z);}
+  }}
+  for(let j=0;j<cells;j++){
+   const rn=Math.sqrt((j+.5)/cells),aa=j*2.399963,r=CR*rn,y=CH*Math.max(0,1-rn*rn)**.62,tilt=Math.atan(1.24*CH/CR*rn*Math.max(.015,1-rn*rn)**(-.38)),g=flowerFrame(f,[Math.sin(aa)*r,y,Math.cos(aa)*r],tilt,aa),FW=FL*.22;
+   if(spent){g.add(grape?'gqDiscLongRef':'gqDiscShortRef','spent-floret-gaillardia-source-ref','#8f755b',0,0,0,FW,FL*.55,FW);continue;}
+   if(j<Math.floor(cells*.20)){g.add('gqBudRef','disc-bud-gaillardia-source-ref',grape?'#572b43':'#d6b548',0,FL*.28,0,FW*.65,FL*.32,FW*.65);continue;}
+   g.add(grape?'gqDiscLongRef':'gqDiscShortRef','disc-corolla-gaillardia-source-ref',grape?'#713d58':'#9d4636',0,0,0,FW,FL,FW);g.add('gqBudRef','inferior-ovary-gaillardia-source-ref','#8b9a6f',0,-FL*.12,0,FW*.38,FL*.12,FW*.38);
+   for(let k=0;k<5;k++){const az=k*TAU/5;line(g,[Math.sin(az)*FW*.20,FL*.12,Math.cos(az)*FW*.20],[Math.sin(az)*FW*.20,FL*.70,Math.cos(az)*FW*.20],FW*.032,'disc-filament-gaillardia-source-ref',grape?'#b49770':'#cbad5d');}
+   g.add('gqAntherRef','disc-anther-tube-gaillardia-source-ref',grape?'#b89763':'#bb8c4e',0,FL*.63,0,FW*.50,FL*.24,FW*.50);line(g,[0,FL*.15,0],[0,FL*1.10,0],FW*.055,'disc-style-gaillardia-source-ref',grape?'#d8bc6b':'#e2bd5c');for(const side of [-1,1])line(g,[0,FL*1.10,0],[side*FW*.42,FL*1.24,FW*.07],FW*.040,'disc-stigma-branch-gaillardia-source-ref',grape?'#d9be74':'#e6c56b');
+  }
+ };
+ for(let i=0;i<N;i++){
+  const yaw=.35+i*2.399963,r=w*.13*Math.sqrt((i+.5)/N),root=[Math.sin(yaw)*r,SR*1.3,Math.cos(yaw)*r],spring=month===3,late=grape&&month===12,tip=[root[0]+Math.sin(yaw)*w*.08,LH*(spring?.32:late?.26:.78),root[2]+Math.cos(yaw)*w*.08],nodes=grape?10:14;let prev=root;
+  for(let j=0;j<6;j++)if((j+.2)/6<s.leafDensity)leaf(root,yaw+j*2.399963,a.leafLength*(.85+.15*j/6));
+  for(let j=1;j<=nodes;j++){const t=j/nodes,node=root.map((v,k)=>v+(tip[k]-v)*t);line(null,prev,node,SR*(1-.30*t),dry?'spent-stem-gaillardia-source-ref':'stem-gaillardia-source-ref',stem);if((j-.2)/nodes<s.leafDensity)leaf(node,yaw+j*2.399963,a.leafLength*(1-.40*t));prev=node;}
+  if(!live&&!dry&&!budding)continue;
+  for(let k=0;k<a.flowerPalette.headsPerStem;k++){
+   const ay=yaw+(k-1)*(grape?1.15:.85),reach=Math.min(w*(grape?.16:.12),h*.16),at=[tip[0]+Math.sin(ay)*reach,h*(.98-i/N*.05-k*.065)-(CH+FL)*1.30,tip[2]+Math.cos(ay)*reach],start=root.map((v,j)=>v+(tip[j]-v)*(k===0?1:.65));line(null,start,at,SR*.60,dry?'spent-head-stalk-gaillardia-source-ref':'head-stalk-gaillardia-source-ref',stem);head(at,ay);
+  }
  }
 }
