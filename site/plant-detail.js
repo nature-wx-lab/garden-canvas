@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.486';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.487';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.486';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.487';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(['reedFoliageReferences','canaryReferences'].includes(info.appearance?.architecture)){drawReedCanaryReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['sorghastrumReferences','boutelouaReferences'].includes(info.appearance?.architecture)){drawPrairieGrassReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['sandLovegrassReference','sesleriaReference','imperataRedReference'].includes(info.appearance?.architecture)){drawRemainingGrassReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['cortaderiaReferences','moliniaReferences'].includes(info.appearance?.architecture)){drawPampasMoliniaReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22628,6 +22629,35 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
 
 
 
+export function reedCanaryPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='rcLeafRef'||type==='rcArchingLeafRef')return[u*.5*sn**.50,type==='rcLeafRef'?t-.22*t*t:Math.sin(Math.PI*.65*t)-.75*t,t+.045*u*u*sn];
+ if(type==='rcGlumeRef')return[u*.5*sn**.58,t,.28*(1-Math.abs(u))*sn];
+ if(type==='rcKeelWingRef'){const y=.26+t*.74,v=Math.max(0,Math.sin(Math.PI*y));return[.008*u*Math.sin(Math.PI*t),y,.28*v+(u+1)*.14*Math.sin(Math.PI*t)];}
+ return[u*.5*sn**.6,t,(type==='rcLemmaRef'?.14:.07)*(1-u*u)*sn];
+}
+function drawReedCanaryReferences(b,{info,s,detail,month,rand},kit){
+ const annual=info.appearance.architecture==='canaryReferences',dawn=info.appearance.shootProfile==='dawn',type=annual?'canariensis':dawn?'dawn':'variegata',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.96)*s.leafScale,winter=!annual&&[12,1,2].includes(month),dry=!!s.seedHeads,front=Math.atan2(.8,1),R=Math.min(annual?.0018:dawn?.0012:.002,h*.003,w*.004),stems=Math.max(3,Math.round((annual?9:dawn?18:15)*detail)),rootY=Math.min(.00015,h*.001);
+ const line=(a,z,r,kind,col)=>{r=Math.min(r,Math.max(0,Math.min(a[1],z[1])*.85));if(r<=1e-12)return;const q=new THREE.Vector3(...a),end=new THREE.Vector3(...z),v=end.clone().sub(q);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');b.add('rcStemRef',kind,col,...q.add(end).multiplyScalar(.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ for(let i=0;i<stems;i++){
+  const az=front+i*2.399963,rr=w*.20*Math.sqrt((i+.5)/stems),root=[Math.sin(az)*rr,Math.max(rootY,R*1.1),Math.cos(az)*rr],heads=annual&&(s.bloom||s.seedHeads),stemH=annual?(heads?h*.92:Math.min(h*.90,LH*.90)):Math.min(h*.95,Math.max(.0001,s.leafHeight*.90)),top=[root[0]+Math.sin(az)*w*.06,stemH,root[2]+Math.cos(az)*w*.06],stemCol=winter||dry?'#b9a585':annual?'#9cae72':'#9eaf8e';line(root,top,R,'culm-reed-'+type,stemCol);
+  const leaves=s.leafDensity>0?Math.max(1,Math.round((annual?5:7)*s.leafDensity)):0;
+  for(let j=0;j<leaves;j++){
+   const y=Math.min(stemH*.88,LH*.72)*(j+.5)/leaves,t=stemH>root[1]?Math.max(0,Math.min(1,(y-root[1])/(stemH-root[1]))):0,at=root.map((v,n)=>v+(top[n]-v)*t),angle=az+j*Math.PI,fy=Math.min(annual?.34:dawn?.22:.38,Math.max(0,LH-at[1])/.80,h*.55)*(.82+.18*(.5+.5*Math.cos(i+j))),reach=Math.min(w*.20,fy*(annual?.50:.75)),W=Math.min(annual?.012:dawn?.006:.010,w*.035,LH*.1,h*.02),f=flowerFrame(b,at,0,angle),phase=dawn&&[9,10,11].includes(month)?'-pink':'';
+   if(fy<=1e-12)continue;
+   f.add(j%3?'rcLeafRef':'rcArchingLeafRef','leaf-reed-'+type+phase,kit.shade(rand,s.leafColor,.03),0,0,0,W,fy,reach);
+   const nr=Math.min(R*1.2,h*.003,w*.004);line([at[0],Math.max(root[1],at[1]-nr*.5),at[2]],[at[0],Math.min(stemH,at[1]+nr*.5),at[2]],R*1.1,'node-reed-'+type,stemCol);
+  }
+  if(!heads)continue;
+  const H=Math.min(.03,h*.15,w*.15),baseY=h*.94-H,base=[top[0],baseY,top[2]],headTop=[base[0],baseY+H,base[2]];line(top,base,R*.65,'peduncle-canariensis',stemCol);line(base,headTop,R*.4,'axis-canariensis',stemCol);
+  for(let row=0;row<8;row++)for(let k=0;k<8;k++){
+   const t=(row+.5)/8,angle=az+k*Math.PI/4+(row%2)*Math.PI/8,S=Math.min(.008,h*.015,w*.025),W=Math.min(.004,S*.5,w*.012),rad=Math.min(.006,w*.03,h*.025)*Math.sin(Math.PI*t)**.55,at=[base[0]+Math.sin(angle)*rad,baseY+H*t-S*.30,base[2]+Math.cos(angle)*rad],f=flowerFrame(b,at,.28,angle),col=dry?'#cbb58f':'#e2e8d7';
+   for(let q=0;q<2;q++){const side=q?-1:1;f.add('rcGlumeRef','glume-canariensis'+(dry?'-dry':''),col,0,0,side*W*.025,W,S,W,0,q*Math.PI,0);f.add('rcKeelWingRef','keel-wing-canariensis'+(dry?'-dry':''),col,0,0,side*W*.025,W,S,W,0,q*Math.PI,0);}
+   if(!dry){f.add('rcLemmaRef','lemma-fertile-canariensis','#a9ba88',0,0,0,W*.62,S*.66,W*.45);f.add('rcPaleaRef','palea-canariensis','#b3c19a',0,0,-W*.01,W*.50,S*.62,W*.36,0,Math.PI,0);for(let q=0;q<2;q++)f.add('rcLemmaRef','lemma-sterile-canariensis','#d2dac0',(q?1:-1)*W*.12,0,0,W*.35,S*.43,W*.3,0,q*Math.PI,0);}
+   if(s.bloom&&i===0&&row===7&&k===0){const verts=[[20/40,0],[21/40,0],[20/40,2/16]].map(([t,u])=>new THREE.Vector3(...reedCanaryPoint('rcGlumeRef',t,u)).multiply(new THREE.Vector3(W,S,W)).add(new THREE.Vector3(0,0,W*.025))),centre=verts[0].clone().add(verts[1]).add(verts[2]).multiplyScalar(1/3),normal=verts[1].clone().sub(verts[0]).cross(verts[2].clone().sub(verts[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');f.flower(centre.toArray(),S*.44,pose.x,pose.y,pose.z);}
+  }
+ }
+}
 export function prairieGrassPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='pgUprightLeafRef'||type==='pgArchingLeafRef')return[u*.5*sn**.52,type==='pgUprightLeafRef'?t-.18*t*t:Math.sin(Math.PI*.65*t)-.75*t,t+.035*u*u*sn];

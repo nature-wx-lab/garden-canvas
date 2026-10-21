@@ -12,6 +12,29 @@ import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulip
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Reed references keep uncertain flowers absent and Canary pairs of winged glumes annual',()=>{
+ const rows=[['p-e4d14379f3a0',[.5,.5,.4],[.2,.28,.15]],['p-ce059fcc6a2f',[1.4,.7,1.1],[.3,.35,.22]],['p-3a7b9b932473',[1.4,.6,1.0],[.3,.3,.2]]];assert.deepEqual(CATALOG[rows[0][0]].height,[.5,.5]);assert.deepEqual(CATALOG[rows[1][0]].height,[1.5,1.5]);assert.equal(CATALOG[rows[2][0]].life,'annual');for(const [id]of rows)assert.equal(CATALOG[id].spread,null);
+ for(const [id,...sizes]of rows)for(const size of sizes)for(let month=1;month<=12;month++){
+  const p={...makePlant(id,48700,2,2),height:size[0],spread:size[1],leafHeight:size[2]},old=structuredClone(p),s=stateAt(p,view(month)),annual=id===rows[2][0];assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(CATALOG[id].bloomKnown,false);assert.equal(s.bloom,annual&&[5,6].includes(month));assert.equal(s.seedHeads,annual&&month===7);assert.equal(s.groundDormant,annual&&month>=8);assert.equal(s.shootScale,1);assert.deepEqual(p,old);if(![1,3,6,7,9,11].includes(month))continue;
+  const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);try{if(s.groundDormant)assert.equal(g.children.length,0);else assert.equal(g.userData.architecture,annual?'canaryReferences':'reedFoliageReferences');assert.equal(!!g.userData.flowerTargets?.length,s.bloom);assert.ok(!g.children.some(m=>/anther|ovary|pollen|caryopsis|fruit|seed|^awn-/.test(m.userData.component)));if(annual&&(s.bloom||s.seedHeads)){const glumes=count('glume-canariensis');assert.ok(glumes>0);assert.equal(count('keel-wing-canariensis'),glumes);assert.equal(count('lemma-fertile-canariensis'),s.bloom?glumes/2:0);assert.equal(count('lemma-sterile-canariensis'),s.bloom?glumes:0);assert.equal(count('palea-canariensis'),s.bloom?glumes/2:0);}else assert.equal(count('glume-canariensis'),0);
+   if(annual&&month===6){const m=g.children.find(x=>x.userData.component==='glume-canariensis'),shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};m.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,/canaryNerves/);assert.ok(!shader.fragmentShader.includes('\\n'));}
+   if(!annual&&[1,12].includes(month))assert.equal(count('leaf-reed-'),0);
+   if(!annual&&month===6){const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-reed-')),shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};leaf.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,/reedStripe/);assert.ok(!shader.fragmentShader.includes('\\n'));}
+   for(const m of g.children)for(const a of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok(a.every(Number.isFinite));
+  }finally{dispose(g);}
+  if(annual){const next=stateAt(p,{...view(6),year:1});assert.equal(next.present,false);const empty=plantModel(p,{...view(6),year:1});assert.equal(empty.children.length,0);dispose(empty);}
+ }
+});
+test('Reed and Canary independent small dimensions bound every blade scale and wing vertex',()=>{
+ for(const id of ['p-e4d14379f3a0','p-ce059fcc6a2f','p-3a7b9b932473'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
+  const p={...makePlant(id,48799,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component);if(m.userData.component.startsWith('leaf-'))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+ }
+});
+test('Canary macro view reaches actual overlapping glume wings at both sizes',()=>{
+ for(const size of [[1.4,.6,1.0],[.3,.3,.2]]){
+  const p={...makePlant('p-3a7b9b932473',48799,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6));try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&/^(glume|keel-wing|lemma|palea)-.*canariensis/.test(hit.object.userData.component),'visible glume '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
 test('Prairie grasses keep Sorghastrum barren pedicels and bent awns separate from Bouteloua comb rames',()=>{
  const rows=[['p-30f4df68a97a',[1.4,.7,.8],[.3,.35,.18]],['p-a12f93626235',[1.2,.7,.7],[.3,.35,.18]],['p-f181b6640980',[.45,.25,.17],[.2,.2,.08]]];assert.deepEqual(CATALOG[rows[0][0]].height,[1,1.5]);assert.equal(CATALOG[rows[1][0]].spread,null);assert.deepEqual(CATALOG[rows[2][0]].height,[.3,.5]);
  for(const [id,...sizes]of rows)for(const size of sizes)for(let month=1;month<=12;month++){
