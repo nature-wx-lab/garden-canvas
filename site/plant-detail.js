@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.524';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.525';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.524';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.525';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='magnusEchinaceaReferences'){drawMagnusEchinaceaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['alternantheraCultivarReferences','texturedAlternantheraReferences','smallVariegatedAlternantheraReferences'].includes(info.appearance?.architecture)){drawAlternantheraCultivarReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='aromaticArtemisiaReferences'){drawAromaticArtemisiaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='artemisiaFoliageReferences'){drawArtemisiaFoliageReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -24070,3 +24071,53 @@ function drawGoldenBambooReferences(b,{info,s,detail,rand,month},kit){
  }
 }
 
+
+export function magnusEchinaceaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),a=u*Math.PI;
+ if(type==='maLeafRef')return[u*.5*sn**.70*(1+.035*Math.sin(t*Math.PI*28)),.035*sn*(1-u*u)+.010*u*u*Math.sin(t*Math.PI*5)*sn,t];
+ if(type==='maRayRef'){const width=(.22+.78*Math.sin(Math.PI*t*.82))*(.55+.45*t);return[u*.5*width,.015*sn*(1-u*u)-.025*t*t,t-.035*(.5+.5*Math.cos(u*Math.PI*3))*t**20];}
+ if(type==='maReceptacleRef'){const r=Math.max(.0001,1-t*t)**.52;return[Math.sin(a)*r,t,Math.cos(a)*r];}
+ if(type==='maDiscRef'){const lobe=.5+.5*Math.cos(a*5),r=.22+.19*t+.13*t*t;return[Math.sin(a)*r,t-.10*t**8*(1-lobe),Math.cos(a)*r];}
+ if(type==='maAntherTubeRef'){const r=.43+.035*Math.cos(a*5);return[Math.sin(a)*r,t,Math.cos(a)*r];}
+ const palea=type==='maPaleaRef',width=sn**(palea?.62:.85)*(1-.40*t);return[u*.5*width,t,(palea?.18:.06)*sn*(1-u*u)];
+}
+function drawMagnusEchinaceaReferences(b,{info,s,detail,month,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h),dry=!!s.seedHeads,live=!!s.bloom,stem=dry?'#85734f':a.stemColor,R=Math.min(.0025,h*.006,w*.008,LH*.01),N=Math.max(2,Math.round(3*detail));
+ if(!s.leafDensity&&!dry&&!live)return;
+ const line=(frame,from,to,r,kind,color)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.8));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('maStemRef',kind,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const HR=Math.min(a.flowerRadius,h*.13,w*.20),CR=Math.min(a.coneRadius,HR*.40),CH=Math.min(a.coneHeight,h*.045,HR*.42),PL=Math.min(a.paleaLength,h*.04,HR*.24),FL=Math.min(a.flowerLength,h*.018,HR*.12),FW=FL*.23,RL=Math.min(a.rayLength,HR-CR),RW=Math.min(a.rayWidth,RL*.40),cells=a.referenceDiscFlorets;
+ const leaf=(node,yaw,L,upper=false)=>{
+  L=Math.min(L,w*.34,LH*.65,Math.max(0,LH-node[1])/(upper?.75:1.05));if(L<1e-10)return;
+  const pet=Math.min(L*(upper?.12:.34),w*.06),end=[node[0]+Math.sin(yaw)*pet,node[1]+pet*.18,node[2]+Math.cos(yaw)*pet],pitch=upper?-.20:-.42,f=flowerFrame(b,end,pitch,yaw),W=L*a.leafWidth/a.leafLength*(upper?.75:1),eps=Math.min(.00003,LH*.005,L*.005);
+  line(null,node,end,Math.min(R*.25,L*.025),'petiole-magnus-ref',stem);f.add('maLeafRef','leaf-magnus-ref',kit.shade(rand,s.leafColor,.025),0,0,0,W,L,L);
+  for(const side of [-.55,0,.55]){let prev=null;for(let j=0;j<=12;j++){const t=j/12,u=side*Math.sin(Math.PI*t*.75),p=magnusEchinaceaPoint('maLeafRef',t,u).map((v,k)=>v*(k===0?W:L));p[1]+=eps;if(prev)line(f,prev,p,Math.min(R*.055,L*.006),'vein-magnus-ref','#8eab72');prev=p;}}
+ };
+ let heads=0;
+ const head=(origin,yaw)=>{
+  const target=live&&heads===0,f=flowerFrame(b,origin,.035*Math.sin(heads*.9),yaw);heads++;
+  f.add('maReceptacleRef',dry?'dry-receptacle-magnus-ref':'receptacle-magnus-ref',dry?'#65543c':'#633a2b',0,0,0,CR,CH,CR);
+  if(live)for(let j=0;j<a.referenceRayFlorets;j++){const az=j*TAU/a.referenceRayFlorets,at=[Math.sin(az)*CR*.94,-HR*.02,Math.cos(az)*CR*.94];f.add('maRayRef','ray-magnus-ref',a.flowerPalette.ray,...at,RW,RL,RL,.02+(heads%3)*.055,az,0);}
+  for(let row=0;row<3;row++)for(let j=0;j<12;j++){const az=j*TAU/12+row*.22,rad=CR*(.85+.13*row),len=Math.min(.012,h*.05,HR*.28);f.add('maPhyllaryRef',dry?'dry-phyllary-magnus-ref':'phyllary-magnus-ref',stem,Math.sin(az)*rad,-HR*(.04+row*.035),Math.cos(az)*rad,len*.22,len,len,2.05+row*.12,az,0);}
+  for(let j=0;j<cells;j++){
+   const rn=Math.sqrt((j+.5)/cells),az=j*2.399963,rad=CR*rn,y=CH*Math.max(0,1-rn*rn)**.62,tilt=Math.atan(1.24*CH/CR*rn*Math.max(.015,1-rn*rn)**(-.38)),at=[Math.sin(az)*rad,y,Math.cos(az)*rad],g=flowerFrame(f,at,tilt,az),paleaAt=[FL*.30,0,0];
+   g.add('maPaleaRef',dry?'dry-palea-magnus-ref':'palea-magnus-ref',dry?'#786044':'#713d2b',...paleaAt,Math.min(.0018,PL*.18),PL,PL,.08,0,0);
+   if(target&&j===0){const rows=32,cols=16,ee=new THREE.Euler(.08,0,0,'YXZ'),scale=new THREE.Vector3(Math.min(.0018,PL*.18),PL,PL),vs=[[24/rows,0],[24/rows,2/cols],[25/rows,0]].map(([t,u])=>new THREE.Vector3(...magnusEchinaceaPoint('maPaleaRef',t,u)).multiply(scale).applyEuler(ee).add(new THREE.Vector3(...paleaAt))),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');g.flower(centre.toArray(),HR*1.05,pose.x,pose.y,pose.z);}
+   if(dry)continue;
+   if(rn<.5){g.add('maBudRef','disc-bud-magnus-ref','#684334',0,FL*.24,0,FW*.55,FL*.30,FW*.55);continue;}
+   const female=rn>.8,tubeColor=female?'#947049':'#a08a48',top=female?FL*1.10:FL*.88;
+   g.add('maDiscRef','disc-corolla-magnus-ref',tubeColor,0,0,0,FW,FL,FW);g.add('maBudRef','inferior-ovary-magnus-ref','#8b9467',0,-FL*.12,0,FL*.10,FL*.12,FL*.10);
+   for(let k=0;k<5;k++){const aa=k*TAU/5+Math.PI/5,x=Math.sin(aa)*FW*.25,z=Math.cos(aa)*FW*.25;line(g,[x,FL*.22,z],[x,FL*.75,z],FW*.035,'filament-magnus-ref','#bcaf6d');}
+   g.add('maAntherTubeRef','anther-tube-magnus-ref','#89653e',0,FL*.66,0,FW*.60,FL*.22,FW*.60);line(g,[0,FL*.18,0],[0,top,0],FW*.055,female?'style-magnus-ref-female':'style-magnus-ref-male','#c6ae77');
+   if(female)for(const side of [-1,1])line(g,[0,top,0],[side*FW*.34,top+FL*.12,FW*.08],FW*.040,'style-branch-magnus-ref','#c5b184');
+  }
+ };
+ for(let i=0;i<N;i++){
+  const az=.45+i*2.399963,root=[Math.sin(az)*w*.075,R*1.3,Math.cos(az)*w*.075],leafTop=[root[0]+Math.sin(az)*w*.035,LH*(.95-.06*(i%2)),root[2]+Math.cos(az)*w*.035];
+  if(s.leafDensity){for(let j=0;j<4;j++)if((j+.15)/4<s.leafDensity)leaf(root,az+j*2.399963,a.leafLength*(.8+.2*j/4));}
+  let prev=root;
+  for(let j=1;j<=6;j++){const t=j/6,node=root.map((v,k)=>v+(leafTop[k]-v)*t);line(null,prev,node,R*(1-.32*t),dry?'dry-stem-magnus-ref':'stem-magnus-ref',stem);if(s.leafDensity&&(j-.4)/6<s.leafDensity)leaf(node,az+j*2.399963,a.leafLength*(1-.35*t),j>3);prev=node;}
+  if(!live&&!dry)continue;
+  const top=[leafTop[0],h*(.99-i*.04)-(CH+PL)*1.1,leafTop[2]];line(null,leafTop,top,R*.60,dry?'dry-peduncle-magnus-ref':'peduncle-magnus-ref',stem);head(top,az);
+  if(i%2===0){const t=.72,base=root.map((v,k)=>v+(leafTop[k]-v)*t),yaw=az+.85,reach=Math.min(w*.16,h*.08),end=[base[0]+Math.sin(yaw)*reach,h*(.78-i*.025)-(CH+PL)*1.1,base[2]+Math.cos(yaw)*reach];line(null,base,end,R*.48,dry?'dry-lateral-magnus-ref':'lateral-magnus-ref',stem);head(end,yaw);}
+ }
+}

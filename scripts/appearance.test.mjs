@@ -7235,8 +7235,11 @@ test('every catalog entry has an explicit evidence record and no unsupported com
  for(const field of ['involucreRadius','involucreHeight','discRadius','rayWidth','discLength','floretTube','floretLobe'])allowed.add(field);
  allowed.add('calyxMonths');allowed.add('calyxColor');allowed.add('waterSurfaceModel');allowed.add('monthlyLeafDensity');allowed.add('leafletPairs');allowed.add('budColor');allowed.add('winterStemColor');allowed.add('fourLeafShare');allowed.add('petioleLength');allowed.add('upperPetalWidth');allowed.add('lowerPetalWidth');allowed.add('stemHairLength');
  for(const field of ['sepalCount','tepalCount','styleCount','minFloweringYearsAfterPlanting'])allowed.add(field);
+ for(const field of ['coneRadius','coneHeight','rayLength','paleaLength','referenceRayFlorets','referenceDiscFlorets','discCorollaLobes'])allowed.add(field);
  for(const [id,a] of Object.entries(APPEARANCE_DATA)){
   for(const field of ['sepalCount','tepalCount','styleCount'])if(a[field]!==undefined)assert.ok(Number.isInteger(a[field])&&a[field]>=1&&a[field]<=12,id+':'+field);
+  for(const field of ['coneRadius','coneHeight','rayLength','paleaLength'])if(a[field]!==undefined)assert.ok(Number.isFinite(a[field])&&a[field]>.0001&&a[field]<.1,id+':'+field);
+  for(const [field,min,max]of [['referenceRayFlorets',8,21],['referenceDiscFlorets',200,400],['discCorollaLobes',5,5]])if(a[field]!==undefined)assert.ok(Number.isInteger(a[field])&&a[field]>=min&&a[field]<=max,id+':'+field);
   if(a.minFloweringYearsAfterPlanting!==undefined)assert.ok(Number.isInteger(a.minFloweringYearsAfterPlanting)&&a.minFloweringYearsAfterPlanting>=1&&a.minFloweringYearsAfterPlanting<=10,id+':minFloweringYearsAfterPlanting');
   for(const field of ['involucreRadius','involucreHeight','discRadius','rayWidth','discLength','floretTube','floretLobe'])if(a[field]!==undefined)assert.ok(Number.isFinite(a[field])&&a[field]>.0001&&a[field]<.05,id+':'+field);
   for(const field of ['upperPetalWidth','lowerPetalWidth'])if(a[field]!==undefined)assert.ok(Number.isFinite(a[field])&&a[field]>=.001&&a[field]<=.1,id+':'+field);
@@ -7359,6 +7362,9 @@ test('snowdrops flower with leaves in late winter and leave no above-ground plan
  for(const info of Object.values(CATALOG))for(const month of info.appearance?.flowerMonths||[]){
   if(info.appearance.persistence==='frostDormantTuber'&&[12,1,2,3].includes(month)){
    assert.equal(info.appearance.winterClimateSensitive,true);assert.match(info.bloomText,/初霜/);assert.equal(seasonAt(info,month).bloom,false);continue;
+  }
+  if(info.appearance.persistence==='protectedWinter'&&info.appearance.dormantMonths?.includes(month)){
+   const winter=seasonAt(info,month);assert.equal(info.appearance.winterClimateSensitive,true,info.label);assert.equal(winter.groundDormant,true,info.label);assert.equal(winter.bloom,false,info.label);assert.equal(winter.leafDensity,0,info.label);assert.match(winter.phase,/保護場所.*屋外表示なし/,info.label);continue;
   }
   assert.equal(seasonAt(info,month).groundDormant,false,'Source flowering contradicts dormancy: '+info.label);
  }
@@ -9573,4 +9579,23 @@ test('Base Elegans Hosta macro cameras centre the visible perianth above large l
 });
 test('Base Elegans Hosta source range update keeps older saved specimen dimensions and camera intact',()=>{
  const doc=emptyDocument(8,6);doc.plans.A.plants=[{...makePlant('hosta',52480,2,2),height:.91,spread:1.22,leafHeight:.61}];doc.view.camera={position:[-1.5,.8,-.5],target:[-2,.4,-1]};const raw={...structuredClone(doc),catalogVersion:'2026-10-22.10'};assert.deepEqual(validateDocument(raw),doc);const p=doc.plans.A.plants[0],state=stateAt(p,view(6));assert.equal(state.height,p.height);assert.equal(state.spread,p.spread);assert.equal(state.leafHeight,p.leafHeight);assert.equal(raw.catalogVersion,'2026-10-22.10');
+});
+
+test('Base Magnus Echinacea references distinguish neuter rays disc-floret organs and retained dry winter heads',()=>{
+ for(const size of [[.9,.45,.62],[.4,.25,.27]])for(let month=1;month<=12;month++){
+  const p={...makePlant('echinacea',52500,2,2),height:size[0],spread:size[1],leafHeight:size[2]},before=structuredClone(p),s=stateAt(p,view(month)),g=plantModel(p,view(month)),live=[6,7,8].includes(month),dry=[9,10,11,12,1,2].includes(month),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),heads=count(live?'receptacle-magnus-ref':'dry-receptacle-magnus-ref'),corollas=count('disc-corolla-magnus-ref'),female=count('style-magnus-ref-female'),male=count('style-magnus-ref-male'),label=size+' '+month;
+  try{assert.equal(s.bloom,live,label);assert.equal(s.seedHeads,dry,label);assert.equal(g.children.length===0,month===3,label+' spring cleanup example');if(g.children.length)assert.equal(g.userData.architecture,'magnusEchinaceaReferences');assert.equal(heads>0,live||dry,label);assert.equal(!!g.userData.flowerTargets?.length,live);assert.equal(count('ray-magnus-ref'),live?heads*20:0);assert.equal(count(live?'palea-magnus-ref':'dry-palea-magnus-ref'),(live||dry)?heads*240:0);assert.equal(count('filament-magnus-ref'),corollas*5);assert.equal(count('anther-tube-magnus-ref'),corollas);assert.equal(count('inferior-ovary-magnus-ref'),corollas);assert.equal(male+female,corollas);assert.equal(count('style-branch-magnus-ref'),female*2);if(live){assert.ok(male>0&&female>0);assert.equal(count('disc-bud-magnus-ref')+corollas,heads*240);}else assert.equal(corollas,0);assert.ok(!g.children.some(m=>/pollen|nectar|fruit|seed|dew|ray-(ovary|style|filament)/.test(m.userData.component)),label);if([1,2,3,11,12].includes(month))assert.equal(count('leaf-magnus-ref'),0);for(const mesh of g.children)for(const arr of [mesh.instanceMatrix.array,mesh.geometry.attributes.position.array,mesh.geometry.attributes.normal.array])assert.ok(arr.every(Number.isFinite),label);assert.deepEqual(p,before);}finally{dispose(g);}
+ }
+ const a=CATALOG.echinacea.appearance;assert.equal(a.status,'partial');assert.equal(a.arrangement,'alternate');assert.equal(a.petals,undefined);assert.equal(a.discCorollaLobes,5);assert.equal(a.stamenCount,5);assert.equal(a.styleCount,1);assert.equal(a.minFloweringYearsAfterPlanting,undefined);assert.deepEqual(CATALOG.echinacea.height,[.76,.91]);assert.deepEqual(CATALOG.echinacea.spread,[.30,.46]);assert.match(a.sourceConflict,/中性舌状花/);assert.match(a.sourceConflict,/品種解剖の確定値ではない/);assert.match(a.sourceConflict,/3月に整理した管理例/);
+});
+test('Base Magnus Echinacea independent tiny inputs bound real leaves rays paleae tubular florets and winter heads',()=>{
+ for(const size of [[.9,.45,.62],[.4,.25,.27],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]])for(const month of [7,1]){
+  const p={...makePlant('echinacea',52599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),matrix=new Matrix4(),point=new Vector3();
+  try{let maxLeaf=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite));assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,size+' '+month+' height '+mesh.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,size+' '+month+' footprint '+mesh.userData.component);if(mesh.userData.component==='leaf-magnus-ref'||mesh.userData.component==='vein-magnus-ref')maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,size+' '+month+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+ }
+});
+test('Base Magnus Echinacea macro cameras centre a visible cone palea above the leaf envelope',()=>{
+ for(const size of [[.9,.45,.62],[.4,.25,.27]]){
+  const p={...makePlant('echinacea',52599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(7));try{assert.equal(flowerInspectionDistanceFloor(g),.14);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&hit.object.userData.component==='palea-magnus-ref','first visible '+hit?.object.userData.component);}finally{dispose(g);}
+ }
 });
