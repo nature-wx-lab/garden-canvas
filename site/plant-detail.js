@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.528';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.529';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.528';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.529';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='achilleaReferences'){drawAchilleaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='autumnJoyReferences'){drawAutumnJoyReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='milleniumAlliumReferences'){drawMilleniumAlliumReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='limelightHydrangeaReferences'){drawLimelightHydrangeaReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -24252,5 +24253,56 @@ function drawAutumnJoyReferences(b,{info,s,detail,month,rand},kit){
    previous=node;
   }
   if(!(live||dry||budding))continue;const centre=[tip[0],h*(.985-i/N*.12)-CL*1.30-HR*.15,tip[2]],branchRoot=[centre[0],centre[1]-Math.min(HR*.34,h*.08),centre[2]];line(null,tip,branchRoot,R*.55,dry?'dry-head-stalk-autumn-ref':'head-stalk-autumn-ref',stemColor);head(centre,yaw);
+ }
+}
+
+export function achilleaReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),az=u*Math.PI;
+ if(type==='acLinearRef')return[u*.5*sn**.60*(1+.10*Math.sin(t*Math.PI*54)),.025*sn*(1-u*u),t];
+ if(type==='acPinnaRef')return[u*.5*sn**.65*(.15+.85*Math.abs(Math.sin(t*Math.PI*7))**.38),.030*sn*(1-u*u),t];
+ if(type==='acRayRef'){const width=sn**.42*(.65+.35*t);return[u*.5*width,.040*sn*(1-u*u)+.025*t*t,t-.045*(.5+.5*Math.cos(u*Math.PI*3))*t**20];}
+ if(type==='acDiscRef'){const r=.28+.16*t+.12*t*t;return[Math.sin(az)*r,t-.15*t**10*(.5-.5*Math.cos(az*5)),Math.cos(az)*r];}
+ if(type==='acAntherRef'){const r=.45+.04*Math.cos(az*5);return[Math.sin(az)*r,t,Math.cos(az)*r];}
+ return[u*.5*sn**.70,t,.045*sn*(1-u*u)];
+}
+function drawAchilleaReferences(b,{info,s,detail,month,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h),P=a.shootProfile,white=P==='peter',gold=P==='gold',live=!!s.bloom,dry=!!s.seedHeads,budding=!!s.flowerBuds,spring=month===3,early=month===4,N=a.flowerPalette.stems,HR=Math.min(a.headRadius,w*.18,h*.13),CR=Math.min(a.flowerRadius,HR*(white?.18:.15),h*.06),RL=Math.min(a.rayLength,CR*(white?.70:gold?.55:.85)),RW=RL*a.rayWidth/a.rayLength,FL=Math.min(a.flowerLength,CR*(white?.75:gold?1.2:1.0)),R=Math.min(.0025,h*.009,w*.010,LH*.015),stem=dry?'#9c8768':a.stemColor;
+ if(!s.leafDensity&&!live&&!dry&&!budding)return;
+ const line=(frame,from,to,r,kind,color)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.8));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('acStemRef',kind,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const leaf=(node,yaw,len)=>{
+  const L=Math.min(len,w*.27,LH*.65,Math.max(0,LH-node[1])/.65)*(spring?.25:early?.65:1),W=L*a.leafWidth/a.leafLength;if(L<1e-10)return;const f=flowerFrame(b,node,-.38,yaw),color=kit.shade(rand,s.leafColor,.025);
+  if(white){f.add('acLinearRef','leaf-achillea-ref',color,0,0,0,W,L,L);line(f,[0,L*.002,0],[0,L*.002,L*.96],Math.min(R*.06,W*.025),'leaf-midrib-achillea-ref','#91a474');return;}
+  line(f,[0,0,0],[0,L*.004,L],Math.min(R*.12,W*.035),'leaf-rachis-achillea-ref',color);
+  for(let j=0;j<14;j++)for(const side of [-1,1]){const t=.08+j*.062,plen=W*.51*Math.sin(Math.PI*t)**.75,pw=plen*.30;f.add('acPinnaRef','leaf-pinna-achillea-ref',color,side*W*.008,L*.003,L*t,pw,plen,plen,-.03,side*1.18,0);}
+ };
+ let groupCount=0,capCount=0;
+ const cap=(f,point,j)=>{
+  const target=live&&groupCount===0&&j===0,g=flowerFrame(f,point,0,j*.13),closed=budding||live&&j%13===12;
+  capCount++;g.add('acBudRef',dry?'dry-receptacle-achillea-ref':'receptacle-achillea-ref',dry?'#9b8969':'#859762',0,-FL*.14,0,CR*.65,FL*.25,CR*.65);
+  for(let k=0;k<(white?20:gold?16:24);k++){const aa=k*2.399963,row=k%3,len=FL*(.55+.10*row);g.add('acBractRef',dry?'dry-phyllary-achillea-ref':'phyllary-achillea-ref',dry?'#a09171':'#8d9f72',Math.sin(aa)*CR*.55,-FL*.20,Math.cos(aa)*CR*.55,len*.22,len,len,1.95,aa,0);}
+  if(closed&&!dry){g.add('acBudRef','bud-achillea-ref',gold?'#b9bc62':white?'#d9dfcd':'#c9aa96',0,FL*.20,0,CR*.60,FL*.55,CR*.60);return;}
+  const rayColor=dry?'#b39f7d':white?'#f5f1e8':gold?'#eac52a':kit.shade(rand,j%4===0?'#e1c9b3':j%3===0?'#dbad9b':'#d58c98',.018),rays=a.referenceRayFlorets;
+  for(let k=0;k<rays;k++){
+   const ring=white?Math.floor(k/22):0,aa=white?(k%22)*TAU/22+ring*.22:k*TAU/rays,r=white?CR*Math.max(.015,.72-ring*.18):CR*.43,pitch=white?.12+ring*.08:-.10,at=[Math.sin(aa)*r,white?FL*(.12+ring*.12):FL*.12,Math.cos(aa)*r],f2=flowerFrame(g,at,pitch,aa),len=RL*(white?1-ring*.08:1),width=RW*(white?.70:1);
+   f2.add('acRayRef',dry?'dry-ray-achillea-ref':'ray-achillea-ref',rayColor,0,0,0,width,len,len);
+   if(target&&k===0){const rows=32,cols=12,scale=new THREE.Vector3(width,len,len),vs=[[26/rows,0],[27/rows,0],[26/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...achilleaReferencePoint('acRayRef',t,u)).multiply(scale)),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');f2.flower(centre.toArray(),CR*1.1,pose.x,pose.y,pose.z);}
+  }
+  if(white||dry)return;
+  for(let k=0;k<a.referenceDiscFlorets;k++){
+   const r=CR*.39*Math.sqrt((k+.5)/a.referenceDiscFlorets),aa=k*2.399963,at=[Math.sin(aa)*r,-FL*.75,Math.cos(aa)*r],v=flowerFrame(g,at,0,aa),FW=FL*(gold?.30:.20);
+   v.add('acDiscRef','disc-corolla-achillea-ref',gold?'#dfb628':'#d7b55c',0,0,0,FW,FL,FW);v.add('acBudRef','inferior-ovary-achillea-ref','#a5aa7b',0,-FL*.12,0,FW*.35,FL*.12,FW*.35);
+   for(let k2=0;k2<5;k2++){const az=k2*TAU/5;line(v,[Math.sin(az)*FW*.18,FL*.15,Math.cos(az)*FW*.18],[Math.sin(az)*FW*.18,FL*.72,Math.cos(az)*FW*.18],FW*.030,'disc-filament-achillea-ref','#d3bb65');}
+   v.add('acAntherRef','disc-anther-tube-achillea-ref','#b59e4d',0,FL*.68,0,FW*.45,FL*.23,FW*.45);line(v,[0,FL*.15,0],[0,FL*1.04,0],FW*.055,'disc-style-achillea-ref','#e4ce86');for(const side of [-1,1])line(v,[0,FL*1.04,0],[side*FW*.30,FL*1.15,0],FW*.045,'disc-stigma-branch-achillea-ref','#ead69a');
+  }
+ };
+ for(let i=0;i<N;i++){
+  const yaw=.35+i*2.399963,r=w*.13*Math.sqrt((i+.5)/N),root=[Math.sin(yaw)*r,R*1.3,Math.cos(yaw)*r],tip=[root[0]+Math.sin(yaw)*w*.095,LH*(spring?.15:early?.57:.80),root[2]+Math.cos(yaw)*w*.095];let prev=root;
+  if(s.leafDensity)for(let j=0;j<15;j++)if((j+.15)/15<s.leafDensity)leaf(root,yaw+j*2.399963,a.leafLength*(.8+.15*j/15));
+  for(let j=1;j<=18;j++){const t=j/18,node=root.map((v,k)=>v+(tip[k]-v)*t);line(null,prev,node,R*(1-.30*t),dry?'dry-stem-achillea-ref':'stem-achillea-ref',stem);if((j-.2)/18<s.leafDensity)leaf(node,yaw+j*2.399963,a.leafLength*(1-.40*t));prev=node;}
+  if(!live&&!dry&&!budding)continue;
+  const cy=[tip[0],h*(.98-i/N*.10)-FL*1.8-HR*(white?.75:.08),tip[2]],branchRoot=[cy[0],cy[1]-Math.min(HR*.50,h*.08),cy[2]],f=flowerFrame(b,cy,0,yaw);line(null,tip,branchRoot,R*.65,dry?'dry-head-stalk-achillea-ref':'head-stalk-achillea-ref',stem);
+  const count=a.flowerPalette.capitulaPerStem;
+  for(let j=0;j<count;j++){const az=j*2.399963,rn=Math.sqrt((j+.5)/count),r=HR*rn,point=[Math.sin(az)*r,HR*(white?.65:.035)*(1-rn*rn),Math.cos(az)*r];line(f,[0,-Math.min(HR*.50,h*.08),0],point,Math.min(R*.15,FL*.06),dry?'dry-corymb-branch-achillea-ref':'corymb-branch-achillea-ref',stem);cap(f,point,j);}
+  groupCount++;
  }
 }
