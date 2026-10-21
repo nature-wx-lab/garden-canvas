@@ -12,6 +12,28 @@ import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulip
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Schizachyrium cultivars retain distinct foliage and solitary paired-spikelet rames',()=>{
+ const rows=[['p-7eb513c5a663',[.55,.5,.4],[.18,.25,.12]],['p-d583678c24cc',[.9,.6,.6],[.20,.28,.13]],['p-f5ea8a5fb954',[.9,.5,.6],[.20,.28,.13]]];
+ assert.deepEqual(CATALOG[rows[0][0]].height,[.4,.6]);assert.deepEqual(CATALOG[rows[1][0]].spread,[.5,.7]);assert.equal(CATALOG[rows[2][0]].latin,"Schizachyrium scoparius 'Prairie Blues'");
+ for(const [id,...sizes]of rows)for(const size of sizes)for(let month=1;month<=12;month++){
+  const p={...makePlant(id,48000,2,2),height:size[0],spread:size[1],leafHeight:size[2]},before=structuredClone(p),s=stateAt(p,view(month));assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(CATALOG[id].bloomKnown,false);assert.equal(s.bloom,id===rows[0][0]?month===9:[8,9].includes(month));assert.equal(s.seedHeads,[10,11,12,1,2].includes(month));assert.equal(s.groundDormant,false);assert.equal(s.shootScale,1);assert.deepEqual(p,before);if(![1,3,6,9,11].includes(month))continue;
+  const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);try{assert.equal(g.userData.architecture,'schizachyriumReferences');assert.equal(!!g.userData.flowerTargets?.length,s.bloom);assert.equal(count('leaf-schizachyrium-old')>0,month===1);assert.ok(!g.children.some(m=>/anther|ovary|pollen|caryopsis|fruit|seed/.test(m.userData.component)));
+   const pairs=count('pedicel-schizachyrium-');if(s.bloom||s.seedHeads){assert.ok(count('rachis-solitary-schizachyrium-')>0);assert.equal(pairs,count('rachis-solitary-schizachyrium-')*8);assert.equal(count('glume-sessile-schizachyrium-'),pairs*2);assert.equal(count('glume-pedicellate-schizachyrium-'),pairs*2);assert.equal(count('awn-schizachyrium-'),pairs);}else assert.equal(pairs,0);
+   if(month===6){assert.equal(count('hair-leaf-schizachyrium-')>0,id===rows[1][0]);if(id===rows[0][0]){const m=g.children.find(m=>m.userData.component.startsWith('leaf-schizachyrium-chameleon')),shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};m.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,/schWhite/);assert.ok(!shader.fragmentShader.includes('\\n'));}}
+   for(const mesh of g.children)for(const a of [mesh.instanceMatrix.array,mesh.geometry.attributes.position.array,mesh.geometry.attributes.normal.array])assert.ok(a.every(Number.isFinite));
+  }finally{dispose(g);}
+ }
+});
+test('Schizachyrium independent tiny inputs bound actual live and retained winter geometry',()=>{
+ for(const id of ['p-7eb513c5a663','p-d583678c24cc','p-f5ea8a5fb954'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [9,1]){
+  const p={...makePlant(id,48099,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),matrix=new Matrix4(),point=new Vector3();try{let maxLeaf=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite));assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component);if(m.userData.component.startsWith('leaf-'))maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=.005001,'leaf ceiling '+maxLeaf);}finally{dispose(g);}
+ }
+});
+test('Schizachyrium observation ray reaches the rendered sessile glume at both sizes',()=>{
+ for(const [id,size]of [['p-7eb513c5a663',[.55,.5,.4]],['p-7eb513c5a663',[.18,.25,.12]],['p-d583678c24cc',[.9,.6,.6]],['p-d583678c24cc',[.20,.28,.13]],['p-f5ea8a5fb954',[.9,.5,.6]],['p-f5ea8a5fb954',[.20,.28,.13]]]){
+  const p={...makePlant(id,48099,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(9));try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&/^glume-(sessile|pedicellate)-schizachyrium-/.test(hit.object.userData.component),'visible glume '+id+' '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
 test('Andropogon cultivars keep domestic dimensions separate colours and paired spikelet exteriors',()=>{
  const rows=[['p-151c55ddace0',[1.1,.55,.72],[.20,.28,.13]],['p-9f9ba15aa2d9',[.9,.5,.6],[.20,.28,.13]]];assert.deepEqual(CATALOG[rows[0][0]].height,[.6,1.2]);assert.deepEqual(CATALOG[rows[1][0]].height,[.6,1]);
  for(const [id,...sizes]of rows)for(const size of sizes)for(let month=1;month<=12;month++){
