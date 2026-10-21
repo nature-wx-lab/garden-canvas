@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.485';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.486';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.485';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.486';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(['sorghastrumReferences','boutelouaReferences'].includes(info.appearance?.architecture)){drawPrairieGrassReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['sandLovegrassReference','sesleriaReference','imperataRedReference'].includes(info.appearance?.architecture)){drawRemainingGrassReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['cortaderiaReferences','moliniaReferences'].includes(info.appearance?.architecture)){drawPampasMoliniaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='deschampsiaReferences'){drawDeschampsiaReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22627,6 +22628,61 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
 
 
 
+export function prairieGrassPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='pgUprightLeafRef'||type==='pgArchingLeafRef')return[u*.5*sn**.52,type==='pgUprightLeafRef'?t-.18*t*t:Math.sin(Math.PI*.65*t)-.75*t,t+.035*u*u*sn];
+ if(type==='pgSorLowerRef')return[u*.5*(.10+.90*Math.sin(Math.PI*.94*t)**.58),t,.18*(1-u*u)*sn];
+ if(type==='pgSorUpperRef'||type==='pgBouGlumeRef')return[u*.5*sn**.65,t,.18*(1-u*u)*sn];
+ if(type==='pgSorLemmaRef')return[u*.5*sn**.58,t-.075*t**12*(1-Math.abs(u)),.10*(1-u*u)*sn];
+ if(type==='pgBouLemmaRef'||type==='pgBouRudimentRef')return[u*.5*sn**.48,t-.11*t**14*(.5+.5*Math.cos(u*Math.PI*(type==='pgBouRudimentRef'?3:5))),.13*(1-u*u)*sn];
+ if(type==='pgBouPaleaRef')return[u*.5*sn**.62,t,.065*(1-u*u)*sn];
+ const ph=(u+1)*Math.PI,r=.006*(1-.85*t),e=Math.max(0,t-.42);
+ return type==='pgBentAwnRef'?[Math.sin(ph)*r+e*.30,t<=.42?t:.42+e*.85,Math.cos(ph)*r+.025*Math.sin(t*18)*Math.min(1,t*4)]:[Math.sin(ph)*r,t,(type==='pgHairRef'?.18:0)*sn+Math.cos(ph)*r];
+}
+function drawPrairieGrassReferences(b,{info,s,detail,month,rand},kit){
+ const bout=info.appearance.architecture==='boutelouaReferences',sioux=info.appearance.shootProfile==='siouxBlue',type=bout?'badRiver':sioux?'siouxBlue':'indianSteel',tag=bout?'bouteloua-':'sorghastrum-',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.96)*s.leafScale,heads=s.bloom||s.seedHeads,dry=!!s.seedHeads,front=Math.atan2(.8,1),R=Math.min(bout?.0008:.0015,h*.0025,w*.003),rootY=Math.min(.00015,h*.001),leaves=s.leafDensity>0?Math.max(bout?2:12,Math.round((bout?60:95)*detail*s.leafDensity)):0,stems=Math.max(2,Math.round((bout?13:sioux?8:10)*detail)),winter=[12,1,2].includes(month);
+ const line=(a,z,r,kind,col)=>{const q=new THREE.Vector3(...a),end=new THREE.Vector3(...z),d=end.clone().sub(q);if(d.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');b.add('pgStemRef',kind,col,...q.add(end).multiplyScalar(.5).toArray(),r,d.length(),r,e.x,e.y,e.z);};
+ const leaf=(at,az,j,upper=false)=>{const fy=Math.min(bout?.24:.5,h*.8,Math.max(0,LH-at[1])/.84)*(upper?.55:.74+.26*(.5+.5*Math.cos(j*3.4))),reach=Math.min(w*(upper?.18:.32),fy*.55),width=Math.min(bout?.003:sioux?.007:.008,h*.025,w*.02,LH*.15),f=flowerFrame(b,at,0,az);f.add(upper||j%3?'pgUprightLeafRef':'pgArchingLeafRef','leaf-'+tag+type,kit.shade(rand,s.leafColor,.03),0,0,0,width,fy,reach);};
+ for(let j=0;j<leaves;j++){const az=front+j*2.399963,rr=w*.12*Math.sqrt((j+.5)/leaves);leaf([Math.sin(az)*rr,Math.min(rootY,LH*.05),Math.cos(az)*rr],az,j);}
+ if(!heads)return;
+ for(let i=0;i<stems;i++){
+  const az=front+i*2.399963,rr=w*.09*Math.sqrt((i+.5)/stems),root=[Math.sin(az)*rr,Math.max(rootY,R*1.1),Math.cos(az)*rr],base=[root[0]+Math.sin(az)*w*(i===0?.20:.035),h*(bout?.80:.66),root[2]+Math.cos(az)*w*(i===0?.20:.035)],stemCol=dry?'#b6a182':bout?'#9aa37b':sioux?'#a6b6ad':'#a4b0a0';line(root,base,R,'culm-'+tag+type,stemCol);
+  for(let j=0;j<(bout?1:3);j++){const t=.28+j*.18,at=root.map((v,n)=>v+(base[n]-v)*t);if(at[1]<LH*.85&&s.leafDensity>.15)leaf(at,az+j*2.8,j,true);}
+  if(bout){
+   const S=Math.min(.005,h*.014,w*.02),W=Math.min(.0017,S*.34,w*.006),L=Math.min(.045,h*.18,w*.17);
+   for(let arm=0;arm<2;arm++){
+    const origin=[base[0],base[1]+arm*h*.09,base[2]],angle=az+arm*1.6;
+    const at=t=>[origin[0]+Math.sin(angle)*L*t,origin[1]+Math.sin(Math.PI*t)*h*.018,origin[2]+Math.cos(angle)*L*t];if(arm)line(base,origin,R*.6,'axis-'+tag+type,stemCol);
+    let prev=at(0);for(let k=1;k<=16;k++){const end=at(k/16);line(prev,end,R*.38,'rame-'+tag+type,stemCol);prev=end;}
+    for(let j=0;j<22;j++)for(let row=0;row<2;row++){
+     const t=(j+.5)/22,origin=at(t),place=[origin[0]+Math.cos(angle)*W*(row?1:-1)*.35,origin[1],origin[2]-Math.sin(angle)*W*(row?1:-1)*.35],f=flowerFrame(b,place,Math.PI,angle),col=dry?'#c2ae89':'#71655f';
+     f.add('pgBouGlumeRef','glume-lower-'+tag+type,col,0,0,W*.025,W*.8,S*.48,W*.8);f.add('pgBouGlumeRef','glume-upper-'+tag+type,col,0,0,-W*.025,W,S,W,0,Math.PI,0);
+     f.add('pgBouLemmaRef','lemma-fertile-'+tag+type,col,0,0,0,W*.68,S*.92,W*.60);f.add('pgBouPaleaRef','palea-'+tag+type,col,0,0,-W*.02,W*.45,S*.88,W*.38,0,Math.PI,0);f.add('pgBouRudimentRef','lemma-rudiment-'+tag+type,col,W*.17,S*.52,0,W*.40,S*.32,W*.35);
+     for(let q=0;q<3;q++){const A=S*.4;f.add('pgStraightAwnRef','awn-fertile-'+tag+type,col,(q-1)*W*.20,S*.86,0,A,A,A,0,0,(q-1)*.25);f.add('pgStraightAwnRef','awn-rudiment-'+tag+type,col,W*.17+(q-1)*W*.1,S*.80,0,A,A,A,0,0,(q-1)*.3);}
+     for(let hair=0;hair<5;hair++){const a=hair*2.399963,L=S*.30;f.add('pgHairRef','hair-rudiment-'+tag+type,dry?'#d1bf9e':'#b8b4a1',W*.17,S*.48,0,L,L,L,Math.sin(a)*.65,a,Math.cos(a)*.65);}
+     if(s.bloom&&i===0&&arm===1&&j===21&&row===0)pgTarget(f,'pgBouGlumeRef',W*.8,S*.48,W*.8,W*.025,S);
+    }
+   }
+  }else{
+   const top=[base[0],h*.94,base[2]];line(base,top,R*.5,'axis-'+tag+type,stemCol);const arms=sioux?12:14;
+   for(let arm=0;arm<arms;arm++){
+    const t=arm/(arms-1),origin=base.map((v,n)=>v+(top[n]-v)*t*.88),angle=az+arm*2.399963,reach=Math.min(sioux?.023:.075,w*(sioux?.08:.14),h*.13)*(1-t*.6),end=[origin[0]+Math.sin(angle)*reach,origin[1]+Math.min(.06,h*.10)*(1-t*.6),origin[2]+Math.cos(angle)*reach];line(origin,end,R*.23,'branch-'+tag+type,stemCol);
+    for(let twig=0;twig<5;twig++){
+     const t=(twig+.5)/5,at=origin.map((v,n)=>v+(end[n]-v)*t),out=Math.min(.025,w*.035,h*.04),tip=[at[0]+Math.cos(angle)*out*(twig%2?1:-1),at[1]+out,at[2]-Math.sin(angle)*out*(twig%2?1:-1)];line(at,tip,R*.13,'raceme-'+tag+type,stemCol);
+     for(let k=0;k<3;k++){
+      const t=(k+.5)/3,place=at.map((v,n)=>v+(tip[n]-v)*t),S=Math.min(.007,h*.014,w*.02),W=Math.min(.0024,S*.34,w*.006),f=flowerFrame(b,place,.15,angle),col=dry?'#b8a080':sioux?'#c9cec4':'#bd9560',ped=Math.min(.005,S*.65),P=[place[0]+Math.sin(angle)*ped,place[1]+ped*.7,place[2]+Math.cos(angle)*ped];line(place,P,R*.08,'barren-pedicel-'+tag+type,stemCol);const pf=flowerFrame(b,P,.2,angle);for(let q=0;q<4;q++){const a=q*2.399963,L=S*.32;pf.add('pgHairRef','hair-barren-pedicel-'+tag+type,'#d1d0ba',0,-ped*.25,0,L,L,L,Math.sin(a)*.8,a,Math.cos(a)*.8);}
+      f.add('pgSorLowerRef','glume-lower-'+tag+type,col,0,0,W*.025,W,S,W);f.add('pgSorUpperRef','glume-upper-'+tag+type,col,0,0,-W*.025,W,S,W,0,Math.PI,0);
+      f.add('pgSorLemmaRef','lemma-lower-'+tag+type,col,-W*.10,0,0,W*.65,S*.7,W*.55);f.add('pgSorLemmaRef','lemma-upper-'+tag+type,col,W*.10,S*.12,0,W*.60,S*.6,W*.50,0,Math.PI,0);
+      const A=Math.min(.018,S*2.5,h*.025,w*.035);f.add('pgBentAwnRef','awn-lemma-'+tag+type,col,W*.10,S*.67,0,A,A,A,0,Math.PI,0);
+      for(let hair=0;hair<7;hair++){const a=hair*2.399963,L=S*.48;f.add('pgHairRef','hair-callus-'+tag+type,dry?'#cebea3':'#d8d6c3',0,0,0,L,L,L,Math.sin(a)*.85,a,Math.cos(a)*.85);}
+      if(s.bloom&&i===0&&arm===arms-1&&twig===4&&k===2)pgTarget(f,'pgSorLowerRef',W,S,W,W*.025,S);
+     }
+    }
+   }
+  }
+ }
+ function pgTarget(f,shape,x,y,z,offset,S){const verts=[[20/40,0],[21/40,0],[20/40,2/16]].map(([t,u])=>new THREE.Vector3(...prairieGrassPoint(shape,t,u)).multiply(new THREE.Vector3(x,y,z)).add(new THREE.Vector3(0,0,offset))),centre=verts[0].clone().add(verts[1]).add(verts[2]).multiplyScalar(1/3),normal=verts[1].clone().sub(verts[0]).cross(verts[2].clone().sub(verts[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');f.flower(centre.toArray(),S*.44,pose.x,pose.y,pose.z);}
+}
 export function remainingGrassPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='rgUprightLeafRef'||type==='rgArchingLeafRef')return[u*.5*sn**.52,type==='rgUprightLeafRef'?t-.16*t*t:Math.sin(Math.PI*.65*t)-.75*t,t+.04*u*u*sn];
