@@ -12,6 +12,27 @@ import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulip
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Elymus keeps blue rye heads open bottlebrush spikelets and cold-sensitive blue foliage distinct',()=>{
+ const rows=[['p-22407ee64773',[1.4,.65,.9],[.25,.3,.15]],['p-646b6f5a4662',[.55,.35,.35],[.18,.25,.12]],['p-ea75ae49ebde',[.55,.5,.35],[.18,.25,.12]]];assert.deepEqual(CATALOG[rows[0][0]].height,[1.5,1.5]);assert.equal(CATALOG[rows[0][0]].spread,null);assert.deepEqual(CATALOG[rows[1][0]].spread,[.2,.4]);assert.deepEqual(CATALOG[rows[2][0]].height,[.3,.6]);
+ for(const [id,...sizes]of rows)for(const size of sizes)for(let month=1;month<=12;month++){
+  const p={...makePlant(id,48100,2,2),height:size[0],spread:size[1],leafHeight:size[2]},old=structuredClone(p),s=stateAt(p,view(month)),mag=id===rows[2][0],brush=id===rows[1][0];assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(CATALOG[id].bloomKnown,false);assert.equal(s.bloom,mag?[6,7,8].includes(month):brush?[6,7].includes(month):[8,9].includes(month));assert.equal(s.seedHeads,mag?[9,10,11].includes(month):brush?[8,9,10,11,12,1,2].includes(month):[10,11,12,1,2].includes(month));assert.equal(s.groundDormant,false);assert.equal(s.shootScale,1);assert.deepEqual(p,old);if(![1,3,6,8,11].includes(month))continue;
+  const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);try{assert.equal(g.userData.architecture,'elymusReferences');assert.equal(!!g.userData.flowerTargets?.length,s.bloom);assert.ok(!g.children.some(m=>/anther|ovary|pollen|caryopsis|fruit|seed/.test(m.userData.component)));if(mag)assert.ok(count('leaf-elymus-magellanicus')>0);
+   const lemmas=count('lemma-elymus-'),glumes=count('glume-elymus-');if(s.bloom||s.seedHeads){assert.ok(lemmas>0);assert.equal(count('palea-elymus-'),lemmas);assert.equal(count('awn-lemma-elymus-'),lemmas);assert.equal(glumes,brush?0:lemmas/(mag?5:4)*2);}else assert.equal(lemmas,0);
+   for(const m of g.children)for(const a of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok(a.every(Number.isFinite));
+  }finally{dispose(g);}
+ }
+ assert.match(CATALOG[rows[1][0]].appearance.sourceConflict,/初夏/);assert.match(CATALOG[rows[2][0]].appearance.sourceConflict,/地下茎/);
+});
+test('Elymus independent small dimensions bound actual blades spikelets and awns in summer and winter',()=>{
+ for(const id of ['p-22407ee64773','p-646b6f5a4662','p-ea75ae49ebde'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [id==='p-22407ee64773'?8:6,1]){
+  const p={...makePlant(id,48199,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(m.userData.component.startsWith('leaf-'))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+leafMax);}finally{dispose(g);}
+ }
+});
+test('Elymus observation sees a rendered lemma at adult and small dimensions',()=>{
+ for(const [id,size]of [['p-22407ee64773',[1.4,.65,.9]],['p-22407ee64773',[.25,.3,.15]],['p-646b6f5a4662',[.55,.35,.35]],['p-646b6f5a4662',[.18,.25,.12]],['p-ea75ae49ebde',[.55,.5,.35]],['p-ea75ae49ebde',[.18,.25,.12]]]){
+  const p={...makePlant(id,48199,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(id==='p-22407ee64773'?8:6));try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&/^lemma-elymus-/.test(hit.object.userData.component),'visible lemma '+id+' '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
 test('Schizachyrium cultivars retain distinct foliage and solitary paired-spikelet rames',()=>{
  const rows=[['p-7eb513c5a663',[.55,.5,.4],[.18,.25,.12]],['p-d583678c24cc',[.9,.6,.6],[.20,.28,.13]],['p-f5ea8a5fb954',[.9,.5,.6],[.20,.28,.13]]];
  assert.deepEqual(CATALOG[rows[0][0]].height,[.4,.6]);assert.deepEqual(CATALOG[rows[1][0]].spread,[.5,.7]);assert.equal(CATALOG[rows[2][0]].latin,"Schizachyrium scoparius 'Prairie Blues'");

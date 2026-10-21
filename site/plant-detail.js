@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.480';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.481';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.480';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.481';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='elymusReferences'){drawElymusReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='schizachyriumReferences'){drawSchizachyriumReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='andropogonReferences'){drawAndropogonReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='chasmanthiumReferences'){drawChasmanthiumReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22618,6 +22619,43 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
  }
 }
 
+
+
+export function elymusReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='elyUprightLeafRef'||type==='elyArchingLeafRef')return[u*.5*sn**.55,type==='elyUprightLeafRef'?t-.15*t*t:Math.sin(Math.PI*.65*t)-.75*t,t+.04*u*u*sn];
+ if(type==='elyPaleaRef')return[u*.5*sn**.6,t,.08*(1-u*u)*sn];
+ if(type==='elyGlumeRef'||type==='elyLemmaRef')return[u*.5*sn**.72*(1-.35*t),t,.18*(1-u*u)*sn];
+ const ph=(u+1)*Math.PI,r=.004*(1-.8*t);return[Math.sin(ph)*r,t,(type==='elyStraightAwnRef'?0:.13*sn)+Math.cos(ph)*r];
+}
+function drawElymusReferences(b,{info,s,detail,month,rand},kit){
+ const type=info.appearance.shootProfile,icy=type==='icyBlue',brush=type==='hystrix',mag=type==='magellanicus',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.96)*s.leafScale,heads=s.bloom||s.seedHeads,dry=!!s.seedHeads,winter=[12,1,2].includes(month),front=Math.atan2(.8,1),R=Math.min(.0016,h*.0025,w*.003),rootY=Math.min(.00015,h*.001),stems=Math.max(4,Math.round((mag?13:brush?8:10)*detail));
+ const line=(f,a,z,r,kind,col)=>{const q=new THREE.Vector3(...a),end=new THREE.Vector3(...z),d=end.clone().sub(q);if(d.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');f.add('elyStemRef',kind,col,...q.add(end).multiplyScalar(.5).toArray(),r,d.length(),r,e.x,e.y,e.z);};
+ for(let i=0;i<stems;i++){
+  const az=front+i*2.399963,nodding=icy&&i%3===0,rr=w*.11*Math.sqrt((i+.5)/stems),root=[Math.sin(az)*rr,Math.max(rootY,R*1.1),Math.cos(az)*rr],top=[root[0]+Math.sin(az)*w*(heads&&i===0?.20:.035),heads?h*(nodding?.91:icy?.76:.80):Math.max(root[1],LH*.88),root[2]+Math.cos(az)*w*(heads&&i===0?.20:.035)],stemColor=dry?'#ae9877':brush?'#80906c':mag?'#abc6cb':'#a0b8bd';line(b,root,top,R,'culm-elymus-'+type,stemColor);
+  const addLeaf=(y,j,old=false)=>{const bt=(y-root[1])/Math.max(.00001,top[1]-root[1]),at=[root[0]+(top[0]-root[0])*bt,y,root[2]+(top[2]-root[2])*bt],ceiling=old?Math.min(s.leafHeight,h*.65):LH,fy=Math.min(icy?.40:mag?.28:.30,h*.58,Math.max(0,ceiling-y)/.87),reach=Math.min(w*(mag?.26:.24),fy*.5),width=Math.min(mag?.007:brush?.010:.009,h*.028,w*.035,ceiling*.13),f=flowerFrame(b,at,0,az+j*Math.PI+.10*Math.sin(i*3+j));
+   f.add(j%4?'elyUprightLeafRef':'elyArchingLeafRef','leaf-elymus-'+(old?'old':type),kit.shade(rand,old?'#ae9877':s.leafColor,.035),0,0,0,width,fy,reach);const sl=Math.min(.04,h*.06,w*.10,ceiling*.13);line(b,[at[0],Math.max(root[1],y-sl),at[2]],at,R*1.1,'sheath-elymus-'+type,stemColor);
+  };
+  if(s.leafDensity>0){const n=Math.max(2,Math.round((mag?7:5)*s.leafDensity));for(let j=0;j<n;j++)addLeaf(root[1]+Math.max(0,LH-root[1])*.66*(j+.3)/n,j);}
+  else if(winter&&heads&&!mag&&i%2===0)addLeaf(root[1]+Math.min(s.leafHeight,h*.6)*.15,0,true);
+  if(!heads)continue;
+  const L=Math.min(icy?.17:brush?.09:.12,h*(icy?.18:.18),w*.38),reach=nodding?Math.min(.10,h*.12,w*.20):Math.min(w*.015,L*.08),axis=t=>[0,nodding?L*(.12*Math.sin(Math.PI*t)-.23*t):L*t,reach*(nodding?Math.sin(Math.PI*.63*t):t)],f=flowerFrame(b,top,0,az),nodes=icy?12:brush?8:12,pairs=mag?1:2,col=dry?'#b5a07e':brush?'#8b9c79':mag?'#a7c0bf':'#b4c9ca';
+  for(let k=0;k<16;k++)line(f,axis(k/16),axis((k+1)/16),R*.35,'rachis-elymus-'+type,col);
+  for(let k=0;k<nodes;k++){
+   const bt=(k+.35)/nodes,at=axis(bt),body=Math.min(brush?.009:mag?.013:.013,h*.032,w*.047,L*.18),width=Math.min(brush?.0018:mag?.0026:.0022,body*.22,w*.012),awn=Math.min(icy?.033:brush?.028:.003,h*(mag?.010:.065),w*(mag?.025:.12),L*(mag?.05:.35));
+   for(let n=0;n<pairs;n++){
+    const side=mag?(k%2?1:-1):(n?1:-1),tilt=-side*(brush?1.35:icy?.36:.20),sp=flowerFrame(f,[at[0]+side*R*.42,at[1],at[2]],0,0),sf=flowerFrame(sp,[0,0,0],0,0);line(sp,[0,0,0],[side*width*.18,body*.12,0],R*.15,'rachilla-elymus-'+type,col);
+    if(!brush)for(let q=0;q<2;q++){const gl=flowerFrame(sf,[side*width*.18,0,0],0,0);gl.add('elyGlumeRef','glume-elymus-'+type,col,0,0,(q?-1:1)*width*.02,width*(icy?.55:.85),body*(icy?.5:.82),width*.65,0,q*Math.PI,tilt*.45);if(icy)gl.add('elyAwnRef','awn-glume-elymus-icyBlue',col,side*body*.06,body*.48,0,awn*.22,awn*.22,awn*.22,0,0,tilt*.65);}
+    const florets=brush?3:mag?5:4;
+    for(let j=0;j<florets;j++){
+     const y=body*.65*j/florets,side2=j%2?1:-1,origin=[side*width*.65+side2*width*.18,y,0],rot=tilt-side2*.16,len=body*(brush?.75:.65),ww=width*.70,euler=new THREE.Euler(0,0,rot,'YXZ'),tip=new THREE.Vector3(0,len*.88,0).applyEuler(euler).add(new THREE.Vector3(...origin));
+     sf.add('elyLemmaRef','lemma-elymus-'+type,kit.shade(rand,col,.025),...origin,ww,len,width*.65,0,0,rot);sf.add('elyPaleaRef','palea-elymus-'+type,col,origin[0],origin[1],-width*.025,ww*.65,len*.80,width*.40,0,Math.PI,rot);sf.add(brush?'elyStraightAwnRef':'elyAwnRef','awn-lemma-elymus-'+type,col,...tip.toArray(),awn,awn,awn,0,j*.07,rot*(icy?1.35:1));
+     if(s.bloom&&i===0&&k===nodes-1&&n===0&&j===florets-1){const verts=[[20/40,0],[21/40,0],[20/40,2/16]].map(([t,u])=>new THREE.Vector3(...elymusReferencePoint('elyLemmaRef',t,u)).multiply(new THREE.Vector3(ww,len,width*.65)).applyEuler(euler).add(new THREE.Vector3(...origin))),centre=verts[0].clone().add(verts[1]).add(verts[2]).multiplyScalar(1/3),normal=verts[1].clone().sub(verts[0]).cross(verts[2].clone().sub(verts[0])).normalize().negate(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');sf.flower(centre.toArray(),len*.4,pose.x,pose.y,pose.z);}
+    }
+   }
+  }
+ }
+}
 
 export function schizachyriumReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
