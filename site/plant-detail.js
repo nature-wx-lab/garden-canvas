@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.477';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.478';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.477';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.478';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='chasmanthiumReferences'){drawChasmanthiumReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='luzulaSelectReference'){drawLuzulaSelectReference(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='redVeinDockReference'){drawRedVeinDockReference(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='hordeumReference'){drawHordeumReference(b,{info,s,detail,month,rand},kit);return;}
@@ -22610,6 +22611,52 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
     for(let n=0;n<2;n++)ff.add('wbStyleRef','stigma-whitetop-reference','#ebe5ca',0,gyn+unit*.40,0,unit*.8,unit*.45,unit*.8,0,n*Math.PI,n?-.65:.65);
     for(let n=0;n<3;n++){const an=n*TAU/3,x=Math.sin(an)*unit*.17,z=Math.cos(an)*unit*.17;ff.add('wbFilamentRef','filament-whitetop-reference','#e7e4ce',x,0,z,unit,unit,unit*.5);ff.add('wbAntherRef','anther-whitetop-reference','#d8cf9b',x,unit,z,unit*.55,unit*.35,unit*.55);}
     if(i===0&&j===0&&k===4)ff.flower([0,unit*1.08,unit*.17],unit*.55);
+   }
+  }
+ }
+}
+
+export function chasmanthiumReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='chLeafRef')return[u*.5*sn**.45,Math.sin(Math.PI*.70*t)-.55*t+.025*u*u*sn,t];
+ if(type==='chPaleaRef')return[u*.5*sn**.65,t,.08*sn*(1+.75*Math.sin(u*Math.PI)**2)];
+ const winged=type==='chLemmaWingedRef',glume=type==='chGlumeRef';
+ return[u*.5*sn**(glume?.75:.85)*(glume?1:1-.50*t),t,(winged?.14:.045)*(1-u*u)*sn];
+}
+function drawChasmanthiumReferences(b,{info,s,detail,month,rand},kit){
+ const type=info.appearance.shootProfile,slender=type==='laxumSlender',river=type==='latifoliumRiverMist',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.96)*s.leafScale,heads=s.bloom||s.seedHeads,dry=!!s.seedHeads,front=Math.atan2(.8,1),R=Math.min(.001,h*.0025,w*.003,Math.max(.000005,LH*.03)),rootY=Math.min(.00015,h*.001,Math.max(.00001,LH*.01)),stems=Math.max(3,Math.round((slender?10:river?6:8)*detail));
+ const line=(f,a,z,r,kind,col)=>{const q=new THREE.Vector3(...a),end=new THREE.Vector3(...z),d=end.clone().sub(q);if(d.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');f.add('chStemRef',kind,col,...q.add(end).multiplyScalar(.5).toArray(),r,d.length(),r,e.x,e.y,e.z);};
+ for(let i=0;i<stems;i++){
+  const az=front+i*2.399963,rr=w*(heads&&i===0?.30:.12)*Math.sqrt((i+.8)/stems),root=[Math.sin(az)*rr,Math.max(rootY,R*1.1),Math.cos(az)*rr],top=[root[0]+Math.sin(az)*w*.025,heads?h*.96:Math.max(root[1],LH*.90),root[2]+Math.cos(az)*w*.025],stemColor=dry?'#a59068':slender?'#7b8f53':'#76914f';
+  line(b,root,top,R,'culm-chasmanthium-'+type,stemColor);
+  if(s.leafDensity>0){
+   const n=Math.max(2,Math.round(7*s.leafDensity));
+   for(let j=0;j<n;j++){
+    const y=root[1]+Math.max(0,LH-root[1])*.70*(j+.3)/n,t=(y-root[1])/Math.max(.00001,top[1]-root[1]),at=[root[0]+(top[0]-root[0])*t,y,root[2]+(top[2]-root[2])*t],len=Math.min(slender?.20:.18,h*.25,w*.30,Math.max(0,LH-y)/.75),width=Math.min(slender?.006:.017,len*.12,w*.055,LH*.13),yaw=az+j*Math.PI+.15*Math.sin(i*3+j),f=flowerFrame(b,at,0,yaw),color=month===3&&river?'#aa8377':s.leafColor;
+    f.add('chLeafRef','leaf-chasmanthium-'+type+(month>=10?'-autumn':''),kit.shade(rand,color,.035),0,0,0,width,len,len);
+    const sl=Math.min(.012,h*.035,w*.035,LH*.13);line(b,[at[0],Math.max(root[1],y-sl),at[2]],at,R*1.12,'sheath-chasmanthium-'+type,stemColor);
+   }
+  }
+  if(!heads)continue;
+  const branches=slender?8:6;
+  for(let j=0;j<branches;j++){
+   const terminal=j===branches-1,angle=az+j*2.399963,baseY=terminal?top[1]:h*(slender?.60+.046*j:.73+.028*j),t=(baseY-root[1])/(top[1]-root[1]),base=[root[0]+(top[0]-root[0])*t,baseY,root[2]+(top[2]-root[2])*t],reach=terminal?0:Math.min(w*(slender?.045:.15),h*(slender?.045:.18)),axis=t=>[base[0]+Math.sin(angle)*reach*t,terminal?baseY:slender?baseY+h*.065*t:baseY+h*.08*Math.sin(Math.PI*t)-h*.04*t,base[2]+Math.cos(angle)*reach*t],pieces=terminal?1:slender?3:12;
+   for(let k=0;k<pieces;k++)line(b,axis(k/pieces),axis((k+1)/pieces),R*.40,'branch-chasmanthium-'+type,stemColor);
+   const number=terminal?1:slender?4:3;
+   for(let k=0;k<number;k++){
+    const bt=(k+.8)/(number+.05),a=axis(bt),ped=terminal?0:Math.min(slender?.0018:.022,h*(slender?.005:.05),w*(slender?.007:.06)),side=k%2?1:-1,at=[a[0]+Math.cos(angle)*ped*.35*side,a[1]+(slender?ped*.5:-ped*.82),a[2]-Math.sin(angle)*ped*.35*side];line(b,a,at,R*.22,'pedicel-chasmanthium-'+type,stemColor);
+    const f=flowerFrame(b,at,slender?.12:Math.PI-.16,angle+.20*Math.sin(k*3+j)),L=Math.min(slender?.007:.028,h*(slender?.025:.075),w*(slender?.025:.09)),W=Math.min(slender?.0035:.012,L*(slender?.48:.44)),thick=Math.min(.001,L*.06),florets=slender?4:10,sterile=slender?1:2,lemmaL=Math.min(slender?.004:.0115,L*(slender?.58:.38)),suffix=type+(dry?month===11&&river?'-pink':'-dry':''),color=dry?river&&month===11?'#c2a396':'#b9a17d':river?'#ded8b2':'#a9ba6f';
+    line(f,[0,0,0],[0,L*.88,0],Math.min(R*.20,L*.008),'rachilla-chasmanthium-'+type,dry?'#ae9977':'#8da46a');
+    for(let g=0;g<2;g++)f.add('chGlumeRef','glume-chasmanthium-'+suffix,color,0,0,0,W*.20,L*(g?.29:.24),thick,.10,g*Math.PI,0);
+    for(let n=0;n<florets;n++){
+     const side=n%2?1:-1,y=L*.72*n/florets,x=side*W*.025,rot=-side*.52,kind=(n<sterile?'lemma-sterile-chasmanthium-':'lemma-fertile-chasmanthium-')+suffix;
+     f.add(slender?'chLemmaUnwingedRef':'chLemmaWingedRef',kind,kit.shade(rand,color,.025),x,y,0,W*.32,lemmaL,thick,.02,0,rot);
+     if(n>=sterile)f.add('chPaleaRef','palea-chasmanthium-'+suffix,color,x,y,thick*.12,W*.18,lemmaL*.65,thick*.65,.02,0,rot);
+     if(s.bloom&&i===0&&j===(slender?branches-1:0)&&k===number-1&&n===Math.floor(florets*.55)){
+      const shape=slender?'chLemmaUnwingedRef':'chLemmaWingedRef',rotation=new THREE.Euler(.02,0,rot,'YXZ'),verts=[[22/40,0],[23/40,0],[22/40,2/16]].map(([t,u])=>new THREE.Vector3(...chasmanthiumReferencePoint(shape,t,u)).multiply(new THREE.Vector3(W*.32,lemmaL,thick)).applyEuler(rotation)),centre=verts[0].clone().add(verts[1]).add(verts[2]).multiplyScalar(1/3).add(new THREE.Vector3(x,y,0)),normal=verts[1].clone().sub(verts[0]).cross(verts[2].clone().sub(verts[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');
+      f.flower(centre.toArray(),lemmaL*.44,pose.x,pose.y,pose.z);
+     }
+    }
    }
   }
  }
