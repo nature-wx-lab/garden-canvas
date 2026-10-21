@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.487';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.487';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.488';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.488';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -10,7 +10,7 @@ export function keepCameraAboveGround(camera,target){
 }
 // Flower anchors belong to the visible generated plant, so dormant/hidden flowers
 // cannot be focused and a reference-size change is reflected in the camera fit.
-export function flowerInspectionDistanceFloor(group){return ['reedFoliageReferences','canaryReferences','sorghastrumReferences','boutelouaReferences','sandLovegrassReference','sesleriaReference','imperataRedReference','cortaderiaReferences','moliniaReferences','deschampsiaReferences','miscanthusReferences','elymusReferences','schizachyriumReferences','andropogonReferences','chasmanthiumReferences','luzulaSelectReference','redVeinDockReference','hordeumReference','planumReferences','whitetopReferences','tussockReferences','acorusReferences','milletMelicaReferences','brizaReferences','pennisetumReferences','fescueReferences','blueFescue','otherCarexReferences','blueCarexReferences','fineCarexReferences','oshimensisReferences','eupatorieaeReferences','muhlenbergiaPanicles','tallEupatorieae','panicumReferences','calamagrostisReferences','hakonechloaReferences','liriopeReferences','ophiopogonReferences'].includes(group?.userData?.architecture)?.045:.14;}
+export function flowerInspectionDistanceFloor(group){return ['koeleriaReferences','lagurusReferences','reedFoliageReferences','canaryReferences','sorghastrumReferences','boutelouaReferences','sandLovegrassReference','sesleriaReference','imperataRedReference','cortaderiaReferences','moliniaReferences','deschampsiaReferences','miscanthusReferences','elymusReferences','schizachyriumReferences','andropogonReferences','chasmanthiumReferences','luzulaSelectReference','redVeinDockReference','hordeumReference','planumReferences','whitetopReferences','tussockReferences','acorusReferences','milletMelicaReferences','brizaReferences','pennisetumReferences','fescueReferences','blueFescue','otherCarexReferences','blueCarexReferences','fineCarexReferences','oshimensisReferences','eupatorieaeReferences','muhlenbergiaPanicles','tallEupatorieae','panicumReferences','calamagrostisReferences','hakonechloaReferences','liriopeReferences','ophiopogonReferences'].includes(group?.userData?.architecture)?.045:.14;}
 export function pennisetumFoliageInspectionView(group,aspect=1){
  if(group?.userData?.architecture!=='pennisetumReferences'||group.userData.flowerTargets?.length)return null;
  group.updateWorldMatrix(true,false);const box=new THREE.Box3().setFromObject(group);if(box.isEmpty())return null;

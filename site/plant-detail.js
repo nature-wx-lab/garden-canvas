@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.487';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.488';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.487';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.488';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(['koeleriaReferences','lagurusReferences'].includes(info.appearance?.architecture)){drawKoeleriaLagurusReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['reedFoliageReferences','canaryReferences'].includes(info.appearance?.architecture)){drawReedCanaryReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['sorghastrumReferences','boutelouaReferences'].includes(info.appearance?.architecture)){drawPrairieGrassReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['sandLovegrassReference','sesleriaReference','imperataRedReference'].includes(info.appearance?.architecture)){drawRemainingGrassReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22628,6 +22629,47 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
 
 
 
+
+export function koeleriaLagurusPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='klRolledLeafRef')return[Math.sin(u*2.6)*.5*sn**.48,t-.25*t*t,t+.004*(1-Math.cos(u*2.6))*sn];
+ if(type==='klVelvetLeafRef')return[u*.5*sn**.52,Math.sin(Math.PI*.62*t)-.65*t,t+.06*u*u*sn];
+ if(type==='klHairRef')return[u*.5*Math.sin(Math.PI*t)**.4,t,.1*Math.sin(Math.PI*t)];
+ if(type==='klLateralAwnRef')return[u*.5*(1-t*.95),t,.08*t*t];
+ if(type==='klBentAwnRef')return[u*.5*(1-t*.95),t,.58*Math.max(0,t-.42)];
+ return[u*.5*sn**.58,t,(type==='klGlumeRef'?.23:type==='klLemmaRef'?.13:.065)*(1-u*u)*sn];
+}
+function drawKoeleriaLagurusReferences(b,{info,s,detail,month,rand},kit){
+ const lag=info.appearance.architecture==='lagurusReferences',type=lag?'lagurus':'koeleria',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.94)*s.leafScale,dry=!!s.seedHeads,heads=s.bloom||dry,stems=Math.max(3,Math.round((lag?9:15)*detail)),front=Math.atan2(.8,1),R=Math.min(.0012,h*.002,w*.003),leafCol=lag?'#96a88b':[7,8,9].includes(month)?'#6e9270':'#98b2b3';
+ const line=(a,z,r,kind,col)=>{r=Math.min(r,Math.max(0,Math.min(a[1],z[1])*.85));if(r<=1e-12)return;const q=new THREE.Vector3(...a),v=new THREE.Vector3(...z).sub(q);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');b.add('klStemRef',kind,col,...q.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ for(let i=0;i<stems;i++){
+  const az=front+i*2.399963,rr=w*.14*Math.sqrt((i+.5)/stems),root=[Math.sin(az)*rr,Math.min(h*.001,.00015),Math.cos(az)*rr],stemH=heads?h*.77:Math.min(h*.8,LH*.64),top=[root[0]+Math.sin(az)*w*.035,stemH,root[2]+Math.cos(az)*w*.035],col=dry?'#c3ad86':lag?'#a0ad81':'#8d9e75';if(heads)line(root,top,R,'culm-'+type,col);
+  const leaves=s.leafDensity>0?Math.max(1,Math.round((lag?8:12)*s.leafDensity)):0;
+  for(let j=0;j<leaves;j++){
+   const cauline=lag&&heads&&j<3,atY=cauline?Math.min(LH*.67,stemH*.55)*(j+.5)/3:root[1],t=stemH>root[1]?Math.max(0,Math.min(1,(atY-root[1])/(stemH-root[1]))):0,at=cauline?root.map((v,n)=>v+(top[n]-v)*t):root,angle=az+j*2.399963,fy=Math.min(lag?.21:.14,Math.max(0,LH-at[1])/(lag?.56:.78))*(.78+.22*(.5+.5*Math.cos(j+i))),reach=Math.min(w*(cauline?.19:.29),fy*(lag?.85:.9)),W=Math.min(lag?.014:.002,w*(lag?.035:.008),h*.035,LH*.18);
+   if(fy<=1e-12)continue;const f=flowerFrame(b,at,0,angle);f.add(lag?'klVelvetLeafRef':'klRolledLeafRef','leaf-'+type,kit.shade(rand,leafCol,.025),0,0,0,W,fy,reach);
+   if(lag)for(let k=0;k<5;k++){const t=(k+1)/7,u=(k%2?1:-1)*.4,pt=koeleriaLagurusPoint('klVelvetLeafRef',t,u);f.add('klHairRef','hair-leaf-lagurus','#ced4bb',pt[0]*W,pt[1]*fy,pt[2]*reach,Math.min(.000045,w*.0002,h*.0002),Math.min(.001,h*.004,w*.008),Math.min(.000045,w*.0002,h*.0002),.6,k,0);}
+  }
+  if(!heads)continue;
+  const H=Math.min(lag?.045:.085,h*.20,w*.18),baseY=h*.94-H,base=[top[0],baseY,top[2]];line(top,base,R*.75,'peduncle-'+type,col);line(base,[base[0],baseY+H,base[2]],R*.45,'axis-'+type,col);
+  const rows=lag?8:6,spokes=lag?8:4;
+  for(let row=0;row<rows;row++)for(let k=0;k<spokes;k++){
+   const t=(row+.5)/rows,angle=az+k*Math.PI*2/spokes+(row%2)*.35,S=Math.min(lag?.009:.0048,h*.025,w*.022),W=Math.min(lag?.0018:.0019,S*.43,w*.009),radius=lag?Math.min(.011,w*.045,h*.04)*Math.sin(Math.PI*t)**.52:Math.min(.012,w*.05,H*.20)*(dry?.18:1)*Math.sin(Math.PI*t),at=[base[0]+Math.sin(angle)*radius,baseY+H*t-S*.25,base[2]+Math.cos(angle)*radius],f=flowerFrame(b,at,lag?.62:.25,angle),fc=dry?'#cbb38a':lag?'#ebe8d9':'#d9e0c8';
+   if(!lag)line([base[0],baseY+H*t,base[2]],at,R*.22,'short-branch-koeleria',col);
+   for(let q=0;q<2;q++){
+    const yaw=q*Math.PI,side=q?-1:1;f.add('klGlumeRef','glume-'+type+(dry?'-dry':''),fc,0,0,side*W*.04,W,S*(q||lag?1:.9),W,0,yaw,0);
+    if(lag)for(let a=0;a<36;a++){const z=(a+.7)/37,u=(a%2?1:-1)*.65,pt=koeleriaLagurusPoint('klGlumeRef',z,u),hairLen=Math.min(.0016,S*.18,h*.005,w*.006),yawHair=angle+a*2.4;f.add('klHairRef','hair-plumose-lagurus',fc,pt[0]*W,pt[1]*S,side*(pt[2]*W+W*.04),Math.min(.00007,S*.010,w*.0003),hairLen,Math.min(.00007,S*.010,w*.0003),.9,yawHair,0);}
+   }
+   const florets=lag?1:3;
+   for(let j=0;j<florets;j++){
+    const y=lag?S*.18:j*S*.17,x=lag?0:(j%2?1:-1)*W*.18,ss=lag?S*.48:S*.78;
+    f.add('klLemmaRef','lemma-'+type,fc,x,y,0,W*.66,ss,W*.55);f.add('klPaleaRef','palea-'+type,fc,x,y,-W*.04,W*.52,ss*.9,W*.44,0,Math.PI,0);
+    if(lag){const thin=Math.min(.000035,h*.00012,w*.00015),lat=Math.min(.009,h*.018,w*.022),bent=Math.min(.017,h*.035,w*.04);for(let a=0;a<2;a++)f.add('klLateralAwnRef','awn-lateral-lagurus',fc,(a?1:-1)*W*.12,y+ss*.9,0,thin,lat,lat*.18,0,a?Math.PI:0,0);f.add('klBentAwnRef','awn-dorsal-lagurus',fc,0,y+ss*.4,0,thin,bent,bent*.5);}
+   }
+   if(s.bloom&&i===0&&row===rows-1&&k===0){const verts=[[20/40,0],[21/40,0],[20/40,2/16]].map(([t,u])=>new THREE.Vector3(...koeleriaLagurusPoint('klGlumeRef',t,u)).multiply(new THREE.Vector3(W,S,W)).add(new THREE.Vector3(0,0,W*.04))),centre=verts[0].clone().add(verts[1]).add(verts[2]).multiplyScalar(1/3),normal=verts[1].clone().sub(verts[0]).cross(verts[2].clone().sub(verts[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');f.flower(centre.toArray(),S*.5,pose.x,pose.y,pose.z);}
+  }
+ }
+}
 
 export function reedCanaryPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));

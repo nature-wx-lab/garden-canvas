@@ -12,6 +12,26 @@ import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulip
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Koeleria and Lagurus keep distinct rolled and velvet leaves with sampled exterior spikelets',()=>{
+ const rows=[['p-c27041038aef',[.27,.35,.13],[.15,.22,.07]],['p-b30520347767',[.45,.4,.22],[.25,.25,.12]]];assert.deepEqual(CATALOG[rows[0][0]].height,[.15,.3]);assert.deepEqual(CATALOG[rows[0][0]].spread,[.2,.4]);assert.deepEqual(CATALOG[rows[1][0]].height,[.3,.5]);assert.deepEqual(CATALOG[rows[1][0]].spread,[.2,.5]);assert.equal(CATALOG[rows[1][0]].life,'annual');
+ for(const [id,...sizes]of rows)for(const size of sizes)for(let month=1;month<=12;month++){
+  const p={...makePlant(id,48800,2,2),height:size[0],spread:size[1],leafHeight:size[2]},old=structuredClone(p),s=stateAt(p,view(month)),lag=id===rows[1][0],type=lag?'lagurus':'koeleria';assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(CATALOG[id].bloomKnown,false);assert.equal(s.bloom,(lag?[4,5,6]:[5,6]).includes(month));assert.equal(s.seedHeads,(lag?[7]:[7,8,9,10,11]).includes(month));assert.equal(s.groundDormant,lag&&month>=8);assert.deepEqual(p,old);if(![1,4,6,7,9,11].includes(month))continue;
+  const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);try{if(s.groundDormant)assert.equal(g.children.length,0);else assert.equal(g.userData.architecture,type+'References');assert.equal(!!g.userData.flowerTargets?.length,s.bloom);assert.ok(!g.children.some(m=>/anther|ovary|pollen|caryopsis|fruit|seed/.test(m.userData.component)));if(s.bloom||s.seedHeads){const glumes=count('glume-'+type);assert.ok(glumes>0);assert.equal(count('lemma-'+type),glumes*(lag?.5:1.5));assert.equal(count('palea-'+type),glumes*(lag?.5:1.5));assert.equal(count('awn-lateral-lagurus'),lag?glumes:0);assert.equal(count('awn-dorsal-lagurus'),lag?glumes/2:0);if(lag)assert.equal(count('hair-plumose-lagurus'),glumes*36);}else assert.equal(count('glume-'+type),0);if(!lag&&month===1)assert.ok(count('leaf-koeleria')>0);
+   for(const m of g.children)for(const a of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok(a.every(Number.isFinite));
+  }finally{dispose(g);}
+ }
+ const p=makePlant(rows[1][0],48899,2,2),next=stateAt(p,{...view(6),year:1});assert.equal(next.present,false);
+});
+test('Koeleria and Lagurus independent tiny dimensions bound actual rolled blades awns and plumose hairs',()=>{
+ for(const id of ['p-c27041038aef','p-b30520347767'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
+  const p={...makePlant(id,48899,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component);if(m.userData.component.startsWith('leaf-'))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+ }
+});
+test('Koeleria and Lagurus macro rays reach real glumes or their plumose hairs at both input sizes',()=>{
+ for(const [id,size]of [['p-c27041038aef',[.27,.35,.13]],['p-c27041038aef',[.15,.22,.07]],['p-b30520347767',[.45,.4,.22]],['p-b30520347767',[.25,.25,.12]]]){
+  const p={...makePlant(id,48899,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6));try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&/^(glume-|hair-plumose-|lemma-|palea-)/.test(hit.object.userData.component),'real floral exterior '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
 test('Reed references keep uncertain flowers absent and Canary pairs of winged glumes annual',()=>{
  const rows=[['p-e4d14379f3a0',[.5,.5,.4],[.2,.28,.15]],['p-ce059fcc6a2f',[1.4,.7,1.1],[.3,.35,.22]],['p-3a7b9b932473',[1.4,.6,1.0],[.3,.3,.2]]];assert.deepEqual(CATALOG[rows[0][0]].height,[.5,.5]);assert.deepEqual(CATALOG[rows[1][0]].height,[1.5,1.5]);assert.equal(CATALOG[rows[2][0]].life,'annual');for(const [id]of rows)assert.equal(CATALOG[id].spread,null);
  for(const [id,...sizes]of rows)for(const size of sizes)for(let month=1;month<=12;month++){
