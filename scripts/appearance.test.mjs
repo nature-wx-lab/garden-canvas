@@ -12,6 +12,24 @@ import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulip
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Uncinia Rubra keeps its separate retail identity and domestic copper evergreen seasonal reference',()=>{
+ const id='p-c4a0b394114f',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.label,'ウンシニア ルブラ');assert.deepEqual(info.height,[.1,.2]);assert.deepEqual(info.spread,[.2,.4]);assert.equal(info.bloomKnown,false);assert.match(info.appearance.sourceConflict,/Carex uncinata/);assert.equal(info.appearance.shootProfile,'hookRubra');assert.notEqual(info,CATALOG['p-de19f78331f2']);
+ for(const size of [[.18,.35,.16],[.06,.18,.05]])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,47700,2,2),height:size[0],spread:size[1],leafHeight:size[2]},before=structuredClone(p),s=stateAt(p,view(month));assert.equal(s.bloom,month>=8&&month<=11);assert.equal(s.groundDormant,false);assert.equal(s.seedHeads,false);assert.equal(s.shootScale,1);assert.deepEqual(p,before);if(![1,4,9,12].includes(month))continue;const g=plantModel(p,view(month));
+  try{assert.equal(g.userData.architecture,'tussockReferences');assert.ok(g.children.some(m=>m.userData.component==='leaf-tussock-hookRubra'));assert.equal(g.children.some(m=>m.userData.component==='leaf-tussock-hookRubra-old'),month===1||month===12);assert.equal(!!g.userData.flowerTargets?.length,s.bloom);assert.ok(!g.children.some(m=>/fruit|seed|pollen|anther|ovary|utricle/.test(m.userData.component)));assert.ok(g.children.find(m=>m.userData.component==='leaf-tussock-hookRubra').material.roughness<.5);for(const mesh of g.children)for(const arr of [mesh.instanceMatrix.array,mesh.geometry.attributes.position.array,mesh.geometry.attributes.normal.array])assert.ok(arr.every(Number.isFinite));}finally{dispose(g);}
+ }
+ assert.notEqual(stateAt(makePlant(id,47700,2,2),view(1)).leafColor,stateAt(makePlant(id,47700,2,2),view(4)).leafColor);
+});
+test('Uncinia Rubra tiny independent inputs constrain retained leaves and small spike exteriors',()=>{
+ for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]]){
+  const p={...makePlant('p-c4a0b394114f',47799,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(9)),matrix=new Matrix4(),point=new Vector3();try{let maxLeaf=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite));assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,size+' height '+mesh.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,size+' footprint '+mesh.userData.component);if(mesh.userData.component.startsWith('leaf-'))maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=.005001,size+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+ }
+});
+test('Uncinia Rubra inspection uses a visible exterior scale without exposing invented fruit hooks',()=>{
+ for(const size of [[.18,.35,.16],[.06,.18,.05]]){
+  const p={...makePlant('p-c4a0b394114f',47799,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(9));try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&/^(scale|head)-tussock-hookRubra-exterior$/.test(hit.object.userData.component),'visible small scale '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
 test('Luzula Select keeps thick hairy evergreen foliage and species-qualified six-part brown flowers',()=>{
  const id='p-dee37c8648e1',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.2,.3]);assert.deepEqual(info.spread,[.2,.3]);assert.equal(info.bloomKnown,false);assert.match(info.appearance.sourceConflict,/Select/);assert.equal(info.appearance.petals,0);
  for(const size of [[.28,.28,.18],[.08,.15,.05]])for(let month=1;month<=12;month++){

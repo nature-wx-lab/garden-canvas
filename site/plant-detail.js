@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.476';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.477';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.476';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.477';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -22504,21 +22504,22 @@ export function tussockReferencePoint(type,t,u){
  if(type==='trScaleRef'){const ph=(u+1)*Math.PI,r=sn**.62;return[Math.sin(ph)*r*.45,t,Math.cos(ph)*r*.13];}
  if(type==='trSnowGlumeRef'){const ph=(u+1)*Math.PI,r=sn**1.10;return[Math.sin(ph)*r*.32,t,Math.cos(ph)*r*.09];}
  if(type==='trAwnRef')return[u*.045,t,.35*Math.sin(Math.PI*.65*t)];
+ if(type==='trRubraLeafRef')return[u*.5*sn**.55*(1-.2*t),Math.sin(Math.PI*.62*t),t];
  if(type==='trMembraneRef')return[u*.5*sn**.3,t,.36*sn*(.8+.2*u)];
  const crystal=type==='trCrystalLeafRef',upright=type==='trUprightLeafRef',width=crystal?.47:.5*sn**.30*(1-.33*t),y=crystal||upright?t:Math.sin(Math.PI*.83*t)-Math.sin(Math.PI*.83)*t*.90;
  return[u*width,y+.0003*u*u*sn,t];
 }
-const TUSSOCK_LEAF_TOP=Object.fromEntries(['trCrystalLeafRef','trUprightLeafRef','trArchingLeafRef'].map(type=>{let top=0;for(let i=0;i<=72;i++)top=Math.max(top,tussockReferencePoint(type,i/72,0)[1]);return[type,top];}));
+const TUSSOCK_LEAF_TOP=Object.fromEntries(['trCrystalLeafRef','trUprightLeafRef','trArchingLeafRef','trRubraLeafRef'].map(type=>{let top=0;for(let i=0;i<=72;i++)top=Math.max(top,tussockReferencePoint(type,i/72,0)[1]);return[type,top];}));
 function drawTussockReferences(b,{info,s,detail,month,rand},kit){
- const type=info.appearance.shootProfile,hook=type==='hookFiredance',rush=type==='matrushGold',snow=type==='snowFlavicans',crystal=type==='crystalTruncata',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0002,h*.002,LH*.01),R=Math.min(.001,h*.004,w*.003,LH*.04),green=s.leafColor;
+ const type=info.appearance.shootProfile,rubra=type==='hookRubra',hook=rubra||type==='hookFiredance',rush=type==='matrushGold',snow=type==='snowFlavicans',crystal=type==='crystalTruncata',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0002,h*.002,LH*.01),R=Math.min(.001,h*.004,w*.003,LH*.04),green=s.leafColor;
  const segment=(from,to,r,kind,color)=>{const a=new THREE.Vector3(...from),q=new THREE.Vector3(...to),d=q.clone().sub(a),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ'),mid=a.add(q).multiplyScalar(.5);b.add('trCulmRef',kind,color,...mid.toArray(),r,d.length(),r,e.x,e.y,e.z);};
  if(s.leafDensity){
   const fans=Math.max(4,Math.round((crystal?16:rush?11:snow?10:9)*detail)),perFan=Math.max(4,Math.round((crystal?10:12)*s.leafDensity));
   for(let c=0;c<fans;c++){
    const az=c*2.399963,rr=w*.15*Math.sqrt((c+.5)/fans),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr];
    for(let j=0;j<perFan;j++){
-    const edge=j/(perFan-1),yaw=az+j*2.399963,shape=crystal?'trCrystalLeafRef':edge<.32?'trUprightLeafRef':'trArchingLeafRef',fy=(LH*.985-rootY)/TUSSOCK_LEAF_TOP[shape]*(.68+.32*(.5+.5*Math.sin(c*3.1+j*2.4))),reach=Math.min(w*(crystal?.18:.29),fy*(crystal?.7:edge<.32?.12:.9)),width=Math.min(crystal?.0035:hook?.0025:rush?.004:.006,h*.06,w*.03,LH*.085),f=flowerFrame(b,root,0,yaw),kind='leaf-tussock-'+type;
-    f.add(shape,kind,kit.shade(rand,green,.045),0,0,0,width,fy,reach);
+    const edge=j/(perFan-1),yaw=az+j*2.399963,shape=crystal?'trCrystalLeafRef':rubra?(edge<.70?'trUprightLeafRef':'trRubraLeafRef'):edge<.32?'trUprightLeafRef':'trArchingLeafRef',fy=(LH*.985-rootY)/TUSSOCK_LEAF_TOP[shape]*(.68+.32*(.5+.5*Math.sin(c*3.1+j*2.4))),reach=rubra?Math.min(w*.27,fy*(edge<.70?.40:.80)):Math.min(w*(crystal?.18:.29),fy*(crystal?.7:edge<.32?.12:.9)),width=Math.min(crystal?.0035:rubra?.0038:hook?.0025:rush?.004:.006,h*.06,w*.03,LH*.085),f=flowerFrame(b,root,0,yaw),kind='leaf-tussock-'+type;
+    const oldLeaf=rubra&&[12,1,2].includes(month)&&j===perFan-1;f.add(shape,oldLeaf?'leaf-tussock-hookRubra-old':kind,kit.shade(rand,oldLeaf?'#947e5f':green,.045),0,0,0,width,fy,reach);
     if(crystal)for(const side of [-1,1])for(let k=1;k<=6;k++){
      const t=(k+.25*Math.sin(c*3+j*2+k))/(7.2),q=tussockReferencePoint(shape,t,side),peel=Math.min(.003,h*.014,w*.01,LH*.025)*(k%2?.9:.5);
      f.add('trMembraneRef','membrane-tussock-crystal','#d7ddd1',q[0]*width,q[1]*fy,q[2]*reach,peel*.30,peel,peel*.40,.35+side*.2,side*.7,side*1.1);
