@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.481';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.482';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.481';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.482';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='miscanthusReferences'){drawMiscanthusReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='elymusReferences'){drawElymusReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='schizachyriumReferences'){drawSchizachyriumReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='andropogonReferences'){drawAndropogonReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22620,6 +22621,44 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
 }
 
 
+
+
+export function miscanthusReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='misUprightLeafRef'||type==='misArchingLeafRef')return[u*.5*sn**.52,type==='misUprightLeafRef'?t-.20*t*t:Math.sin(Math.PI*.65*t)-.75*t,t+.035*u*u*sn];
+ if(type==='misGlumeRef')return[u*.5*sn**.74*(1-.25*t),t,.18*(1-u*u)*sn];
+ const ph=(u+1)*Math.PI,r=(type==='misHairRef'?.004:.005)*(1-.8*t),e=Math.max(0,t-.4);
+ if(type==='misHairRef')return[Math.sin(ph)*r,t,.19*sn+Math.cos(ph)*r];
+ return[Math.sin(ph)*r+e*.27,t<=.4?t:.4+e*.87,Math.cos(ph)*r+e*.31];
+}
+function drawMiscanthusReferences(b,{info,s,detail,month,rand},kit){
+ const type=info.appearance.shootProfile,gold=type==='goldBar',morning=type==='morningLight',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.96)*s.leafScale,heads=s.bloom||s.seedHeads,dry=!!s.seedHeads,winter=[12,1,2].includes(month),front=Math.atan2(.8,1),R=Math.min(.002,h*.003,w*.003),rootY=Math.min(.00015,h*.001),stems=Math.max(4,Math.round((gold?12:morning?14:12)*detail)),headCount=Math.max(2,Math.round(stems*(gold?.25:.55)));
+ const line=(f,a,z,r,kind,col)=>{const q=new THREE.Vector3(...a),end=new THREE.Vector3(...z),d=end.clone().sub(q);if(d.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');f.add('misStemRef',kind,col,...q.add(end).multiplyScalar(.5).toArray(),r,d.length(),r,e.x,e.y,e.z);};
+ for(let i=0;i<stems;i++){
+  const az=front+i*2.399963,rr=w*.11*Math.sqrt((i+.5)/stems),root=[Math.sin(az)*rr,Math.max(rootY,R*1.1),Math.cos(az)*rr],hasHead=heads&&i<headCount,lean=hasHead&&i===0?w*.20:w*.025,top=[root[0]+Math.sin(az)*lean,hasHead?h*.80:Math.max(root[1],winter&&heads?Math.min(s.leafHeight,h*.65)*.8:LH*.88),root[2]+Math.cos(az)*lean],col=dry?'#ac9474':type==='purpleFall'&&month>=10?'#a45550':'#829270';line(b,root,top,R,'culm-miscanthus-'+type,col);
+  const addLeaf=(y,j,old=false)=>{const bt=Math.max(0,Math.min(1,(y-root[1])/Math.max(.00001,top[1]-root[1]))),at=[root[0]+(top[0]-root[0])*bt,y,root[2]+(top[2]-root[2])*bt],ceiling=old?Math.min(s.leafHeight,h*.65):LH,fy=Math.min(gold?.30:.55,h*.62,Math.max(0,ceiling-y)/.85),reach=Math.min(w*(gold?.22:.29),fy*.50),width=Math.min(morning?.003:gold?.006:.008,h*.025,w*.025,ceiling*.13),f=flowerFrame(b,at,0,az+j*Math.PI+.15*Math.sin(i*3+j)),upright=gold?j%4!==0:morning?j%2===0:j%3===0;
+   f.add(upright?'misUprightLeafRef':'misArchingLeafRef','leaf-miscanthus-'+(old?'old':type)+(gold&&!old?'-band'+((i+j)%4):''),kit.shade(rand,old?'#b29a78':s.leafColor,.035),0,0,0,width,fy,reach);const sl=Math.min(.055,h*.08,w*.10,ceiling*.15);line(b,[at[0],Math.max(root[1],y-sl),at[2]],at,R*1.1,'sheath-miscanthus-'+type,col);
+  };
+  if(s.leafDensity>0){const n=Math.max(2,Math.round((morning?8:6)*s.leafDensity));for(let j=0;j<n;j++)addLeaf(root[1]+Math.max(0,LH-root[1])*.66*(j+.3)/n,j);}
+  else if(winter&&heads&&i%2===0)addLeaf(root[1]+Math.min(s.leafHeight,h*.6)*.15,0,true);
+  if(!hasHead)continue;
+  const L=Math.min(gold?.10:.18,h*.19,w*.32),reach=Math.min(gold?.06:.11,h*.14,w*.15),S=Math.min(.0055,h*.018,w*.024,L*.10),W=Math.min(.0012,S*.22,w*.008),A=Math.min(.008,h*.025,w*.035,L*.15),headCol=dry?'#c8b89a':gold?'#a08a6e':morning?'#a16e68':'#98626c',rames=8;
+  for(let arm=0;arm<rames;arm++){
+   const baseY=h*(.68+arm*.010),bt=(baseY-root[1])/(top[1]-root[1]),base=[root[0]+(top[0]-root[0])*bt,baseY,root[2]+(top[2]-root[2])*bt],angle=gold?az+(arm-3.5)*.18:az+arm*2.399963,axis=t=>[0,L*(t-(dry?.13:.04)*t*t),reach*(.3+.7*(1-arm/rames))*t],f=flowerFrame(b,base,0,angle);
+   for(let j=0;j<12;j++)line(f,axis(j/12),axis((j+1)/12),R*.22,'rachis-miscanthus-'+type,headCol);
+   for(let k=0;k<8;k++){
+    const at=axis((k+.35)/8),side=k%2?1:-1;
+    for(let q=0;q<2;q++){
+     const ped=Math.min(q?.0045:.002,h*(q?.012:.006),w*(q?.018:.008),S*(q?.8:.35)),origin=[at[0]+side*ped*.7,at[1]+ped*.35,at[2]],sp=flowerFrame(f,origin,.08,side*.24);line(f,at,origin,R*.13,'pedicel-'+(q?'long':'short')+'-miscanthus-'+type,headCol);
+     for(let g=0;g<2;g++)sp.add('misGlumeRef','glume-miscanthus-'+type,headCol,0,0,(g?-1:1)*W*.03,W,S,W,0,g*Math.PI,0);
+     sp.add('misAwnRef','awn-miscanthus-'+type,dry?'#c7b99e':headCol,0,S*.65,0,A,A,A,0,k*.19,0);
+     const H=Math.min(S*1.5,h*.03,w*.04),hairs=dry?8:5;for(let j=0;j<hairs;j++)sp.add('misHairRef','hair-callus-miscanthus-'+type,dry?'#e0d6bf':'#d1c8b2',0,-S*.08,0,H,H,H,.50,j*2.399963+k*.17,0);
+     if(s.bloom&&i===0&&arm===rames-1&&k===6&&q===1){const verts=[[20/40,0],[21/40,0],[20/40,2/16]].map(([t,u])=>new THREE.Vector3(...miscanthusReferencePoint('misGlumeRef',t,u)).multiply(new THREE.Vector3(W,S,W)).add(new THREE.Vector3(0,0,W*.03))),centre=verts[0].clone().add(verts[1]).add(verts[2]).multiplyScalar(1/3),normal=verts[1].clone().sub(verts[0]).cross(verts[2].clone().sub(verts[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');sp.flower(centre.toArray(),S*.44,pose.x,pose.y,pose.z);}
+    }
+   }
+  }
+ }
+}
 
 export function elymusReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));

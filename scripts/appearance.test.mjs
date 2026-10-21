@@ -12,6 +12,27 @@ import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulip
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Miscanthus cultivars preserve transverse bands fine pale leaf lines and conditional panicles',()=>{
+ const rows=[['p-69ac5659f5f6',[.55,.6,.4],[.18,.25,.12],10],['p-f7fbd3d4cef7',[1.1,1,.7],[.25,.35,.15],9],['p-775fe606b345',[.75,1,.5],[.20,.35,.13],9]];assert.deepEqual(CATALOG[rows[0][0]].height,[.3,.6]);assert.deepEqual(CATALOG[rows[1][0]].spread,[.8,1.2]);assert.deepEqual(CATALOG[rows[2][0]].height,[.6,.8]);
+ for(const [id,...parts]of rows){const sizes=parts.slice(0,2),gold=id===rows[0][0];for(const size of sizes)for(let month=1;month<=12;month++){
+  const p={...makePlant(id,48200,2,2),height:size[0],spread:size[1],leafHeight:size[2]},before=structuredClone(p),s=stateAt(p,view(month));assert.equal(CATALOG[id].appearance.status,'partial');assert.equal(CATALOG[id].bloomKnown,false);assert.equal(s.bloom,gold?month===10:[8,9].includes(month));assert.equal(s.seedHeads,(gold?[11,12,1,2]:[10,11,12,1,2]).includes(month));assert.equal(s.groundDormant,false);assert.equal(s.shootScale,1);assert.deepEqual(p,before);if(![1,3,6,9,10,11].includes(month))continue;
+  const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0);try{assert.equal(g.userData.architecture,'miscanthusReferences');assert.equal(!!g.userData.flowerTargets?.length,s.bloom);assert.ok(!g.children.some(m=>/anther|ovary|pollen|caryopsis|fruit|seed/.test(m.userData.component)));const short=count('pedicel-short-miscanthus-'),long=count('pedicel-long-miscanthus-');assert.equal(short,long);if(s.bloom||s.seedHeads){assert.ok(short>0);assert.equal(count('glume-miscanthus-'),(short+long)*2);assert.equal(count('awn-miscanthus-'),short+long);assert.equal(count('hair-callus-miscanthus-'),(short+long)*(s.seedHeads?8:5));}else assert.equal(short,0);
+   if(month===6&&id!==rows[1][0]){const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-miscanthus-')),shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};leaf.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,gold?/misBand/:/misEdge/);assert.ok(!shader.fragmentShader.includes('\\n'));}
+   for(const m of g.children)for(const a of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok(a.every(Number.isFinite));
+  }finally{dispose(g);}
+ }}
+ assert.match(CATALOG[rows[0][0]].appearance.sourceConflict,/開花しない/);assert.match(CATALOG[rows[2][0]].appearance.sourceConflict,/白斑/);
+});
+test('Miscanthus independent small dimensions bound panicle hair bent awns and old leaves',()=>{
+ for(const id of ['p-69ac5659f5f6','p-f7fbd3d4cef7','p-775fe606b345'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [id==='p-69ac5659f5f6'?10:9,1]){
+  const p={...makePlant(id,48299,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component);if(m.userData.component.startsWith('leaf-'))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+leafMax);}finally{dispose(g);}
+ }
+});
+test('Miscanthus macro ray reaches a paired spikelet glume at both sizes',()=>{
+ for(const [id,size]of [['p-69ac5659f5f6',[.55,.6,.4]],['p-69ac5659f5f6',[.18,.25,.12]],['p-f7fbd3d4cef7',[1.1,1,.7]],['p-f7fbd3d4cef7',[.25,.35,.15]],['p-775fe606b345',[.75,1,.5]],['p-775fe606b345',[.20,.35,.13]]]){
+  const p={...makePlant(id,48299,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(id==='p-69ac5659f5f6'?10:9));try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&/^glume-miscanthus-/.test(hit.object.userData.component),'visible glume '+id+' '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
 test('Elymus keeps blue rye heads open bottlebrush spikelets and cold-sensitive blue foliage distinct',()=>{
  const rows=[['p-22407ee64773',[1.4,.65,.9],[.25,.3,.15]],['p-646b6f5a4662',[.55,.35,.35],[.18,.25,.12]],['p-ea75ae49ebde',[.55,.5,.35],[.18,.25,.12]]];assert.deepEqual(CATALOG[rows[0][0]].height,[1.5,1.5]);assert.equal(CATALOG[rows[0][0]].spread,null);assert.deepEqual(CATALOG[rows[1][0]].spread,[.2,.4]);assert.deepEqual(CATALOG[rows[2][0]].height,[.3,.6]);
  for(const [id,...sizes]of rows)for(const size of sizes)for(let month=1;month<=12;month++){
