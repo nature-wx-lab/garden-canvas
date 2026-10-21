@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.490';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.491';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.490';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.491';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='fernFrondReferences'){drawFernFrondReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='coronillaReferences'){drawCoronillaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['koeleriaReferences','lagurusReferences'].includes(info.appearance?.architecture)){drawKoeleriaLagurusReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['reedFoliageReferences','canaryReferences'].includes(info.appearance?.architecture)){drawReedCanaryReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22630,6 +22631,36 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
 
 
 
+
+export function fernFrondPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='nfDryPinnuleRef')return[u*.5*sn**.56*(1+.075*Math.sin(t*14*Math.PI)),.035*sn+.018*u*u*sn,t];
+ const angle=(u+.10)*.85,r=t*(1-.055*Math.max(0,Math.cos((u+1)*Math.PI*6))**2*t**8);return[r*Math.sin(angle),.025*Math.sin(Math.PI*t),r*Math.cos(angle)];
+}
+function drawFernFrondReferences(b,{info,s,detail,month,rand},kit){
+ const adi=info.appearance.shootProfile==='pedatum',type=adi?'adiantum':'dryopteris',w=s.spread,LH=Math.min(s.leafHeight,s.height)*s.leafScale,n=Math.max(3,Math.round((adi?11:13)*detail)),R=Math.min(adi?.0008:.0014,s.height*.003,w*.003,LH*.006),front=Math.atan2(.8,1);
+ if(s.leafDensity<=0||LH<=0)return;
+ const line=(a,z,r,kind,col)=>{r=Math.min(r,Math.max(0,Math.min(a[1],z[1])*.85));if(r<=1e-12)return;const q=new THREE.Vector3(...a),v=new THREE.Vector3(...z).sub(q);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');b.add('nfStemRef',kind,col,...q.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const N=Math.max(2,Math.round(n*s.leafDensity));
+ for(let i=0;i<N;i++){
+  const az=front+i*2.399963,rootY=Math.min(.0001,LH*.001),root=[Math.sin(az)*w*.025,rootY,Math.cos(az)*w*.025],young=(adi?[3,4,5].includes(month):month>=3&&month<=11)&&i%4===0,leafCol=young?(adi?'#c49792':'#ce966c'):(adi?'#86ac67':month>=5&&month<=9?'#94b96b':'#699c55'),stemCol=adi?'#3f3437':'#909c66',rise=LH*(.74+.16*((i%4)/3));
+  if(!adi){
+   const path=t=>[root[0]+Math.sin(az)*w*.30*t,rootY+rise*(1.42*t-.42*t*t),root[2]+Math.cos(az)*w*.30*t];
+   for(let k=1;k<=16;k++)line(path((k-1)/16),path(k/16),R*(1-.7*k/16),'stipe-dryopteris',stemCol);
+   for(let row=0;row<14;row++)for(const side of [-1,1]){
+    const t=.23+.70*(row+.5)/14,at=path(t),frac=(t-.20)/.76,P=w*.14*Math.sin(Math.PI*Math.min(.99,frac))**.62*(1-.25*frac),yaw=az+side*1.18,pinEnd=[at[0]+Math.sin(yaw)*P,at[1]+LH*.025,at[2]+Math.cos(yaw)*P];line(at,pinEnd,R*.28,'pinna-axis-dryopteris',stemCol);
+    for(let k=0;k<7;k++)for(const fl of [-1,1]){const t=(k+.6)/7,base=at.map((v,j)=>v+(pinEnd[j]-v)*t),L=Math.min(.025,w*.024,LH*.12)*(1-.5*t)*Math.max(.18,Math.sin(Math.PI*frac)**.5),W=L*.44,f=flowerFrame(b,base,0,yaw+fl*1.04);f.add('nfDryPinnuleRef','pinnule-dryopteris',kit.shade(rand,leafCol,.02),0,0,0,W,Math.min(LH*.03,L),L);}
+   }
+  }else{
+   const base=[root[0]+Math.sin(az)*w*.035,rootY+rise*.76,root[2]+Math.cos(az)*w*.035],stipe=t=>[root[0]+(base[0]-root[0])*t,rootY+(base[1]-rootY)*t,root[2]+(base[2]-root[2])*t];for(let k=1;k<=12;k++)line(stipe((k-1)/12),stipe(k/12),R,'stipe-adiantum',stemCol);
+   for(const side of [-1,1]){const arc=t=>{const x=side*w*.095*Math.sin(t*1.60),z=w*.095*(1-Math.cos(t*1.60));return[base[0]+Math.cos(az)*x+Math.sin(az)*z,base[1]+rise*.10*Math.sin(t*1.4),base[2]-Math.sin(az)*x+Math.cos(az)*z];};for(let k=1;k<=16;k++)line(arc((k-1)/16),arc(k/16),R*.7,'horseshoe-rachis-adiantum',stemCol);
+    for(let ray=0;ray<4;ray++){const t=(ray+.6)/4,at=arc(t),yaw=az+side*(.35+ray*.45),P=w*(.22-.025*ray),end=[at[0]+Math.sin(yaw)*P,at[1]-rise*.06,at[2]+Math.cos(yaw)*P];line(at,end,R*.45,'pinna-axis-adiantum',stemCol);
+     for(let k=0;k<14;k++)for(const fl of [-1,1]){const t=(k+.6)/14,node=at.map((v,j)=>v+(end[j]-v)*t),L=Math.min(.018,w*.026,LH*.10)*(1-.40*t),f=flowerFrame(b,node,0,yaw+fl*1.18);f.add('nfFanPinnuleRef','pinnule-adiantum',kit.shade(rand,leafCol,.018),0,0,0,L,Math.min(LH*.03,L),L);}
+    }
+   }
+  }
+ }
+}
 
 export function coronillaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
