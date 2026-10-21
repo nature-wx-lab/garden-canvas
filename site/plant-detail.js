@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.474';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.475';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.474';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.475';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='redVeinDockReference'){drawRedVeinDockReference(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='hordeumReference'){drawHordeumReference(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='planumReferences'){drawPlanumReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='whitetopReferences'){drawWhitetopReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22607,6 +22608,56 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
     for(let n=0;n<2;n++)ff.add('wbStyleRef','stigma-whitetop-reference','#ebe5ca',0,gyn+unit*.40,0,unit*.8,unit*.45,unit*.8,0,n*Math.PI,n?-.65:.65);
     for(let n=0;n<3;n++){const an=n*TAU/3,x=Math.sin(an)*unit*.17,z=Math.cos(an)*unit*.17;ff.add('wbFilamentRef','filament-whitetop-reference','#e7e4ce',x,0,z,unit,unit,unit*.5);ff.add('wbAntherRef','anther-whitetop-reference','#d8cf9b',x,unit,z,unit*.55,unit*.35,unit*.55);}
     if(i===0&&j===0&&k===4)ff.flower([0,unit*1.08,unit*.17],unit*.55);
+   }
+  }
+ }
+}
+
+export function redVeinDockPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='rsLeafRef')return[u*.5*Math.sin(Math.PI*(.10+.90*t))**.65*sn**.15*(1+.035*Math.sin(t*37)),.22*sn-.10*t*t+.045*u*u*sn,t];
+ if(type==='rsOuterTepalRef'||type==='rsInnerTepalRef')return[u*.5*sn**.60,(type==='rsInnerTepalRef'?.18:.10)*sn+(type==='rsInnerTepalRef'?.45:.15)*t*t,t];
+ const ph=(u+1)*Math.PI;
+ if(type==='rsAntherRef')return[Math.sin(ph)*sn**.55*.25,t,Math.cos(ph)*sn**.55*.15];
+ if(type==='rsOvaryRef'){const rel=(ph+Math.PI/3)%(TAU/3)-Math.PI/3,r=sn**.55*.16/Math.cos(rel);return[Math.sin(ph)*r,t,Math.cos(ph)*r];}
+ return[Math.sin(ph)*.035,t,Math.cos(ph)*.035];
+}
+function drawRedVeinDockReference(b,{info,s,detail,rand,month},kit){
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.96)*s.leafScale,R=Math.min(.0008,h*.006,w*.004),rootY=Math.min(.00015,h*.001,LH*.01),front=Math.atan2(.8,1),crowns=Math.max(1,Math.round(2*detail)),green=s.leafColor;
+ const line=(f,a,z,r,kind,color)=>{const q=new THREE.Vector3(...a),end=new THREE.Vector3(...z),d=end.clone().sub(q),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');f.add('rsStemRef',kind,color,...q.add(end).multiplyScalar(.5).toArray(),r,d.length(),r,e.x,e.y,e.z);};
+ for(let ci=0;ci<crowns;ci++){
+  const yaw=front+ci*2.399963,rr=w*.075,root=[Math.sin(yaw)*rr,Math.max(rootY,R*.85),Math.cos(yaw)*rr],leaves=Math.max(4,Math.round(14*s.leafDensity));
+  for(let j=0;j<leaves;j++){
+   const az=yaw+j*2.399963,PL=Math.min(.055,h*.22,w*.17,LH*.28)*(.75+.25*(.5+.5*Math.sin(j*4.7))),tip=[root[0]+Math.sin(az)*PL*.58,root[1]+PL*.63,root[2]+Math.cos(az)*PL*.58],L=Math.min(.11,h*.40,w*.25,LH*.75,Math.max(0,LH-tip[1])/1.1),W=Math.min(.04,L*.48,w*.14,LH*.33),pitch=-.45-.35*(.5+.5*Math.cos(j*2.1));
+   line(b,root,tip,Math.min(R*.45,LH*.015),'petiole-rumex','#7d3044');
+   b.add('rsLeafRef','leaf-rumex-basal',kit.shade(rand,green,.025),...tip,W,L,L,pitch,az,0);
+  }
+  if(!s.bloom)continue;
+  const stem='#82494c',top=[root[0]+Math.sin(yaw)*w*.015,h*.91,root[2]+Math.cos(yaw)*w*.015];line(b,root,top,R,'stem-rumex',stem);
+  for(let j=0;j<3;j++){
+   const y=Math.min(LH*.58,h*.30)*(j+.5)/3,t=y/top[1],at=[root[0]+(top[0]-root[0])*t,y,root[2]+(top[2]-root[2])*t],L=Math.min(.055,h*.18,w*.16,Math.max(0,LH-y)/1.1);
+   b.add('rsLeafRef','leaf-rumex-upper',green,...at,L*.30,L,L,-.45,yaw+j*2.399963,0);
+   const oL=Math.min(.005,h*.025,w*.02);b.add('rsStemRef','ocrea-rumex','#c5b495',at[0],Math.max(root[1]+oL*.5,y-oL*.25),at[2],R*1.18,oL,R*1.18);
+  }
+  for(let tier=0;tier<3;tier++)for(let br=0;br<2;br++){
+   const az=yaw+tier*2.399963+br*Math.PI,start=h*(.36+.17*tier),t=start/top[1],base=[root[0]+(top[0]-root[0])*t,start,root[2]+(top[2]-root[2])*t],reach=w*(.12-.018*tier),end=[base[0]+Math.sin(az)*reach,h*(.76+.06*tier),base[2]+Math.cos(az)*reach];line(b,base,end,R*.52,'branch-rumex',stem);
+   for(let whorl=0;whorl<5;whorl++){
+    const t=(whorl+.4)/5,p=[base[0]+(end[0]-base[0])*t,base[1]+(end[1]-base[1])*t,base[2]+(end[2]-base[2])*t],unit=Math.min(.0016,h*.015,w*.009),ped=Math.min(.005,h*.025,w*.018);
+    for(let fi=0;fi<10;fi++){
+     const an=az+fi*TAU/10,at=[p[0]+Math.sin(an)*ped,p[1]+unit*.3*Math.sin(fi*3),p[2]+Math.cos(an)*ped];line(b,p,at,R*.18,'pedicel-rumex','#9ca16c');const f=flowerFrame(b,at,.55+.15*Math.sin(fi),an),fresh='#a1b274';
+     f.add('rsOvaryRef','ovary-exterior-rumex','#a4ad73',0,0,0,unit*.48,unit*.48,unit*.48);
+     for(let k=0;k<3;k++){
+      const outer=k*TAU/3,inner=outer+Math.PI/3;
+      f.add('rsOuterTepalRef','tepal-outer-rumex',fresh,0,0,0,unit*.46,unit*.55,unit*.65,0,outer,0);
+      f.add('rsInnerTepalRef','tepal-inner-rumex','#b0ba84',0,0,0,unit*.60,unit*.70,unit*.85,0,inner,0);
+      const sf=flowerFrame(f,[(k===0?0:Math.sin(outer))*unit*.08,unit*.38,Math.cos(outer)*unit*.08],.22,outer),SL=unit*.64;
+      sf.add('rsFilamentRef','style-rumex','#d4d6b6',0,0,0,unit*.55,SL,unit*.55);
+      sf.add('rsAntherRef','stigma-base-rumex','#dbdcc2',0,SL,0,unit*.13,unit*.12,unit*.13);
+      for(let hair=0;hair<4;hair++)sf.add('rsFilamentRef','stigma-branch-rumex','#dedec8',0,SL,0,unit*.40,unit*.22,unit*.40,.65,hair*TAU/4,0);
+     }
+     for(let k=0;k<6;k++){const a=k*TAU/6,x=Math.sin(a)*unit*.19,z=Math.cos(a)*unit*.19;f.add('rsFilamentRef','filament-rumex','#d9d9b9',x,unit*.06,z,unit*.60,unit*.78,unit*.60,.12,a,0);f.add('rsAntherRef','anther-rumex','#cdbd86',x,unit*.84,z,unit*.27,unit*.28,unit*.27);}
+     if(ci===0&&tier===2&&br===0&&whorl===3&&fi===0)f.flower([0,unit*.55,unit*.18],unit*.75);
+    }
    }
   }
  }

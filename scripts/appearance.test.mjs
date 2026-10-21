@@ -12,6 +12,29 @@ import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulip
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Red-veined dock corrects white veins and separates domestic winter foliage from genus flower references',()=>{
+ const id='p-769a49f96881',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.2,.3]);assert.deepEqual(info.spread,[.2,.3]);assert.equal(info.bloomKnown,false);assert.equal(info.appearance.leafPattern,'redVeins');assert.equal(TRAIT_VALUES.redVeins,'赤い葉脈');assert.equal(info.appearance.patternColor,'#8f1f35');assert.match(info.appearance.sourceConflict,/白いsilverVeins/);assert.equal(info.appearance.petals,0);
+ for(const size of [[.28,.30,.15],[.08,.15,.045]])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,47500,2,2),height:size[0],spread:size[1],leafHeight:size[2]},before=structuredClone(p),s=stateAt(p,view(month));assert.equal(s.bloom,month===5||month===6);assert.equal(s.groundDormant,false);assert.equal(s.seedHeads,false);assert.equal(s.shootScale,1);assert.deepEqual(p,before);if(![1,4,6,11].includes(month))continue;const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+  try{assert.equal(g.userData.architecture,'redVeinDockReference');assert.ok(count('leaf-rumex-basal')>0);assert.equal(!!g.userData.flowerTargets?.length,s.bloom);assert.ok(!g.children.some(m=>/petal|fruit|seed|pollen|tubercle/.test(m.userData.component)));
+   if(s.bloom){const flowers=count('ovary-exterior-rumex');assert.ok(flowers>0);assert.equal(count('tepal-outer-rumex'),flowers*3);assert.equal(count('tepal-inner-rumex'),flowers*3);assert.equal(count('filament-rumex'),flowers*6);assert.equal(count('anther-rumex'),flowers*6);assert.equal(count('style-rumex'),flowers*3);assert.equal(count('stigma-base-rumex'),flowers*3);assert.ok(count('stigma-branch-rumex')>0);assert.ok(count('ocrea-rumex')>0);}
+   else for(const k of ['tepal-inner-rumex','anther-rumex','stem-rumex'])assert.equal(count(k),0);
+   for(const mesh of g.children)for(const arr of [mesh.instanceMatrix.array,mesh.geometry.attributes.position.array,mesh.geometry.attributes.normal.array])assert.ok(arr.every(Number.isFinite));const leaf=g.children.find(m=>m.userData.component==='leaf-rumex-basal'),shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};leaf.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,/rsRed/);assert.ok(!shader.fragmentShader.includes('${'));
+  }finally{dispose(g);}
+ }
+ assert.notEqual(stateAt(makePlant(id,47500,2,2),view(1)).leafColor,stateAt(makePlant(id,47500,2,2),view(6)).leafColor);
+});
+test('Red-veined dock independently tiny inputs keep leaves and flowers inside the physical limits',()=>{
+ for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]]){
+  const p={...makePlant('p-769a49f96881',47599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),matrix=new Matrix4(),point=new Vector3();
+  try{let maxLeaf=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite));assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,size+' height '+mesh.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,size+' footprint '+mesh.userData.component);if(mesh.userData.component.startsWith('leaf-'))maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=.005001,size+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+ }
+});
+test('Red-veined dock macro inspection centres visible small flower organs at both input sizes',()=>{
+ for(const size of [[.28,.30,.15],[.08,.15,.045]]){
+  const p={...makePlant('p-769a49f96881',47599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6));try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&/^(tepal-(outer|inner)|anther|filament|style|stigma-base|stigma-branch|ovary-exterior)-rumex$/.test(hit.object.userData.component),'visible small flower '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
 test('Hordeum keeps the domestic perennial reference fine awned spikelets and reduced winter leaves',()=>{
  const id='p-3d7a83494608',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.4,.6]);assert.deepEqual(info.spread,[.4,.6]);assert.equal(info.life,'perennial');assert.equal(info.bloomKnown,false);assert.match(info.appearance.sourceConflict,/芒込み/);
  for(const size of [[.55,.50,.28],[.15,.25,.08]])for(let month=1;month<=12;month++){
