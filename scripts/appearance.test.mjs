@@ -7042,10 +7042,12 @@ test('summer and winter dormancy follow the different bulb and rhizome cycles',(
  assert.equal(seasonAt(CATALOG[triteleia.kind],1).leafDensity,1);
  const july=plantModel(triteleia,view(7));assert.ok(july.children.some(m=>m.userData.component==='tepal-rudy'));assert.ok(!july.children.some(m=>m.userData.component.startsWith('leaf')));dispose(july);
 });
-test('standing winter grasses keep dry foliage and distinctive seed structures',()=>{
- for(const id of ['p-f181b6640980','p-30f4df68a97a','p-a12f93626235']){
-  const s=seasonAt(CATALOG[id],1);assert.equal(s.groundDormant,false);assert.equal(s.seedHeads,true);
-  const g=plantModel(makePlant(id,354,2,2),view(1));assert.ok(g.children.some(m=>m.userData.component==='seed'));assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf')));assert.ok(!g.children.some(m=>m.userData.component==='petal'));dispose(g);
+test('winter Bouteloua retains dry exterior spikelets while cold-trimmed Sorghastrum stays dormant',()=>{
+ const id='p-f181b6640980',s=seasonAt(CATALOG[id],1);assert.equal(s.groundDormant,false);assert.equal(s.seedHeads,true);
+ const g=plantModel(makePlant(id,354,2,2),view(1));try{assert.ok(g.children.some(m=>m.userData.component.startsWith('glume-lower-bouteloua-')));assert.ok(g.children.some(m=>m.userData.component.startsWith('lemma-rudiment-bouteloua-')));assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-bouteloua-')));assert.ok(!g.children.some(m=>m.userData.component==='seed'||m.userData.component==='petal'));}finally{dispose(g);}
+ for(const id of ['p-30f4df68a97a','p-a12f93626235']){
+  const p=makePlant(id,355,2,2),winter=stateAt(p,view(1));assert.equal(winter.groundDormant,true);assert.equal(winter.seedHeads,false);const bare=plantModel(p,view(1));assert.equal(bare.children.length,0);dispose(bare);
+  const dry=plantModel(p,view(11));try{assert.ok(dry.children.some(m=>m.userData.component.startsWith('glume-lower-sorghastrum-')));assert.ok(dry.children.some(m=>m.userData.component.startsWith('hair-callus-sorghastrum-')));assert.ok(!dry.children.some(m=>m.userData.component==='seed'||m.userData.component==='petal'));}finally{dispose(dry);}
  }
 });
 test('peltate leaves shelter pendant flowers and ironweed never receives daisy rays',()=>{
@@ -7192,18 +7194,15 @@ test('sea kales distinguish a summer-fading crown from winter dieback and preser
  assert.equal(parts.filter(p=>p.kind==='petal').length,4);assert.equal(parts.filter(p=>p.kind==='anther').length,6);
 });
 
-test('reed leaves lose green winter foliage while annual canary grass does not regrow in autumn',()=>{
+test('reed leaves keep source-specific culms and unknown flowers absent while annual canary grass does not regrow',()=>{
  for(const id of ['p-e4d14379f3a0','p-ce059fcc6a2f']){
   const p=makePlant(id,482,2,2),summer=plantModel(p,view(6)),winter=plantModel(p,view(1));
-  assert.ok(summer.children.some(m=>m.geometry.userData.archingReedLeaf));assert.ok(winter.children.some(m=>m.userData.component==='culm'));assert.ok(!winter.children.some(m=>m.userData.component.startsWith('leaf')));
-  assert.ok(!summer.children.some(m=>m.userData.component.startsWith('sepal')),'Unknown flowering season must not invent a panicle');
-  for(const g of [summer,winter]){for(const m of g.children)assert.ok([...m.instanceMatrix.array].every(Number.isFinite));dispose(g);}
+  try{assert.ok(summer.children.some(m=>m.geometry.userData.reedCanaryOrgan==='rcArchingLeafRef'));assert.ok(winter.children.some(m=>m.userData.component.startsWith('culm-reed-')));assert.ok(!winter.children.some(m=>m.userData.component.startsWith('leaf')));assert.ok(!summer.userData.flowerTargets?.length,'Unknown flowering season must not invent a panicle');for(const g of [summer,winter])for(const m of g.children)assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}finally{dispose(summer);dispose(winter);}
  }
- const autumn=plantModel(makePlant('p-e4d14379f3a0',483,2,2),view(10));assert.ok(autumn.children.some(m=>m.userData.component==='leaf-stripes-dcaebe'));dispose(autumn);
- const p=makePlant('p-3a7b9b932473',484,2,2),bloom=plantModel(p,view(6));assert.ok(bloom.children.some(m=>m.userData.component==='sepal-canaryVeins-527948'));dispose(bloom);
- assert.equal(plantModel(p,view(10)).children.length,0);assert.equal(stateAt(p,{...view(6),year:1}).present,false);
+ const autumn=plantModel(makePlant('p-e4d14379f3a0',483,2,2),view(10));try{assert.ok(autumn.children.some(m=>m.userData.component==='leaf-reed-dawn-pink'));}finally{dispose(autumn);}
+ const p=makePlant('p-3a7b9b932473',484,2,2),bloom=plantModel(p,view(6));try{assert.ok(bloom.children.some(m=>m.userData.component==='glume-canariensis'));assert.ok(bloom.children.some(m=>m.userData.component==='keel-wing-canariensis'));assert.ok(bloom.children.some(m=>m.userData.component==='lemma-fertile-canariensis'));assert.ok(!bloom.children.some(m=>m.userData.component==='seed'));}finally{dispose(bloom);}
+ const ended=plantModel(p,view(10));assert.equal(ended.children.length,0);dispose(ended);assert.equal(stateAt(p,{...view(6),year:1}).present,false);
 });
-
 test('mallows, speedwells, valerian and globe daisies retain distinct winter structures and floral organs',()=>{
  const ids=['p-1e5437ee2bd7','p-8f59c8a9888f','p-5c9cc85ba529','p-4345fea9e95d','p-b7cd76520581','p-0c6e0a887f42','p-4a8a59960764','p-bcf4c6b6a5b0','p-37c503d24b05','p-547a022619db'];
  const dieback=new Set(['p-1e5437ee2bd7','p-8f59c8a9888f','p-4a8a59960764','p-bcf4c6b6a5b0']);
