@@ -8379,3 +8379,27 @@ test('Tender Pennisetum inspection centres a visible curved or long-bristled ext
   try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&hit.object.userData.component.endsWith('pennisetum-exterior')&&!hit.object.userData.component.startsWith('spike-axis'),id+' visible exterior '+hit?.object.userData.component);}finally{dispose(g);}
  }
 });
+
+test('Briza references preserve three identities and distinguish leafy flowering plants from leafless uncut winter panicles',()=>{
+ const ids=['p-ea845e515c8e','p-12609f3f0036','p-d29a82a6e247'];
+ for(const [ci,id]of ids.entries())for(const [si,size]of [[.45,.35,.20],[.16,.22,.06]].entries())for(let month=1;month<=12;month++){
+  const p={...makePlant(id,46800+ci*10+si,2,2),height:size[0],spread:size[1],leafHeight:size[2]},before=structuredClone(p),s=seasonAt(CATALOG[id],month),g=plantModel(p,view(month)),label=id+' '+si+' '+month,winter=[12,1,2].includes(month),bloom=month>=(ci===2?5:4)&&month<=8,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.deepEqual(CATALOG[id].height,[.3,.5]);assert.deepEqual(CATALOG[id].spread,ci===1?[.3,.5]:[.2,.4]);assert.equal(CATALOG[id].bloomKnown,false);assert.equal(g.userData.architecture,'brizaReferences');assert.equal(s.groundDormant,false,label);assert.equal(s.bloom,bloom,label);assert.equal(s.seedHeads,month>=9||month<=2,label);assert.equal(g.children.some(m=>m.userData.component.startsWith('leaf-briza-')),!winter,label);assert.equal(count('spikelet-surface-briza-exterior')>0,bloom||s.seedHeads,label);assert.equal(!!g.userData.flowerTargets?.length,bloom||s.seedHeads,label);if(winter)assert.match(s.label,/切戻し苗.*別条件/);
+   for(const m of g.children)for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok(arr.every(Number.isFinite),label);assert.ok(!g.children.some(m=>/anther.*briza|pollen.*briza|grain.*briza/.test(m.userData.component)),label);assert.deepEqual(p,before);
+   if(ci===0&&month===6){const m=g.children.find(m=>m.userData.component==='leaf-briza-brizaRussells'),shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};m.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,/bzEdge/);assert.match(shader.fragmentShader,/bzStripe/);assert.equal(CATALOG[id].appearance.leafPattern,'stripes');}
+  }finally{dispose(g);}
+ }
+});
+test('Briza small independently sized leaves and hanging heads stay within the requested plant bounds',()=>{
+ for(const id of ['p-ea845e515c8e','p-12609f3f0036','p-d29a82a6e247'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]]){
+  const p={...makePlant(id,46899,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),matrix=new Matrix4(),point=new Vector3(),label=id+' '+size;
+  try{let maxLeaf=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite),label);assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,label+' height '+mesh.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,label+' footprint '+mesh.userData.component);if(mesh.userData.component.startsWith('leaf-briza-'))maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=.005001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+ }
+});
+test('Briza flower inspection targets visible hanging spikelet exteriors at adult and small sizes',()=>{
+ for(const id of ['p-ea845e515c8e','p-12609f3f0036','p-d29a82a6e247'])for(const size of [[.45,.35,.20],[.16,.22,.06],[.7,.8,.005]]){
+  const p={...makePlant(id,46899,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6));
+  try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&hit.object.userData.component.endsWith('briza-exterior'),id+' visible exterior '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});

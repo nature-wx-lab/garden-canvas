@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.467';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.468';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.467';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.468';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='brizaReferences'){drawBrizaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='pennisetumReferences'){drawPennisetumReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.shootProfile?.startsWith('fescue')){drawFescueReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='otherCarexReferences'){drawOtherCarexReferences(b,{info,s,detail,month},kit);return;}
@@ -19469,6 +19470,51 @@ function drawFans(b,{info,s,detail,rand},kit){
    const an=k*2.399,yy=top-h*.23+k*h*.028,end=[x+Math.sin(an)*w*.12,yy+h*.03,z+Math.cos(an)*w*.12];
    b.branch([x,yy,z],end,.0015,green,'petiole');
    for(let f=0;f<3;f++)detailedFlower(b,{x:end[0],y:end[1]+f*.016,z:end[2],r:.014,color:info.flower,shape:'tube',tilt:.85,yaw:an},{...kit,rand});
+  }
+ }
+}
+
+// Sampled overlapping spikelet surfaces; the mesh does not assert a floret count.
+export function brizaReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='brizaSpikeletRef'){const ph=(u+1)*Math.PI,profile=sn**.62*(1.12-.30*t);return[Math.sin(ph)*.5*profile,-t,Math.cos(ph)*.16*profile];}
+ if(type==='brizaScaleRef')return[u*.5*sn**.48,-t,.15*(1-u*u)*sn];
+ const upright=type==='brizaUprightRef',y=upright?Math.sin(Math.PI*.64*t):Math.sin(Math.PI*.83*t)-Math.sin(Math.PI*.83)*t;
+ return[u*.5*sn**.55,y+.001*u*u*sn,t];
+}
+const BRIZA_LEAF_TOP=Object.fromEntries(['brizaOuterRef','brizaUprightRef'].map(type=>{let top=0;for(let i=0;i<=72;i++)for(let j=0;j<=8;j++)top=Math.max(top,brizaReferencePoint(type,i/72,j/4-1)[1]);return[type,top];}));
+function drawBrizaReferences(b,{info,s,detail,month,rand},kit){
+ const type=info.appearance.shootProfile,triloba=type==='brizaTriloba',russells=type==='brizaRussells',winter=[12,1,2].includes(month),dry=s.seedHeads&&!s.bloom,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.96)*s.leafScale,rootY=Math.min(.0003,h*.002,LH*.02),R=Math.min(.0006,h*.002,w*.002,LH*.025),green=s.leafColor,leafKind='leaf-briza-'+type;
+ const line=(a,z,r,c,k)=>{const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('brizaRoundCulmRef',k,c,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);};
+ if(s.leafDensity>0){
+  const crowns=Math.max(4,Math.round((triloba?15:12)*detail)),leaves=Math.max(3,Math.round(10*s.leafDensity));
+  for(let c=0;c<crowns;c++){
+   const az=c*2.399963,rr=w*.12*Math.sqrt((c+.5)/crowns),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr];
+   for(let j=0;j<leaves;j++){
+    const shape=(j+c)%3?'brizaOuterRef':'brizaUprightRef',fy=(LH*.985-rootY)/BRIZA_LEAF_TOP[shape]*(.55+.45*(.5+.5*Math.sin(c*4.73+j*3.91))),reach=Math.min(w*(shape==='brizaOuterRef'?.31:.13),fy*(shape==='brizaOuterRef'?1.3:.35)),width=Math.min(russells?.004:.0035,h*.035,w*.028,LH*.08);
+    b.add(shape,leafKind,kit.shade(rand,green,.035),...root,width,fy,reach,0,az+j*2.399963,0);
+   }
+  }
+ }
+ if(!s.bloom&&!s.seedHeads)return;
+ const culms=Math.max(2,Math.round((triloba?16:russells?10:14)*detail)),L=Math.min(triloba?.0065:.009,h*.025,w*.032),stem=dry?'#ac9872':'#87936a';
+ for(let i=0;i<culms;i++){
+  const az=i*2.399963,rr=w*(i===0?.10:.14*Math.sqrt((i+.5)/culms)),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],top=h*(.97-.12*i/culms),reach=w*(triloba?.23:.05),at=t=>[root[0]+Math.sin(az)*reach*t*t,rootY+(top-rootY)*(triloba?Math.sin(t*Math.PI*.64):t),root[2]+Math.cos(az)*reach*t*t];
+  let prev=at(0);for(let j=1;j<=18;j++){const next=at(j/18);line(prev,next,R,stem,'culm-briza');prev=next;}
+  if(!winter)for(let node=0;node<2;node++){
+   const p=at(.20+node*.22);b.add('brizaRoundCulmRef','node-briza',stem,...p,R*1.4,Math.min(.0012,h*.005),R*1.4);if(p[1]>=LH*.6)continue;const fy=(LH*.85-p[1])/BRIZA_LEAF_TOP.brizaOuterRef;b.add('brizaOuterRef',leafKind,green,...p,Math.min(.003,h*.025,w*.02,LH*.06),fy,Math.min(w*.10,fy),0,az+node*Math.PI,0);
+  }
+  const branches=triloba?9:7;
+  for(let j=0;j<branches;j++){
+   const t=.60+j*(triloba?.039:.047),base=at(t),yaw=az+j*2.399963,branchReach=Math.min(w*(triloba?.055:.14)*(1-(t-.60)*1.8),h*.20),tip=[base[0]+Math.sin(yaw)*branchReach,Math.min(h*.985,base[1]+h*(triloba?.014:.035)),base[2]+Math.cos(yaw)*branchReach],drop=Math.min(L*.65,h*.028),end=[tip[0]+Math.sin(yaw)*L*.14,tip[1]-drop,tip[2]+Math.cos(yaw)*L*.14];
+   line(base,tip,R*.52,stem,'panicle-branch-briza');line(tip,end,R*.34,stem,'pedicel-briza');
+   const stage=(i+j)%3,co=dry?'#b49a72':triloba?(stage===2?'#b4b6a0':'#a9b998'):russells?(stage===0?'#c7cfb0':stage===1?'#c0b6bc':'#d1c8ac'):(stage===0?'#aab686':stage===1?'#aa8297':'#c3c19a'),f=flowerFrame(b,end,.12+(.5+.5*Math.sin(i*3.7+j*4.1))*.22,yaw),width=L*(triloba?.66:.78);
+   f.add('brizaSpikeletRef','spikelet-surface-briza-exterior',co,0,0,0,width,L,L);
+   for(let k=0;k<8;k++){
+    const q=.08+k*.10,side=k%2?1:-1,profile=Math.sin(Math.PI*(q+.09))**.62*(1.12-.30*(q+.09)),c=dry?co:stage===1&&!triloba?'#ad8b9e':co;
+    for(const z of [-1,1])f.add('brizaScaleRef','spikelet-scale-briza-exterior',kit.shade(rand,c,.018),side*width*.025*profile,-L*q,z*L*(.16*profile+.004),width*.90*profile,L*.18,L*.035,0,z<0?Math.PI:0,side*.025);
+   }
+   if(i===0&&j===3){const radius=L*.70;f.flower([width*.12,-L*.5-radius*.30,L*.16],radius);}
   }
  }
 }
