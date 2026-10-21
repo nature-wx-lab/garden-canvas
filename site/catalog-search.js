@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.513';
+import {treeProfile} from './tree-profiles.js?v=0.9.515';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -195,6 +195,7 @@ export function seasonAt(info,month){
  if(a.architecture==='dropwortRosettes'){scale=1;phase=[12,1,2].includes(month)?'少ない株元葉と未剪定茎の参考（冬の成株写真・残葉量と残存月は未確認）':'株元の細かい羽状複葉と白い八重花（花弁数・花量・伸長は参考）';}
  if(a.architecture==='ulmariaSprays'){scale=1;phase=[12,1,2].includes(month)?'低温で落葉した未剪定茎の参考（品種の冬写真・残葉量・残存月は未確認）':'大小の小葉が並ぶ複葉と白い円錐状の花房（品種別の葉色・八重花、花量と伸長は参考）';}
  if(a.architecture==='filipendulaSprays'){scale=1;phase=[12,1,2].includes(month)?'低温期に落葉した未剪定の茎の参考（品種別の冬写真・残葉量・残存月は未確認）':'掌状に裂ける葉と小花を集めた花房（花量・伸長・紅葉時期は参考）';}
+ if(a.architecture==='rodgersiaCultivarReferences'){scale=month===4?.60:1;phase=a.calyxMonths?.includes(month)?'花後に残る萼の参考（開花した株・結実は未確認）':density===0?'低温管理・霜後に地上部を整理した冬の参考（未剪定の花茎は未再現）':'複葉と花弁のない小花の参考（株齢・発色と気温応答は未校正）';}
  if(a.architecture==='gilleniaSprays'){scale=1;phase=a.calyxMonths?.includes(month)?'花後に残る赤い萼の参考（果実・残存月と結実量は未確認）':'互生する三出複葉と細い星形の花（伸長・花数・紅葉時期は参考）';}
  if(a.architecture==='fireflyCymes'){scale=1;phase=[12,1,2].includes(month)?'国内の少ない残葉・紅葉の参考（冬の成株写真、残存量・月境界は未確認）':'対生葉と二出分枝、切れ込みのある八重花（花数・花弁数・月別伸長は参考）';}
  if(a.architecture==='snowtipMat'){scale=1;phase=[12,1,2].includes(month)?'冬苗の少ない残葉を参考表示（掲載写真は切戻し株、未剪定の冬姿は未確認）':'這う赤い茎と小さい対生葉・白い5弁花（花数・成長・月別葉量は参考）';}
