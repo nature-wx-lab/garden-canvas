@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.484';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.485';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.484';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.485';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(['sandLovegrassReference','sesleriaReference','imperataRedReference'].includes(info.appearance?.architecture)){drawRemainingGrassReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['cortaderiaReferences','moliniaReferences'].includes(info.appearance?.architecture)){drawPampasMoliniaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='deschampsiaReferences'){drawDeschampsiaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='miscanthusReferences'){drawMiscanthusReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22626,6 +22627,47 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
 
 
 
+export function remainingGrassPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='rgUprightLeafRef'||type==='rgArchingLeafRef')return[u*.5*sn**.52,type==='rgUprightLeafRef'?t-.16*t*t:Math.sin(Math.PI*.65*t)-.75*t,t+.04*u*u*sn];
+ if(type==='rgGlumeRef')return[u*.5*sn**.65,t,.22*(1-u*u)*sn];
+ if(type==='rgLemmaRef'||type==='rgPaleaRef')return[u*.5*sn**.58*(1-.14*t),t,(type==='rgLemmaRef'?.18:.07)*(1-u*u)*sn];
+ const ph=(u+1)*Math.PI,r=(type==='rgHairRef'?.010:.006)*(1-.9*t);return[Math.sin(ph)*r,t,(type==='rgHairRef'?.28:0)*sn+Math.cos(ph)*r];
+}
+function drawRemainingGrassReferences(b,{info,s,detail,month,rand},kit){
+ const sand=info.appearance.architecture==='sandLovegrassReference',ses=info.appearance.architecture==='sesleriaReference',imp=!sand&&!ses,type=sand?'sandlove':ses?'sesleria':'imperata',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.96)*s.leafScale,heads=s.bloom||s.seedHeads,dry=!!s.seedHeads,front=Math.atan2(.8,1),R=Math.min(sand?.001:ses?.0012:.0016,h*.0025,w*.003),rootY=Math.min(.00015,h*.001),leaves=Math.max(18,Math.round((sand?75:ses?120:60)*detail*s.leafDensity)),stems=Math.max(2,Math.round((sand?9:ses?21:2)*detail));
+ const line=(a,z,r,kind,col)=>{const q=new THREE.Vector3(...a),end=new THREE.Vector3(...z),d=end.clone().sub(q);if(d.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');b.add('rgStemRef',kind,col,...q.add(end).multiplyScalar(.5).toArray(),r,d.length(),r,e.x,e.y,e.z);};
+ const leaf=(at,az,j,upper=false)=>{const y=at[1],fy=Math.min(imp?.5:.42,h*.8,Math.max(0,LH-y)/.85)*(upper?.42:.75+.25*(.5+.5*Math.cos(j*3.4))),reach=Math.min(w*(upper?.18:imp?.19:.34),fy*(imp?.28:.55)),width=Math.min(imp?.010:ses?.004:.006,h*.026,w*.022,LH*.16),f=flowerFrame(b,at,0,az),phase=imp?([9,10,11].includes(month)?'-autumn':month<=4?'-spring':'-summer'):'';f.add(upper||j%3?'rgUprightLeafRef':'rgArchingLeafRef','leaf-'+type+phase,kit.shade(rand,s.leafColor,.03),0,0,0,width,fy,reach);};
+ for(let j=0;j<leaves;j++){const az=front+j*2.399963,rr=w*(imp?.30:.12)*Math.sqrt((j+.5)/leaves);leaf([Math.sin(az)*rr,Math.min(rootY,LH*.05),Math.cos(az)*rr],az,j);}
+ if(!heads)return;
+ for(let i=0;i<stems;i++){
+  const az=front+i*2.399963,rr=w*.09*Math.sqrt((i+.5)/stems),root=[Math.sin(az)*rr,Math.max(rootY,R*1.1),Math.cos(az)*rr],base=[root[0]+Math.sin(az)*w*(i===0?.20:.035),h*(sand?.53:ses?.80:.72),root[2]+Math.cos(az)*w*(i===0?.20:.035)],stemCol=dry?'#b8a080':ses?'#b8bc82':'#a5b17b';line(root,base,R,'culm-'+type,stemCol);
+  for(let j=0;j<(sand?3:1);j++){const t=.25+j*.18,at=root.map((v,n)=>v+(base[n]-v)*t);if(at[1]<LH*.85)leaf(at,az+j*2.7,j,true);}
+  const top=[base[0],h*.94,base[2]];line(base,top,R*.5,'axis-'+type,stemCol);const levels=sand?10:ses?15:18;
+  if(ses)for(let j=0;j<2;j++){const f=flowerFrame(b,base,.15,az+j*Math.PI),S=Math.min(.006,h*.018,w*.024);f.add('rgGlumeRef','sterile-scale-sesleria','#d2c9ac',0,0,0,S*.3,S,S*.3);}
+  for(let level=0;level<levels;level++){
+   const t=level/(levels-1),origin=base.map((v,n)=>v+(top[n]-v)*t*.89),angle=az+level*2.399963,reach=sand?Math.min(.15,w*.19,h*.18)*(1-t*.60):Math.min(ses?.004:.009,w*.024,h*.018),end=[origin[0]+Math.sin(angle)*reach,origin[1]+(sand?Math.min(.065,h*.08)*(1-t*.6):Math.min(.004,h*.01)),origin[2]+Math.cos(angle)*reach];line(origin,end,R*(sand?.22:.16),'branch-'+type,stemCol);
+   const twigs=sand?4:1;
+   for(let twig=0;twig<twigs;twig++){
+    const bt=sand?(twig+.5)/twigs:1,at=origin.map((v,n)=>v+(end[n]-v)*bt),out=sand?Math.min(.036,w*.04,h*.045):0,tip=[at[0]+Math.cos(angle)*out*(twig%2?1:-1),at[1]+out*.65,at[2]-Math.sin(angle)*out*(twig%2?1:-1)];if(sand)line(at,tip,R*.12,'twig-'+type,stemCol);
+    for(let pair=0;pair<(imp?2:sand?3:1);pair++){
+     const ped=sand?Math.min(.012,h*.018,w*.024):imp?Math.min(pair?.0018:.0007,h*.004,w*.008):Math.min(.001,h*.004,w*.006),anchor=sand?at.map((v,n)=>v+(tip[n]-v)*(pair+.5)/3):tip,place=[anchor[0]+Math.sin(angle+pair)*ped,anchor[1]+ped*.3,anchor[2]+Math.cos(angle+pair)*ped];line(anchor,place,R*.08,(imp?(pair?'pedicel-long-':'pedicel-short-'):'pedicel-')+type,stemCol);
+     const S=Math.min(sand?.007:ses?.0065:.004,h*.014,w*.02),W=Math.min(sand?.002:ses?.0018:.001,S*.30,w*.006),f=flowerFrame(b,place,.12,angle),col=dry?'#b8a38a':sand?'#c8c59e':ses?'#e4dfc5':'#e8e2cf',gn=sand?S*.38:ses?S*.84:S;
+     if(!sand||!dry)for(let q=0;q<2;q++){f.add('rgGlumeRef','glume-'+type,col,0,0,(q?-1:1)*W*.025,W,gn,W,0,q*Math.PI,0);if(ses){const A=S*.25;f.add('rgAwnRef','awn-glume-sesleria',col,0,gn,0,A,A,A,0,q*Math.PI,0);}}
+     const count=sand?6:ses?3:2;
+     for(let q=0;q<count;q++){
+      const side=q%2?1:-1,len=S*(sand?.43:ses?.7:q?.5:.65),y=q*S*(sand?.12:ses?.12:0),ff=flowerFrame(f,[side*W*.12,y,0],0,q%2*Math.PI),fc=sand&&dry?'#a98ca3':col;
+      if(!sand||!dry)ff.add('rgLemmaRef','lemma-'+type,fc,0,0,0,W*.65,len,W*.65);
+      if(!imp||q===1)ff.add('rgPaleaRef','palea-'+type,fc,0,0,-W*.02,W*.42,len*.85,W*.35,0,Math.PI,0);
+      if(ses)for(let a=0;a<3;a++){const A=S*(a===1?.20:.07);ff.add('rgAwnRef','awn-lemma-sesleria',col,(a-1)*W*.13,len*.96,0,A,A,A,0,0,(a-1)*.3);}
+     }
+     if(imp)for(let hair=0;hair<18;hair++){const a=hair*2.399963,L=S*2.8;f.add('rgHairRef','hair-glume-imperata',col,Math.sin(a)*W*.12,(hair%3)*S*.2,Math.cos(a)*W*.12,L,L,L,Math.sin(a)*.8,a,Math.cos(a)*.8);}
+     if(s.bloom&&i===0&&level===levels-1&&twig===twigs-1&&pair===(imp?1:sand?2:0)){const verts=[[20/40,0],[21/40,0],[20/40,2/16]].map(([t,u])=>new THREE.Vector3(...remainingGrassPoint('rgGlumeRef',t,u)).multiply(new THREE.Vector3(W,gn,W)).add(new THREE.Vector3(0,0,W*.025))),centre=verts[0].clone().add(verts[1]).add(verts[2]).multiplyScalar(1/3),normal=verts[1].clone().sub(verts[0]).cross(verts[2].clone().sub(verts[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');f.flower(centre.toArray(),S*.44,pose.x,pose.y,pose.z);}
+    }
+   }
+  }
+ }
+}
 export function pampasMoliniaReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='pmUprightLeafRef'||type==='pmArchingLeafRef')return[u*.5*sn**.50,type==='pmUprightLeafRef'?t-.16*t*t:Math.sin(Math.PI*.65*t)-.75*t,t+.04*u*u*sn];
