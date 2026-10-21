@@ -12,6 +12,28 @@ import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulip
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Luzula Select keeps thick hairy evergreen foliage and species-qualified six-part brown flowers',()=>{
+ const id='p-dee37c8648e1',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.2,.3]);assert.deepEqual(info.spread,[.2,.3]);assert.equal(info.bloomKnown,false);assert.match(info.appearance.sourceConflict,/Select/);assert.equal(info.appearance.petals,0);
+ for(const size of [[.28,.28,.18],[.08,.15,.05]])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,47600,2,2),height:size[0],spread:size[1],leafHeight:size[2]},before=structuredClone(p),s=stateAt(p,view(month));assert.equal(s.bloom,month===5||month===6);assert.equal(s.groundDormant,false);assert.equal(s.seedHeads,false);assert.equal(s.shootScale,1);assert.deepEqual(p,before);if(![1,4,6,11].includes(month))continue;const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+  try{assert.equal(g.userData.architecture,'luzulaSelectReference');assert.ok(count('leaf-luzula-select')>0);assert.ok(count('hair-margin-luzula')>0);assert.equal(count('leaf-luzula-old')>0,month===1);assert.equal(!!g.userData.flowerTargets?.length,s.bloom);assert.ok(!g.children.some(m=>/petal|fruit|seed|pollen|capsule/.test(m.userData.component)));
+   if(s.bloom){const flowers=count('ovary-exterior-luzula');assert.ok(flowers>0);assert.equal(count('tepal-outer-luzula'),flowers*3);assert.equal(count('tepal-inner-luzula'),flowers*3);assert.equal(count('anther-luzula'),flowers*6);assert.equal(count('filament-luzula'),flowers*6);assert.equal(count('style-luzula'),flowers);assert.equal(count('stigma-branch-luzula'),flowers*3);assert.equal(count('bracteole-luzula'),flowers*2);assert.equal(count('bract-flower-luzula'),flowers);}
+   else for(const k of ['tepal-inner-luzula','anther-luzula','culm-luzula'])assert.equal(count(k),0);
+   for(const mesh of g.children)for(const arr of [mesh.instanceMatrix.array,mesh.geometry.attributes.position.array,mesh.geometry.attributes.normal.array])assert.ok(arr.every(Number.isFinite));
+  }finally{dispose(g);}
+ }
+});
+test('Luzula Select thin independent dimensions constrain soft margin hairs and foliage to the leaf ceiling',()=>{
+ for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]]){
+  const p={...makePlant('p-dee37c8648e1',47699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),matrix=new Matrix4(),point=new Vector3();
+  try{let maxLeaf=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite));assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,size+' height '+mesh.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,size+' footprint '+mesh.userData.component);if(mesh.userData.component.startsWith('leaf-')||mesh.userData.component==='hair-margin-luzula')maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=.005001,size+' leaf/hair ceiling '+maxLeaf);}finally{dispose(g);}
+ }
+});
+test('Luzula Select flower observation centres an exposed small brown flower at both input sizes',()=>{
+ for(const size of [[.28,.28,.18],[.08,.15,.05]]){
+  const p={...makePlant('p-dee37c8648e1',47699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6));try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&/^(tepal-(outer|inner)|anther|filament|style|stigma-branch|ovary-exterior)-luzula$/.test(hit.object.userData.component),'visible brown flower '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
 test('Red-veined dock corrects white veins and separates domestic winter foliage from genus flower references',()=>{
  const id='p-769a49f96881',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.2,.3]);assert.deepEqual(info.spread,[.2,.3]);assert.equal(info.bloomKnown,false);assert.equal(info.appearance.leafPattern,'redVeins');assert.equal(TRAIT_VALUES.redVeins,'赤い葉脈');assert.equal(info.appearance.patternColor,'#8f1f35');assert.match(info.appearance.sourceConflict,/白いsilverVeins/);assert.equal(info.appearance.petals,0);
  for(const size of [[.28,.30,.15],[.08,.15,.045]])for(let month=1;month<=12;month++){
