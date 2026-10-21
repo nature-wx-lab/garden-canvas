@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.468';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.468';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.469';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.469';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -10,12 +10,15 @@ export function keepCameraAboveGround(camera,target){
 }
 // Flower anchors belong to the visible generated plant, so dormant/hidden flowers
 // cannot be focused and a reference-size change is reflected in the camera fit.
-export function flowerInspectionDistanceFloor(group){return ['brizaReferences','pennisetumReferences','fescueReferences','blueFescue','otherCarexReferences','blueCarexReferences','fineCarexReferences','oshimensisReferences','eupatorieaeReferences','muhlenbergiaPanicles','tallEupatorieae','panicumReferences','calamagrostisReferences','hakonechloaReferences','liriopeReferences','ophiopogonReferences'].includes(group?.userData?.architecture)?.045:.14;}
+export function flowerInspectionDistanceFloor(group){return ['milletMelicaReferences','brizaReferences','pennisetumReferences','fescueReferences','blueFescue','otherCarexReferences','blueCarexReferences','fineCarexReferences','oshimensisReferences','eupatorieaeReferences','muhlenbergiaPanicles','tallEupatorieae','panicumReferences','calamagrostisReferences','hakonechloaReferences','liriopeReferences','ophiopogonReferences'].includes(group?.userData?.architecture)?.045:.14;}
 export function pennisetumFoliageInspectionView(group,aspect=1){
  if(group?.userData?.architecture!=='pennisetumReferences'||group.userData.flowerTargets?.length)return null;
  group.updateWorldMatrix(true,false);const box=new THREE.Box3().setFromObject(group);if(box.isEmpty())return null;
  const target=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3()),ratio=Number.isFinite(aspect)&&aspect>0?Math.min(1,aspect):1,d=Math.max(.16,size.y*1.2,size.x*1.12,size.z*1.12)/ratio,position=target.clone().add(new THREE.Vector3(d,d*.48,d));position.y=Math.max(.1,position.y);
  return {position:position.toArray(),target:target.toArray()};
+}
+export function inspectionSeasonActive(p,view){
+ if(!p)return false;const s=stateAt(p,view);return s.present&&!s.groundDormant&&(s.bloom||(plantInfo(p.kind).appearance?.shootProfile==='purpleMajesty'&&s.seedHeads));
 }
 export function flowerInspectionView(group,aspect=1,fov=40){
  const anchors=group?.userData?.flowerTargets;
@@ -23,7 +26,7 @@ export function flowerInspectionView(group,aspect=1,fov=40){
  const anchor=anchors.find(a=>a&&typeof a==='object'&&Array.isArray(a.origin)&&a.origin.length===3&&a.origin.every(Number.isFinite)&&Array.isArray(a.axis)&&a.axis.length===3&&a.axis.every(Number.isFinite)&&Math.hypot(...a.axis)>.00001&&Number.isFinite(a.radius)&&a.radius>0&&a.radius<10);
  if(!anchor)return null;
  group.updateWorldMatrix(true,false);
- const nodding=group.userData.architecture==='ophiopogonReferences',sedgeExterior=['brizaReferences','pennisetumReferences','fescueReferences','blueFescue','oshimensisReferences','fineCarexReferences','blueCarexReferences','otherCarexReferences'].includes(group.userData.architecture);
+ const nodding=group.userData.architecture==='ophiopogonReferences',sedgeExterior=['milletMelicaReferences','brizaReferences','pennisetumReferences','fescueReferences','blueFescue','oshimensisReferences','fineCarexReferences','blueCarexReferences','otherCarexReferences'].includes(group.userData.architecture);
  const radius=Math.max(.004,anchor.radius*group.matrixWorld.getMaxScaleOnAxis()),axis=new THREE.Vector3(...anchor.axis).transformDirection(group.matrixWorld),target=group.localToWorld(new THREE.Vector3(...anchor.origin)).addScaledVector(axis,radius*.30),direction=axis.clone().multiplyScalar(nodding?.45:sedgeExterior?.20:.90).add(new THREE.Vector3(.8,.18,1).multiplyScalar(nodding?.75:sedgeExterior?.90:.45)).normalize(),ratio=Number.isFinite(aspect)&&aspect>0?Math.min(1,aspect):1,angle=Math.atan(Math.tan((Number.isFinite(fov)&&fov>5&&fov<100?fov:40)*Math.PI/360)*ratio),distance=Math.max(flowerInspectionDistanceFloor(group),radius*1.20/Math.sin(angle)),position=target.clone().addScaledVector(direction,distance);
  position.y=Math.max(CAMERA_FLOOR+1e-7,position.y);
  return {position:position.toArray(),target:target.toArray()};
@@ -177,7 +180,7 @@ export function createScene(container,onPick){
     if(!plan)return;
     const foliagePose=type==='focus'&&selection?pennisetumFoliageInspectionView(plants?.children.find(g=>g.userData.plantId===selection),camera.aspect):null;
     if(type==='flower'){
-      const p=plan.plants.find(p=>p.id===selection),group=plants?.children.find(g=>g.userData.plantId===selection),pose=p&&stateAt(p,view).bloom?flowerInspectionView(group,camera.aspect,camera.fov):null;if(!pose)return false;controls.minDistance=Math.min(.12,flowerInspectionDistanceFloor(group));controls.target.fromArray(pose.target);camera.position.fromArray(pose.position);
+      const p=plan.plants.find(p=>p.id===selection),group=plants?.children.find(g=>g.userData.plantId===selection),pose=inspectionSeasonActive(p,view)?flowerInspectionView(group,camera.aspect,camera.fov):null;if(!pose)return false;controls.minDistance=Math.min(.12,flowerInspectionDistanceFloor(group));controls.target.fromArray(pose.target);camera.position.fromArray(pose.position);
     }else if(foliagePose){controls.minDistance=.12;controls.target.fromArray(foliagePose.target);camera.position.fromArray(foliagePose.position);
     }else if(type==='focus'&&selection){controls.minDistance=.12;const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view);controls.target.set(p.x-plan.width/2,plantBaseAt(plan,p)+Math.min(s.height,pondDepthAt(plan,p.x,p.z)||s.height)*.52,p.z-plan.depth/2);const d=Math.max(.16,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);camera.position.copy(controls.target).add(new THREE.Vector3(d,d*.48,d));}
     else{
@@ -204,5 +207,5 @@ export function createScene(container,onPick){
     if(moving&&lastTick)elapsed+=Math.min(.1,(now-lastTick)/1000);lastTick=now;wind.time.value=elapsed;
     renderer.render(scene,camera);lastDraw=now;dirty=false;container.dataset.frames=String(++frameCount);container.dataset.windTime=elapsed.toFixed(2);
   });
-  return {render,hasFlower:()=>{const p=plan?.plants.find(p=>p.id===selection);return !!(p&&stateAt(p,view).bloom&&flowerInspectionView(plants?.children.find(g=>g.userData.plantId===selection),camera.aspect,camera.fov));},wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(controls.minDistance,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{restoreCameraPose(camera,controls,c);dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
+  return {render,hasFlower:()=>{const p=plan?.plants.find(p=>p.id===selection);return !!(inspectionSeasonActive(p,view)&&flowerInspectionView(plants?.children.find(g=>g.userData.plantId===selection),camera.aspect,camera.fov));},wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(controls.minDistance,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{restoreCameraPose(camera,controls,c);dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
 }

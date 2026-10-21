@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.468';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.469';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.468';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.469';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='milletMelicaReferences'){drawMilletMelicaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='brizaReferences'){drawBrizaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='pennisetumReferences'){drawPennisetumReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.shootProfile?.startsWith('fescue')){drawFescueReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -19470,6 +19471,71 @@ function drawFans(b,{info,s,detail,rand},kit){
    const an=k*2.399,yy=top-h*.23+k*h*.028,end=[x+Math.sin(an)*w*.12,yy+h*.03,z+Math.cos(an)*w*.12];
    b.branch([x,yy,z],end,.0015,green,'petiole');
    for(let f=0;f<3;f++)detailedFlower(b,{x:end[0],y:end[1]+f*.016,z:end[2],r:.014,color:info.flower,shape:'tube',tilt:.85,yaw:an},{...kit,rand});
+  }
+ }
+}
+
+export function milletMelicaPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='mmMilletEnvelopeRef'){const ph=(u+1)*Math.PI,r=.5*sn**.22;return[Math.sin(ph)*r,t,Math.cos(ph)*r];}
+ if(type==='mmSpikeletRef'){const ph=(u+1)*Math.PI;return[Math.sin(ph)*.22*sn**.55,t,Math.cos(ph)*.12*sn**.55];}
+ if(type==='mmHairRef'||type==='mmSilkyHairRef')return[u*(type==='mmSilkyHairRef'?.014:.008)*(1-.9*t),t,.06*sn];
+ if(type==='mmMelicaSpikeletRef'){const ph=(u+1)*Math.PI;return[Math.sin(ph)*.13*sn**.85,t,Math.cos(ph)*.025*sn**.85];}
+ if(type==='mmCornRef')return[u*.5*sn**.48,.34*Math.sin(Math.PI*.85*t)-.13*t,t+.013*Math.sin(t*18)*u];
+ const upright=type==='mmUprightRef',y=upright?Math.sin(Math.PI*.64*t):Math.sin(Math.PI*.83*t)-Math.sin(Math.PI*.83)*t;
+ return[u*.5*sn**.48,y+.001*u*u*sn,t+(type==='mmWideRef'?.013*Math.sin(t*18)*u:0)];
+}
+const MM_LEAF_TOP=Object.fromEntries(['mmOuterRef','mmUprightRef','mmWideRef','mmCornRef'].map(type=>{let top=0;for(let i=0;i<=72;i++)for(let j=0;j<=8;j++)top=Math.max(top,milletMelicaPoint(type,i/72,j/4-1)[1]);return[type,top];}));
+function drawMilletMelicaReferences(b,{info,s,detail,month,rand},kit){
+ const type=info.appearance.shootProfile,majesty=type==='purpleMajesty',gold=type==='goldenMilium',white=type==='melicaCiliata',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0003,h*.002,LH*.02),R=Math.min(majesty?.005:.0007,h*(majesty?.004:.0025),w*(majesty?.012:.0025),LH*.04),green=s.leafColor,leafKind='leaf-mm-'+type;
+ const line=(a,z,r,c,k)=>{const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('mmRoundCulmRef',k,c,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);};
+ if(!s.leafDensity)return;
+ const crowns=Math.max(3,Math.round((majesty?5:gold?10:16)*detail)),leaves=Math.max(3,Math.round((majesty?4:gold?8:11)*s.leafDensity));
+ for(let c=0;c<(majesty?0:crowns);c++){
+  const az=c*2.399963,rr=w*(majesty?.12:.17)*Math.sqrt((c+.5)/crowns),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr];
+  for(let j=0;j<leaves;j++){
+   const shape=majesty||gold?'mmWideRef':(j+c)%4?'mmOuterRef':'mmUprightRef',fy=(LH*.97-rootY)/MM_LEAF_TOP[shape]*(.45+.55*(.5+.5*Math.sin(c*4.73+j*3.91))),reach=Math.min(w*(shape==='mmUprightRef'?.12:.29),fy*(shape==='mmUprightRef'?.35:1.35)),width=Math.min(majesty?.04:gold?.014:.004,h*.055,w*.07,LH*.10);
+   b.add(shape,leafKind,kit.shade(rand,green,.04),...root,width,fy,reach,0,az+j*2.399963,0);
+  }
+ }
+ const headed=s.bloom||s.seedHeads,culms=majesty?crowns:headed?Math.max(3,Math.round((white?24:gold?10:16)*detail)):0;
+ for(let i=0;i<culms;i++){
+  const az=i*2.399963,rr=w*(i===0?(gold?.20:.10):.14*Math.sqrt((i+.5)/culms)),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr],L=Math.min(majesty?.26:white?.04:gold?.0018:.009,h*(majesty?.25:white?.13:gold?.009:.035),w*(majesty?.40:white?.23:gold?.018:.05)),panicleLength=gold?Math.min(.16,h*.30):white?L:majesty?L:Math.min(.20,h*.27),top=headed?h*(.97-.12*i/culms)-panicleLength:LH*.72,drift=Math.min(w*(majesty?.025:.09),h*.10),at=t=>[root[0]+Math.sin(az)*drift*t*t,rootY+(top-rootY)*t,root[2]+Math.cos(az)*drift*t*t],stem=majesty?'#664357':green;
+  let prev=at(0);for(let j=1;j<=16;j++){const next=at(j/16);line(prev,next,R,stem,'culm-mm-'+type);prev=next;}
+  for(let j=0;j<(majesty?7:3);j++){
+   const t=.12+j*(majesty?.115:.20),p=at(t);b.add('mmRoundCulmRef','node-mm',stem,...p,R*1.4,Math.min(majesty?.005:.0015,h*.006),R*1.4);if(p[1]>=LH*.88)continue;
+   const shape=majesty?'mmCornRef':gold?'mmWideRef':'mmOuterRef',reach=majesty?Math.min(w*.29,h*.32,LH*.7):Math.min(w*.24,(LH*.985-p[1])/MM_LEAF_TOP[shape]*1.25),fy=Math.min((LH*.985-p[1])/MM_LEAF_TOP[shape],majesty?reach*.85:Infinity)*(.70+.30*(.5+.5*Math.sin(i*2.9+j*3.1))),width=Math.min(majesty?.045:gold?.013:.004,h*.05,w*.07,LH*.1);b.add(shape,leafKind,green,...p,width,fy,reach,0,az+(j%2)*Math.PI,0);
+  }
+  if(!headed)continue;
+  if(gold){
+   const tiers=7,headColor='#b8be6b',axis=t=>[at(1)[0]+Math.sin(az)*w*.035*t*t,top+panicleLength*t,at(1)[2]+Math.cos(az)*w*.035*t*t];
+   let old=axis(0);for(let j=1;j<=12;j++){const end=axis(j/12);line(old,end,R*.6,green,'panicle-axis-mm');old=end;}
+   for(let j=0;j<tiers;j++)for(let k=0;k<3;k++){
+    const t=.12+j*.12,base=axis(t),yaw=az+j*2.399963+k*TAU/3,reach=Math.min(w*.15,h*.14)*(1-t*.65),end=[base[0]+Math.sin(yaw)*reach,base[1]+panicleLength*.10,base[2]+Math.cos(yaw)*reach];line(base,end,R*.35,green,'panicle-branch-mm');
+    for(let q=0;q<3;q++){
+     const v=.48+q*.24,p=base.map((x,l)=>x+(end[l]-x)*v),len=L*(.75+.25*q/2),tip=[p[0]+Math.sin(yaw+.5)*L*1.8,p[1]-L,p[2]+Math.cos(yaw+.5)*L*1.8];line(p,tip,R*.20,green,'pedicel-mm');b.add('mmSpikeletRef','spikelet-gold-mm-exterior',headColor,...tip,len,len,len,-.10,yaw,0);
+     if(i===0&&j===3&&k===0&&q===1){const radius=Math.max(L*2,panicleLength*.14);b.flower([tip[0]+len*.12,tip[1]+len*.5-radius*.30,tip[2]+len*.095],radius);}
+    }
+   }
+  }else if(majesty){
+   const width=Math.min(.026,h*.025,w*.10),f=flowerFrame(b,at(1),.035+i/culms*.10,az),co=i%3===0?'#543346':i%3===1?'#694055':'#765669';f.add('mmMilletEnvelopeRef','millet-surface-mm-exterior',co,0,0,0,width,L,width);
+   const tiers=38,around=9;
+   for(let j=0;j<tiers;j++)for(let k=0;k<around;k++){
+    const t=(j+.4)/tiers,ph=k*TAU/around+j*.3,rad=width*.5*Math.sin(Math.PI*t)**.22,p=[Math.sin(ph)*rad,L*t,Math.cos(ph)*rad],unit=Math.min(.0016,h*.005,w*.008);f.add('mmSpikeletRef','millet-scale-mm-exterior',co,...p,unit,unit*1.5,unit,.35,ph,0);
+    if((j+k+i)%4===0){const len=Math.min(.003,h*.008,w*.014),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(Math.sin(ph)*.8,.4,Math.cos(ph)*.8).normalize()),'YXZ');f.add('mmSpikeletRef','millet-pale-tip-mm-exterior',i%3?'#c0a8b0':'#d7c9b0',...p,len*.65,len,len*.55,e.x,e.y,e.z);}
+   }
+   const radius=L*.42;f.flower([width*.25,L*.55-radius*.30,width*.35],radius);
+  }else{
+   const arch=white?.15:.42,headOrigin=at(1),axis=t=>[headOrigin[0]+Math.sin(az)*Math.min(w*.12,panicleLength*arch)*t*t,top+panicleLength*(white?t:Math.sin(t*Math.PI*.64)),headOrigin[2]+Math.cos(az)*Math.min(w*.12,panicleLength*arch)*t*t],tiers=white?20:24,co=white?'#d7d3b4':i%3===0?'#79445c':i%3===1?'#9d7182':'#aa8a8f';
+   let old=axis(0);for(let j=1;j<=20;j++){const end=axis(j/20);line(old,end,R*.5,green,'panicle-axis-mm');old=end;}
+   for(let j=0;j<tiers;j++)for(let k=0;k<(white?3:j/tiers>.60?3:2);k++){
+    const t=(j+.3)/tiers,base=axis(t),yaw=az+j*2.399963+k*TAU/(white||j/tiers>.60?3:2),branchLength=Math.min(white?.0018:.009,h*.024,w*.025)*(white?1:Math.sin(Math.PI*t)**.45),end=[base[0]+Math.sin(yaw)*branchLength,base[1]+(white?.1:-.4)*branchLength,base[2]+Math.cos(yaw)*branchLength];line(base,end,R*.35,co,'pedicel-mm');
+    const f=flowerFrame(b,end,white?.28:i%3===0?.30:2.75,yaw),len=white?Math.min(.0028,h*.012,w*.02):L;f.add('mmMelicaSpikeletRef',white?'spikelet-white-mm-exterior':'spikelet-red-mm-exterior',co,0,0,0,len,len,len);
+    if(white)for(let n=0;n<18;n++){
+     const ph=n*TAU/18+j*.27,bl=Math.min(.0048,h*.016,w*.025),dir=new THREE.Vector3(Math.sin(ph)*.75,.75,Math.cos(ph)*.75).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir),'YXZ');f.add('mmSilkyHairRef','silky-tuft-mm-exterior','#e2dfcc',0,len*.3,0,bl,bl,bl,e.x,e.y,e.z);
+    }
+    if(i===0&&j===Math.floor(tiers*.55)&&k===0){const radius=white?panicleLength*.34:panicleLength*.19;f.flower([0,len*.5-radius*.30,len*.020],radius);}
+   }
   }
  }
 }
