@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.522';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.523';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.522';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.523';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,7 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
- if(['alternantheraCultivarReferences','texturedAlternantheraReferences'].includes(info.appearance?.architecture)){drawAlternantheraCultivarReferences(b,{info,s,detail,month,rand},kit);return;}
+ if(['alternantheraCultivarReferences','texturedAlternantheraReferences','smallVariegatedAlternantheraReferences'].includes(info.appearance?.architecture)){drawAlternantheraCultivarReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='aromaticArtemisiaReferences'){drawAromaticArtemisiaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='artemisiaFoliageReferences'){drawArtemisiaFoliageReferences(b,{info,s,detail,month,rand},kit);return;}
  if(['mukdeniaReferences','dwarfAlchemillaReferences'].includes(info.appearance?.architecture)){drawKarasubaDwarfAlchemilla(b,{info,s,detail,month,rand},kit);return;}
@@ -22646,6 +22646,10 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
 
 // Domestic nursery examples and genus morphology; dimensions are plan inputs.
 // Species-linked reference organs. The two genera have different floral plans.
+export function alternantheraSmallVariegatedPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),curl=type==='altPmCurlRef',small=type==='altPmSmallRef',width=sn**(curl?.36:small?.65:.75)*(curl?(.75+.25*t):small?(1+.06*Math.cos(t*Math.PI*6)):1+.03*Math.sin(t*Math.PI*6));
+ return [u*.5*width,t-(curl?.13:0)*u*u*sn,(curl?.45:.035)*u*u*sn+(curl?.08:.015)*Math.sin(t*Math.PI*(curl?6:5)+u)*Math.abs(u)**3*sn+.04*sn*(1-u*u)];
+}
 export function alternantheraTexturedPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),curl=type==='altTxCurledLeafRef',cats=type==='altTxCatsLeafRef',width=sn**(curl?.38:cats?.65:.75)*(curl?(.72+.28*t):cats?(1+.08*Math.cos(t*Math.PI*6)):1);
  return [u*.5*width,t-(curl?.12:0)*u*u*sn,(curl?.40:.035)*u*u*sn+(curl?.13:.025)*Math.sin(t*Math.PI*(curl?3:5)+u)*Math.abs(u)**3*sn+.045*sn*(1-u*u)];
@@ -22658,13 +22662,13 @@ export function alternantheraCultivarPoint(type,t,u){
  return [u*.5*r,y,.045*sn];
 }
 function drawAlternantheraCultivarReferences(b,{info,s,detail,month,rand},kit){
- const a=info.appearance,type=a.shootProfile,textured=a.architecture==='texturedAlternantheraReferences',pink=type==='pinkShade',ovo=type==='ovoFosho',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h)*s.leafScale,R=Math.min(.0018,h*.004,w*.004,LH*.008),season=[4,5].includes(month)?'spring':[10,11].includes(month)?'autumn':'summer',stem=a.stemColor;
+ const a=info.appearance,type=a.shootProfile,textured=['texturedAlternantheraReferences','smallVariegatedAlternantheraReferences'].includes(a.architecture),pink=type==='pinkShade',ovo=type==='ovoFosho',h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h)*s.leafScale,R=Math.min(.0018,h*.004,w*.004,LH*.008),season=[4,5].includes(month)?'spring':[10,11].includes(month)?'autumn':'summer',stem=a.stemColor;
  if(!s.leafDensity)return;
  const line=(frame,from,to,r,kind,color)=>{
   r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.8));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;
   const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('altCvStemRef',kind,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);
  };
- const shoots=Math.max(3,Math.round(14*detail)),nodes=Math.max(2,Math.round(8*s.leafDensity)),records=[];
+ const shoots=Math.max(3,Math.round((type==='mercury'?18:14)*detail)),nodes=Math.max(2,Math.round((type==='mercury'?11:8)*s.leafDensity)),records=[];
  for(let i=0;i<shoots;i++){
   const t=(i+.5)/shoots,az=.55+i*2.399963,root=[Math.sin(az)*w*.06,R*1.25,Math.cos(az)*w*.06],top=[Math.sin(az)*w*.30*Math.sqrt(t),LH*(.97-.12*t)-Math.min(a.leafLength,w*.18,LH*.29)*Math.cos(1.02)*1.05,Math.cos(az)*w*.30*Math.sqrt(t)];
   line(null,root,top,R,'stem-alt-cv-ref-'+type,stem);records.push({root,top,az});
