@@ -1,4 +1,4 @@
-import {inspectionSeasonActive,pennisetumFoliageInspectionView,flowerInspectionDistanceFloor,flowerInspectionView} from '../site/scene.js';
+import {inspectionSeasonActive,pennisetumFoliageInspectionView,planumRosetteInspectionView,flowerInspectionDistanceFloor,flowerInspectionView} from '../site/scene.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Matrix4,Vector3,Line3,Color,PerspectiveCamera,Vector2,Raycaster,SRGBColorSpace} from '../site/vendor/three.module.js';
@@ -12,6 +12,32 @@ import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulip
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
+test('Planum separates cordate basal leaves trifurcating blue heads and a reduced winter rosette',()=>{
+ const id='p-7439d88ac439',info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.deepEqual(info.height,[.8,1.2]);assert.deepEqual(info.spread,[.3,.5]);assert.equal(info.bloomKnown,false);assert.match(info.appearance.sourceConflict,/花柱盤なし/);
+ for(const size of [[1.10,.45,.55],[.20,.25,.14]])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,47300,2,2),height:size[0],spread:size[1],leafHeight:size[2]},before=structuredClone(p),s=stateAt(p,view(month)),label=id+' '+size+' '+month;assert.equal(s.bloom,month>=6&&month<=8,label);assert.equal(s.groundDormant,false,label);assert.equal(s.shootScale,1,label);assert.deepEqual(p,before);if(![1,3,7,11].includes(month))continue;
+  const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+  try{assert.equal(g.userData.architecture,'planumReferences');assert.ok(count('leaf-basal-planum')>0);assert.equal(count('leaf-upper-planum')>0,s.bloom);assert.equal(count('fork-planum')>0,s.bloom);assert.equal(!!g.userData.flowerTargets?.length,s.bloom);assert.ok(!g.children.some(m=>/stylopodium|fruit|seed|pollen|leaf-generic/.test(m.userData.component)));
+   if(s.bloom){const petals=count('petal-planum');assert.ok(petals>0);assert.equal(petals%5,0);assert.equal(count('filament-planum'),petals);assert.equal(count('anther-planum'),petals);assert.equal(count('style-planum'),petals/5*2);assert.equal(count('ovary-exterior-planum'),petals/5);assert.ok(count('sepal-planum')>petals);assert.ok(count('bract-planum')>0);}
+   else for(const k of ['receptacle-planum','petal-planum','bract-planum','stem-planum'])assert.equal(count(k),0);
+   for(const mesh of g.children)for(const arr of [mesh.instanceMatrix.array,mesh.geometry.attributes.position.array,mesh.geometry.attributes.normal.array])assert.ok(arr.every(Number.isFinite),label);
+   const leaf=g.children.find(m=>m.userData.component==='leaf-basal-planum'),shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};leaf.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,/epVeins/);assert.ok(!shader.fragmentShader.includes('${'));
+  }finally{dispose(g);}
+ }
+ for(const size of [[1.1,.45,.55],[.2,.25,.14]]){const p={...makePlant(id,47300,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(1));try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=planumRosetteInspectionView(g,349/388);assert.ok(cv);assert.ok(cv.target[1]<.012+p.leafHeight*.5);assert.ok(cv.position[1]>=.1);assert.equal(pennisetumFoliageInspectionView(g),null);}finally{dispose(g);}}
+ const winter=plantModel({...makePlant(id,47300,2,2),height:1.1,spread:.45,leafHeight:.55},view(1)),summer=plantModel({...makePlant(id,47300,2,2),height:1.1,spread:.45,leafHeight:.55},view(7));try{assert.ok(winter.children.find(m=>m.userData.component==='leaf-basal-planum').count<summer.children.find(m=>m.userData.component==='leaf-basal-planum').count);}finally{dispose(winter);dispose(summer);}
+});
+test('Planum independently tiny physical inputs constrain leaves heads and small flower organs',()=>{
+ for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]]){
+  const p={...makePlant('p-7439d88ac439',47399,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(7)),matrix=new Matrix4(),point=new Vector3();
+  try{let maxLeaf=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite));assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,size+' height '+mesh.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,size+' footprint '+mesh.userData.component);if(mesh.userData.component.startsWith('leaf-'))maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=.005001,size+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+ }
+});
+test('Planum macro inspection targets a visible small flower at adult and small input sizes',()=>{
+ for(const size of [[1.1,.45,.55],[.20,.25,.14]]){
+  const p={...makePlant('p-7439d88ac439',47399,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(7));try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&/^(petal|sepal|anther|filament|style|ovary-exterior|bracteole)-planum$/.test(hit.object.userData.component),'visible flower '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
 test('Adenophora contrasts included versus exserted styles whorled leaves and double corollas without invented organ counts',()=>{
  const ids=['p-311a62d62f0f','p-3e7482d4a39e','p-514a17bbdbda','p-fe465b04de5e'];
  for(const [ci,id] of ids.entries())for(const [si,size] of [[ci===2?1:.3,ci===2?.5:.25,.08],[ci===2?.3:.16,ci===2?.25:.15,.035]].entries()){
