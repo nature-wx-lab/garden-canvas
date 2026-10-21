@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.527';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.528';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.527';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.528';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='autumnJoyReferences'){drawAutumnJoyReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='milleniumAlliumReferences'){drawMilleniumAlliumReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='limelightHydrangeaReferences'){drawLimelightHydrangeaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='magnusEchinaceaReferences'){drawMagnusEchinaceaReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -24215,5 +24216,41 @@ function drawMilleniumAlliumReferences(b,{info,s,detail,month,rand},kit){
   }
   if(!(live||dry||budding))continue;
   for(let k=0;k<3;k++){const angle=yaw+k*2.1,centre=[root[0]+Math.sin(angle)*w*.035,h*(.985-(i*3+k)/(N*3)*.18)-HR*1.05,root[2]+Math.cos(angle)*w*.035];line(null,root,centre,R*(.90-k*.12),dry?'dry-scape-millenium-ref':'scape-millenium-ref',dry?'#9d8b6b':a.stemColor);umbel(centre,angle);}
+ }
+}
+
+export function autumnJoyReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),az=u*Math.PI;
+ if(type==='ajLeafRef'){const r=sn**.58*(.48+.52*t)*(1+.035*Math.cos(t*Math.PI*16));return[Math.cos(az)*.5*r,Math.sin(az)*.040*r+.018*sn*(1-Math.abs(Math.cos(az))),t];}
+ if(type==='ajCarpelRef'){const r=.5*sn**.65*(.65+.35*t);return[Math.sin(az)*r,t,Math.cos(az)*r];}
+ return[u*.5*sn**.70,.07*sn*(1-u*u),t];
+}
+function drawAutumnJoyReferences(b,{info,s,detail,month,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h),live=!!s.bloom,dry=!!s.seedHeads,budding=!!s.flowerBuds,spring=month===3,early=month===4,N=Math.max(3,Math.round(18*detail)),HR=Math.min(a.headRadius,w*.18,h*.14),CL=Math.min(a.flowerPalette.carpelLength,HR*.09,h*.025,w*.018),CW=CL*a.flowerPalette.carpelWidth/a.flowerPalette.carpelLength,PL=Math.min(a.flowerLength,CL*.70),SL=Math.min(a.flowerPalette.sepalLength,CL*.40),R=Math.min(.004,h*.012,w*.012,LH*.012),rootY=R*1.30,stemColor=dry?'#8d785d':a.stemColor;
+ const line=(frame,from,to,r,kind,color)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.8));if(r<=1e-12)return;const P=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(P);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('ajStemRef',kind,color,...P.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const carpelColour=dry?'#8f6a4c':month===10?'#9e4964':'#c3758a',petalColour=dry?'#b0997c':month===10?'#d8c8b5':'#ece4d4';let heads=0;
+ const head=(centre,yaw)=>{
+  const target=live&&heads===0;heads++;const f=flowerFrame(b,centre,0,yaw);
+  for(let branch=0;branch<7;branch++){
+   const az=branch*2.399963,reach=HR*(branch===0?.15:.52+.12*Math.sin(branch)**2),end=[Math.sin(az)*reach,HR*(.01+.035*Math.sin(branch*1.7)),Math.cos(az)*reach],start=[0,-Math.min(HR*.34,h*.08),0];line(f,start,end,Math.min(R*.15,HR*.015),dry?'dry-cyme-branch-autumn-ref':'cyme-branch-autumn-ref',stemColor);
+   for(let j=0;j<45;j++){
+    const r=HR*.39*Math.sqrt((j+.5)/45),aa=j*2.399963,point=[end[0]+Math.sin(aa)*r,end[1]+HR*.15*(1-r/(HR*.39)),end[2]+Math.cos(aa)*r],g=flowerFrame(f,point,0,az*.15),bud=budding||live&&j%11===0;line(f,end,point,Math.min(R*.055,CL*.055),dry?'dry-pedicel-autumn-ref':'pedicel-autumn-ref',stemColor);
+    if(bud&&!dry){g.add('ajBudRef','bud-autumn-ref',month===8?'#c3bcb4':'#afc3a6',0,CL*.30,0,CL*.35,CL*.40,CL*.35);continue;}
+    for(let k=0;k<5;k++){
+     const angle=k*TAU/5;g.add('ajFlatRef',dry?'dry-sepal-autumn-ref':'sepal-autumn-ref',dry?'#9b866b':'#a9bc94',0,-CL*.04,0,SL*.32,SL,SL,-.30,angle+.32,0);g.add('ajFlatRef',dry?'dry-petal-autumn-ref':'petal-autumn-ref',petalColour,0,CL*.05,0,PL*.70,PL,PL,-.95,angle,0);
+     const origin=[Math.sin(angle)*CL*.26,0,Math.cos(angle)*CL*.26],c=flowerFrame(g,origin,.38,angle),colour=kit.shade(rand,carpelColour,.025);c.add('ajCarpelRef',dry?'dry-carpel-autumn-ref':'carpel-autumn-ref',colour,0,0,0,CW,CL,CW);line(c,[0,CL*.97,0],[0,CL*1.04,0],CL*.012,dry?'dry-style-autumn-ref':'style-autumn-ref',colour);c.add('ajBudRef',dry?'dry-stigma-autumn-ref':'stigma-autumn-ref',dry?'#8b6e52':'#c68b99',0,CL*1.04,0,CL*.025,CL*.018,CL*.025);
+     if(target&&branch===0&&j===12&&k===0){const rows=20,cols=12,scale=new THREE.Vector3(CW,CL,CW),vs=[[16/rows,0],[16/rows,2/cols],[17/rows,0]].map(([t,u])=>new THREE.Vector3(...autumnJoyReferencePoint('ajCarpelRef',t,u)).multiply(scale)),point=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');c.flower(point.toArray(),HR*.22,pose.x,pose.y,pose.z);}
+    }
+   }
+  }
+ };
+ for(let i=0;i<N;i++){
+  const yaw=.25+i*2.399963,r=w*.14*Math.sqrt((i+.5)/N),root=[Math.sin(yaw)*r,rootY,Math.cos(yaw)*r],reach=w*.12,tip=[root[0]+Math.sin(yaw)*reach,LH*(spring?.13:early?.62:.94),root[2]+Math.cos(yaw)*reach],nodes=14;let previous=root;
+  for(let j=1;j<=nodes;j++){
+   const t=j/nodes,node=root.map((v,k)=>v+(tip[k]-v)*t);line(null,previous,node,R*(.95-.30*t),dry?'dry-stem-autumn-ref':'stem-autumn-ref',stemColor);
+   if((j-.2)/nodes<s.leafDensity){const L=Math.min(a.leafLength,w*.20,LH*.55,Math.max(0,LH-node[1])/.50)*(spring?.26:early?.70:1)*(.78+.22*Math.sin(j*1.3)**2),W=L*a.leafWidth/a.leafLength,f=flowerFrame(b,node,-.28,yaw+j*2.399963);f.add('ajLeafRef','leaf-autumn-ref',kit.shade(rand,s.leafColor,.025),0,0,0,W,L,L);}
+   previous=node;
+  }
+  if(!(live||dry||budding))continue;const centre=[tip[0],h*(.985-i/N*.12)-CL*1.30-HR*.15,tip[2]],branchRoot=[centre[0],centre[1]-Math.min(HR*.34,h*.08),centre[2]];line(null,tip,branchRoot,R*.55,dry?'dry-head-stalk-autumn-ref':'head-stalk-autumn-ref',stemColor);head(centre,yaw);
  }
 }

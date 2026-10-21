@@ -1,7 +1,7 @@
-import { EXPANDED_CATALOG, BASE_POPULARITY, RETIRED_GARDEN_PLANTS } from './catalog-data.js?v=0.9.527';
-import {attachAppearance} from './appearance.js?v=0.9.527';
+import { EXPANDED_CATALOG, BASE_POPULARITY, RETIRED_GARDEN_PLANTS } from './catalog-data.js?v=0.9.528';
+import {attachAppearance} from './appearance.js?v=0.9.528';
 // Public botanical facts; monthly boundaries and procedural geometry are display conventions.
-export const CATALOG_VERSION='2026-10-22.14';
+export const CATALOG_VERSION='2026-10-22.15';
 const nc='https://plants.ces.ncsu.edu/plants/';
 const mo='https://plantfinder.mobot.org/PlantFinderDetails.aspx?taxonid=';
 const BASE_CATALOG={
@@ -20,6 +20,7 @@ const baseGenres={maple:'庭木',olive:'庭木',rose:'バラ',hydrangea:'庭木'
 for(const [key,p] of Object.entries(BASE_CATALOG))Object.assign(p,{genre:baseGenres[key],aliases:[],colors:[key==='rose'?'pink':'unknown'],visual:'reference',bloomKnown:!!p.bloom.length,sourceChecked:'2026-10-09'});
 BASE_CATALOG.grass.bloomKnown=false;BASE_CATALOG.grass.sourceChecked='2026-10-20';
 BASE_CATALOG.lavender.colors=['purple'];
+BASE_CATALOG.sedum.sourceChecked='2026-10-22';
 BASE_CATALOG.hydrangea.sourceChecked='2026-10-22';
 BASE_CATALOG.echinacea.sourceChecked='2026-10-22';
 BASE_CATALOG.hosta.bloomKnown=false;BASE_CATALOG.hosta.sourceChecked='2026-10-22';BASE_CATALOG.hosta.colors=['white'];
