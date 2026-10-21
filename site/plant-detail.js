@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.473';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.474';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.473';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.474';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='hordeumReference'){drawHordeumReference(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='planumReferences'){drawPlanumReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='whitetopReferences'){drawWhitetopReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='goldenBambooReferences'){drawGoldenBambooReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -22607,6 +22608,45 @@ function drawWhitetopReferences(b,{info,s,detail,rand},kit){
     for(let n=0;n<3;n++){const an=n*TAU/3,x=Math.sin(an)*unit*.17,z=Math.cos(an)*unit*.17;ff.add('wbFilamentRef','filament-whitetop-reference','#e7e4ce',x,0,z,unit,unit,unit*.5);ff.add('wbAntherRef','anther-whitetop-reference','#d8cf9b',x,unit,z,unit*.55,unit*.35,unit*.55);}
     if(i===0&&j===0&&k===4)ff.flower([0,unit*1.08,unit*.17],unit*.55);
    }
+  }
+ }
+}
+
+export function hordeumReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='hordeumAwnRef'){const ph=(u+1)*Math.PI,r=(1-t)**.75;return[Math.sin(ph)*r*.00070,t,.035*Math.sin(Math.PI*t)+.012*t*t+Math.cos(ph)*r*.00070];}
+ if(type==='hordeumLemmaRef'||type==='hordeumPaleaRef'){const ph=(u+1)*Math.PI,r=sn**.55;return[Math.sin(ph)*r*.35,t,Math.cos(ph)*r*.12+.05*sn];}
+ const outer=type==='hordeumOuterLeafRef';return[u*.5*sn**.30,outer?Math.sin(Math.PI*.95*t)-.12*t:Math.sin(Math.PI*.77*t)-.08*t,t];
+}
+function drawHordeumReference(b,{info,s,detail,rand,month},kit){
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,R=Math.min(.0009,h*.003,w*.004),rootY=Math.min(.00015,h*.001,LH*.01),front=Math.atan2(.8,1),n=Math.max(6,Math.round(36*detail)),winter=[12,1,2].includes(month),green=s.leafColor;
+ const line=(f,a,z,r,kind,color)=>{const q=new THREE.Vector3(...a),end=new THREE.Vector3(...z),d=end.clone().sub(q),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');f.add('hordeumCulmRef',kind,color,...q.add(end).multiplyScalar(.5).toArray(),r,d.length(),r,e.x,e.y,e.z);};
+ for(let i=0;i<n;i++){
+  const az=front+i*2.399963,rr=w*(i===0?.21:.18*Math.sqrt((i+.5)/n)),root=[Math.sin(az)*rr,Math.max(rootY,R*1.1),Math.cos(az)*rr],top=h*(.69+.13*(.5+.5*Math.cos(i*3.7))),lean=w*.08,stemAt=t=>[root[0]+Math.sin(az)*lean*t*t,root[1]+(top-root[1])*t,root[2]+Math.cos(az)*lean*t*t],head=stemAt(1),leaves=Math.max(2,Math.round(6*s.leafDensity));
+  for(let j=0;j<leaves;j++){
+   const upper=j>3,y=root[1]+LH*(upper?.52:.035*(j%3)),L=Math.min(upper?.09:.12,h*.32,LH*(upper?.42:.88),Math.max(0,LH-y)),W=Math.min(.0025,w*.014,h*.02,LH*.05),reach=Math.min(L,w*.18),at=[root[0],y,root[2]],yaw=az+j*2.399963;
+   b.add(upper?'hordeumUpperLeafRef':'hordeumOuterLeafRef',upper?'leaf-hordeum-upper':'leaf-hordeum-basal',kit.shade(rand,green,.025),...at,W,L,reach,0,yaw,0);
+   const sheathL=Math.min(.010,h*.04,LH*.07);b.add('hordeumCulmRef','sheath-hordeum',green,at[0],Math.max(root[1]+sheathL*.50,y-sheathL*.35),at[2],R*1.12,sheathL,R*1.12);
+  }
+  if(winter)for(let j=0;j<2;j++){const L=Math.min(.08,h*.25,LH*.68,Math.max(0,LH-root[1])),W=Math.min(.0017,w*.009,h*.015,LH*.035);b.add('hordeumOuterLeafRef','leaf-hordeum-old','#9b8d6b',...root,W,L,Math.min(L,w*.15),0,az+j*Math.PI,0);}
+  if(!s.bloom)continue;
+  for(let k=0;k<6;k++)line(b,stemAt(k/6),stemAt((k+1)/6),R,'culm-hordeum','#789361');
+  for(let j=1;j<=3;j++){const t=j*.23,q=stemAt(t);b.add('hordeumCulmRef','node-hordeum','#99aa74',...q,R*1.18,Math.min(.0015,h*.006),R*1.18);}
+  const f=flowerFrame(b,head,.08*Math.sin(i),az),L=Math.min(.050,h*.11,w*.10),axis=t=>[0,Math.sin(Math.PI*.78*t)*L*.65,t*L*.82],A=Math.min(.053,h*.13,w*.13),body=Math.min(.0055,h*.02,w*.022),shade=i%3===0?'lime':i%3===1?'pink':'cream',col=shade==='pink'?'#b7b998':shade==='cream'?'#d5d7aa':'#b5ce84';
+  for(let j=0;j<42;j++){
+   const t=(j+.5)/42,p=axis(t),pt=axis(Math.min(1,t+.001)),tilt=Math.atan2(pt[2]-p[2],pt[1]-p[1]),row=j%2?Math.PI:0,node=flowerFrame(f,p,tilt,row);
+   line(f,j>0?axis((j-.5)/42):axis(0),p,R*.42,'rachis-hordeum','#a1b675');
+   const central=flowerFrame(node,[0,0,Math.min(.0007,h*.003,w*.003)],.10,0);
+   central.add('hordeumLemmaRef','lemma-hordeum-exterior',col,0,0,0,body*.32,body,body*.50);
+   central.add('hordeumPaleaRef','palea-hordeum-exterior','#c4cea1',0,0,body*.10,body*.28,body*.95,body*.45);
+   for(let k=0;k<2;k++){const yaw=k?-.35:.35;central.add('hordeumAwnRef','glume-hordeum-'+shade,col,(k?1:-1)*body*.13,body*.04,0,A*(.82+.08*Math.sin(i+j+k)),A*(.82+.08*Math.sin(i+j+k)),A*(.82+.08*Math.sin(i+j+k)),.35,yaw,k?.08:-.08);}
+   central.add('hordeumAwnRef','lemma-awn-hordeum-'+shade,col,0,body*.97,0,A*(.84+.08*Math.sin(j*2.4)),A*(.84+.08*Math.sin(j*2.4)),A*(.84+.08*Math.sin(j*2.4)),.12,0,0);
+   for(let k=0;k<2;k++){
+    const side=k?1:-1,ped=Math.min(.0011,h*.005,w*.006),q=[side*ped,ped*.65,0];line(node,[side*body*.10,0,0],q,R*.22,'pedicel-hordeum','#a8b98c');
+    const lateral=flowerFrame(node,q,.12,side*.55);lateral.add('hordeumLemmaRef','lateral-reduced-hordeum-exterior',col,0,0,0,body*.15,body*.48,body*.20);
+    for(let m=0;m<2;m++)lateral.add('hordeumAwnRef','lateral-glume-hordeum-'+shade,col,(m?1:-1)*body*.06,0,0,A*(.80+.09*Math.sin(i*2+j+m+k)),A*(.80+.09*Math.sin(i*2+j+m+k)),A*(.80+.09*Math.sin(i*2+j+m+k)),.42+.10*m,side*(.30+m*.22),0);
+   }
+   if(i===0&&j===20)central.flower([0,body*.32-A*.24,body*.15],A*.80);
   }
  }
 }
