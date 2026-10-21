@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.469';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.470';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.469';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.470';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='acorusReferences'){drawAcorusReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='milletMelicaReferences'){drawMilletMelicaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='brizaReferences'){drawBrizaReferences(b,{info,s,detail,month,rand},kit);return;}
  if(info.appearance?.architecture==='pennisetumReferences'){drawPennisetumReferences(b,{info,s,detail,month,rand},kit);return;}
@@ -19471,6 +19472,54 @@ function drawFans(b,{info,s,detail,rand},kit){
    const an=k*2.399,yy=top-h*.23+k*h*.028,end=[x+Math.sin(an)*w*.12,yy+h*.03,z+Math.cos(an)*w*.12];
    b.branch([x,yy,z],end,.0015,green,'petiole');
    for(let f=0;f<3;f++)detailedFlower(b,{x:end[0],y:end[1]+f*.016,z:end[2],r:.014,color:info.flower,shape:'tube',tilt:.85,yaw:an},{...kit,rand});
+  }
+ }
+}
+
+export function acorusReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='acorusTepalRef')return[u*.30*sn**.55,t*.95,.34*Math.sin(Math.PI*.78*t)+.06*(1-u*u)*sn];
+ if(type==='acorusFilamentRef')return[u*.055,t,.045*sn];
+ if(type==='acorusAntherRef'){const th=t*Math.PI,ph=(u+1)*Math.PI;return[.15*Math.sin(th)*Math.sin(ph),.15+.15*Math.cos(th),.10*Math.sin(th)*Math.cos(ph)];}
+ if(type==='acorusPistilRef'){const ph=(u+1)*Math.PI,r=t>.80?.44*(1-t)/.20:.30+.14*t/.80;return[Math.sin(ph)*r,t,Math.cos(ph)*r];}
+ if(type==='acorusSpadixRef'){const ph=(u+1)*Math.PI,r=.5*sn**.12;return[Math.sin(ph)*r,t,Math.cos(ph)*r];}
+ const upright=type==='acorusUprightRef',y=upright?t:type==='acorusArchingRef'?Math.sin(Math.PI*.72*t)-.10*t:Math.sin(Math.PI*.61*t)-.03*t;
+ return[u*.5*sn**.28*(1-.40*t),y+.0005*u*u*sn,t];
+}
+const ACORUS_LEAF_TOP=Object.fromEntries(['acorusOuterRef','acorusUprightRef','acorusArchingRef'].map(type=>{let top=0;for(let i=0;i<=72;i++)for(let j=0;j<=8;j++)top=Math.max(top,acorusReferencePoint(type,i/72,j/4-1)[1]);return[type,top];}));
+function drawAcorusReferences(b,{info,s,detail,month,rand},kit){
+ const type=info.appearance.shootProfile,gold=type==='acorusOgon',hime=type==='acorusHime',masa=type==='acorusMasamune',winter=[12,1,2].includes(month),h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.97)*s.leafScale,rootY=Math.min(.0003,h*.002,LH*.02),R=Math.min(.001,h*.006,w*.006,LH*.04),green=s.leafColor;
+ if(!s.leafDensity)return;
+ const fans=Math.max(4,Math.round((hime?12:gold?8:11)*detail)),half=Math.max(3,Math.round(5*s.leafDensity));
+ for(let c=0;c<fans;c++){
+  const az=c*2.399963,rr=w*.15*Math.sqrt((c+.5)/fans),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr];
+  for(let j=-half;j<=half;j++){
+   const side=j<0?Math.PI:0,edge=Math.abs(j)/half,shape=edge>.86&&(!masa||winter)?'acorusArchingRef':edge>.60?'acorusOuterRef':'acorusUprightRef',fy=(LH*.985-rootY)/ACORUS_LEAF_TOP[shape]*(.66+.34*(.5+.5*Math.sin(c*3.71+j*2.93))),reach=Math.min(w*(.025+edge*.25),fy*(.15+edge*.85)),width=Math.min(hime?.002:gold?.0045:.0035,h*.055,w*.035,LH*.075),kind='leaf-acorus-'+type+(gold&&Math.abs(j+c)%4===0?'-broad':'');
+   b.add(shape,kind,kit.shade(rand,green,.035),root[0]+Math.sin(az+Math.PI/2)*j/half*w*.012,rootY,root[2]+Math.cos(az+Math.PI/2)*j/half*w*.012,width,fy,reach,0,az+side,0);
+  }
+ }
+ if(!s.bloom)return;
+ const scapes=Math.max(1,Math.round((hime?2:3)*detail)),L=Math.min(hime?.020:.055,h*.24,w*.20),D=Math.min(hime?.003:.0045,h*.025,w*.025),unit=Math.min(.0015,h*.030,w*.030,L*.065),rows=Math.max(7,Math.round(L/(unit*1.20))),around=Math.max(5,Math.round(Math.PI*D/(unit*1.20)));
+ for(let i=0;i<scapes;i++){
+  const az=i*2.399963+(i===0?Math.atan2(.8,1):0),rr=w*(i===0?.34:.12),root=[Math.sin(az)*rr,Math.max(rootY,R*1.1),Math.cos(az)*rr],at=[root[0]+Math.sin(az)*w*.035,h*(.36-.05*i/scapes),root[2]+Math.cos(az)*w*.035],v=new THREE.Vector3(...at).sub(new THREE.Vector3(...root)),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ'),mid=new THREE.Vector3(...root).add(new THREE.Vector3(...at)).multiplyScalar(.5);
+  b.add('acorusCompressedScapeRef','scape-acorus','#739658',...mid.toArray(),R,v.length(),R*.42,e.x,e.y,e.z);
+  // The persistent leaflike spathe continues above the lateral spadix.
+  b.add('acorusUprightRef','spathe-acorus','#71904e',...at,Math.min(.003,h*.04,w*.025),h*.54/ACORUS_LEAF_TOP.acorusUprightRef,w*.035,0,az+Math.PI,0);
+  const f=flowerFrame(b,at,.12+i*.08,az),gynH=unit*1.45;f.add('acorusSpadixRef','axis-acorus','#a4b16b',0,0,0,D,L,D);
+  for(let j=0;j<rows;j++)for(let k=0;k<around;k++){
+   const t=(j+.45)/rows,ph=k*TAU/around+j*.38,r=D*.5*Math.sin(Math.PI*t)**.12,ff=flowerFrame(f,[Math.sin(ph)*r,L*t,Math.cos(ph)*r],Math.PI/2,ph),open=t<.72;
+   if(!open){ff.add('acorusPistilRef','bud-acorus','#9cb36a',0,0,0,unit*.88,unit*.90,unit*.88);continue;}
+   // Six tepals and six stamens follow the family description; sizes are
+   // species references, not measurements of the three domestic retail forms.
+   for(let n=0;n<6;n++){
+    const an=n*TAU/6,inner=n%2,rad=unit*(inner?.22:.28),sin=Math.sin(an),cos=Math.cos(an),col=kit.shade(rand,j<rows*.3?'#d0cd91':'#bac77e',.025);
+    ff.add('acorusTepalRef','tepal-acorus',col,sin*rad,inner*unit*.025,cos*rad,unit*(inner?.92:1),unit*(inner?1.10:1.15),unit*(inner?.92:1),.04,an,0);
+    ff.add('acorusFilamentRef','filament-acorus','#d2ce95',sin*unit*.50,unit*.05,cos*unit*.50,unit,unit,unit,0,an,0);
+    ff.add('acorusAntherRef','anther-acorus','#d7c97e',sin*unit*.50,unit*1.02,cos*unit*.50,unit,unit,unit,0,an,0);
+   }
+   ff.add('acorusPistilRef','gynoecium-acorus','#b4bc78',0,0,0,unit,gynH,unit);ff.add(kit.bud,'stigma-acorus','#d2ce9a',0,gynH,0,unit*.07,unit*.045,unit*.07);
+   const inspectK=((Math.round((Math.atan2(.8,1)-az-j*.38)/TAU*around)%around)+around)%around;
+   if(i===0&&j===Math.floor(rows*.44)&&k===inspectK){const radius=unit*2.35;ff.flower([0,gynH-radius*.30,0],radius);}
   }
  }
 }

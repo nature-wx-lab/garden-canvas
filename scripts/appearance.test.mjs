@@ -7012,13 +7012,14 @@ test('20 spurges and gauras use distinct leaf and reproductive organs through al
 
 test('twelve grasses and sedges preserve leaf apices, heads and winter persistence',()=>{
  const arches=['blueFescue','snowTussock','goldMillet','redMelica','crystalSedge','redHookSedge','goldMatRush','goldDwarfBamboo','sweetFlagFans','whitetopSedge'];
- const entries=Object.entries(CATALOG).filter(([id,p])=>arches.includes(p.appearance?.architecture)||['p-96529c6d37e1','p-925157abb909'].includes(id));assert.equal(entries.length,12);
+ const entries=Object.entries(CATALOG).filter(([id,p])=>arches.includes(p.appearance?.architecture)||['p-96529c6d37e1','p-925157abb909','p-2ebde73aa083','p-b1eb3be4e657','p-7a24f0539c5f'].includes(id));assert.equal(entries.length,12);
  for(const [id,info] of entries)for(let month=1;month<=12;month++){
   const g=plantModel(makePlant(id,3801,2,2),view(month));
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
   if(month===1){if((['redMelica','whitetopSedge'].includes(info.appearance.architecture)||info.appearance.shootProfile==='melicaRed'))assert.equal(g.children.length,0,id);else if(info.appearance.architecture!=='goldDwarfBamboo')assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf')),id);}
   if(month===6&&info.appearance.architecture==='whitetopSedge'){assert.ok(g.children.some(m=>m.userData.component==='bract-tip-517d46'));assert.ok(!g.children.some(m=>m.userData.component==='petal'));assert.ok(g.children.some(m=>m.userData.component==='culm'&&m.geometry.parameters.radialSegments===3));}
   if(month===6&&info.appearance.architecture==='sweetFlagFans')assert.ok(g.children.some(m=>m.userData.component==='spadixFlower'));
+  if(month===6&&info.appearance.architecture==='acorusReferences'){assert.ok(g.children.some(m=>m.userData.component==='tepal-acorus'));assert.ok(g.children.some(m=>m.userData.component==='scape-acorus'&&m.geometry.parameters.radialSegments===3));}
   if(info.appearance.architecture==='crystalSedge')assert.ok(g.children.some(m=>m.userData.component==='membranousEdge'));
   dispose(g);
  }
@@ -8432,5 +8433,31 @@ test('Millet and Melica inspection centres visible reference exteriors at adult 
  for(const [ci,id]of ['p-82a2066444f7','p-96529c6d37e1','p-925157abb909','p-5c2181addfb1'].entries())for(const size of [[ci===0?1.3:.6,.45,.32],[.18,.25,.08]]){
   const p={...makePlant(id,46999,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(ci===0?9:ci===1?6:7));
   try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&hit.object.userData.component.endsWith('-mm-exterior'),id+' visible exterior '+hit?.object.userData.component);}finally{dispose(g);}
+ }
+});
+
+test('Acorus references keep domestic identities fans and six-part species flowers separate from winter foliage',()=>{
+ const ids=['p-2ebde73aa083','p-b1eb3be4e657','p-7a24f0539c5f'],heights=[[.2,.4],[.05,.1],[.1,.2]];
+ for(const [ci,id]of ids.entries())for(const [si,size]of [[.30,.35,.20],[.08,.15,.04]].entries())for(let month=1;month<=12;month++){
+  const p={...makePlant(id,47000+ci*10+si,2,2),height:size[0],spread:size[1],leafHeight:size[2]},before=structuredClone(p),s=stateAt(p,view(month)),g=plantModel(p,view(month)),label=id+' '+si+' '+month,bloom=[5,6,...(ci===1?[7]:[])].includes(month),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
+  try{
+   assert.equal(CATALOG[id].appearance.status,'partial');assert.deepEqual(CATALOG[id].height,heights[ci]);assert.equal(CATALOG[id].spread,null);assert.equal(CATALOG[id].bloomKnown,ci!==0);assert.equal(CATALOG[id].appearance.arrangement,'distichous');assert.equal(g.userData.architecture,'acorusReferences');assert.equal(s.groundDormant,false,label);assert.equal(s.bloom,bloom,label);assert.equal(s.seedHeads,false,label);assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-acorus-')),label);assert.equal(!!g.userData.flowerTargets?.length,bloom,label);
+   if(bloom){const flowers=count('gynoecium-acorus');assert.ok(flowers>0,label);assert.equal(count('tepal-acorus'),flowers*6,label);assert.equal(count('filament-acorus'),flowers*6,label);assert.equal(count('anther-acorus'),flowers*6,label);assert.equal(count('stigma-acorus'),flowers,label);assert.ok(count('spathe-acorus')>0,label);assert.ok(g.children.some(m=>m.userData.component==='scape-acorus'&&m.geometry.parameters.radialSegments===3),label);}else for(const part of ['tepal-acorus','filament-acorus','anther-acorus','gynoecium-acorus','spathe-acorus'])assert.equal(count(part),0,label);
+   for(const mesh of g.children)for(const arr of [mesh.instanceMatrix.array,mesh.geometry.attributes.position.array,mesh.geometry.attributes.normal.array])assert.ok(arr.every(Number.isFinite),label);assert.ok(!g.children.some(m=>/pollen.*acorus|fruit.*acorus|seed.*acorus/.test(m.userData.component)),label);assert.deepEqual(p,before);
+   if(month===6&&ci!==1){const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-acorus-')),shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};leaf.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,ci===0?/acGreen/:/acWhite/);assert.equal(CATALOG[id].appearance.leafPattern,'stripes');}
+  }finally{dispose(g);}
+ }
+ assert.match(CATALOG[ids[0]].appearance.sourceConflict,/国内幅は未確認/);assert.match(CATALOG[ids[1]].appearance.sourceConflict,/5〜7月/);assert.match(CATALOG[ids[2]].appearance.sourceConflict,/ポット込み/);
+});
+test('Acorus tiny independent foliage and reproductive organs remain within the input height and footprint',()=>{
+ for(const id of ['p-2ebde73aa083','p-b1eb3be4e657','p-7a24f0539c5f'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]]){
+  const p={...makePlant(id,47099,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),matrix=new Matrix4(),point=new Vector3(),label=id+' '+size;
+  try{let maxLeaf=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite),label);assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,label+' height '+mesh.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,label+' footprint '+mesh.userData.component);if(mesh.userData.component.startsWith('leaf-acorus-'))maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=.005001,label+' foliage ceiling '+maxLeaf);}finally{dispose(g);}
+ }
+});
+test('Acorus inspection targets a visible lateral flower rather than an occluding blade or bare axis',()=>{
+ for(const id of ['p-2ebde73aa083','p-b1eb3be4e657','p-7a24f0539c5f'])for(const size of [[.30,.35,.20],[.08,.15,.04]]){
+  const p={...makePlant(id,47099,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6));
+  try{assert.equal(flowerInspectionDistanceFloor(g),.045);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);const cv=flowerInspectionView(g,349/388,40);assert.ok(cv);const cam=new PerspectiveCamera(40,349/388,.01,650);cam.position.fromArray(cv.position);cam.lookAt(...cv.target);cam.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),cam);const hit=ray.intersectObject(g,true)[0];assert.ok(hit&&['tepal-acorus','anther-acorus','filament-acorus','gynoecium-acorus','stigma-acorus'].includes(hit.object.userData.component),id+' visible flower '+hit?.object.userData.component);}finally{dispose(g);}
  }
 });
