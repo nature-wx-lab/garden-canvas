@@ -79,7 +79,7 @@ def audit():
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--build',action='store_true');parser.add_argument('--publish-request');parser.add_argument('--preview-verified',action='store_true');parser.add_argument('--target');args=parser.parse_args()
     if args.publish_request is not None:
-        if not args.preview_verified or args.target!='nature-wx-lab/garden-canvas' or not any(v in args.publish_request for v in ['公開して','公開まで','未配信分の公開・QAから進めて']):fail('publication authority, target or preview missing')
+        if not args.preview_verified or args.target!='nature-wx-lab/garden-canvas' or not any(v in args.publish_request for v in ['公開して','公開まで','未配信分の公開・QAから進めて','未配信分の公開・QAを優先して進めて']):fail('publication authority, target or preview missing')
     audit()
     if args.build:
         out=ROOT/'_site';out.mkdir(exist_ok=True)
