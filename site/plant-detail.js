@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.542';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.543';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.542';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.543';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='tulbaghiaReferences'){drawTulbaghiaReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='delavayiReferences'){drawDelavayiReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='chrysanthemumReferences'){drawChrysanthemumReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='annLeysReferences'){drawAnnLeysReferences(b,{info,s,month,rand},kit);return;}
@@ -24665,6 +24666,44 @@ function drawDelavayiReferences(b,{info,s,month,rand},kit){
     const frac=.42+k*.29,base=start.map((v,n)=>v+(end[n]-v)*frac),pedicel=Math.min(.018,w*.030,h*.035),aa=az+(k%2?-.8:.8),hook=[base[0]+Math.sin(aa)*pedicel*.65,base[1]+pedicel*.55,base[2]+Math.cos(aa)*pedicel*.65],head=[hook[0]+Math.sin(aa)*pedicel*.20,hook[1]-pedicel*.32,hook[2]+Math.cos(aa)*pedicel*.20];
     line(null,base,hook,SR*.13,'pedicel');line(null,hook,head,SR*.11,'pedicel');flower(head,aa);
    }
+  }
+ }
+}
+
+export function tulbaghiaReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='gcTulbaghiaBladeRef')return[u*.5*Math.min(1,t*10)*(1-t)**.30,t-.24*t**5,.32*t*t+.001*u*u*sn];
+ if(type==='gcTulbaghiaTepalRef')return[u*.5*sn**.78,.055*sn*(1-u*u)+.06*t*t,t];
+ if(type==='gcTulbaghiaCoronaRef')return[u*.5*sn**.35,t-.08*(1-u*u)*t**12,.32*t*t];
+ const az=u*Math.PI,rad=1+.10*Math.sin(Math.PI*t);return[Math.sin(az)*rad,t,Math.cos(az)*rad];
+}
+function drawTulbaghiaReferences(b,{info,s,month,rand},kit){
+ const a=info.appearance,cfg=a.flowerPalette,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),live=!!s.bloom,budding=!!s.flowerBuds,SR=Math.min(.0018,h*.009,w*.008,LH*.02),TL=Math.min(cfg.tubeLength,h*.065,w*.035),TR=Math.min(cfg.tubeRadius,TL*.14),PL=Math.min(cfg.tepalLength,h*.045,w*.025),PW=PL*cfg.tepalWidth/cfg.tepalLength,CL=Math.min(cfg.coronaLength,TL*.32),CW=Math.min(cfg.coronaWidth,CL*.55),stem=a.stemColor;
+ const line=(frame,from,to,r,kind,color=stem)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.75));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('gcTulbaghiaStemRef',kind+'-tulbaghia-ref',color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ for(let i=0;i<cfg.fans;i++){
+  const az=i*2.399963,q=Math.sqrt((i+.5)/cfg.fans),base=[Math.sin(az)*w*.11*q,Math.min(LH*.025,h*.012),Math.cos(az)*w*.11*q],leaves=Math.max(1,Math.round(cfg.leavesPerFan*s.leafDensity));
+  for(let j=0;j<leaves;j++){
+   const side=j%2?-1:1,pitch=.08+.52*(j+.5)/leaves,yaw=az+side*.65+(j*.17),L=Math.min(a.leafLength*(.76+.24*Math.sin(j*1.7+i)),LH*.90,w*.38),W=Math.min(a.leafWidth,w*.025,L*.045),frame=flowerFrame(b,base,pitch,yaw);
+   frame.add('gcTulbaghiaBladeRef','leaf-tulbaghia-silverlace-ref',kit.shade(rand,s.leafColor,.02),0,0,0,W,L,L);
+  }
+ }
+ if(!live&&!budding)return;
+ for(let i=0;i<cfg.scapes;i++){
+  const az=i*2.399963,q=Math.sqrt((i+.5)/cfg.scapes),root=[Math.sin(az)*w*.06*q,SR*1.3,Math.cos(az)*w*.06*q],hub=[Math.sin(az)*w*.16*q,h*(.85-.045*q)-TL-PL,Math.cos(az)*w*.16*q];
+  line(null,root,hub,SR,'scape');
+  for(let side=0;side<2;side++){const frame=flowerFrame(b,hub,1.0,az+side*Math.PI),L=Math.min(.016,h*.07,w*.06);frame.add('gcTulbaghiaTepalRef','spathe-tulbaghia-ref','#b7b49c',0,0,0,L*.25,L,L);}
+  for(let j=0;j<cfg.flowersPerUmbel;j++){
+   const yaw=az+j*2.399963,r=Math.min(.026,w*.09,h*.12)*Math.sqrt((j+.5)/cfg.flowersPerUmbel),top=[hub[0]+Math.sin(yaw)*r,hub[1]+Math.min(.028,h*.11)*(1-.45*r/Math.max(.000001,w*.09)),hub[2]+Math.cos(yaw)*r],frame=flowerFrame(b,top,.20+.75*(j+.5)/cfg.flowersPerUmbel,yaw),colour=kit.shade(rand,s.flowerColor,.02),closed=budding||j%5===4;
+   line(null,hub,top,SR*.22,'pedicel');
+   if(closed){frame.add('gcTulbaghiaRoundRef','flower-bud-tulbaghia-ref',colour,0,TL*.40,0,TR*1.3,TL*.45,TR*1.3);continue;}
+   frame.add('gcTulbaghiaTubeRef','perianth-tube-tulbaghia-ref',colour,0,0,0,TR,TL,TR);
+   for(let k=0;k<a.tepalCount;k++){
+    const aa=k*TAU/a.tepalCount,len=PL*(k%2?.94:1),g=flowerFrame(frame,[Math.sin(aa)*TR*.85,TL,Math.cos(aa)*TR*.85],-.06,aa);
+    g.add('gcTulbaghiaTepalRef','tepal-tulbaghia-ref',colour,0,0,0,PW,len,len);
+    if(i===0&&j===0&&k===0){const rows=24,cols=16,vs=[[17/rows,0],[18/rows,0],[17/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...tulbaghiaReferencePoint('gcTulbaghiaTepalRef',t,u)).multiply(new THREE.Vector3(PW,len,len))),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');g.flower(centre.toArray(),PL,pose.x,pose.y,pose.z);}
+   }
+   for(let k=0;k<cfg.coronaLobes;k++){const aa=k*TAU/cfg.coronaLobes+Math.PI/3,g=flowerFrame(frame,[Math.sin(aa)*TR*.78,TL,Math.cos(aa)*TR*.78],.10,aa);g.add('gcTulbaghiaCoronaRef','corona-lobe-tulbaghia-ref',cfg.corona,0,0,0,CW,CL,CL);}
+   // Included reproductive organs remain unresolved in the adopted cultivar photographs.
   }
  }
 }
