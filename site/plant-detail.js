@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.548';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.549';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.548';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.549';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='woodlandPhloxReferences'){drawWoodlandPhloxReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='mallowReferences'){drawMallowReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='retailPeachBellReferences'){drawRetailPeachBellReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='fineAmsoniaReferences'){drawFineAmsoniaReferences(b,{info,s,month,rand},kit);return;}
@@ -24921,4 +24922,44 @@ function drawMallowReferences(b,{info,s,month,rand},kit){
  const scale=winter?.12:month===3?.35:month===4?.65:1;
  const shoot=(root,tip,yaw)=>{let prev=root;for(let k=0;k<cfg.leafNodes;k++){const t=(k+1)/cfg.leafNodes,node=root.map((v,j)=>v+(tip[j]-v)*t);line(null,prev,node,SR*(1-.38*t),'main-stem');if(k/cfg.leafNodes<s.leafDensity)leaf(node,yaw+k*2.399963,1-.35*t);if((live||budding)&&k>=cfg.leafNodes-cfg.floweringNodes){for(let j=0;j<cfg.flowersPerAxil;j++){const az=yaw+k*2.399963+j*.62,PD=Math.min(.015,w*.035,h*.04),at=[node[0]+Math.sin(az)*PD,Math.max(node[1]+PD*(.20+j*.17),PL*.80+CL*.12+CR),node[2]+Math.cos(az)*PD];line(null,node,at,SR*.20,'pedicel');flower(at,az);}}prev=node;}};
  for(let i=0;i<cfg.mainStems;i++){const yaw=i*2.399963,q=Math.sqrt((i+.5)/cfg.mainStems),root=[Math.sin(yaw)*w*.06*q,SR*1.3,Math.cos(yaw)*w*.06*q],tip=[Math.sin(yaw)*w*.20*q,Math.min(h*.86,LH*.86)*scale,Math.cos(yaw)*w*.20*q];shoot(root,tip,yaw);if(!winter){const fork=root.map((v,j)=>v+(tip[j]-v)*.40),az=yaw+(i%2?.9:-.9),side=[tip[0]+Math.sin(az)*w*.13,tip[1]*.91,tip[2]+Math.cos(az)*w*.13];shoot(fork,side,az);}}
+}
+
+export function woodlandPhloxReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type.includes('Leaf')){const blue=type.includes('Blue'),width=.5*sn**(blue?.55:.78)*(blue?1:.82+.18*(1-t));return[u*width,.025*sn*u*u+.08*t*t,t];}
+ if(type.includes('Lobe')){const white=type.includes('White'),mont=type.includes('Montrose'),notch=(mont?.025:white?.07:.055)*Math.exp(-((u/.28)**2))*t**10,width=.5*Math.sin(Math.PI*t*.84)**.48*(.35+.65*t);return[u*width,.035*sn*(1-u*u)+.025*t*t,t-notch];}
+ if(type==='gcWoodlandPhloxSepalRef')return[u*.5*sn**1.1,.05*t*t,t];
+ const az=u*Math.PI,rad=.82+.18*Math.sin(Math.PI*t*.7);return[Math.sin(az)*rad,t,Math.cos(az)*rad];
+}
+function drawWoodlandPhloxReferences(b,{info,s,month,rand},kit){
+ const a=info.appearance,cfg=a.flowerPalette,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),profile=a.shootProfile,inspectionFlower={whitePerfume:1,bluePerfume:9,montrose:0}[profile],mont=profile==='montrose',blue=profile==='bluePerfume',winter=[1,2,12].includes(month),live=!!s.bloom,budding=!!s.flowerBuds,SR=Math.min(.0011,h*.007,w*.006,LH*.015),TL=Math.min(cfg.tubeLength,h*.09,w*.04),TR=Math.min(.0011,TL*.10),PL=Math.min(cfg.lobeLength,h*.07,w*.03),PW=PL*cfg.lobeWidth/cfg.lobeLength,CL=Math.min(.005,TL*.50),tag='-woodland-phlox-ref',stem=a.stemColor,leafType=mont?'gcWoodlandPhloxLeafMontroseRef':blue?'gcWoodlandPhloxLeafBlueRef':'gcWoodlandPhloxLeafWhiteRef',lobeType=mont?'gcWoodlandPhloxLobeMontroseRef':blue?'gcWoodlandPhloxLobeBlueRef':'gcWoodlandPhloxLobeWhiteRef';
+ const line=(frame,from,to,r,kind,color=stem)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.7));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('gcWoodlandPhloxStemRef',kind+tag,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const leaf=(node,yaw,ratio,cream)=>{
+  const L=Math.min(a.leafLength*ratio,w*.13,LH*.65,Math.max(0,LH-node[1])*.80),W=L*a.leafWidth/a.leafLength;if(L<1e-10)return;const f=flowerFrame(b,node,-.15,yaw),kind='leaf'+tag+'-'+profile+(cream?'-cream':'');f.add(leafType,kind,cream?cfg.marginColor:kit.shade(rand,s.leafColor,.025),0,0,0,W,L,L);
+  let prev=null;for(let k=0;k<=8;k++){const pt=woodlandPhloxReferencePoint(leafType,k/8,0).map((v,j)=>v*(j===0?W:L));pt[1]+=L*.001;if(prev)line(f,prev,pt,L*.0025,'leaf-vein',cream?'#d5d1b9':'#879c68');prev=pt;}
+  if(cfg.hairCount)for(let k=1;k<=cfg.hairCount/2;k++)for(const side of [-1,1]){const pt=woodlandPhloxReferencePoint(leafType,.12+k*.11,side),from=pt.map((v,j)=>v*(j===0?W:L)),hair=Math.min(.00030,L*.008,W*.04),to=[from[0]+side*hair,from[1]+hair*.25,from[2]+hair*.10];line(f,from,to,hair*.09,'leaf-margin-hair','#d3d7c1');}
+ };
+ let flowerIndex=0;
+ const flower=(at,yaw)=>{
+  const index=flowerIndex++,f=flowerFrame(b,at,.12+.07*(index%3),yaw),closed=budding||index%6===5;
+  for(let k=0;k<5;k++){const az=k*TAU/5,g=flowerFrame(f,[Math.sin(az)*TR*.7,0,Math.cos(az)*TR*.7],.15,az);g.add('gcWoodlandPhloxSepalRef','calyx-lobe'+tag,stem,0,0,0,CL*.18,CL,CL);}
+  if(closed){f.add('gcWoodlandPhloxRoundRef','flower-bud'+tag,cfg.tubeColor,0,TL*.5,0,TR*1.20,TL*.52,TR*1.20);return;}
+  f.add('gcWoodlandPhloxTubeRef','corolla-tube'+tag,cfg.tubeColor,0,0,0,TR,TL,TR);
+  f.add('gcWoodlandPhloxTubeRef','throat-ring'+tag,cfg.eyeColor,0,TL-TL*.018,0,TR*1.035,TL*.018,TR*1.035);
+  for(let k=0;k<5;k++){const az=k*TAU/5,g=flowerFrame(f,[Math.sin(az)*TR*.86,TL,Math.cos(az)*TR*.86],-.025,az);g.add(lobeType,'corolla-lobe'+tag,kit.shade(rand,s.flowerColor,.015),0,0,0,PW,PL,PL);
+   if(index===inspectionFlower&&k===0){const rows=24,cols=16,vs=[[17/rows,0],[18/rows,0],[17/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...woodlandPhloxReferencePoint(lobeType,t,u)).multiply(new THREE.Vector3(PW,PL,PL))),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');g.flower(centre.toArray(),PL,pose.x,pose.y,pose.z);}
+  }
+  // Included reproductive parts are not resolved by these source photos.
+ };
+ for(let i=0;i<cfg.runners;i++){
+  const yaw=i*2.399963,root=[0,SR*1.3,0],rad=w*(winter?.16:.34),tip=[Math.sin(yaw)*rad,SR*1.3+Math.min(h*.025,LH*.04),Math.cos(yaw)*rad],cream=mont&&i===0;let prev=root;
+  for(let k=1;k<=cfg.runnerNodes;k++){const t=k/cfg.runnerNodes,node=root.map((v,j)=>v+(tip[j]-v)*t);line(null,prev,node,SR*.75,'creeping-stem');if(k/cfg.runnerNodes<=s.leafDensity)for(const side of [0,1])leaf(node,yaw+k*Math.PI/2+side*Math.PI,.95,cream);prev=node;}
+  if(winter)continue;
+  for(let si=0;si<cfg.floweringShootsPerRunner;si++){
+   const rt=cfg.floweringShootsPerRunner===1?.50:.30+si*.25,start=root.map((v,j)=>v+(tip[j]-v)*rt),heightFactor=.86+.14*((i+si*2)%3)/2,top=[start[0],Math.max(SR*2,h*.80*heightFactor-TL-PL),start[2]],leafTop=Math.min(LH*.90,top[1]*.96);line(null,start,top,SR,'flower-stem');
+   for(let k=1;k<=cfg.shootNodes;k++){const t=k/cfg.shootNodes,node=[start[0],start[1]+Math.max(0,leafTop-start[1])*t,start[2]];if(k/cfg.shootNodes<=s.leafDensity)for(const side of [0,1])leaf(node,yaw+k*Math.PI/2+side*Math.PI,1-.3*t,cream);}
+   if(!live&&!budding)continue;
+   for(let branch=0;branch<3;branch++){const az=yaw+branch*TAU/3,reach=Math.min(.014,w*.07,h*.08),end=[top[0]+Math.sin(az)*reach,top[1]+reach*.35,top[2]+Math.cos(az)*reach];line(null,top,end,SR*.28,'cyme-branch');for(let j=0;j<3;j++){const aa=az+j*2.399963,PD=Math.min(.004,w*.015,h*.025),at=[end[0]+Math.sin(aa)*PD,end[1]+PD*(.30+j*.20),end[2]+Math.cos(aa)*PD];line(null,end,at,SR*.15,'pedicel');flower(at,aa);}}
+  }
+ }
 }
