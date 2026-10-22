@@ -7445,7 +7445,7 @@ test('peltate leaves shelter pendant flowers and ironweed never receives daisy r
 test('phlox corollas have five spreading lobes on one tube and Carex retains the correct variegation',()=>{
  const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,shape:'salver',color:'#eeeeee'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
  assert.equal(parts.filter(p=>p.shape==='petal').length,5);assert.equal(parts.filter(p=>p.shape==='tube').length,1);
- for(const info of Object.values(CATALOG).filter(p=>p.latin.startsWith('Phlox'))){assert.ok(['salver','stolonPhloxFlower','paniclePhloxFlower','woodlandPhloxSalver'].includes(info.appearance.flowerShape));assert.equal(info.appearance.petals,5);}
+ for(const info of Object.values(CATALOG).filter(p=>p.latin.startsWith('Phlox'))){assert.ok(['salver','stolonPhloxFlower','paniclePhloxFlower','woodlandPhloxSalver','woodlandPhloxFiveLobeReference'].includes(info.appearance.flowerShape));assert.equal(info.appearance.petals,5);}
  const everoro=CATALOG['p-ab429729420b'],everest=CATALOG['p-ba5a0872d571'];
  assert.equal(everoro.appearance.leafPattern,'center');assert.equal(everest.appearance.leafPattern,'margin');
  for(const info of [everoro,everest])assert.equal(seasonAt(info,1).leafDensity,1);

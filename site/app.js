@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.552';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.552';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.552';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.552';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS } from './model.js?v=0.9.552';
-import { createScene } from './scene.js?v=0.9.552';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.553';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.553';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.553';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.553';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS } from './model.js?v=0.9.553';
+import { createScene } from './scene.js?v=0.9.553';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
@@ -39,7 +39,7 @@ function sourceCard(target,kind){const info=plantInfo(kind),box=$(target);box.re
    const notes=el('details',undefined,'reference-notes');notes.append(el('summary','参考表示の注意点'));
    const list=el('ul');for(const k of appearance.unconfirmed)list.append(el('li',TRAIT_LABELS[k]||k));notes.append(list);box.append(notes);
   }
-  box.append(el('p',appearance?.lifeForm==='moss'?'コケ植物なので花は付けません。胞子のうの季節変化は未確認です。':['evergreenHorsetail','waterHorsetail'].includes(appearance?.architecture)?'シダ植物なので花は付けません。胞子嚢穂の出現月は未確認です。':appearance?.flowerTiming==='months'&&appearance.flowerMonths?.length?`開花月の記載あり：${appearance.flowerMonths.join('・')}月。出典の地域・栽培条件での目安です。`:!info.bloomKnown&&!appearance?.flowerMonths?.length?'開花月は資料未確認です。実や葉の観賞期を開花月として扱っていません。':'季節表記を月に区分した参考表示。芽出し・落葉の正確な月は、資料に記載がある植物だけ採用しています。','hint'));
+  box.append(el('p',appearance?.lifeForm==='moss'?'コケ植物なので花は付けません。胞子のうの季節変化は未確認です。':['evergreenHorsetail','waterHorsetail'].includes(appearance?.architecture)?'シダ植物なので花は付けません。胞子嚢穂の出現月は未確認です。':appearance?.flowerTiming==='months'&&appearance.flowerMonths?.length&&info.bloomKnown!==false?`開花月の記載あり：${appearance.flowerMonths.join('・')}月。出典の地域・栽培条件での目安です。`:!info.bloomKnown&&!appearance?.flowerMonths?.length?'開花月は資料未確認です。実や葉の観賞期を開花月として扱っていません。':'季節表記を月に区分した参考表示。芽出し・落葉の正確な月は、資料に記載がある植物だけ採用しています。','hint'));
   const months=el('div',undefined,'phenology');months.setAttribute('aria-label','12か月の開花参考');
   for(let month=1;month<=12;month++){const phase=seasonAt(info,month),cell=button(String(month),()=>{doc.view.month=month;if(preview)preview.view.month=month;calendarMonth=month;sync();message(`${info.label}・${month}月：${phase.label}`);});cell.dataset.phase=phase.bloom?'flower':phase.dormant?'dormant':phase.autumn?'autumn':phase.known?'outside':'unknown';cell.title=`${month}月：${phase.label}`;cell.setAttribute('aria-label',cell.title);months.append(cell);}box.append(months);
   box.append(el('p',info.form==='unmodeled'?'外観は未対応です。配置すると寸法の枠を表示します。':'資料で分かる特徴を描いた参考3Dです。未確認の細部・月には共通の近似が残ります。全品種の実物同等の再現は未完成です。','hint'));
