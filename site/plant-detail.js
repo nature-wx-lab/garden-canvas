@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.535';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.536';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.535';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.536';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='gardenAsterReferences'){drawGardenAsterReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='showmakersAsterReferences'){drawShowmakersAsterReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='callistephusReferences'){drawCallistephusReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='gaillardiaSourceReferences'){drawGaillardiaSourceReferences(b,{info,s,month,rand},kit);return;}
@@ -24438,6 +24439,57 @@ function drawShowmakersAsterReferences(b,{info,s,month,rand},kit){
    const t=.58+branch*.20,start=root.map((v,k)=>v+(tip[k]-v)*(k===1?t:t*t)),az=yaw+(branch?-.85:.85),sideHeadY=h*(.91-.14*q-branch*.025)-allowance,end=[tip[0]+Math.sin(az)*w*.11,Math.min(LH*(.93-.10*q),(live||budding)?sideHeadY-clearance:h),tip[2]+Math.cos(az)*w*.11];line(null,start,end,SR*.42,'lateral-stem-showmakers-ref',stem);
    if(s.leafDensity)for(let j=1;j<=4;j++)if((j-.2)/4<s.leafDensity){const at=start.map((v,k)=>v+(end[k]-v)*j/4);leaf(at,az+j*2.399963,a.leafLength*(.72-j*.10));}
    if(live||budding){const top=[end[0],sideHeadY,end[2]];line(null,end,top,SR*.36,'head-stalk-showmakers-ref',stem);head(top,az);}
+  }
+ }
+}
+
+export function gardenAsterReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),az=u*Math.PI;
+ if(type==='asPrinceLeafRef'){const edge=sn**.66*(.72+.28*t)*(1+.035*Math.sin(t*Math.PI*8)*t**3);return[u*.5*edge,.024*sn*(1-u*u),t];}
+ if(type==='asVioletLeafRef'){const edge=sn**.64*(.82+.18*t)+.30*(1-t)**12;return[u*.5*edge,.020*sn*(1-u*u)+.055*(1-t)**10*u*u,t-.045*(1-t)**8*Math.cos(u*Math.PI)];}
+ if(type==='asMonchLeafRef'){const edge=sn**.52*(.90+.10*t)*(1+.018*Math.sin(t*Math.PI*8)*sn);return[u*.5*edge,.026*sn*(1-u*u),t];}
+ if(type==='asRayRef'){const edge=sn**.44*(.72+.28*t);return[u*.5*edge,.06*u*u*sn+.018*sn*(1-u*u)-.01*t*t,t-.03*(.5+.5*Math.cos(u*Math.PI*2))*t**20];}
+ if(type==='asCoreRef'){const r=Math.max(.00001,1-t*t)**.52;return[Math.sin(az)*r,t,Math.cos(az)*r];}
+ if(type==='asDiscPrinceRef'){const lobes=.5-.5*Math.cos(az*5),r=.22+.14*t+.35*t**6*lobes;return[Math.sin(az)*r,t-.40*t**7*lobes,Math.cos(az)*r];}
+ if(type==='asDiscRef'){const r=.25+.18*t+.10*t*t;return[Math.sin(az)*r,t-.18*t**8*(.5-.5*Math.cos(az*5)),Math.cos(az)*r];}
+ if(type==='asAntherRef'){const r=.45+.035*Math.cos(az*5);return[Math.sin(az)*r,t,Math.cos(az)*r];}
+ return[u*.5*sn**.60*(.65+.35*t),t,.055*sn*(1-u*u)];
+}
+function drawGardenAsterReferences(b,{info,s,month,rand},kit){
+ const a=info.appearance,P=a.shootProfile,prince=P==='prince',violet=P==='violetta',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),live=!!s.bloom,budding=!!s.flowerBuds,R=Math.min(a.flowerRadius,w*.08,h*.10),DR=Math.min(a.discRadius,R*.38),RL=Math.min(a.rayLength,R-DR),RW=Math.min(a.rayWidth,RL*.38),FL=Math.min(a.flowerLength,R*(prince?.60:.35),h*.035),DH=Math.min(prince?.001:.0017,R*.13),SR=Math.min(prince?.0014:.0022,h*.008,w*.008,LH*.009),leafType=prince?'asPrinceLeafRef':violet?'asVioletLeafRef':'asMonchLeafRef',discType=prince?'asDiscPrinceRef':'asDiscRef',leafColor=s.leafColor,stem=a.stemColor;
+ if(!s.leafDensity&&!live&&!budding)return;
+ const line=(frame,from,to,r,kind,color)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.8));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('asStemRef',kind,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const leaf=(node,yaw,len)=>{const L=Math.min(len,w*.18,LH*.42,Math.max(0,LH-node[1])/.75,Math.max(0,w*.50-Math.hypot(node[0],node[2]))*.90),W=L*a.leafWidth/a.leafLength;if(L<1e-10)return;const f=flowerFrame(b,node,-.25,yaw),eps=Math.min(.00002,L*.002);f.add(leafType,'leaf-garden-aster-ref',kit.shade(rand,leafColor,.025),0,0,0,W,L,L);let prev=null;for(let j=0;j<=12;j++){const p=gardenAsterReferencePoint(leafType,j/12,0).map((v,k)=>v*(k===0?W:L));p[1]+=eps;if(prev)line(f,prev,p,Math.min(SR*.07,L*.006),'leaf-vein-garden-aster-ref',prince?'#78656f':'#97aa74');prev=p;}};
+ let heads=0;
+ const head=(origin,yaw)=>{
+  const index=heads++,closed=budding||live&&index%9===7,spent=live&&index%9===8,target=live&&index===0,f=flowerFrame(b,origin,.035*Math.sin(index*1.4),yaw);f.add('asCoreRef','receptacle-garden-aster-ref',spent?'#7a6351':'#a5a66a',0,0,0,DR,DH,DR);
+  for(let row=0;row<3;row++)for(let j=0;j<16;j++){const aa=j*TAU/16+row*.18,L=Math.min(prince?.004:.008,R*(prince?.70:.40),h*.05),rad=DR*(1.10-row*.06);f.add('asBractRef','phyllary-garden-aster-ref',spent?'#79654d':stem,Math.sin(aa)*rad,-DH*.15,Math.cos(aa)*rad,L*.22,L,L,1.85,aa,0);}
+  if(closed){f.add('asBudRef','head-bud-garden-aster-ref',stem,0,DH*.3,0,DR*.98,Math.max(DH,FL)*.85,DR*.98);return;}
+  if(spent){f.add('asCoreRef','spent-head-garden-aster-ref','#80634f',0,DH*.25,0,DR*.95,FL*.60,DR*.95);return;}
+  const rays=a.referenceRayFlorets,whorls=a.flowerPalette.rayWhorls,perRing=rays/whorls;
+  for(let j=0;j<rays;j++){
+   const ring=Math.floor(j/perRing),az=(j%perRing)*TAU/perRing+ring*.17,q=ring/Math.max(1,whorls-1),at=[Math.sin(az)*DR*(.97-ring*.045),ring*RL*.008,Math.cos(az)*DR*(.97-ring*.045)],g=flowerFrame(f,at,.08-q*.38,az),len=RL*(1-q*.22),width=RW*(1+ring*.04);g.add('asRayRef','ray-garden-aster-ref',kit.shade(rand,a.flowerPalette.ray,.018),0,0,0,width,len,len);
+   const ov=FL*.10;g.add('asBudRef','ray-inferior-ovary-garden-aster-ref','#a2aa77',0,-FL*.14,0,ov*.32,ov,ov*.32);line(g,[0,-FL*.07,0],[0,FL*.18,0],FL*.009,'ray-style-garden-aster-ref','#e6d6b2');for(const side of [-1,1])line(g,[0,FL*.18,0],[side*FL*.04,FL*.25,0],FL*.007,'ray-stigma-branch-garden-aster-ref','#e8dcc0');
+   if(target&&j===0){const rows=24,cols=12,scale=new THREE.Vector3(width,len,len),vs=[[16/rows,0],[17/rows,0],[16/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...gardenAsterReferencePoint('asRayRef',t,u)).multiply(scale)),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');g.flower(centre.toArray(),R*.85,pose.x,pose.y,pose.z);}
+  }
+  const cells=a.referenceDiscFlorets;
+  for(let j=0;j<cells;j++){
+   const rn=Math.sqrt((j+.5)/cells),az=j*2.399963,r=DR*rn,y=DH*(1-rn*rn),g=flowerFrame(f,[Math.sin(az)*r,y-FL*.65,Math.cos(az)*r],0,az),FW=FL*(prince?.25:.20),color=kit.shade(rand,a.flowerPalette.disc,.018);
+   if(j<Math.floor(cells*.15)){g.add('asBudRef','disc-bud-garden-aster-ref',color,0,FL*.7,0,FW*.60,FL*.30,FW*.60);continue;}
+   g.add(discType,'disc-corolla-garden-aster-ref',color,0,0,0,FW,FL,FW);g.add('asBudRef','disc-inferior-ovary-garden-aster-ref','#a2a974',0,-FL*.12,0,FW*.35,FL*.12,FW*.35);
+   for(let k=0;k<5;k++){const aa=k*TAU/5;line(g,[Math.sin(aa)*FW*.20,FL*.14,Math.cos(aa)*FW*.20],[Math.sin(aa)*FW*.20,FL*.70,Math.cos(aa)*FW*.20],FW*.03,'disc-filament-garden-aster-ref',color);}
+   g.add('asAntherRef','disc-anther-tube-garden-aster-ref',color,0,FL*.64,0,FW*.50,FL*.23,FW*.50);line(g,[0,FL*.15,0],[0,FL*1.05,0],FW*.05,'disc-style-garden-aster-ref',color);for(const side of [-1,1])line(g,[0,FL*1.05,0],[side*FW*.34,FL*1.18,0],FW*.04,'disc-stigma-branch-garden-aster-ref',color);
+  }
+ };
+ const stems=a.flowerPalette.stems,branches=a.flowerPalette.branches,allowance=Math.max(FL*1.40,RL*.80)+DH,clearance=Math.min(h*.02,R*.25),nodes=prince?24:violet?20:18;
+ for(let i=0;i<stems;i++){
+  const q=Math.sqrt((i+.5)/stems),yaw=i*2.399963,mainHeadY=h*(.97-.12*q)-allowance,root=[Math.sin(yaw)*w*.04,SR*1.3,Math.cos(yaw)*w*.04],tip=[Math.sin(yaw)*w*(prince?.17:.22)*q,Math.min(LH*(.96-.10*q),(live||budding)?mainHeadY-clearance:h),Math.cos(yaw)*w*(prince?.17:.22)*q];let prev=root;
+  for(let j=1;j<=nodes;j++){const t=j/nodes,node=root.map((v,k)=>v+(tip[k]-v)*(k===1?t:t*t));line(null,prev,node,SR*(1-.35*t),'main-stem-garden-aster-ref',stem);if((j-.2)/nodes<s.leafDensity)leaf(node,yaw+j*2.399963,a.leafLength*(1-.42*t));prev=node;}
+  if(live||budding){const top=[tip[0],mainHeadY,tip[2]];line(null,tip,top,SR*.50,'head-stalk-garden-aster-ref',stem);head(top,yaw);}
+  for(let branch=0;branch<branches;branch++){
+   const t=prince?.30+branch*.12:.50+branch*.12,start=root.map((v,k)=>v+(tip[k]-v)*(k===1?t:t*t)),az=prince?yaw+.65:yaw+(branch%2?-.90:.90)+branch*.25,reach=w*(prince?.12+branch*.012:.10),sideHeadY=h*(.90-.12*q-branch*(prince?.022:.030))-allowance,end=[tip[0]+Math.sin(az)*reach,Math.min(LH*(.88-.10*q),(live||budding)?sideHeadY-clearance:h),tip[2]+Math.cos(az)*reach];line(null,start,end,SR*.40,'lateral-stem-garden-aster-ref',stem);
+   if(s.leafDensity)for(let j=1;j<=4;j++)if((j-.2)/4<s.leafDensity){const at=start.map((v,k)=>v+(end[k]-v)*j/4);leaf(at,az+j*2.399963,a.leafLength*(.70-j*.10));}
+   if(live||budding){const top=[end[0],sideHeadY,end[2]];line(null,end,top,SR*.33,'head-stalk-garden-aster-ref',stem);head(top,az);}
   }
  }
 }
