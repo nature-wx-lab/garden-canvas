@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.536';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.537';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.536';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.537';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='annLeysReferences'){drawAnnLeysReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='gardenAsterReferences'){drawGardenAsterReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='showmakersAsterReferences'){drawShowmakersAsterReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='callistephusReferences'){drawCallistephusReferences(b,{info,s,month,rand},kit);return;}
@@ -24456,7 +24457,7 @@ export function gardenAsterReferencePoint(type,t,u){
  return[u*.5*sn**.60*(.65+.35*t),t,.055*sn*(1-u*u)];
 }
 function drawGardenAsterReferences(b,{info,s,month,rand},kit){
- const a=info.appearance,P=a.shootProfile,prince=P==='prince',violet=P==='violetta',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),live=!!s.bloom,budding=!!s.flowerBuds,R=Math.min(a.flowerRadius,w*.08,h*.10),DR=Math.min(a.discRadius,R*.38),RL=Math.min(a.rayLength,R-DR),RW=Math.min(a.rayWidth,RL*.38),FL=Math.min(a.flowerLength,R*(prince?.60:.35),h*.035),DH=Math.min(prince?.001:.0017,R*.13),SR=Math.min(prince?.0014:.0022,h*.008,w*.008,LH*.009),leafType=prince?'asPrinceLeafRef':violet?'asVioletLeafRef':'asMonchLeafRef',discType=prince?'asDiscPrinceRef':'asDiscRef',leafColor=s.leafColor,stem=a.stemColor;
+ const a=info.appearance,P=a.shootProfile,prince=P==='prince',violet=P==='violetta'||P==='crimsonBrocade',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),live=!!s.bloom,budding=!!s.flowerBuds,R=Math.min(a.flowerRadius,w*.08,h*.10),DR=Math.min(a.discRadius,R*.38),RL=Math.min(a.rayLength,R-DR),RW=Math.min(a.rayWidth,RL*.38),FL=Math.min(a.flowerLength,R*(prince?.60:.35),h*.035),DH=Math.min(prince?.001:.0017,R*.13),SR=Math.min(prince?.0014:.0022,h*.008,w*.008,LH*.009),leafType=prince?'asPrinceLeafRef':violet?'asVioletLeafRef':'asMonchLeafRef',discType=prince?'asDiscPrinceRef':'asDiscRef',leafColor=s.leafColor,stem=a.stemColor;
  if(!s.leafDensity&&!live&&!budding)return;
  const line=(frame,from,to,r,kind,color)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.8));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('asStemRef',kind,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
  const leaf=(node,yaw,len)=>{const L=Math.min(len,w*.18,LH*.42,Math.max(0,LH-node[1])/.75,Math.max(0,w*.50-Math.hypot(node[0],node[2]))*.90),W=L*a.leafWidth/a.leafLength;if(L<1e-10)return;const f=flowerFrame(b,node,-.25,yaw),eps=Math.min(.00002,L*.002);f.add(leafType,'leaf-garden-aster-ref',kit.shade(rand,leafColor,.025),0,0,0,W,L,L);let prev=null;for(let j=0;j<=12;j++){const p=gardenAsterReferencePoint(leafType,j/12,0).map((v,k)=>v*(k===0?W:L));p[1]+=eps;if(prev)line(f,prev,p,Math.min(SR*.07,L*.006),'leaf-vein-garden-aster-ref',prince?'#78656f':'#97aa74');prev=p;}};
@@ -24490,6 +24491,42 @@ function drawGardenAsterReferences(b,{info,s,month,rand},kit){
    const t=prince?.30+branch*.12:.50+branch*.12,start=root.map((v,k)=>v+(tip[k]-v)*(k===1?t:t*t)),az=prince?yaw+.65:yaw+(branch%2?-.90:.90)+branch*.25,reach=w*(prince?.12+branch*.012:.10),sideHeadY=h*(.90-.12*q-branch*(prince?.022:.030))-allowance,end=[tip[0]+Math.sin(az)*reach,Math.min(LH*(.88-.10*q),(live||budding)?sideHeadY-clearance:h),tip[2]+Math.cos(az)*reach];line(null,start,end,SR*.40,'lateral-stem-garden-aster-ref',stem);
    if(s.leafDensity)for(let j=1;j<=4;j++)if((j-.2)/4<s.leafDensity){const at=start.map((v,k)=>v+(end[k]-v)*j/4);leaf(at,az+j*2.399963,a.leafLength*(.70-j*.10));}
    if(live||budding){const top=[end[0],sideHeadY,end[2]];line(null,end,top,SR*.33,'head-stalk-garden-aster-ref',stem);head(top,az);}
+  }
+ }
+}
+
+export function annLeysReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='anLeafRef')return gardenAsterReferencePoint('asVioletLeafRef',t,u);
+ return[u*.5*sn**.85*(.85+.15*t),.035*sn*(1-u*u)+.065*u*u*sn,t-.045*t**5];
+}
+function drawAnnLeysReferences(b,{info,s,month,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),live=!!s.bloom,budding=!!s.flowerBuds,R=Math.min(a.flowerRadius,w*.07,h*.08),SL=Math.min(a.flowerPalette.segmentLength,R*1.1,h*.08,w*.07),SW=Math.min(a.flowerPalette.segmentWidth,SL*.30),SR=Math.min(.0018,h*.007,w*.007,LH*.010),stem=a.stemColor;
+ if(!s.leafDensity&&!live&&!budding)return;
+ const line=(frame,from,to,r,kind,color)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.8));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('anStemRef',kind,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const leaf=(node,yaw,len)=>{const L=Math.min(len,w*.18,LH*.42,Math.max(0,LH-node[1])/.75,Math.max(0,w*.50-Math.hypot(node[0],node[2]))*.90),W=L*a.leafWidth/a.leafLength;if(L<1e-10)return;const f=flowerFrame(b,node,-.25,yaw),eps=Math.min(.00002,L*.002);f.add('anLeafRef','leaf-ann-leys-ref',kit.shade(rand,s.leafColor,.025),0,0,0,W,L,L);let prev=null;for(let j=0;j<=12;j++){const p=annLeysReferencePoint('anLeafRef',j/12,0).map((v,k)=>v*(k===0?W:L));p[1]+=eps;if(prev)line(f,prev,p,Math.min(SR*.07,L*.006),'leaf-vein-ann-leys-ref','#91a675');prev=p;}};
+ let heads=0;
+ const head=(origin,yaw)=>{
+  const index=heads++,closed=budding||live&&index%7===6,target=live&&index===0,dark=index%3!==1,f=flowerFrame(b,origin,.025*Math.sin(index),yaw),green=a.flowerPalette.green;
+  // Only visible exterior masses and narrow pieces: their floral identities and internal organs are unresolved.
+  f.add('anCoreRef','head-exterior-base-ann-leys-ref',green,0,0,0,R*.43,R*.20,R*.43);
+  if(closed){f.add('anBudRef','head-bud-ann-leys-ref',green,0,R*.22,0,R*.30,R*.48,R*.30);return;}
+  const pieces=a.flowerPalette.segments,whorls=a.flowerPalette.segmentWhorls,perRing=pieces/whorls;
+  for(let j=0;j<pieces;j++){
+   const ring=Math.floor(j/perRing),q=ring/Math.max(1,whorls-1),az=(j%perRing)*TAU/perRing+ring*.21+.035*Math.sin(j*2.399963),rad=R*(.44-q*.32),g=flowerFrame(f,[Math.sin(az)*rad,R*q*.5,Math.cos(az)*rad],.38-q*2.18,az),len=SL*(1-q*.22)*(1+.12*Math.sin(j*2.1)),kind='exterior-segment-ann-leys-ref-'+(dark?'dark':'green');
+   g.add('anSegmentRef',kind,kit.shade(rand,green,.020),0,0,0,SW,len,len);
+   if(target&&j===perRing*2){const rows=24,cols=12,scale=new THREE.Vector3(SW,len,len),vs=[[16/rows,0],[17/rows,0],[16/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...annLeysReferencePoint('anSegmentRef',t,u)).multiply(scale)),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');g.flower(centre.toArray(),R*1.6,pose.x,pose.y,pose.z);}
+  }
+ };
+ const stems=a.flowerPalette.stems,branches=a.flowerPalette.branches,nodes=18,allowance=SL*1.6+R,clearance=Math.min(h*.02,R*.25);
+ for(let i=0;i<stems;i++){
+  const q=Math.sqrt((i+.5)/stems),yaw=i*2.399963,headY=h*(.97-.12*q)-allowance,root=[Math.sin(yaw)*w*.04,SR*1.3,Math.cos(yaw)*w*.04],tip=[Math.sin(yaw)*w*.20*q,Math.min(LH*(.96-.10*q),(live||budding)?headY-clearance:h),Math.cos(yaw)*w*.20*q];let prev=root;
+  for(let j=1;j<=nodes;j++){const t=j/nodes,node=root.map((v,k)=>v+(tip[k]-v)*(k===1?t:t*t));line(null,prev,node,SR*(1-.35*t),'main-stem-ann-leys-ref',stem);if((j-.2)/nodes<s.leafDensity)leaf(node,yaw+j*2.399963,a.leafLength*(1-.42*t));prev=node;}
+  if(live||budding){const top=[tip[0],headY,tip[2]];line(null,tip,top,SR*.50,'head-stalk-ann-leys-ref',stem);head(top,yaw);}
+  for(let j=0;j<branches;j++){
+   const t=.48+j*.15,start=root.map((v,k)=>v+(tip[k]-v)*(k===1?t:t*t)),az=yaw+(j%2?-.90:.90)+j*.25,sideY=h*(.89-.12*q-j*.035)-allowance,end=[tip[0]+Math.sin(az)*w*.10,Math.min(LH*(.88-.10*q),(live||budding)?sideY-clearance:h),tip[2]+Math.cos(az)*w*.10];line(null,start,end,SR*.40,'lateral-stem-ann-leys-ref',stem);
+   if(s.leafDensity)for(let k=1;k<=4;k++)if((k-.2)/4<s.leafDensity)leaf(start.map((v,n)=>v+(end[n]-v)*k/4),az+k*2.399963,a.leafLength*(.70-k*.10));
+   if(live||budding){const top=[end[0],sideY,end[2]];line(null,end,top,SR*.33,'head-stalk-ann-leys-ref',stem);head(top,az);}
   }
  }
 }
