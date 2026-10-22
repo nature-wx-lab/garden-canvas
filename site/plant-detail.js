@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.555';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.556';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.555';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.556';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='rugosaSourceReferences'){drawRugosaSourceReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='bergamoAnnualReference'){drawBergamoAnnualReference(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='ogisMonardaColourReferences'){drawOgisMonardaColourReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='retailMonardaReferences'){drawRetailMonardaReferences(b,{info,s,month,rand},kit);return;}
@@ -25091,5 +25092,47 @@ function drawBergamoAnnualReference(b,{info,s,month,rand},kit){
   const yaw=i*2.399963,root=[Math.sin(yaw)*w*.08,SR*1.3,Math.cos(yaw)*w*.08],top=[Math.sin(yaw)*w*.13,Math.max(SR*2,h*(.86+.015*(i%3))-HR-TL-UL),Math.cos(yaw)*w*.13];line(null,root,top,SR,'main-stem');
   const leafTop=Math.min(LH*.80,top[1]*.78);for(let k=1;k<=8;k++){const f=(leafTop-root[1])/Math.max(1e-12,top[1]-root[1])*k/8,node=root.map((v,j)=>v+(top[j]-v)*f);if(k/8<=s.leafDensity)for(const side of[0,1])leaf(node,yaw+k*Math.PI/2+side*Math.PI,1-.25*k/8);}
   for(let tier=0;tier<3;tier++){const f=.58+tier*.21,at=root.map((v,j)=>v+(top[j]-v)*f);head(at,i*3+tier);}
+ }
+}
+
+export function rugosaSourceReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='gcRugosaSourceLeafRef'){const edge=.5*(.42+.58*sn**.65)*(1-t**4)**.6*(1+.085*(1-Math.abs(2*((t*10)%1)-1))),notch=.12*Math.exp(-t*14)*(1-Math.abs(u))**2;return[u*edge,.025*sn*(1-Math.abs(u))+.015*u*u*sn+.004*Math.sin(t*48-Math.abs(u)*14)*sn,t+notch];}
+ if(type==='gcRugosaSourceBractRef')return[u*.5*sn**.65,.025*sn,t];
+ if(type==='gcRugosaSourceUpperRef'){const notch=.11*Math.exp(-((u/.3)**2))*t**10;return[u*.5*sn**.55,t-notch,.12*Math.sin(Math.PI*t*.8)];}
+ if(type==='gcRugosaSourceLowerRef')return[u*.5*sn**.45*(.45+.55*t)*(1+.055*Math.cos(u*Math.PI*5)*t*t),-.10*t*t,t];
+ const az=u*Math.PI,calyx=type==='gcRugosaSourceCalyxRef',sector=((Math.round(az/TAU*5)%5)+5)%5,tooth=sector===0||sector===1||sector===4?1:.88;
+ const rad=calyx?(.65+.35*t)*(1+.022*Math.cos(15*az)):.60+.90*t,yy=calyx?.80*t+.20*t**8*Math.max(0,Math.cos(5*az))*tooth:t;
+ return[Math.sin(az)*rad,yy,Math.cos(az)*rad+(calyx?0:.10*t*t)];
+}
+function drawRugosaSourceReferences(b,{info,s,month,rand},kit){
+ const a=info.appearance,cfg=a.flowerPalette,gold=a.shootProfile==='golden',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),live=!!s.bloom,budding=!!s.flowerBuds,dry=gold&&a.seedHeadMonths.includes(month)&&!live&&!budding,cold=[12,1,2].includes(month),tag='-rugosa-source-ref',stem=cold?a.winterStemColor:a.stemColor,SR=Math.min(.0018,h*.008,w*.008,LH*.03),HL=Math.min(a.inflorescenceLength,h*.16),HR=Math.min(.0095,h*.025,w*.035),CL=Math.min(.006,h*.025,w*.025),TL=Math.min(.0067,h*.028,w*.028),UL=Math.min(.0016,h*.010,w*.010),LL=Math.min(.0026,h*.014,w*.014),LW=Math.min(.0035,h*.018,w*.018),TR=Math.min(.0010,TL*.15),N=gold?6:4;
+ const line=(f,from,to,r,kind,color=stem)=>{if(!f)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.7));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(f||b).add('gcRetailMonardaStemRef',kind+tag,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const leaf=(node,yaw,ratio)=>{const L=Math.min(a.leafLength*ratio,w*.20,LH*.30,Math.max(0,LH-node[1])*.65),W=L*a.leafWidth/a.leafLength,PL=Math.min(.025,w*.045,L*.30);if(L<1e-10)return;const at=[node[0]+Math.sin(yaw)*PL,node[1]+PL*.06,node[2]+Math.cos(yaw)*PL];line(null,node,at,Math.min(SR*.25,L*.01),'petiole');const f=flowerFrame(b,at,-.16,yaw);f.add('gcRugosaSourceLeafRef','leaf'+tag,kit.shade(rand,s.leafColor,.025),0,0,0,W,L,L);for(const side of[-1,1]){const p=rugosaSourceReferencePoint('gcRugosaSourceLeafRef',.48,side*.65).map((v,j)=>v*(j===0?W:L)),hair=Math.min(.0003,L*.005);line(f,p,[p[0]+side*hair*.3,p[1]+hair,p[2]],hair*.075,'leaf-hair','#c3cfaf');}};
+ const spike=(base,index,len)=>{
+  const end=[base[0],base[1]+len,base[2]];line(null,base,end,SR*.55,'spike-axis');if(!live&&!budding&&!dry)return;
+  for(let row=0;row<24;row++){
+   const t=row/23,y=base[1]+len*t,rad=HR*(.32+.68*Math.sin(Math.PI*(.08+.84*t))**.4),oldColour=cold||month>=10?cfg.spentColor:cfg.calyxColor;
+   for(const side of[0,1]){const az=row*.7+side*Math.PI,f=flowerFrame(b,[base[0],y,base[2]],.35,az),L=Math.min(.004,w*.025,h*.02);f.add('gcRugosaSourceBractRef',(dry?'dry-bract':'floral-bract')+tag,dry?oldColour:cfg.bractColor,0,0,0,L*.28,L,L);}
+   for(let j=0;j<8;j++){
+    const k=row*8+j,az=j*TAU/8+row*.39,origin=[base[0]+Math.sin(az)*rad,y,base[2]+Math.cos(az)*rad],f=flowerFrame(b,origin,1.35,az),closed=budding||k%4===3;
+    f.add('gcRugosaSourceCalyxRef',(dry?'dry-calyx':'calyx')+tag,dry?oldColour:cfg.calyxColor,0,0,0,TR,CL,TR);
+    if(dry)continue;
+    for(let q=0;q<3;q++){const an=q*TAU/3,p=[Math.sin(an)*TR,CL*.6,Math.cos(an)*TR],hair=Math.min(.00035,TR*.3);line(f,p,[p[0]+Math.sin(an)*hair,p[1]+hair*.3,p[2]+Math.cos(an)*hair],hair*.07,'calyx-hair','#cbc1ce');}
+    if(closed){f.add('gcRetailMonardaRoundRef','flower-bud'+tag,cfg.budColor,0,CL*.82,0,TR*.7,CL*.38,TR*.7);continue;}
+    f.add('gcRugosaSourceTubeRef','corolla-tube'+tag,s.flowerColor,0,0,0,TR,TL,TR);f.add('gcRugosaSourceUpperRef','upper-lip'+tag,s.flowerColor,0,TL,0,UL*.85,UL,UL);
+    for(let q=-1;q<=1;q++){const L=q===0?LL:LL*.42,W=q===0?LW:LW*.32,g=flowerFrame(f,[q*TR*.65,TL,TR*.60],.12,q*.65);g.add('gcRugosaSourceLowerRef','lower-lip'+tag,s.flowerColor,0,0,0,W,L,L);if(index===0&&k===0&&q===0){const p=rugosaSourceReferencePoint('gcRugosaSourceLowerRef',.62,0).map((v,i)=>v*(i===0?W:L));g.flower(p,LL);}}
+    for(let q=0;q<4;q++){const side=q%2?-1:1,posterior=q<2,from=[side*TR*.45,TL*.62,0],end=[side*TR*(posterior?.85:1.0),TL+UL*(posterior?1.9:1.3),UL*(posterior?1.1:.25)];line(f,from,end,TR*.085,posterior?'posterior-filament':'anterior-filament','#dfd8e4');for(const cell of[-1,1])f.add('gcRetailMonardaRoundRef','anther-theca'+tag,cfg.antherColor,end[0]+cell*TR*.18,end[1],end[2],TR*.15,UL*.16,TR*.13,0,0,cell*.65);}
+    const top=[0,TL+UL*2.0,UL*.8];line(f,[0,TL*.50,0],top,TR*.09,'style','#e1dae7');for(const side of[-1,1])line(f,top,[side*UL*.22,top[1]+UL*.22,top[2]+UL*.08],TR*.07,'stigma-lobe','#e1dae7');
+    for(let q=1;q<=4;q++){const t=.12+q*.16,p=rugosaSourceReferencePoint('gcRugosaSourceUpperRef',t,q%2?.4:-.4).map((v,i)=>v*(i===0?UL*.85:UL));p[1]+=TL;const hair=Math.min(.00018,UL*.1);line(f,p,[p[0],p[1]+hair*.2,p[2]+hair],hair*.07,'corolla-hair','#e4ddec');}
+   }
+  }
+ };
+ for(let i=0;i<N;i++){
+  const yaw=i*2.399963,root=[Math.sin(yaw)*w*.08,SR*1.3,Math.cos(yaw)*w*.08],top=[Math.sin(yaw)*w*.14,Math.max(SR*2,h*(.88+.012*(i%3))-HL-TL-UL*2.3),Math.cos(yaw)*w*.14];line(null,root,top,SR,'main-stem');const leafTop=Math.min(LH*.82,top[1]*.86);
+  for(let k=1;k<=8;k++){const f=(leafTop-root[1])/Math.max(1e-12,top[1]-root[1])*k/8,node=root.map((v,j)=>v+(top[j]-v)*f);if(k/8<=s.leafDensity)for(const side of[0,1])leaf(node,yaw+k*Math.PI/2+side*Math.PI,1-.25*k/8);}
+  spike(top,i*2,HL);const start=root.map((v,j)=>v+(top[j]-v)*.46),end=[start[0]+Math.sin(yaw+.9)*w*.12,Math.max(SR*2,h*.72-HL*.75-TL-UL*2.3),start[2]+Math.cos(yaw+.9)*w*.12];line(null,start,end,SR*.65,'side-stem');const limit=Math.min(LH*.80,end[1]*.88);
+  for(let k=1;k<=4;k++){const f=Math.max(0,limit-start[1])/Math.max(1e-12,end[1]-start[1])*k/4,node=start.map((v,j)=>v+(end[j]-v)*f);if(k/4<=s.leafDensity)for(const side of[0,1])leaf(node,yaw+.9+k*Math.PI/2+side*Math.PI,.75);}
+  spike(end,i*2+1,HL*.75);
  }
 }
