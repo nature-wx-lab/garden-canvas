@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.539';
+import {treeProfile} from './tree-profiles.js?v=0.9.540';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -316,7 +316,8 @@ export function seasonAt(info,month){
  if(a.architecture==='liriopeReferences'){const managed=!['silver','unnamed'].includes(a.shootProfile);scale=managed?(month===1?.20:month===2?.18:month===12?.30:month===3?.35:month===4?.70:1):[12,1,2].includes(month)?.90:1;phase=managed&&[12,1,2].includes(month)?'国内の低温管理苗で古葉を切り戻した冬の参考（未剪定成株は別条件）':managed&&month<=4?'切戻し後の新葉の参考（芽出し・再生量・月境界は未予測）':a.shootProfile==='blonde'?(month<=6?'白い新葉から淡緑へ変わる春〜初夏の参考（発色・月境界は未校正）':'夏の黄緑葉と青紫の花の参考（常に白い葉ではありません）'):a.shootProfile==='ingot'?'春の黄葉と日向で淡くなる葉の参考（半日陰の発色・照度応答は未校正）':bloom?'6枚の花被片をもつ小花の房の参考（開花月・花数は資料からの目安）':'常緑の帯状葉を残す株姿の参考（残葉量・冬の傷みは未校正）';}
  if(a.architecture==='hakonechloaReferences'){scale=month===3?.30:month===4?.65:month===5?.90:1;phase=[12,1,2].includes(month)?'枯葉を冬も残す未剪定の参考（残葉量・月境界は未校正）':month<=4?'新芽前に枯葉を整理した管理例（芽出し日・再生量は未予測）':bloom?'葉の間に上がる目立たない穂の参考（8〜9月は季節記述からの目安）':month>=10?'秋の橙褐色と、斑入り型の赤みの参考（発色・境界月は未校正）':'節に交互に葉を付けて垂れる草姿の参考（品種同定・年次拡大は未検証）';}
  if(a.architecture==='stipoidReferences'){scale=a.shootProfile==='nassella'?1:month===3?.40:month===4?.75:1;phase=groundDormant?'国内の低温管理株で地上部を整理した冬の参考（未剪定成株の残穂は未確認）':a.shootProfile==='nassella'?([12,1,2,11].includes(month)?'RHSの春まで枯葉を残す案内を参考にした褐色の葉（国内の冬姿・残穂は未確認）':'針状の細葉と長い芒の参考（販売名エンジェルヘアー・品種固定性は未確認）'):a.seedHeadMonths?.includes(month)?(a.shootProfile==='allgau'?'小麦色の穂と枯れた葉を残す未剪定の参考（残存量・月境界は未校正）':'秋の白い綿状の残穂の参考（結実・種子散布・月境界は未校正）'):bloom?'低い細葉の上に上がる柔らかな穂の参考（開花月の換算は目安）':'春の細葉と株姿の参考（芽出し時期・葉量は未校正）';}
- if(a.architecture==='chrysanthemumReferences'){scale=1;phase=[1,2,12].includes(month)?'花後の枯茎を整理し株元の芽と小さい葉を保護した参考（越冬成功・自然な一律消失は未保証）':bloom?'国内の明示月に沿う品種別頭花の参考（東海地方基準・年次成長と現物解剖は未校正）':'互生する切れ込み葉と摘芯後の分枝株の参考（摘芯応答・年次成長は未予測）';}
+ if(a.architecture==='chrysanthemumReferences'&&a.flowerPalette?.regime==='naturalMayJuly'){scale=1;phase=[1,2,12].includes(month)?'花後の枯茎を整理し株元の芽を保護した参考（冬姿・越冬は未保証）':bloom?'通常栽培5～7月の参考（電照販売株8～9月とは別条件・生育年で管理条件を推定しない）':'通常栽培の参考（電照・販売時の草丈と成長後の株姿は別条件）';}
+ else if(a.architecture==='chrysanthemumReferences'){scale=1;phase=[1,2,12].includes(month)?'花後の枯茎を整理し株元の芽と小さい葉を保護した参考（越冬成功・自然な一律消失は未保証）':bloom?'国内の明示月に沿う品種別頭花の参考（東海地方基準・年次成長と現物解剖は未校正）':'互生する切れ込み葉と摘芯後の分枝株の参考（摘芯応答・年次成長は未予測）';}
  if(a.architecture==='annLeysReferences'){scale=1;phase=bloom?'緑～黒紫の細長い片からなる頭花の外観参考（器官同定・内部構造・稔性は未確認）':'国内の季節表記から選ぶ参考月と寒冷地の花後整理例（年次成長は未予測）';}
  if(a.architecture==='gardenAsterReferences'){scale=1;phase=bloom?(a.shootProfile==='crimsonBrocade'?'国内販売元の明示月に沿う頭花の参考（年次成長・月別実物照合は未校正）':'国内の季節表記から選ぶ品種別頭花の参考（月別実物照合・連続開花は未予測）'):'寒冷地で花後整理した管理例（全国の冬姿・年次成長は未予測）';}
  if(a.architecture==='showmakersAsterReferences'){scale=1;phase=bloom?'国内の秋表記から選ぶ八重頭花の参考（月別実物照合・施設作型は未予測）':'花後整理を含む寒冷期の管理例（全国の越冬・年次成長は未予測）';}
