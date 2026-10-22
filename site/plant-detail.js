@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.538';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.539';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.538';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.539';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -24538,12 +24538,15 @@ export function chrysanthemumReferencePoint(type,t,u){
  if(type==='gcChrysMiltonRayRef'){const width=sn**.32*(.60+.40*t);return[u*.5*width,.10*u*u*sn+.018*sn*(1-u*u),t-.035*(.5+.5*Math.cos(u*Math.PI*3))*t**20];}
  if(type==='gcChrysPomponRayRef')return[u*.5*sn**.40,.10+.14*sn+.06*u*u*sn,t-.5];
  if(type==='gcChrysSpoonRayRef'){const q=Math.max(0,Math.min(1,(t-.70)/.24)),open=q*q*(3-2*q),edge=sn**.30;return[((1-open)*Math.sin(az)*.10+open*u*.5)*edge,(1-open)*Math.cos(az)*.10+open*(.055+.06*u*u)*sn,t-.02*t**12];}
+ if(type==='gcChrysCurledRayRef'){const width=sn**.34*(.45+.55*t);return[u*.5*width,.035*sn*(1-u*u)+.22*t**8,t-.14*t**8];}
+ if(type==='gcChrysBoatRayRef'){const width=sn**.36*(.60+.40*t);return[u*.5*width,.22*u*u*sn-.04*sn*(1-u*u),t-.04*t**8];}
+ if(type==='gcChrysCentrePieceRef')return[u*.5*sn**.50,t-.10*u*u*sn,.18*sn*(1-u*u)];
  if(type==='gcChrysDiscRef'){const r=.25+.18*t+.10*t*t;return[Math.sin(az)*r,t-.18*t**8*(.5-.5*Math.cos(az*5)),Math.cos(az)*r];}
  if(type==='gcChrysAntherRef'){const r=.45+.035*Math.cos(az*5);return[Math.sin(az)*r,t,Math.cos(az)*r];}
  return[u*.5*sn**.62,t,.045*sn*(1-u*u)];
 }
 function drawChrysanthemumReferences(b,{info,s,month,rand},kit){
- const a=info.appearance,P=a.shootProfile,milton=P==='milton',pompon=P==='munsell',chelsea=P==='chelsea',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),live=!!s.bloom,budding=!!s.flowerBuds,winter=[1,2,12].includes(month),R=Math.min(a.flowerRadius,w*.09,h*.10),DR=Math.min(chelsea?a.discRadius:R*.16,R*.30),RL=Math.min(a.rayLength,pompon?R*.42:R-DR),RW=Math.min(a.rayWidth,RL*(pompon?.65:.40)),FL=Math.min(a.flowerLength||.003,R*.20,h*.025),SR=Math.min(.0022,h*.008,w*.008,LH*.010),stem=a.stemColor;
+ const a=info.appearance,P=a.shootProfile,milton=P==='milton',pompon=P==='munsell',chelsea=P==='chelsea',claire=P==='claire',curled=P==='scabione',boat=P==='galileo',exposed=chelsea||claire,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),live=!!s.bloom,budding=!!s.flowerBuds,winter=[1,2,12].includes(month),R=Math.min(a.flowerRadius,w*.09,h*.10),DR=Math.min(a.discRadius||R*.16,R*(boat?.36:.30)),RL=Math.min(a.rayLength,pompon?R*.42:R-DR),RW=Math.min(a.rayWidth,RL*(pompon?.65:.40)),FL=Math.min(a.flowerLength||.003,R*.20,h*.025),SR=Math.min(.0022,h*.008,w*.008,LH*.010),stem=a.stemColor;
  const line=(frame,from,to,r,kind,color)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.8));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('gcChrysStemRef',kind,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
  const leaf=(node,yaw,len)=>{const L=Math.min(len,w*.20,LH*.42,Math.max(0,LH-node[1])/.75,Math.max(0,w*.50-Math.hypot(node[0],node[2]))*.85),W=L*a.leafWidth/a.leafLength;if(L<1e-10)return;const f=flowerFrame(b,node,-.25,yaw),eps=Math.min(.00002,L*.002);f.add('gcChrysLeafRef','leaf-chrysanthemum-ref',kit.shade(rand,s.leafColor,.025),0,0,0,W,L,L);let prev=null;for(let j=0;j<=12;j++){const p=chrysanthemumReferencePoint('gcChrysLeafRef',j/12,0).map((v,k)=>v*(k===0?W:L));p[1]+=eps;if(prev)line(f,prev,p,Math.min(SR*.07,L*.006),'leaf-vein-chrysanthemum-ref','#879b72');prev=p;}};
  const stems=a.flowerPalette.stems,branches=a.flowerPalette.branches;
@@ -24555,21 +24558,22 @@ function drawChrysanthemumReferences(b,{info,s,month,rand},kit){
  let heads=0;
  const head=(origin,yaw)=>{
   const index=heads++,closed=budding||live&&index%7===6,target=live&&index===0,f=flowerFrame(b,origin,.035*Math.sin(index*1.4),yaw);
-  f.add('gcChrysCoreRef','head-exterior-base-chrysanthemum-ref',pompon?a.flowerPalette.ray:milton?a.flowerPalette.inner:a.flowerPalette.disc,0,0,0,pompon?R*.90:DR,pompon?R*.90:R*.07,pompon?R*.90:DR);
+  f.add('gcChrysCoreRef','head-exterior-base-chrysanthemum-ref',pompon?a.flowerPalette.ray:milton?a.flowerPalette.inner:(a.flowerPalette.centreGreen||a.flowerPalette.discBud||a.flowerPalette.disc),0,0,0,pompon?R*.90:DR,pompon?R*.90:R*.07,pompon?R*.90:DR);
   for(let row=0;row<2;row++)for(let j=0;j<16;j++){const aa=j*TAU/16+row*.19,L=Math.min(.007,R*.33,h*.04),rad=(pompon?R*.42:DR)*(1.05-row*.08);f.add('gcChrysBractRef','phyllary-chrysanthemum-ref',stem,Math.sin(aa)*rad,pompon?-R*.52:-R*.02,Math.cos(aa)*rad,L*.28,L,L,1.85,aa,0);}
   if(closed){f.add('gcChrysBudRef','head-bud-chrysanthemum-ref',stem,0,R*.10,0,R*.34,R*.40,R*.34);return;}
   const pieces=a.referenceRayFlorets,whorls=a.flowerPalette.rayWhorls,perRing=pieces/whorls;
   for(let j=0;j<pieces;j++){
    let g,len,width=RW,type,colour;
    if(pompon){const y=1-(j+.5)/pieces*1.60,az=j*2.399963,r=Math.sqrt(Math.max(0,1-y*y)),normal=new THREE.Vector3(Math.sin(az)*r,y,Math.cos(az)*r),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');g=flowerFrame(f,normal.clone().multiplyScalar(R*.90).toArray(),pose.x,pose.y,pose.z);len=RL*(.94+.06*Math.sin(j*1.7));type='gcChrysPomponRayRef';colour=a.flowerPalette.ray;
-   }else{const ring=Math.floor(j/perRing),q=ring/Math.max(1,whorls-1),az=(j%perRing)*TAU/perRing+ring*.17,at=[Math.sin(az)*DR*(.97-ring*.045),ring*RL*.008,Math.cos(az)*DR*(.97-ring*.045)];g=flowerFrame(f,at,.08-q*(milton?1.10:.55),az);len=RL*(1-q*(milton?.65:.12));type=milton?'gcChrysMiltonRayRef':'gcChrysSpoonRayRef';colour=milton&&ring>=3?a.flowerPalette.inner:a.flowerPalette.ray;}
+   }else{const ring=Math.floor(j/perRing),q=ring/Math.max(1,whorls-1),az=(j%perRing)*TAU/perRing+ring*.17,at=[Math.sin(az)*DR*(.97-ring*.045),ring*RL*.008,Math.cos(az)*DR*(.97-ring*.045)];g=flowerFrame(f,at,.08-q*(milton?1.10:curled?.90:boat?.85:claire?.45:.55),az);len=RL*(1-q*(milton?.65:curled?.50:boat?.30:claire?.18:.12));type=milton||claire?'gcChrysMiltonRayRef':curled?'gcChrysCurledRayRef':boat?'gcChrysBoatRayRef':'gcChrysSpoonRayRef';colour=milton&&ring>=3?a.flowerPalette.inner:a.flowerPalette.ray;}
    const kind='ray-chrysanthemum-ref-'+P;g.add(type,kind,kit.shade(rand,colour,.015),0,0,0,width,len,len);
-   if(target&&j===(pompon?60:0)){const rows=24,cols=milton?12:20,scale=new THREE.Vector3(width,len,len),vs=[[16/rows,0],[17/rows,0],[16/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...chrysanthemumReferencePoint(type,t,u)).multiply(scale)),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');g.flower(centre.toArray(),R,pose.x,pose.y,pose.z);}
+   if(target&&j===(pompon?60:0)){const rows=24,cols=type==='gcChrysMiltonRayRef'?12:20,scale=new THREE.Vector3(width,len,len),vs=[[16/rows,0],[17/rows,0],[16/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...chrysanthemumReferencePoint(type,t,u)).multiply(scale)),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');g.flower(centre.toArray(),R,pose.x,pose.y,pose.z);}
   }
-  if(!chelsea)return;
+  if(a.flowerPalette.centrePieces){const N=a.flowerPalette.centrePieces,SH=Math.min(a.flowerPalette.centrePieceLength,R*.24,h*.025),SW=Math.min(a.flowerPalette.centrePieceWidth,SH*.65);for(let j=0;j<N;j++){const rn=Math.sqrt((j+.5)/N),az=j*2.399963,r=DR*rn*.95,y=R*.07+SH*.45*(1-rn*rn),g=flowerFrame(f,[Math.sin(az)*r,y-SH*.5,Math.cos(az)*r],Math.atan(.9*SH/DR*rn),az);g.add('gcChrysCentrePieceRef','head-centre-piece-chrysanthemum-ref',kit.shade(rand,a.flowerPalette.centreParts,.012),0,0,0,SW,SH,SW);}return;}
+  if(!exposed)return;
   const cells=a.referenceDiscFlorets;
   for(let j=0;j<cells;j++){const rn=Math.sqrt((j+.5)/cells),az=j*2.399963,r=DR*rn,g=flowerFrame(f,[Math.sin(az)*r,R*.07*(1-rn*rn)-FL*.65,Math.cos(az)*r],0,az),FW=FL*.20,colour=kit.shade(rand,a.flowerPalette.disc,.018);
-   if(j<Math.floor(cells*.15)){g.add('gcChrysBudRef','disc-bud-chrysanthemum-ref',colour,0,FL*.7,0,FW*.60,FL*.30,FW*.60);continue;}
+   if(j<Math.floor(cells*.15)){g.add('gcChrysBudRef','disc-bud-chrysanthemum-ref',a.flowerPalette.discBud||colour,0,FL*.7,0,FW*.60,FL*.30,FW*.60);continue;}
    g.add('gcChrysDiscRef','disc-corolla-chrysanthemum-ref',colour,0,0,0,FW,FL,FW);g.add('gcChrysBudRef','disc-inferior-ovary-chrysanthemum-ref','#a2a974',0,-FL*.12,0,FW*.35,FL*.12,FW*.35);
    for(let k=0;k<5;k++){const aa=k*TAU/5;line(g,[Math.sin(aa)*FW*.20,FL*.14,Math.cos(aa)*FW*.20],[Math.sin(aa)*FW*.20,FL*.70,Math.cos(aa)*FW*.20],FW*.03,'disc-filament-chrysanthemum-ref',colour);}
    g.add('gcChrysAntherRef','disc-anther-tube-chrysanthemum-ref',colour,0,FL*.64,0,FW*.50,FL*.23,FW*.50);line(g,[0,FL*.15,0],[0,FL*1.05,0],FW*.05,'disc-style-chrysanthemum-ref',colour);for(const side of [-1,1])line(g,[0,FL*1.05,0],[side*FW*.34,FL*1.18,0],FW*.04,'disc-stigma-branch-chrysanthemum-ref',colour);
