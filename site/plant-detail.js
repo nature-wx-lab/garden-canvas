@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.562';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.563';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.562';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.563';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -12196,6 +12196,8 @@ function drawHeucherella(b,{info,s,detail,rand},kit){
  }
  if(!s.bloom)return;
  const n=a.flowerAbundance==='rare'?1:Math.max(3,Math.round((typ==='bridget'?11:trailing?8:9)*detail)),r=a.flowerRadius,stem=a.stemColor;
+ const inspectionStem=Array.from({length:n},(_,i)=>{const root=crowns[i%crowns.length]||[0,.012,0],az=i*2.399963;return{i,front:(root[0]+Math.sin(az)*w*.11)*.8+root[2]+Math.cos(az)*w*.11};}).reduce((best,v)=>v.front>best.front?v:best).i;
+ let inspectionTargets=0;
  for(let i=0;i<n;i++){
   const root=crowns[i%crowns.length]||[0,.012,0],az=i*2.399963,top=[root[0]+Math.sin(az)*w*.11,h*(.80+rand()*.17),root[2]+Math.cos(az)*w*.11],len=Math.min(a.inflorescenceLength,h*.52),bottom=[top[0]*.9,Math.max(root[1]+.01,top[1]-len),top[2]*.9];
   b.branch(root,bottom,.0012,stem,'scape-heucherella');b.branch(bottom,top,.0008,stem,'raceme-heucherella');
@@ -12204,11 +12206,16 @@ function drawHeucherella(b,{info,s,detail,rand},kit){
    const t=(j+.5)/count,an=j*2.399963,at=bottom.map((v,k)=>v+(top[k]-v)*t),rad=(.010+(1-t)*.014)*(typ==='tapestry'?1.45:1),pt=[at[0]+Math.sin(an)*rad,at[1]+.003,at[2]+Math.cos(an)*rad];
    b.branch(at,pt,.00022,stem,'pedicel-heucherella');
    if(t>.86||rand()>s.flowerDensity){b.add(kit.bud,'bud-heucherella',s.flowerColor,...pt,r*.36,r*.50,r*.36);continue;}
-   const f=flowerFrame(b,pt,1.78+rand()*.40,an),calyx=typ==='plum'?'#b888a5':s.flowerColor;
+   const pitch=1.78+rand()*.40,f=flowerFrame(b,pt,pitch,an),calyx=typ==='plum'?'#b888a5':s.flowerColor;
    f.add('heucherellaCalyx','sepal-heucherella',calyx,0,0,0,r,r,r);
    for(let q=0;q<5;q++){
     const aa=q*TAU/5+.63;
     f.add('iberisEntire','petal-heucherella',s.flowerColor,Math.sin(aa)*r*.32,r*.56,Math.cos(aa)*r*.32,r*.22,r*.83,r,.46,aa,0);
+   }
+   // Inspect a rendered petal above the lower foliage, preserving the mesh and RNG.
+   if(i===inspectionStem&&t>.6&&inspectionTargets<16){
+    const facing=[1,3].map(q=>{const aa=TAU*q/5+.63,n=new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(.46+Math.PI/2,aa,0,'YXZ')).applyEuler(new THREE.Euler(pitch,an,0,'YXZ'));return{aa,front:n.x*.8+n.z};}).reduce((best,v)=>v.front>best.front?v:best),aa=facing.aa,point=new THREE.Vector3(...iberisPoint('entire',.65,0)).multiply(new THREE.Vector3(r*.22,r*.83,r)).applyEuler(new THREE.Euler(.46,aa,0,'YXZ')).add(new THREE.Vector3(Math.sin(aa)*r*.32,r*.56,Math.cos(aa)*r*.32));
+    f.flower(point.toArray(),r*.55,.46+Math.PI/2,aa);inspectionTargets++;
    }
    for(let q=0;q<a.stamenCount;q++){
     const aa=q*TAU/a.stamenCount,tip=[Math.sin(aa)*r*.44,r*1.15,Math.cos(aa)*r*.44];

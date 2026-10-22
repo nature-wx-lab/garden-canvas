@@ -5658,7 +5658,7 @@ test('Heucherella preserves palmate foliage, trailing stems and rare or stamenle
  for(const [i,[id,info]] of entries.entries())for(let month=1;month<=12;month++){
   const p=makePlant(id,6900+i,2,2),st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component.startsWith(k));
   assert.equal(st.groundDormant,false,id+':'+month);assert.ok(has('leaf-heucherella'));assert.equal(g.userData.architecture,'heucherellaCrowns');
-  assert.equal(has('petal-heucherella'),st.bloom,id+':'+month);assert.equal(has('anther-heucherella'),st.bloom&&info.appearance.stamenCount>0,id);
+  assert.equal(has('petal-heucherella'),st.bloom,id+':'+month);assert.equal(has('anther-heucherella'),st.bloom&&info.appearance.stamenCount>0,id);assert.equal(!!g.userData.flowerTargets?.length,st.bloom,id+':'+month);
   assert.equal(has('runner-heucherella'),['copper','plum','yellowstone'].includes(info.appearance.shootProfile));
   assert.ok(!has('fruit'));assert.ok(!has('seed'));
   if(st.bloom){
@@ -10237,4 +10237,14 @@ test('Six Heucherella seasonal sources use domestic spread without altering save
  assert.match(CATALOG[ids[4]].bloomText,/日本の全地域で連続開花する保証はない/);
  const doc=emptyDocument(8,6);doc.plans.A.plants=ids.map((id,i)=>({...makePlant(id,56200+i,2+(i%3)*2,2+Math.floor(i/3)*2),height:.3,spread:.6,leafHeight:.18,start:i%2?9:0}));doc.view.month=5;doc.view.year=1;doc.view.camera={position:[-1.5,.8,-.5],target:[-2,.3,-1]};const raw={...structuredClone(doc),catalogVersion:'2026-10-23.1'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
  for(const p of doc.plans.A.plants){const state=stateAt(p,doc.view);assert.equal(state.spread,.6);assert.equal(state.height,.3);assert.equal(state.leafHeight,.18);if([ids[3],ids[4]].includes(p.kind))assert.equal(stateAt(p,{...doc.view,reference:true}).spread,CATALOG[p.kind].spread[1]);}
+});
+test('Heucherella flower observation centres a rendered petal at both sizes and stays unavailable outside flowering',()=>{
+ const ids=['p-b91527c69202','p-92899f7d7023'];
+ for(const [i,id]of ids.entries())for(const size of [[.4,.4,.24],[.12,.2,.07]])for(const month of [5,1]){
+  const p={...makePlant(id,56300+i,2+i*3,2),height:size[0],spread:size[1],leafHeight:size[2]},old=structuredClone(p),v={...view(month),year:1},g=plantModel(p,v);
+  try{assert.deepEqual(p,old);assert.equal(!!g.userData.flowerTargets?.length,month===5);assert.equal(inspectionSeasonActive(p,v),month===5);if(month===1){assert.equal(flowerInspectionView(g,.8,40),null);continue;}
+   assert.equal(flowerInspectionDistanceFloor(g),.08);g.position.set(p.x-4,.012,p.z-3);g.updateMatrixWorld(true);const pose=flowerInspectionView(g,.8,40);assert.ok(pose);const camera=new PerspectiveCamera(40,.8,.01,650);camera.position.fromArray(pose.position);camera.lookAt(new Vector3(...pose.target));camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(g,true).find(h=>{const z=-h.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.ok(hit,id+' '+size+' no visible hit');assert.match(hit.object.userData.component,/^(petal|sepal|anther|filament|style|ovary)-heucherella$/,id+' '+size+' first visible hit '+hit.object.userData.component);
+  }finally{dispose(g);}
+ }
+ const doc=emptyDocument(8,6);doc.plans.A.plants=ids.map((id,i)=>({...makePlant(id,56300+i,2+i*3,2),height:.4,spread:.4,leafHeight:.24}));doc.view.month=5;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.2'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
