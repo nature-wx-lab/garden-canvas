@@ -7269,10 +7269,8 @@ test('winter loss removes the whole herbaceous plant while dormant trees keep th
 test('summer flowers preserve opposite leaves, bracted heads and the documented winter distinction',()=>{
  const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,color:'#cd66a2',shape:'amaranthHead',palette:{tip:'#e3af58'}},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
  assert.ok(parts.filter(p=>p.kind==='bract').length>50);assert.ok(parts.some(p=>p.kind==='anther'));assert.ok(!parts.some(p=>p.kind==='petal'&&p.shape==='petal'));
- for(const id of ['p-8d016a17fdc9','p-a92a80a9701a']){
-  const p=makePlant(id,413,2,2);assert.equal(CATALOG[id].appearance.arrangement,'opposite');assert.equal(seasonAt(CATALOG[id],1).groundDormant,false);
-  assert.equal(seasonAt(CATALOG[id],7).bloom,false);const g=plantModel(p,view(8));assert.ok(g.children.some(m=>m.userData.component==='petal'));dispose(g);
- }
+ const tropic=makePlant('p-8d016a17fdc9',413,2,2),tropicInfo=CATALOG[tropic.kind];assert.equal(tropicInfo.appearance.arrangement,'opposite');assert.equal(seasonAt(tropicInfo,1).groundDormant,false);assert.equal(seasonAt(tropicInfo,7).bloom,false);const tg=plantModel(tropic,view(8));try{assert.ok(tg.children.some(m=>m.userData.component==='corolla-ruellia-tropicstar-ref'));assert.ok(tg.children.some(m=>m.userData.component==='leaf-ruellia-tropicstar-ref'));}finally{dispose(tg);}
+ const tuberosa=makePlant('p-a92a80a9701a',414,2,2),tuberosaInfo=CATALOG[tuberosa.kind];assert.equal(tuberosaInfo.form,'unmodeled');assert.equal(tuberosaInfo.appearance.status,'unconfirmed');assert.equal(tuberosaInfo.appearance.arrangement,undefined);assert.equal(seasonAt(tuberosaInfo,7).bloom,false);const ug=plantModel(tuberosa,view(8));try{assert.equal(ug.userData.unmodeled,true);assert.equal(ug.children.length,1);assert.ok(ug.children[0].material.wireframe);assert.equal(ug.userData.flowerTargets?.length||0,0);}finally{dispose(ug);}
  assert.equal(plantModel(makePlant('p-4fd14a60fc7f',415,2,2),view(1)).children.length,0);
  const dry=plantModel(makePlant('p-771fe3fdbf03',416,2,2),view(1));assert.ok(dry.children.some(m=>m.userData.component==='seed'));assert.ok(!dry.children.some(m=>m.userData.component==='anther'));dispose(dry);
  const annual=makePlant('p-3cefec433578',417,2,2);assert.equal(plantModel(annual,view(1)).children.length,0);assert.equal(stateAt(annual,{...view(6),year:1}).present,false);
@@ -7655,15 +7653,13 @@ test('celosia distinguishes cockscombs, terminal Dracula heads and branched plum
  assert.ok(counts('p-7d6b310a39da')<counts('p-0d7284ac4c9f'));
 });
 
-test('monarda winter seed stems keep their height while Bergamo remains a flowering-cycle annual',()=>{
+test('monarda retained winter heads respect grower conditions while Bergamo remains a flowering-cycle annual',()=>{
  for(const id of ['p-1d891e02bfb8','p-1c5cbca2e8b7']){
   const p=makePlant(id,553,2,2),summer=plantModel(p,view(7)),winter=plantModel(p,view(1));
-  const stems=g=>g.children.find(m=>m.geometry.userData.squareStem);assert.ok(stems(summer));assert.ok(stems(winter));assert.deepEqual([...stems(summer).instanceMatrix.array],[...stems(winter).instanceMatrix.array]);
-  assert.deepEqual(summer.scale.toArray(),winter.scale.toArray());assert.ok(winter.children.some(m=>(m.userData.component==='seed'||m.userData.component==='seed-domestica-reference')));assert.ok(!winter.children.some(m=>m.userData.component.startsWith('petal')));
-  assert.ok(summer.children.some(m=>m.geometry.userData.monardaTube));dispose(summer);dispose(winter);
+  try{const stems=g=>g.children.find(m=>m.userData.component==='main-stem-ogis-monarda-colour-ref');assert.ok(stems(summer));assert.ok(stems(winter));assert.equal(stems(summer).geometry.parameters.radialSegments,4);assert.deepEqual([...stems(summer).instanceMatrix.array],[...stems(winter).instanceMatrix.array]);assert.deepEqual(summer.scale.toArray(),winter.scale.toArray());assert.ok(summer.children.some(m=>m.userData.component==='corolla-tube-ogis-monarda-colour-ref'));assert.ok(winter.children.some(m=>m.userData.component==='dry-receptacle-ogis-monarda-colour-ref'));assert.ok(winter.children.some(m=>m.userData.component==='dry-calyx-ogis-monarda-colour-ref'));assert.ok(!winter.children.some(m=>/^(corolla|upper-lip|lower-lip|leaf|seed|fruit)/.test(m.userData.component)));assert.equal(winter.userData.flowerTargets?.length||0,0);}finally{dispose(summer);dispose(winter);}
  }
  const berg=makePlant('p-0d0942c2daa1',554,2,2);assert.equal(CATALOG[berg.kind].life,'annual');assert.equal(stateAt(berg,view(10)).groundDormant,true);assert.equal(stateAt(berg,{...view(7),year:1}).present,false);
- assert.equal(plantModel(makePlant('p-521d2705f039',555,2,2),view(1)).children.length,0);
+ const vivian=plantModel(makePlant('p-521d2705f039',555,2,2),view(1));try{assert.equal(CATALOG['p-521d2705f039'].appearance.persistence,'unknown');assert.ok(vivian.children.some(m=>m.userData.component==='leaf-retail-monarda-ref'));assert.equal(vivian.userData.flowerTargets?.length||0,0);}finally{dispose(vivian);}
 });
 
 test('gaillardias have distinct ray proportions and patterns and documented winter dieback',()=>{
