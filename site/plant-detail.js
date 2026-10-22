@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.545';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.546';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.545';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.546';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='fineAmsoniaReferences'){drawFineAmsoniaReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='stormcloudReferences'){drawStormcloudReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='amsoniaEllipticaReferences'){drawAmsoniaEllipticaReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='tulbaghiaReferences'){drawTulbaghiaReferences(b,{info,s,month,rand},kit);return;}
@@ -24800,4 +24801,53 @@ function drawStormcloudReferences(b,{info,s,month,rand},kit){
   shoot(fork,side,aa,q);
  }
 
+}
+
+export function fineAmsoniaReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='gcFineAmsoniaLeafRef')return[u*.5*sn**.74,.025*sn*u*u+.11*t*t,t];
+ if(type==='gcFineAmsoniaLobeRef')return[u*.5*sn**.78+.055*sn,.04*sn*(1-u*u)+.07*t*t,t];
+ if(type==='gcFineAmsoniaCalyxRef')return[u*.5*sn**1.1,.08*t*t,t];
+ const az=u*Math.PI,rad=.80+.20*Math.sin(Math.PI*t*.85);return[Math.sin(az)*rad,t,Math.cos(az)*rad];
+}
+function drawFineAmsoniaReferences(b,{info,s,month,rand},kit){
+ const a=info.appearance,cfg=a.flowerPalette,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),live=!!s.bloom,budding=!!s.flowerBuds,SR=Math.min(.0012,h*.007,w*.008,LH*.015),TL=Math.min(cfg.tubeLength,h*.06,w*.04),TR=Math.min(cfg.tubeRadius,TL*.12),PL=Math.min(cfg.lobeLength,h*.04,w*.025),PW=PL*cfg.lobeWidth/cfg.lobeLength,CL=Math.min(cfg.calyxLength,TL*.25),stem=a.stemColor,autumn=[10,11].includes(month),spring=[3,4,5].includes(month),winter=[1,2,12].includes(month);
+ const line=(frame,from,to,r,kind,color=stem)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.75));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('gcFineAmsoniaStemRef',kind+'-fine-amsonia-ref',color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const leaf=(node,yaw,ratio,ceiling)=>{
+  const L=Math.min(a.leafLength*ratio,w*.16,ceiling*.28,Math.max(0,ceiling-node[1])*.85),W=L*a.leafWidth/a.leafLength,petiole=0,at=[node[0]+Math.sin(yaw)*petiole,node[1]+petiole*.12,node[2]+Math.cos(yaw)*petiole];
+  if(L<1e-10)return;line(null,node,at,Math.min(SR*.12,L*.008),'petiole');const frame=flowerFrame(b,at,-.18,yaw);
+  frame.add('gcFineAmsoniaLeafRef','leaf-fine-amsonia-ref-'+a.shootProfile+(autumn?'-autumn':'-green'),kit.shade(rand,s.leafColor,.025),0,0,0,W,L,L);
+  if(cfg.leafMarginHairs&&spring&&node[1]>ceiling*.5){for(let k=1;k<=cfg.leafMarginHairs/2;k++)for(const side of [-1,1]){const t=.12+k*.11,pt=fineAmsoniaReferencePoint('gcFineAmsoniaLeafRef',t,side),from=pt.map((v,j)=>v*(j===0?W:L)),hair=Math.min(.00025,W*.06,L*.008),to=[from[0]+side*hair,from[1]+hair*.25,from[2]+hair*.15];line(frame,from,to,hair*.09,'leaf-margin-hair','#d3d8c1');}}
+  let prev=null;for(let k=0;k<=10;k++){const p=fineAmsoniaReferencePoint('gcFineAmsoniaLeafRef',k/10,0).map((v,j)=>v*(j===0?W:L));p[1]+=L*.001;if(prev)line(frame,prev,p,L*.003,'leaf-vein',autumn?'#b69d54':'#81955f');prev=p;}
+ };
+ let flowerIndex=0;
+ const flower=(origin,yaw)=>{
+  const index=flowerIndex++,frame=flowerFrame(b,origin,.18+.55*((index%7)/7),yaw),closed=budding||index%6===5,colour=kit.shade(rand,s.flowerColor,.018);
+  for(let k=0;k<cfg.calyxLobes;k++){const aa=k*TAU/cfg.calyxLobes,g=flowerFrame(frame,[Math.sin(aa)*TR*.6,0,Math.cos(aa)*TR*.6],.18,aa);g.add('gcFineAmsoniaCalyxRef','calyx-lobe-fine-amsonia-ref',stem,0,0,0,CL*.20,CL,CL);}
+  if(closed){frame.add('gcFineAmsoniaRoundRef','flower-bud-fine-amsonia-ref',cfg.tube,0,TL*.5,0,TR*1.1,TL*.52,TR*1.1);return;}
+  frame.add('gcFineAmsoniaTubeRef','corolla-tube-fine-amsonia-ref',cfg.tube,0,0,0,TR,TL,TR);
+  for(let k=0;k<cfg.corollaLobes;k++){
+   const aa=k*TAU/cfg.corollaLobes,g=flowerFrame(frame,[Math.sin(aa)*TR*.78,TL,Math.cos(aa)*TR*.78],-.035,aa+.09);
+   g.add('gcFineAmsoniaLobeRef','corolla-lobe-fine-amsonia-ref',colour,0,0,0,PW,PL,PL);
+   if(index===0&&k===0){const rows=24,cols=16,vs=[[17/rows,0],[18/rows,0],[17/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...fineAmsoniaReferencePoint('gcFineAmsoniaLobeRef',t,u)).multiply(new THREE.Vector3(PW,PL,PL))),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');g.flower(centre.toArray(),PL,pose.x,pose.y,pose.z);}
+  }
+  for(let k=0;k<cfg.throatHairs;k++){const aa=k*2.399963,y=TL*(.91+.08*((k%5)/5)),from=[Math.sin(aa)*TR*.95,y,Math.cos(aa)*TR*.95],to=[Math.sin(aa)*TR*.48,y+TL*.015,Math.cos(aa)*TR*.48];line(frame,from,to,TL*.0025,'throat-hair','#d8e2df');}
+  // The species has included stamens; domestic photographs do not resolve their geometry.
+ };
+ if(!s.leafDensity&&!live&&!budding)return;
+ const shoot=(root,tip,yaw,q,shootHeight,ceiling,hasFlowers)=>{
+  let prev=root;for(let k=1;k<=cfg.leafNodes;k++){const t=k/cfg.leafNodes,node=root.map((v,n)=>v+(tip[n]-v)*t);line(null,prev,node,SR*(1-.35*t),'main-stem');if((k-.2)/cfg.leafNodes<s.leafDensity)leaf(node,yaw+k*2.399963,1-.35*t,ceiling);prev=node;}
+  if(!hasFlowers||(!live&&!budding))return;
+  const top=[tip[0],Math.max(tip[1],shootHeight*(.94-.07*q)-TL-PL),tip[2]];line(null,tip,top,SR*.45,'thyrse-axis');
+  for(let level=0;level<3;level++)for(const side of [-1,1]){
+   const t=.25+level*.30,start=tip.map((v,n)=>v+(top[n]-v)*t),aa=yaw+side*(.9+level*.32),reach=Math.min(.020,w*.065,h*.07)*(1-level*.14),end=[top[0]+Math.sin(aa)*reach,top[1]-shootHeight*(.022+level*.018),top[2]+Math.cos(aa)*reach];line(null,start,end,SR*.18,'cyme-branch');
+   for(let j=0;j<3;j++){const az=aa+j*2.399963,PD=Math.min(.004,w*.018,h*.022),head=[end[0]+Math.sin(az)*PD,end[1]+PD*(.45+j*.16),end[2]+Math.cos(az)*PD];line(null,end,head,SR*.10,'pedicel');flower(head,az);}
+  }
+ };
+ const hub=a.shootProfile==='hubrichtii',early=hub&&month<=6,flowerHeight=h*(early?.44:1),leafCeiling=Math.min(LH,flowerHeight*.78);
+ for(let i=0;i<cfg.stems;i++){
+  const yaw=i*2.399963,q=Math.sqrt((i+.5)/cfg.stems),root=[Math.sin(yaw)*w*.055*q,SR*1.3,Math.cos(yaw)*w*.055*q],tip=[Math.sin(yaw)*w*.24*q,Math.min(leafCeiling*.87,flowerHeight*.75),Math.cos(yaw)*w*.24*q];
+  shoot(root,tip,yaw,q,flowerHeight,leafCeiling,true);
+  if(!hub||month>=6){const fork=root.map((v,k)=>v+(tip[k]-v)*.46),aa=yaw+(i%2?-.95:.95),side=[tip[0]+Math.sin(aa)*w*.13,Math.min(LH*.80,h*.69),tip[2]+Math.cos(aa)*w*.13];shoot(fork,side,aa,q,h,LH,!hub);}
+ }
 }
