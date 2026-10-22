@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.541';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.542';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.541';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.542';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='delavayiReferences'){drawDelavayiReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='chrysanthemumReferences'){drawChrysanthemumReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='annLeysReferences'){drawAnnLeysReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='gardenAsterReferences'){drawGardenAsterReferences(b,{info,s,month,rand},kit);return;}
@@ -24594,6 +24595,76 @@ function drawChrysanthemumReferences(b,{info,s,month,rand},kit){
   for(let j=0;j<branches;j++){const t=.46+j*.17,start=root.map((v,k)=>v+(tip[k]-v)*(k===1?t:t*t)),az=yaw+(j%2?-.90:.90)+j*.25,sideY=h*(.89-.12*q-j*.035)-allowance,end=[tip[0]+Math.sin(az)*w*.10,Math.min(LH*(.88-.10*q),(live||budding)?sideY-clearance:h),tip[2]+Math.cos(az)*w*.10];line(null,start,end,SR*.40,'lateral-stem-chrysanthemum-ref',stem);
    if(s.leafDensity)for(let k=1;k<=4;k++)if((k-.2)/4<s.leafDensity)leaf(start.map((v,n)=>v+(end[n]-v)*k/4),az+k*2.399963,a.leafLength*(.70-k*.10));
    if(live||budding){const top=[end[0],sideY,end[2]];line(null,end,top,SR*.33,'head-stalk-chrysanthemum-ref',stem);head(top,az,cohort);}
+  }
+ }
+}
+
+// Domestic nursery photographs with qualified Thalictrum delavayi species anatomy.
+export function delavayiReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='gcDelavayiSepalRef')return[u*.5*sn**.62,.065*sn*u*u+.12*t*t,t-.025*Math.abs(u)*t**8];
+ const width=.5*Math.sin(Math.PI*t*.75)**.55*Math.min(1,t*6);
+ return[u*width,.045*sn*u*u+.045*t*t,t-.09*(1-Math.cos(u*Math.PI*3))*t**10];
+}
+function drawDelavayiReferences(b,{info,s,month,rand},kit){
+ const a=info.appearance,cfg=a.flowerPalette,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),live=!!s.bloom,budding=!!s.flowerBuds,SR=Math.min(.0016,h*.006,w*.004,LH*.008),SL=Math.min(a.flowerLength,w*.030,h*.045),SW=SL*cfg.flowerWidth/a.flowerLength,FL=Math.min(cfg.filamentLength,SL*.80),AL=Math.min(cfg.antherLength,FL*.20),stem=a.stemColor;
+ const line=(frame,from,to,r,kind,color=stem)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.75));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('gcDelavayiStemRef',kind+'-delavayi-ref',color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const compound=(origin,yaw)=>{
+  const L=Math.min(a.leafLength,w*.15,LH*.18,Math.max(0,LH-origin[1])*.80),LL=Math.min(cfg.leafletLength,L*.22,w*.045,LH*.06),LW=LL*cfg.leafletWidth/cfg.leafletLength;
+  if(L<1e-10||LL<1e-10)return;
+  const frame=flowerFrame(b,origin,-.10,yaw);
+  const divide=(from,az,len,depth)=>{
+   if(depth===0){
+    const leaf=flowerFrame(frame,from,-.12,az),colour=kit.shade(rand,s.leafColor,.025);
+    leaf.add('gcDelavayiLeafletRef','leaf-delavayi-ref',colour,0,0,0,LW,LL,LL);
+    let prev=null;for(let j=0;j<=8;j++){const p=delavayiReferencePoint('gcDelavayiLeafletRef',j/8,0).map((v,k)=>v*(k===0?LW:LL));p[1]+=LL*.001;if(prev)line(leaf,prev,p,LL*.003,'leaf-vein','#8c9c7c');prev=p;}
+    return;
+   }
+   const end=[from[0]+Math.sin(az)*len,from[1]+len*.025,from[2]+Math.cos(az)*len];
+   line(frame,from,end,Math.min(SR*.24,LL*.018),'leaf-rachis-order'+(4-depth));
+   divide(end,az,len*.60,depth-1);
+   for(const side of [-1,1])divide(from.map((v,k)=>v+(end[k]-v)*.62),az+side*1.02,len*.60,depth-1);
+  };
+  // Three connected levels are a chosen reduced compound-leaf layout, not a measured leaf count.
+  divide([0,0,0],0,L,3);
+ };
+ if(!s.leafDensity&&!live&&!budding)return;
+ let headIndex=0;
+ const flower=(origin,yaw)=>{
+  const index=headIndex++,closed=budding||live&&index%5===4,tilt=1.72+.34*Math.sin(index*1.73),frame=flowerFrame(b,origin,tilt,yaw),colour=kit.shade(rand,s.flowerColor,.018);
+  frame.add('gcDelavayiRoundRef','receptacle-delavayi-ref',stem,0,-SL*.04,0,SL*.12,SL*.08,SL*.12);
+  if(closed){frame.add('gcDelavayiRoundRef','flower-bud-delavayi-ref',colour,0,SL*.22,0,SL*.27,SL*.42,SL*.27);return;}
+  for(let k=0;k<a.sepalCount;k++){
+   const az=k*TAU/4+.10*Math.sin(index),g=flowerFrame(frame,[Math.sin(az)*SL*.08,0,Math.cos(az)*SL*.08],-.10,az);
+   g.add('gcDelavayiSepalRef','sepal-delavayi-ref-'+a.shootProfile,colour,0,0,0,SW,SL,SL);
+   if(index===0&&k===0){const rows=24,cols=16,vs=[[17/rows,0],[18/rows,0],[17/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...delavayiReferencePoint('gcDelavayiSepalRef',t,u)).multiply(new THREE.Vector3(SW,SL,SL))),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');g.flower(centre.toArray(),SL,pose.x,pose.y,pose.z);}
+  }
+  for(let k=0;k<a.stamenCount;k++){
+   const az=k*2.399963,q=Math.sqrt((k+.5)/a.stamenCount),root=[Math.sin(az)*SL*.095,SL*.025,Math.cos(az)*SL*.095],tip=[Math.sin(az)*FL*(.25+.42*q),FL*(.90-.35*q),Math.cos(az)*FL*(.25+.42*q)];
+   line(frame,root,tip,FL*.012,'filament',cfg.filament);
+   const direction=new THREE.Vector3(...tip).sub(new THREE.Vector3(...root)).normalize(),pose=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction),'YXZ');
+   frame.add('gcDelavayiRoundRef','anther-delavayi-ref',kit.shade(rand,cfg.anther,.02),...tip,AL*.22,AL*.50,AL*.22,pose.x,pose.y,pose.z);
+  }
+  for(let k=0;k<a.pistilCount;k++){
+   const az=k*2.399963,r=SL*.105*Math.sqrt((k+.5)/a.pistilCount),root=[Math.sin(az)*r,SL*.10,Math.cos(az)*r],top=[root[0]*1.15,SL*.23,root[2]*1.15];
+   frame.add('gcDelavayiRoundRef','carpel-delavayi-ref','#98a775',...root,SL*.027,SL*.08,SL*.027);
+   line(frame,root,top,SL*.008,'short-style','#c3c79a');
+  }
+ };
+ for(let i=0;i<cfg.stems;i++){
+  const yaw=i*2.399963,q=Math.sqrt((i+.5)/cfg.stems),root=[Math.sin(yaw)*w*.035,SR*1.3,Math.cos(yaw)*w*.035],tip=[Math.sin(yaw)*w*.11*q,Math.min(LH*.84,h*.69),Math.cos(yaw)*w*.11*q];
+  let prev=root;for(let k=1;k<=8;k++){const t=k/8,node=root.map((v,n)=>v+(tip[n]-v)*t);line(null,prev,node,SR*(1-.35*t),'main-stem');prev=node;}
+  for(let k=0;k<cfg.leafSets;k++)if((k+.25)/cfg.leafSets<s.leafDensity){const t=.20+k*.20,node=root.map((v,n)=>v+(tip[n]-v)*t);compound(node,yaw+k*2.399963);}
+  if(!live&&!budding)continue;
+  const peak=[tip[0],Math.max(tip[1],h*(.96-.065*q)-SL*1.45),tip[2]];
+  line(null,tip,peak,SR*.48,'panicle-axis');
+  for(let j=0;j<cfg.panicleBranches;j++){
+   const az=yaw+j*2.399963,t=.20+j*.20,start=tip.map((v,n)=>v+(peak[n]-v)*t),reach=w*(.16-.025*j),end=[tip[0]+Math.sin(az)*reach,peak[1]-h*(.025+j*.030),tip[2]+Math.cos(az)*reach];
+   line(null,start,end,SR*.27,'panicle-branch');
+   for(let k=0;k<cfg.flowersPerBranch;k++){
+    const frac=.42+k*.29,base=start.map((v,n)=>v+(end[n]-v)*frac),pedicel=Math.min(.018,w*.030,h*.035),aa=az+(k%2?-.8:.8),hook=[base[0]+Math.sin(aa)*pedicel*.65,base[1]+pedicel*.55,base[2]+Math.cos(aa)*pedicel*.65],head=[hook[0]+Math.sin(aa)*pedicel*.20,hook[1]-pedicel*.32,hook[2]+Math.cos(aa)*pedicel*.20];
+    line(null,base,hook,SR*.13,'pedicel');line(null,hook,head,SR*.11,'pedicel');flower(head,aa);
+   }
   }
  }
 }
