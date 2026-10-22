@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.549';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.550';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.549';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.550';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17086,6 +17086,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='ruelliaTropicstarReference'){drawRuelliaTropicstarReference(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='woodlandPhloxReferences'){drawWoodlandPhloxReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='mallowReferences'){drawMallowReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='retailPeachBellReferences'){drawRetailPeachBellReferences(b,{info,s,month,rand},kit);return;}
@@ -24961,5 +24962,34 @@ function drawWoodlandPhloxReferences(b,{info,s,month,rand},kit){
    if(!live&&!budding)continue;
    for(let branch=0;branch<3;branch++){const az=yaw+branch*TAU/3,reach=Math.min(.014,w*.07,h*.08),end=[top[0]+Math.sin(az)*reach,top[1]+reach*.35,top[2]+Math.cos(az)*reach];line(null,top,end,SR*.28,'cyme-branch');for(let j=0;j<3;j++){const aa=az+j*2.399963,PD=Math.min(.004,w*.015,h*.025),at=[end[0]+Math.sin(aa)*PD,end[1]+PD*(.30+j*.20),end[2]+Math.cos(aa)*PD];line(null,end,at,SR*.15,'pedicel');flower(at,aa);}}
   }
+ }
+}
+
+export function ruelliaTropicstarReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='gcRuelliaLeafRef')return[u*.5*sn**.75*(1+.025*Math.sin(7*Math.PI*t)),.035*sn*u*u+.025*t*t,t];
+ if(type==='gcRuelliaSepalRef')return[u*.5*sn**1.2,.04*t*t,t];
+ const az=u*Math.PI,flare=t<.55?.07+.11*(t/.55)**2:.18+.82*((t-.55)/.45)**1.35,edge=t**8,scallop=1-.13*edge*(1-Math.cos(5*az)),crinkle=.016*edge*Math.sin(25*az)+.008*Math.sin(5*az+19*t)*Math.sin(Math.PI*t);
+ return[Math.sin(az)*(flare*scallop+crinkle),t+.025*edge*Math.cos(5*az),Math.cos(az)*(flare*scallop+crinkle)];
+}
+function drawRuelliaTropicstarReference(b,{info,s,month,rand},kit){
+ const a=info.appearance,cfg=a.flowerPalette,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),winter=[1,2,12].includes(month),live=!!s.bloom,budding=!!s.flowerBuds,R=Math.min(cfg.diameter/2,h*.09,w*.12),FL=Math.min(cfg.length,h*.13,w*.13),SR=Math.min(.0015,h*.008,w*.008,LH*.02),tag='-ruellia-tropicstar-ref',stem=a.stemColor;
+ const line=(f,from,to,r,kind,color=stem)=>{if(!f)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.7));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(f||b).add('gcRuelliaStemRef',kind+tag,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
+ const leaf=(node,yaw,ratio)=>{const L=Math.min(a.leafLength*ratio,w*.27,LH*.65,Math.max(0,LH-node[1])*.75),W=L*a.leafWidth/a.leafLength;if(L<1e-10)return;const f=flowerFrame(b,node,-.28,yaw);f.add('gcRuelliaLeafRef','leaf'+tag,kit.shade(rand,s.leafColor,.025),0,0,0,W,L,L);};
+ const fitFlowerBase=at=>{const reach=Math.hypot(at[0],at[2]),limit=Math.max(0,w*.50-R-FL);if(reach>limit&&reach>0){at[0]*=limit/reach;at[2]*=limit/reach;}return at;};
+ let flowerIndex=0;
+ const flower=(at,yaw)=>{const index=flowerIndex++,closed=budding||index%4===3,f=flowerFrame(b,at,.72,yaw);
+  for(let k=0;k<5;k++){const az=k*TAU/5,g=flowerFrame(f,[Math.sin(az)*R*.045,0,Math.cos(az)*R*.045],.15,az),L=Math.min(.008,FL*.35);g.add('gcRuelliaSepalRef','calyx-lobe'+tag,stem,0,0,0,L*.14,L,L);}
+  if(closed){f.add('gcRuelliaRoundRef','flower-bud'+tag,cfg.tubeColor,0,FL*.42,0,R*.12,FL*.45,R*.12);return;}
+  f.add('gcRuelliaFunnelRef','corolla'+tag,kit.shade(rand,s.flowerColor,.015),0,0,0,R,FL,R);
+  f.add('gcRuelliaStemRef','corolla-base'+tag,cfg.throatColor,0,FL*.010,0,R*.071,FL*.020,R*.071);
+  if(index===0)f.flower([0,FL*.86,0],R);
+  // The included sexual organs are not resolved sufficiently by these stock photographs.
+ };
+ for(let i=0;i<4;i++){
+  const yaw=i*2.399963,root=[Math.sin(yaw)*w*.10,SR*1.3,Math.cos(yaw)*w*.10],top=[root[0]+Math.sin(yaw)*w*.06,h*(.77+.025*(i%3)),root[2]+Math.cos(yaw)*w*.06];line(null,root,top,SR,'main-stem');
+  for(let k=1;k<=8;k++){const t=k/8,node=[root[0]+(top[0]-root[0])*t,SR*1.3+(LH*.88-SR*1.3)*t,root[2]+(top[2]-root[2])*t];if(k/8<=s.leafDensity)for(const side of [0,1])leaf(node,yaw+k*Math.PI/2+side*Math.PI,1-.25*t);if((live||budding)&&[5,7].includes(k))for(const side of [0,1]){const az=yaw+side*Math.PI+(k===7?.7:0),at=[node[0]+Math.sin(az)*w*.16,node[1]+Math.min(h*.10,FL*.90),node[2]+Math.cos(az)*w*.16];fitFlowerBase(at);line(null,node,at,SR*.35,'peduncle');flower(at,az);}}
+  const start=root.map((v,j)=>v+(top[j]-v)*.46),end=[start[0]+Math.sin(yaw+.9)*w*.18,h*.72,start[2]+Math.cos(yaw+.9)*w*.18];line(null,start,end,SR*.60,'side-stem');
+  for(let k=1;k<=4;k++){const t=k/4,node=start.map((v,j)=>v+(end[j]-v)*t);node[1]=Math.min(node[1],LH*.86);if(k/4<=s.leafDensity)for(const side of [0,1])leaf(node,yaw+.9+k*Math.PI/2+side*Math.PI,.72);if(k===4&&(live||budding))for(const side of [0,1]){const az=yaw+.9+side*Math.PI,at=[node[0]+Math.sin(az)*w*.15,node[1]+Math.min(h*.09,FL*.85),node[2]+Math.cos(az)*w*.15];fitFlowerBase(at);line(null,node,at,SR*.30,'peduncle');flower(at,az);}}
  }
 }
