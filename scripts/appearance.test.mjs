@@ -10932,3 +10932,22 @@ test('Good Pink Manners hood keeps its attached quarter and a rounded domed term
  console.log('PHYSOSTEGIA_610_HOOD '+JSON.stringify({vertices:points.length,triangles,preservedBaseVertices:preserved,minAreaSq,minXZArea,terminalWidthRatio:terminalWidth/maxWidth,terminalDome:dome,roundedFront:roundedEnd}));
  const doc=emptyDocument(10,6);doc.plans.A.plants=[[.65,.4,.30],[.14,.2,.06]].map((dims,i)=>({...makePlant('p-2170af3d50b2',610000+i,2+i*3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=7;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.49'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
+
+test('Good Pink Manners lower lip shader retains spatial phases with broader spots and working linear colours',()=>{
+ const id='p-2170af3d50b2',sizes=[[.65,.4,.30],[.14,.2,.06]],plants=[],paletteBefore=structuredClone(CATALOG[id].appearance.flowerPalette),mask='float pmPale=1.0-smoothstep(.18,.70,vUv.y);float pmSpot=pow(max(0.0,cos(vUv.x*40.0+sin(vUv.y*26.0))*cos(vUv.y*48.0)),4.0);';let models=0;
+ const compile=material=>{const shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>\n#include <project_vertex>\n#include <worldpos_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};material.onBeforeCompile(shader,{});return shader;};
+ for(const[si,dims]of sizes.entries()){
+  const p={...makePlant(id,61100+si,2+si*3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),g=plantModel(p,{...view(7),year:1});models++;
+  try{const lip=g.children.find(m=>m.userData.component==='petal-physostegia'),hood=g.children.find(m=>m.userData.component==='hood-physostegia');assert.ok(lip?.isInstancedMesh&&lip.count>0,'actual lower lip material');assert.ok(hood?.isInstancedMesh&&hood.count>0,'actual upper hood material');const shader=compile(lip.material),source=shader.fragmentShader;
+   assert.equal(source.split(mask).length-1,1,'same pale placement frequencies and fourth-power spot mask');assert.ok(source.includes('#include <color_fragment>')&&source.includes('#include <emissivemap_fragment>'),'existing shader includes retained');assert.deepEqual(Object.keys(shader.uniforms).sort(),['gardenStrength','gardenTime']);for(const uniform of Object.values(shader.uniforms))assert.ok(Number.isFinite(uniform.value),'finite wind uniform');
+   for(const text of[shader.vertexShader,source]){assert.ok(!text.includes('\\n'),'no literal backslash-n');for(const token of['undefined','NaN','Infinity','${'])assert.ok(!text.includes(token),'no JavaScript token '+token);}
+   // These are display colour candidates, not measured pigment values or a claim about the original author's intent.
+   for(const[name,hex,expression]of[['pale','#f7e8fa',/vec3\(([^)]+)\),pmPale\*\.50\)/],['spots','#8c4596',/vec3\(([^)]+)\),pmSpot\*vUv\.y\*\.90\)/]]){
+    const match=source.match(expression);assert.ok(match,name+' keeps its expected UV factor and display mix strength');const literals=match[1].split(','),values=literals.map(Number),linear=new Color(hex),srgb=linear.clone().convertLinearToSRGB();assert.equal(values.length,3,name+' vec3 channels');
+    for(const[ci,channel]of['r','g','b'].entries()){assert.match(literals[ci],/^\d+\.\d{8}$/,'finite floating GLSL literal');assert.ok(Number.isFinite(values[ci]));assert.ok(Math.abs(values[ci]-linear[channel])<1e-7,name+' working-linear '+channel);assert.ok(Math.abs(values[ci]-srgb[channel])>1e-3,name+' encoded sRGB is not injected for '+channel);}
+   }
+   const hoodShader=compile(hood.material);assert.ok(!hoodShader.fragmentShader.includes('pmPale')&&!hoodShader.fragmentShader.includes('pmSpot'),'upper hood receives no lower lip mask');assert.deepEqual(p,before,'saved input unchanged');assert.deepEqual(CATALOG[id].appearance.flowerPalette,paletteBefore,'existing palette unchanged');plants.push(p);
+  }finally{dispose(g);}
+ }assert.equal(models,2);
+ const doc=emptyDocument(10,6);doc.plans.A.plants=plants;doc.view.month=7;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.50'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});
