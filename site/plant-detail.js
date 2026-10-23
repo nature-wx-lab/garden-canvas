@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.582';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.583';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.582';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.583';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -12505,7 +12505,7 @@ function drawDianthus(b,{info,s,detail,rand},kit){
  if(s.groundDormant)return;
  let inspection=null,inspectionScore=-Infinity;
  const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,mat=['deltoides','arenarius'].includes(type),cluster=type==='barbatus',arching=type==='orihime',winter=[12,1,2].includes(s.month),green=s.leafColor,stem=a.stemColor,L=Math.min(a.leafLength,w*.45),lk=foliageKind(info);
- const varied=['superbus','arenarius','deltoides','orihime'].includes(type);
+ const varied=['superbus','arenarius','deltoides','orihime','knappii','barbatus'].includes(type);
  const leaf=(at,az,len,pitch=1.0)=>{
   // Consume the original colour variation even when an upper leaf is omitted.
   const color=kit.shade(rand,green,.04),room=Math.min(s.height,s.leafHeight)-at[1];
