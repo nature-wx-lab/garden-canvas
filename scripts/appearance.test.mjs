@@ -10,6 +10,7 @@ import {plantModel} from '../site/vegetation.js';
 import {drawTree} from '../site/tree-model.js';
 import {meadowTrifoliumPoint,bronzeArmeriaPoint,asclepiasPoint,parrotBranchTulipPoint,pinkRainLilyPoint,DOUBLE_TULIP_PROFILES,doubleTulipPoint,MINOR_TULIP_TYPES,minorTulipPoint,slenderTulipPoint,SINGLE_TULIP_PROFILES,singleTulipPoint,cannaReferencePoint,gardenAnemonePoint,alliumReferencePoint,daylilyReferencePoint,iridSpikePoint,irisReferencePoint,retailLilyPoint,freesiaReferencePoint,miniIrisPoint,hyacinthReferencePoint,narcissusCupPoint,nativeLilyPoint,martagonReferencePoint,narcissusReferencePoint,borderTulipPoint,retailTulipPoint,camassiaPoint,autumnCyclamenPoint,coumPoint,convallariaPoint,fritillariaPoint,spanishBluebellPoint,englishBluebellPoint,tecophilaeaPoint,acisPoint,fawnLilyPoint,earlySquillPoint,grapeHyacinthPoint,snowdropPoint,resedaPoint,acaenaPoint,chloranthusPoint,berzeliaPoint,asteliaPoint,convolvulusPoint,trainedVineSurfacePoint,eryngoSurfacePoint,soapwortPoint,balloonPoint,detailedFlower,drawDetailedHerb,fescueReferencePoint,otherCarexPoint,blueCarexPoint,fineCarexPoint,oshimensisPoint,ophiopogonPoint,liriopePoint,hakonechloaPoint,stipoidPoint,calamagrostisPoint,panicumPoint,tallEupatorieaePoint,muhlenbergiaPoint,eupatorieaePoint,aegopodiumPoint,ligulariaPoint,oxypetalumPoint,patriniaPoint,heleniumPoint,heliopsisPoint,echinopsPoint,oreganoPoint,swanAnemonePoint,echinaceaPoint,veronicaPoint,veronicastrumPoint,baptisiaPoint,BAPTISIA_PROFILES,tanacetumPoint,arctotisPoint,emperorDahliaPoint,darkDahliaPoint,decorativeDahliaPoint,maxiDahliaPoint,MAXI_DAHLIA_PROFILES,rudyPoint,eucomisPoint,paraneePoint,somekawaPoint,queenMoonPoint,moonCupGeometry,rustySagePoint,gardenBellPoint,coniferShootGeometry,CONIFER_SHOOTS,hamamelidPoint,syringaLeafPoint,camelliaLeafPoint,namedTreeSkeleton,roseLeafPoint,vincaPoint,syneilesisPoint,artichokePoint,dianthusPetalPoint,raggedRobinPoint} from '../site/plant-detail.js';
 import {foliageKind,TRAIT_VALUES,appearanceSummary} from '../site/appearance.js';
+import {physostegiaPoint} from '../site/plant-detail.js';
 const view=month=>({month,year:0,reference:false});
 const dispose=g=>{for(const m of g.children){m.geometry?.dispose();if(m.isInstancedMesh)m.dispose();}};
 test('Two separate Hosta catalog references reuse verified cultivars while preserving blank Latin independent identities and source months',()=>{
@@ -10899,4 +10900,25 @@ test('Good Pink Manners saved dimensions bound attached opposite leaves and wint
  };
  for(const dims of sizes)for(let month=1;month<=12;month++)check(dims,month);for(const dims of tiny)for(const month of[7,10])check(dims,month);assert.equal(models,30);assert.equal(basalModels,8);assert.ok(directPairs>0,'legal minimum inputs exercise actual direct pair attachment');
  const doc=emptyDocument(10,6);doc.plans.A.plants=[...sizes,...tiny].map((dims,i)=>({...makePlant(id,608000+i,1+i*1.8,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=7;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.47'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});
+
+test('Good Pink Manners tube belly preserves its end rings axis and five other organ surfaces without degenerate triangles',()=>{
+ // Frozen pre609 point formulas protect the unchanged organs and original tube ends.
+ const beforePoint=(type,t,u)=>{
+  const sn=Math.max(0,Math.sin(Math.PI*t));
+  if(type==='physostegiaLeaf')return [u*.53*sn**.83*(1-.16*t)*(1+.09*(Math.abs((t*17%1)*2-1)*2-1)),t,.032*u*u*sn-.07*t*t+.012*Math.sin(t*8)*u];
+  if(type==='physostegiaHood')return [u*.30*sn**.48,.10+.21*sn-.045*u*u,.70+.31*t-.02*Math.exp(-u*u*60)*t**4];
+  if(type==='physostegiaLip')return [u*(.045+.31*sn**.47)*(1+.17*Math.cos(u*Math.PI*3)),-.035-.14*t-.04*u*u,.68+.35*t-.045*t*t+.024*Math.cos(u*Math.PI*3)*t**5];
+  const az=(u+1)*Math.PI,calyx=type==='physostegiaCalyx',bud=type==='physostegiaBud',r=calyx?.07+.055*t:bud?.05+.095*sn**.7:.047+.17*Math.sin(t*1.65)**1.3;
+  return [Math.cos(az)*r,Math.sin(az)*r+.04*t*t,calyx?.31*t-.04*Math.cos(az*5)*t**8:bud?.18+.43*t:.80*t];
+ };
+ const rows=40,cols=24,points=new Float32Array((rows+1)*(cols+1)*3),eps=1e-7;let peakIncrease=0,triangles=0,protectedPoints=0;
+ for(let row=0;row<=rows;row++){const t=row/rows,centreY=.04*t*t;let sumX=0,sumY=0;
+  for(let col=0;col<=cols;col++){const u=col/cols*2-1,current=new Float32Array(physostegiaPoint('physostegiaTube',t,u)),old=new Float32Array(beforePoint('physostegiaTube',t,u));assert.ok(current.every(Number.isFinite),'finite tube vertex '+row+'/'+col);points.set(current,(row*(cols+1)+col)*3);assert.equal(current[2],old[2],'unchanged longitudinal coordinate');if(row===0||row===rows)assert.deepEqual(current,old,'unchanged end ring '+row+'/'+col);
+   const increase=Math.hypot(current[0],current[1]-centreY)-Math.hypot(old[0],old[1]-centreY);assert.ok(increase>=-eps&&increase<=.06+eps,'bounded positive illustrative belly');if(row===rows/2)assert.ok(Math.abs(increase-.06)<eps,'middle ring receives the small belly');peakIncrease=Math.max(peakIncrease,increase);if(col<cols){sumX+=current[0];sumY+=current[1];}
+  }assert.ok(Math.abs(sumX/cols)<eps&&Math.abs(sumY/cols-centreY)<eps,'original tube centreline');
+ }assert.equal(points.length/3,1025);assert.ok(Math.abs(peakIncrease-.06)<eps,'bounded peak radial increase');
+ for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){const a=row*(cols+1)+col,b=a+cols+1,c=a+1,d=b+1,index=[a,b,c,c,b,d];for(let k=0;k<6;k+=3){const p0=new Vector3().fromArray(points,index[k]*3),p1=new Vector3().fromArray(points,index[k+1]*3),p2=new Vector3().fromArray(points,index[k+2]*3),areaSq=p1.sub(p0).cross(p2.sub(p0)).lengthSq();assert.ok(Number.isFinite(areaSq)&&areaSq>1e-12,'nondegenerate actual-index tube triangle '+triangles);triangles++;}}assert.equal(triangles,1920);
+ for(const type of['physostegiaLeaf','physostegiaHood','physostegiaLip','physostegiaCalyx','physostegiaBud']){const organRows=type==='physostegiaLeaf'?72:40;for(let row=0;row<=organRows;row++)for(let col=0;col<=cols;col++){const t=row/organRows,u=col/cols*2-1;assert.deepEqual(new Float32Array(physostegiaPoint(type,t,u)),new Float32Array(beforePoint(type,t,u)),'unchanged '+type+' vertex '+row+'/'+col);protectedPoints++;}}assert.equal(protectedPoints,5925);
+ const doc=emptyDocument(10,6);doc.plans.A.plants=[[.65,.4,.30],[.14,.2,.06]].map((dims,i)=>({...makePlant('p-2170af3d50b2',609000+i,2+i*3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=7;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.48'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });

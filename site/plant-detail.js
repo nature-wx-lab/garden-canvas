@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.608';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.609';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.608';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.609';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9718,7 +9718,8 @@ export function physostegiaPoint(type,t,u){
  if(type==='physostegiaHood')return [u*.30*sn**.48,.10+.21*sn-.045*u*u,.70+.31*t-.02*Math.exp(-u*u*60)*t**4];
  if(type==='physostegiaLip')return [u*(.045+.31*sn**.47)*(1+.17*Math.cos(u*Math.PI*3)),-.035-.14*t-.04*u*u,.68+.35*t-.045*t*t+.024*Math.cos(u*Math.PI*3)*t**5];
  const az=(u+1)*Math.PI,calyx=type==='physostegiaCalyx',bud=type==='physostegiaBud',r=calyx?.07+.055*t:bud?.05+.095*sn**.7:.047+.17*Math.sin(t*1.65)**1.3;
- return [Math.cos(az)*r,Math.sin(az)*r+.04*t*t,calyx?.31*t-.04*Math.cos(az*5)*t**8:bud?.18+.43*t:.80*t];
+ const radius=type==='physostegiaTube'?r+.06*Math.sin(Math.PI*t)**2:r;
+ return [Math.cos(az)*radius,Math.sin(az)*radius+.04*t*t,calyx?.31*t-.04*Math.cos(az*5)*t**8:bud?.18+.43*t:.80*t];
 }
 
 function drawPhysostegia(b,{info,s,detail,rand,month},kit){
