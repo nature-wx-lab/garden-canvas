@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.596';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.597';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.596';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.597';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9058,11 +9058,23 @@ export function springPhloxPoint(type,t,u){
 
 function drawSpringPhlox(b,{info,s,detail,rand,month},kit){
  const a=info.appearance,pilosa=a.shootProfile==='pilosa',h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.25,w*.15),R=a.flowerRadius*Math.min(1,h/.20),F=a.flowerLength*Math.min(1,h/.20),n=Math.max(3,Math.min(22,Math.round((pilosa?15:19)*detail*Math.sqrt(w/.5)*Math.min(1,h/.23))));
+ const ceiling=Math.min(h,s.leafHeight),floor=Math.min(.007,.30*ceiling),runnerFit=Math.min(1,Math.max(0,.55*ceiling-floor)/(.005+.028*h)),unchanged=floor===.007&&runnerFit===1,mapY=y=>unchanged?y:floor+(y-.007)*runnerFit;
  let inspection=null,inspectionScore=-Infinity;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const pair=(at,az,len,i,k)=>{
   if(noise(i,k)>s.leafDensity)return;
-  for(let side=0;side<2;side++){const aa=az+side*Math.PI,pet=len*.025,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0005,h*.003),a.stemColor,'petiole-spring-phlox');b.add('springPhloxLeaf',pilosa?'leaf-spring-phlox-hairy':'leaf-spring-phlox',kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,1.03+.25*noise(i,k+side),aa,(noise(i,k+side+72)-.5)*.2);}
+  const pet=len*.025,radius=Math.min(.0005,h*.003),ratio=a.leafWidth/a.leafLength,leaves=[];let bound=pet*.3+radius;
+  for(let side=0;side<2;side++){
+   const aa=az+side*Math.PI,pitch=1.03+.25*noise(i,k+side),roll=(noise(i,k+side+72)-.5)*.2,color=kit.shade(rand,s.leafColor,.035),cp=Math.cos(pitch),sp=Math.sin(pitch);
+   // The unchanged leaf has |X|<=.52, Y in [0,1], Z in [0,.115] before its YXZ pose.
+   const rise=Math.max(0,cp*Math.cos(roll))+.52*ratio*Math.abs(cp*Math.sin(roll))+.115*Math.max(0,-sp);
+   bound=Math.max(bound,pet*.3+len*rise);leaves.push({aa,pitch,roll,color});
+  }
+  // Consume both original shades before an upper pair is omitted.
+  const room=ceiling-at[1];if(room<=0)return;
+  const fit=Math.min(1,room/Math.max(bound,1e-8)),fitted=leaves.map(leaf=>({...leaf,end:[at[0]+Math.sin(leaf.aa)*pet*fit,at[1]+pet*.3*fit,at[2]+Math.cos(leaf.aa)*pet*fit]}));
+  const direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...at)).length()<.0001);
+  for(const leaf of fitted){if(!direct)b.branch(at,leaf.end,radius*fit,a.stemColor,'petiole-spring-phlox');b.add('springPhloxLeaf',pilosa?'leaf-spring-phlox-hairy':'leaf-spring-phlox',leaf.color,...(direct?at:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
  };
  const cyme=(base,az,i)=>{
   if(!s.bloom&&!a.budMonths.includes(month))return;
@@ -9080,9 +9092,9 @@ function drawSpringPhlox(b,{info,s,detail,rand,month},kit){
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*.7,tier=Math.sqrt((i+.5)/n),rr=w*.34*tier,root=[Math.sin(az)*rr*.35,.007,Math.cos(az)*rr*.35],end=[Math.sin(az)*rr,.012,Math.cos(az)*rr];let old=root;
+  const az=i*2.399963+(noise(i,1)-.5)*.7,tier=Math.sqrt((i+.5)/n),rr=w*.34*tier,root=[Math.sin(az)*rr*.35,.007,Math.cos(az)*rr*.35],end=[Math.sin(az)*rr,.012,Math.cos(az)*rr];let old=[root[0],mapY(root[1]),root[2]];
   for(let j=1;j<=4;j++){
-   const at=mix(root,end,j/4);at[1]+=h*.028*Math.sin(j/4*Math.PI);b.branch(old,at,Math.min(.0012,h*.004),a.stemColor,'runner-spring-phlox');old=at;pair(at,az+j*Math.PI/2,L*.75,i,j+25);
+   const at=mix(root,end,j/4);at[1]+=h*.028*Math.sin(j/4*Math.PI);at[1]=mapY(at[1]);b.branch(old,at,Math.min(.0012,h*.004),a.stemColor,'runner-spring-phlox');old=at;pair(at,az+j*Math.PI/2,L*.75,i,j+25);
    if(j!==2&&j!==4)continue;
    const aa=az+(j===2?-.4:.4),top=[at[0]+Math.sin(aa)*w*.045,at[1]+h*(.42+.21*Math.sqrt(1-tier*tier)+.11*noise(i,j+4)),at[2]+Math.cos(aa)*w*.045];let prev=at;
    for(let q=1;q<=6;q++){const t=(q+(q<6?(noise(i,q+j*10)-.5)*.6:0))/6,loc=mix(at,top,t);loc[0]+=Math.sin(aa+1)*w*.022*Math.sin(t*Math.PI);b.branch(prev,loc,Math.min(.001,h*.0036)*(1-t*.48),a.stemColor,'stem-spring-phlox');prev=loc;pair(loc,aa+q*Math.PI/2,L*(.85-.30*t),i,j*29+q);}

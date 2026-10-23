@@ -2840,8 +2840,8 @@ test('Moody Blue and Pilosa have opposite narrow leaves, loose five-lobed cymes 
   for(let month=1;month<=12;month++){
    const p={...makePlant(id,23800+i,1,1),height:small?.10:i?.35:.25,spread:small?.18:.5,leafHeight:small?.06:i?.21:.15},g=plantModel(p,view(month));
    if([12,1,2].includes(month)){assert.equal(g.userData.groundDormant,true);assert.equal(g.children.length,0);assert.match(seasonAt(info,month).phase,/低温管理/);dispose(g);continue;}
-   assert.equal(g.userData.architecture,'springPhloxTrails');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
-   const leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-spring-phlox')),count=leaves.reduce((n,m)=>n+m.count,0);assert.ok(count>0);assert.equal(count%2,0);assert.ok(leaves.every(m=>m.geometry.userData.springPhloxLeaf));assert.equal(count,g.children.find(m=>m.userData.component==='petiole-spring-phlox').count);
+   assert.equal(g.userData.architecture,'springPhloxTrails');assert.ok(g.scale.y>0&&g.scale.y<=1,'complete geometry fit only shrinks height');assert.equal(stateAt(p,view(month)).shootScale,1);
+   const leaves=g.children.filter(m=>m.userData.component.startsWith('leaf-spring-phlox')),count=leaves.reduce((n,m)=>n+m.count,0),petioles=g.children.find(m=>m.userData.component==='petiole-spring-phlox')?.count??0;assert.ok(count>0);assert.equal(count%2,0);assert.ok(leaves.every(m=>m.geometry.userData.springPhloxLeaf));assert.ok(petioles<=count);assert.equal((count-petioles)%2,0,'short petioles attach complete leaf pairs directly');
    const flowers=g.children.find(m=>m.userData.component===(i?'tube-spring-phlox-hairy':'tube-spring-phlox'));assert.equal(!!flowers,month>=3&&month<=6);if(flowers){assert.equal(g.children.find(m=>m.userData.component==='petal-spring-phlox-'+(i?'pilosa':'moody')).count,flowers.count*5);assert.equal(g.children.find(m=>m.userData.component==='eye-spring-phlox').count,flowers.count);assert.equal(g.children.find(m=>m.userData.component==='sepal-spring-phlox').count,flowers.count*5);}assert.ok(!g.children.some(m=>/filament|anther|fruit|seed|rhizome|root/.test(m.userData.component)));
    const now=g.children.filter(m=>/^(stem|runner)-spring-phlox$/.test(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(skeleton)assert.deepEqual(now,skeleton);else skeleton=now;
    for(const m of g.children){for(const arr of [m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok([...arr].every(Number.isFinite));m.computeBoundingBox();assert.ok(m.boundingBox.min.y>=-.015);assert.ok(m.boundingBox.max.y<p.height*1.15);assert.ok(Math.max(Math.abs(m.boundingBox.min.x),Math.abs(m.boundingBox.max.x),Math.abs(m.boundingBox.min.z),Math.abs(m.boundingBox.max.z))<p.spread*.75);}dispose(g);
@@ -10664,4 +10664,32 @@ test('Spring phlox observation reaches a visible lobe vertex and fits all five l
   }finally{dispose(g);}
  }assert.equal(cameraChecks,8);
  const doc=emptyDocument(10,6);doc.plans.A.plants=rows.map(([id,pid,,dims])=>({...makePlant(id,pid,4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.35'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});
+
+test('Spring phlox runners paired blades and petioles respect saved limits and attachment through dormancy and legal minimum inputs',()=>{
+ const rows=[['p-51c603bd1c65',59700,[.3,.6,.12],[.1,.2,.04]],['p-a7c8251be5c6',59701,[.4,.6,.17],[.1,.2,.04]]],tiny=[[.01,.30,.005],[.50,.10,.16],[.50,.30,.005]],eps=1e-7,attachmentEps2=(2e-7)**2;let models=0,dormantModels=0;
+ const check=(id,pid,dims,month)=>{
+  const p={...makePlant(id,pid,4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),v={...view(month),year:1},st=stateAt(p,v),g=plantModel(p,v),matrix=new Matrix4(),point=new Vector3(),label=id+' '+dims.join('/')+' month='+month,shootEnds=[],petioleBases=[],petioleTips=[],bladeBases=[],dormant=[12,1,2].includes(month);let vertices=0,leafVertices=0,petioleVertices=0,leaves=0,petioles=0;models++;
+  try{assert.equal(st.groundDormant,dormant,label+' cold-grown winter dormancy');g.updateMatrixWorld(true);g.traverse(mesh=>{
+   if(!mesh.isMesh)return;const pos=mesh.geometry.getAttribute('position'),normal=mesh.geometry.getAttribute('normal'),tag=mesh.userData.component,leaf=tag==='leaf-spring-phlox'||tag==='leaf-spring-phlox-hairy',petiole=tag==='petiole-spring-phlox',shoot=tag==='stem-spring-phlox'||tag==='runner-spring-phlox',count=mesh.isInstancedMesh?mesh.count:1;
+   assert.ok(pos&&normal,label+' geometry attributes');assert.ok(normal.array.every(Number.isFinite),label+' finite normals');if(mesh.isInstancedMesh)assert.ok(mesh.instanceMatrix.array.every(Number.isFinite),label+' finite transforms');if(mesh.instanceColor)assert.ok(mesh.instanceColor.array.every(Number.isFinite),label+' finite colours');if(leaf)leaves+=count;if(petiole)petioles+=count;
+   for(let i=0;i<count;i++){if(mesh.isInstancedMesh){mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);}else matrix.copy(mesh.matrixWorld);
+    if(shoot)shootEnds.push(new Vector3(0,-.5,0).applyMatrix4(matrix),new Vector3(0,.5,0).applyMatrix4(matrix));if(petiole){petioleBases.push(new Vector3(0,-.5,0).applyMatrix4(matrix));petioleTips.push(new Vector3(0,.5,0).applyMatrix4(matrix));}if(leaf)bladeBases.push(new Vector3().applyMatrix4(matrix));
+    for(let j=0;j<pos.count;j++){point.fromBufferAttribute(pos,j).applyMatrix4(matrix);vertices++;
+     if(!Number.isFinite(point.x)||!Number.isFinite(point.y)||!Number.isFinite(point.z))assert.fail(label+' nonfinite '+tag+' '+i+'/'+j);
+     if(point.y < -eps||point.y>st.height+eps)assert.fail(label+' ground/height '+tag+' '+point.y);
+     if(Math.hypot(point.x,point.z)*2>st.spread+eps)assert.fail(label+' spread '+tag+' '+i+'/'+j);
+     if(leaf||petiole){if(leaf)leafVertices++;else petioleVertices++;if(point.y>Math.min(st.height,st.leafHeight)+eps)assert.fail(label+' foliage ceiling '+tag+' '+point.y);}
+    }
+   }
+  });
+   if(dormant){dormantModels++;assert.equal(g.children.length,0,label+' fully absent winter organs');assert.equal(vertices,0,label+' no winter vertices');}
+   else{assert.ok(vertices>0,label+' nonempty plant');assert.ok(leaves>0&&leafVertices>0,label+' retained leaf pairs');assert.equal(leaves%2,0,label+' paired blades');assert.equal(petioles%2,0,label+' paired petioles');assert.ok(petioles<=leaves,label+' no orphan petiole count');assert.equal(petioleVertices>0,petioles>0,label+' actual retained petioles');
+    const attached=(base,ends)=>ends.some(end=>base.distanceToSquared(end)<=attachmentEps2),supports=[...shootEnds,...petioleTips];assert.ok(shootEnds.length>0,label+' rendered runner/stem endpoints');for(const base of bladeBases)assert.ok(attached(base,supports),label+' blade attached to a rendered petiole tip or runner/stem endpoint');for(const base of petioleBases)assert.ok(attached(base,shootEnds),label+' petiole attached to runner/stem endpoint');for(const tip of petioleTips)assert.ok(attached(tip,bladeBases),label+' petiole supports a retained blade');
+   }assert.deepEqual(p,before,label+' saved input unchanged');
+  }finally{dispose(g);}
+ };
+ for(const[id,pid,large,small]of rows){for(const dims of[large,small])for(let month=1;month<=12;month++)check(id,pid,dims,month);for(const dims of tiny)for(const month of[6,10])check(id,pid,dims,month);}assert.equal(models,60);assert.equal(dormantModels,12);
+ const doc=emptyDocument(10,6);doc.plans.A.plants=rows.flatMap(([id,pid,large,small],ri)=>[large,small,...tiny].map((dims,i)=>({...makePlant(id,pid*10+i,2+i*1.4,1.5+ri*2),height:dims[0],spread:dims[1],leafHeight:dims[2]})));doc.view.month=6;doc.view.year=1;
+ const raw={...structuredClone(doc),catalogVersion:'2026-10-23.36'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
