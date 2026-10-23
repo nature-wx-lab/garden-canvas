@@ -10902,12 +10902,11 @@ test('Good Pink Manners saved dimensions bound attached opposite leaves and wint
  const doc=emptyDocument(10,6);doc.plans.A.plants=[...sizes,...tiny].map((dims,i)=>({...makePlant(id,608000+i,1+i*1.8,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=7;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.47'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
 
-test('Good Pink Manners tube belly preserves its end rings axis and four other organ surfaces without degenerate triangles',()=>{
+test('Good Pink Manners tube belly preserves its end rings axis and three other organ surfaces without degenerate triangles',()=>{
  // Frozen pre609 point formulas protect the unchanged organs and original tube ends.
  const beforePoint=(type,t,u)=>{
   const sn=Math.max(0,Math.sin(Math.PI*t));
   if(type==='physostegiaLeaf')return [u*.53*sn**.83*(1-.16*t)*(1+.09*(Math.abs((t*17%1)*2-1)*2-1)),t,.032*u*u*sn-.07*t*t+.012*Math.sin(t*8)*u];
-  if(type==='physostegiaLip')return [u*(.045+.31*sn**.47)*(1+.17*Math.cos(u*Math.PI*3)),-.035-.14*t-.04*u*u,.68+.35*t-.045*t*t+.024*Math.cos(u*Math.PI*3)*t**5];
   const az=(u+1)*Math.PI,calyx=type==='physostegiaCalyx',bud=type==='physostegiaBud',r=calyx?.07+.055*t:bud?.05+.095*sn**.7:.047+.17*Math.sin(t*1.65)**1.3;
   return [Math.cos(az)*r,Math.sin(az)*r+.04*t*t,calyx?.31*t-.04*Math.cos(az*5)*t**8:bud?.18+.43*t:.80*t];
  };
@@ -10918,7 +10917,7 @@ test('Good Pink Manners tube belly preserves its end rings axis and four other o
   }assert.ok(Math.abs(sumX/cols)<eps&&Math.abs(sumY/cols-centreY)<eps,'original tube centreline');
  }assert.equal(points.length/3,1025);assert.ok(Math.abs(peakIncrease-.06)<eps,'bounded peak radial increase');
  for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){const a=row*(cols+1)+col,b=a+cols+1,c=a+1,d=b+1,index=[a,b,c,c,b,d];for(let k=0;k<6;k+=3){const p0=new Vector3().fromArray(points,index[k]*3),p1=new Vector3().fromArray(points,index[k+1]*3),p2=new Vector3().fromArray(points,index[k+2]*3),areaSq=p1.sub(p0).cross(p2.sub(p0)).lengthSq();assert.ok(Number.isFinite(areaSq)&&areaSq>1e-12,'nondegenerate actual-index tube triangle '+triangles);triangles++;}}assert.equal(triangles,1920);
- for(const type of['physostegiaLeaf','physostegiaLip','physostegiaCalyx','physostegiaBud']){const organRows=type==='physostegiaLeaf'?72:40;for(let row=0;row<=organRows;row++)for(let col=0;col<=cols;col++){const t=row/organRows,u=col/cols*2-1;assert.deepEqual(new Float32Array(physostegiaPoint(type,t,u)),new Float32Array(beforePoint(type,t,u)),'unchanged '+type+' vertex '+row+'/'+col);protectedPoints++;}}assert.equal(protectedPoints,4900);
+ for(const type of['physostegiaLeaf','physostegiaCalyx','physostegiaBud']){const organRows=type==='physostegiaLeaf'?72:40;for(let row=0;row<=organRows;row++)for(let col=0;col<=cols;col++){const t=row/organRows,u=col/cols*2-1;assert.deepEqual(new Float32Array(physostegiaPoint(type,t,u)),new Float32Array(beforePoint(type,t,u)),'unchanged '+type+' vertex '+row+'/'+col);protectedPoints++;}}assert.equal(protectedPoints,3875);
  const doc=emptyDocument(10,6);doc.plans.A.plants=[[.65,.4,.30],[.14,.2,.06]].map((dims,i)=>({...makePlant('p-2170af3d50b2',609000+i,2+i*3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=7;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.48'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
 
@@ -10950,4 +10949,16 @@ test('Good Pink Manners lower lip shader retains spatial phases with broader spo
   }finally{dispose(g);}
  }assert.equal(models,2);
  const doc=emptyDocument(10,6);doc.plans.A.plants=plants;doc.view.month=7;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.50'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});
+
+test('Good Pink Manners lower lip outline keeps its base height depth and observation vertex with a broad three-peaked end',()=>{
+ const rows=40,cols=24,points=[],oldPoints=[],beforePoint=(t,u)=>{const sn=Math.max(0,Math.sin(Math.PI*t));return [u*(.045+.31*sn**.47)*(1+.17*Math.cos(u*Math.PI*3)),-.035-.14*t-.04*u*u,.68+.35*t-.045*t*t+.024*Math.cos(u*Math.PI*3)*t**5];};let preserved=0,triangles=0,minAreaSq=Infinity;
+ for(let row=0;row<=rows;row++)for(let col=0;col<=cols;col++){const t=row/rows,u=col/cols*2-1,point=physostegiaPoint('physostegiaLip',t,u).map(Math.fround),old=beforePoint(t,u).map(Math.fround);assert.ok(point.every(Number.isFinite),'finite lower-lip vertex '+row+'/'+col);assert.ok(Math.abs(point[0])<=.301,'bounded lower-lip width');assert.equal(point[1],old[1],'unchanged Y '+row+'/'+col);assert.equal(point[2],old[2],'unchanged Z '+row+'/'+col);if(t<=.25){assert.deepEqual(point,old,'unchanged attached-quarter Float32 vertex '+row+'/'+col);preserved++;}points.push(point);oldPoints.push(old);}assert.equal(points.length,1025);assert.equal(preserved,275);assert.deepEqual(points[32*25+12],oldPoints[32*25+12],'unchanged actual observation vertex812');
+ for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){const a=row*(cols+1)+col,b=a+cols+1,c=a+1,d=b+1;for(const tri of[[a,b,c],[c,b,d]]){const[p0,p1,p2]=tri.map(index=>new Vector3(...points[index])),areaSq=p1.sub(p0).cross(p2.sub(p0)).lengthSq();assert.ok(Number.isFinite(areaSq)&&areaSq>1e-14,'nondegenerate actual-index lip triangle '+triangles);minAreaSq=Math.min(minAreaSq,areaSq);triangles++;}}assert.equal(triangles,1920);
+ const span=vertices=>Math.max(...vertices.map(p=>p[0]))-Math.min(...vertices.map(p=>p[0])),terminal=points.slice(rows*(cols+1)),oldTerminal=oldPoints.slice(rows*(cols+1)),terminalWidth=span(terminal),maxWidth=span(points),oldTerminalWidth=span(oldTerminal),peaks=[];
+ // These width ratios are display constraints, not measurements from a source photograph.
+ assert.ok(terminalWidth/maxWidth>.79&&terminalWidth/maxWidth<.83,'broad end retains most of the maximum width');assert.ok(terminalWidth/oldTerminalWidth>6&&terminalWidth/oldTerminalWidth<6.6,'end width replaces the compressed old tip');
+ for(let col=1;col<cols;col++)if(terminal[col][2]>terminal[col-1][2]&&terminal[col][2]>terminal[col+1][2])peaks.push(col);assert.deepEqual(peaks,[4,12,20],'original three shallow front peaks');assert.ok(terminal[peaks[0]][0]<-.2&&terminal[peaks[1]][0]===0&&terminal[peaks[2]][0]>.2,'three peaks spread across the broad end');assert.ok(terminal[12][2]-terminal[8][2]>.047&&terminal[12][2]-terminal[8][2]<.049,'original front-edge depth retained');
+ console.log('PHYSOSTEGIA_612_LIP '+JSON.stringify({vertices:points.length,triangles,preservedBaseVertices:preserved,minAreaSq,terminalWidthRatio:terminalWidth/maxWidth,terminalExpansion:terminalWidth/oldTerminalWidth,peakColumns:peaks}));
+ const doc=emptyDocument(10,6);doc.plans.A.plants=[[.65,.4,.30],[.14,.2,.06]].map((dims,i)=>({...makePlant('p-2170af3d50b2',612000+i,2+i*3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=7;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.51'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });

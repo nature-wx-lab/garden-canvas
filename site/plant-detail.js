@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.611';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.612';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.611';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.612';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9721,7 +9721,12 @@ export function physostegiaPoint(type,t,u){
   const q=Math.max(0,Math.min(1,(t-.25)/.75)),blend=q*q*(3-2*q),v=t*(1-.20*blend),arch=Math.max(0,Math.sin(Math.PI*v));
   return [u*.30*arch**.48,.10+.21*arch-.045*u*u+.025*blend*t*t*(1-u*u),.70+.31*t-.02*Math.exp(-u*u*60)*t**4*(1-blend)-.035*u*u*t**4*blend];
  }
- if(type==='physostegiaLip')return [u*(.045+.31*sn**.47)*(1+.17*Math.cos(u*Math.PI*3)),-.035-.14*t-.04*u*u,.68+.35*t-.045*t*t+.024*Math.cos(u*Math.PI*3)*t**5];
+ if(type==='physostegiaLip'){
+  // Retain the attached quarter, Y/Z surface and three shallow edge peaks while broadening the end.
+  // This width progression is a display approximation, not a measured cultivar proportion.
+  const q=Math.max(0,Math.min(1,(t-.25)/.75)),blend=q*q*(3-2*q),v=t*(1-.20*blend),arch=Math.max(0,Math.sin(Math.PI*v));
+  return [u*(.045+.31*arch**.47)*(1+.17*Math.cos(u*Math.PI*3)),-.035-.14*t-.04*u*u,.68+.35*t-.045*t*t+.024*Math.cos(u*Math.PI*3)*t**5];
+ }
  const az=(u+1)*Math.PI,calyx=type==='physostegiaCalyx',bud=type==='physostegiaBud',r=calyx?.07+.055*t:bud?.05+.095*sn**.7:.047+.17*Math.sin(t*1.65)**1.3;
  const radius=type==='physostegiaTube'?r+.06*Math.sin(Math.PI*t)**2:r;
  return [Math.cos(az)*radius,Math.sin(az)*radius+.04*t*t,calyx?.31*t-.04*Math.cos(az*5)*t**8:bud?.18+.43*t:.80*t];
