@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.606';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.607';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.606';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.607';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9724,6 +9724,7 @@ export function physostegiaPoint(type,t,u){
 function drawPhysostegia(b,{info,s,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.19,w*.20),F=a.flowerLength*Math.min(1,h/.36),n=Math.max(3,Math.min(24,Math.round(18*detail*Math.sqrt(w/.4)*Math.min(1,h/.5)))),stem=a.stemColor;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,basal=false)=>{
   for(let q=0;q<2;q++){const aa=az+q*Math.PI,pet=len*.025,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.4,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0006,h*.003),stem,basal?'petiole-physostegia-basal':'petiole-physostegia');b.add('physostegiaLeaf',basal?'leaf-physostegia-basal':'leaf-physostegia',kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,basal?.55+noise(i,k+q)*.5:.95+.42*noise(i,k+q),aa,(noise(i,k+q+70)-.5)*.28);}
  };
@@ -9733,10 +9734,13 @@ function drawPhysostegia(b,{info,s,detail,rand,month},kit){
    const t=(j+(j>0&&j<levels?(noise(i,j+90)-.5)*.32:0))/levels,at=[base[0]+Math.sin(az)*len*.10*t*t,base[1]+len*t,base[2]+Math.cos(az)*len*.10*t*t];if(j)b.branch(old,at,Math.min(.0013,h*.003)*(1-t*.5),stem,'axis-physostegia');old=at;
    if(!s.bloom&&!a.budMonths.includes(month))continue;
    for(let k=0;k<2;k++){
-    const aa=az+(j%2)*Math.PI/2+k*Math.PI+(noise(i,j*23+k)-.5)*.14,pos=[at[0]+Math.sin(aa)*F*.09,at[1],at[2]+Math.cos(aa)*F*.09],fl=F*(.86+.14*noise(i,j*11+k)),f=flowerFrame(b,pos,-.2+(noise(i,j*19+k)-.5)*.52,aa);
+    const aa=az+(j%2)*Math.PI/2+k*Math.PI+(noise(i,j*23+k)-.5)*.14,pos=[at[0]+Math.sin(aa)*F*.09,at[1],at[2]+Math.cos(aa)*F*.09],fl=F*(.86+.14*noise(i,j*11+k)),pitch=-.2+(noise(i,j*19+k)-.5)*.52,f=flowerFrame(b,pos,pitch,aa);
     f.add('physostegiaCalyx','calyx-physostegia',a.flowerPalette.calyx,0,0,0,fl,fl,fl);
     if(!s.bloom||t>.87||noise(i,j*31+k)>.85){f.add('physostegiaBud','bud-physostegia',a.flowerPalette.bud,0,0,0,fl,fl,fl);continue;}
     f.add('physostegiaTube','tube-physostegia',s.flowerColor,0,0,0,fl,fl,fl);f.add('physostegiaHood','hood-physostegia',s.flowerColor,0,0,0,fl,fl,fl);f.add('physostegiaLip','petal-physostegia',s.flowerColor,0,0,0,fl,fl,fl);
+    // Actual row32/column12 of the existing40x24 lower-lip surface.
+    const point=new THREE.Vector3(...physostegiaPoint('physostegiaLip',.8,0).map(Math.fround)).multiplyScalar(fl),atPoint=point.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=atPoint.x*.8+atPoint.z;
+    if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),fl*1.2,Math.PI/2);}
    }
   }
  };
@@ -9750,6 +9754,7 @@ function drawPhysostegia(b,{info,s,detail,rand,month},kit){
   spike(top,az,Math.min(a.inflorescenceLength,h*.32)*(.81+.19*noise(i,65)),i);
   if([11,12,1,2].includes(month)&&i%3===0)for(let j=0;j<3;j++)pair([root[0],root[1]+j*.006,root[2]],az+j*Math.PI/2,Math.min(.027,h*.12)*(1-j*.22),i,300+j,true);
  }
+ inspection?.();
 }
 
 export function catmintPoint(type,t,u){
