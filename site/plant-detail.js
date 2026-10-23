@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.613';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.614';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.613';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.614';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9843,11 +9843,25 @@ function drawTallNepeta(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,tuber=a.shootProfile==='tuberosa',moon=a.shootProfile==='blueMoon',dreams=a.shootProfile==='pinkDreams',h=s.height,w=s.spread,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.20,w*.17),F=a.flowerLength*Math.min(1,h/(dreams?.35:moon?.28:.5)),stem=cold?a.winterStemColor:a.stemColor,n=Math.max(3,Math.min(24,Math.round((dreams?14:moon?18:tuber?16:14)*detail*Math.sqrt(w/.5)*Math.min(1,h/(dreams?.45:moon?.32:.65)))));
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const observe=p?.kind==='p-9017037456b9'&&dreams;let inspection=null,inspectionScore=-Infinity;
- const pair=(at,az,len,i,k,basal=false)=>{
-  if(!basal&&noise(i,k)>s.leafDensity)return;
-  for(let q=0;q<2;q++){
+ const pair=(at,az,len,i,k,basal=false,root=at,retainedPair=false)=>{
+  if(!basal&&noise(i,k)>s.leafDensity)return false;
+  if(!observe){for(let q=0;q<2;q++){
    const aa=az+q*Math.PI,pet=len*(dreams?.035:tuber?.04:.10),end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0008,h*.003),stem,basal?'petiole-tall-nepeta-winter':'petiole-tall-nepeta');b.add(dreams?'dreamsLeaf':moon?'nervosaLeaf':tuber?'tuberosaLeaf':'nudaLeaf',basal?'leaf-tall-nepeta-winter':dreams?'leaf-dreams':moon?'leaf-nervosa':tuber?'leaf-tuberosa':'leaf-nuda',basal?'#8b7565':kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,.98+.32*noise(i,k+q),aa,(noise(i,k+q+70)-.5)*.25);
+  }return false;}
+  const pet=len*.035,radius=Math.min(.0008,h*.003),ratio=a.leafWidth/a.leafLength,leaves=[];let upper=pet*.3+radius,lower=radius;
+  for(let q=0;q<2;q++){
+   const aa=az+q*Math.PI,pitch=.98+.32*noise(i,k+q),roll=(noise(i,k+q+70)-.5)*.25,color=basal?'#8b7565':kit.shade(rand,s.leafColor,.035),euler=new THREE.Euler(pitch,aa,roll,'YXZ');
+   // Both normal and basal leaves use dreamsLeaf: |X|<=.60705, Y in [0,1], Z in [-.06,.035].
+   // Include the rolled blade with and without its positive petiole rise for safe direct attachment.
+   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?.60705:-.60705)*ratio*len,corner&2?len:0,(corner&4?.035:-.06)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.3);lower=Math.max(lower,-point.y);}
+   leaves.push({aa,pitch,roll,color});
   }
+  // Preserve two original normal shades, and zero basal shade draws, before any high pair is omitted.
+  const ceiling=Math.min(h,s.leafHeight),base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
+  const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.3*fit,base[2]+Math.cos(leaf.aa)*pet*fit]}));
+  const direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,stem,basal?'petiole-tall-nepeta-winter':'petiole-tall-nepeta');b.add('dreamsLeaf',basal?'leaf-tall-nepeta-winter':'leaf-dreams',leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
+  return true;
  };
  const spike=(base,az,len,i)=>{
   let old=base;const levels=dreams?6:moon?11:tuber?19:16,spent=a.seedHeadMonths.includes(month);
@@ -9870,18 +9884,23 @@ function drawTallNepeta(b,{info,s,p,detail,rand,month},kit){
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*.5,tier=Math.sqrt((i+.5)/n),rr=w*.23*tier,root=[Math.sin(az)*rr*.68,.004,Math.cos(az)*rr*.68],top=[Math.sin(az)*rr,h*(dreams?.36+.16*Math.sqrt(1-tier*tier)+.13*noise(i,3):.48+.10*Math.sqrt(1-tier*tier)+.08*noise(i,3)),Math.cos(az)*rr];let old=root;
+  const az=i*2.399963+(noise(i,1)-.5)*.5,tier=Math.sqrt((i+.5)/n),rr=w*.23*tier,root=[Math.sin(az)*rr*.68,.004,Math.cos(az)*rr*.68],top=[Math.sin(az)*rr,h*(dreams?.36+.16*Math.sqrt(1-tier*tier)+.13*noise(i,3):.48+.10*Math.sqrt(1-tier*tier)+.08*noise(i,3)),Math.cos(az)*rr];let old=root,retainedPair=false;
   for(let j=1;j<=9;j++){
-   const t=(j+(dreams&&j<9?(noise(i,j+220)-.5)*.65:0))/9,at=mix(root,top,t);b.branch(old,at,Math.min(.002,h*.0032)*(1-t*.35),stem,'stem-tall-nepeta');old=at;pair(at,az+j*Math.PI/2,L*(.65+.35*Math.sin(t*Math.PI))*(cold?.35:1),i,j+20);
+   const t=(j+(dreams&&j<9?(noise(i,j+220)-.5)*.65:0))/9,at=mix(root,top,t);b.branch(old,at,Math.min(.002,h*.0032)*(1-t*.35),stem,'stem-tall-nepeta');old=at;retainedPair=pair(at,az+j*Math.PI/2,L*(.65+.35*Math.sin(t*Math.PI))*(cold?.35:1),i,j+20,false,root,retainedPair)||retainedPair;
    if(dreams?j!==5:tuber||moon?(j!==6):(j!==5&&j!==7))continue;
    for(let k=0;k<2;k++){
     const aa=az+(k?1.3:-1.3),end=[at[0]+Math.sin(aa)*w*(tuber?.12:.17),at[1]+h*(tuber?.14:.18),at[2]+Math.cos(aa)*w*(tuber?.12:.17)];let prev=at;
-    for(let q=1;q<=3;q++){const loc=mix(at,end,q/3);b.branch(prev,loc,Math.min(.001,h*.002)*(1-q*.12),stem,'branch-tall-nepeta');prev=loc;pair(loc,aa+q*Math.PI/2,L*(.53-q*.08)*(cold?.35:1),i,j*29+k*7+q);}
+    for(let q=1;q<=3;q++){const loc=mix(at,end,q/3);b.branch(prev,loc,Math.min(.001,h*.002)*(1-q*.12),stem,'branch-tall-nepeta');prev=loc;retainedPair=pair(loc,aa+q*Math.PI/2,L*(.53-q*.08)*(cold?.35:1),i,j*29+k*7+q,false,root,retainedPair)||retainedPair;}
     spike(end,aa,Math.min(a.inflorescenceLength*.7,h*.23),i+j*19+k*59);
    }
   }
   spike(top,az,Math.min(a.inflorescenceLength,h*(dreams?.44:.34))*(dreams?.70+.30*noise(i,65):.87+.13*noise(i,65)),i);
-  if(cold&&!moon&&i%3===0)for(let j=0;j<2;j++)pair([root[0],root[1]+j*.003,root[2]],az+j*Math.PI/2,Math.min(.014,h*.06)*(j?.7:1),i,300+j,true);
+  if(cold&&!moon&&i%3===0){
+   if(!observe){for(let j=0;j<2;j++)pair([root[0],root[1]+j*.003,root[2]],az+j*Math.PI/2,Math.min(.014,h*.06)*(j?.7:1),i,300+j,true);}
+   else{let retainedBasal=false;for(let j=0;j<2;j++){
+    const at=mix(root,top,Math.min(1,j*.003/Math.max(top[1]-root[1],1e-8)));retainedBasal=pair(at,az+j*Math.PI/2,Math.min(.014,h*.06)*(j?.7:1),i,300+j,true,root,retainedBasal)||retainedBasal;
+   }}
+  }
  }
  inspection?.();
 }
