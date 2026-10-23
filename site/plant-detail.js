@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.570';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.571';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.570';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.571';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -12462,6 +12462,7 @@ function drawDianthus(b,{info,s,detail,rand},kit){
  if(s.groundDormant)return;
  let inspection=null,inspectionScore=-Infinity;
  const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,mat=['deltoides','arenarius'].includes(type),cluster=type==='barbatus',arching=type==='orihime',winter=[12,1,2].includes(s.month),green=s.leafColor,stem=a.stemColor,L=Math.min(a.leafLength,w*.45),lk=foliageKind(info);
+ const varied=['superbus','arenarius','deltoides','orihime'].includes(type);
  const leaf=(at,az,len,pitch=1.0)=>{
   // Consume the original colour variation even when an upper leaf is omitted.
   const color=kit.shade(rand,green,.04),room=Math.min(s.height,s.leafHeight)-at[1];
@@ -12486,13 +12487,16 @@ function drawDianthus(b,{info,s,detail,rand},kit){
  const tufts=Math.max(5,Math.round((mat?72:cluster?13:18)*detail));
  for(let i=0;i<tufts;i++){
   const az=i*2.399963,rad=w*(mat?.43:.23)*Math.sqrt((i+.5)/tufts),base=[Math.sin(az)*rad,.004,Math.cos(az)*rad],tip=[base[0]+Math.sin(az)*L*.26,.008+L*.18,base[2]+Math.cos(az)*L*.26];branch(base,tip,.00065,'basalShoot-dianthus');
-  for(let k=0;k<(mat?5:3);k++)for(let side=0;side<2;side++)if(rand()<s.leafDensity){const t=k/(mat?5:3),at=base.map((v,d)=>v+(tip[d]-v)*t);leaf(at,az+k*.65+side*Math.PI,L*(.57+.4*rand())*s.leafScale,.72+k*.17+rand()*.3);}
+  for(let k=0;k<(mat?5:3);k++)for(let side=0;side<2;side++)if(rand()<s.leafDensity){const phase=i*2.113+k*1.71,t=(k+(varied&&k?.08*Math.sin(phase):0))/(mat?5:3),at=base.map((v,d)=>v+(tip[d]-v)*t),turn=varied?.12*Math.sin(i*2.113)+.06*Math.sin(phase):0,pitch=varied?.06*Math.sin(phase*1.13):0;leaf(at,az+k*.65+turn+side*Math.PI,L*(.57+.4*rand())*s.leafScale,.72+k*.17+rand()*.3+pitch);}
  }
  if(winter&&!s.bloom)return;
  const n=Math.max(4,Math.round((mat?48:type==='ranman'?29:cluster?9:type==='knappii'?17:14)*detail)),heightFactor=s.bloom?1:.50;
  for(let i=0;i<n;i++){
   const az=i*2.399963,rad=w*(mat?.36:type==='ranman'?.38:.18)*Math.sqrt(rand()),origin=[Math.sin(az)*rad,.008,Math.cos(az)*rad],rise=h*(.62+.24*rand())*heightFactor,reach=w*(arching?.45:.10)*(rand()*.55+.45),path=[];
-  for(let k=0;k<=6;k++){const t=k/6;path.push([origin[0]+Math.sin(az)*reach*t*t,origin[1]+rise*(arching?Math.sin(t*2.25):t),origin[2]+Math.cos(az)*reach*t*t]);if(k){branch(path[k-1],path[k],cluster?.0014:.0008);if(k<6){b.add(kit.bud,'stemNode-dianthus',green,...path[k],.0016,.0019,.0016);for(let side=0;side<2;side++)if(rand()<s.leafDensity)leaf(path[k],az+k*Math.PI/2+side*Math.PI,L*(.83-k*.08),.68+k*.08);}}}
+  // Bounded node and pair-pose variation is illustrative, not a measured internode or leaf angle.
+  // Reuse already sampled stem proportions, keeping the colour/flower random stream unchanged.
+  const phase=i*2.113+rad/w*7.31+rise/h*3.71;
+  for(let k=0;k<=6;k++){const t=(k+(varied&&k>0&&k<6?.10*Math.sin(phase+k*1.71):0))/6;path.push([origin[0]+Math.sin(az)*reach*t*t,origin[1]+rise*(arching?Math.sin(t*2.25):t),origin[2]+Math.cos(az)*reach*t*t]);if(k){branch(path[k-1],path[k],cluster?.0014:.0008);if(k<6){b.add(kit.bud,'stemNode-dianthus',green,...path[k],.0016,.0019,.0016);const turn=varied?.12*Math.sin(phase)+.06*Math.sin(phase+k*1.71):0,pitch=varied?.06*Math.sin(phase*1.37+k*1.19):0;for(let side=0;side<2;side++)if(rand()<s.leafDensity)leaf(path[k],az+k*Math.PI/2+turn+side*Math.PI,L*(.83-k*.08),.68+k*.08+pitch);}}}
   if(s.bloom){
    bloom(path[6],az,i);
    if(!cluster)for(let k=0;k<(mat?1:2);k++){

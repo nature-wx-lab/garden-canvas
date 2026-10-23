@@ -10298,3 +10298,24 @@ test('Dianthus complete geometry respects height spread-radius and leaf ceilings
  for(const[id,pid,large,small]of rows){for(const dims of[large,small])for(let month=1;month<=12;month++)check({...makePlant(id,pid,2,2),height:dims[0],spread:dims[1],leafHeight:dims[2]},{...view(month),year:1});for(const month of[1,6])check({...makePlant(id,pid,2,2),height:.03,spread:.1,leafHeight:.005},{...view(month),year:1});}
  const doc=emptyDocument(10,6),p={...makePlant('p-4d2b6d52cd5b',56702,2,2),height:.12,spread:.2,leafHeight:.07,scenario:{year:2,height:.3,spread:.4,leafHeight:.18}};doc.plans.A.plants=[p];doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.9'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);check(p,doc.view);check(p,{...doc.view,reference:true});
 });
+
+
+test('Fine-leaf Dianthus keeps connected irregular nodes opposite leaf pairs and repeatable saved plants',()=>{
+ const rows=[['p-42c8fe4bac77',56700,[.4,.3,.24],[.12,.2,.07]],['p-85a1652c0694',56701,[.12,.3,.07],[.06,.18,.04]],['p-4d2b6d52cd5b',56702,[.3,.3,.18],[.12,.2,.07]],['p-47f878ad504a',56703,[.18,.25,.1],[.08,.18,.05]]];
+ const endpoint=(mesh,i,y)=>{const m=new Matrix4();mesh.getMatrixAt(i,m);return new Vector3(0,y,0).applyMatrix4(m);};
+ for(const[id,pid,large,small]of rows)for(const dims of[large,small]){
+  const p={...makePlant(id,pid,2,2),height:dims[0],spread:dims[1],leafHeight:dims[2]},v={...view(6),year:1},g=plantModel(p,v),again=plantModel(p,v),before=structuredClone(p);
+  try{
+   assert.deepEqual(g.scale.toArray(),again.scale.toArray());assert.deepEqual(g.userData.flowerTargets,again.userData.flowerTargets);assert.equal(g.children.length,again.children.length);
+   for(let i=0;i<g.children.length;i++){assert.deepEqual(g.children[i].instanceMatrix.array,again.children[i].instanceMatrix.array);assert.deepEqual(g.children[i].instanceColor?.array,again.children[i].instanceColor?.array);}
+   const stems=g.children.find(m=>m.userData.component==='stem-dianthus'),nodes=g.children.find(m=>m.userData.component==='stemNode-dianthus'),branches=g.children.find(m=>m.userData.component==='branch-dianthus');assert.ok(stems&&nodes&&branches);assert.equal(stems.count%6,0);assert.equal(nodes.count,stems.count/6*5);const nodePoints=[];
+   for(let i=0;i<stems.count;i+=6){const rises=[];let previous=null;for(let k=0;k<6;k++){const start=endpoint(stems,i+k,-.5),end=endpoint(stems,i+k,.5);assert.ok(start.distanceTo(end)>1e-5);if(previous)assert.ok(start.distanceTo(previous)<2e-6,id+' connected stem');rises.push(end.y-start.y);if(k<5){const node=endpoint(nodes,i/6*5+k,0);assert.ok(node.distanceTo(end)<2e-6,id+' node lies on stem');nodePoints.push(node);}previous=end;}
+    if(CATALOG[id].appearance.shootProfile!=='orihime'){assert.ok(rises.every(y=>y>0),id+' ordered ascending nodes');assert.ok(Math.max(...rises)-Math.min(...rises)>p.height*.001,id+' internodes do not all repeat the same spacing');}
+   }
+   for(let i=0;i<branches.count;i++){const start=endpoint(branches,i,-.5);assert.ok(nodePoints.some(n=>n.distanceTo(start)<2e-6),id+' lateral starts at a real node');}
+   const leaves=g.children.filter(m=>m.userData.component.startsWith('leaf')),pairs=new Map();for(const mesh of leaves)for(let i=0;i<mesh.count;i++){const origin=endpoint(mesh,i,0),tip=endpoint(mesh,i,1),direction=tip.sub(origin);direction.y=0;direction.normalize();const key=origin.toArray().map(n=>n.toFixed(6)).join(',');if(!pairs.has(key))pairs.set(key,[]);pairs.get(key).push(direction);}
+   assert.ok(pairs.size>0);for(const directions of pairs.values()){assert.equal(directions.length%2,0,id+' complete opposite pairs in full summer foliage');for(let i=0;i<directions.length;i+=2)assert.ok(directions[i].dot(directions[i+1])<-.9999,id+' opposite horizontal leaf directions');}assert.deepEqual(p,before);
+  }finally{dispose(g);dispose(again);}
+ }
+ const doc=emptyDocument(10,6);doc.plans.A.plants=[{...makePlant(rows[0][0],57100,2,2),height:.4,spread:.3,leafHeight:.24}];doc.view.month=6;doc.view.year=1;const old={...structuredClone(doc),catalogVersion:'2026-10-23.10'},before=structuredClone(old);assert.deepEqual(validateDocument(old),doc);assert.deepEqual(old,before);
+});
