@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.580';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.581';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.580';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.581';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -12461,6 +12461,12 @@ export function dianthusPetalPoint(type,t,u){
   const tooth=Math.pow(Math.max(0,Math.cos((u+.037)*Math.PI*11)),.65),edge=1-.13*u*u-.025*(1-tooth),p=t*edge,half=.012+.28*Math.sin(Math.PI*.80*Math.pow(p,1.5));
   return [u*half,.035*p+.018*Math.sin(u*2.2+p*3)*p*p+.035*u*u*p,.08+.92*p];
  }
+ if(type==='barbatus'){
+  // Cultivar photos show broad rounded limbs with shallow teeth and gentle cupping.
+  // The common outline is approximate; each cultivar retains its own colour and foliage.
+  const tooth=Math.pow(Math.max(0,Math.cos((u+.037)*Math.PI*11)),.65),edge=1-.13*u*u-.025*(1-tooth),p=t*edge,half=.012+.36*Math.sin(Math.PI*.80*Math.pow(p,1.5));
+  return [u*half,.035*p+.018*Math.sin(u*2.2+p*3)*p*p+.05*p*p+.075*u*u*p*p,.08+.92*p];
+ }
  if(type==='superbus'){
   // Monotone phase variation and modest tip-length variation soften the uniform radial fringe.
   // The photo-based distal curl fades to zero before the continuous petal centre.
@@ -13823,7 +13829,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
    const phase=x*17+y*23+z*29+yaw*1.7+j*2.399963+l*.71,angle=type==='chinensis'?baseAngle+.06*Math.sin(phase):baseAngle,sx=variedPetal?rr*(1+.06*Math.sin(phase)):rr,sz=variedPetal?rr*(1+.05*Math.sin(phase*1.37+.8)):rr;
    f.add('dianthusPetal-'+type,pk,petalColor,0,l*r*.055,0,sx,rr,sz,0,angle,0);
    if(l===0&&j===0&&typeof onInspectionTarget==='function'){
-    const point=new THREE.Vector3(...dianthusPetalPoint(type,['orihime','knappii','superbus','arenarius','deltoides','chinensis','ranman'].includes(type)?.5:.45,0));
+    const point=new THREE.Vector3(...dianthusPetalPoint(type,['orihime','knappii','barbatus','superbus','arenarius','deltoides','chinensis','ranman'].includes(type)?.5:.45,0));
     if(variedPetal)point.multiply(new THREE.Vector3(sx,rr,sz));else point.multiplyScalar(rr);
     point.applyEuler(new THREE.Euler(0,angle,0,'YXZ'));onInspectionTarget(()=>f.flower(point.toArray(),r*(['superbus','arenarius','orihime'].includes(type)?1.2:.85)));
    }
