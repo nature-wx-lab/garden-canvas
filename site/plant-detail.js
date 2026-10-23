@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.584';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.585';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.584';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.585';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -8878,7 +8878,16 @@ function drawRaggedRobin(b,{info,s,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,n=Math.max(3,Math.min(14,Math.round(9*detail*Math.sqrt(w/.25)*Math.min(1,h/.3)))),L=Math.min(a.leafLength,w*.34,h*.3),R=a.flowerRadius*Math.min(1,h/.25),F=a.flowerLength*Math.min(1,h/.25);
  let inspection=null,inspectionScore=-Infinity;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const leaf=(at,aa,len,i,k)=>{if(noise(i,k)>s.leafDensity)return;b.add('raggedRobinLeaf','leaf-ragged-robin',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,.85+.28*noise(i,k+3),aa,(noise(i,k+7)-.5)*.2);};
+ const leaf=(at,aa,len,i,k)=>{
+  if(noise(i,k)>s.leafDensity)return;
+  // Consume the original shade draw even when the independent leaf ceiling hides this leaf.
+  const color=kit.shade(rand,s.leafColor,.035),room=Math.min(s.height,s.leafHeight)-at[1];if(room<=0)return;
+  const pitch=.85+.28*noise(i,k+3),roll=(noise(i,k+7)-.5)*.2,cp=Math.cos(pitch),sp=Math.sin(pitch),ratio=a.leafWidth/a.leafLength;
+  // YXZ: yaw does not affect height; the blade has |x|<=.5, 0<=y<=1 and 0<=z<=.075.
+  const rise=Math.max(0,cp*Math.cos(roll))+.5*Math.abs(cp*Math.sin(roll)*ratio)+.075*Math.max(0,-sp);
+  len=Math.min(len,room/Math.max(rise,1e-8));
+  b.add('raggedRobinLeaf','leaf-ragged-robin',color,...at,len*ratio,len,len,pitch,aa,roll);
+ };
  const flower=(at,az,i,k)=>{
   if(!s.bloom)return;const f=flowerFrame(b,at,.18+.7*noise(i,k+3),az),r=R*(.9+.1*noise(i,k+5));
   f.add('raggedRobinCalyx','calyx-ragged-robin',a.flowerPalette.calyx,0,0,0,F,F,F);

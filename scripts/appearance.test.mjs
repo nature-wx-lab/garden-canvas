@@ -10472,3 +10472,26 @@ test('Petit Henri flower observation targets a visible rendered petal and stays 
  const id='p-55783b7fea00';for(const dims of[[.5,.3,.16],[.12,.15,.05]])for(let month=1;month<=12;month++){const p={...makePlant(id,58400,4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),v={...view(month),year:1},g=plantModel(p,v);try{assert.equal(!!g.userData.flowerTargets?.length,stateAt(p,v).bloom);if(!stateAt(p,v).bloom)assert.equal(flowerInspectionView(g,.8,40),null);if(month===6){assert.equal(flowerInspectionDistanceFloor(g),.08);assert.equal(g.userData.flowerTargets.length,1);const target=new Vector3(...g.userData.flowerTargets[0].origin),mesh=g.children.find(m=>m.userData.component==='petal-ragged-robin'),pos=mesh.geometry.getAttribute('position'),index=27*81+30,m=new Matrix4();let nearest=Infinity;for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,m);nearest=Math.min(nearest,new Vector3().fromBufferAttribute(pos,index).applyMatrix4(m).distanceTo(target));}assert.ok(nearest<2e-7,'target is a rendered row27/column30 vertex');g.position.set(-3,.012,-1);g.updateMatrixWorld(true);const pose=flowerInspectionView(g,.8,40);assert.ok(pose);assert.ok(new Vector3(...pose.target).distanceTo(g.localToWorld(target.clone()))<1e-9,'no generic offset from the rendered vertex');const camera=new PerspectiveCamera(40,.8,.01,650);camera.position.fromArray(pose.position);camera.lookAt(new Vector3(...pose.target));camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(g,true).find(h=>{const z=-h.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.equal(hit?.object.userData.component,'petal-ragged-robin','first visible hit at both saved sizes');}assert.deepEqual(p,before);}finally{dispose(g);}}
  const doc=emptyDocument(10,6);doc.plans.A.plants=[{...makePlant(id,58400,4,3),height:.12,spread:.15,leafHeight:.05}];doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.23'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
+
+
+test('Petit Henri bounds every retained leaf and complete plant across months and independent tiny inputs',()=>{
+ const id='p-55783b7fea00',eps=1e-7,sizes=[[.5,.3,.16],[.12,.15,.05]],tiny=[[.01,.30,.005],[.50,.10,.16],[.50,.30,.005]];let models=0;
+ const check=(dims,month)=>{
+  const p={...makePlant(id,58500,4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),v={...view(month),year:1},st=stateAt(p,v),g=plantModel(p,v),matrix=new Matrix4(),point=new Vector3(),label=dims.join('/')+' month='+month;let vertices=0,leafVertices=0,leaves=0;models++;
+  try{g.updateMatrixWorld(true);g.traverse(mesh=>{
+   if(!mesh.isMesh)return;const pos=mesh.geometry.getAttribute('position');assert.ok(pos,label+' geometry positions');const leaf=mesh.userData.component==='leaf-ragged-robin',count=mesh.isInstancedMesh?mesh.count:1;if(leaf)leaves+=count;
+   for(let i=0;i<count;i++){if(mesh.isInstancedMesh){mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);}else matrix.copy(mesh.matrixWorld);
+    for(let j=0;j<pos.count;j++){point.fromBufferAttribute(pos,j).applyMatrix4(matrix);vertices++;const tag=mesh.userData.component;
+     if(!Number.isFinite(point.x)||!Number.isFinite(point.y)||!Number.isFinite(point.z))assert.fail(label+' nonfinite '+tag+' '+i+'/'+j);
+     if(point.y>st.height+eps)assert.fail(label+' height '+tag+' '+point.y);
+     if(Math.hypot(point.x,point.z)*2>st.spread+eps)assert.fail(label+' spread '+tag+' '+i+'/'+j);
+     if(leaf){leafVertices++;if(point.y>Math.min(st.height,st.leafHeight)+eps)assert.fail(label+' leaf ceiling '+point.y);}
+    }
+   }
+  });assert.ok(vertices>0,label+' nonempty plant');assert.ok(leaves>0&&leafVertices>0,label+' retained basal leaves');assert.deepEqual(p,before,label+' saved input unchanged');}finally{dispose(g);}
+ };
+ for(const dims of sizes)for(let month=1;month<=12;month++)check(dims,month);
+ for(const dims of tiny)for(const month of[1,6])check(dims,month);assert.equal(models,30);
+ const doc=emptyDocument(10,6);doc.plans.A.plants=[...sizes,...tiny].map((dims,i)=>({...makePlant(id,58500+i,2+i*1.4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=6;doc.view.year=1;
+ const raw={...structuredClone(doc),catalogVersion:'2026-10-23.24'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});
