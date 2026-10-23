@@ -10511,3 +10511,24 @@ test('Rose campion flower observation reaches an actual visible petal for both c
  }
  const doc=emptyDocument(10,6);doc.plans.A.plants=rows.map(([id,pid,,dims])=>({...makePlant(id,pid,4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.25'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
+
+test('Rose campion retains leaf blades and hairs within independent saved dimensions through all months',()=>{
+ const rows=[['p-84cb69e40b51',58600,[.7,.6,.28],[.12,.2,.05]],['p-92b2b04c2c82',58601,[.6,.5,.25],[.1,.18,.045]]],tiny=[[.01,.3,.005],[.5,.1,.16],[.5,.3,.005]],eps=1e-7;let models=0;
+ const check=(id,pid,dims,month)=>{
+  const p={...makePlant(id,pid,4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),v={...view(month),year:1},st=stateAt(p,v),g=plantModel(p,v),matrix=new Matrix4(),point=new Vector3(),label=id+' '+dims.join('/')+' month='+month;let vertices=0,leafVertices=0,hairVertices=0;models++;
+  try{g.updateMatrixWorld(true);g.traverse(mesh=>{
+   if(!mesh.isMesh)return;const pos=mesh.geometry.getAttribute('position'),tag=mesh.userData.component,leaf=tag.startsWith('leaf-rose-campion-'),hair=tag==='hair-rose-campion',count=mesh.isInstancedMesh?mesh.count:1;assert.ok(pos,label+' positions');
+   for(let i=0;i<count;i++){if(mesh.isInstancedMesh){mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);}else matrix.copy(mesh.matrixWorld);
+    for(let j=0;j<pos.count;j++){point.fromBufferAttribute(pos,j).applyMatrix4(matrix);vertices++;if(leaf)leafVertices++;if(hair)hairVertices++;
+     if(!Number.isFinite(point.x)||!Number.isFinite(point.y)||!Number.isFinite(point.z))assert.fail(label+' nonfinite '+tag);
+     if(point.y>st.height+eps)assert.fail(label+' height '+tag+' '+point.y);
+     if(Math.hypot(point.x,point.z)*2>st.spread+eps)assert.fail(label+' spread '+tag);
+     if((leaf||hair)&&point.y>Math.min(st.height,st.leafHeight)+eps)assert.fail(label+' leaf/hair ceiling '+tag+' '+point.y);
+    }
+   }
+  });assert.ok(vertices>0&&leafVertices>0,label+' nonempty plant and retained basal leaves');if(dims[0]>=.1)assert.ok(hairVertices>0,label+' retained hairs');assert.deepEqual(p,before);}finally{dispose(g);}
+ };
+ for(const[id,pid,large,small]of rows){for(const dims of[large,small])for(let month=1;month<=12;month++)check(id,pid,dims,month);for(const dims of tiny)for(const month of[1,6])check(id,pid,dims,month);}assert.equal(models,60);
+ const doc=emptyDocument(10,6);doc.plans.A.plants=rows.flatMap(([id,pid,large,small],r)=>[large,small,...tiny].map((dims,i)=>({...makePlant(id,pid+r*10+i,1+i*1.5,1+r*3),height:dims[0],spread:dims[1],leafHeight:dims[2]})));doc.view.month=6;doc.view.year=1;
+ const raw={...structuredClone(doc),catalogVersion:'2026-10-23.26'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});

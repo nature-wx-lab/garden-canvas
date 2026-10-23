@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.586';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.587';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.586';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.587';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -8435,12 +8435,15 @@ function drawRoseCampion(b,{info,s,detail,rand,month},kit){
  const a=info.appearance,doubled=a.shootProfile==='gardeners',h=s.height,w=s.spread,size=Math.min(1,h/.45,w/.4),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*Math.max(.55,size),C=a.flowerLength*Math.max(.55,size),n=Math.max(4,Math.min(13,Math.round(9*detail*Math.sqrt(w/.45)))),shoot=[0,0,.20,.40,.85,1,.95,.70,.35,0,0,0][month-1];
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const leaf=(at,az,i,k,scale=1,basal=false)=>{
-  const f=flowerFrame(b,at,(basal?.86:1.05)+noise(i,k)*.28,az),len=L*scale,width=W*scale;
-  f.add(basal?'roseCampionBasal':'roseCampionUpper',basal?'leaf-rose-campion-basal-woolly':'leaf-rose-campion-upper-woolly',kit.shade(rand,s.leafColor,.035),0,0,0,width,len,len);
+  const pitch=(basal?.86:1.05)+noise(i,k)*.28,len0=L*scale,width0=W*scale,hair=.00045*size,color=kit.shade(rand,s.leafColor,.035),room=Math.min(s.height,s.leafHeight)-at[1];if(room<=0)return;
+  // Positive pitch makes blade Z and each hair tip descend; include the hair tube radius.
+  // Preserve hair length so the existing branch-length cutoff does not thin retained hairs.
+  const fit=Math.min(1,room/Math.max(len0*Math.cos(pitch)+hair*.06,1e-8)),len=len0*fit,width=width0*fit,hairRadius=hair*.06*fit,f=flowerFrame(b,at,pitch,az);
+  f.add(basal?'roseCampionBasal':'roseCampionUpper',basal?'leaf-rose-campion-basal-woolly':'leaf-rose-campion-upper-woolly',color,0,0,0,width,len,len);
   // Sparse silhouette hairs complement the surface shading; density is approximate.
   for(let j=0;j<18;j++){
-   const t=.12+.80*noise(i,k+j*17),u=j%2?1:-1,p=roseCampionPoint(basal?'roseCampionBasal':'roseCampionUpper',t,u),root=[p[0]*width,p[1]*len,p[2]*len],hair=.00045*size;
-   f.branch(root,[root[0]+u*hair,root[1]+hair*.15,root[2]+hair*.5],hair*.06,'#d1d4c8','hair-rose-campion');
+   const t=.12+.80*noise(i,k+j*17),u=j%2?1:-1,p=roseCampionPoint(basal?'roseCampionBasal':'roseCampionUpper',t,u),root=[p[0]*width,p[1]*len,p[2]*len];
+   f.branch(root,[root[0]+u*hair,root[1]+hair*.15,root[2]+hair*.5],hairRadius,'#d1d4c8','hair-rose-campion');
   }
  };
  let inspection=null,inspectionScore=-Infinity;
