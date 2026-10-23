@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.607';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.608';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.607';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.608';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9725,8 +9725,20 @@ function drawPhysostegia(b,{info,s,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.19,w*.20),F=a.flowerLength*Math.min(1,h/.36),n=Math.max(3,Math.min(24,Math.round(18*detail*Math.sqrt(w/.4)*Math.min(1,h/.5)))),stem=a.stemColor;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  let inspection=null,inspectionScore=-Infinity;
- const pair=(at,az,len,i,k,basal=false)=>{
-  for(let q=0;q<2;q++){const aa=az+q*Math.PI,pet=len*.025,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.4,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0006,h*.003),stem,basal?'petiole-physostegia-basal':'petiole-physostegia');b.add('physostegiaLeaf',basal?'leaf-physostegia-basal':'leaf-physostegia',kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,basal?.55+noise(i,k+q)*.5:.95+.42*noise(i,k+q),aa,(noise(i,k+q+70)-.5)*.28);}
+ const ceiling=Math.min(h,s.leafHeight),pair=(at,az,len,i,k,basal,root,retainedPair)=>{
+  const pet=len*.025,radius=Math.min(.0006,h*.003),ratio=a.leafWidth/a.leafLength,leaves=[];let upper=pet*.4+radius,lower=radius;
+  for(let q=0;q<2;q++){
+   const aa=az+q*Math.PI,pitch=basal?.55+noise(i,k+q)*.5:.95+.42*noise(i,k+q),roll=(noise(i,k+q+70)-.5)*.28,color=kit.shade(rand,s.leafColor,.035),euler=new THREE.Euler(pitch,aa,roll,'YXZ');
+   // Bound the unchanged rolled leaf by all corners, including negative Z and both attachment modes.
+   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?.578:-.578)*ratio*len,corner&2?len:0,(corner&4?.044:-.082)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.4);lower=Math.max(lower,-point.y);}
+   leaves.push({aa,pitch,roll,color});
+  }
+  // Consume both original shades before a high pair is omitted; later flowers retain their RNG sequence.
+  const base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
+  const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.4*fit,base[2]+Math.cos(leaf.aa)*pet*fit]}));
+  const direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,stem,basal?'petiole-physostegia-basal':'petiole-physostegia');b.add('physostegiaLeaf',basal?'leaf-physostegia-basal':'leaf-physostegia',leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
+  return true;
  };
  const spike=(base,az,len,i)=>{
   let old=base;const levels=18;
@@ -9745,14 +9757,17 @@ function drawPhysostegia(b,{info,s,detail,rand,month},kit){
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*.5,tier=Math.sqrt((i+.5)/n),rr=w*.29*tier,root=[Math.sin(az)*rr*.82,.004,Math.cos(az)*rr*.82],top=[Math.sin(az)*rr,h*(.46+.12*Math.sqrt(1-tier*tier)+.10*noise(i,3)),Math.cos(az)*rr];let old=root;
+  const az=i*2.399963+(noise(i,1)-.5)*.5,tier=Math.sqrt((i+.5)/n),rr=w*.29*tier,root=[Math.sin(az)*rr*.82,.004,Math.cos(az)*rr*.82],top=[Math.sin(az)*rr,h*(.46+.12*Math.sqrt(1-tier*tier)+.10*noise(i,3)),Math.cos(az)*rr];let old=root,retainedPair=false;
   for(let j=1;j<=10;j++){
-   const t=(j+(j<10?(noise(i,j+220)-.5)*.5:0))/10,at=mix(root,top,t);b.branch(old,at,Math.min(.0021,h*.004)*(1-t*.4),stem,'stem-physostegia');old=at;pair(at,az+j*Math.PI/2,L*(.74+.26*Math.sin(t*Math.PI)),i,j+20);
+   const t=(j+(j<10?(noise(i,j+220)-.5)*.5:0))/10,at=mix(root,top,t);b.branch(old,at,Math.min(.0021,h*.004)*(1-t*.4),stem,'stem-physostegia');old=at;retainedPair=pair(at,az+j*Math.PI/2,L*(.74+.26*Math.sin(t*Math.PI)),i,j+20,false,root,retainedPair)||retainedPair;
    if(j!==7||i%3===0)continue;
-   for(let k=0;k<2;k++){const aa=az+(k?1.3:-1.3),end=[at[0]+Math.sin(aa)*w*.10,at[1]+h*.15,at[2]+Math.cos(aa)*w*.10];let prev=at;for(let q=1;q<=3;q++){const loc=mix(at,end,q/3);b.branch(prev,loc,Math.min(.0011,h*.0025)*(1-q*.1),stem,'branch-physostegia');prev=loc;pair(loc,aa+q*Math.PI/2,L*(.65-q*.10),i,j*29+k*7+q);}spike(end,aa,Math.min(a.inflorescenceLength*.64,h*.23),i+50+k*37);}
+   for(let k=0;k<2;k++){const aa=az+(k?1.3:-1.3),end=[at[0]+Math.sin(aa)*w*.10,at[1]+h*.15,at[2]+Math.cos(aa)*w*.10];let prev=at;for(let q=1;q<=3;q++){const loc=mix(at,end,q/3);b.branch(prev,loc,Math.min(.0011,h*.0025)*(1-q*.1),stem,'branch-physostegia');prev=loc;retainedPair=pair(loc,aa+q*Math.PI/2,L*(.65-q*.10),i,j*29+k*7+q,false,root,retainedPair)||retainedPair;}spike(end,aa,Math.min(a.inflorescenceLength*.64,h*.23),i+50+k*37);}
   }
   spike(top,az,Math.min(a.inflorescenceLength,h*.32)*(.81+.19*noise(i,65)),i);
-  if([11,12,1,2].includes(month)&&i%3===0)for(let j=0;j<3;j++)pair([root[0],root[1]+j*.006,root[2]],az+j*Math.PI/2,Math.min(.027,h*.12)*(1-j*.22),i,300+j,true);
+  if([11,12,1,2].includes(month)&&i%3===0){let retainedBasal=false;for(let j=0;j<3;j++){
+   // Existing basal heights follow the rendered main-stem line instead of floating beside its lean.
+   const at=mix(root,top,Math.min(1,j*.006/Math.max(top[1]-root[1],1e-8)));retainedBasal=pair(at,az+j*Math.PI/2,Math.min(.027,h*.12)*(1-j*.22),i,300+j,true,root,retainedBasal)||retainedBasal;
+  }}
  }
  inspection?.();
 }
