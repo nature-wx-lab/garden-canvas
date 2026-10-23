@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.592';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.593';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.592';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.593';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9007,6 +9007,7 @@ export function carolinaPhloxPoint(type,t,u){
 }
 function drawCarolinaPhlox(b,{info,s,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,bill=a.shootProfile==='billBaker',n=Math.max(3,Math.min(26,Math.round((bill?22:20)*detail*Math.sqrt(w/.45)*Math.min(1,h/.3)))),L=Math.min(a.leafLength,h*.26,w*.18),R=a.flowerRadius*Math.min(1,h/.25),F=a.flowerLength*Math.min(1,h/.25);
+ let inspection=null,inspectionScore=-Infinity;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);};
  for(let i=0;i<n;i++){
   const az=i*2.399963+(noise(i,1)-.5)*.35,rr=w*.32*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr],top=h*(.63+.16*noise(i,2)),lean=w*(.025+.045*noise(i,3)),point=t=>[root[0]+Math.sin(az)*lean*t*t,root[1]+top*t,root[2]+Math.cos(az)*lean*t*t];let prev=root;
@@ -9025,8 +9026,11 @@ function drawCarolinaPhlox(b,{info,s,detail,rand,month},kit){
    f.add('tube','tube-carolina-phlox',a.flowerPalette.tube,0,0,0,r*.22,fl/1.09,r*.22);
    for(let k=0;k<5;k++){const ba=k*TAU/5;f.add('carolinaPhloxLobe',bill?'petal-carolina-phlox-pink':'petal-carolina-phlox-white',s.flowerColor,0,fl,0,r,r,r,Math.PI/2,ba,0);f.add('narrow','sepal-carolina-phlox',a.flowerPalette.calyx,Math.sin(ba)*r*.07,fl*.34,Math.cos(ba)*r*.07,r*.1,fl*.26,fl*.26,.18,ba,0);}
    f.add('tube','eye-carolina-phlox',a.flowerPalette.eye,0,fl*.99,0,r*.12,fl*.025,r*.12);
+   const point=new THREE.Vector3(...carolinaPhloxPoint('carolinaPhloxLobe',.75,0).map(Math.fround)).multiplyScalar(r).applyEuler(new THREE.Euler(Math.PI/2,0,0,'YXZ')).add(new THREE.Vector3(0,fl,0)),score=at[0]*.8+at[2];
+   if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),R*2);}
   }
  }
+ inspection?.();
 }
 
 export function springPhloxPoint(type,t,u){
