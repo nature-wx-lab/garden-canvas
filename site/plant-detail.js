@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.593';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.594';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.593';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.594';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9010,11 +9010,24 @@ function drawCarolinaPhlox(b,{info,s,detail,rand,month},kit){
  let inspection=null,inspectionScore=-Infinity;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);};
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*.35,rr=w*.32*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr],top=h*(.63+.16*noise(i,2)),lean=w*(.025+.045*noise(i,3)),point=t=>[root[0]+Math.sin(az)*lean*t*t,root[1]+top*t,root[2]+Math.cos(az)*lean*t*t];let prev=root;
+  const az=i*2.399963+(noise(i,1)-.5)*.35,rr=w*.32*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr],top=h*(.63+.16*noise(i,2)),lean=w*(.025+.045*noise(i,3)),point=t=>[root[0]+Math.sin(az)*lean*t*t,root[1]+top*t,root[2]+Math.cos(az)*lean*t*t];let prev=root,retainedPair=false;
   for(let j=1;j<=8;j++){
    const t=(j+(j<8?(noise(i,j+7)-.5)*.5:0))/8,at=point(t);b.branch(prev,at,Math.min(.00125,h*.0038)*(1-t*.5),a.stemColor,'stem-carolina-phlox');prev=at;
    if(noise(i,j+30)>s.leafDensity)continue;
-   for(let side=0;side<2;side++){const aa=az+j*Math.PI/2+side*Math.PI,len=L*(.92-.42*t),pet=len*.015,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0004,h*.002),a.stemColor,'petiole-carolina-phlox');b.add('carolinaPhloxLeaf','leaf-carolina-phlox',kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,.95+.30*noise(i,j*3+side),aa,(noise(i,j+90+side)-.5)*.2);}
+   const len=L*(.92-.42*t),pet=len*.015,radius=Math.min(.0004,h*.002),ratio=a.leafWidth/a.leafLength,leaves=[];let bound=pet*.3+radius;
+   for(let side=0;side<2;side++){
+    const aa=az+j*Math.PI/2+side*Math.PI,pitch=.95+.30*noise(i,j*3+side),roll=(noise(i,j+90+side)-.5)*.2,color=kit.shade(rand,s.leafColor,.035),cp=Math.cos(pitch),sp=Math.sin(pitch);
+    // YXZ rise of the existing leaf, including its negative central groove.
+    const rise=Math.max(0,cp*Math.cos(roll))+.50*ratio*Math.abs(cp*Math.sin(roll))+.010*Math.max(0,sp)+.128*Math.max(0,-sp);
+    bound=Math.max(bound,pet*.3+len*rise);leaves.push({aa,pitch,roll,color});
+   }
+   // Both original shades are consumed even when this upper pair is omitted.
+   // Keep only the first eligible pair at the unchanged root if a low ceiling excludes every leaf node.
+   const ceiling=Math.min(s.height,s.leafHeight),base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)continue;
+   const fit=Math.min(1,room/Math.max(bound,1e-8)),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.3*fit,base[2]+Math.cos(leaf.aa)*pet*fit]}));
+   // A sub-cutoff petiole cannot support a detached blade: attach the pair directly to the node.
+   const direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
+   for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,a.stemColor,'petiole-carolina-phlox');b.add('carolinaPhloxLeaf','leaf-carolina-phlox',leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}retainedPair=true;
   }
   if(!s.bloom)continue;
   const base=point(1),rad=Math.min(w*.105,h*.16),rise=h*.10,sites=bill?15:18;
