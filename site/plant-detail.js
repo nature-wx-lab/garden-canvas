@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.581';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.582';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.581';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.582';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -12523,7 +12523,11 @@ function drawDianthus(b,{info,s,detail,rand},kit){
    branch(at,pt,.00035,'pedicel-dianthus');
    if(cluster)for(let q=0;q<3;q++){const bn=an+q*TAU/3;leaf(pt,bn,.010,.45+q*.1);}
    if(open)detailedFlower(b,{x:pt[0],y:pt[1],z:pt[2],r:a.flowerRadius,color:s.flowerColor,shape:'dianthusFringed',layers:a.flowerLayers||1,tilt,yaw:an,markInspection:false,onInspectionTarget:register=>{const score=pt[0]*.8+pt[2];if(score>inspectionScore){inspectionScore=score;inspection=register;}},palette:{profile:type,eye:a.flowerEyeColor,rim:a.flowerPatternColor}},{...kit,rand});
-   else b.add(kit.bud,'flowerBud-dianthus',green,...pt,.0025,.008,.0025);
+   else if(type==='knappii'||cluster){
+    // Photo-informed proportions, not measured bud dimensions; anchor the closed base to its pedicel.
+    const budRadius=a.flowerRadius*.28,budHalfLength=a.flowerRadius*.75;
+    b.add(kit.bud,'flowerBud-dianthus',green,pt[0],pt[1]+budHalfLength,pt[2],budRadius,budHalfLength,budRadius);
+   }else b.add(kit.bud,'flowerBud-dianthus',green,...pt,.0025,.008,.0025);
   }
  };
  // Separate short leafy shoots persist after the taller flowering stems die back.
@@ -13818,7 +13822,8 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
  if(shape==='dianthusFringed'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),type=palette.profile||'superbus',tube=type==='superbus'?1.3:type==='arenarius'?.95:type==='barbatus'?.95:.85;
-  f.add('tube','calyx-dianthus',type==='superbus'?'#797464':'#79875c',0,-r*tube*.50,0,r*.13,r*tube,r*.13);
+  // The shared tube starts at y=0; these small-flowered profiles meet the petals at its top centre.
+  f.add('tube','calyx-dianthus',type==='superbus'?'#797464':'#79875c',0,-r*tube*(['knappii','barbatus'].includes(type)?1:.50),0,r*.13,r*tube,r*.13);
   for(let j=0;j<5;j++){const an=j*TAU/5;f.add('narrow','calyxTooth-dianthus','#79875c',Math.sin(an)*r*.12,-r*.12,Math.cos(an)*r*.12,r*.09,r*.20,r*.09,-.12,an,0);}
   for(let j=0;j<4;j++)f.add('narrow','epicalyx-dianthus','#77805c',0,-r*tube*.94,0,r*.11,r*tube*.45,r*.12,-.22,j*TAU/4,0);
   const pk=palette.eye?'petal-dianthus-eye-'+palette.eye.slice(1):palette.rim?'petal-dianthus'+(type==='chinensis'?'-chinensis':'')+'-rim-'+palette.rim.slice(1):'petal-dianthus';
