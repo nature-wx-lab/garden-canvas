@@ -10693,3 +10693,11 @@ test('Spring phlox runners paired blades and petioles respect saved limits and a
  const doc=emptyDocument(10,6);doc.plans.A.plants=rows.flatMap(([id,pid,large,small],ri)=>[large,small,...tiny].map((dims,i)=>({...makePlant(id,pid*10+i,2+i*1.4,1.5+ri*2),height:dims[0],spread:dims[1],leafHeight:dims[2]})));doc.view.month=6;doc.view.year=1;
  const raw={...structuredClone(doc),catalogVersion:'2026-10-23.36'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
+
+test('Spring phlox lobes retain separated narrow shoulders and shallow notches without folded faces',async()=>{
+ const {springPhloxPoint}=await import('../site/plant-detail.js'),rows=36,cols=18,points=[];
+ for(let row=0;row<=rows;row++)for(let col=0;col<=cols;col++){const p=springPhloxPoint('springPhloxLobe',row/rows,col/cols*2-1).map(Math.fround);assert.ok(p.every(Number.isFinite));assert.ok(p[1]>=0&&p[1]<=1.001);points.push(p);}
+ let negative=0;for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){const a=row*(cols+1)+col,b=a+1,c=a+cols+1,d=c+1;for(const tri of[[a,c,b],[b,c,d]]){const[p,q,r]=tri.map(i=>points[i]),area=(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]);assert.ok(area<-1e-12,'nonfolded nondegenerate XY face');negative++;}}assert.equal(negative,1296);
+ const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]),width=Math.max(...xs)-Math.min(...xs),length=Math.max(...ys)-Math.min(...ys),tip=points.slice(rows*(cols+1)),tipWidth=Math.max(...tip.map(p=>p[0]))-Math.min(...tip.map(p=>p[0]));
+ assert.ok(width/length>.65&&width/length<.80,'narrow separate-lobe display proportions');assert.ok(tipWidth/width>.85,'broad terminal edge');assert.ok(Math.max(...tip.map(p=>p[1]))-tip[cols/2][1]>.02,'shallow central terminal notch');assert.ok(points[cols][0]-points[0][0]>.02,'finite attached root width');
+});

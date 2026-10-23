@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.597';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.598';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.597';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.598';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9052,7 +9052,11 @@ function drawCarolinaPhlox(b,{info,s,detail,rand,month},kit){
 
 export function springPhloxPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
- if(type==='springPhloxLobe')return [u*.47*sn**.54,t-.020*Math.exp(-u*u*30)*t**8,.04*t*t+.055*u*u*sn+.015*Math.sin(u*7+t*4)*t*t];
+ if(type==='springPhloxLobe'){
+  // Narrow separated shoulders and a shallow terminal notch; proportions are visual approximations.
+  const edge=1-.16*u*u-.045*Math.exp(-32*u*u),p=t*edge,half=.014+.34*Math.sin(Math.PI*.79*p**1.28);
+  return [u*half,p,.04*p*p+.055*u*u*Math.sin(Math.PI*p)+.015*Math.sin(u*7+p*4)*p*p];
+ }
  return [u*.52*sn**.90*(1-.15*t),t,.085*t*t+.03*u*u*sn];
 }
 
