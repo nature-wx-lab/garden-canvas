@@ -10577,3 +10577,26 @@ test('Polemonium flower observation reaches a visible corolla vertex on narrow a
  }assert.equal(cameraChecks,8);
  const doc=emptyDocument(10,6);doc.plans.A.plants=rows.map(([id,pid,,dims])=>({...makePlant(id,pid,4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.30'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
+
+test('Polemonium whole feathers and complete plants obey saved dimensions across months and legal minimum inputs',()=>{
+ const rows=[['p-75ae35f9a68c',59200,[.45,.30,.17],[.12,.15,.05]],['p-6d87364deb8c',59201,[.35,.25,.17],[.12,.15,.05]]],tiny=[[.01,.30,.005],[.50,.10,.16],[.50,.30,.005]],eps=1e-7;let models=0;
+ const check=(id,pid,dims,month)=>{
+  const p={...makePlant(id,pid,4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),v={...view(month),year:1},st=stateAt(p,v),g=plantModel(p,v),matrix=new Matrix4(),point=new Vector3(),label=id+' '+dims.join('/')+' month='+month;let vertices=0,leafVertices=0,rachisVertices=0,leaves=0,axes=0,basalFeathers=0;models++;
+  try{g.updateMatrixWorld(true);g.traverse(mesh=>{
+   if(!mesh.isMesh)return;const pos=mesh.geometry.getAttribute('position'),normal=mesh.geometry.getAttribute('normal'),tag=mesh.userData.component,leaf=tag==='leaf-polemonium',rachis=tag==='rachis-polemonium',count=mesh.isInstancedMesh?mesh.count:1;
+   assert.ok(pos&&normal,label+' geometry attributes');assert.ok(normal.array.every(Number.isFinite),label+' finite normals');if(mesh.isInstancedMesh)assert.ok(mesh.instanceMatrix.array.every(Number.isFinite),label+' finite transforms');if(leaf)leaves+=count;if(rachis)axes+=count;
+   for(let i=0;i<count;i++){if(mesh.isInstancedMesh){mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);}else matrix.copy(mesh.matrixWorld);
+    if(rachis&&i%8===0){point.set(0,-.5,0).applyMatrix4(matrix);if(Math.abs(point.y-.004*g.scale.y)<eps)basalFeathers++;}
+    for(let j=0;j<pos.count;j++){point.fromBufferAttribute(pos,j).applyMatrix4(matrix);vertices++;
+     if(!Number.isFinite(point.x)||!Number.isFinite(point.y)||!Number.isFinite(point.z))assert.fail(label+' nonfinite '+tag+' '+i+'/'+j);
+     if(point.y>st.height+eps)assert.fail(label+' height '+tag+' '+point.y);
+     if(Math.hypot(point.x,point.z)*2>st.spread+eps)assert.fail(label+' spread '+tag+' '+i+'/'+j);
+     if(leaf||rachis){if(leaf)leafVertices++;else rachisVertices++;if(point.y>Math.min(st.height,st.leafHeight)+eps)assert.fail(label+' feather ceiling '+tag+' '+point.y);}
+    }
+   }
+  });assert.ok(vertices>0,label+' nonempty plant');assert.ok(leaves>0&&axes>0&&leafVertices>0&&rachisVertices>0,label+' retained feathers');assert.ok(basalFeathers>0,label+' retained basal feathers');assert.equal(leaves%15,0,label+' whole 15-leaflet feathers');assert.equal(axes%8,0,label+' whole 8-axis feathers');assert.equal(leaves/15,axes/8,label+' connected feather units');assert.deepEqual(p,before,label+' saved input unchanged');}finally{dispose(g);}
+ };
+ for(const[id,pid,large,small]of rows){for(const dims of[large,small])for(let month=1;month<=12;month++)check(id,pid,dims,month);for(const dims of tiny)for(const month of[1,6])check(id,pid,dims,month);}assert.equal(models,60);
+ const doc=emptyDocument(10,6);doc.plans.A.plants=rows.flatMap(([id,pid,large,small],ri)=>[large,small,...tiny].map((dims,i)=>({...makePlant(id,pid*10+i,2+i*1.4,1.5+ri*2),height:dims[0],spread:dims[1],leafHeight:dims[2]})));doc.view.month=6;doc.view.year=1;
+ const raw={...structuredClone(doc),catalogVersion:'2026-10-23.31'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});

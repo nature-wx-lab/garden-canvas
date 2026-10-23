@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.591';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.592';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.591';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.592';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -8946,12 +8946,29 @@ function drawPolemonium(b,{info,s,detail,rand,month},kit){
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const pinnate=(at,az,len,i,k)=>{
   if(noise(i,k)>s.leafDensity)return;
-  const end=[at[0]+Math.sin(az)*len*.82,at[1]+len*.42,at[2]+Math.cos(az)*len*.82],pairs=7;let prev=at;
+  const end=[at[0]+Math.sin(az)*len*.82,at[1]+len*.42,at[2]+Math.cos(az)*len*.82],pairs=7,parts=[];let prev=at,bound=0;
   for(let j=1;j<=pairs+1;j++){
-   const q=j/(pairs+1),mid=mix(at,end,q);mid[1]+=len*.12*Math.sin(q*Math.PI);b.branch(prev,mid,Math.min(.0006,h*.002)*(1-q*.5),a.stemColor,'rachis-polemonium');prev=mid;
-   const ll=Math.min(.025,len*.24)*(.74+.26*Math.sin(q*Math.PI)),width=ll*.36;
-   if(j<=pairs)for(let side=0;side<2;side++){const aa=az+(side?1:-1)*(1.12-.15*q);b.add('polemoniumLeaflet','leaf-polemonium',kit.shade(rand,s.leafColor,.04),...mid,width,ll,ll,1.0+.20*noise(i,k+j+side),aa,(noise(i,j+80+side)-.5)*.2);}
-   else b.add('polemoniumLeaflet','leaf-polemonium',kit.shade(rand,s.leafColor,.04),...mid,width,ll,ll,.90,az,0);
+   const q=j/(pairs+1),mid=mix(at,end,q);mid[1]+=len*.12*Math.sin(q*Math.PI);
+   const radius=Math.min(.0006,h*.002)*(1-q*.5),ll=Math.min(.025,len*.24)*(.74+.26*Math.sin(q*Math.PI)),width=ll*.36,leaflets=[];
+   bound=Math.max(bound,Math.max(prev[1],mid[1])-at[1]+radius);
+   const leaflet=(pitch,yaw,roll)=>{
+    // Consume all 15 original shades before omitting or fitting the whole feather.
+    const color=kit.shade(rand,s.leafColor,.04),cp=Math.cos(pitch),sp=Math.sin(pitch);
+    // YXZ rise for |X|<=.52, Y in [0,1], Z in [-.012,.11], including the negative groove.
+    const rise=Math.max(0,cp*Math.cos(roll))+.52*.36*Math.abs(cp*Math.sin(roll))+.012*Math.max(0,sp)+.11*Math.max(0,-sp);
+    bound=Math.max(bound,mid[1]-at[1]+ll*rise);leaflets.push({color,pitch,yaw,roll});
+   };
+   if(j<=pairs)for(let side=0;side<2;side++)leaflet(1.0+.20*noise(i,k+j+side),az+(side?1:-1)*(1.12-.15*q),(noise(i,j+80+side)-.5)*.2);
+   else leaflet(.90,az,0);
+   parts.push({from:prev,to:mid,radius,ll,width,leaflets});prev=mid;
+  }
+  const room=Math.min(s.height,s.leafHeight)-at[1];if(room<=0)return;
+  const fit=Math.min(1,room/Math.max(bound,1e-8)),point=p=>fit===1?p:p.map((v,j)=>at[j]+(v-at[j])*fit),fitted=parts.map(part=>({...part,from:point(part.from),to:point(part.to)}));
+  // Match batch.branch's cutoff before emitting anything, so no leaflet loses its supporting axis.
+  if(fitted.some(part=>new THREE.Vector3(...part.to).sub(new THREE.Vector3(...part.from)).length()<.0001))return;
+  for(const part of fitted){
+   b.branch(part.from,part.to,part.radius*fit,a.stemColor,'rachis-polemonium');
+   for(const leaf of part.leaflets)b.add('polemoniumLeaflet','leaf-polemonium',leaf.color,...part.to,part.width*fit,part.ll*fit,part.ll*fit,leaf.pitch,leaf.yaw,leaf.roll);
   }
  };
  const flower=(at,az,i,k)=>{
