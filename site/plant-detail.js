@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.614';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.615';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.614';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.615';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9786,7 +9786,12 @@ function drawPhysostegia(b,{info,s,detail,rand,month},kit){
 export function catmintPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='dreamsLeaf')return [u*.57*sn**.70*(1-.20*t)*(1+.065*(Math.abs((t*13%1)*2-1)*2-1)),t,.035*u*u*sn-.06*t*t];
- if(type==='dreamsLip')return [u*(.04+.34*sn**.55)*(1+.13*Math.cos(u*Math.PI*3)),-.03-.21*t,.65+.37*t-.035*t*t+.022*Math.cos(u*Math.PI*5)*t**4];
+ if(type==='dreamsLip'){
+  // Keep the attached quarter, Y/Z surface and center observation anchor; broaden the rounded end.
+  // Photo-guided display approximation, not a measured cultivar proportion.
+  const q=Math.max(0,Math.min(1,(t-.25)/.75)),blend=q*q*(3-2*q),v=t*(1-.18*blend),arch=Math.max(0,Math.sin(Math.PI*v));
+  return [u*(.04+.34*arch**.55)*(1+.13*Math.cos(u*Math.PI*3)),-.03-.21*t,.65+.37*t-.035*t*t+.022*Math.cos(u*Math.PI*5)*t**4];
+ }
  if(type==='dreamsHood')return [u*(.03+.21*sn),.08+.10*sn,.67+.27*t-.055*Math.exp(-u*u*70)*t**4];
  if(type==='dreamsTube'){const az=(u+1)*Math.PI,r=.065+.085*t;return [Math.cos(az)*r,Math.sin(az)*r+.04*t*t,.76*t];}
  if(type==='nudaLeaf'||type==='tuberosaLeaf'||type==='nervosaLeaf')return [u*.53*sn**.82*(1-.24*t)*(1+.042*Math.cos(t*TAU*12)),t,.035*u*u*sn-.065*t*t];
