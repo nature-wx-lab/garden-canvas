@@ -10718,3 +10718,21 @@ test('Spring phlox Moody eye shader uses its owning palette in working linear sp
  }assert.equal(models,2);
  const doc=emptyDocument(10,6);doc.plans.A.plants=plants;doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.38'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
+
+test('Spring phlox lobes keep modest independent width length and yaw variation within each five-lobed flower',()=>{
+ const rows=[['p-51c603bd1c65',60000,[.3,.6,.12],3],['p-a7c8251be5c6',60001,[.4,.6,.17],6]],plants=[],eps=1e-6;let models=0;
+ for(const[id,pid,large,x]of rows)for(const[si,dims]of[large,[.1,.2,.04]].entries()){
+  const p={...makePlant(id,pid,x,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),g=plantModel(p,{...view(6),year:1}),pilosa=id==='p-a7c8251be5c6',tubeMatrix=new Matrix4(),petalMatrix=new Matrix4(),label=id+' '+dims;models++;
+  try{const tube=g.children.find(m=>m.userData.component===(pilosa?'tube-spring-phlox-hairy':'tube-spring-phlox')),petals=g.children.find(m=>m.userData.component==='petal-spring-phlox-'+(pilosa?'pilosa':'moody'));assert.ok(tube?.count>0&&petals?.count>0,label+' retained flowers');assert.equal(petals.count,tube.count*5,label+' five lobes per flower');
+   for(let flower=0;flower<tube.count;flower++){
+    tube.getMatrixAt(flower,tubeMatrix);const frame=Array.from({length:3},(_,axis)=>new Vector3().setFromMatrixColumn(tubeMatrix,axis).normalize()),radius=new Vector3().setFromMatrixColumn(tubeMatrix,0).length()/.22,widths=[],lengths=[],yaws=[];assert.ok(Number.isFinite(radius)&&radius>0,label+' radius from unchanged tube');
+    for(let k=0;k<5;k++){
+     petals.getMatrixAt(flower*5+k,petalMatrix);const basis=Array.from({length:3},(_,axis)=>new Vector3().setFromMatrixColumn(petalMatrix,axis)),sx=basis[0].length()/(radius*(pilosa?.83:1)),sy=basis[1].length()/radius,sz=basis[2].length()/radius;assert.ok([sx,sy,sz].every(Number.isFinite),label+' finite lobe scales');assert.ok(sx>=.95-eps&&sx<=1.05+eps,label+' width range');assert.ok(sy>=.96-eps&&sy<=1.04+eps&&sz>=.96-eps&&sz<=1.04+eps,label+' length/depth range');assert.ok(Math.abs(sy-sz)<eps,label+' matched length and depth');
+     const xDirection=basis[0].normalize(),localX=new Vector3(...frame.map(axis=>xDirection.dot(axis))),angle=Math.atan2(-localX.z,localX.x)-k*Math.PI*2/5,yaw=Math.atan2(Math.sin(angle),Math.cos(angle));assert.ok(Math.abs(localX.y)<eps,label+' lobe X remains in its flower frame plane');assert.ok(Number.isFinite(yaw)&&Math.abs(yaw)<=.035+eps,label+' yaw range');widths.push(sx);lengths.push(sy);yaws.push(yaw);
+    }
+    for(const[name,values]of[['width',widths],['length',lengths],['yaw',yaws]])assert.ok(new Set(values.map(value=>Math.round(value*1e5))).size>1,label+' actual '+name+' differences within flower '+flower);
+   }assert.deepEqual(p,before,label+' saved input unchanged');plants.push({...structuredClone(p),id:pid*10+si});
+  }finally{dispose(g);}
+ }assert.equal(models,4);
+ const doc=emptyDocument(10,6);doc.plans.A.plants=plants;doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.39'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});

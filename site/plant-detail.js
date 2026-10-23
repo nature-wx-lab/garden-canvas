@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.599';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.600';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.599';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.600';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9089,9 +9089,14 @@ function drawSpringPhlox(b,{info,s,detail,rand,month},kit){
    if(!s.bloom||noise(i,j+60)>.88){f.add(kit.bud,'bud-spring-phlox',a.flowerPalette.bud,0,fl*.35,0,radius*.17,fl*.7,radius*.17);continue;}
    const age=noise(i,j+150),color=pilosa?s.flowerColor:new THREE.Color(a.flowerPalette.young).lerp(new THREE.Color(age>.7?a.flowerPalette.old:a.flowerPalette.mature),age>.7?(age-.7)/.3:age/.7);
    f.add('tube',pilosa?'tube-spring-phlox-hairy':'tube-spring-phlox',color,0,0,0,radius*.22,fl/1.09,radius*.22);f.add('woodlandMintTube','calyx-spring-phlox',a.flowerPalette.calyx,0,0,0,radius*.31,fl*.43,radius*.31);
-   for(let k=0;k<5;k++){const ba=k*TAU/5;f.add('springPhloxLobe',pilosa?'petal-spring-phlox-pilosa':'petal-spring-phlox-moody',color,0,fl,0,radius*(pilosa?.83:1),radius,radius,Math.PI/2,ba,0);f.add('narrow','sepal-spring-phlox',a.flowerPalette.calyx,Math.sin(ba)*radius*.08,fl*.34,Math.cos(ba)*radius*.08,radius*.10,fl*.24,fl*.24,.2,ba,0);}
+   let lobe0;
+   for(let k=0;k<5;k++){
+    const ba=k*TAU/5,sx=radius*(pilosa?.83:1)*(.95+.10*noise(i,j*19+k+330)),sy=radius*(.96+.08*noise(i,j*19+k+530)),yaw=ba+(noise(i,j*19+k+730)-.5)*.07;
+    f.add('springPhloxLobe',pilosa?'petal-spring-phlox-pilosa':'petal-spring-phlox-moody',color,0,fl,0,sx,sy,sy,Math.PI/2,yaw,0);f.add('narrow','sepal-spring-phlox',a.flowerPalette.calyx,Math.sin(ba)*radius*.08,fl*.34,Math.cos(ba)*radius*.08,radius*.10,fl*.24,fl*.24,.2,ba,0);
+    if(k===0)lobe0={sx,sy,sz:sy,yaw};
+   }
    f.add('tube','eye-spring-phlox',a.flowerPalette.eye,0,fl*.97,0,radius*(pilosa?.12:.26),fl*.026,radius*(pilosa?.12:.26));
-   const point=new THREE.Vector3(...springPhloxPoint('springPhloxLobe',.75,0).map(Math.fround)).multiply(new THREE.Vector3(radius*(pilosa?.83:1),radius,radius)).applyEuler(new THREE.Euler(Math.PI/2,0,0,'YXZ')).add(new THREE.Vector3(0,fl,0)),score=end[0]*.8+end[2];
+   const point=new THREE.Vector3(...springPhloxPoint('springPhloxLobe',.75,0).map(Math.fround)).multiply(new THREE.Vector3(lobe0.sx,lobe0.sy,lobe0.sz)).applyEuler(new THREE.Euler(Math.PI/2,lobe0.yaw,0,'YXZ')).add(new THREE.Vector3(0,fl,0)),score=end[0]*.8+end[2];
    if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),R*2);}
   }
  };
