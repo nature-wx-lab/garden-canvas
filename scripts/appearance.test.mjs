@@ -10561,3 +10561,19 @@ test('Gardeners double petals vary modestly at each layer while retaining scale 
  }finally{dispose(g);}}
  const doc=emptyDocument(10,6);doc.plans.A.plants=[{...makePlant(id,58601,4,3),height:.1,spread:.18,leafHeight:.045}];doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.29'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
+
+
+test('Polemonium flower observation reaches a visible corolla vertex on narrow and wide viewports',()=>{
+ const rows=[['p-75ae35f9a68c',59100,[.45,.30,.17],[.12,.15,.05]],['p-6d87364deb8c',59101,[.35,.25,.17],[.12,.15,.05]]];let cameraChecks=0;
+ for(const[id,pid,large,small]of rows)for(const dims of[large,small])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,pid,4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),v={...view(month),year:1},st=stateAt(p,v),g=plantModel(p,v);
+  try{assert.equal(!!g.userData.flowerTargets?.length,st.bloom);if(!st.bloom)assert.equal(flowerInspectionView(g,.8,40),null);
+   if(month===6){assert.equal(flowerInspectionDistanceFloor(g),.08);assert.equal(g.userData.flowerTargets.length,1);const target=new Vector3(...g.userData.flowerTargets[0].origin),mesh=g.children.find(m=>m.userData.component===(id==='p-6d87364deb8c'?'petal-polemonium-apricot':'petal-polemonium-purple')),pos=mesh.geometry.getAttribute('position'),index=27*81+16,matrix=new Matrix4();let nearest=Infinity,observedInstance=-1;
+    for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);const distance=new Vector3().fromBufferAttribute(pos,index).applyMatrix4(matrix).distanceTo(target);if(distance<nearest){nearest=distance;observedInstance=i;}}assert.ok(nearest<2e-7,'target is a rendered row27/column16 vertex');g.position.set(-3,.012,-1);g.updateMatrixWorld(true);const worldTarget=g.localToWorld(target.clone());
+    for(const aspect of[.8,1.65]){cameraChecks++;const pose=flowerInspectionView(g,aspect,40);assert.ok(pose);assert.ok(new Vector3(...pose.target).distanceTo(worldTarget)<1e-9,'no generic offset');const camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(new Vector3(...pose.target));camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(g,true).find(h=>{const z=-h.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.equal(hit?.object.userData.component,mesh.userData.component,'first visible hit is the selected corolla');assert.ok(hit.point.distanceTo(worldTarget)<2e-6,'target not hidden by the front of the funnel');mesh.getMatrixAt(observedInstance,matrix);matrix.premultiply(mesh.matrixWorld);const projected=new Vector3();for(let j=0;j<pos.count;j++){projected.fromBufferAttribute(pos,j).applyMatrix4(matrix).project(camera);assert.ok(Math.abs(projected.x)<=.98&&Math.abs(projected.y)<=.98&&projected.z>=-1&&projected.z<=1,'whole selected corolla fits viewport');}
+    }
+   }assert.deepEqual(p,before);
+  }finally{dispose(g);}
+ }assert.equal(cameraChecks,8);
+ const doc=emptyDocument(10,6);doc.plans.A.plants=rows.map(([id,pid,,dims])=>({...makePlant(id,pid,4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.30'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});
