@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.609';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.610';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.609';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.610';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9715,7 +9715,12 @@ function drawPajamas(b,{info,s,detail,rand,month},kit){
 export function physostegiaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='physostegiaLeaf')return [u*.53*sn**.83*(1-.16*t)*(1+.09*(Math.abs((t*17%1)*2-1)*2-1)),t,.032*u*u*sn-.07*t*t+.012*Math.sin(t*8)*u];
- if(type==='physostegiaHood')return [u*.30*sn**.48,.10+.21*sn-.045*u*u,.70+.31*t-.02*Math.exp(-u*u*60)*t**4];
+ if(type==='physostegiaHood'){
+  // Keep the attached quarter unchanged, then retain a broad rounded end and a transverse dome.
+  // These hood proportions are illustrative; the source photographs were not measured.
+  const q=Math.max(0,Math.min(1,(t-.25)/.75)),blend=q*q*(3-2*q),v=t*(1-.20*blend),arch=Math.max(0,Math.sin(Math.PI*v));
+  return [u*.30*arch**.48,.10+.21*arch-.045*u*u+.025*blend*t*t*(1-u*u),.70+.31*t-.02*Math.exp(-u*u*60)*t**4*(1-blend)-.035*u*u*t**4*blend];
+ }
  if(type==='physostegiaLip')return [u*(.045+.31*sn**.47)*(1+.17*Math.cos(u*Math.PI*3)),-.035-.14*t-.04*u*u,.68+.35*t-.045*t*t+.024*Math.cos(u*Math.PI*3)*t**5];
  const az=(u+1)*Math.PI,calyx=type==='physostegiaCalyx',bud=type==='physostegiaBud',r=calyx?.07+.055*t:bud?.05+.095*sn**.7:.047+.17*Math.sin(t*1.65)**1.3;
  const radius=type==='physostegiaTube'?r+.06*Math.sin(Math.PI*t)**2:r;
