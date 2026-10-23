@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.604';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.605';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.604';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.605';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -13534,7 +13534,9 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
    f.add('paniclePhloxLobe',pk,color,0,L,0,r*.99,r,r,Math.PI/2,aa,0);
    f.add('narrow','sepal-panicle-phlox','#6f8657',Math.sin(aa)*r*.115,L*.36,Math.cos(aa)*r*.115,r*.15,L*.24,L*.24,.20,aa,0);
   }
-  f.add('tube','eye-panicle-phlox',palette.eye,0,L*.97,0,r*.35,L*.028,r*.35);
+  // A filled colour patch keeps the previous eye width; its tiny offset avoids overlap with the lobe roots.
+  // This surface is a display approximation, not a model of unconfirmed internal reproductive organs.
+  f.add('paniclePhloxEye','eye-panicle-phlox',palette.eye,0,L+.001*r,0,r,r,r);
   if(typeof onInspectionTarget==='function'){
    // Actual row15/column7 of the existing20x14 surface, transformed like its first lobe.
    const point=new THREE.Vector3(...paniclePhloxPoint('paniclePhloxLobe',.75,0).map(Math.fround)).multiply(new THREE.Vector3(r*.99,r,r)).applyEuler(new THREE.Euler(Math.PI/2,0,0,'YXZ')).add(new THREE.Vector3(0,L,0));

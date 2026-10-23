@@ -10814,3 +10814,26 @@ test('Panicle phlox source dimensions preserve defaults saved inputs and existin
  }assert.equal(models,3);assert.equal(cameraChecks,6);
  const doc=emptyDocument(10,6);doc.plans.A.plants=saved;doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.43'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
+
+test('Panicle phlox eye surface fills the colour patch with its existing palette and follows the flower throat pose',()=>{
+ const rows=[['p-289e28874872',60100,[.5,.4,.23],[.12,.2,.05]],['p-5960a0205273',60101,[.8,.5,.4],[.15,.22,.06]],['p-a80ce5615f08',60102,[1,.6,.5],[.16,.24,.07]]],saved=[],eps=2e-7;let models=0,rayChecks=0;
+ for(const[ri,[id,pid,large,small]]of rows.entries())for(const[si,dims]of[large,small].entries()){
+  const p={...makePlant(id,pid,2+ri*3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),a=CATALOG[id].appearance,r=a.flowerRadius,L=a.flowerLength,g=plantModel(p,{...view(6),year:1}),label=id+' '+dims;models++;
+  try{const eye=g.children.find(m=>m.userData.component==='eye-panicle-phlox'),tube=g.children.find(m=>m.userData.component==='tube-panicle-phlox');assert.ok(eye?.isInstancedMesh&&eye.count>0,label+' retained colour patches');assert.equal(eye.count,tube.count,label+' unchanged one eye per tube');assert.notEqual(eye.geometry,tube.geometry,label+' eye surface does not replace shared open tube');const pos=eye.geometry.getAttribute('position'),normal=eye.geometry.getAttribute('normal'),ix=eye.geometry.index;
+   assert.ok(pos.array.every(Number.isFinite)&&normal.array.every(Number.isFinite),label+' finite eye geometry');assert.equal(pos.count,26,label+' filled circle centre and boundary');assert.equal(ix.count,72,label+' complete 24-triangle fan');let radius=0;
+   for(let j=0;j<pos.count;j++){const point=new Vector3().fromBufferAttribute(pos,j),n=new Vector3().fromBufferAttribute(normal,j);assert.ok(Math.abs(point.y)<1e-8,label+' throat-plane local Y');assert.ok(n.distanceTo(new Vector3(0,1,0))<1e-7,label+' outward +Y normal');radius=Math.max(radius,Math.hypot(point.x,point.z));}assert.ok(Math.abs(radius-.105)<1e-8,label+' actual normalized radius');assert.ok(new Vector3().fromBufferAttribute(pos,0).length()<1e-8,label+' filled central vertex');
+   for(let j=0;j<ix.count;j+=3){const[p0,p1,p2]=[0,1,2].map(k=>new Vector3().fromBufferAttribute(pos,ix.getX(j+k))),cross=p1.sub(p0).cross(p2.sub(p0));assert.ok(cross.y>1e-10&&Math.abs(cross.x)<1e-10&&Math.abs(cross.z)<1e-10,label+' finite nondegenerate filled triangle '+j/3);}
+   // The generic tube remains an open side mesh for the existing corolla tube and other profiles.
+   const tubePos=tube.geometry.getAttribute('position');assert.equal(tubePos.count,13*26);assert.equal(tube.geometry.index.count,12*25*6);for(let j=0;j<tubePos.count;j++)assert.ok(Math.hypot(tubePos.getX(j),tubePos.getZ(j))>.15,label+' unchanged open tube has no central cap');
+   const tubeMatrix=new Matrix4(),eyeMatrix=new Matrix4(),expected=new Color(a.flowerPalette.eye),actual=new Color();
+   for(let i=0;i<eye.count;i++){
+    tube.getMatrixAt(i,tubeMatrix);eye.getMatrixAt(i,eyeMatrix);assert.ok(eyeMatrix.elements.every(Number.isFinite),label+' finite eye transform');const frame=[0,1,2].map(axis=>new Vector3().setFromMatrixColumn(tubeMatrix,axis).normalize()),delta=new Vector3().setFromMatrixPosition(eyeMatrix).sub(new Vector3().setFromMatrixPosition(tubeMatrix));assert.ok(Math.abs(delta.dot(frame[0]))<eps&&Math.abs(delta.dot(frame[2]))<eps,label+' centered on existing throat');assert.ok(Math.abs(delta.dot(frame[1])-(L+.001*r))<eps,label+' tiny colour-patch offset above lobe-root plane');
+    for(let axis=0;axis<3;axis++){const basis=new Vector3().setFromMatrixColumn(eyeMatrix,axis);assert.ok(Math.abs(basis.length()-r)<eps,label+' actual eye radius scale');assert.ok(basis.normalize().dot(frame[axis])>1-1e-6,label+' eye follows original flower frame');}eye.getColorAt(i,actual);for(const channel of['r','g','b'])assert.ok(Math.abs(actual[channel]-expected[channel])<1e-6,label+' owning linear eye colour '+channel);
+   }
+   g.updateMatrixWorld(true);eye.getMatrixAt(0,eyeMatrix);eyeMatrix.premultiply(eye.matrixWorld);const direction=new Vector3().setFromMatrixColumn(eyeMatrix,2).cross(new Vector3().setFromMatrixColumn(eyeMatrix,0)).normalize();
+   for(const x of[0,.105*.35]){const target=new Vector3(x,0,0).applyMatrix4(eyeMatrix),ray=new Raycaster(target.clone().addScaledVector(direction,r*.25),direction.clone().negate(),0,r),hit=ray.intersectObject(eye,false).find(h=>h.instanceId===0);assert.ok(hit,label+' direct eye-surface ray hits filled '+(x?'interior':'centre'));assert.ok(hit.point.distanceTo(target)<eps,label+' filled patch has no open central hole');rayChecks++;}
+   assert.deepEqual(p,before,label+' saved input unchanged');saved.push({...structuredClone(p),id:pid*10+si});
+  }finally{dispose(g);}
+ }assert.equal(models,6);assert.equal(rayChecks,12);
+ const doc=emptyDocument(10,6);doc.plans.A.plants=saved;doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.44'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});
