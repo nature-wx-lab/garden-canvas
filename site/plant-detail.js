@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.600';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.601';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.600';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.601';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9116,6 +9116,7 @@ function drawSpringPhlox(b,{info,s,detail,rand,month},kit){
 function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),growth=month===3?.25:month===4?.55:month===5?.83:1;
  const n=Math.max(3,Math.min(12,Math.round(6*detail*Math.pow(w/.4,.70)))),L=Math.min(a.leafLength,w*.28),stem=winter?a.winterStemColor:a.stemColor;
+ let inspection=null,inspectionScore=-Infinity;
  const leafPair=(at,angle,len,upper=false,pitch=.9)=>{
   for(const side of [0,Math.PI]){
    const aa=angle+side,petiole=upper?.0008:.003,tip=[at[0]+Math.sin(aa)*petiole,at[1]+.001,at[2]+Math.cos(aa)*petiole];
@@ -9138,7 +9139,7 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
   const R=Math.min(a.headRadius,w*.18),rise=top-body,axis=from;
   const floret=(at,angle,tilt,index)=>{
    const age=(index%3+rand()*.7)/3,color=a.shootProfile==='blueParadise'?new THREE.Color(a.flowerPalette.young).lerp(new THREE.Color(a.flowerPalette.mature),age):s.flowerColor;
-   detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius,color,shape:'paniclePhloxFlower',palette:{...a.flowerPalette,length:a.flowerLength,pattern:index%3},tilt,yaw:angle},{...kit,rand});
+   detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius,color,shape:'paniclePhloxFlower',palette:{...a.flowerPalette,length:a.flowerLength,pattern:index%3},tilt,yaw:angle,markInspection:false,onInspectionTarget:register=>{const score=at[0]*.8+at[2];if(score>inspectionScore){inspectionScore=score;inspection=register;}}},{...kit,rand});
   };
   let previous=axis;
   for(let level=0;level<5;level++){
@@ -9157,6 +9158,7 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
    if(level===4){b.branch(start,end,.00055,stem,'axis-panicle-phlox');floret(end,az,.12,i);}
   }
  }
+ inspection?.();
 }
 
 // A divided silver leaf is one connected three-dimensional organ, not a flat fern outline.
@@ -13519,6 +13521,11 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
    f.add('narrow','sepal-panicle-phlox','#6f8657',Math.sin(aa)*r*.115,L*.36,Math.cos(aa)*r*.115,r*.15,L*.24,L*.24,.20,aa,0);
   }
   f.add('tube','eye-panicle-phlox',palette.eye,0,L*.97,0,r*.35,L*.028,r*.35);
+  if(typeof onInspectionTarget==='function'){
+   // Actual row15/column7 of the existing20x14 surface, transformed like its first lobe.
+   const point=new THREE.Vector3(...paniclePhloxPoint('paniclePhloxLobe',.75,0).map(Math.fround)).multiply(new THREE.Vector3(r*.99,r,r)).applyEuler(new THREE.Euler(Math.PI/2,0,0,'YXZ')).add(new THREE.Vector3(0,L,0));
+   onInspectionTarget(()=>f.flower(point.toArray(),r*2));
+  }
   // Internal reproductive structures remain unconfirmed and are not fabricated.
   return;
  }
