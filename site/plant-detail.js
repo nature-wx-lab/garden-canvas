@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.602';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.603';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.602';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.603';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5017,7 +5017,10 @@ function drawVinca(b,{info,s,detail,rand},kit){
 // Paniculata leaves have a midrib and lateral veins curving towards the margin.
 export function paniclePhloxPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
- if(type==='paniclePhloxLobe')return [u*.60*Math.pow(sn,.32),t-.065*Math.exp(-u*u*24)*Math.pow(t,8),.045*t*t+.045*u*u*sn];
+ if(type==='paniclePhloxLobe'){
+  const edge=1-.12*u*u-.04*Math.exp(-32*u*u),p=t*edge,half=.014+.48*Math.sin(Math.PI*.80*p**1.28);
+  return [u*half,p,.04*p*p+.045*u*u*Math.sin(Math.PI*p)+.012*Math.sin(7*u+4*p)*p*p];
+ }
  const width=.5*Math.pow(sn,.80)*(1-.14*t),curve=t-Math.abs(u)*(.29-.12*Math.abs(u));
  return [u*width,t,.105*t*t+.048*u*u*sn-.011*Math.exp(-u*u*65)*sn+.006*Math.cos(curve*TAU*6)*Math.abs(u)*sn];
 }

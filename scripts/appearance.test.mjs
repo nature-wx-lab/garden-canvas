@@ -10785,3 +10785,14 @@ test('Panicle phlox saved dimensions bound attached leaf pairs and complete plan
  const doc=emptyDocument(10,6);doc.plans.A.plants=rows.flatMap(([id,pid,large,small],ri)=>[large,small,...tiny].map((dims,i)=>({...makePlant(id,pid*10+i,2+i*1.4,1+ri*2),height:dims[0],spread:dims[1],leafHeight:dims[2]})));doc.view.month=6;doc.view.year=1;
  const raw={...structuredClone(doc),catalogVersion:'2026-10-23.41'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
+
+test('Panicle phlox lobe surface keeps a rounded continuous limb and shallow notch without folded faces',async()=>{
+ const {paniclePhloxPoint}=await import('../site/plant-detail.js'),rows=20,cols=14,points=[];
+ for(let row=0;row<=rows;row++)for(let col=0;col<=cols;col++){const p=paniclePhloxPoint('paniclePhloxLobe',row/rows,col/cols*2-1).map(Math.fround);assert.ok(p.every(Number.isFinite));assert.ok(p[1]>=0&&p[1]<=1&&p[2]>=0&&p[2]<.10);points.push(p);}assert.equal(points.length,315);
+ let triangles=0,minArea=Infinity;for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){const a=row*(cols+1)+col,b=a+1,c=a+cols+1,d=c+1;for(const tri of[[a,c,b],[b,c,d]]){const[p,q,r]=tri.map(i=>points[i]),area=(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]);assert.ok(area < -1e-10,'continuous nonfolded nondegenerate XY triangle '+triangles);minArea=Math.min(minArea,-area);triangles++;}}assert.equal(triangles,560);
+ const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]),width=Math.max(...xs)-Math.min(...xs),length=Math.max(...ys)-Math.min(...ys),root=points.slice(0,cols+1),terminal=points.slice(rows*(cols+1)),rootWidth=Math.max(...root.map(p=>p[0]))-Math.min(...root.map(p=>p[0])),terminalWidth=Math.max(...terminal.map(p=>p[0]))-Math.min(...terminal.map(p=>p[0]));
+ // These are normalized engineering proportions for the illustrative surface, not measured cultivar dimensions.
+ assert.ok(width/length>.95&&width/length<1.05,'rounded limb display proportions');assert.ok(rootWidth>.027&&rootWidth<.029&&rootWidth<width*.04,'finite narrow attached root');assert.ok(terminalWidth/width>.80&&terminalWidth/width<.90,'broad terminal edge below maximum limb width');assert.ok(Math.max(...terminal.map(p=>p[1]))-terminal[cols/2][1]>.02,'shallow central terminal notch');
+ console.log('PANICLE_PHLOX_603_SURFACE '+JSON.stringify({vertices:points.length,triangles,minXYArea:minArea,width,length,widthLengthRatio:width/length,rootWidth,terminalWidthRatio:terminalWidth/width}));
+ const doc=emptyDocument(10,6);doc.plans.A.plants=[['p-289e28874872',60100,[.5,.4,.23]],['p-5960a0205273',60101,[.8,.5,.4]],['p-a80ce5615f08',60102,[1,.6,.5]]].map(([id,pid,dims],i)=>({...makePlant(id,pid,2+i*3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.42'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});
