@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.605';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.606';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.605';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.606';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9153,7 +9153,7 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
   const R=Math.min(a.headRadius,w*.18),rise=top-body,axis=from;
   const floret=(at,angle,tilt,index)=>{
    const age=(index%3+rand()*.7)/3,color=a.shootProfile==='blueParadise'?new THREE.Color(a.flowerPalette.young).lerp(new THREE.Color(a.flowerPalette.mature),age):s.flowerColor;
-   detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius,color,shape:'paniclePhloxFlower',palette:{...a.flowerPalette,length:a.flowerLength,pattern:index%3},tilt,yaw:angle,markInspection:false,onInspectionTarget:register=>{const score=at[0]*.8+at[2];if(score>inspectionScore){inspectionScore=score;inspection=register;}}},{...kit,rand});
+   detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius,color,shape:'paniclePhloxFlower',palette:{...a.flowerPalette,length:a.flowerLength,pattern:index%3,phase:i*97+index*13},tilt,yaw:angle,markInspection:false,onInspectionTarget:register=>{const score=at[0]*.8+at[2];if(score>inspectionScore){inspectionScore=score;inspection=register;}}},{...kit,rand});
   };
   let previous=axis;
   for(let level=0;level<5;level++){
@@ -13527,19 +13527,21 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
  if(shape==='paniclePhloxFlower'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length,pk=palette.splash?'petal-phlox-picasso-'+palette.pattern:'petal-panicle-phlox';
+  const phase=Number.isFinite(palette.phase)?palette.phase:0,noise=k=>{const value=Math.sin((phase+1)*12.9898+k*7.233)*43758.5453;return value-Math.floor(value);};let lobe0;
   f.add('tube','tube-panicle-phlox',palette.tube||color,0,0,0,r*.30,L/1.09,r*.30);
   f.add('woodlandMintTube','calyx-panicle-phlox','#6f8657',0,0,0,r*.46,L*.44,r*.46);
   for(let j=0;j<5;j++){
-   const aa=j*TAU/5;
-   f.add('paniclePhloxLobe',pk,color,0,L,0,r*.99,r,r,Math.PI/2,aa,0);
+   const aa=j*TAU/5,sx=r*.99*(.96+.08*noise(j+7)),sy=r*(.97+.06*noise(j+47)),angle=aa+(noise(j+87)-.5)*.06;
+   f.add('paniclePhloxLobe',pk,color,0,L,0,sx,sy,sy,Math.PI/2,angle,0);
    f.add('narrow','sepal-panicle-phlox','#6f8657',Math.sin(aa)*r*.115,L*.36,Math.cos(aa)*r*.115,r*.15,L*.24,L*.24,.20,aa,0);
+   if(j===0)lobe0={sx,sy,sz:sy,yaw:angle};
   }
   // A filled colour patch keeps the previous eye width; its tiny offset avoids overlap with the lobe roots.
   // This surface is a display approximation, not a model of unconfirmed internal reproductive organs.
   f.add('paniclePhloxEye','eye-panicle-phlox',palette.eye,0,L+.001*r,0,r,r,r);
   if(typeof onInspectionTarget==='function'){
    // Actual row15/column7 of the existing20x14 surface, transformed like its first lobe.
-   const point=new THREE.Vector3(...paniclePhloxPoint('paniclePhloxLobe',.75,0).map(Math.fround)).multiply(new THREE.Vector3(r*.99,r,r)).applyEuler(new THREE.Euler(Math.PI/2,0,0,'YXZ')).add(new THREE.Vector3(0,L,0));
+   const point=new THREE.Vector3(...paniclePhloxPoint('paniclePhloxLobe',.75,0).map(Math.fround)).multiply(new THREE.Vector3(lobe0.sx,lobe0.sy,lobe0.sz)).applyEuler(new THREE.Euler(Math.PI/2,lobe0.yaw,0,'YXZ')).add(new THREE.Vector3(0,L,0));
    onInspectionTarget(()=>f.flower(point.toArray(),r*2));
   }
   // Internal reproductive structures remain unconfirmed and are not fabricated.
