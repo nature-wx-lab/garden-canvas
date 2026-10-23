@@ -10495,3 +10495,19 @@ test('Petit Henri bounds every retained leaf and complete plant across months an
  const doc=emptyDocument(10,6);doc.plans.A.plants=[...sizes,...tiny].map((dims,i)=>({...makePlant(id,58500+i,2+i*1.4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=6;doc.view.year=1;
  const raw={...structuredClone(doc),catalogVersion:'2026-10-23.24'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
+
+
+test('Rose campion flower observation reaches an actual visible petal for both cultivars and saved sizes',()=>{
+ const rows=[['p-84cb69e40b51',58600,[.7,.6,.28],[.12,.2,.05]],['p-92b2b04c2c82',58601,[.6,.5,.25],[.1,.18,.045]]];
+ for(const[id,pid,large,small]of rows)for(const dims of[large,small])for(let month=1;month<=12;month++){
+  const p={...makePlant(id,pid,4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),v={...view(month),year:1},st=stateAt(p,v),g=plantModel(p,v);
+  try{assert.equal(!!g.userData.flowerTargets?.length,st.bloom);if(!st.bloom)assert.equal(flowerInspectionView(g,.8,40),null);
+   if(month===6){assert.equal(flowerInspectionDistanceFloor(g),.08);assert.equal(g.userData.flowerTargets.length,1);const target=new Vector3(...g.userData.flowerTargets[0].origin),index=(id==='p-92b2b04c2c82'?33:26)*33+16,matrix=new Matrix4();let nearest=Infinity,observedMesh=null,observedInstance=-1;
+    for(const mesh of g.children.filter(m=>m.userData.component.startsWith('petal-rose-campion-'))){const pos=mesh.geometry.getAttribute('position');for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);const distance=new Vector3().fromBufferAttribute(pos,index).applyMatrix4(matrix).distanceTo(target);if(distance<nearest){nearest=distance;observedMesh=mesh;observedInstance=i;}}}assert.ok(nearest<2e-7,'target is a rendered cultivar-specific row/column16 vertex');
+    g.position.set(-3,.012,-1);g.updateMatrixWorld(true);const pose=flowerInspectionView(g,.8,40),worldTarget=g.localToWorld(target.clone());assert.ok(pose);assert.ok(new Vector3(...pose.target).distanceTo(worldTarget)<1e-9,'no generic offset');
+    const camera=new PerspectiveCamera(40,.8,.01,650);camera.position.fromArray(pose.position);camera.lookAt(new Vector3(...pose.target));camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(g,true).find(h=>{const z=-h.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.ok(hit?.object.userData.component.startsWith('petal-rose-campion-'),'first visible hit is a petal');assert.ok(hit.point.distanceTo(worldTarget)<2e-6,'observed vertex is not hidden by another surface');const petalsPerFlower=id==='p-92b2b04c2c82'?32:5,start=Math.floor(observedInstance/petalsPerFlower)*petalsPerFlower,pos=observedMesh.geometry.getAttribute('position'),projected=new Vector3();for(let i=start;i<start+petalsPerFlower;i++){observedMesh.getMatrixAt(i,matrix);matrix.premultiply(observedMesh.matrixWorld);for(let j=0;j<pos.count;j++){projected.fromBufferAttribute(pos,j).applyMatrix4(matrix).project(camera);assert.ok(Math.abs(projected.x)<=.98&&Math.abs(projected.y)<=.98&&projected.z>=-1&&projected.z<=1,'selected complete flower fits the observation viewport');}}
+   }assert.deepEqual(p,before);
+  }finally{dispose(g);}
+ }
+ const doc=emptyDocument(10,6);doc.plans.A.plants=rows.map(([id,pid,,dims])=>({...makePlant(id,pid,4,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.25'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});

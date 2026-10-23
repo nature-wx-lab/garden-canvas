@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.585';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.586';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.585';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.586';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -8443,17 +8443,23 @@ function drawRoseCampion(b,{info,s,detail,rand,month},kit){
    f.branch(root,[root[0]+u*hair,root[1]+hair*.15,root[2]+hair*.5],hair*.06,'#d1d4c8','hair-rose-campion');
   }
  };
+ let inspection=null,inspectionScore=-Infinity;
+ const observe=(f,at,origin,scale,rx,aa)=>{
+  // Actual row26(single) or row33(double), column16 of the existing40x32 surface.
+  const rotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,aa,0,'YXZ')),point=new THREE.Vector3(...roseCampionPoint('roseCampionPetal',doubled?.825:.65,0).map(Math.fround)).multiply(new THREE.Vector3(...scale)).applyQuaternion(rotation).add(new THREE.Vector3(...origin)),outward=rotation.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2)),e=new THREE.Euler().setFromQuaternion(outward,'YXZ'),score=at[0]*.8+at[2];
+  if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),R*(doubled?2:1.2),e.x,e.y,e.z);}
+ };
  const flower=(at,az,i,k)=>{
   if(!s.bloom)return;const f=flowerFrame(b,at,.30+.80*noise(i,k+91),az);
   f.add('roseCampionCalyx','calyx-rose-campion',a.stemColor,0,0,0,C,C,C);
   if(noise(i,k+921)>s.flowerDensity*.86){f.add(kit.bud,'bud-rose-campion',doubled?'#a52b68':'#e4d8e0',0,C*.87,0,R*.20,R*.31,R*.20);return;}
   if(doubled){
-   for(let j=0;j<32;j++){const q=j/31,aa=j*2.399963,rr=R*(.13-.09*q),len=R*(1-.5*q);f.add('roseCampionPetal','petal-rose-campion-double',kit.shade(rand,s.flowerColor,.08),Math.sin(aa)*rr,C+q*R*.20,Math.cos(aa)*rr,len*.82,len,len,1.36-q*.75+(noise(i,k+j+310)-.5)*.25,aa,0);}
+   for(let j=0;j<32;j++){const q=j/31,aa=j*2.399963,rr=R*(.13-.09*q),len=R*(1-.5*q),rx=1.36-q*.75+(noise(i,k+j+310)-.5)*.25,origin=[Math.sin(aa)*rr,C+q*R*.20,Math.cos(aa)*rr];f.add('roseCampionPetal','petal-rose-campion-double',kit.shade(rand,s.flowerColor,.08),...origin,len*.82,len,len,rx,aa,0);if(j===0)observe(f,at,origin,[len*.82,len,len],rx,aa);}
    return;
   }
   const blush=Math.floor(noise(i,k+410)*3);
   for(let j=0;j<5;j++){
-   const aa=j*TAU/5;f.add('roseCampionPetal','petal-rose-campion-angel-'+blush,s.flowerColor,0,C,0,R*.99,R,R,1.42,aa,0);
+   const aa=j*TAU/5;f.add('roseCampionPetal','petal-rose-campion-angel-'+blush,s.flowerColor,0,C,0,R*.99,R,R,1.42,aa,0);if(j===0)observe(f,at,[0,C,0],[R*.99,R,R],1.42,aa);
    for(let side=0;side<2;side++)f.add('narrow','appendage-rose-campion','#f3e8eb',Math.sin(aa)*R*.08,C,Math.cos(aa)*R*.08,R*.065,.003*size,.003*size,.42,aa+side*.14,0);
   }
   for(let j=0;j<10;j++){const aa=j*TAU/10,rr=R*.065,tip=[Math.sin(aa)*rr,C+.0015*size,Math.cos(aa)*rr];f.branch([0,C*.75,0],tip,.00010*size,'#e5d6d6','filament-rose-campion');f.add(kit.bud,'anther-rose-campion','#675b56',...tip,.00035*size,.00065*size,.00028*size,0,aa,0);}
@@ -8475,6 +8481,7 @@ function drawRoseCampion(b,{info,s,detail,rand,month},kit){
   }
   flower(top,az,i,33000);
  }
+ if(inspection)inspection();
 }
 
 // Firefly's double flower has petaloid organs and an inner sepal tube, not stamens.
