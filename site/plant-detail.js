@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.620';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.621';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.620';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.621';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9874,7 +9874,7 @@ function drawCatmint(b,{info,s,p,detail,rand,month},kit){
 function drawTallNepeta(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,tuber=a.shootProfile==='tuberosa',moon=a.shootProfile==='blueMoon',dreams=a.shootProfile==='pinkDreams',h=s.height,w=s.spread,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.20,w*.17),F=a.flowerLength*Math.min(1,h/(dreams?.35:moon?.28:.5)),stem=cold?a.winterStemColor:a.stemColor,n=Math.max(3,Math.min(24,Math.round((dreams?14:moon?18:tuber?16:14)*detail*Math.sqrt(w/.5)*Math.min(1,h/(dreams?.45:moon?.32:.65)))));
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const observe=p?.kind==='p-9017037456b9'&&dreams;let inspection=null,inspectionScore=-Infinity;
+ const observe=p?.kind==='p-9017037456b9'&&dreams,inspect=observe||(p?.kind==='p-f8f380b8f606'&&moon);let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,basal=false,root=at,retainedPair=false)=>{
   if(!basal&&noise(i,k)>s.leafDensity)return false;
   if(!observe){for(let q=0;q<2;q++){
@@ -9907,9 +9907,9 @@ function drawTallNepeta(b,{info,s,p,detail,rand,month},kit){
     f.add('catmintCalyx',spent?'calyx-tall-nepeta-spent':'calyx-tall-nepeta',calyx,0,0,0,fl,fl,fl);if(spent)continue;
     if(!s.bloom||t>.94||noise(i,j*37+k)>(tuber?.56:.8)){f.add('catmintBud','bud-tall-nepeta',a.flowerPalette.bud,0,0,0,fl,fl,fl);continue;}
     const color=tuber&&t>.74?'#baa0d9':s.flowerColor;f.add(dreams?'dreamsTube':'catmintTube','tube-tall-nepeta',color,0,0,0,fl,fl,fl);f.add(dreams?'dreamsHood':'catmintHood','hood-tall-nepeta',color,0,0,0,fl,fl,fl);f.add(dreams?'dreamsLip':'catmintLip',dreams?'petal-dreams':moon?'petal-nervosa':tuber?'petal-catmint':'petal-nuda',color,0,0,0,fl,fl,fl);
-    if(observe){
-     // Actual row26/column12 of the existing32x24 lower-lip surface, only for this verified cultivar.
-     const point=new THREE.Vector3(...catmintPoint('dreamsLip',.8125,0).map(Math.fround)).multiplyScalar(fl),atPoint=point.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=atPoint.x*.8+atPoint.z;
+    if(inspect){
+     // Actual row26/column12 of the existing32x24 lower-lip surface, only for the eligible catalog entries.
+     const point=new THREE.Vector3(...catmintPoint(dreams?'dreamsLip':'catmintLip',.8125,0).map(Math.fround)).multiplyScalar(fl),atPoint=point.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=atPoint.x*.8+atPoint.z;
      if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),fl*1.2,Math.PI/2);}
     }
    }
