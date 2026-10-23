@@ -10701,3 +10701,20 @@ test('Spring phlox lobes retain separated narrow shoulders and shallow notches w
  const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]),width=Math.max(...xs)-Math.min(...xs),length=Math.max(...ys)-Math.min(...ys),tip=points.slice(rows*(cols+1)),tipWidth=Math.max(...tip.map(p=>p[0]))-Math.min(...tip.map(p=>p[0]));
  assert.ok(width/length>.65&&width/length<.80,'narrow separate-lobe display proportions');assert.ok(tipWidth/width>.85,'broad terminal edge');assert.ok(Math.max(...tip.map(p=>p[1]))-tip[cols/2][1]>.02,'shallow central terminal notch');assert.ok(points[cols][0]-points[0][0]>.02,'finite attached root width');
 });
+
+test('Spring phlox Moody eye shader uses its owning palette in working linear space without changing Pilosa',()=>{
+ const rows=[['p-51c603bd1c65',59900,[.3,.6,.12],3,'petal-spring-phlox-moody'],['p-a7c8251be5c6',59901,[.4,.6,.17],6,'petal-spring-phlox-pilosa']],plants=[];let models=0;
+ for(const[id,pid,dims,x,kind]of rows){
+  const p={...makePlant(id,pid,x,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),paletteBefore=structuredClone(CATALOG[id].appearance.flowerPalette),g=plantModel(p,{...view(6),year:1});models++;
+  try{const mesh=g.children.find(m=>m.userData.component===kind);assert.ok(mesh?.isInstancedMesh&&mesh.count>0,id+' actual petal material');const shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <color_fragment>\n#include <emissivemap_fragment>'};mesh.material.onBeforeCompile(shader,{});
+   assert.deepEqual(Object.keys(shader.uniforms).sort(),['gardenStrength','gardenTime']);for(const uniform of Object.values(shader.uniforms))assert.ok(Number.isFinite(uniform.value),id+' finite existing uniform');
+   for(const source of[shader.vertexShader,shader.fragmentShader]){assert.equal(typeof source,'string');assert.ok(!source.includes('\\n'),id+' no literal backslash-n');for(const token of['undefined','NaN','Infinity','${'])assert.ok(!source.includes(token),id+' no JavaScript token '+token);}assert.ok(shader.vertexShader.includes('#include <begin_vertex>'));assert.ok(shader.fragmentShader.includes('#include <color_fragment>'));assert.ok(shader.fragmentShader.includes('#include <emissivemap_fragment>'));
+   if(kind==='petal-spring-phlox-moody'){
+    assert.ok(shader.fragmentShader.includes('float spEye=(1.0-smoothstep(.12,.38,vUv.y))*(.88+.12*cos(vUv.x*19.0));'),'unchanged eye mask');const match=shader.fragmentShader.match(/vec3\(([^)]+)\),spEye\*\.87\)/);assert.ok(match,'eye colour keeps existing mix strength');const literals=match[1].split(','),values=literals.map(Number),expected=new Color(CATALOG[id].appearance.flowerPalette.eye),srgb=expected.clone().convertLinearToSRGB();assert.equal(values.length,3);
+    for(const[index,channel]of ['r','g','b'].entries()){assert.match(literals[index],/^\d+\.\d{8}$/,'finite floating GLSL literal');assert.ok(Number.isFinite(values[index]));assert.ok(Math.abs(values[index]-expected[channel])<1e-7,'working-linear '+channel);assert.ok(Math.abs(values[index]-srgb[channel])>1e-3,'encoded sRGB was not injected for '+channel);}
+   }else assert.ok(!shader.fragmentShader.includes('spEye'),'Pilosa has no Moody eye injection');
+   assert.deepEqual(p,before,id+' saved input unchanged');assert.deepEqual(CATALOG[id].appearance.flowerPalette,paletteBefore,id+' palette unchanged');plants.push(p);
+  }finally{dispose(g);}
+ }assert.equal(models,2);
+ const doc=emptyDocument(10,6);doc.plans.A.plants=plants;doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.38'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});
