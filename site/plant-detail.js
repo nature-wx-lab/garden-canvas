@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.616';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.617';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.616';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.617';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9792,7 +9792,12 @@ export function catmintPoint(type,t,u){
   const q=Math.max(0,Math.min(1,(t-.25)/.75)),blend=q*q*(3-2*q),v=t*(1-.18*blend),arch=Math.max(0,Math.sin(Math.PI*v));
   return [u*(.04+.34*arch**.55)*(1+.13*Math.cos(u*Math.PI*3)),-.03-.21*t,.65+.37*t-.035*t*t+.022*Math.cos(u*Math.PI*5)*t**4];
  }
- if(type==='dreamsHood')return [u*(.03+.21*sn),.08+.10*sn,.67+.27*t-.055*Math.exp(-u*u*70)*t**4];
+ if(type==='dreamsHood'){
+  // Retain the attached quarter, then carry a rounded roof into two shallow terminal tips.
+  // The photo-guided outline and curvature are display approximations, not measured proportions.
+  const q=Math.max(0,Math.min(1,(t-.25)/.75)),blend=q*q*(3-2*q),v=t*(1-.22*blend),arch=Math.max(0,Math.sin(Math.PI*v));
+  return [u*(.03+.21*arch),.08+.10*arch+.02*blend*t*t*(1-u*u),.67+.27*t-.055*Math.exp(-u*u*70)*t**4*(1-.65*blend)-.025*u*u*blend*t**4];
+ }
  // Photo-guided mid-tube belly; endpoint rings and centerline stay fixed. Curvature is unmeasured.
  if(type==='dreamsTube'){const az=(u+1)*Math.PI,r=.065+.085*t+.06*sn*sn;return [Math.cos(az)*r,Math.sin(az)*r+.04*t*t,.76*t];}
  if(type==='nudaLeaf'||type==='tuberosaLeaf'||type==='nervosaLeaf')return [u*.53*sn**.82*(1-.24*t)*(1+.042*Math.cos(t*TAU*12)),t,.035*u*u*sn-.065*t*t];
