@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.563';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.564';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.563';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.564';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9124,6 +9124,7 @@ function drawBronzeSnapdragons(b,{info,s,p,detail,rand,month},kit){
 
 function drawSilverSnapdragons(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.15,w*.085),n=Math.max(12,Math.min(45,Math.round(26*detail*w/.35))),noise=(i,j)=>.5+.5*Math.sin(i*16.1+j*7.7+p.id*.25),r=Math.min(a.flowerRadius,h*.060,w*.036);
+ const inspectionStem=Array.from({length:n},(_,i)=>{const az=i*2.399963,reach=w*(.10+.29*Math.sqrt((i+.5)/n)),turn=az+.14*Math.sin(4+i);return{i,front:Math.sin(turn)*reach*.8+Math.cos(turn)*reach};}).reduce((best,v)=>v.front>best.front?v:best).i;
  const leaf=(at,yaw,pitch,len,key)=>{if(noise(key,15)>s.leafDensity)return;b.add('helichrysumRounded','leaf-silver-snapdragon',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,pitch,yaw,0);};
  for(let i=0;i<n;i++){
   const az=i*2.399963,reach=w*(.10+.29*Math.sqrt((i+.5)/n)),rise=h*(.36+.18*noise(i,1));let prev=[Math.sin(az)*w*.03,.005,Math.cos(az)*w*.03];
@@ -9137,7 +9138,9 @@ function drawSilverSnapdragons(b,{info,s,p,detail,rand},kit){
    const t=j/5,yaw=az+j*2.399963,base=[prev[0],prev[1]+spike*t,prev[2]],at=[base[0]+Math.sin(yaw)*r*.65,base[1],base[2]+Math.cos(yaw)*r*.65];b.branch(base,at,r*.055,a.stemColor,'pedicel-silver-snapdragon');
    if(!s.bloom)continue;
    if(j>3){b.add(kit.bud,'bud-silver-snapdragon',j===5?s.leafColor:a.flowerPalette.tube,...at,r*.36,r*.55,r*.36,.3,yaw,0);continue;}
-   detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:r*(1-t*.14),color:s.flowerColor,shape:'snapdragonLips',palette:a.flowerPalette,tilt:-.22,yaw},{...kit,rand});
+   const radius=r*(1-t*.14);
+   detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:radius,color:s.flowerColor,shape:'snapdragonLips',palette:a.flowerPalette,tilt:-.22,yaw,markInspection:false},{...kit,rand});
+   if(i===inspectionStem&&j===3)flowerFrame(b,at,Math.PI/2-.22,yaw).flower([0,radius*.89,-radius*.15],radius*.6);
   }
  }
 }
@@ -13325,8 +13328,8 @@ function flowerFrame(b,origin,pitch,yaw,roll=0){
 }
 
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
-export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0},kit){
- const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);b.flower?.([x,y,z],r*1.6,tilt,yaw);
+export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0,markInspection=true},kit){
+ const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);if(markInspection)b.flower?.([x,y,z],r*1.6,tilt,yaw);
  if(shape==='vincaPinwheel'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length;
   f.add('vincaTube','tube-vinca',color,0,0,0,r,L,r);

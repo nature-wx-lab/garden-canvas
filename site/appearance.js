@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.563';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.564';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -6,6 +6,7 @@ export const TRAIT_VALUES={heart:'心形',round:'円形',kidney:'腎形',triangu
 Object.assign(TRAIT_VALUES,{ovate:'卵形の葉',ovateDentate:'鋸歯のある卵形の葉',linear:'線形の細い葉'});
 Object.assign(TRAIT_VALUES,{oxfordLeaf:'対生する小さな葉の参考',oxfordFourLobes:'白い中心をもつ青い4裂花の参考'});
 Object.assign(TRAIT_VALUES,{lanceolate:'披針形の葉'});
+Object.assign(TRAIT_VALUES,{pinnate:'小葉が羽状に並ぶ葉'});
 Object.assign(TRAIT_VALUES,{rugosaSourceCordateReference:'対生する鋸歯と心形の基部がある広い葉の参考',rugosaSourceTwoLipReference:'4本の雄しべ・2裂の上唇と3裂の下唇がある筒状小花の参考'});
 Object.assign(TRAIT_VALUES,{retailMonardaSerrateReference:'対生する鋸歯のある単葉の参考',retailMonardaTwoLipReference:'細い上唇と3裂の下唇をもつ筒状小花の参考'});
 Object.assign(TRAIT_VALUES,{ruelliaNarrowReference:'細長い対生葉の参考',ruelliaFunnelReference:'5裂の縁へ広がる漏斗花の参考',axillaryCyme:'葉腋の集散花序'});
