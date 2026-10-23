@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.566';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.567';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.566';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.567';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -12457,6 +12457,7 @@ export function dianthusPetalPoint(type,t,u){
 
 function drawDianthus(b,{info,s,detail,rand},kit){
  if(s.groundDormant)return;
+ let inspection=null,inspectionScore=-Infinity;
  const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,mat=['deltoides','arenarius'].includes(type),cluster=type==='barbatus',arching=type==='orihime',winter=[12,1,2].includes(s.month),green=s.leafColor,stem=a.stemColor,L=Math.min(a.leafLength,w*.45),lk=foliageKind(info);
  const leaf=(at,az,len,pitch=1.0)=>{const f=flowerFrame(b,at,-pitch,az);f.add('dianthusLeaf',lk,kit.shade(rand,green,.04),0,0,0,len*a.leafWidth/a.leafLength,len,len);};
  const branch=(from,to,r=.00085,kind='stem-dianthus')=>b.branch(from,to,r,stem,kind);
@@ -12466,7 +12467,7 @@ function drawDianthus(b,{info,s,detail,rand},kit){
    const an=az+j*2.399963,rad=rr*Math.sqrt((j+.5)/count),pt=[at[0]+Math.sin(an)*rad,at[1]+rr*.42*Math.sqrt(1-rad/(rr||1)),at[2]+Math.cos(an)*rad],open=s.bloom&&((j+index)%7!==0||count===1),tilt=arching?.65+rand()*.35:rand()*.40;
    branch(at,pt,.00035,'pedicel-dianthus');
    if(cluster)for(let q=0;q<3;q++){const bn=an+q*TAU/3;leaf(pt,bn,.010,.45+q*.1);}
-   if(open)detailedFlower(b,{x:pt[0],y:pt[1],z:pt[2],r:a.flowerRadius,color:s.flowerColor,shape:'dianthusFringed',layers:a.flowerLayers||1,tilt,yaw:an,palette:{profile:type,eye:a.flowerEyeColor,rim:a.flowerPatternColor}},{...kit,rand});
+   if(open)detailedFlower(b,{x:pt[0],y:pt[1],z:pt[2],r:a.flowerRadius,color:s.flowerColor,shape:'dianthusFringed',layers:a.flowerLayers||1,tilt,yaw:an,markInspection:false,onInspectionTarget:register=>{const score=pt[0]*.8+pt[2];if(score>inspectionScore){inspectionScore=score;inspection=register;}},palette:{profile:type,eye:a.flowerEyeColor,rim:a.flowerPatternColor}},{...kit,rand});
    else b.add(kit.bud,'flowerBud-dianthus',green,...pt,.0025,.008,.0025);
   }
  };
@@ -12488,6 +12489,7 @@ function drawDianthus(b,{info,s,detail,rand},kit){
    }
   }
  }
+ if(inspection)inspection();
 }
 
 export function verbenaLeafPoint(type,t,u){
@@ -13328,7 +13330,7 @@ function flowerFrame(b,origin,pitch,yaw,roll=0){
 }
 
 // Connected flower parts share an origin. Variation changes size and angle, not taxon identity.
-export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0,markInspection=true},kit){
+export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layers=1,pattern,patternColor,palette={},guides=true,outerPattern,center='#c6ad56',stamenCount=2,bracts=12,tilt=0,yaw=0,markInspection=true,onInspectionTarget},kit){
  const {bud,rand,shade}=kit,kind=patternKind('petal',pattern,patternColor);if(markInspection)b.flower?.([x,y,z],r*1.6,tilt,yaw);
  if(shape==='vincaPinwheel'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length;
@@ -13762,7 +13764,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   for(let j=0;j<5;j++){const an=j*TAU/5;f.add('narrow','calyxTooth-dianthus','#79875c',Math.sin(an)*r*.12,-r*.12,Math.cos(an)*r*.12,r*.09,r*.20,r*.09,-.12,an,0);}
   for(let j=0;j<4;j++)f.add('narrow','epicalyx-dianthus','#77805c',0,-r*tube*.94,0,r*.11,r*tube*.45,r*.12,-.22,j*TAU/4,0);
   const pk=palette.eye?'petal-dianthus-eye-'+palette.eye.slice(1):palette.rim?'petal-dianthus-rim-'+palette.rim.slice(1):'petal-dianthus';
-  for(let l=0;l<layers;l++)for(let j=0;j<5;j++){const rr=r*(1-l*.22);f.add('dianthusPetal-'+type,pk,kit.shade(rand,color,.018),0,l*r*.055,0,rr,rr,rr,0,j*TAU/5+l*.47+(rand()-.5)*.035,0);}
+  for(let l=0;l<layers;l++)for(let j=0;j<5;j++){const rr=r*(1-l*.22),petalColor=kit.shade(rand,color,.018),angle=j*TAU/5+l*.47+(rand()-.5)*.035;f.add('dianthusPetal-'+type,pk,petalColor,0,l*r*.055,0,rr,rr,rr,0,angle,0);if(l===0&&j===0&&typeof onInspectionTarget==='function'){const point=new THREE.Vector3(...dianthusPetalPoint(type,.45,0)).multiplyScalar(rr).applyEuler(new THREE.Euler(0,angle,0,'YXZ'));onInspectionTarget(()=>f.flower(point.toArray(),r*(['superbus','arenarius'].includes(type)?1.2:.85)));}}
   f.add(bud,'flowerThroat-dianthus','#a6a587',0,r*.003,0,r*.066,r*.020,r*.066);
   for(let j=0;j<10;j++){const an=j*TAU/10,from=[Math.sin(an)*r*.036,r*.012,Math.cos(an)*r*.036],to=[Math.sin(an)*r*.15,r*(j%2?.31:.23),Math.cos(an)*r*.15];f.branch(from,to,r*.009,'#d1c5bf','stamen-dianthus');f.add(bud,'anther-dianthus',type==='superbus'?'#c5b899':'#8c7b82',...to,r*.025,r*.042,r*.022);}
   for(let j=0;j<2;j++){const from=[0,0,0],bend=[(j?1:-1)*r*.045,r*.28,0],to=[(j?1:-1)*r*.14,r*.37,r*.022];f.branch(from,bend,r*.014,'#d8cac8','style-dianthus');f.branch(bend,to,r*.012,'#d8cac8','style-dianthus');}return;
