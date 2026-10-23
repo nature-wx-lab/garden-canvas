@@ -10319,3 +10319,16 @@ test('Fine-leaf Dianthus keeps connected irregular nodes opposite leaf pairs and
  }
  const doc=emptyDocument(10,6);doc.plans.A.plants=[{...makePlant(rows[0][0],57100,2,2),height:.4,spread:.3,leafHeight:.24}];doc.view.month=6;doc.view.year=1;const old={...structuredClone(doc),catalogVersion:'2026-10-23.10'},before=structuredClone(old);assert.deepEqual(validateDocument(old),doc);assert.deepEqual(old,before);
 });
+
+
+test('Orihime rendered petals keep distal shoulders without folded triangles',()=>{
+ const p=makePlant('p-4d2b6d52cd5b',57200,2,2),g=plantModel(p,{...view(6),year:1});
+ try{
+  const mesh=g.children.find(m=>m.userData.component.startsWith('petal-dianthus'));assert.ok(mesh,'rendered Orihime petals exist');
+  const pos=mesh.geometry.getAttribute('position'),index=mesh.geometry.getIndex(),rows=8,cols=128;assert.equal(pos.count,(rows+1)*(cols+1));assert.equal(index.count,rows*cols*6);
+  for(let k=0;k<index.count;k+=3){const a=index.getX(k),b=index.getX(k+1),c=index.getX(k+2),area2=(pos.getX(b)-pos.getX(a))*(pos.getZ(c)-pos.getZ(a))-(pos.getZ(b)-pos.getZ(a))*(pos.getX(c)-pos.getX(a));assert.ok(area2 < -1e-9,'non-degenerate consistently wound XZ triangle '+k/3);}
+  const widths=[];for(let i=0;i<=rows;i++){let min=Infinity,max=-Infinity;for(let j=0;j<=cols;j++){const x=pos.getX(i*(cols+1)+j);min=Math.min(min,x);max=Math.max(max,x);}widths.push(max-min);}
+  const widest=Math.max(...widths),peakRow=widths.indexOf(widest);assert.ok(peakRow>rows/2&&peakRow<rows,'widest shoulder lies in the distal half before the tip');assert.ok(widths[rows]<widest*.99,'petal narrows beyond the shoulder');
+ }finally{dispose(g);}
+ const doc=emptyDocument(8,6);doc.plans.A.plants=[{...makePlant('p-4d2b6d52cd5b',57200,2,2),height:.3,spread:.3,leafHeight:.18}];doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.11'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});
