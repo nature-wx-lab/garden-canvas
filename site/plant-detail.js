@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.589';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.590';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.589';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.590';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -8455,9 +8455,9 @@ function drawRoseCampion(b,{info,s,detail,rand,month},kit){
   }
  };
  let inspection=null,inspectionScore=-Infinity;
- const observe=(f,at,origin,scale,rx,aa)=>{
+ const observe=(f,at,origin,scale,rx,aa,rz=0)=>{
   // Actual row26(single) or row33(double), column16 of the existing40x32 surface.
-  const rotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,aa,0,'YXZ')),point=new THREE.Vector3(...roseCampionPoint(doubled?'roseCampionDoublePetal':'roseCampionSinglePetal',doubled?.825:.65,0).map(Math.fround)).multiply(new THREE.Vector3(...scale)).applyQuaternion(rotation).add(new THREE.Vector3(...origin)),outward=rotation.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2)),e=new THREE.Euler().setFromQuaternion(outward,'YXZ'),score=at[0]*.8+at[2];
+  const rotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,aa,rz,'YXZ')),point=new THREE.Vector3(...roseCampionPoint(doubled?'roseCampionDoublePetal':'roseCampionSinglePetal',doubled?.825:.65,0).map(Math.fround)).multiply(new THREE.Vector3(...scale)).applyQuaternion(rotation).add(new THREE.Vector3(...origin)),outward=rotation.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2)),e=new THREE.Euler().setFromQuaternion(outward,'YXZ'),score=at[0]*.8+at[2];
   if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),R*(doubled?2:1.2),e.x,e.y,e.z);}
  };
  const flower=(at,az,i,k)=>{
@@ -8465,7 +8465,7 @@ function drawRoseCampion(b,{info,s,detail,rand,month},kit){
   f.add('roseCampionCalyx','calyx-rose-campion',a.stemColor,0,0,0,C,C,C);
   if(noise(i,k+921)>s.flowerDensity*.86){f.add(kit.bud,'bud-rose-campion',doubled?'#a52b68':'#e4d8e0',0,C*.87,0,R*.20,R*.31,R*.20);return;}
   if(doubled){
-   for(let j=0;j<32;j++){const q=j/31,aa=j*2.399963,rr=R*(.13-.09*q),len=R*(1-.5*q),rx=1.36-q*.75+(noise(i,k+j+310)-.5)*.25,origin=[Math.sin(aa)*rr,C+q*R*.20,Math.cos(aa)*rr];f.add('roseCampionDoublePetal','petal-rose-campion-double',kit.shade(rand,s.flowerColor,.08),...origin,len*.82,len,len,rx,aa,0);if(j===0)observe(f,at,origin,[len*.82,len,len],rx,aa);}
+   for(let j=0;j<32;j++){const q=j/31,aa=j*2.399963,rr=R*(.13-.09*q),len=R*(1-.5*q),rx=1.36-q*.75+(noise(i,k+j+310)-.5)*.25,origin=[Math.sin(aa)*rr,C+q*R*.20,Math.cos(aa)*rr],sx=len*.82*(.95+.10*noise(i,k+j+1310)),axial=len*(.94+.12*noise(i,k+j+1510)),yaw=aa+(noise(i,k+j+1710)-.5)*.12,rz=(noise(i,k+j+1910)-.5)*.08;f.add('roseCampionDoublePetal','petal-rose-campion-double',kit.shade(rand,s.flowerColor,.08),...origin,sx,axial,axial,rx,yaw,rz);if(j===0)observe(f,at,origin,[sx,axial,axial],rx,yaw,rz);}
    return;
   }
   const blush=Math.floor(noise(i,k+410)*3);
