@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.621';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.622';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.621';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.622';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9874,25 +9874,25 @@ function drawCatmint(b,{info,s,p,detail,rand,month},kit){
 function drawTallNepeta(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,tuber=a.shootProfile==='tuberosa',moon=a.shootProfile==='blueMoon',dreams=a.shootProfile==='pinkDreams',h=s.height,w=s.spread,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.20,w*.17),F=a.flowerLength*Math.min(1,h/(dreams?.35:moon?.28:.5)),stem=cold?a.winterStemColor:a.stemColor,n=Math.max(3,Math.min(24,Math.round((dreams?14:moon?18:tuber?16:14)*detail*Math.sqrt(w/.5)*Math.min(1,h/(dreams?.45:moon?.32:.65)))));
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const observe=p?.kind==='p-9017037456b9'&&dreams,inspect=observe||(p?.kind==='p-f8f380b8f606'&&moon);let inspection=null,inspectionScore=-Infinity;
+ const observe=p?.kind==='p-9017037456b9'&&dreams,fitMoon=p?.kind==='p-f8f380b8f606'&&moon,inspect=observe||fitMoon;let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,basal=false,root=at,retainedPair=false)=>{
   if(!basal&&noise(i,k)>s.leafDensity)return false;
-  if(!observe){for(let q=0;q<2;q++){
+  if(!observe&&!fitMoon){for(let q=0;q<2;q++){
    const aa=az+q*Math.PI,pet=len*(dreams?.035:tuber?.04:.10),end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0008,h*.003),stem,basal?'petiole-tall-nepeta-winter':'petiole-tall-nepeta');b.add(dreams?'dreamsLeaf':moon?'nervosaLeaf':tuber?'tuberosaLeaf':'nudaLeaf',basal?'leaf-tall-nepeta-winter':dreams?'leaf-dreams':moon?'leaf-nervosa':tuber?'leaf-tuberosa':'leaf-nuda',basal?'#8b7565':kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,.98+.32*noise(i,k+q),aa,(noise(i,k+q+70)-.5)*.25);
   }return false;}
-  const pet=len*.035,radius=Math.min(.0008,h*.003),ratio=a.leafWidth/a.leafLength,leaves=[];let upper=pet*.3+radius,lower=radius;
+  const pet=len*(fitMoon?.10:.035),radius=Math.min(.0008,h*.003),ratio=a.leafWidth/a.leafLength,maxX=fitMoon?.5523:.60705,minZ=fitMoon?-.065:-.06,leaves=[];let upper=pet*.3+radius,lower=radius;
   for(let q=0;q<2;q++){
    const aa=az+q*Math.PI,pitch=.98+.32*noise(i,k+q),roll=(noise(i,k+q+70)-.5)*.25,color=basal?'#8b7565':kit.shade(rand,s.leafColor,.035),euler=new THREE.Euler(pitch,aa,roll,'YXZ');
-   // Both normal and basal leaves use dreamsLeaf: |X|<=.60705, Y in [0,1], Z in [-.06,.035].
+   // Use actual blade bounds: dreamsLeaf X±.60705,Z[-.06,.035]; nervosaLeaf X±.5523,Z[-.065,.035]; both Y[0,1].
    // Include the rolled blade with and without its positive petiole rise for safe direct attachment.
-   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?.60705:-.60705)*ratio*len,corner&2?len:0,(corner&4?.035:-.06)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.3);lower=Math.max(lower,-point.y);}
+   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?maxX:-maxX)*ratio*len,corner&2?len:0,(corner&4?.035:minZ)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.3);lower=Math.max(lower,-point.y);}
    leaves.push({aa,pitch,roll,color});
   }
   // Preserve two original normal shades, and zero basal shade draws, before any high pair is omitted.
   const ceiling=Math.min(h,s.leafHeight),base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
   const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.3*fit,base[2]+Math.cos(leaf.aa)*pet*fit]}));
   const direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
-  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,stem,basal?'petiole-tall-nepeta-winter':'petiole-tall-nepeta');b.add('dreamsLeaf',basal?'leaf-tall-nepeta-winter':'leaf-dreams',leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,stem,basal?'petiole-tall-nepeta-winter':'petiole-tall-nepeta');b.add(fitMoon?'nervosaLeaf':'dreamsLeaf',basal?'leaf-tall-nepeta-winter':fitMoon?'leaf-nervosa':'leaf-dreams',leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
   return true;
  };
  const spike=(base,az,len,i)=>{
