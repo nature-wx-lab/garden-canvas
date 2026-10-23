@@ -10380,3 +10380,15 @@ test('Arctic Fire keeps shallow petal edges and eye UV radii without folded tria
  }finally{dispose(g);}
  const doc=emptyDocument(10,6);doc.plans.A.plants=[{...makePlant('p-47f878ad504a',57603,2,2),height:.18,spread:.25,leafHeight:.1}];doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.15'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
+
+
+test('Black and White Minstrels keeps the complete frilled outline and rim UVs with a regular petal centre',()=>{
+ const p={...makePlant('p-2e21db161a63',57704,2,4),height:.3,spread:.25,leafHeight:.18},g=plantModel(p,{...view(6),year:0});
+ try{
+  const mesh=g.children.find(m=>m.userData.component==='petal-dianthus-chinensis-rim-e7e4df');assert.ok(mesh,'first-year flowers retain their white rim material');const pos=mesh.geometry.getAttribute('position'),uv=mesh.geometry.getAttribute('uv'),index=mesh.geometry.getIndex(),rows=8,cols=128;assert.equal(pos.count,(rows+1)*(cols+1));assert.equal(index.count,rows*cols*6);
+  for(let k=0;k<index.count;k+=3){const a=index.getX(k),b=index.getX(k+1),c=index.getX(k+2),area2=(pos.getX(b)-pos.getX(a))*(pos.getZ(c)-pos.getZ(a))-(pos.getZ(b)-pos.getZ(a))*(pos.getX(c)-pos.getX(a));assert.ok(area2 < -1e-9,'regular XZ triangle '+k/3);}
+  for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){const k=i*(cols+1)+j,t=i/rows,u=j/cols*2-1;assert.ok([pos.getX(k),pos.getY(k),pos.getZ(k)].every(Number.isFinite));assert.equal(uv.getX(k),Math.fround(j/cols));assert.equal(uv.getY(k),Math.fround(t));if(i===rows){const tooth=Math.pow(Math.max(0,Math.cos((u+.037)*Math.PI*15)),.65),edge=1-.15+.15*tooth,rr=.08+(edge-.08),an=u*(.13+.40),y=.035+.045*Math.sin(u*13+3)+.035*u*u;assert.equal(pos.getX(k),Math.fround(Math.sin(an)*rr));assert.equal(pos.getY(k),Math.fround(y));assert.equal(pos.getZ(k),Math.fround(Math.cos(an)*rr));}}
+  for(const radius of[.35,.45]){const heights=[];for(let j=0;j<=40;j++){const u=-.8+j*.04;let lo=0,hi=1;for(let k=0;k<30;k++){const t=(lo+hi)/2,q=dianthusPetalPoint('chinensis',t,u);if(Math.hypot(q[0],q[2])<radius)lo=t;else hi=t;}heights.push(dianthusPetalPoint('chinensis',(lo+hi)/2,u)[1]);}let reversals=0,last=0;for(let j=1;j<heights.length;j++){const sign=Math.sign(heights[j]-heights[j-1]);if(sign&&last&&sign!==last)reversals++;if(sign)last=sign;}assert.ok(reversals<=2,'smooth central limb at '+radius);}
+ }finally{dispose(g);}
+ const doc=emptyDocument(10,6);doc.plans.A.plants=[p];doc.view.month=6;doc.view.year=0;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.16'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);const expired=plantModel(p,{...view(6),year:1});try{assert.ok(!expired.children.some(m=>m.userData.component.startsWith('petal-dianthus')),'cool-season annual remains finished in the following year');}finally{dispose(expired);}
+});
