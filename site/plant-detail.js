@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.583';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.584';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.583';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.584';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -8867,11 +8867,16 @@ function drawAlchemilla(b,{info,s,detail,rand,month},kit){
 export function raggedRobinPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='raggedRobinLeaf')return [u*.50*sn**.83*(1-.12*t),t,.075*t*t+.03*u*u*sn];
- if(type==='raggedRobinPetal'){const fingers=(.5+.5*Math.cos((u+.75)*Math.PI*4))**3;return [u*(.035+.43*Math.sin(t*Math.PI/2)**.75),t*(.56+.44*fingers),.08*t*t+.025*Math.sin(u*12+t*8)*t];}
+ if(type==='raggedRobinPetal'){
+  // Linear width follows actual axial progress, keeping the grid regular beside deep illustrative splits.
+  const q=u+.025*Math.sin(u*9)+.012*Math.sin(u*23),wave=.5+.5*Math.cos((q+.75)*Math.PI*4),round=Math.max(0,Math.min(1,(wave-.30)/.45)),fingers=round*round*(3-2*round)*(.94+.06*wave),edge=.24+.76*fingers*(.96+.04*Math.sin(u*1.7+.4)),p=t*edge,tail=Math.max(0,p-.35),y=Math.min(p,.35)+Math.sin(tail*1.8)/1.8,half=.012+.43*y,curl=Math.sin(q*17+.3)*(1-Math.cos(tail*1.8))/1.8;
+  return [u*half,y,.06*y*y+.018*Math.sin(u*2.2+y*3)*y*y+curl];
+ }
  const az=(u+1)*Math.PI,r=(.12+.065*sn)*(1+.07*Math.cos(az*10));return [Math.sin(az)*r,t,Math.cos(az)*r];
 }
 function drawRaggedRobin(b,{info,s,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,n=Math.max(3,Math.min(14,Math.round(9*detail*Math.sqrt(w/.25)*Math.min(1,h/.3)))),L=Math.min(a.leafLength,w*.34,h*.3),R=a.flowerRadius*Math.min(1,h/.25),F=a.flowerLength*Math.min(1,h/.25);
+ let inspection=null,inspectionScore=-Infinity;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const leaf=(at,aa,len,i,k)=>{if(noise(i,k)>s.leafDensity)return;b.add('raggedRobinLeaf','leaf-ragged-robin',kit.shade(rand,s.leafColor,.035),...at,len*a.leafWidth/a.leafLength,len,len,.85+.28*noise(i,k+3),aa,(noise(i,k+7)-.5)*.2);};
  const flower=(at,az,i,k)=>{
@@ -8879,7 +8884,13 @@ function drawRaggedRobin(b,{info,s,detail,rand,month},kit){
   f.add('raggedRobinCalyx','calyx-ragged-robin',a.flowerPalette.calyx,0,0,0,F,F,F);
   if(noise(i,k+17)>.85){f.add(kit.bud,'bud-ragged-robin',a.flowerPalette.bud,0,F*.8,0,r*.18,F*.45,r*.18);return;}
   for(let level=0;level<3;level++)for(let j=0;j<7;j++){
-   const aa=az+j*TAU/7+level*.63+(noise(i,k+j+level*10)-.5)*.18,len=r*(1-level*.19)*( .9+.1*noise(i,k+j+80));f.add('raggedRobinPetal','petal-ragged-robin',s.flowerColor,Math.sin(aa)*r*.10,F+level*r*.12,Math.cos(aa)*r*.10,len,len,len,Math.PI/2-.25-level*.24+(noise(i,k+j+30)-.5)*.20,aa,(noise(i,k+j+60)-.5)*.18);
+   const aa=az+j*TAU/7+level*.63+(noise(i,k+j+level*10)-.5)*.40,len=r*(1-level*.19)*(.84+.16*noise(i,k+j+80)),rx=Math.PI/2-.06-level*.18+(noise(i,k+j+30)-.5)*.50,rz=(noise(i,k+j+60)-.5)*.30,offset=r*(level===2?.012:level===1?.055:.10),origin=[Math.sin(aa)*offset,F+level*r*.12,Math.cos(aa)*offset];
+   f.add('raggedRobinPetal','petal-ragged-robin',s.flowerColor,...origin,len,len,len,rx,aa,rz);
+   if(level===0&&j===0){
+    // An actual row27/column30 surface vertex; use the outward side of its local XY reference plane.
+    const rotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,aa,rz,'YXZ')),point=new THREE.Vector3(...raggedRobinPoint('raggedRobinPetal',.75,-.25)).multiplyScalar(len).applyQuaternion(rotation).add(new THREE.Vector3(...origin)),outward=rotation.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2)),e=new THREE.Euler().setFromQuaternion(outward,'YXZ'),score=at[0]*.8+at[2];
+    if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),len*1.1,e.x,e.y,e.z);}
+   }
   }
  };
  for(let i=0;i<n;i++){
@@ -8894,6 +8905,7 @@ function drawRaggedRobin(b,{info,s,detail,rand,month},kit){
    }
   }flower(top,az,i,200);
  }
+ if(inspection)inspection();
 }
 
 export function polemoniumPoint(type,t,u){
