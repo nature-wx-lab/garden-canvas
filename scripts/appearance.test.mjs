@@ -10332,3 +10332,16 @@ test('Orihime rendered petals keep distal shoulders without folded triangles',()
  }finally{dispose(g);}
  const doc=emptyDocument(8,6);doc.plans.A.plants=[{...makePlant('p-4d2b6d52cd5b',57200,2,2),height:.3,spread:.3,leafHeight:.18}];doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.11'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
+
+
+test('Superbus keeps its deeply fringed outline with regular rendered petals and smooth interiors',()=>{
+ const p=makePlant('p-42c8fe4bac77',57300,2,2),g=plantModel(p,{...view(6),year:1});
+ try{
+  const mesh=g.children.find(m=>m.userData.component.startsWith('petal-dianthus'));assert.ok(mesh);const pos=mesh.geometry.getAttribute('position'),index=mesh.geometry.getIndex(),rows=8,cols=128;assert.equal(pos.count,(rows+1)*(cols+1));assert.equal(index.count,rows*cols*6);
+  for(let k=0;k<index.count;k+=3){const a=index.getX(k),b=index.getX(k+1),c=index.getX(k+2),area2=(pos.getX(b)-pos.getX(a))*(pos.getZ(c)-pos.getZ(a))-(pos.getZ(b)-pos.getZ(a))*(pos.getX(c)-pos.getX(a));assert.ok(area2 < -1e-9,'regular XZ triangle '+k/3);}
+  // The pre-repair distal outline, including the deep fringe teeth, is retained exactly.
+  for(let j=0;j<=cols;j++){const u=j/cols*2-1,tooth=Math.pow(Math.max(0,Math.cos((u+.037)*Math.PI*21)),.65),edge=1-.51+.51*tooth,rr=.08+(edge-.08),an=u*(.13+.40),k=rows*(cols+1)+j;assert.equal(pos.getX(k),Math.fround(Math.sin(an)*rr));assert.equal(pos.getZ(k),Math.fround(Math.cos(an)*rr));}
+  for(const radius of[.35,.45]){const heights=[];for(let j=0;j<=40;j++){const u=-.8+j*.04;let lo=0,hi=1;for(let k=0;k<30;k++){const t=(lo+hi)/2,q=dianthusPetalPoint('superbus',t,u);if(Math.hypot(q[0],q[2])<radius)lo=t;else hi=t;}heights.push(dianthusPetalPoint('superbus',(lo+hi)/2,u)[1]);}let reversals=0,last=0;for(let j=1;j<heights.length;j++){const sign=Math.sign(heights[j]-heights[j-1]);if(sign&&last&&sign!==last)reversals++;if(sign)last=sign;}assert.ok(reversals<=2,'no repeated interior folds at radius '+radius);}
+ }finally{dispose(g);}
+ const doc=emptyDocument(8,6);doc.plans.A.plants=[{...makePlant('p-42c8fe4bac77',57300,2,2),height:.4,spread:.3,leafHeight:.24}];doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.12'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});
