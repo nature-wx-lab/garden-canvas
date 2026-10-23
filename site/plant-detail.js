@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.587';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.588';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.587';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.588';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -8423,6 +8423,10 @@ function drawChalcedonica(b,{info,s,detail,rand,month},kit){
 // Rose campion keeps woolly rosettes and open, forked flowering shoots.
 export function roseCampionPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='roseCampionSinglePetal'){
+  const edge=1-.10*u*u-.06*Math.exp(-u*u*32),p=t*edge,half=.018+.48*Math.sin(Math.PI*.77*p**1.35);
+  return [u*half,p,.045*p+.04*u*u*p*p+.025*Math.sin(u*2+p*3)*p*p+.025*Math.sin(u*9+.5)*p**6];
+ }
  if(type==='roseCampionCalyx'){
   const az=u*Math.PI,r=(.11+.17*sn**.65)*(1+.055*Math.cos(az*10));
   return [Math.sin(az)*r,t+.12*t**12*Math.cos(az*5),Math.cos(az)*r];
@@ -8449,7 +8453,7 @@ function drawRoseCampion(b,{info,s,detail,rand,month},kit){
  let inspection=null,inspectionScore=-Infinity;
  const observe=(f,at,origin,scale,rx,aa)=>{
   // Actual row26(single) or row33(double), column16 of the existing40x32 surface.
-  const rotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,aa,0,'YXZ')),point=new THREE.Vector3(...roseCampionPoint('roseCampionPetal',doubled?.825:.65,0).map(Math.fround)).multiply(new THREE.Vector3(...scale)).applyQuaternion(rotation).add(new THREE.Vector3(...origin)),outward=rotation.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2)),e=new THREE.Euler().setFromQuaternion(outward,'YXZ'),score=at[0]*.8+at[2];
+  const rotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,aa,0,'YXZ')),point=new THREE.Vector3(...roseCampionPoint(doubled?'roseCampionPetal':'roseCampionSinglePetal',doubled?.825:.65,0).map(Math.fround)).multiply(new THREE.Vector3(...scale)).applyQuaternion(rotation).add(new THREE.Vector3(...origin)),outward=rotation.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2)),e=new THREE.Euler().setFromQuaternion(outward,'YXZ'),score=at[0]*.8+at[2];
   if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),R*(doubled?2:1.2),e.x,e.y,e.z);}
  };
  const flower=(at,az,i,k)=>{
@@ -8462,7 +8466,7 @@ function drawRoseCampion(b,{info,s,detail,rand,month},kit){
   }
   const blush=Math.floor(noise(i,k+410)*3);
   for(let j=0;j<5;j++){
-   const aa=j*TAU/5;f.add('roseCampionPetal','petal-rose-campion-angel-'+blush,s.flowerColor,0,C,0,R*.99,R,R,1.42,aa,0);if(j===0)observe(f,at,[0,C,0],[R*.99,R,R],1.42,aa);
+   const aa=j*TAU/5;f.add('roseCampionSinglePetal','petal-rose-campion-angel-'+blush,s.flowerColor,0,C,0,R*.99,R,R,1.42,aa,0);if(j===0)observe(f,at,[0,C,0],[R*.99,R,R],1.42,aa);
    for(let side=0;side<2;side++)f.add('narrow','appendage-rose-campion','#f3e8eb',Math.sin(aa)*R*.08,C,Math.cos(aa)*R*.08,R*.065,.003*size,.003*size,.42,aa+side*.14,0);
   }
   for(let j=0;j<10;j++){const aa=j*TAU/10,rr=R*.065,tip=[Math.sin(aa)*rr,C+.0015*size,Math.cos(aa)*rr];f.branch([0,C*.75,0],tip,.00010*size,'#e5d6d6','filament-rose-campion');f.add(kit.bud,'anther-rose-campion','#675b56',...tip,.00035*size,.00065*size,.00028*size,0,aa,0);}
