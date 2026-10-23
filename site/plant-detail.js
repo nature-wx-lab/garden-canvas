@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.612';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.613';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.612';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.613';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9839,9 +9839,10 @@ function drawCatmint(b,{info,s,detail,rand,month},kit){
  }
 }
 
-function drawTallNepeta(b,{info,s,detail,rand,month},kit){
+function drawTallNepeta(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,tuber=a.shootProfile==='tuberosa',moon=a.shootProfile==='blueMoon',dreams=a.shootProfile==='pinkDreams',h=s.height,w=s.spread,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.20,w*.17),F=a.flowerLength*Math.min(1,h/(dreams?.35:moon?.28:.5)),stem=cold?a.winterStemColor:a.stemColor,n=Math.max(3,Math.min(24,Math.round((dreams?14:moon?18:tuber?16:14)*detail*Math.sqrt(w/.5)*Math.min(1,h/(dreams?.45:moon?.32:.65)))));
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const observe=p?.kind==='p-9017037456b9'&&dreams;let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,basal=false)=>{
   if(!basal&&noise(i,k)>s.leafDensity)return;
   for(let q=0;q<2;q++){
@@ -9855,11 +9856,16 @@ function drawTallNepeta(b,{info,s,detail,rand,month},kit){
    if(!s.bloom&&!a.budMonths.includes(month)&&!spent)continue;
    const sites=dreams?(j>levels-2?4:7):moon?(j>levels-2?5:9):tuber?(j>levels-2?6:14):(j>levels-2?4:8);
    for(let k=0;k<sites;k++){
-    const aa=az+j*1.67+k*TAU/sites+(noise(i,j*23+k)-.5)*.35,r=F*(tuber||moon?.43:.16),pos=[at[0]+Math.sin(aa)*r,at[1]+F*(noise(i,j*17+k)-.5)*.35,at[2]+Math.cos(aa)*r],fl=F*(.85+.15*noise(i,j*11+k)),f=flowerFrame(b,pos,(dreams?-.42:-.13)+(noise(i,j*19+k)-.5)*(dreams?.9:.6),aa),calyx=spent?'#907667':tuber?(t>.82?'#b6a291':'#a77897'):a.flowerPalette.calyx;
+    const aa=az+j*1.67+k*TAU/sites+(noise(i,j*23+k)-.5)*.35,r=F*(tuber||moon?.43:.16),pos=[at[0]+Math.sin(aa)*r,at[1]+F*(noise(i,j*17+k)-.5)*.35,at[2]+Math.cos(aa)*r],fl=F*(.85+.15*noise(i,j*11+k)),pitch=(dreams?-.42:-.13)+(noise(i,j*19+k)-.5)*(dreams?.9:.6),f=flowerFrame(b,pos,pitch,aa),calyx=spent?'#907667':tuber?(t>.82?'#b6a291':'#a77897'):a.flowerPalette.calyx;
     if(tuber||moon){const br=moon?.85:1.6;f.add(moon?'nervosaBract':'tuberosaBract',moon?'bract-nervosa':spent?'bract-tuberosa-spent':'bract-tuberosa',calyx,0,-fl*.05,-fl*.15,fl*br,fl*br,fl*br);}
     f.add('catmintCalyx',spent?'calyx-tall-nepeta-spent':'calyx-tall-nepeta',calyx,0,0,0,fl,fl,fl);if(spent)continue;
     if(!s.bloom||t>.94||noise(i,j*37+k)>(tuber?.56:.8)){f.add('catmintBud','bud-tall-nepeta',a.flowerPalette.bud,0,0,0,fl,fl,fl);continue;}
     const color=tuber&&t>.74?'#baa0d9':s.flowerColor;f.add(dreams?'dreamsTube':'catmintTube','tube-tall-nepeta',color,0,0,0,fl,fl,fl);f.add(dreams?'dreamsHood':'catmintHood','hood-tall-nepeta',color,0,0,0,fl,fl,fl);f.add(dreams?'dreamsLip':'catmintLip',dreams?'petal-dreams':moon?'petal-nervosa':tuber?'petal-catmint':'petal-nuda',color,0,0,0,fl,fl,fl);
+    if(observe){
+     // Actual row26/column12 of the existing32x24 lower-lip surface, only for this verified cultivar.
+     const point=new THREE.Vector3(...catmintPoint('dreamsLip',.8125,0).map(Math.fround)).multiplyScalar(fl),atPoint=point.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=atPoint.x*.8+atPoint.z;
+     if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),fl*1.2,Math.PI/2);}
+    }
    }
   }
  };
@@ -9877,6 +9883,7 @@ function drawTallNepeta(b,{info,s,detail,rand,month},kit){
   spike(top,az,Math.min(a.inflorescenceLength,h*(dreams?.44:.34))*(dreams?.70+.30*noise(i,65):.87+.13*noise(i,65)),i);
   if(cold&&!moon&&i%3===0)for(let j=0;j<2;j++)pair([root[0],root[1]+j*.003,root[2]],az+j*Math.PI/2,Math.min(.014,h*.06)*(j?.7:1),i,300+j,true);
  }
+ inspection?.();
 }
 
 export function rupestrisPoint(type,t,u){
@@ -17545,7 +17552,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='mahoniaCanes'){drawMahoniaCanes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pajamasCymes'){drawPajamas(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='physostegiaRows'){drawPhysostegia(b,{info,s,detail,rand,month},kit);return;}
- if(['tallNepetaSpires','nervosaHeads','subsessilisWhorls'].includes(info.appearance?.architecture)){drawTallNepeta(b,{info,s,detail,rand,month},kit);return;}
+ if(['tallNepetaSpires','nervosaHeads','subsessilisWhorls'].includes(info.appearance?.architecture)){drawTallNepeta(b,{info,s,p,detail,rand,month},kit);return;}
  if(['catmintMounds','giantCatmintShoots','pinkCatmintBranches','simpleCatmintBranches','limeCatmintMound','uprightFaassenii'].includes(info.appearance?.architecture)){drawCatmint(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='rupestrisBranches'){drawRupestris(b,{info,s,detail,rand,month},kit);return;}
  if(['rugosaHyssopSpikes','hybridHyssopSpikes'].includes(info.appearance?.architecture)){drawRugosaHyssop(b,{info,s,detail,rand,month},kit);return;}
