@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.567';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.568';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.567';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.568';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -12451,8 +12451,11 @@ export function dianthusLeafPoint(t,u){
 export function dianthusPetalPoint(type,t,u){
  const deep=['superbus','arenarius'].includes(type),teeth=type==='superbus'?21:type==='arenarius'?9:type==='chinensis'?15:type==='ranman'?17:11;
  const tooth=Math.pow(Math.max(0,Math.cos((u+.037)*Math.PI*teeth)),.65),depth=type==='superbus'?.51:type==='arenarius'?.42:type==='chinensis'?.15:type==='ranman'?.22:.09;
- const edge=1-depth+depth*tooth,rr=.08+(edge-.08)*t,an=u*(.13+.40*Math.min(1,t*2.5)),curl=deep?.10:.045;
- return [Math.sin(an)*rr,.035*t+curl*Math.sin(u*13+t*3)*t*t+.035*u*u*t,Math.cos(an)*rr];
+ // The Orihime close-up has narrower shallow-fringed limbs than the other reference profiles.
+ const edge=1-depth+depth*tooth,rr=.08+(edge-.08)*t,an=u*(type==='orihime'?(.14+.09*Math.min(1,t*2.5)):(.13+.40*Math.min(1,t*2.5))),curl=deep?.10:type==='orihime'?.018:.045;
+ // Keep Orihime edge teeth from corrugating the entire petal body at a fixed radius.
+ const progress=type==='orihime'?(rr-.08)/.92:t;
+ return [Math.sin(an)*rr,.035*progress+curl*Math.sin((type==='orihime'?u*2.2:u*13)+progress*3)*progress*progress+.035*u*u*progress,Math.cos(an)*rr];
 }
 
 function drawDianthus(b,{info,s,detail,rand},kit){
@@ -13764,7 +13767,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   for(let j=0;j<5;j++){const an=j*TAU/5;f.add('narrow','calyxTooth-dianthus','#79875c',Math.sin(an)*r*.12,-r*.12,Math.cos(an)*r*.12,r*.09,r*.20,r*.09,-.12,an,0);}
   for(let j=0;j<4;j++)f.add('narrow','epicalyx-dianthus','#77805c',0,-r*tube*.94,0,r*.11,r*tube*.45,r*.12,-.22,j*TAU/4,0);
   const pk=palette.eye?'petal-dianthus-eye-'+palette.eye.slice(1):palette.rim?'petal-dianthus-rim-'+palette.rim.slice(1):'petal-dianthus';
-  for(let l=0;l<layers;l++)for(let j=0;j<5;j++){const rr=r*(1-l*.22),petalColor=kit.shade(rand,color,.018),angle=j*TAU/5+l*.47+(rand()-.5)*.035;f.add('dianthusPetal-'+type,pk,petalColor,0,l*r*.055,0,rr,rr,rr,0,angle,0);if(l===0&&j===0&&typeof onInspectionTarget==='function'){const point=new THREE.Vector3(...dianthusPetalPoint(type,.45,0)).multiplyScalar(rr).applyEuler(new THREE.Euler(0,angle,0,'YXZ'));onInspectionTarget(()=>f.flower(point.toArray(),r*(['superbus','arenarius'].includes(type)?1.2:.85)));}}
+  for(let l=0;l<layers;l++)for(let j=0;j<5;j++){const rr=r*(1-l*.22),petalColor=kit.shade(rand,color,.018),angle=j*TAU/5+l*.47+(rand()-.5)*.035;f.add('dianthusPetal-'+type,pk,petalColor,0,l*r*.055,0,rr,rr,rr,0,angle,0);if(l===0&&j===0&&typeof onInspectionTarget==='function'){const point=new THREE.Vector3(...dianthusPetalPoint(type,.45,0)).multiplyScalar(rr).applyEuler(new THREE.Euler(0,angle,0,'YXZ'));onInspectionTarget(()=>f.flower(point.toArray(),r*(['superbus','arenarius','orihime'].includes(type)?1.2:.85)));}}
   f.add(bud,'flowerThroat-dianthus','#a6a587',0,r*.003,0,r*.066,r*.020,r*.066);
   for(let j=0;j<10;j++){const an=j*TAU/10,from=[Math.sin(an)*r*.036,r*.012,Math.cos(an)*r*.036],to=[Math.sin(an)*r*.15,r*(j%2?.31:.23),Math.cos(an)*r*.15];f.branch(from,to,r*.009,'#d1c5bf','stamen-dianthus');f.add(bud,'anther-dianthus',type==='superbus'?'#c5b899':'#8c7b82',...to,r*.025,r*.042,r*.022);}
   for(let j=0;j<2;j++){const from=[0,0,0],bend=[(j?1:-1)*r*.045,r*.28,0],to=[(j?1:-1)*r*.14,r*.37,r*.022];f.branch(from,bend,r*.014,'#d8cac8','style-dianthus');f.branch(bend,to,r*.012,'#d8cac8','style-dianthus');}return;
