@@ -10357,3 +10357,14 @@ test('Little Maiden keeps its fringed outline with regular petals and smooth int
   for(const radius of[.35,.45]){const heights=[];for(let j=0;j<=40;j++){const u=-.8+j*.04;let lo=0,hi=1;for(let k=0;k<30;k++){const t=(lo+hi)/2,q=dianthusPetalPoint('arenarius',t,u);if(Math.hypot(q[0],q[2])<radius)lo=t;else hi=t;}heights.push(dianthusPetalPoint('arenarius',(lo+hi)/2,u)[1]);}let reversals=0,last=0;for(let j=1;j<heights.length;j++){const sign=Math.sign(heights[j]-heights[j-1]);if(sign&&last&&sign!==last)reversals++;if(sign)last=sign;}assert.ok(reversals<=2,'smooth interior at '+radius);}
  }finally{dispose(g);}
 });
+
+
+test('Fine-fringed Dianthus petals vary modestly and deterministically without extra random draws',()=>{
+ const r=.02,origin=[.03,.18,-.02],record=type=>{const parts=[],targets=[];let calls=0;detailedFlower({add:(...args)=>parts.push(args),branch(){},flower:point=>targets.push(point)},{x:origin[0],y:origin[1],z:origin[2],r,color:'#ffffff',shape:'dianthusFringed',layers:1,tilt:0,yaw:0,palette:{profile:type},markInspection:false,onInspectionTarget:register=>register()},{bud:'bud',rand:()=>{calls++;return .5;},shade:(_rand,color)=>color});return{parts,targets,calls};};
+ for(const type of['superbus','arenarius']){
+  const a=record(type),b=record(type);assert.deepEqual(a,b,'same inputs reproduce every part');assert.equal(a.calls,5,'only the existing angle draws');const petals=a.parts.filter(p=>p[0]==='dianthusPetal-'+type);assert.equal(petals.length,5);
+  const ratios=[];for(const p of petals){assert.ok(p[6]>=r*.94-1e-12&&p[6]<=r*1.06+1e-12);assert.equal(p[7],r);assert.ok(p[8]>=r*.95-1e-12&&p[8]<=r*1.05+1e-12);ratios.push(p[6]/p[8]);}const spread=Math.max(...ratios)-Math.min(...ratios);assert.ok(spread>.01&&spread<.23,'small aspect-ratio differences');
+  assert.equal(a.targets.length,1);const vertex=dianthusPetalPoint(type,.5,0),first=petals[0],scale=[first[6],first[7],first[8]];for(let d=0;d<3;d++)assert.ok(Math.abs(a.targets[0][d]-(origin[d]+vertex[d]*scale[d]))<1e-12,'inspection follows the scaled rendered vertex');
+ }
+ const doc=emptyDocument(10,6);doc.plans.A.plants=[{...makePlant('p-42c8fe4bac77',57500,2,2),height:.4,spread:.3,leafHeight:.24},{...makePlant('p-85a1652c0694',57501,4,2),height:.12,spread:.3,leafHeight:.07}];doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-23.14'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+});
