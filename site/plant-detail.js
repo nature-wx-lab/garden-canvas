@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.601';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.602';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.601';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.602';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9117,21 +9117,32 @@ function drawPaniclePhlox(b,{info,s,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),growth=month===3?.25:month===4?.55:month===5?.83:1;
  const n=Math.max(3,Math.min(12,Math.round(6*detail*Math.pow(w/.4,.70)))),L=Math.min(a.leafLength,w*.28),stem=winter?a.winterStemColor:a.stemColor;
  let inspection=null,inspectionScore=-Infinity;
- const leafPair=(at,angle,len,upper=false,pitch=.9)=>{
+ const ceiling=Math.min(h,s.leafHeight),leafPair=(at,angle,len,upper,pitch,root,retainedPair)=>{
+  const petiole=upper?.0008:.003,radius=.00055,ratio=a.leafWidth/a.leafLength,leaves=[];let upperBound=.001+radius,lowerBound=radius;
   for(const side of [0,Math.PI]){
-   const aa=angle+side,petiole=upper?.0008:.003,tip=[at[0]+Math.sin(aa)*petiole,at[1]+.001,at[2]+Math.cos(aa)*petiole];
-   b.branch(at,tip,.00055,stem,'petiole-panicle-phlox');
-   b.add('paniclePhloxLeaf','leaf-panicle-phlox',kit.shade(rand,s.leafColor,.035),...tip,len*a.leafWidth/a.leafLength,len,len,pitch+.045*Math.sin(aa*3.7),aa,0);
+   const aa=angle+side,q=pitch+.045*Math.sin(aa*3.7),cp=Math.cos(q),sp=Math.sin(q),color=kit.shade(rand,s.leafColor,.035);
+   // The unchanged leaf has Y in [0,1], Z in [-.017,.159] and zero roll.
+   upperBound=Math.max(upperBound,.001+len*(Math.max(0,cp)+.017*Math.max(0,sp)+.159*Math.max(0,-sp)));
+   // Do not rely on the petiole rise: a sub-cutoff pair attaches directly to its node.
+   lowerBound=Math.max(lowerBound,len*(Math.max(0,-cp)+.159*Math.max(0,sp)+.017*Math.max(0,-sp)));
+   leaves.push({aa,pitch:q,color});
   }
+  // Consume both original shades before omitting a pair, preserving later flower RNG.
+  // If every stem node exceeds a low ceiling, retain only its first pair at the existing root.
+  const base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
+  const fit=Math.min(1,room/upperBound,base[1]/lowerBound),fitted=leaves.map(leaf=>({...leaf,tip:[base[0]+Math.sin(leaf.aa)*petiole*fit,base[1]+.001*fit,base[2]+Math.cos(leaf.aa)*petiole*fit]}));
+  const direct=fitted.some(leaf=>new THREE.Vector3(...leaf.tip).sub(new THREE.Vector3(...base)).length()<.0001);
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.tip,radius*fit,stem,'petiole-panicle-phlox');b.add('paniclePhloxLeaf','leaf-panicle-phlox',leaf.color,...(direct?base:leaf.tip),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,0);}
+  return true;
  };
  for(let i=0;i<n;i++){
   // Structural variation is fixed per stem, independent of seasonal leaf/flower density.
   const shape=k=>.5+.5*Math.sin((i+1)*12.9898+k*7.233);
   const az=i*2.399963,rr=w*.20*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.003,Math.cos(az)*rr],top=h*(.79+shape(0)*.13),body=(winter?top*.86:s.bloom?top*.76:top*.90)*(winter?1:growth);
-  const point=t=>[root[0]+Math.sin(az)*w*.035*t*t,root[1]+body*t,root[2]+Math.cos(az)*w*.035*t*t];let from=root;
+  const point=t=>[root[0]+Math.sin(az)*w*.035*t*t,root[1]+body*t,root[2]+Math.cos(az)*w*.035*t*t];let from=root,retainedPair=false;
   for(let j=1;j<=8;j++){
    const t=(j+(j===8?0:(shape(j)-.5)*.32))/8,at=point(t);b.branch(from,at,.00165*(1-t*.35),stem,winter?'dry-stem-panicle-phlox':'stem-panicle-phlox');from=at;
-   if(!winter&&(j<3||rand()<s.leafDensity))leafPair(at,az+j*Math.PI/2,L*(s.bloom&&j===8?.30:.98-.46*t)*(.65+.35*growth),j>5,1.22-.43*t);
+   if(!winter&&(j<3||rand()<s.leafDensity))retainedPair=leafPair(at,az+j*Math.PI/2,L*(s.bloom&&j===8?.30:.98-.46*t)*(.65+.35*growth),j>5,1.22-.43*t,root,retainedPair)||retainedPair;
   }
   // Retained dead stems are illustrative. They are not a pruning event or a
   // miniature living shoot; actual winter persistence is not quantified.
