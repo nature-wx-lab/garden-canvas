@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.666';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.667';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.666';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.667';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10995,35 +10995,45 @@ export function leucanthaPoint(type,t,u){
  return [Math.sin(az)*radius,t*(1+.065*Math.cos(az*2)*Math.pow(t,7)),-Math.cos(az)*radius+.20*t*t];
 }
 
-function drawLeucantha(b,{info,s,detail,rand,month},kit){
+function drawLeucantha(b,{info,s,p,detail,rand,month},kit){
  if(s.groundDormant)return;
  const a=info.appearance,h=s.height,w=s.spread,fairy=a.shootProfile==='fairy',winter=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.25,w*.20),stem=winter?a.winterStemColor:a.stemColor,n=Math.max(4,Math.min(28,Math.round(16*detail*Math.sqrt(w/.9)))),thin=fairy?.76:1;
  const mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);};
- const pair=(at,az,len,i,k)=>{if(noise(i,k)>s.leafDensity)return;for(const side of [0,1])b.add('leucanthaLeaf','leaf-leucantha',kit.shade(rand,s.leafColor,.06),...at,len*a.leafWidth/a.leafLength,len,len,.97+.35*noise(i,k+30+side),az+side*Math.PI,(noise(i,k+44+side)-.5)*.16);};
+ const observe=['p-b9522652b263','p-999eb18d45d6','p-dd06812f8866'].includes(p?.kind);let inspection=null,inspectionScore=-Infinity;
+ const pair=(at,az,len,i,k,root=at,retainedPair=false)=>{
+  if(noise(i,k)>s.leafDensity)return false;
+  if(!observe){for(const side of [0,1])b.add('leucanthaLeaf','leaf-leucantha',kit.shade(rand,s.leafColor,.06),...at,len*a.leafWidth/a.leafLength,len,len,.97+.35*noise(i,k+30+side),az+side*Math.PI,(noise(i,k+44+side)-.5)*.16);return false;}
+  const ratio=a.leafWidth/a.leafLength,leaves=[];let upper=0,lower=0;
+  for(const side of [0,1]){const pitch=.97+.35*noise(i,k+30+side),yaw=az+side*Math.PI,roll=(noise(i,k+44+side)-.5)*.16,color=kit.shade(rand,s.leafColor,.06),euler=new THREE.Euler(pitch,yaw,roll,'YXZ');for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*.510001*ratio*len,(corner&2?1:0)*len,(corner&4?.043001:-.085001)*len).applyEuler(euler);upper=Math.max(upper,point.y);lower=Math.max(lower,-point.y);}leaves.push({pitch,yaw,roll,color});}
+  const ceiling=Math.min(h,s.leafHeight);if(ceiling<=.005)return false;const base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;const fit=Math.min(1,room/upper,lower>0?base[1]/lower:1);
+  for(const leaf of leaves)b.add('leucanthaLeaf','leaf-leucantha',leaf.color,...base,len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.yaw,leaf.roll);return true;
+ };
  const spike=(base,az,len,i)=>{
   const bend=w*(.12+.10*noise(i,12)),levels=Math.max(6,Math.min(16,Math.round(len/.022))),point=t=>[base[0]+Math.sin(az)*bend*t*t,base[1]+len*(t-.26*t*t*t),base[2]+Math.cos(az)*bend*t*t];let old=base;
   for(let j=0;j<=levels;j++){
    const t=Math.pow((j===0?0:j===levels?levels:j+(noise(i,j+150)-.5)*.32)/levels,.86),at=point(t);if(j)b.branch(old,at,Math.min(.0018,h*.003)*thin*(1-t*.55),stem,'axis-leucantha');old=at;
    for(let k=0;k<(t>.86?4:6);k++){
-    const aa=az+k*TAU/6+(j%2)*.4,calLen=Math.min(.013,h*.038)*(1-.30*Math.pow(t,5)),rr=calLen*.45,pos=[at[0]+Math.sin(aa)*rr,at[1],at[2]+Math.cos(aa)*rr],f=flowerFrame(b,pos,1.70+.15*noise(i,j+k),aa),cal=s.bloom?a.flowerOutsideColor:fairy?'#d5cfc1':winter?'#9e9285':'#a58dac';
+    const aa=az+k*TAU/6+(j%2)*.4,calLen=Math.min(.013,h*.038)*(1-.30*Math.pow(t,5)),rr=calLen*.45,pos=[at[0]+Math.sin(aa)*rr,at[1],at[2]+Math.cos(aa)*rr],pitch=1.70+.15*noise(i,j+k),f=flowerFrame(b,pos,pitch,aa),cal=s.bloom?a.flowerOutsideColor:fairy?'#d5cfc1':winter?'#9e9285':'#a58dac';
     f.add('leucanthaCalyx','calyx-leucantha-velvet',cal,0,0,0,calLen,calLen,calLen);
     if(!s.bloom||t>.88||noise(i,j*29+k+9)>.52)continue;const len=Math.min(a.flowerLength,h*.065)*(1-.15*t);
     f.add('leucanthaTube',fairy?'tube-leucantha-fairy':'tube-leucantha',s.flowerColor,0,calLen*.61,0,len*.90,len*.85,len*.90);
     f.add('nemorosaHood','hood-leucantha',s.flowerColor,0,calLen*.61+len*.75,len*.12,len*.45,len*.28,len*.5);
     f.add('nemorosaLip','lip-leucantha',s.flowerColor,0,calLen*.61+len*.75,len*.12,len*.46,len*.22,len*.5,1.0,0,0);
+    if(observe){const marker=sageLipInspection((t,u)=>nemorosaPoint('nemorosaLip',t,u),20,[len*.46,len*.22,len*.5],[0,calLen*.61+len*.75,len*.12],1.0,48,19),point=marker.centre.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=point.x*.8+point.z;if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(marker.centre.toArray(),len*1.30,marker.euler.x,marker.euler.y,marker.euler.z);}}
    }
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*.45,rr=w*.27*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.55,.005,Math.cos(az)*rr*.55],total=h*(.79+.19*noise(i,8)),spikeLen=Math.min(a.inflorescenceLength,total*.40),top=[Math.sin(az)*rr,total-spikeLen*.74,Math.cos(az)*rr],wood=mix(root,top,.07);b.branch(root,wood,Math.min(.004,h*.008)*thin,a.barkColor,'wood-leucantha');let old=wood;
+  const az=i*2.399963+(noise(i,1)-.5)*.45,rr=w*.27*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.55,.005,Math.cos(az)*rr*.55],total=h*(.79+.19*noise(i,8)),spikeLen=Math.min(a.inflorescenceLength,total*.40),top=[Math.sin(az)*rr,total-spikeLen*.74,Math.cos(az)*rr],wood=mix(root,top,.07);b.branch(root,wood,Math.min(.004,h*.008)*thin,a.barkColor,'wood-leucantha');let old=wood,retainedPair=false;
   for(let j=1;j<=11;j++){
-   const t=j/11,at=mix(wood,top,t),aa=az+j*Math.PI/2;at[1]+=h*.025*Math.sin(t*Math.PI);b.branch(old,at,Math.min(.0025,h*.004)*thin*(1-j*.035),stem,'stem-leucantha');old=at;pair(at,aa,L*(j<8?.76+.24*noise(i,j+22):.65-.10*(j-8)),i,j+15);
+   const t=j/11,at=mix(wood,top,t),aa=az+j*Math.PI/2;at[1]+=h*.025*Math.sin(t*Math.PI);b.branch(old,at,Math.min(.0025,h*.004)*thin*(1-j*.035),stem,'stem-leucantha');old=at;retainedPair=pair(at,aa,L*(j<8?.76+.24*noise(i,j+22):.65-.10*(j-8)),i,j+15,root,retainedPair)||retainedPair;
    if(j!==4&&j!==7)continue;const yaw=aa+(j===4?1.1:-1.1),end=[at[0]+Math.sin(yaw)*w*.13,at[1]+h*.12,at[2]+Math.cos(yaw)*w*.13];let prev=at;
-   for(let q=1;q<=8;q++){const loc=mix(at,end,q/8);b.branch(prev,loc,Math.min(.0013,h*.003)*thin,stem,'branch-leucantha');prev=loc;pair(loc,yaw+q*Math.PI/2,L*(.95-q*.055),i,q+90);}
+   for(let q=1;q<=8;q++){const loc=mix(at,end,q/8);b.branch(prev,loc,Math.min(.0013,h*.003)*thin,stem,'branch-leucantha');prev=loc;retainedPair=pair(loc,yaw+q*Math.PI/2,L*(.95-q*.055),i,q+90,root,retainedPair)||retainedPair;}
    if(j===7&&i%3===0)spike(end,yaw,spikeLen*.62,i+100);
   }
   spike(top,az,spikeLen,i);
  }
+ if(inspection)inspection();
 }
 
 export function indigoLeafPoint(t,u){
@@ -17879,7 +17889,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='patensShoots'){drawPatens(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='cherrySageBranches'){drawCherrySage(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='officinalisMounds'){drawOfficinalis(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='leucanthaCanes'){drawLeucantha(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='leucanthaCanes'){drawLeucantha(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='indigoSpires'){drawIndigoSpires(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='perovskiaShoots'){drawPerovskia(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lavenderMounds'){drawLavenderMounds(b,{info,s,detail,rand,month},kit);return;}
