@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.699';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.700';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.699';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.700';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11465,27 +11465,33 @@ export function silverDropPoint(t,u){
  return [u*width,t-baseNotch,.035*u*u*sn+.025*t*t];
 }
 
-function drawSilverDrop(b,{info,s,detail,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.12,w*.12),young=a.stemColor,wood=a.barkColor;
+function drawSilverDrop(b,{info,s,p,detail,rand},kit){
+ const a=info.appearance,observe=p?.kind==='p-54d3bae798d4',h=s.height,w=s.spread,ceiling=Math.min(h,s.leafHeight),foliageScale=observe&&ceiling<h?Math.min(1,ceiling*.86/h):1,L=Math.min(a.leafLength,h*.12,w*.12,observe?s.leafHeight*.8:Infinity),oldL=Math.min(a.leafLength,h*.12,w*.12),young=a.stemColor,wood=a.barkColor;
  const shape=(i,k)=>.5+.5*Math.sin((i+1)*15.989+k*7.233),mix=(x,y,t)=>x.map((v,k)=>v+(y[k]-v)*t);
- const axis=t=>[Math.sin(t*3.1)*w*.025,.004+(h*.96-.004)*t,Math.sin(t*2.4)*w*.018];
- const pair=(at,yaw,len,pitch)=>{for(const side of [0,1])b.add('silverDropLeaf','leaf-silver-drop',kit.shade(rand,s.leafColor,.04),...at,len*a.leafWidth/a.leafLength,len,len,pitch,yaw+side*Math.PI,(shape(Math.round(at[1]*1000),side)-.5)*.08);};
+ const axis=t=>[Math.sin(t*3.1)*w*.025,(.004+(h*.96-.004)*t)*foliageScale,Math.sin(t*2.4)*w*.018];
+ const woodyBranch=(from,to,r,color,kind)=>{if(observe){const horizontal=Math.hypot(to[0]-from[0],to[2]-from[2]);if(horizontal>0)r=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*Math.hypot(horizontal,to[1]-from[1])/horizontal);}b.branch(from,to,r,color,kind);};
+ const pair=(at,yaw,len,pitch)=>{
+  const ratio=a.leafWidth/a.leafLength,rolls=[0,1].map(side=>(shape(Math.round(at[1]*1000),side)-.5)*.08);let fitted=len;
+  if(observe){let upper=0,lower=0;for(const side of[0,1]){const rotation=new THREE.Euler(pitch,yaw+side*Math.PI,rolls[side],'YXZ');for(let k=0;k<8;k++){const v=new THREE.Vector3((k&1?1:-1)*.5*ratio*len,(k&2?1:-.085)*len,(k&4?.06:0)*len).applyEuler(rotation);upper=Math.max(upper,v.y);lower=Math.max(lower,-v.y);}}fitted*=Math.max(0,Math.min(1,upper>0?(ceiling-at[1]-.00002)/upper:1,lower>0?at[1]/lower:1));}
+  for(const side of[0,1]){const color=kit.shade(rand,s.leafColor,.04);if(observe&&fitted<=.00001)continue;b.add('silverDropLeaf','leaf-silver-drop',color,...at,fitted*ratio,fitted,fitted,pitch,yaw+side*Math.PI,rolls[side]);}
+ };
  const trunkNodes=Math.max(8,Math.min(42,Math.round(h/.035))),count=Math.max(5,Math.min(18,Math.round((h<.4?8:12)*detail*Math.pow(h/.8,.25))));let from=axis(0);
  for(let j=1;j<=trunkNodes;j++){
-  const t=j/trunkNodes,at=axis(t);b.branch(from,at,Math.min(.018,h*.010)*(1-t*.82),t>.64?young:wood,t>.64?'wood-silver-drop-young':'wood-silver-drop-smooth');from=at;
+  const t=j/trunkNodes,at=axis(t);woodyBranch(from,at,Math.min(.018,h*.010)*(1-t*.82),t>.64?young:wood,t>.64?'wood-silver-drop-young':'wood-silver-drop-smooth');from=at;
   if(t>.07)pair(at,j*Math.PI/2,L*(.98-.48*Math.pow(t,7)),.78+.35*shape(j,1));
  }
+ if(observe&&foliageScale<1){const crown=axis(1),tip=[crown[0],h*.96,crown[2]];woodyBranch(crown,tip,Math.min(.018,h*.010)*.18,young,'wood-silver-drop-young');}
  for(let i=0;i<count;i++){
-  const t=.16+.66*(i+.5)/count,at=axis(t),az=i*2.399963,reach=Math.max(.005,w*.45-L)*(.87-.34*t),tip=[at[0]+Math.sin(az)*reach,Math.min(h*.94,at[1]+h*(.13+.11*shape(i,2))),at[2]+Math.cos(az)*reach];
-  const middle=mix(at,tip,.50);middle[1]-=h*.025;
-  const curve=q=>q<.5?mix(at,middle,q*2):mix(middle,tip,(q-.5)*2),axisLength=Math.hypot(...tip.map((v,k)=>v-at[k])),nodes=Math.max(4,Math.min(18,Math.round(axisLength/.028)));let last=at;
+  const t=.16+.66*(i+.5)/count,at=axis(t),az=i*2.399963,reach=Math.max(.005,w*.45-oldL)*(.87-.34*t),tip=[at[0]+Math.sin(az)*reach,Math.min(h*.94*foliageScale,at[1]+h*(.13+.11*shape(i,2))*foliageScale),at[2]+Math.cos(az)*reach];
+  const middle=mix(at,tip,.50);middle[1]-=h*.025*foliageScale;
+  const curve=q=>q<.5?mix(at,middle,q*2):mix(middle,tip,(q-.5)*2),axisLength=Math.hypot(...tip.map((v,k)=>k===1?(v-at[k])/foliageScale:v-at[k])),nodes=Math.max(4,Math.min(18,Math.round(axisLength/.028)));let last=at;
   for(let j=1;j<=nodes;j++){
-   const q=j/nodes,point=curve(q);b.branch(last,point,Math.min(.0045,h*.003)*(1-q*.68),young,'wood-silver-drop-young');last=point;
+   const q=j/nodes,point=curve(q);woodyBranch(last,point,Math.min(.0045,h*.003)*(1-q*.68),young,'wood-silver-drop-young');last=point;
    const yaw=az+j*Math.PI/2,pitch=.72+.46*shape(i,j+5),len=L*(.98-.40*Math.pow(q,7));pair(point,yaw,len,pitch);
    if(h<.40||j%2!==1||q<.18||q>.82)continue;
-   const aa=az+(j%2?1:-1)*.75,branchL=Math.min(.16,w*.12),end=[point[0]+Math.sin(aa)*branchL,point[1]+branchL*.8,point[2]+Math.cos(aa)*branchL];let old=point;
+   const aa=az+(j%2?1:-1)*.75,branchL=Math.min(.16,w*.12),end=[point[0]+Math.sin(aa)*branchL,point[1]+branchL*.8*foliageScale,point[2]+Math.cos(aa)*branchL];let old=point;
    for(let k=1;k<=5;k++){
-    const u=k/5,p=mix(point,end,u);b.branch(old,p,.00055*(1-u*.5),young,'twig-silver-drop');old=p;pair(p,aa+k*Math.PI/2,L*(.90-.32*Math.pow(u,5)),.73+.41*shape(i,k+40));
+    const u=k/5,p=mix(point,end,u);woodyBranch(old,p,.00055*(1-u*.5),young,'twig-silver-drop');old=p;pair(p,aa+k*Math.PI/2,L*(.90-.32*Math.pow(u,5)),.73+.41*shape(i,k+40));
    }
   }
  }
@@ -18078,7 +18084,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='perovskiaShoots'){drawPerovskia(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lavenderMounds'){drawLavenderMounds(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='chocolateCosmos'){drawChocolateCosmos(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='silverDropJuvenile'){drawSilverDrop(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='silverDropJuvenile'){drawSilverDrop(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='autumnAnemone'){drawAutumnAnemone(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oxfordMat'){drawOxfordMat(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='melinisTussock'){drawMelinis(b,{info,s,detail,rand,month},kit);return;}
