@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.692';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.693';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.692';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.693';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11302,6 +11302,7 @@ function drawLavenderMounds(b,{info,s,p,detail,rand,month},kit){
   if(observe){const euler=new THREE.Euler(pitch,az,0,'YXZ');let upper=0,lower=0;for(let k=0;k<8;k++){const point=new THREE.Vector3((k&1?1:-1)*.5*ratio*len,(k&2?1:0)*len,(k&4?.035:-.070)*len).applyEuler(euler);upper=Math.max(upper,point.y);lower=Math.max(lower,-point.y);}fitted*=Math.max(0,Math.min(1,upper>0?(ceiling-at[1]-.00004)/upper:1,lower>0?at[1]/lower:1));}
   for(const side of [0,1]){const color=kit.shade(rand,s.leafColor,.045);if(observe&&fitted<=.00001)continue;b.add(sand?'lavenderSandLeaf':'lavenderLinear',sand?'leaf-lavender-silver-sand':'leaf-lavender',color,...at,fitted*ratio,fitted,fitted,pitch,az+side*Math.PI,0);}
  };
+ let inspection=null,inspectionScore=-Infinity;
  const head=(base,tip,az,i,k)=>{
   const angle=Math.atan2(Math.hypot(tip[0]-base[0],tip[2]-base[2]),tip[1]-base[1]),f=flowerFrame(b,tip,angle,az),levels=grosso?9:sand?6:7,stem=s.bloom?a.stemColor:'#887e69';
   f.branch([0,0,0],[0,spike,0],.00051,stem,'spike-lavender');
@@ -11309,6 +11310,22 @@ function drawLavenderMounds(b,{info,s,p,detail,rand,month},kit){
    const t=j/(levels-1),yy=spike*t,ring=(grosso?.0042:.0032)*(1-.45*t),q=sand?spike*(j===0?0:j===1?.28:.49+(j-2)*.17):j<2?yy*.90:yy;
    for(let z=0;z<6;z++){
     const yaw=z*TAU/6+j*.9,at=[Math.sin(yaw)*ring,q,Math.cos(yaw)*ring],calyx=s.bloom?(grosso?'#6e718d':sand?'#949993':'#5a5276'):'#887d67';
+    if(observe){
+     const F=Math.min(a.flowerLength,h*.025),root=[Math.sin(yaw)*Math.min(.00045,F*.07),q,Math.cos(yaw)*Math.min(.00045,F*.07)],pitch=1.15,fl=flowerFrame(f,root,pitch,yaw);
+     const micro=(from,to,r,color,kind)=>{const v=new THREE.Vector3(...to).sub(new THREE.Vector3(...from)),len=v.length();if(!len)return;const mid=new THREE.Vector3(...from).add(new THREE.Vector3(...to)).multiplyScalar(.5),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.multiplyScalar(1/len)),'YXZ');fl.add('hidcoteAxis',kind,color,...mid.toArray(),r,len,r,e.x,e.y,e.z);};
+     fl.add('hidcoteCalyx','calyx-lavender',calyx,0,0,0,F,F,F);
+     for(let hair=0;hair<6;hair++){const u=hair*2.399,t=.20+hair*.11,pt=hidcoteCalyxPoint(t,u).map(v=>v*F);micro(pt,[pt[0]+Math.sin(u)*F*.028,pt[1]+F*.012,pt[2]+Math.cos(u)*F*.028],F*.0012,'#b8b4b8','calyx-hair-lavender');}
+     if(!s.bloom||shape(i,j*6+z+k*80+100)>s.flowerDensity||j===levels-1)continue;
+     let color;for(let l=0;l<5;l++){const shade=kit.shade(rand,s.flowerColor,.04);if(l===0)color=shade;}
+     fl.add('hidcoteCorolla','corolla-lavender-hidcote',color,0,0,0,F,F,F);
+     for(let st=0;st<4;st++){const front=st<2,side=st%2?1:-1,end=[side*F*.065,F*(front?.685:.635),F*(front?.045:-.045)];micro([side*F*.055,F*.32,end[2]],end,F*.006,'#ded4e4','filament-lavender');fl.add(kit.bud,'anther-lavender','#b4a1c2',...end,F*.025,F*.014,F*.018);}
+     micro([0,F*.20,0],[0,F*.68,0],F*.005,'#d4bfdc','style-lavender');for(const side of[-1,1])micro([0,F*.68,0],[side*F*.022,F*.705,F*.008],F*.004,'#d8c6df','stigma-lavender');
+     const row=29,column=50,C=80,R=32,vs=[[row,column],[row+1,column],[row,column+1]].map(([r,c])=>new THREE.Vector3(...hidcoteCorollaPoint(r/R,c/C*TAU).map(Math.fround)).multiplyScalar(F)),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),rot=new THREE.Euler(pitch,yaw,0,'YXZ'),headRot=new THREE.Euler(angle,az,0,'YXZ');
+     if(normal.clone().applyEuler(rot).applyEuler(headRot).y<0)normal.negate();
+     const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ'),point=centre.clone().applyEuler(rot).add(new THREE.Vector3(...root)).applyEuler(headRot).add(new THREE.Vector3(...tip)),score=point.x*.8+point.z;
+     if(score>inspectionScore){inspectionScore=score;inspection=()=>fl.flower(centre.toArray(),F*1.5,e.x,e.y,e.z);}
+     continue;
+    }
     f.add(sand?'lavenderSandCalyx':kit.bud,sand?'calyx-lavender-silver-sand':'calyx-lavender',calyx,...at,sand?.0032:.0017,sand?.004:.0025,sand?.0032:.0017,.6,yaw,0);
     if(!s.bloom||shape(i,j*6+z+k*80+100)>s.flowerDensity*(sand?.46:1)||j===levels-1)continue;
     const len=Math.min(a.flowerLength,h*.025),fl=flowerFrame(f,at,1.15,yaw);fl.add('lavenderTube','tube-lavender',s.flowerColor,0,0,0,len*.65,len,len*.65);
@@ -11344,6 +11361,25 @@ function drawLavenderMounds(b,{info,s,p,detail,rand,month},kit){
    const aa=az+side*.55,start=mix(neck,tip,.25),end=[tip[0]+Math.sin(aa)*w*.085,tip[1]-h*.08,tip[2]+Math.cos(aa)*w*.085];b.branch(start,end,.00055,floral,'fork-lavender');head(start,end,aa,i,side+2);
   }
  }
+ if(inspection)inspection();
+}
+
+// One unbroken tube and scalloped limb: two broad upper lobes and three narrower lower lobes.
+// Species-level proportions are drawing references, not measured Hidcote clone dimensions.
+export function hidcoteCorollaPoint(t,az){
+ const a=((az+Math.PI/2)%TAU+TAU)%TAU-Math.PI/2,upper=a>=Math.PI/2,width=upper?Math.PI/2:Math.PI/3,start=upper?Math.PI/2:-Math.PI/2,k=Math.min(upper?1:2,Math.floor((a-start)/width)),u=(a-start-k*width)/width*2-1,lobe=Math.sqrt(Math.max(0,1-u*u));
+ if(t<=.70){const q=t/.70,r=.090+.070*q;return[Math.sin(az)*r,.72*q,Math.cos(az)*r];}
+ const q=(t-.70)/.30,r=.160+(upper?.215:.170)*q*lobe,y=.72+(upper?.280:.165)*q*lobe;
+ return[Math.sin(az)*r,y,Math.cos(az)*r];
+}
+export function hidcoteCalyxPoint(t,az){
+ const ribs=.006*Math.cos(13*az)*Math.sin(Math.PI*t)**.6,r=.095+.075*Math.sin(Math.PI*t*.72)+ribs,upper=Math.max(0,-Math.cos(az))**8,teeth=.5+.5*Math.cos(5*az),y=.445*t+t**12*(.05+.055*upper-.035*(1-teeth));
+ return[Math.sin(az)*r,y,Math.cos(az)*r];
+}
+export function hidcoteFloralGeometry(type){
+ const pos=[],uv=[],idx=[],R=type==='corolla'?32:20,C=80,point=type==='corolla'?hidcoteCorollaPoint:hidcoteCalyxPoint;
+ for(let r=0;r<=R;r++)for(let c=0;c<=C;c++){pos.push(...point(r/R,c/C*TAU));uv.push(c/C,r/R);if(r<R&&c<C){const k=r*(C+1)+c;idx.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData.hidcoteFloral=type==='corolla'?{upper:2,lower:3,continuousTube:true,rows:R,columns:C}:{veins:13,upperToothEnlarged:true,rows:R,columns:C};return g;
 }
 
 export function chocolateCosmosPoint(type,t,u){
