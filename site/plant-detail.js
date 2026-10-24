@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.697';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.698';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.697';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.698';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11406,13 +11406,25 @@ export function chocolateCosmosPoint(type,t,u){
  return [u*.50*Math.pow(sn,.83)*lobes,t,.070*u*u*sn+.050*t*t+.008*Math.cos(t*36-Math.abs(u)*4)*Math.abs(u)*sn];
 }
 
-function drawChocolateCosmos(b,{info,s,detail,rand,month},kit){
- const a=info.appearance,cherry=a.shootProfile==='cherry',w=s.spread,h=s.height,L=Math.min(a.leafLength,w*.23,h*.27),winter=s.leafDensity===0,stem=winter?a.winterStemColor:a.stemColor;
+function drawChocolateCosmos(b,{info,s,p,detail,rand,month},kit){
+ const a=info.appearance,observe=p?.kind==='p-880f71a3aca2',cherry=a.shootProfile==='cherry',w=s.spread,h=s.height,ceiling=Math.min(h,s.leafHeight),oldL=Math.min(a.leafLength,w*.23,h*.27),L=Math.min(oldL,observe?s.leafHeight*.8:Infinity),winter=s.leafDensity===0,stem=winter?a.winterStemColor:a.stemColor;
  const n=Math.max(4,Math.min(20,Math.round((cherry?10:14)*detail*Math.pow(w/.4,.65)))),mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const shape=(i,k)=>.5+.5*Math.sin((i+1)*12.989+k*7.233);
+ const vegetativeBranch=(from,to,r,color,kind)=>{if(observe){const horizontal=Math.hypot(to[0]-from[0],to[2]-from[2]);if(horizontal>0)r=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*Math.hypot(horizontal,to[1]-from[1])/horizontal);}b.branch(from,to,r,color,kind);};
  const leaf=(at,az,len,lobed)=>{
-  const pet=len*.22,tip=[at[0]+Math.sin(az)*pet*.85,at[1]+pet*.45,at[2]+Math.cos(az)*pet*.85];b.branch(at,tip,.00052,a.stemColor,'petiole-cosmos');
-  b.add(lobed?'cosmosPinnatifid':'cosmosSimple',lobed?'leaf-cosmos-lobed':'leaf-cosmos-simple',kit.shade(rand,s.leafColor,.05),...tip,len*a.leafWidth/a.leafLength,len,len,.81+.28*shape(Math.round(at[1]*100),2),az,0);
+  const pitch=.81+.28*shape(Math.round(at[1]*100),2),ratio=a.leafWidth/a.leafLength;let fitted=len,direct=false;
+  if(observe){
+   const rotation=new THREE.Euler(pitch,az,0,'YXZ');let upper=0,lower=0;
+   for(let k=0;k<8;k++){const v=new THREE.Vector3((k&1?1:-1)*.5*ratio*len,(k&2?1:0)*len,(k&4?.128:0)*len).applyEuler(rotation);upper=Math.max(upper,v.y);lower=Math.max(lower,-v.y);}
+   const fit=pet=>Math.max(0,Math.min(1,upper+pet>0?(ceiling-at[1]-.00004)/(upper+pet):1,lower-pet>0?at[1]/(lower-pet):1));
+   fitted*=fit(len*.22*.45);
+   direct=fitted*.22*Math.hypot(.85,.45)<=.0001;
+   if(direct)fitted=len*fit(0);
+  }
+  const pet=direct?0:fitted*.22,tip=[at[0]+Math.sin(az)*pet*.85,at[1]+pet*.45,at[2]+Math.cos(az)*pet*.85],color=kit.shade(rand,s.leafColor,.05);
+  if(observe&&fitted<=.00001)return;
+  if(!direct)vegetativeBranch(at,tip,observe?Math.min(.00052,fitted*.16):.00052,a.stemColor,'petiole-cosmos');
+  b.add(lobed?'cosmosPinnatifid':'cosmosSimple',lobed?'leaf-cosmos-lobed':'leaf-cosmos-simple',color,...tip,fitted*ratio,fitted,fitted,pitch,az,0);
  };
  const head=(end,az,i,k)=>{
   if(!s.bloom)return;
@@ -11434,13 +11446,13 @@ function drawChocolateCosmos(b,{info,s,detail,rand,month},kit){
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963,rr=Math.max(.002,w*.34-L*.40)*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.55,.004,Math.cos(az)*rr*.55],joint=[Math.sin(az)*rr,h*(.24+.12*shape(i,1)),Math.cos(az)*rr];let old=root;
+  const az=i*2.399963,rr=Math.max(.002,w*.34-oldL*.40)*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.55,observe?Math.min(.004,h*.02,ceiling*.12):.004,Math.cos(az)*rr*.55],joint=[Math.sin(az)*rr,observe?Math.min(h*(.24+.12*shape(i,1)),ceiling*.70):h*(.24+.12*shape(i,1)),Math.cos(az)*rr];let old=root;
   for(let j=1;j<=5;j++){
-   const at=mix(root,joint,j/5);b.branch(old,at,.00125*(1-j*.075),stem,'stem-cosmos');old=at;
+   const at=mix(root,joint,j/5);vegetativeBranch(old,at,.00125*(1-j*.075),stem,'stem-cosmos');old=at;
    if(shape(i,j+10)<s.leafDensity)for(const side of [0,1])leaf(at,az+j*Math.PI/2+side*Math.PI,L*(.97-j*.08),j<4);
   }
   for(let k=0;k<3;k++){
-   const aa=az+(k-1)*.70,base=k===0?joint:mix(root,joint,.65+.15*k),reach=w*(k===0?.035:.12),tip=[joint[0]+Math.sin(aa)*reach,h*(.63+.33*shape(i,k+30)),joint[2]+Math.cos(aa)*reach],neck=mix(base,tip,.21);b.branch(base,neck,.00088,stem,'shoot-cosmos');
+   const aa=az+(k-1)*.70,base=k===0?joint:mix(root,joint,.65+.15*k),reach=w*(k===0?.035:.12),tip=[joint[0]+Math.sin(aa)*reach,h*(.63+.33*shape(i,k+30)),joint[2]+Math.cos(aa)*reach],neck=mix(base,tip,.21);if(observe)neck[1]=Math.min(neck[1],ceiling*.90);vegetativeBranch(base,neck,.00088,stem,'shoot-cosmos');
    if(shape(i,k+40)<s.leafDensity)for(const side of [0,1])leaf(neck,aa+side*Math.PI,L*.43,false);
    let from=neck;for(let seg=1;seg<=5;seg++){const q=seg/5,p=mix(neck,tip,q);p[0]+=Math.sin(q*Math.PI)*w*.025;p[2]-=Math.sin(q*Math.PI)*w*.011;b.branch(from,p,.00064*(1-q*.27),stem,'peduncle-cosmos');from=p;}
    head(tip,aa,i,k);
@@ -18065,7 +18077,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='indigoSpires'){drawIndigoSpires(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='perovskiaShoots'){drawPerovskia(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lavenderMounds'){drawLavenderMounds(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='chocolateCosmos'){drawChocolateCosmos(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='chocolateCosmos'){drawChocolateCosmos(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='silverDropJuvenile'){drawSilverDrop(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='autumnAnemone'){drawAutumnAnemone(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oxfordMat'){drawOxfordMat(b,{info,s,detail,rand,month},kit);return;}
