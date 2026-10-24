@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.737';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.738';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.737';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.738';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -12993,16 +12993,35 @@ export function heucherellaCalyxGeometry(){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.heucherellaCalyx=true;return g;
 }
 
-function drawHeucherella(b,{info,s,detail,rand},kit){
+const heucherellaUnitAxis=new THREE.CylinderGeometry(1,1,1,6,1),heucherellaCapPoints=new Map();
+function heucherellaCapSupport(type,size,ratio,pitch,yaw,roll){
+ let points=heucherellaCapPoints.get(type);
+ if(!points){points=[];for(let i=0;i<=12;i++)for(let j=0;j<=160;j++)points.push(heucherellaLeafPoint(type,i/12,j/160*TAU-Math.PI).map(Math.fround));heucherellaCapPoints.set(type,points);}
+ const e=new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(pitch,yaw,roll,'YXZ')).elements;let low=Infinity,high=-Infinity;
+ for(const p of points){const y=e[1]*p[0]*size*ratio+e[5]*p[1]*size+e[9]*p[2]*size;low=Math.min(low,y);high=Math.max(high,y);}return{low,high};
+}
+function drawHeucherella(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
+ const observed=['p-b91527c69202','p-88a52b6656d9'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);
  const a=info.appearance,typ=a.shootProfile,trailing=['copper','plum','yellowstone'].includes(typ),h=s.height,w=s.spread,lh=Math.min(s.leafHeight||h,h*a.foliageHeightRatio),L=Math.min(a.leafLength,w*.32)*s.leafScale;
  const leafKind=`leaf-heucherella-${a.leafShape}-${s.leafPatternColor.slice(1)}-${a.leafPattern}-${a.leafUnderside.slice(1)}-${a.leafTexture}`;
+ const axis=(from,to,r,kind,color=a.stemColor)=>{
+  if(!observed){b.branch(from,to,r,color,kind);return;}
+  const radius=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*.7),length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length<=0)return;
+  if(length>=.0001){b.branch(from,to,radius,color,kind);return;}
+  const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');
+  b.add(heucherellaUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,radius,length,radius,rotation.x,rotation.y,rotation.z);
+ };
+ const organBuilder=observed?{add:(...v)=>b.add(...v),branch:(from,to,r,color,kind)=>axis(from,to,r,kind,color),flower:(...v)=>b.flower?.(...v)}:b;
  const leaf=(base,an,size,outer=false)=>{
   const rise=lh*(outer?.27:.35+rand()*.35),reach=size*(outer?.40:.50),tip=[base[0]+Math.sin(an)*reach,base[1]+rise,base[2]+Math.cos(an)*reach];
   const bend=[(base[0]+tip[0])*.5,base[1]+rise*.74,(base[2]+tip[2])*.5];
-  b.branch(base,bend,.0014,a.stemColor,'petiole-heucherella');b.branch(bend,tip,.0010,a.stemColor,'petiole-heucherella');
   const leafColor=typ==='copper'?new THREE.Color(s.leafColor).lerp(new THREE.Color(size<L*.74?'#b88080':'#a18e65'),.42):s.leafColor;
-  b.add('heucherella-'+a.leafShape,leafKind,kit.shade(rand,leafColor,.045),...tip,size*a.leafWidth/a.leafLength*1.07,size,size,1.15+rand()*.72,an,(rand()-.5)*.28);
+  const color=kit.shade(rand,leafColor,.045),pitch=1.15+rand()*.72,roll=(rand()-.5)*.28;let fit=1;
+  if(observed){const support=heucherellaCapSupport(a.leafShape,size,a.leafWidth/a.leafLength*1.07,pitch,an,roll),low=Math.min(-.0014,rise+support.low),high=Math.max(rise+.0010,rise+support.high);fit=Math.max(0,Math.min(1,(ceiling-base[1]-.00002)/high,low<0?base[1]/-low:1));}
+  const at=observed?tip.map((v,k)=>base[k]+(v-base[k])*fit):tip,elbow=observed?bend.map((v,k)=>base[k]+(v-base[k])*fit):bend;
+  axis(base,elbow,.0014*fit,'petiole-heucherella');axis(elbow,at,.0010*fit,'petiole-heucherella');
+  b.add('heucherella-'+a.leafShape,leafKind,color,...at,size*a.leafWidth/a.leafLength*1.07*fit,size*fit,size*fit,pitch,an,roll);
  };
  const crowns=[];
  if(trailing){
@@ -13016,30 +13035,32 @@ function drawHeucherella(b,{info,s,detail,rand},kit){
    }
   }
  }else{
-  for(let i=0;i<5;i++){const an=i*2.399963,r=i===0?0:w*.17;crowns.push([Math.sin(an)*r,.012,Math.cos(an)*r]);}
+  for(let i=0;i<5;i++){const an=i*2.399963,r=i===0?0:w*.17;crowns.push([Math.sin(an)*r,observed?Math.min(.012,h*.08,ceiling*.10):.012,Math.cos(an)*r]);}
   const leaves=Math.max(6,Math.round(12*detail));
   for(const at of crowns)for(let j=0;j<leaves;j++)if(j===0||rand()<s.leafDensity){const angle=j*2.399963+rand()*.15;leaf(at,angle,L*(.58+.42*j/leaves));}
  }
  if(!s.bloom)return;
- const n=a.flowerAbundance==='rare'?1:Math.max(3,Math.round((typ==='bridget'?11:trailing?8:9)*detail)),r=a.flowerRadius,stem=a.stemColor;
+ const n=a.flowerAbundance==='rare'?1:Math.max(3,Math.round((typ==='bridget'?11:trailing?8:9)*detail)),r=observed?Math.min(a.flowerRadius,h*.10,w*.04):a.flowerRadius,stem=a.stemColor;
  const inspectionStem=Array.from({length:n},(_,i)=>{const root=crowns[i%crowns.length]||[0,.012,0],az=i*2.399963;return{i,front:(root[0]+Math.sin(az)*w*.11)*.8+root[2]+Math.cos(az)*w*.11};}).reduce((best,v)=>v.front>best.front?v:best).i;
- let inspectionTargets=0;
+ let inspectionTargets=0,frontPetal=null;
  for(let i=0;i<n;i++){
-  const root=crowns[i%crowns.length]||[0,.012,0],az=i*2.399963,top=[root[0]+Math.sin(az)*w*.11,h*(.80+rand()*.17),root[2]+Math.cos(az)*w*.11],len=Math.min(a.inflorescenceLength,h*.52),bottom=[top[0]*.9,Math.max(root[1]+.01,top[1]-len),top[2]*.9];
-  b.branch(root,bottom,.0012,stem,'scape-heucherella');b.branch(bottom,top,.0008,stem,'raceme-heucherella');
+  const root=crowns[i%crowns.length]||[0,.012,0],az=i*2.399963,top=[root[0]+Math.sin(az)*w*.11,h*(.80+rand()*.17),root[2]+Math.cos(az)*w*.11],len=Math.min(a.inflorescenceLength,h*.52),bottom=[top[0]*.9,Math.max(root[1]+(observed?Math.min(.01,h*.10):.01),top[1]-len),top[2]*.9];
+  axis(root,bottom,.0012,'scape-heucherella');axis(bottom,top,.0008,'raceme-heucherella');
   const count=Math.round((typ==='tapestry'?110:typ==='bridget'?90:65)*detail);
   for(let j=0;j<count;j++){
-   const t=(j+.5)/count,an=j*2.399963,at=bottom.map((v,k)=>v+(top[k]-v)*t),rad=(.010+(1-t)*.014)*(typ==='tapestry'?1.45:1),pt=[at[0]+Math.sin(an)*rad,at[1]+.003,at[2]+Math.cos(an)*rad];
-   b.branch(at,pt,.00022,stem,'pedicel-heucherella');
+   const t=(j+.5)/count,an=j*2.399963,at=bottom.map((v,k)=>v+(top[k]-v)*t),rad=observed?Math.min((.010+(1-t)*.014)*(typ==='tapestry'?1.45:1),h*.15,w*.08):(.010+(1-t)*.014)*(typ==='tapestry'?1.45:1),pt=[at[0]+Math.sin(an)*rad,at[1]+(observed?Math.min(.003,h*.1):.003),at[2]+Math.cos(an)*rad];
+   axis(at,pt,.00022,'pedicel-heucherella');
    if(t>.86||rand()>s.flowerDensity){b.add(kit.bud,'bud-heucherella',s.flowerColor,...pt,r*.36,r*.50,r*.36);continue;}
-   const pitch=1.78+rand()*.40,f=flowerFrame(b,pt,pitch,an),calyx=typ==='plum'?'#b888a5':s.flowerColor;
+   const pitch=1.78+rand()*.40,f=flowerFrame(organBuilder,pt,pitch,an),calyx=typ==='plum'?'#b888a5':s.flowerColor;
    f.add('heucherellaCalyx','sepal-heucherella',calyx,0,0,0,r,r,r);
    for(let q=0;q<5;q++){
     const aa=q*TAU/5+.63;
     f.add('iberisEntire','petal-heucherella',s.flowerColor,Math.sin(aa)*r*.32,r*.56,Math.cos(aa)*r*.32,r*.22,r*.83,r,.46,aa,0);
    }
    // Inspect a rendered petal above the lower foliage, preserving the mesh and RNG.
-   if(i===inspectionStem&&t>.6&&inspectionTargets<16){
+   if(observed){
+    for(let q=0;q<5;q++){const aa=q*TAU/5+.63,point=new THREE.Vector3(...iberisPoint('entire',.85,0)).multiply(new THREE.Vector3(r*.22,r*.83,r)).applyEuler(new THREE.Euler(.46,aa,0,'YXZ')).add(new THREE.Vector3(Math.sin(aa)*r*.32,r*.56,Math.cos(aa)*r*.32)).applyEuler(new THREE.Euler(pitch,an,0,'YXZ')).add(new THREE.Vector3(...pt)),score=point.x*.8+point.z;if(!frontPetal||score>frontPetal.score)frontPetal={point,r,score};}
+   }else if(i===inspectionStem&&t>.6&&inspectionTargets<16){
     const facing=[1,3].map(q=>{const aa=TAU*q/5+.63,n=new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(.46+Math.PI/2,aa,0,'YXZ')).applyEuler(new THREE.Euler(pitch,an,0,'YXZ'));return{aa,front:n.x*.8+n.z};}).reduce((best,v)=>v.front>best.front?v:best),aa=facing.aa,point=new THREE.Vector3(...iberisPoint('entire',.65,0)).multiply(new THREE.Vector3(r*.22,r*.83,r)).applyEuler(new THREE.Euler(.46,aa,0,'YXZ')).add(new THREE.Vector3(Math.sin(aa)*r*.32,r*.56,Math.cos(aa)*r*.32));
     f.flower(point.toArray(),r*.55,.46+Math.PI/2,aa);inspectionTargets++;
    }
@@ -13052,6 +13073,8 @@ function drawHeucherella(b,{info,s,detail,rand},kit){
    }else for(const side of [-1,1])f.branch([0,r*.3,0],[side*r*.15,r*1.20,0],r*.045,'#dfd6ca','style-heucherella');
   }
  }
+ if(frontPetal){const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(.8,.18,1).normalize()),'YXZ');b.flower?.(frontPetal.point.toArray(),frontPetal.r*.55,e.x,e.y,e.z);}
+
 }
 
 export function iberisPoint(type,t,u){
@@ -18144,7 +18167,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='agapanthusFans'){drawAgapanthus(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='tiarellaCrowns'){drawTiarella(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='heucheraCrowns'){drawHeuchera(b,{info,s,detail,rand},kit);return;}
- if(info.appearance?.architecture==='heucherellaCrowns'){drawHeucherella(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='heucherellaCrowns'){drawHeucherella(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='iberisCorymbs'){drawIberis(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='astilbePlumes'){drawAstilbe(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='aquilegiaCymes'){drawAquilegia(b,{info,s,detail,rand},kit);return;}
