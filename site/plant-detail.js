@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.671';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.672';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.671';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.672';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10295,21 +10295,28 @@ export function discolorPoint(type,t,u){
  return [Math.cos(az)*r,Math.sin(az)*r-.08*t*t,(calyx?.57:.77)*t+teeth];
 }
 
-function drawDiscolorSage(b,{info,s,detail,rand,month},kit){
+function drawDiscolorSage(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.28,w*.22),F=Math.min(a.flowerLength,h*.12,w*.08),n=Math.max(4,Math.min(14,Math.round(8*detail*Math.sqrt(w/.5))));
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const pair=(at,az,len,i,k)=>{
-  if(noise(i,k)>s.leafDensity)return;
+ const observe=p?.kind==='p-eff905db9c7b'&&a.shootProfile==='discolor';let inspection=null,inspectionScore=-Infinity;
+ const pair=(at,az,len,i,k,root=at,retainedPair=false)=>{
+  if(noise(i,k)>s.leafDensity)return false;
+  if(!observe){for(let q=0;q<2;q++){const aa=az+q*Math.PI,pet=len*.18,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.2,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0012,h*.004),a.stemColor,'petiole-discolor');b.add('discolorLeaf','leaf-discolor',kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,.82+.37*noise(i,k+q+64),aa,(noise(i,k+q+72)-.5)*.43);}return false;}
+  const pet=len*.18,radius=Math.min(.0012,h*.004),ratio=a.leafWidth/a.leafLength,leaves=[];let upper=pet*.2+radius,lower=radius;
   for(let q=0;q<2;q++){
-   const aa=az+q*Math.PI,pet=len*.18,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.2,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0012,h*.004),a.stemColor,'petiole-discolor');b.add('discolorLeaf','leaf-discolor',kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,.82+.37*noise(i,k+q+64),aa,(noise(i,k+q+72)-.5)*.43);
+   const aa=az+q*Math.PI,color=kit.shade(rand,s.leafColor,.035),pitch=.82+.37*noise(i,k+q+64),roll=(noise(i,k+q+72)-.5)*.43,euler=new THREE.Euler(pitch,aa,roll,'YXZ');
+   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*.482396*ratio*len,(corner&2?1:0)*len,(corner&4?.073831:-.140002)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.2);lower=Math.max(lower,-point.y);}leaves.push({aa,color,pitch,roll});
   }
+  const ceiling=Math.min(h,s.leafHeight);if(ceiling<=.008)return false;const base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.2*fit,base[2]+Math.cos(leaf.aa)*pet*fit]})),direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,a.stemColor,'petiole-discolor');b.add('discolorLeaf','leaf-discolor',leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}return true;
  };
  const flowers=(at,az,i,k,top)=>{
   if(!s.bloom)return;
   for(let q=0;q<4;q++){
-   const aa=az+Math.PI*(q%2)+(q>1?.34:0),r=F*(.22+.09*(q%2)),pos=[at[0]+Math.sin(aa)*r,at[1]+F*.09*(q>1),at[2]+Math.cos(aa)*r],f=flowerFrame(b,pos,.35+.25*noise(i,k+q+81),aa),fl=F*(.85+.15*noise(i,k+q+90));b.branch(at,pos,fl*.022,a.flowerPalette.axis,'pedicel-discolor');f.add('discolorCalyx','calyx-discolor',a.flowerPalette.calyx,0,0,0,fl,fl,fl);
+   const aa=az+Math.PI*(q%2)+(q>1?.34:0),r=F*(.22+.09*(q%2)),pos=[at[0]+Math.sin(aa)*r,at[1]+F*.09*(q>1),at[2]+Math.cos(aa)*r],pitch=.35+.25*noise(i,k+q+81),f=flowerFrame(b,pos,pitch,aa),fl=F*(.85+.15*noise(i,k+q+90));b.branch(at,pos,fl*.022,a.flowerPalette.axis,'pedicel-discolor');f.add('discolorCalyx','calyx-discolor',a.flowerPalette.calyx,0,0,0,fl,fl,fl);
    if(noise(i,k*13+q)>(top?.18:.74)){f.add('discolorBud','bud-discolor','#73746a',0,0,0,fl*.9,fl*.9,fl*.9);continue;}
    f.add('discolorTube','tube-discolor',s.flowerColor,0,0,0,fl,fl,fl);f.add('discolorHood','hood-discolor',s.flowerColor,0,0,0,fl,fl,fl);f.add('discolorLip','petal-discolor',s.flowerColor,0,0,0,fl,fl,fl);
+   if(observe){const marker=sageLipInspection((t,u)=>discolorPoint('discolorLip',t,u),24,[fl,fl,fl],[0,0,0],0,52),point=marker.centre.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=point.x*.8+point.z;if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(marker.centre.toArray(),fl*1.30,marker.euler.x,marker.euler.y,marker.euler.z);}}
    for(let side=-1;side<=1;side+=2)f.branch([side*.03*fl,.025*fl,.62*fl],[side*.045*fl,.03*fl,.94*fl],fl*.008,'#998ca9','filament-discolor');
    f.branch([0,.02*fl,.70*fl],[0,-.06*fl,1.07*fl],fl*.007,'#715390','style-discolor');for(let side=-1;side<=1;side+=2)f.branch([0,-.06*fl,1.07*fl],[side*.025*fl,-.10*fl,1.13*fl],fl*.005,'#64427f','stigma-discolor');
   }
@@ -10321,16 +10328,17 @@ function drawDiscolorSage(b,{info,s,detail,rand,month},kit){
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*.8,r=w*.24*Math.sqrt((i+.5)/n),root=[Math.sin(az)*r*.2,.008,Math.cos(az)*r*.2],top=[Math.sin(az)*r,h*(.44+.12*noise(i,5)),Math.cos(az)*r];let old=root;
+  const az=i*2.399963+(noise(i,1)-.5)*.8,r=w*.24*Math.sqrt((i+.5)/n),root=[Math.sin(az)*r*.2,.008,Math.cos(az)*r*.2],top=[Math.sin(az)*r,h*(.44+.12*noise(i,5)),Math.cos(az)*r];let old=root,retainedPair=false;
   for(let j=1;j<=8;j++){
-   const t=j/8,at=mix(root,top,t);at[0]+=Math.sin(az+.7)*w*.035*Math.sin(t*Math.PI);b.branch(old,at,Math.min(.0035,h*.011)*(1-t*.55),a.stemColor,'stem-discolor');old=at;pair(at,az+j*Math.PI/2,L*(.64+.35*Math.sin(t*Math.PI*.85)),i,j+15);
+   const t=j/8,at=mix(root,top,t);at[0]+=Math.sin(az+.7)*w*.035*Math.sin(t*Math.PI);b.branch(old,at,Math.min(.0035,h*.011)*(1-t*.55),a.stemColor,'stem-discolor');old=at;retainedPair=pair(at,az+j*Math.PI/2,L*(.64+.35*Math.sin(t*Math.PI*.85)),i,j+15,root,retainedPair)||retainedPair;
    if(j!==3&&j!==5)continue;
    const aa=az+(j===3?1.1:-1.2),end=[at[0]+Math.sin(aa)*w*.16,at[1]+h*.12,at[2]+Math.cos(aa)*w*.16];let prev=at;
-   for(let q=1;q<=5;q++){const loc=mix(at,end,q/5);loc[1]+=h*.03*Math.sin(q/5*Math.PI);b.branch(prev,loc,Math.min(.0018,h*.006)*(1-q*.07),a.stemColor,'branch-discolor');prev=loc;pair(loc,aa+q*Math.PI/2,L*(.67+.20*Math.sin(q/5*Math.PI)),i,j*37+q);}
+   for(let q=1;q<=5;q++){const loc=mix(at,end,q/5);loc[1]+=h*.03*Math.sin(q/5*Math.PI);b.branch(prev,loc,Math.min(.0018,h*.006)*(1-q*.07),a.stemColor,'branch-discolor');prev=loc;retainedPair=pair(loc,aa+q*Math.PI/2,L*(.67+.20*Math.sin(q/5*Math.PI)),i,j*37+q,root,retainedPair)||retainedPair;}
    if(i%2===0&&j===5)raceme(end,aa,h*(.24+.04*noise(i,42)),i+65);
   }
   raceme(top,az,h*(.31+.09*noise(i,24)),i);
  }
+ if(inspection)inspection();
 }
 
 export function clevelandPoint(type,t,u){
@@ -17915,7 +17923,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='rockinRacemes'){drawRockin(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='guaraniticaShoots'){drawGuaranitica(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='rustySageCalyces'){drawRustySage(b,{info,s,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='discolorBranches'){drawDiscolorSage(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='discolorBranches'){drawDiscolorSage(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='clevelandWhorls'){drawClevelandSage(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='whiteSageShrub'){drawWhiteSage(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='claryPanicles'){drawClarySages(b,{info,s,p,detail,rand,month},kit);return;}
