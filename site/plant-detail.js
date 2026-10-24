@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.727';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.728';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.727';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.728';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4939,26 +4939,33 @@ export function trifoliumLeafPoint(t,u){
  return [u*width,t-.045*Math.exp(-u*u*45)*Math.pow(t,10),.018*t*t+.045*Math.abs(u)*sn+.004*Math.cos((t-Math.abs(u)*.30)*69)*sn];
 }
 
-function drawClover(b,{info,s,detail,rand},kit){
+const cloverMicroAxis=new THREE.CylinderGeometry(1,1,1,6,1,false);
+function drawClover(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const a=info.appearance,annual=a.architecture==='crimsonClover',typ=a.shootProfile,h=s.height*(annual?s.leafScale:1),w=s.spread*(annual?Math.sqrt(s.leafScale):1),L=a.leafLength*(annual?.7+.3*Math.sqrt(s.leafScale):.82+.18*s.leafDensity),stem=a.stemColor;
+ const a=info.appearance,observe=['p-63ce870f4355','p-572cbb54cfae'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight),annual=a.architecture==='crimsonClover',typ=a.shootProfile,h=s.height*(annual?s.leafScale:1),w=s.spread*(annual?Math.sqrt(s.leafScale):1),L=a.leafLength*(annual?.7+.3*Math.sqrt(s.leafScale):.82+.18*s.leafDensity),stem=a.stemColor;
  const leaf=(node,angle,rise)=>{
-  const reach=L*(.45+rand()*.5),tip=[node[0]+Math.sin(angle)*reach,node[1]+rise,node[2]+Math.cos(angle)*reach];let from=node;
-  for(let q=1;q<=3;q++){const z=q/3,to=[node[0]+(tip[0]-node[0])*z*z,node[1]+rise*(1-Math.pow(1-z,1.4)),node[2]+(tip[2]-node[2])*z*z];b.branch(from,to,.00042,stem,'petiole-clover');from=to;}
-  for(const side of [-1,1])b.add('narrow','stipule-clover','#9eaf7d',...node,.0014,.005,.003,.4,angle+side*.5,0);
-  const four=!annual&&rand()<a.fourLeafShare,n=four?4:3,turns=four?[0,Math.PI/2,Math.PI,-Math.PI/2]:[-1.9,0,1.9],size=L*(.75+rand()*.25);
-  const colour=typ==='pink'&&s.seasonName!=='summer'&&rand()<.32?'#8fa486':s.leafColor;
-  for(let k=0;k<n;k++)b.add('trifoliumLeaf',`leaf-clover-${typ}`,kit.shade(rand,colour,.035),...tip,size*a.leafWidth/a.leafLength,size,size,annual?.85+rand()*.9:1.20+rand()*.38,angle+turns[k],(rand()-.5)*.16);
+  const reach=L*(.45+rand()*.5),four=!annual&&rand()<a.fourLeafShare,n=four?4:3,turns=four?[0,Math.PI/2,Math.PI,-Math.PI/2]:[-1.9,0,1.9],size=L*(.75+rand()*.25),colour=typ==='pink'&&s.seasonName!=='summer'&&rand()<.32?'#8fa486':s.leafColor;
+  const specs=turns.map(turn=>({color:kit.shade(rand,colour,.035),pitch:annual?.85+rand()*.9:1.20+rand()*.38,yaw:angle+turn,roll:(rand()-.5)*.16}));let fit=1;
+  if(observe){let low=-.00042,high=rise+.00042;
+   for(const spec of specs){const rotation=new THREE.Euler(spec.pitch,spec.yaw,spec.roll,'YXZ');for(let k=0;k<8;k++){const v=new THREE.Vector3((k&1?.58:-.58)*size*a.leafWidth/a.leafLength,(k&2?1:0)*size,(k&4?.067:-.004)*size).applyEuler(rotation);low=Math.min(low,rise+v.y);high=Math.max(high,rise+v.y);}}
+   low=Math.min(low,-.003*.21*Math.sin(.4));high=Math.max(high,.005*Math.cos(.4));fit=Math.max(0,Math.min(1,(ceiling-node[1]-.00002)/high,low<0?node[1]/-low:1));
+  }
+  const tip=[node[0]+Math.sin(angle)*reach*fit,node[1]+rise*fit,node[2]+Math.cos(angle)*reach*fit];let from=node;
+  for(let q=1;q<=3;q++){const z=q/3,to=[node[0]+(tip[0]-node[0])*z*z,node[1]+rise*fit*(1-Math.pow(1-z,1.4)),node[2]+(tip[2]-node[2])*z*z],r=.00042*fit,length=Math.hypot(...to.map((v,k)=>v-from[k]));
+   if(observe&&length>0&&length<.0001){const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(cloverMicroAxis,'petiole-clover',a.stemColor,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,rotation.x,rotation.y,rotation.z);}else b.branch(from,to,r,a.stemColor,'petiole-clover');from=to;
+  }
+  for(const side of [-1,1])b.add('narrow','stipule-clover','#9eaf7d',...node,.0014*fit,.005*fit,.003*fit,.4,angle+side*.5,0);
+  for(const spec of specs)b.add('trifoliumLeaf',`leaf-clover-${typ}`,spec.color,...tip,size*a.leafWidth/a.leafLength*fit,size*fit,size*fit,spec.pitch,spec.yaw,spec.roll);
  };
  const head=(at,angle,index)=>{
-  const length=a.inflorescenceLength,count=annual?90:60,rad=annual?length*.115:length*.24;
+  const length=observe?Math.min(a.inflorescenceLength,h):a.inflorescenceLength,count=annual?90:60,rad=annual?length*.115:length*.24;
   b.add(kit.bud,'receptacle-clover',stem,...at,rad*.64,annual?length*.47:rad*.70,rad*.64);
   for(let k=0;k<count;k++){
    const t=(k+.5)/count,ny=1-2*t,az=k*2.399963+angle,rr=annual?rad*Math.pow(Math.sin(Math.PI*t),.43):rad*Math.sqrt(1-ny*ny),y=annual?length*(.5-t):rad*ny;
    const p=[at[0]+Math.sin(az)*rr,at[1]+y,at[2]+Math.cos(az)*rr];
    if(annual&&t<.07){b.add(kit.bud,'bud-clover',s.flowerColor,...p,.00075,.0018,.00075);continue;}
    const tilt=annual?.35+t*.65:Math.acos(ny)*.83,colour=!annual&&ny<-.35&&index%3===0?'#c1b5a3':kit.shade(rand,s.flowerColor,.025);
-   detailedFlower(b,{x:p[0],y:p[1],z:p[2],r:a.flowerRadius,color:colour,shape:'cloverPea',tilt,yaw:az,palette:{hairy:annual}},{...kit,rand});
+   detailedFlower(b,{x:p[0],y:p[1],z:p[2],r:observe?Math.min(a.flowerRadius,h*.12,w*.10):a.flowerRadius,color:colour,shape:'cloverPea',tilt,yaw:az,palette:{hairy:annual}},{...kit,rand});
   }
  };
  if(annual){
@@ -4980,9 +4987,9 @@ function drawClover(b,{info,s,detail,rand},kit){
  }else{
   const runners=Math.max(6,Math.round(12*detail)),nodes=Math.max(3,Math.round(9*s.leafDensity));
   for(let i=0;i<runners;i++){
-   const an=i*2.399963,r=Math.max(L,w*.47-L*1.7)*(.78+rand()*.22);let from=[0,.002,0];
+   const an=i*2.399963,r=Math.max(L,w*.47-L*1.7)*(.78+rand()*.22);let from=[0,observe?Math.min(.002,h*.10,ceiling*.10):.002,0];
    for(let j=1;j<=nodes;j++){
-    const t=j/nodes,aa=an+Math.sin(t*3.1+i)*.18,to=[Math.sin(aa)*r*t,.003+rand()*.003,Math.cos(aa)*r*t];b.branch(from,to,.0008,stem,'stolon-clover');from=to;
+    const t=j/nodes,aa=an+Math.sin(t*3.1+i)*.18,nodeY=.003+rand()*.003,to=[Math.sin(aa)*r*t,observe?Math.min(nodeY,h*.10,ceiling*.20):nodeY,Math.cos(aa)*r*t];b.branch(from,to,observe?Math.min(.0008,Math.min(from[1],to[1])*.70):.0008,stem,'stolon-clover');from=to;
     leaf(to,aa+j*2.399963,h*(.24+rand()*.38));
     if(s.bloom&&j>3&&(i*nodes+j)%13===0&&rand()<s.flowerDensity){const at=[to[0]+L*Math.sin(aa),h*(.74+rand()*.12),to[2]+L*Math.cos(aa)];b.branch(to,at,.00055,stem,'peduncle-clover');head(at,aa,i);}
    }
