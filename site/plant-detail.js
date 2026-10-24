@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.704';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.705';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.704';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.705';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4780,16 +4780,24 @@ export function saxifrageLeafPoint(type,t,angle){
  return [x,y,.11*t*t+fold+.019*Math.sin(angle*17)*t*t];
 }
 
-function drawSaxifragaceae(b,{info,s,detail,rand},kit){
+// Bound the same closed, corrugated lamina used by vegetation.js once.
+const bergeniaObovateCorners=(()=>{
+ const min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];
+ for(let i=0;i<=22;i++)for(let j=0;j<=120;j++){const point=saxifrageLeafPoint('bergeniaObovate',i/22,-Math.PI+j*TAU/120);for(const back of [0,.0045])for(let k=0;k<3;k++){const value=Math.fround(point[k]-(k===2?back:0));min[k]=Math.min(min[k],value);max[k]=Math.max(max[k],value);}}
+ return Array.from({length:8},(_,c)=>[c&1?max[0]:min[0],c&2?max[1]:min[1],c&4?max[2]:min[2]]);
+})();
+function drawSaxifragaceae(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const a=info.appearance,typ=a.shootProfile,sax=a.architecture==='saxifrageRosettes',h=s.height,w=s.spread;
+ const a=info.appearance,typ=a.shootProfile,sax=a.architecture==='saxifrageRosettes',h=s.height,w=s.spread,observe=p?.kind==='p-8df7e24225e1',cap=Math.min(h,s.leafHeight),rootY=observe?Math.min(.010,h*.10,cap*.12):.010,rhizomeY=observe?Math.min(.017,h*.15,cap*.20):.017;
  const L=Math.min(a.leafLength,w*(sax?.22:.44))*s.leafScale,stem=a.stemColor,crowns=[];
  const leaf=(base,an,size,age)=>{
-  const rise=sax?Math.min(h*a.foliageHeightRatio,size*.48):Math.min(h*a.foliageHeightRatio*.60,L*.85)*(1-age*.85),tip=[base[0]+Math.sin(an)*size*.13,base[1]+rise,base[2]+Math.cos(an)*size*.13];
-  b.branch(base,tip,sax?.0009:.0032,stem,sax?'petiole-saxifrage':'petiole-bergenia');
-  const f=flowerFrame(b,tip,(sax?.65:.30)+age*(sax?.90:1.20)+(rand()-.5)*.18,an),ratio=a.leafWidth/a.leafLength;
+  const rise=sax?Math.min(h*a.foliageHeightRatio,size*.48):Math.min(h*a.foliageHeightRatio*.60,L*.85)*(1-age*.85),pitch=(sax?.65:.30)+age*(sax?.90:1.20)+(rand()-.5)*.18,ratio=a.leafWidth/a.leafLength;let fit=1;
+  if(observe){let upper=0,lower=0;const rotation=new THREE.Euler(pitch,an,0,'YXZ');for(const corner of bergeniaObovateCorners){const v=new THREE.Vector3(corner[0]*size*ratio,corner[1]*size,corner[2]*size).applyEuler(rotation);upper=Math.max(upper,rise+v.y);lower=Math.max(lower,-rise-v.y);}fit=Math.max(0,Math.min(1,upper>0?(cap-base[1]-.00002)/upper:1,lower>0?base[1]/lower:1));}
+  const tip=[base[0]+Math.sin(an)*size*.13*fit,base[1]+rise*fit,base[2]+Math.cos(an)*size*.13*fit],radius=observe?Math.min(.0032,base[1]*.90,Math.max(.00001,cap-tip[1])*.30):sax?.0009:.0032;
+  b.branch(base,tip,radius,stem,sax?'petiole-saxifrage':'petiole-bergenia');
+  const f=flowerFrame(b,tip,pitch,an);
   const kind=sax?`leaf-saxifrage-${typ}-${age>.7?'green':age<.22?'pale':'variegated'}`:typ==='dumbo'?'leaf-bergenia-hairy':'leaf-bergenia-glossy';
-  f.add(a.leafShape,kind,kit.shade(rand,s.leafColor,.045),0,0,0,size*ratio,size,size);
+  f.add(a.leafShape,kind,kit.shade(rand,s.leafColor,.045),0,0,0,size*ratio*fit,size*fit,size*fit);
   if(sax||typ==='dumbo')for(let j=0;j<26;j++){
    const angle=-Math.PI+(j+.3)*TAU/26,p=saxifrageLeafPoint(a.leafShape,1,angle),q=p.map((v,k)=>v*size*(k===0?ratio:1));
    f.branch(q,[q[0]+Math.sin(angle)*.0011,q[1]+Math.cos(angle)*.0011,q[2]+.0007],.00009,'#bac3a8',sax?'hair-saxifrage':'hair-bergenia');
@@ -4797,10 +4805,10 @@ function drawSaxifragaceae(b,{info,s,detail,rand},kit){
  };
  const n=sax?7:4;
  for(let i=0;i<n;i++){
-  const az=i*2.399963,reach=i===0?0:Math.max(0,w*.48-L*.76)*Math.sqrt(i/n),at=[Math.sin(az)*reach,.010,Math.cos(az)*reach];crowns.push(at);
+  const az=i*2.399963,reach=i===0?0:Math.max(0,w*.48-L*.76)*Math.sqrt(i/n),at=[Math.sin(az)*reach,rootY,Math.cos(az)*reach];crowns.push(at);
   if(i){
    if(sax){const prev=[0,.012,0];for(let k=1;k<=6;k++){const t=k/6,p=[at[0]*t,.014+.006*Math.sin(t*Math.PI),at[2]*t];b.branch(prev,p,.0007,stem,'runner-saxifrage');prev.splice(0,3,...p);}}
-   else b.branch([0,.017,0],at,.009,'#89694f','rhizome-bergenia');
+   else b.branch([0,rhizomeY,0],at,observe?Math.min(.009,rootY*.90):.009,'#89694f','rhizome-bergenia');
   }
   const count=Math.max(4,Math.round((sax?7:8)*detail));
   for(let j=0;j<count;j++)if(j===0||rand()<s.leafDensity)leaf(at,j*2.399963+az,L*(.53+.47*j/count)*(sax&&i>3?.72:1),j/count);
@@ -4809,7 +4817,7 @@ function drawSaxifragaceae(b,{info,s,detail,rand},kit){
  // Faded stems need deadheading; the flower calendar is not a pruning action.
  // Retention and colour here are a reference, not a measured persistence date.
  const spent=!sax&&!s.bloom&&!s.flowerBuds,scapeColor=spent?'#84694f':stem;
- const heads=Math.max(2,Math.round((sax?5:typ==='snow'?7:5)*detail)),r=a.flowerRadius;
+ const heads=Math.max(2,Math.round((sax?5:typ==='snow'?7:5)*detail)),r=observe?Math.min(a.flowerRadius,h*.45):a.flowerRadius;
  const flower=(pt,pitch,yaw,young=false)=>{
   const f=flowerFrame(b,pt,pitch,yaw),calyx=sax?'#8a6571':typ==='snow'?'#8ba76e':'#9b5066';
   if(young){f.add(kit.bud,sax?'bud-saxifrage':'bud-bergenia',calyx,0,r*.2,0,r*.19,r*.28,r*.19);return;}
@@ -4834,7 +4842,7 @@ function drawSaxifragaceae(b,{info,s,detail,rand},kit){
  };
  for(let i=0;i<heads;i++){
   const root=crowns[i%crowns.length],az=i*2.399963,top=[root[0]+Math.sin(az)*w*.04,h*(.77+(sax?rand():.5+.5*Math.sin((i+1)*21.77))*.18),root[2]+Math.cos(az)*w*.04];
-  b.branch(root,top,sax?.0010:.0035,scapeColor,sax?'scape-saxifrage':'scape-bergenia');
+  b.branch(root,top,observe?Math.min(.0035,rootY*.90):sax?.0010:.0035,scapeColor,sax?'scape-saxifrage':'scape-bergenia');
   const branches=sax?7:6;
   for(let j=0;j<branches;j++){
    const t=(j+.4)/branches,an=az+j*2.399963,reach=(sax?Math.min(.11,w*.25):Math.min(.08,w*.21))*(1-t*.65),base=[top[0],top[1]*(sax?.55+t*.40:.77+t*.18),top[2]],end=[base[0]+Math.sin(an)*reach,base[1]+h*.07,base[2]+Math.cos(an)*reach];
@@ -18008,7 +18016,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='calaminthaCymes'){drawCalamintha(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='lysimachiaShoots'){drawLysimachia(b,{info,s,view:{month},detail,rand},kit);return;}
  if(info.appearance?.architecture==='delphiniumSpires'){drawDelphinium(b,{info,s,p,detail,rand},kit);return;}
- if(['saxifrageRosettes','bergeniaRhizomes'].includes(info.appearance?.architecture)){drawSaxifragaceae(b,{info,s,detail,rand},kit);return;}
+ if(['saxifrageRosettes','bergeniaRhizomes'].includes(info.appearance?.architecture)){drawSaxifragaceae(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='agapanthusFans'){drawAgapanthus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='tiarellaCrowns'){drawTiarella(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='heucheraCrowns'){drawHeuchera(b,{info,s,detail,rand},kit);return;}
