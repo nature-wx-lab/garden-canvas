@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.643';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.644';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.643';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.644';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10845,10 +10845,10 @@ export function officinalisLeafPoint(t,u,narrow=false){
 function drawOfficinalis(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,profile=a.shootProfile,cold=[11,12,1,2].includes(month),summer=[7,8,9].includes(month),flowers=profile==='common'||profile==='purple'||profile==='nazareth',L=Math.min(a.leafLength,h*.30,w*.20),n=Math.max(5,Math.min(22,Math.round(18*detail*Math.sqrt(w/.45))));
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const observe=p?.kind==='p-440d8df09615'&&profile==='nazareth';let inspection=null,inspectionScore=-Infinity;
+ const fitFoliage=(p?.kind==='p-440d8df09615'&&profile==='nazareth')||(p?.kind==='p-0eb775c25ea5'&&profile==='common')||(p?.kind==='p-53939297e35e'&&profile==='purple'),observe=fitFoliage&&flowers;let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,young=false,root=at,retainedPair=false)=>{
   if(noise(i,k)>s.leafDensity)return false;
-  if(!observe){
+  if(!fitFoliage){
   for(let side=0;side<2;side++){
    const aa=az+side*Math.PI,pet=len*.10,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0007,h*.002),a.stemColor,'petiole-officinalis');
    const purple=profile==='purple'||profile==='tricolor',color=purple&&(young||cold)?(cold?'#80627d':'#8c7694'):s.leafColor,kind='leaf-officinalis-'+profile+(cold?'-cold':summer?'-summer':'')+(young?'-young':'')+'-'+(i%3);
@@ -10857,14 +10857,14 @@ function drawOfficinalis(b,{info,s,p,detail,rand,month},kit){
   return false;}
   const pet=len*.10,radius=Math.min(.0007,h*.002),ratio=a.leafWidth/a.leafLength,leaves=[];let upper=pet*.3+radius,lower=radius;
   for(let side=0;side<2;side++){
-   const aa=az+side*Math.PI,pitch=(young?.65:1.13)+.30*noise(i,k+side+40),roll=(noise(i,k+side+30)-.5)*.26,color=kit.shade(rand,s.leafColor,.045),euler=new THREE.Euler(pitch,aa,roll,'YXZ'),kind='leaf-officinalis-'+profile+(cold?'-cold':summer?'-summer':'')+(young?'-young':'')+'-'+(i%3);
-   // Actual narrow, wrinkled Nazareth leaf bounds; retain both shade samples.
-   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?.50935:-.50935)*ratio*len,(corner&2?1:0)*len,(corner&4?.06027:-.060001)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.3);lower=Math.max(lower,-point.y);}
+   const aa=az+side*Math.PI,pitch=(young?.65:1.13)+.30*noise(i,k+side+40),roll=(noise(i,k+side+30)-.5)*.26,purple=profile==='purple'||profile==='tricolor',baseColor=purple&&(young||cold)?(cold?'#80627d':'#8c7694'):s.leafColor,color=kit.shade(rand,baseColor,.045),euler=new THREE.Euler(pitch,aa,roll,'YXZ'),kind='leaf-officinalis-'+profile+(cold?'-cold':summer?'-summer':'')+(young?'-young':'')+'-'+(i%3);
+   // Bounds of the existing narrow Nazareth or broad rugose sage leaf, including roll. Both original shade samples are retained.
+   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*(profile==='nazareth'?.50935:.48996)*ratio*len,(corner&2?1:0)*len,(corner&4?.06027:-.060001)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.3);lower=Math.max(lower,-point.y);}
    leaves.push({aa,pitch,roll,color,kind});
   }
   const ceiling=Math.min(h,s.leafHeight),base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
   const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.3*fit,base[2]+Math.cos(leaf.aa)*pet*fit]})),direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
-  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,a.stemColor,'petiole-officinalis');b.add('officinalisNazarethLeaf',leaf.kind,leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,a.stemColor,'petiole-officinalis');b.add(profile==='nazareth'?'officinalisNazarethLeaf':'officinalisLeaf',leaf.kind,leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
   return true;
  };
  const spike=(base,az,len,i)=>{
