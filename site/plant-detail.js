@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.657';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.658';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.657';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.658';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10614,11 +10614,18 @@ export function pratensisPoint(type,t,u){
  return [Math.cos(az)*r,Math.sin(az)*r,(calyx?.23:.20)*t+teeth];
 }
 
-function drawPratensis(b,{info,s,detail,rand,month},kit){
+function drawPratensis(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,cold=[12,1,2].includes(month),mad=a.shootProfile==='madeline',L=Math.min(a.leafLength,h*.42,w*.35),F=Math.min(a.flowerLength,h*.17,w*.14),stem=cold?a.winterStemColor:a.stemColor,n=Math.max(3,Math.min(15,Math.round(9*detail*Math.sqrt(w/.36))));
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
+ const observe=(p?.kind==='p-ff64e719fa5a'&&a.shootProfile==='twilight')||(p?.kind==='p-b70506dcea20'&&a.shootProfile==='skyDance');let inspection=null,inspectionScore=-Infinity;
  const leaf=(at,az,len,pitch,kind,color)=>{
-  const pet=len*.20,end=[at[0]+Math.sin(az)*pet,at[1]+pet*.10,at[2]+Math.cos(az)*pet];b.branch(at,end,Math.min(.0012,h*.003),stem,'petiole-pratensis');b.add('pratensisLeaf',kind,kit.shade(rand,color,.055),...end,len*a.leafWidth/a.leafLength,len,len,pitch,az,0);
+  if(!observe){const pet=len*.20,end=[at[0]+Math.sin(az)*pet,at[1]+pet*.10,at[2]+Math.cos(az)*pet];b.branch(at,end,Math.min(.0012,h*.003),stem,'petiole-pratensis');b.add('pratensisLeaf',kind,kit.shade(rand,color,.055),...end,len*a.leafWidth/a.leafLength,len,len,pitch,az,0);return;}
+  const sample=kit.shade(rand,color,.055),pet=len*.20,radius=Math.min(.0012,h*.003),ratio=a.leafWidth/a.leafLength,euler=new THREE.Euler(pitch,az,0,'YXZ');let upper=pet*.10+radius,lower=radius;
+  // Preserve each original basal crown or actual stem attachment, including the lowered blade base.
+  for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*.521116*ratio*len,(corner&2?1:-.070001)*len,(corner&4?.108558:-.110001)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.10);lower=Math.max(lower,-point.y);}
+  const ceiling=Math.min(h,s.leafHeight),room=ceiling-at[1];if(room<=0)return;
+  const fit=Math.min(1,room/upper,at[1]/lower),end=[at[0]+Math.sin(az)*pet*fit,at[1]+pet*.10*fit,at[2]+Math.cos(az)*pet*fit],direct=new THREE.Vector3(...end).sub(new THREE.Vector3(...at)).length()<.0001;
+  if(!direct)b.branch(at,end,radius*fit,stem,'petiole-pratensis');b.add('pratensisLeaf',kind,sample,...(direct?at:end),len*ratio*fit,len*fit,len*fit,pitch,az,0);
  };
  for(let i=0;i<4;i++){
   const az=i*2.399,rr=w*.12*(i?1:0),at=[Math.sin(az)*rr,.005,Math.cos(az)*rr];
@@ -10632,11 +10639,16 @@ function drawPratensis(b,{info,s,detail,rand,month},kit){
   for(let j=1;j<=9;j++){
    const t=j/9,at=[base[0]+Math.sin(az)*w*.032*t*t,base[1]+len*t,base[2]+Math.cos(az)*w*.032*t*t];b.branch(old,at,Math.min(.0012,h*.003)*(1-t*.45),stem,'axis-pratensis');old=at;
    for(let side=0;side<4;side++){
-    const aa=az+side*TAU/4+j*Math.PI/2,ped=F*.13,pos=[at[0]+Math.sin(aa)*ped,at[1]+ped*.2,at[2]+Math.cos(aa)*ped],f=flowerFrame(b,pos,-.08+.16*noise(i,j+side+41),aa),fl=F*(.78+.22*noise(i,j+side+45));
+    const aa=az+side*TAU/4+j*Math.PI/2,ped=F*.13,pos=[at[0]+Math.sin(aa)*ped,at[1]+ped*.2,at[2]+Math.cos(aa)*ped],pitch=-.08+.16*noise(i,j+side+41),f=flowerFrame(b,pos,pitch,aa),fl=F*(.78+.22*noise(i,j+side+45));
     b.branch(at,pos,F*.013,stem,'pedicel-pratensis');f.add('pratensisCalyx','calyx-pratensis',cold?'#9b8570':a.flowerPalette.calyx,0,0,0,fl,fl,fl);
     if(!s.bloom)continue;
     if(j>=8||noise(i,j*31+side+6)>.78){f.add('pratensisBud','bud-pratensis',s.flowerColor,0,0,0,fl*.75,fl*.75,fl*.75);continue;}
     f.add('pratensisTube','tube-pratensis',s.flowerColor,0,0,0,fl,fl,fl);f.add('pratensisHood','hood-pratensis',s.flowerColor,0,0,0,fl,fl,fl);f.add('pratensisLip',mad?'petal-pratensis-madeline':'petal-pratensis',mad?'#f4f4ec':s.flowerColor,0,0,0,fl,fl,fl);
+    if(observe){
+     // The lip centre is hidden by the arched hood; its side lobe is visible from the real face normal.
+     const marker=sageLipInspection((t,u)=>pratensisPoint('pratensisLip',t,u),24,[fl,fl,fl],[0,0,0],0,64,20),atPoint=marker.centre.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=atPoint.x*.8+atPoint.z;
+     if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(marker.centre.toArray(),fl*1.30,marker.euler.x,marker.euler.y,marker.euler.z);}
+    }
     f.branch([0,.20*fl,.77*fl],[0,.16*fl,.98*fl],fl*.008,'#d6d2e4','style-pratensis');f.branch([0,.16*fl,.98*fl],[0,.09*fl,1.14*fl],fl*.006,'#d6d2e4','style-pratensis');
     for(let q=-1;q<=1;q+=2)f.branch([0,.09*fl,1.14*fl],[q*.035*fl,.05*fl,1.18*fl],fl*.004,'#d6d2e4','stigma-pratensis');
    }
@@ -10651,6 +10663,7 @@ function drawPratensis(b,{info,s,detail,rand,month},kit){
   }
   spike(top,az,h*(.29+.10*noise(i,38)),i);
  }
+ if(inspection)inspection();
 }
 
 export function smallSagePoint(type,t,u){
@@ -10817,8 +10830,8 @@ export function cherrySagePoint(type,t,u){
 }
 
 // The inspection marker follows one existing Float32 triangle, including its face normal.
-function sageLipInspection(point,cols,scale,offset,pitch,rows=48){
- const row=Math.floor(rows*2/3),rotation=new THREE.Euler(pitch,0,0,'YXZ'),vertices=[[row/rows,0],[(row+1)/rows,0],[row/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...point(t,u).map(Math.fround)).multiply(new THREE.Vector3(...scale)).applyEuler(rotation).add(new THREE.Vector3(...offset))),centre=vertices[0].clone().add(vertices[1]).add(vertices[2]).multiplyScalar(1/3),normal=vertices[1].clone().sub(vertices[0]).cross(vertices[2].clone().sub(vertices[0])).normalize(),euler=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');
+function sageLipInspection(point,cols,scale,offset,pitch,rows=48,column=null){
+ const row=Math.floor(rows*2/3),u0=column===null?0:column/cols*2-1,u1=column===null?2/cols:(column+1)/cols*2-1,rotation=new THREE.Euler(pitch,0,0,'YXZ'),vertices=[[row/rows,u0],[(row+1)/rows,u0],[row/rows,u1]].map(([t,u])=>new THREE.Vector3(...point(t,u).map(Math.fround)).multiply(new THREE.Vector3(...scale)).applyEuler(rotation).add(new THREE.Vector3(...offset))),centre=vertices[0].clone().add(vertices[1]).add(vertices[2]).multiplyScalar(1/3),normal=vertices[1].clone().sub(vertices[0]).cross(vertices[2].clone().sub(vertices[0])).normalize(),euler=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');
  return {centre,euler};
 }
 
@@ -17792,7 +17805,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='claryPanicles'){drawClarySages(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pineappleSageBranches'){drawPineappleSages(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='tallBlueSpires'){drawTallSages(b,{info,s,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='pratensisRosettes'){drawPratensis(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='pratensisRosettes'){drawPratensis(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='smallSageMounds'){drawSmallSages(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='patensShoots'){drawPatens(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='cherrySageBranches'){drawCherrySage(b,{info,s,p,detail,rand,month},kit);return;}
