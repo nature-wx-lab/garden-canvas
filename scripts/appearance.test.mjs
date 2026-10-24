@@ -2993,7 +2993,7 @@ test('Apache Sunset and Globetrotter separate fine grey foliage from broad leave
 });
 
 test('Nazareth and Violin Music distinguish narrow silver leaves and compact violet flower branches through twelve months',()=>{
- const ids=['p-440d8df09615','p-1d9f9cba7fba'];assert.deepEqual(CATALOG[ids[0]].height,[.2,.4]);assert.deepEqual(CATALOG[ids[0]].spread,[.2,.3]);assert.deepEqual(CATALOG[ids[1]].height,[.3,.3]);assert.equal(CATALOG[ids[1]].spread,null);
+ const ids=['p-440d8df09615','p-1d9f9cba7fba'];assert.deepEqual(CATALOG[ids[0]].height,[.2,.4]);assert.deepEqual(CATALOG[ids[0]].spread,[.2,.3]);assert.equal(CATALOG[ids[1]].height,null);assert.equal(CATALOG[ids[1]].spread,null);
  for(const [i,id] of ids.entries())for(const small of [false,true]){
   const info=CATALOG[id];assert.equal(info.appearance.status,'partial');assert.equal(info.appearance.arrangement,'opposite');let skeleton,winter,summer;
   for(let month=1;month<=12;month++){
@@ -11620,4 +11620,9 @@ test('Globetrotter saved dimensions bound attached broad serrate foliage through
  for(const[id,pid,sizes]of entries){for(const dims of sizes)for(let month=1;month<=12;month++)check(id,pid,dims,month);for(const dims of tiny)for(const month of[6,10])check(id,pid,dims,month);}assert.equal(models,32);assert.ok(directPairs>0,'legal minima exercise complete direct pairs');
  const doc=emptyDocument(24,6);doc.plans.A.plants=entries.flatMap(([id,pid,sizes])=>[...sizes,...tiny].map(dims=>({id,dims}))).map(({id,dims},i)=>({...makePlant(id,640100+i,1+i*1.8,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-24.25'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
  console.log('GLOBE_640_CAPS '+JSON.stringify({models,directPairs}));
+});
+
+test('Violin Music domestic lower bound remains a note with unknown upper limit and no fabricated fixed reference size',()=>{
+ const id='p-1d9f9cba7fba',info=CATALOG[id],a=APPEARANCE_DATA[id],nazareth=CATALOG['p-440d8df09615'];assert.equal(info.height,null);assert.equal(info.spread,null);assert.match(info.care,/30cm以上/);assert.match(info.care,/上限/);assert.match(info.care,/未確認/);assert.equal(info.source,'https://www.engei.net/products/detail?id=144159');assert.equal(info.sourceChecked,'2026-10-14');assert.equal(info.latin,'Salvia splendens　Violin Music');assert.equal(a.architecture,'cherrySageBranches');assert.equal(a.shootProfile,'violin');assert.ok(a.unconfirmed.some(x=>x.includes('30cm以上')&&x.includes('上限')));assert.deepEqual(a.flowerMonths,[4,5,6,7,9,10,11]);assert.deepEqual(nazareth.height,[.2,.4]);assert.deepEqual(nazareth.spread,[.2,.3]);assert.equal(nazareth.sourceChecked,'2026-10-14');
+ const doc=emptyDocument(10,6);for(const[i,dims]of [[.6,.5,.36],[.12,.18,.07]].entries()){const p={...makePlant(id,641000+i,2+i*3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p);for(const reference of[false,true]){const s=stateAt(p,{month:6,year:1,reference});assert.deepEqual([s.height,s.spread,s.leafHeight],dims,'a lower bound without upper limit never forces fixed maturity');}assert.deepEqual(p,before);doc.plans.A.plants.push(p);}const n={...makePlant('p-440d8df09615',641010,5,3),height:.12,spread:.18,leafHeight:.07},ns=stateAt(n,{month:6,year:1,reference:true});assert.equal(ns.height,.4);assert.equal(ns.spread,.3);doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-24.26'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
