@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.645';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.646';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.645';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.646';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10787,20 +10787,20 @@ function sageLipInspection(point,cols,scale,offset,pitch){
 function drawCherrySage(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,amethyst=a.shootProfile==='amethystLips',sierra=a.shootProfile==='sierra',night=a.shootProfile==='nightMoth',hot=a.shootProfile==='hotLips'||amethyst,moon=a.shootProfile==='moonlight',christine=a.shootProfile==='christine',violin=a.shootProfile==='violin',plain=['violin','pinkBlush','pearlPink','pearlWhite','moonlight','soCool','christine'].includes(a.shootProfile),micro=hot||plain,thin=night?.67:1,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.19,w*.12),n=Math.max(violin?2:4,Math.min(28,Math.round((violin?10:night?11:18)*detail*Math.sqrt(w/.8)*(violin?Math.min(1,h/.35):1)))),stem=cold?a.winterStemColor:a.stemColor;
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const observe=p?.kind==='p-1d9f9cba7fba'&&violin;let inspection=null,inspectionScore=-Infinity;
+ const observe=(p?.kind==='p-1d9f9cba7fba'&&violin)||(p?.kind==='p-d1c41ce2384d'&&sierra)||(p?.kind==='p-b1a5190c3968'&&night);let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,root=at,retainedPair=false)=>{
   if(noise(i,k)>s.leafDensity)return false;
   if(!observe){for(let side=0;side<2;side++){const aa=az+side*Math.PI,pet=len*.13,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0005,h*.002),stem,'petiole-cherry');b.add(micro?'cherryHotLeaf':sierra||night?'cherryJamensisLeaf':'cherryGreggiiLeaf',moon?([10,11].includes(month)?'leaf-cherry-moon-autumn':'leaf-cherry-moon'):micro?'leaf-cherry-hot':sierra||night?'leaf-cherry-jamensis':'leaf-cherry-greggii',kit.shade(rand,moon&&[10,11].includes(month)&&noise(i,k+side+19)>.48?'#af5559':s.leafColor,.06),...end,len*a.leafWidth/a.leafLength,len,len,.75+.65*noise(i,k+side+44),aa,(noise(i,k+side+32)-.5)*.25);}return false;}
   const pet=len*.13,radius=Math.min(.0005,h*.002),ratio=a.leafWidth/a.leafLength,leaves=[];let upper=pet*.3+radius,lower=radius;
   for(let side=0;side<2;side++){
-   const aa=az+side*Math.PI,pitch=.75+.65*noise(i,k+side+44),roll=(noise(i,k+side+32)-.5)*.25,color=kit.shade(rand,s.leafColor,.06),euler=new THREE.Euler(pitch,aa,roll,'YXZ');
-   // Actual cherryHotLeaf bounds, including its rolled and curled surface.
+   const aa=az+side*Math.PI,pitch=.75+.65*noise(i,k+side+44),roll=(noise(i,k+side+32)-.5)*.25,color=kit.shade(rand,moon&&[10,11].includes(month)&&noise(i,k+side+19)>.48?'#af5559':s.leafColor,.06),euler=new THREE.Euler(pitch,aa,roll,'YXZ');
+   // Identical existing hot/jamensis leaf bounds, including the rolled and curled surface.
    for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?.50073:-.50073)*ratio*len,(corner&2?1:0)*len,(corner&4?.02109:-.040001)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.3);lower=Math.max(lower,-point.y);}
    leaves.push({aa,pitch,roll,color});
   }
   const ceiling=Math.min(h,s.leafHeight),base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
   const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.3*fit,base[2]+Math.cos(leaf.aa)*pet*fit]})),direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
-  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,stem,'petiole-cherry');b.add('cherryHotLeaf','leaf-cherry-hot',leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,stem,'petiole-cherry');b.add(micro?'cherryHotLeaf':sierra||night?'cherryJamensisLeaf':'cherryGreggiiLeaf',moon?([10,11].includes(month)?'leaf-cherry-moon-autumn':'leaf-cherry-moon'):micro?'leaf-cherry-hot':sierra||night?'leaf-cherry-jamensis':'leaf-cherry-greggii',leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
   return true;
  };
  const raceme=(base,az,len,i)=>{
@@ -10816,7 +10816,7 @@ function drawCherrySage(b,{info,s,p,detail,rand,month},kit){
     f.add('nemorosaHood','hood-cherry-'+mode,upper,0,calLen*.52+fl*.52,0,fl*.36,fl*.42,fl*.42);
     f.add('cherryLip','petal-cherry-'+mode,lower,0,calLen*.52+fl*.55,fl*.03,fl*.94,fl*.67,fl*.80,plain?1.72+.25*noise(i,j+side+27):1.23,0,0);
     if(observe){
-     const marker=sageLipInspection((t,u)=>cherrySagePoint('cherryLip',t,u),24,[fl*.94,fl*.67,fl*.80],[0,calLen*.52+fl*.55,fl*.03],1.72+.25*noise(i,j+side+27)),atPoint=marker.centre.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=atPoint.x*.8+atPoint.z;
+     const marker=sageLipInspection((t,u)=>cherrySagePoint('cherryLip',t,u),24,[fl*.94,fl*.67,fl*.80],[0,calLen*.52+fl*.55,fl*.03],plain?1.72+.25*noise(i,j+side+27):1.23),atPoint=marker.centre.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=atPoint.x*.8+atPoint.z;
      if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(marker.centre.toArray(),fl*1.30,marker.euler.x,marker.euler.y,marker.euler.z);}
     }
     if(plain){f.branch([0,calLen*.52+fl*.85,fl*.015],[0,calLen*.52+fl*.98,fl*.09],fl*.012,'#eee6d4','stigma-cherry');f.branch([0,calLen*.52+fl*.98,fl*.09],[0,calLen*.52+fl*.93,fl*.15],fl*.009,'#eee6d4','stigma-cherry');}
