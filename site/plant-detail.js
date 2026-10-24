@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.701';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.702';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.701';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.702';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11509,7 +11509,7 @@ export function autumnAnemonePoint(type,t,u){
 }
 
 function drawAutumnAnemone(b,{info,s,p,detail,rand,month},kit){
- const a=info.appearance,observe=p?.kind==='p-9fc86e59c35b',momo=a.shootProfile==='momoiro',w=s.spread,h=s.height,ceiling=Math.min(h,s.leafHeight),oldL=Math.min(a.leafLength,w*.23,h*.30),L=Math.min(oldL,observe?s.leafHeight*.8:Infinity),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
+ const a=info.appearance,observe=['p-9fc86e59c35b','p-794e287b757d'].includes(p?.kind),momo=a.shootProfile==='momoiro',w=s.spread,h=s.height,ceiling=Math.min(h,s.leafHeight),oldL=Math.min(a.leafLength,w*.23,h*.30),L=Math.min(oldL,observe?s.leafHeight*.8:Infinity),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
  const n=Math.max(4,Math.min(20,Math.round((momo?12:8)*detail*Math.pow(w/.45,.7))));
  const vegetativeBranch=(from,to,r,color,kind)=>{if(observe){const horizontal=Math.hypot(to[0]-from[0],to[2]-from[2]);if(horizontal>0)r=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*Math.hypot(horizontal,to[1]-from[1])/horizontal);}b.branch(from,to,r,color,kind);};
  const compound=(root,az,length,pitch)=>{

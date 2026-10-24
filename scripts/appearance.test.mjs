@@ -3608,7 +3608,7 @@ test('Japanese anemones distinguish pink narrow-leaf and white single forms with
   assert.deepEqual(info.bloom,i?[9,10,11]:[9,10]);assert.ok(info.appearance.unconfirmed.some(x=>x.includes('雄しべ42本')));
   for(let month=1;month<=12;month++){
    const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),leaves=count(i?'leaf-anemone-broad':'leaf-anemone-narrow');
-   assert.equal(g.userData.architecture,'autumnAnemone');if(i)assert.equal(g.scale.y,1);else assert.ok(g.scale.y>0&&g.scale.y<=1,'saved whole height constrains flowering model');assert.equal(stateAt(p,view(month)).shootScale,1);assert.ok(count('stem-anemone')>0);
+   assert.equal(g.userData.architecture,'autumnAnemone');assert.ok(g.scale.y>0&&g.scale.y<=1,'saved whole height constrains flowering model');assert.equal(stateAt(p,view(month)).shootScale,1);assert.ok(count('stem-anemone')>0);
    assert.equal(leaves%3,0);assert.equal(leaves,count('petiolule-anemone'));assert.equal(leaves>0,![12,1,2].includes(month));
    assert.equal(count('receptacle-anemone')>0,info.bloom.includes(month));assert.equal(count('anther-anemone'),count('receptacle-anemone')*42);assert.equal(count('anther-anemone'),count('filament-anemone'));
    const sepals=count(i?'sepal-anemone-white':'sepal-anemone-pink');assert.ok(sepals>=count('receptacle-anemone')*5&&sepals<=count('receptacle-anemone')*6);
@@ -13354,4 +13354,29 @@ test('Momoiro Bouquet compound foliage respects independent tiny caps with real 
   }finally{dispose(g);}
  }
  assert.equal(models,45);const doc=emptyDocument(14,6);doc.plans.A.plants=[...c.sizes,...tiny].map((d,i)=>({...makePlant(c.id,701100+i,1+i*1.5,3),height:d[0],spread:d[1],leafHeight:d[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-25.3'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);console.log('MOMOIRO_701_GEOMETRY '+JSON.stringify({models,actualVertices,attachedLeaves,attachedPetioles,attachedPetiolules,diagnostics}));
+});
+
+
+const WHITE_ANEMONE_702={"id":"p-794e287b757d","pid":70210,"sizes":[[0.8,0.55,0.75],[0.08,0.18,0.04],[0.8,0.55,0.005]]};
+test('Single white anemone compound foliage respects independent tiny caps with real petiole and leaflet connections',()=>{
+ const c=WHITE_ANEMONE_702,tiny=[[.01,.1,.005],[.5,.1,.005],[.01,.6,.005],[.5,.1,.006]],cases=[...c.sizes.flatMap(dims=>Array.from({length:12},(_,i)=>({dims,month:i+1,reference:false}))),...tiny.flatMap(dims=>[1,9].map(month=>({dims,month,reference:false}))),{dims:c.sizes[1],month:9,reference:true}],eps=1e-7,tolerance2=(2e-7)**2;let models=0,actualVertices=0,attachedLeaves=0,attachedPetioles=0,attachedPetiolules=0;const diagnostics=[];
+ assert.deepEqual(CATALOG[c.id].height,[.6,1]);assert.equal(CATALOG[c.id].spread,null);assert.equal(CATALOG[c.id].latin,'');assert.deepEqual(CATALOG[c.id].bloom,[9,10,11]);assert.equal(CATALOG[c.id].sourceChecked,'2026-10-25');assert.ok(appearanceSummary(CATALOG[c.id]).includes('切れ込みと鋸歯のある幅広い葉'));
+ for(const {dims,month,reference}of cases){models++;const p={...makePlant(c.id,c.pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},original=structuredClone(p),s=stateAt(p,{month,year:1,reference}),g=plantModel(p,{month,year:1,reference}),matrix=new Matrix4(),nodes=new Map(),petioleTips=new Map(),petioluleTips=new Map(),leafRoots=[],petioleRoots=[],petioluleRoots=[];let leaves=0,minY=Infinity,maxY=-Infinity,radial=0,leafTop=-Infinity;const cell=v=>v.map(x=>Math.floor(x*1e6)),key=v=>v.join(','),put=(map,v)=>{const k=key(cell(v));if(!map.has(k))map.set(k,[]);map.get(k).push(v);},near=(map,pt)=>{const b=cell(pt);for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++)for(const q of map.get(key([b[0]+dx,b[1]+dy,b[2]+dz]))||[])if(pt.reduce((n,v,j)=>n+(v-q[j])**2,0)<=tolerance2)return true;return false;};
+  try{g.updateMatrixWorld(true);assert.equal(g.userData.architecture,'autumnAnemone');const count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);assert.equal(count('receptacle-anemone')>0,[9,10,11].includes(month));assert.equal(count('anther-anemone'),count('receptacle-anemone')*42);assert.equal(count('filament-anemone'),count('anther-anemone'));assert.ok(count('sepal-anemone-white')>=count('receptacle-anemone')*5&&count('sepal-anemone-white')<=count('receptacle-anemone')*6);assert.equal(count('leaf-anemone-broad'),count('petiolule-anemone'));assert.equal(count('leaf-anemone-broad'),count('petiole-anemone')*3);
+   for(const mesh of g.children){const component=mesh.userData.component,leaf=component==='leaf-anemone-broad',petiole=component==='petiole-anemone',petiolule=component==='petiolule-anemone',stem=/^(stem|fork|pedicel)-anemone$/.test(component),pos=mesh.geometry.attributes.position.array;assert.ok(pos.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite)&&mesh.instanceMatrix.array.every(Number.isFinite));if(leaf){leaves+=mesh.count;assert.equal(mesh.count%3,0);}
+    for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);const m=matrix.elements;
+     if(stem||petiole||petiolule){const ends=[-.5,.5].map(sign=>[m[12]+sign*m[4],m[13]+sign*m[5],m[14]+sign*m[6]]);if(stem)for(const pt of ends)put(nodes,pt);if(petiole){petioleRoots.push(ends[0]);put(petioleTips,ends[1]);}if(petiolule){petioluleRoots.push(ends[0]);put(petioluleTips,ends[1]);}}
+
+     if(leaf)leafRoots.push([m[12],m[13],m[14]]);
+     for(let j=0;j<pos.length;j+=3){const x=m[0]*pos[j]+m[4]*pos[j+1]+m[8]*pos[j+2]+m[12],y=m[1]*pos[j]+m[5]*pos[j+1]+m[9]*pos[j+2]+m[13],z=m[2]*pos[j]+m[6]*pos[j+1]+m[10]*pos[j+2]+m[14];minY=Math.min(minY,y);maxY=Math.max(maxY,y);radial=Math.max(radial,Math.hypot(x,z));if(leaf||petiole||petiolule)leafTop=Math.max(leafTop,y);actualVertices++;}
+    }
+   }
+   assert.equal(leaves>0,s.leafDensity>0);assert.ok(minY>=-eps,'all actual geometry above soil '+JSON.stringify({dims,month,reference,minY}));assert.ok(maxY<=s.height+eps,'actual height cap '+JSON.stringify({dims,month,reference,maxY,height:s.height}));assert.ok(radial*2<=s.spread+eps,'actual width cap '+JSON.stringify({dims,month,reference,radial}));if(leaves)assert.ok(leafTop<=Math.min(s.height,s.leafHeight)+eps,'actual independent foliage ceiling '+JSON.stringify({dims,month,reference,leafTop,cap:s.leafHeight}));
+   for(const pt of petioleRoots){assert.ok(near(nodes,pt),'petiole base on actual vegetative stem endpoint');attachedPetioles++;}
+   for(const pt of petioluleRoots){assert.ok(near(petioleTips,pt),'each leaflet petiolule attaches to a real common petiole tip');attachedPetiolules++;}
+   for(const pt of leafRoots){assert.ok(near(petioluleTips,pt),'each leaflet starts at its real petiolule tip');attachedLeaves++;}
+   assert.deepEqual(p,original);if(month===9&&!reference)diagnostics.push({dims,minY,maxY,actualSpread:radial*2,actualLeafHeight:leafTop,leaves,scale:g.scale.toArray()});
+  }finally{dispose(g);}
+ }
+ assert.equal(models,45);const doc=emptyDocument(14,6);doc.plans.A.plants=[...c.sizes,...tiny].map((d,i)=>({...makePlant(c.id,702100+i,1+i*1.5,3),height:d[0],spread:d[1],leafHeight:d[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-25.4'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);console.log('WHITE_ANEMONE_702_GEOMETRY '+JSON.stringify({models,actualVertices,attachedLeaves,attachedPetioles,attachedPetiolules,diagnostics}));
 });
