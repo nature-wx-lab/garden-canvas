@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.661';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.662';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.661';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.662';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10561,7 +10561,7 @@ export function tallSagePoint(type,t,u){
 function drawTallSages(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,bog=a.shootProfile==='bog',cobalt=a.shootProfile==='cobalt',cold=[12,1,2].includes(month),stem=cold?a.winterStemColor:a.stemColor,L=Math.min(a.leafLength,h*.16,w*.19),F=Math.min(a.flowerLength,h*.12,w*.10),n=Math.max(4,Math.min(23,Math.round((cobalt?16:10)*detail*Math.sqrt(w/.45))));
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const observe=(p?.kind==='p-46c0650cd43d'&&bog)||(p?.kind==='p-36d8a94c3834'&&cobalt);let inspection=null,inspectionScore=-Infinity;
+ const observe=(p?.kind==='p-46c0650cd43d'&&bog)||(p?.kind==='p-36d8a94c3834'&&cobalt)||(p?.kind==='p-f68df2de4c66'&&a.shootProfile==='azurea');let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,root=at,retainedPair=false)=>{
   if(noise(i,k)>s.leafDensity)return false;
   if(!observe){
@@ -10572,8 +10572,8 @@ function drawTallSages(b,{info,s,p,detail,rand,month},kit){
   const pet=len*(cobalt?.035:.09),radius=Math.min(.0005,h*.001),ratio=a.leafWidth/a.leafLength,leaves=[];let upper=pet*.2+radius,lower=radius;
   for(let side=0;side<2;side++){
    const aa=az+side*Math.PI,pitch=.72+.58*noise(i,k+side+44),roll=(noise(i,k+side+28)-.5)*.22,color=kit.shade(rand,s.leafColor,.055),euler=new THREE.Euler(pitch,aa,roll,'YXZ');
-   // Existing broad Bog or narrow Cobalt blade bounds, including the curled tip and roll.
-   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*(bog?.506785:.501898)*ratio*len,(corner&2?1:0)*len,(corner&4?.013658:-.120001)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.2);lower=Math.max(lower,-point.y);}
+   // Existing broad Bog, narrow Cobalt or grey-green Azurea blade bounds, including the curled tip and roll.
+   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*(bog?.506785:cobalt?.501898:.501619)*ratio*len,(corner&2?1:0)*len,(corner&4?.013658:-.120001)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.2);lower=Math.max(lower,-point.y);}
    leaves.push({aa,pitch,roll,color});
   }
   const ceiling=Math.min(h,s.leafHeight),base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
