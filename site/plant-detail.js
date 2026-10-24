@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.733';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.734';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.733';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.734';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11915,15 +11915,15 @@ function lamiumCapSupport(type,size,ratio,pitch,yaw,roll){
  const e=new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(pitch,yaw,roll,'YXZ')).elements;let low=Infinity,high=-Infinity;
  for(const p of points){const y=e[1]*p[0]*size*ratio+e[5]*p[1]*size+e[9]*p[2]*size;low=Math.min(low,y);high=Math.max(high,y);}return{low,high};
 }
-function drawSterlingLamium(b,{info,s,detail,rand},kit){
+function drawObservedLamium(b,{info,s,detail,rand},kit){
  if(s.groundDormant)return;
- const a=info.appearance,h=s.height,w=s.spread,ceiling=Math.min(s.height,s.leafHeight),stem=a.stemColor,L=Math.min(a.leafLength,w*.28)*s.leafScale;
- const shoots=Math.max(4,Math.min(14,Math.round(7*detail*Math.pow(w/.3,.8)))),nodes=Math.max(3,Math.min(7,Math.round(w/.065))),rootY=Math.min(.006,h*.12,ceiling*.10);
+ const a=info.appearance,compact=a.shootProfile==='sterling',bodyKind=compact?'branch-lamium-sterling':'stolon-lamium',leafKind='leaf-lamium-'+a.shootProfile,h=s.height,w=s.spread,ceiling=Math.min(s.height,s.leafHeight),stem=a.stemColor,L=Math.min(a.leafLength,w*.28)*s.leafScale;
+ const shoots=Math.max(4,Math.min(14,Math.round((compact?7:6)*detail*Math.pow(w/.3,.8)))),nodes=Math.max(3,Math.min(7,Math.round(w/.065))),rootY=Math.min(.006,h*.12,ceiling*.10);
  const axis=(from,to,r,kind)=>{
   const radius=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*.70),length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length<=0)return;
   if(length>=.0001){b.branch(from,to,radius,stem,kind);return;}
   const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');
-  b.add(['branch-lamium-sterling','stem-lamium'].includes(kind)?lamiumUnitSquare:lamiumUnitAxis,kind,stem,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,radius,length,radius,rotation.x,rotation.y,rotation.z);
+  b.add(['branch-lamium-sterling','stolon-lamium','stem-lamium'].includes(kind)?lamiumUnitSquare:lamiumUnitAxis,kind,stem,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,radius,length,radius,rotation.x,rotation.y,rotation.z);
  };
  const leafPair=(at,yaw,size,petiole,pitch=1.18,upper=false,path=[])=>{
   const specs=[-1,1].map(side=>({angle:yaw+(side===1?0:Math.PI),color:kit.shade(rand,s.leafColor,.05),roll:(rand()-.5)*.16}));let low=-.00048,high=petiole*.30+.00048;
@@ -11934,13 +11934,13 @@ function drawSterlingLamium(b,{info,s,detail,rand},kit){
    for(let k=1;k<path.length;k++){const from=path[k-1],to=path[k];if(target>=Math.min(from[1],to[1])&&target<=Math.max(from[1],to[1])&&to[1]!==from[1]){const t=(target-from[1])/(to[1]-from[1]);node=from.map((v,i)=>v+(to[i]-v)*t);break;}}
   }
   const fit=Math.max(0,Math.min(1,(ceiling-node[1]-.00002)/high,low<0?node[1]/-low:1));
-  for(const spec of specs){const end=[node[0]+Math.sin(spec.angle)*petiole*fit,node[1]+petiole*.30*fit,node[2]+Math.cos(spec.angle)*petiole*fit];axis(node,end,.00048*fit,'petiole-lamium');b.add(a.leafShape,'leaf-lamium-sterling'+(upper?'-upper':''),spec.color,...end,size*a.leafWidth/a.leafLength*fit,size*fit,size*fit,pitch,spec.angle,spec.roll);}
+  for(const spec of specs){const end=[node[0]+Math.sin(spec.angle)*petiole*fit,node[1]+petiole*.30*fit,node[2]+Math.cos(spec.angle)*petiole*fit];axis(node,end,.00048*fit,'petiole-lamium');b.add(a.leafShape,leafKind+(upper?'-upper':''),spec.color,...end,size*a.leafWidth/a.leafLength*fit,size*fit,size*fit,pitch,spec.angle,spec.roll);}
  };
  for(let i=0;i<shoots;i++){
-  const angle=i*2.399963,reach=Math.max(.002,w*.34-L*.70),lift=h*(s.winter?.055:.13),nodesAt=[],paths=[],path=[[0,rootY,0]];let from=path[0];
+  const angle=i*2.399963,reach=Math.max(compact?.002:.02,w*(compact?.34:.45)-L*(compact?.70:.75)),lift=h*(s.winter?.055:.13),nodesAt=[],paths=[],path=[[0,rootY,0]];let from=path[0];
   for(let n=1;n<=nodes;n++){
    const t=n/nodes,yaw=angle+.18*Math.sin(t*4+i),at=[Math.sin(yaw)*reach*t,Math.min(.006+lift*Math.sin(t*Math.PI),ceiling*.40),Math.cos(yaw)*reach*t];
-   axis(from,at,.0010*(1-t*.35),'branch-lamium-sterling');path.push(at);nodesAt.push(at);paths.push(path.slice());from=at;
+   axis(from,at,.0010*(1-t*.35),bodyKind);path.push(at);nodesAt.push(at);paths.push(path.slice());from=at;
    if(rand()<s.leafDensity)leafPair(at,yaw+n*Math.PI/2,L*(.72+.24*t),a.petioleLength*s.leafScale,1.18,false,path);
   }
   if(!s.bloom)continue;
@@ -11961,7 +11961,7 @@ function drawSterlingLamium(b,{info,s,detail,rand},kit){
 }
 
 function drawLamium(b,{info,s,p,detail,rand},kit){
- if(p?.kind==='p-c309c35b2f9c'){drawSterlingLamium(b,{info,s,detail,rand},kit);return;}
+ if(['p-c309c35b2f9c','p-7084ea19721c'].includes(p?.kind)){drawObservedLamium(b,{info,s,detail,rand},kit);return;}
  if(s.groundDormant)return;
  const a=info.appearance,sterling=a.shootProfile==='sterling',winter=s.winter,w=s.spread,h=s.height;
  const L=Math.min(a.leafLength,w*.28)*s.leafScale,leafKind='leaf-lamium-'+a.shootProfile,stem=a.stemColor;
