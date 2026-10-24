@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.714';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.715';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.714';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.715';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4879,7 +4879,7 @@ const agapanthusLeafYZ=Array.from({length:33*11},(_,i)=>{
 });
 function drawAgapanthus(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,observe=['p-e0e65a82a219','p-f91292fc2c2d','p-fdf562bb983f'].includes(p?.kind),cap=Math.min(h,s.leafHeight),rootY=observe?Math.min(.008,h*.10,cap*.10):.008,green=s.leafColor,L=Math.min(a.leafLength,w*.55)*s.leafScale,stem=a.stemColor;
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,observe=['p-e0e65a82a219','p-f91292fc2c2d','p-fdf562bb983f','p-fec8316b216d'].includes(p?.kind),cap=Math.min(h,s.leafHeight),rootY=observe?Math.min(.008,h*.10,cap*.10):.008,green=s.leafColor,L=Math.min(a.leafLength,w*.55)*s.leafScale,stem=a.stemColor;
  const crowns=[],n=Math.max(3,Math.round((type==='summer'?7:5)*detail));
  const leafKind=type==='silver'&&[3,4,5,6,7].includes(s.month)?'leaf-agapanthus-margin':'leaf-agapanthus'+(type==='northern'?'-purplebase':'');
  for(let i=0;i<n;i++){
