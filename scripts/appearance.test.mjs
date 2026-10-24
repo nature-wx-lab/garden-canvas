@@ -2877,7 +2877,7 @@ test('Pink Dreams and upright Faassenii retain distinct flower sizes, leaf shape
  }
 });
 test('Limelight and Blue Moon distinguish golden low foliage from green narrow leaves and dense cylindrical heads',()=>{
- const ids=['p-7b8cb961a2d8','p-f8f380b8f606'];assert.deepEqual(CATALOG[ids[0]].height,[.15,.25]);assert.deepEqual(CATALOG[ids[0]].spread,[.3,.5]);assert.equal(CATALOG[ids[1]].spread,null);assert.deepEqual(CATALOG[ids[1]].height,[.4,.4]);assert.notEqual(CATALOG[ids[0]].leafColor,CATALOG[ids[1]].leafColor);
+ const ids=['p-7b8cb961a2d8','p-f8f380b8f606'];assert.deepEqual(CATALOG[ids[0]].height,[.15,.25]);assert.deepEqual(CATALOG[ids[0]].spread,[.3,.5]);assert.equal(CATALOG[ids[1]].spread,null);assert.equal(CATALOG[ids[1]].height,null);assert.match(CATALOG[ids[1]].care,/約40cm/);assert.notEqual(CATALOG[ids[0]].leafColor,CATALOG[ids[1]].leafColor);
  for(const [i,id]of ids.entries())for(const small of [false,true]){
   const info=CATALOG[id];assert.equal(info.appearance.status,'partial');let skeleton,winter,summer;
   for(let month=1;month<=12;month++){
@@ -11130,4 +11130,13 @@ test('Blue Moon saved dimensions bound attached opposite leaves through months a
  for(const dims of sizes)for(let month=1;month<=12;month++)check(dims,month);for(const dims of tiny)for(const month of[6,10])check(dims,month);assert.equal(models,30);assert.ok(directPairs>0,'legal minima exercise complete direct pairs');
  const doc=emptyDocument(10,6);doc.plans.A.plants=[...sizes,...tiny].map((dims,i)=>({...makePlant(id,622000+i,1+i*1.8,3),height:dims[0],spread:dims[1],leafHeight:dims[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-24.7'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
  console.log('BLUE_MOON_622_CAPS '+JSON.stringify({models,directPairs}));
+});
+
+test('Blue Moon approximate height stays a source note rather than a fabricated fixed range and preserves saved input dimensions',()=>{
+ const id='p-f8f380b8f606',info=CATALOG[id],a=APPEARANCE_DATA[id];assert.equal(info.height,null);assert.equal(info.spread,null);assert.match(info.care,/約40cm/);assert.match(info.care,/上下限/);assert.match(info.care,/未確認/);assert.equal(info.source,'https://www.ogis.co.jp/gallery/page01.php?id=753');assert.equal(info.sourceChecked,'2026-10-14','domestic check date not upgraded by UK source reread');assert.equal(a.status,'partial');assert.equal(a.architecture,'nervosaHeads');assert.equal(a.persistence,'winterDormant');assert.deepEqual(a.flowerMonths,[5,6,7,8]);assert.ok(a.unconfirmed.every(x=>typeof x==='string'));assert.ok(a.unconfirmed.some(x=>x.includes('RHSの花穂近接2点')));assert.ok(a.unconfirmed.some(x=>x.includes('0.1〜0.5m')&&x.includes('国内')));
+ const doc=emptyDocument(10,6);
+ for(const[si,dims]of [[.4,.35,.20],[.12,.16,.04]].entries()){
+  const p={...makePlant(id,623000+si,2+si*3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p);
+  for(const reference of[false,true]){const s=stateAt(p,{month:6,year:1,reference});assert.deepEqual([s.height,s.spread,s.leafHeight],dims,'unknown source ranges keep supplied dimensions in both modes');assert.match(s.basis,/年次成長は未設定/);}assert.deepEqual(p,before);doc.plans.A.plants.push(p);
+ }doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-24.8'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
 });
