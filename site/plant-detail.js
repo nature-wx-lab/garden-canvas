@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.689';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.690';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.689';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.690';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -22460,7 +22460,7 @@ const OREGANO_REFERENCE_PROFILES={
  bristolCross:{leaf:.013,bract:.0065,chain:.150,pairs:24,green:'#becba8',greenOnly:true,smallLeaf:true,long:true}
 };
 function drawOreganoReferences(b,{info,s,p,detail,month},kit){
- const a=info.appearance,type=a.flowerPalette.type,P=OREGANO_REFERENCE_PROFILES[type],h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(P.leaf,h*.13,w*.09,s.leafHeight*.8)*scale,R=Math.min(.0011,h*.006,w*.004),stem=a.stemColor,winter=[12,1,2].includes(month),observe=(p?.kind==='p-61ac0afd62cf'&&type==='kentBeauty')||(p?.kind==='p-4fb1522b3f57'&&type==='rotundifolium')||(p?.kind==='p-28b16fa47650'&&type==='kirigami')||(p?.kind==='p-340ab07b41fa'&&type==='rotundifolium')||(p?.kind==='p-e5129f458763'&&type==='kentBeauty')||(p?.kind==='p-530f90269022'&&type==='herrenhausen')||(p?.kind==='p-233b7cad0cfb'&&type==='dictamnus');let headIndex=0,flowerIndex=0,inspection=null,inspectionScore=-Infinity;
+ const a=info.appearance,type=a.flowerPalette.type,P=OREGANO_REFERENCE_PROFILES[type],h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(P.leaf,h*.13,w*.09,s.leafHeight*.8)*scale,R=Math.min(.0011,h*.006,w*.004),stem=a.stemColor,winter=[12,1,2].includes(month),observe=(p?.kind==='p-61ac0afd62cf'&&type==='kentBeauty')||(p?.kind==='p-4fb1522b3f57'&&type==='rotundifolium')||(p?.kind==='p-28b16fa47650'&&type==='kirigami')||(p?.kind==='p-340ab07b41fa'&&type==='rotundifolium')||(p?.kind==='p-e5129f458763'&&type==='kentBeauty')||(p?.kind==='p-530f90269022'&&type==='herrenhausen')||(p?.kind==='p-233b7cad0cfb'&&type==='dictamnus')||(p?.kind==='p-e98cf442c17c'&&type==='amethystFalls');let headIndex=0,flowerIndex=0,inspection=null,inspectionScore=-Infinity;
  const leaf=(node,az,len)=>{
   if(observe){len=Math.min(len,Math.max(0,Math.min(h,s.leafHeight)-node[1]-.00004)/.22);if(len<=.00001)return;}
   const pet=observe&&len*.10*Math.hypot(1,.08)<.0001?0:len*.10,at=[node[0]+Math.sin(az)*pet,node[1]+pet*.08,node[2]+Math.cos(az)*pet],f=flowerFrame(b,at,-.10,az),shape=P.felt?'oreganoFeltLeaf':P.smallLeaf?'oreganoSmallLeaf':'oreganoRoundLeaf';b.branch(node,at,Math.min(R*.30,len*.018),stem,'petiole-oregano');f.add(shape,'leaf-oregano-'+type,s.leafColor,0,0,0,len,len,len);
@@ -22476,7 +22476,7 @@ function drawOreganoReferences(b,{info,s,p,detail,month},kit){
  const flower=(node,az,F)=>{
   const reach=F*.28,at=[node[0]+Math.sin(az)*reach,node[1]-.08*F,node[2]+Math.cos(az)*reach];b.branch(node,at,R*.20,stem,'pedicel-oregano');const pitch=P.cymes?.45:P.felt?.80:1.85,f=flowerFrame(b,at,pitch,az);f.add('oreganoCalyx','calyx-oregano','#a6b197',0,0,0,F*.65,F*.65,F*.65);f.add('oreganoCorolla','corolla-oregano-'+type,s.flowerColor,0,F*.25,0,F,F,F);const first=flowerIndex++===0;if(!observe&&first)f.flower([0,F*.95,0],F*1.1);
   if(observe){
-   const upper=type==='kirigami'||['p-340ab07b41fa','p-e5129f458763','p-530f90269022'].includes(p?.kind),marker=upper?sageLipInspection((t,u)=>{const sn=Math.sin(t*Math.PI),az=2.68+u*(1-t)*.45,r=.17+.25*t,side=u*.18*Math.pow(sn,.65);return[Math.sin(az)*r+Math.cos(2.68)*side,.90+.42*t+.035*u*u*sn,Math.cos(az)*r-Math.sin(2.68)*side];},14,[F,F,F],[0,F*.25,0],0,14):sageLipInspection((t,u)=>{const az=u*(1-t)*.45,r=.17+.70*t,side=u*.30*Math.pow(Math.sin(t*Math.PI),.65);return[Math.sin(az)*r+side,.90-.14*t+.035*u*u*Math.sin(t*Math.PI),Math.cos(az)*r];},14,[F,F,F],[0,F*.25,0],0,14,type==='rotundifolium'?8:null),rotation=new THREE.Euler(pitch,az,0,'YXZ');
+   const upper=type==='kirigami'||['p-340ab07b41fa','p-e5129f458763','p-530f90269022','p-e98cf442c17c'].includes(p?.kind),marker=upper?sageLipInspection((t,u)=>{const sn=Math.sin(t*Math.PI),az=2.68+u*(1-t)*.45,r=.17+.25*t,side=u*.18*Math.pow(sn,.65);return[Math.sin(az)*r+Math.cos(2.68)*side,.90+.42*t+.035*u*u*sn,Math.cos(az)*r-Math.sin(2.68)*side];},14,[F,F,F],[0,F*.25,0],0,14):sageLipInspection((t,u)=>{const az=u*(1-t)*.45,r=.17+.70*t,side=u*.30*Math.pow(Math.sin(t*Math.PI),.65);return[Math.sin(az)*r+side,.90-.14*t+.035*u*u*Math.sin(t*Math.PI),Math.cos(az)*r];},14,[F,F,F],[0,F*.25,0],0,14,type==='rotundifolium'?8:null),rotation=new THREE.Euler(pitch,az,0,'YXZ');
    if(upper){const normal=new THREE.Vector3(0,1,0).applyEuler(marker.euler);if(normal.clone().applyEuler(rotation).y<0)marker.euler.setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal.negate()),'YXZ');}
    const point=marker.centre.clone().applyEuler(rotation).add(new THREE.Vector3(...at)),score=point.x*.8+point.z;if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(marker.centre.toArray(),F*1.5,marker.euler.x,marker.euler.y,marker.euler.z);}
   }
@@ -22494,7 +22494,7 @@ function drawOreganoReferences(b,{info,s,p,detail,month},kit){
  const n=Math.max(5,Math.round((P.compact?10:8)*detail)),H=Math.min(s.leafHeight*.78,h*.65)*scale;
  for(let i=0;i<n;i++){
   const az=i*2.399,rad=w*.10*Math.sqrt(i/n)*scale,root=[Math.sin(az)*rad,Math.min(.001,h*.02),Math.cos(az)*rad],reach=w*.12*scale;let prev=root;
-  for(let j=1;j<=6;j++){const t=j/6,node=[root[0]+Math.sin(az)*reach*t,H*t+root[1],root[2]+Math.cos(az)*reach*t];let radius=R*(1-t*.35);if(observe&&['rotundifolium','kirigami'].includes(type)){const horizontal=Math.hypot(node[0]-prev[0],node[2]-prev[2]);if(horizontal>0)radius=Math.min(radius,Math.max(0,Math.min(prev[1],node[1]))*Math.hypot(horizontal,node[1]-prev[1])/horizontal);}b.branch(prev,node,radius,stem,'stem-oregano-'+type);prev=node;if((j-.4)/6<s.leafDensity)for(let k=0;k<2;k++)leaf(node,az+j*Math.PI/2+k*Math.PI,L*(1-t*.22));}
+  for(let j=1;j<=6;j++){const t=j/6,node=[root[0]+Math.sin(az)*reach*t,H*t+root[1],root[2]+Math.cos(az)*reach*t];let radius=R*(1-t*.35);if(observe&&['rotundifolium','kirigami','amethystFalls'].includes(type)){const horizontal=Math.hypot(node[0]-prev[0],node[2]-prev[2]);if(horizontal>0)radius=Math.min(radius,Math.max(0,Math.min(prev[1],node[1]))*Math.hypot(horizontal,node[1]-prev[1])/horizontal);}b.branch(prev,node,radius,stem,'stem-oregano-'+type);prev=node;if((j-.4)/6<s.leafDensity)for(let k=0;k<2;k++)leaf(node,az+j*Math.PI/2+k*Math.PI,L*(1-t*.22));}
   if(!s.bloom)continue;
   if(P.cymes){
    const collar=[prev[0],h*.61*scale,prev[2]],F=Math.min(.0038,h*.04,w*.035)*scale,B=Math.min(P.bract,h*.04,w*.035)*scale;b.branch(prev,collar,R*.65,stem,'floral-trunk-oregano');
