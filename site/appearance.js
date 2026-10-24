@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.706';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.707';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -675,3 +675,5 @@ Object.assign(TRAIT_VALUES,{hookReferenceBlade:'硬めの細い銅赤色の帯�
 Object.assign(TRAIT_VALUES,{whitetopReferenceBlade:'茎の下部に3列に付く細い葉の種の参考',whitetopReferenceHead:'白い基部と緑の先の総苞・中央の小穂・花被のない小花',goldenBambooReferenceBlade:'細い枝に交互に付く、黄地に太さの違う緑の条を持つ笹葉',tristichous:'3列に並ぶ参考'});
 
 Object.assign(TRAIT_VALUES,{bergeniaObovate:'厚みと丸い縁をもつ倒卵形の葉',bergeniaCup:'房状に集まる杯形の花の参考'});
+
+Object.assign(TRAIT_VALUES,{bergeniaRound:'細かい毛をもつ大きな丸葉の参考'});
