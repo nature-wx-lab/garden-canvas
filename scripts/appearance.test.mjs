@@ -3626,7 +3626,7 @@ test('Oxford Blue is a leafy creeping mat with unequal four-lobed flowers and se
  assert.ok(a.unconfirmed.some(x=>x.includes('Georgia Blue列のみ')));assert.ok(a.unconfirmed.some(x=>x.includes('二番花')));
  for(let month=1;month<=12;month++){
   const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
-  assert.equal(g.userData.architecture,'oxfordMat');assert.equal(g.scale.y,1);assert.equal(stateAt(p,view(month)).shootScale,1);
+  assert.equal(g.userData.architecture,'oxfordMat');assert.ok(g.scale.y>0&&g.scale.y<=1,'saved dimensions bound actual model');assert.equal(stateAt(p,view(month)).shootScale,1);
   assert.ok(count('runner-oxford')>0);assert.ok(count('leaf-oxford')>0);assert.equal(count('leaf-oxford'),count('petiole-oxford'));assert.equal(count('leaf-oxford')%2,0);
   assert.equal(count('petal-oxford')>0,info.bloom.includes(month));assert.equal(count('petal-oxford'),count('throat-oxford')*4);
   assert.equal(count('anther-oxford'),count('throat-oxford')*2);assert.equal(count('anther-oxford'),count('filament-oxford'));
@@ -13379,4 +13379,27 @@ test('Single white anemone compound foliage respects independent tiny caps with 
   }finally{dispose(g);}
  }
  assert.equal(models,45);const doc=emptyDocument(14,6);doc.plans.A.plants=[...c.sizes,...tiny].map((d,i)=>({...makePlant(c.id,702100+i,1+i*1.5,3),height:d[0],spread:d[1],leafHeight:d[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-25.4'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);console.log('WHITE_ANEMONE_702_GEOMETRY '+JSON.stringify({models,actualVertices,attachedLeaves,attachedPetioles,attachedPetiolules,diagnostics}));
+});
+
+
+const OXFORD_BLUE_703={"id":"p-63c3a78d31fa","pid":70310,"sizes":[[0.1,0.4,0.09],[0.025,0.18,0.012],[0.1,0.4,0.005]]};
+test('Oxford Blue actual opposite leaves and petioles obey tiny foliage caps with connected runners and bounded flowers',()=>{
+ const c=OXFORD_BLUE_703,tiny=[[.01,.1,.005],[.5,.1,.005],[.01,.6,.005],[.5,.1,.006]],cases=[...c.sizes.flatMap(dims=>Array.from({length:12},(_,i)=>({dims,month:i+1,reference:false}))),...tiny.flatMap(dims=>[1,4].map(month=>({dims,month,reference:false}))),{dims:c.sizes[1],month:4,reference:true}],eps=1e-7,tolerance2=(2e-7)**2;let models=0,actualVertices=0,attachedLeaves=0,attachedPetioles=0;const diagnostics=[];
+ assert.deepEqual(CATALOG[c.id].height,[.05,.1]);assert.deepEqual(CATALOG[c.id].spread,[.25,.45]);assert.equal(CATALOG[c.id].bloomKnown,false);assert.deepEqual(CATALOG[c.id].bloom,[2,3,4,5]);assert.equal(CATALOG[c.id].sourceChecked,'2026-10-25');assert.equal(CATALOG[c.id].source,'https://item.rakuten.co.jp/ogis/144/');assert.equal(CATALOG[c.id].appearance.leafWidth,.014);assert.equal(CATALOG[c.id].appearance.petioleLength,.0073);assert.equal(CATALOG[c.id].appearance.flowerRadius,.0075);assert.ok(CATALOG[c.id].appearance.unconfirmed.some(x=>x.includes('Georgia Blue列のみ')));
+ for(const {dims,month,reference}of cases){models++;const p={...makePlant(c.id,c.pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},original=structuredClone(p),s=stateAt(p,{month,year:1,reference}),g=plantModel(p,{month,year:1,reference}),matrix=new Matrix4(),nodes=new Map(),petioleTips=new Map(),leafRoots=[],petioleRoots=[];let leaves=0,minY=Infinity,maxY=-Infinity,radial=0,leafTop=-Infinity;const cell=v=>v.map(x=>Math.floor(x*1e6)),key=v=>v.join(','),put=(map,v)=>{const k=key(cell(v));if(!map.has(k))map.set(k,[]);map.get(k).push(v);},near=(map,pt)=>{const b=cell(pt);for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++)for(const q of map.get(key([b[0]+dx,b[1]+dy,b[2]+dz]))||[])if(pt.reduce((n,v,j)=>n+(v-q[j])**2,0)<=tolerance2)return true;return false;};
+  try{g.updateMatrixWorld(true);assert.equal(g.userData.architecture,'oxfordMat');const count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);assert.equal(count('throat-oxford')>0,[2,3,4,5].includes(month));assert.equal(count('petal-oxford'),count('throat-oxford')*4);assert.equal(count('anther-oxford'),count('throat-oxford')*2);assert.equal(count('filament-oxford'),count('anther-oxford'));assert.equal(count('leaf-oxford'),count('petiole-oxford'));
+   for(const mesh of g.children){const component=mesh.userData.component,leaf=component==='leaf-oxford',petiole=component==='petiole-oxford',stem=/^(runner|shoot)-oxford$/.test(component),pos=mesh.geometry.attributes.position.array;assert.ok(pos.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite)&&mesh.instanceMatrix.array.every(Number.isFinite));if(leaf){leaves+=mesh.count;assert.equal(mesh.count%2,0);}
+    for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);const m=matrix.elements;
+     if(stem||petiole){const ends=[-.5,.5].map(sign=>[m[12]+sign*m[4],m[13]+sign*m[5],m[14]+sign*m[6]]);if(stem)for(const pt of ends)put(nodes,pt);if(petiole){petioleRoots.push(ends[0]);put(petioleTips,ends[1]);if(i%2){const prev=petioleRoots.at(-2);assert.ok(ends[0].reduce((n,v,j)=>n+(v-prev[j])**2,0)<=tolerance2,'opposite petioles share their actual stem node');}}}
+     if(leaf)leafRoots.push([m[12],m[13],m[14]]);
+     for(let j=0;j<pos.length;j+=3){const x=m[0]*pos[j]+m[4]*pos[j+1]+m[8]*pos[j+2]+m[12],y=m[1]*pos[j]+m[5]*pos[j+1]+m[9]*pos[j+2]+m[13],z=m[2]*pos[j]+m[6]*pos[j+1]+m[10]*pos[j+2]+m[14];minY=Math.min(minY,y);maxY=Math.max(maxY,y);radial=Math.max(radial,Math.hypot(x,z));if(leaf||petiole)leafTop=Math.max(leafTop,y);actualVertices++;}
+    }
+   }
+   assert.equal(leaves>0,s.leafDensity>0);assert.ok(minY>=-eps,'all actual geometry above soil '+JSON.stringify({dims,month,reference,minY}));assert.ok(maxY<=s.height+eps,'actual height cap '+JSON.stringify({dims,month,reference,maxY,height:s.height}));assert.ok(radial*2<=s.spread+eps,'actual width cap '+JSON.stringify({dims,month,reference,radial}));if(leaves)assert.ok(leafTop<=Math.min(s.height,s.leafHeight)+eps,'actual independent foliage ceiling '+JSON.stringify({dims,month,reference,leafTop,cap:s.leafHeight}));
+   for(const pt of petioleRoots){assert.ok(near(nodes,pt),'petiole base on actual vegetative stem endpoint');attachedPetioles++;}
+   for(const pt of leafRoots){assert.ok(near(petioleTips,pt)||near(nodes,pt),'leaf base on real petiole tip or direct stem node');attachedLeaves++;}
+   assert.deepEqual(p,original);if(month===4&&!reference)diagnostics.push({dims,minY,maxY,actualSpread:radial*2,actualLeafHeight:leafTop,leaves,scale:g.scale.toArray()});
+  }finally{dispose(g);}
+ }
+ assert.equal(models,45);const doc=emptyDocument(14,6);doc.plans.A.plants=[...c.sizes,...tiny].map((d,i)=>({...makePlant(c.id,703100+i,1+i*1.5,3),height:d[0],spread:d[1],leafHeight:d[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-25.5'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);console.log('OXFORD_BLUE_703_GEOMETRY '+JSON.stringify({models,actualVertices,attachedLeaves,attachedPetioles,diagnostics}));
 });

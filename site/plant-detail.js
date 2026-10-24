@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.702';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.703';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.702';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.703';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11566,38 +11566,43 @@ export function oxfordPoint(type,t,u){
  return [u*width,t-notch,.03*u*u*sn+.055*t*t];
 }
 
-function drawOxfordMat(b,{info,s,detail,rand,month},kit){
- const a=info.appearance,w=s.spread,h=s.height,L=Math.min(a.leafLength,w*.12,h*.32),W=L*a.leafWidth/a.leafLength;
+function drawOxfordMat(b,{info,s,p,detail,rand,month},kit){
+ const a=info.appearance,observe=p?.kind==='p-63c3a78d31fa',w=s.spread,h=s.height,ceiling=Math.min(h,s.leafHeight),oldL=Math.min(a.leafLength,w*.12,h*.32),L=Math.min(oldL,observe?s.leafHeight*.8:Infinity),W=L*a.leafWidth/a.leafLength;
  const n=Math.max(8,Math.min(28,Math.round(18*detail*Math.pow(w/.4,.65)))),stem=a.stemColor;
- const leaf=(at,az,len,pitch)=>b.add('oxfordLeaf','leaf-oxford',kit.shade(rand,s.leafColor,.055),...at,W*len/L,len,len,pitch,az,0);
+ const vegetativeBranch=(from,to,r,color,kind)=>{if(observe){const horizontal=Math.hypot(to[0]-from[0],to[2]-from[2]);if(horizontal>0)r=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*Math.hypot(horizontal,to[1]-from[1])/horizontal);}b.branch(from,to,r,color,kind);};
+ const leaf=(at,az,len,pitch)=>{
+  let fitted=len;if(observe){const rotation=new THREE.Euler(pitch,az,0,'YXZ');let upper=0,lower=0;for(let k=0;k<8;k++){const v=new THREE.Vector3((k&1?1:-1)*.5*W*len/L,(k&2?1:0)*len,(k&4?.157:-.012)*len).applyEuler(rotation);upper=Math.max(upper,v.y);lower=Math.max(lower,-v.y);}fitted*=Math.max(0,Math.min(1,upper>0?(ceiling-at[1]-.00004)/upper:1,lower>0?at[1]/lower:1));}
+  const color=kit.shade(rand,s.leafColor,.055);if(observe&&fitted<=.00001)return;b.add('oxfordLeaf','leaf-oxford',color,...at,W*fitted/L,fitted,fitted,pitch,az,0);
+ };
  for(let i=0;i<n;i++){
-  const az=i*2.399963,shape=k=>.5+.5*Math.sin((i+1)*12.9898+k*7.233),reach=Math.max(.01,w*.46-L)*(.65+.35*shape(1));
-  const axis=t=>{const an=az+.23*Math.sin(t*5+shape(2)*3);return [Math.sin(an)*reach*t,.008+h*.14*Math.sin(t*Math.PI),Math.cos(an)*reach*t];};
+  const az=i*2.399963,shape=k=>.5+.5*Math.sin((i+1)*12.9898+k*7.233),reach=Math.max(.01,w*.46-oldL)*(.65+.35*shape(1));
+  const axis=t=>{const an=az+.23*Math.sin(t*5+shape(2)*3);return [Math.sin(an)*reach*t,observe?Math.min(.008+h*.14*Math.sin(t*Math.PI),ceiling*.30):.008+h*.14*Math.sin(t*Math.PI),Math.cos(an)*reach*t];};
   let old=axis(0);
   for(let j=1;j<=10;j++){
-   const t=j/10,at=axis(t);b.branch(old,at,.0007*(1-t*.35),stem,'runner-oxford');old=at;
+   const t=j/10,at=axis(t);vegetativeBranch(old,at,.0007*(1-t*.35),stem,'runner-oxford');old=at;
    const yaw=az+j*Math.PI/2;
    if(shape(j+20)<s.leafDensity)for(const side of [-1,1]){
     const an=yaw+(side<0?Math.PI:0),pet=Math.min(a.petioleLength,L*.35),tip=[at[0]+Math.sin(an)*pet,at[1]+pet*.22,at[2]+Math.cos(an)*pet];
-    b.branch(at,tip,.00030,stem,'petiole-oxford');leaf(tip,an,L*(.74+.24*shape(j+40)),1.02);
+    vegetativeBranch(at,tip,.00030,stem,'petiole-oxford');leaf(tip,an,L*(.74+.24*shape(j+40)),1.02);
    }
    if(j%2)continue;
-   const bend=az+(j%4?1:-1)*.7,top=h*(.45+.37*(1-t)*shape(j+50)),tip=[at[0]+Math.sin(bend)*w*.025,top,at[2]+Math.cos(bend)*w*.025];
+   const bend=az+(j%4?1:-1)*.7,originalTop=h*(.45+.37*(1-t)*shape(j+50)),tip=[at[0]+Math.sin(bend)*w*.025,observe?Math.min(originalTop,ceiling*.85):originalTop,at[2]+Math.cos(bend)*w*.025];
    let from=at;
    for(let k=1;k<=3;k++){
-    const q=k/3,point=at.map((v,idx)=>v+(tip[idx]-v)*q);b.branch(from,point,.00048*(1-q*.30),stem,'shoot-oxford');from=point;
+    const q=k/3,point=at.map((v,idx)=>v+(tip[idx]-v)*q);vegetativeBranch(from,point,.00048*(1-q*.30),stem,'shoot-oxford');from=point;
     if(shape(j*10+k+60)<s.leafDensity)for(const side of [-1,1]){
-     const an=bend+k*Math.PI/2+(side<0?Math.PI:0),pet=a.petioleLength*(.9-.45*q),base=[point[0]+Math.sin(an)*pet,point[1]+pet*.18,point[2]+Math.cos(an)*pet];
-     b.branch(point,base,.00024,stem,'petiole-oxford');leaf(base,an,L*(.85-.35*q),.80+.28*q);
+     const an=bend+k*Math.PI/2+(side<0?Math.PI:0),pet=Math.min(a.petioleLength*(.9-.45*q),observe?ceiling*.25:Infinity),base=[point[0]+Math.sin(an)*pet,point[1]+pet*.18,point[2]+Math.cos(an)*pet];
+     vegetativeBranch(point,base,.00024,stem,'petiole-oxford');leaf(base,an,L*(.85-.35*q),.80+.28*q);
     }
    }
+   if(observe&&tip[1]!==originalTop)vegetativeBranch(tip,[tip[0],originalTop,tip[2]],.00048*.70,stem,'shoot-oxford');
    // Axes remain attached between views; natural persistence and collapse are
    // uncalibrated. No cutback or automatic second flowering is simulated.
    const floral=month>=6&&month<=10?'#766a55':stem;
    for(let k=0;k<5;k++){
-    const q=k/4,an=bend+k*2.399963,base=[tip[0],tip[1]+h*.13*q,tip[2]],ped=h*(.085+.015*shape(j*7+k+100));
+    const q=k/4,an=bend+k*2.399963,base=[tip[0],originalTop+h*.13*q,tip[2]],ped=h*(.085+.015*shape(j*7+k+100));
     const pt=[base[0]+Math.sin(an)*ped,base[1]+h*.045,base[2]+Math.cos(an)*ped];
-    if(k)b.branch([tip[0],tip[1]+h*.13*(k-1)/4,tip[2]],base,.00028,floral,'raceme-oxford');
+    if(k)b.branch([tip[0],originalTop+h*.13*(k-1)/4,tip[2]],base,.00028,floral,'raceme-oxford');
     b.branch(base,pt,.00021,floral,'pedicel-oxford');
     if(!s.bloom)continue;
     const r=Math.min(a.flowerRadius,h*.10),f=flowerFrame(b,pt,.13+.40*shape(k+j+120),an);
@@ -18089,7 +18094,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='chocolateCosmos'){drawChocolateCosmos(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='silverDropJuvenile'){drawSilverDrop(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='autumnAnemone'){drawAutumnAnemone(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='oxfordMat'){drawOxfordMat(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='oxfordMat'){drawOxfordMat(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='melinisTussock'){drawMelinis(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
