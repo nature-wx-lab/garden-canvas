@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.738';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.739';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.738';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.739';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -13002,7 +13002,7 @@ function heucherellaCapSupport(type,size,ratio,pitch,yaw,roll){
 }
 function drawHeucherella(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const observed=['p-b91527c69202','p-88a52b6656d9'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);
+ const observed=['p-b91527c69202','p-88a52b6656d9','p-90f931e479a8','p-e8558b083bc7'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);
  const a=info.appearance,typ=a.shootProfile,trailing=['copper','plum','yellowstone'].includes(typ),h=s.height,w=s.spread,lh=Math.min(s.leafHeight||h,h*a.foliageHeightRatio),L=Math.min(a.leafLength,w*.32)*s.leafScale;
  const leafKind=`leaf-heucherella-${a.leafShape}-${s.leafPatternColor.slice(1)}-${a.leafPattern}-${a.leafUnderside.slice(1)}-${a.leafTexture}`;
  const axis=(from,to,r,kind,color=a.stemColor)=>{
@@ -13048,7 +13048,7 @@ function drawHeucherella(b,{info,s,p,detail,rand},kit){
   axis(root,bottom,.0012,'scape-heucherella');axis(bottom,top,.0008,'raceme-heucherella');
   const count=Math.round((typ==='tapestry'?110:typ==='bridget'?90:65)*detail);
   for(let j=0;j<count;j++){
-   const t=(j+.5)/count,an=j*2.399963,at=bottom.map((v,k)=>v+(top[k]-v)*t),rad=observed?Math.min((.010+(1-t)*.014)*(typ==='tapestry'?1.45:1),h*.15,w*.08):(.010+(1-t)*.014)*(typ==='tapestry'?1.45:1),pt=[at[0]+Math.sin(an)*rad,at[1]+(observed?Math.min(.003,h*.1):.003),at[2]+Math.cos(an)*rad];
+   const t=(j+.5)/count,an=j*2.399963,at=bottom.map((v,k)=>v+(top[k]-v)*t),rad=observed?Math.min((.010+(1-t)*.014)*(typ==='tapestry'?1.45:1),h*.15,w*(typ==='tapestry'?.12:.08)):(.010+(1-t)*.014)*(typ==='tapestry'?1.45:1),pt=[at[0]+Math.sin(an)*rad,at[1]+(observed?Math.min(.003,h*.1):.003),at[2]+Math.cos(an)*rad];
    axis(at,pt,.00022,'pedicel-heucherella');
    if(t>.86||rand()>s.flowerDensity){b.add(kit.bud,'bud-heucherella',s.flowerColor,...pt,r*.36,r*.50,r*.36);continue;}
    const pitch=1.78+rand()*.40,f=flowerFrame(organBuilder,pt,pitch,an),calyx=typ==='plum'?'#b888a5':s.flowerColor;
