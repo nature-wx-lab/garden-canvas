@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.680';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.681';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.680';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.681';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -2016,7 +2016,7 @@ export function aromaticFlowerGeometry(type){
 }
 function drawAromaticShrubs(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,type=a.shootProfile,santo=type==='snowCoral'||type==='lambrook',gold=type==='gildedGold',mozart=type==='mozartBlue',h=s.height,w=s.spread,wood=[],leaves=[],heads=[],flowers=[];
- const observe=(p?.kind==='p-0fe0203ab3f7'&&type==='rosemary')||(p?.kind==='p-7d77d4069d76'&&a.shootProfile==='gildedGold')||(p?.kind==='p-deb60399eed7'&&a.shootProfile==='mozartBlue'),leafBases=new Map(),retainedCrowns=new Set();let inspection=null,inspectionScore=-Infinity;
+ const observe=(p?.kind==='p-0fe0203ab3f7'&&type==='rosemary')||(p?.kind==='p-7d77d4069d76'&&a.shootProfile==='gildedGold')||(p?.kind==='p-deb60399eed7'&&a.shootProfile==='mozartBlue'),observeSanto=santo&&['p-50d888e87b01','p-5d2ca2f030c8','p-bc238e853e2c'].includes(p?.kind),leafBases=new Map(),retainedCrowns=new Set();let inspection=null,inspectionScore=-Infinity;
  const shoot=(root,az,rise,reach,order,crown=root)=>{
   const N=order===0?8:santo?6:9,path=t=>[root[0]+Math.sin(az+.09*t*t)*reach*t,root[1]+rise*t+h*(mozart?.09:.023)*Math.sin(t*Math.PI),root[2]+Math.cos(az+.09*t*t)*reach*t];
   for(let j=1;j<=N;j++){
@@ -2037,13 +2037,13 @@ function drawAromaticShrubs(b,{info,s,p,detail,rand},kit){
  if(santo){
   // Connected low crowns and curved leafy shoots keep a mound instead of a fan.
   const leafH=Math.min(h*.76,Math.max(h*.55,s.leafHeight||h*.72)),count=Math.round(Math.max(30,Math.min(110,w/.6*90))*detail),mix=(x,y,t)=>x.map((v,k)=>v+(y[k]-v)*t);
-  const leafy=(root,tip,az,nodes,sideShoot=false)=>{
+  const leafy=(root,tip,az,nodes,sideShoot=false,crown=root)=>{
    const path=t=>{const pt=mix(root,tip,t);pt[1]+=h*.025*Math.sin(t*Math.PI);return pt;};
    for(let j=1;j<=nodes;j++){
     const t=j/nodes,at=path(t);wood.push({from:path((j-1)/nodes),to:at,r:Math.min(sideShoot?.0006:.0013,h*.007)*(1-t*.55),old:false});
-    for(let k=0;k<3;k++)leaves.push({at:path((j-.72+k*.24)/nodes),az:az+(j*3+k)*2.399963,roll:rand(),size:(sideShoot?.66:.82)+rand()*.18,young:j>nodes-3});
+    for(let k=0;k<3;k++)leaves.push({at:observeSanto?mix(path((j-1)/nodes),at,.28+k*.24):path((j-.72+k*.24)/nodes),az:az+(j*3+k)*2.399963,roll:rand(),size:(sideShoot?.66:.82)+rand()*.18,young:j>nodes-3,crown});
     if(!sideShoot&&(j===4||j===8)){
-     const aa=az+(j===4?-1:1)*(.65+rand()*.45),reach=w*.085,end=[at[0]+Math.sin(aa)*reach,at[1]+h*.08,at[2]+Math.cos(aa)*reach];leafy(at,end,aa,8,true);
+     const aa=az+(j===4?-1:1)*(.65+rand()*.45),reach=w*.085,end=[at[0]+Math.sin(aa)*reach,at[1]+h*.08,at[2]+Math.cos(aa)*reach];leafy(at,end,aa,8,true,crown);
     }
    }
   };
@@ -2051,7 +2051,7 @@ function drawAromaticShrubs(b,{info,s,p,detail,rand},kit){
    const t=(i+.5)/count,az=i*2.399963+rand()*.3,r=w*.405*Math.sqrt(t),root=[Math.sin(az)*r*.82,h*.035,Math.cos(az)*r*.82],tip=[Math.sin(az)*r,leafH*(.32+.63*Math.sqrt(1-t)),Math.cos(az)*r],joint=mix(root,tip,.12);
    const ca=(i%7)*TAU/7,crown=[Math.sin(ca)*w*.075,h*.018,Math.cos(ca)*w*.075],bend=mix(crown,root,.52);bend[1]+=h*.035;
    if(i<7)wood.push({from:[0,h*.006,0],to:crown,r:Math.min(.0017,h*.007),old:true});
-   wood.push({from:crown,to:bend,r:Math.min(.0008,h*.004),old:true},{from:bend,to:root,r:Math.min(.00065,h*.003),old:true},{from:root,to:joint,r:Math.min(.00065,h*.003),old:true});leafy(root,tip,az,16);heads.push({at:tip,az,roll:rand()});
+   wood.push({from:crown,to:bend,r:Math.min(.0008,h*.004),old:true},{from:bend,to:root,r:Math.min(.00065,h*.003),old:true},{from:root,to:joint,r:Math.min(.00065,h*.003),old:true});leafy(root,tip,az,16,false,crown);heads.push({at:tip,az,roll:rand()});
   }
  }else{
   const count=Math.round(26*detail);
@@ -2064,7 +2064,13 @@ function drawAromaticShrubs(b,{info,s,p,detail,rand},kit){
  for(const n of leaves){
   if(n.roll>s.leafDensity)continue;
   const L=a.leafLength*n.size*s.leafScale*(santo?Math.min(1,h/.25,w/.3):1),pattern=gold?(n.young?s.leafPatternColor:'#6e854b'):null,kind=santo?'leaf-aromatic-santolina':'leaf-aromatic-rosemary'+(gold?'-margin-'+pattern.slice(1):'')+'-underside-'+a.leafUnderside.slice(1),color=kit.shade(rand,s.leafColor,.025);
-  if(!observe){const f=flowerFrame(b,n.at,santo?.42+n.roll*.72:.40+n.roll*.45,n.az);f.add('aromatic-leaf-'+(santo?'santolina':'rosemary'),kind,color,0,0,0,santo?L:L*a.leafWidth/a.leafLength,L,L,.08,0,(n.roll-.5)*.18);continue;}
+  if(!observe&&!observeSanto){const f=flowerFrame(b,n.at,santo?.42+n.roll*.72:.40+n.roll*.45,n.az);f.add('aromatic-leaf-'+(santo?'santolina':'rosemary'),kind,color,0,0,0,santo?L:L*a.leafWidth/a.leafLength,L,L,.08,0,(n.roll-.5)*.18);continue;}
+  if(observeSanto){
+   const ceiling=Math.min(h,s.leafHeight),low=[0,h*.006,0];if(ceiling<=low[1])continue;const base=n.at[1]>=ceiling&&!retainedCrowns.has(n.crown)?low:n.at,room=ceiling-base[1];if(room<=0)continue;
+   const pitch=.50+n.roll*.72,roll=(n.roll-.5)*.18,euler=new THREE.Euler(pitch,n.az,roll,'YXZ');let upper=0,lower=0;
+   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*.099984*L,(corner&2?1:0)*L,(corner&4?1:-1)*.099984*L).applyEuler(euler);upper=Math.max(upper,point.y);lower=Math.max(lower,-point.y);}
+   const fit=Math.min(1,room/upper,lower>0?base[1]/lower:1);b.add('aromatic-leaf-santolina',kind,color,...base,L*fit,L*fit,L*fit,pitch,n.az,roll);retainedCrowns.add(n.crown);continue;
+  }
   const ceiling=Math.min(h,s.leafHeight);if(ceiling<=.015)continue;let base=leafBases.get(n.at);
   if(!base){base=n.at[1]>=ceiling&&!retainedCrowns.has(n.crown)?n.crown:n.at;leafBases.set(n.at,base);}
   const room=ceiling-base[1];if(room<=0)continue;const ratio=a.leafWidth/a.leafLength,pitch=.48+n.roll*.45,roll=(n.roll-.5)*.18,euler=new THREE.Euler(pitch,n.az,roll,'YXZ');let upper=0,lower=0;
@@ -2073,6 +2079,7 @@ function drawAromaticShrubs(b,{info,s,p,detail,rand},kit){
  }
  if(!s.bloom)return;
  if(santo){
+  const markerVertices=observeSanto?[[6/7,0],[1,0],[6/7,1/20]].map(([t,u])=>{const az=u*TAU,r=.36+.18*t**4;return new THREE.Vector3(Math.fround(Math.sin(az)*r),Math.fround(t+(t>.7?(t-.7)*.38*Math.cos(az*5):0)),Math.fround(Math.cos(az)*r));}):null;
   for(const head of heads){
    if(head.roll>s.flowerDensity*.62)continue;
    const stalk=Math.min(.15,h*.25),tip=[head.at[0]+Math.sin(head.az)*stalk*.15,head.at[1]+stalk,head.at[2]+Math.cos(head.az)*stalk*.15];b.branch(head.at,tip,Math.min(.00065,h*.006),a.stemColor,'peduncle-aromatic-santolina');const R=a.flowerRadius*Math.min(1,h/.25),f=flowerFrame(b,tip,.10,head.az);
@@ -2080,6 +2087,7 @@ function drawAromaticShrubs(b,{info,s,p,detail,rand},kit){
    for(let j=0;j<64;j++){
     const rr=R*Math.sqrt((j+.5)/64),az=j*2.399963,y=R*.70*Math.sqrt(Math.max(0,1-(rr/R)**2)),pt=[Math.sin(az)*rr,y,Math.cos(az)*rr],ff=flowerFrame({add:(...args)=>f.add(...args),branch:(...args)=>f.branch(...args)},pt,rr/R*.85,az),r=R*.11;
     ff.add('aromatic-flower-santolina','petal-aromatic-santolina',kit.shade(rand,s.flowerColor,.055),0,0,0,r,r*1.8,r);ff.add(kit.bud,'style-aromatic-santolina','#e0c868',0,r*1.9,0,r*.13,r*.23,r*.13);
+    if(observeSanto){const rotation=new THREE.Euler(rr/R*.85,az,0,'YXZ'),centre=markerVertices.reduce((v,p)=>v.add(p.clone().multiply(new THREE.Vector3(r,r*1.8,r))),new THREE.Vector3()).multiplyScalar(1/3).applyEuler(rotation).add(new THREE.Vector3(...pt)),point=centre.clone().applyEuler(new THREE.Euler(.10,head.az,0,'YXZ')).add(new THREE.Vector3(...tip)),score=point.x*.8+point.z;if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(centre.toArray(),R*1.6,rotation.x,rotation.y,rotation.z);}}
    }
   }
  }else{
