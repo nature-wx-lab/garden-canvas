@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.637';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.638';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.637';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.638';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9677,6 +9677,15 @@ export function pajamasPoint(type,t,u){
   // Retain the attached quarter and actual observed centre; the broad curled end is illustrative.
   const q=Math.max(0,Math.min(1,(t-.25)/.75)),blend=q*q*(3-2*q),v=t*(1-.20*blend),arch=Math.max(0,Math.sin(Math.PI*v)),edge=Math.max(0,(t-.8125)/.1875)**2;
   return [u*(.035+.265*arch**.6)*(1+.11*(1-blend)*Math.cos(u*Math.PI*3)),-.035-.18*t+.016*edge*(1-.55*u*u),.62+.39*t-.035*t*t+.018*(Math.cos(u*Math.PI*5)*(1-.80*blend)+.80*blend)*t**4-.012*edge*u*u];
+ }
+ if(type==='pajamasHood'){
+  // A shallow paired tip and raised roof illustrate the source-described upper lip.
+  const q=Math.max(0,Math.min(1,(t-.25)/.75)),blend=q*q*(3-2*q),v=t*(1-.18*blend),arch=Math.max(0,Math.sin(Math.PI*v));
+  return [u*(.025+.15*arch),.06+.09*arch+.012*blend*t*t*(1-u*u),.68+.24*t-.03*Math.exp(-u*u*90)*t**4*(1-.60*blend)-.025*u*u*blend*t**4];
+ }
+ if(type==='pajamasTube'){
+  const az=(u+1)*Math.PI,r=.05+.074*t+.030*Math.sin(Math.PI*t)**2;
+  return [Math.cos(az)*r,Math.sin(az)*r+.025*t*t,.75*t];
  }
  if(type==='pajamasLeaf')return [u*.56*sn**.57*(1-.16*t)*(1+.042*Math.cos(t*TAU*9)),t-.13*Math.abs(u)*Math.exp(-t*11),.055*u*u*sn-.06*t*t+.009*Math.cos(t*42-Math.abs(u)*12)*sn*Math.abs(u)];
  if(type==='pajamasCalyx'){const az=(u+1)*Math.PI,r=(.067+.035*t)*(1+.04*Math.cos(az*15));return [Math.cos(az)*r,Math.sin(az)*r,.65*t-.05*Math.cos(az*5)*t**8];}
