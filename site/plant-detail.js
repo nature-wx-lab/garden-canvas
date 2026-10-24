@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.667';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.668';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.667';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.668';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10519,15 +10519,27 @@ export function pineappleSagePoint(type,t,u){
  return [Math.cos(az)*r,(calyx?0:.035*Math.sin(t*Math.PI))+Math.sin(az)*r,(calyx?.24:.82)*t+teeth];
 }
 
-function drawPineappleSages(b,{info,s,detail,rand,month},kit){
+function drawPineappleSages(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,honey=a.shootProfile==='honey',cold=[12,1,2].includes(month),stem=cold?a.winterStemColor:a.stemColor,L=Math.min(a.leafLength,h*.22,w*.18),F=Math.min(a.flowerLength,h*.16,w*.13),n=Math.max(5,Math.min(24,Math.round((honey?15:22)*detail*Math.sqrt(w/(honey?.5:1.5)))));
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const pair=(at,az,len,i,k)=>{
-  if(noise(i,k)>s.leafDensity)return;
-  for(let side=0;side<2;side++){
-   const aa=az+side*Math.PI+(noise(i,k+side+50)-.5)*.18,pet=len*.14,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.35,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.00075,h*.003),stem,'petiole-pineapple');
-   b.add('pineappleLeaf','leaf-pineapple-'+a.shootProfile,kit.shade(rand,s.leafColor,.10),...end,len*a.leafWidth/a.leafLength,len,len,.70+.85*noise(i,k+side+60),aa,(noise(i,k+side+70)-.5)*.5);
+ const observe=(p?.kind==='p-a14fbb86dd90'&&a.shootProfile==='green')||(p?.kind==='p-f5faaa27a891'&&a.shootProfile==='golden');let inspection=null,inspectionScore=-Infinity;
+ const pair=(at,az,len,i,k,root=at,retainedPair=false)=>{
+  if(noise(i,k)>s.leafDensity)return false;
+  if(!observe){
+   for(let side=0;side<2;side++){
+    const aa=az+side*Math.PI+(noise(i,k+side+50)-.5)*.18,pet=len*.14,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.35,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.00075,h*.003),stem,'petiole-pineapple');
+    b.add('pineappleLeaf','leaf-pineapple-'+a.shootProfile,kit.shade(rand,s.leafColor,.10),...end,len*a.leafWidth/a.leafLength,len,len,.70+.85*noise(i,k+side+60),aa,(noise(i,k+side+70)-.5)*.5);
+   }return false;
   }
+  const pet=len*.14,radius=Math.min(.00075,h*.003),ratio=a.leafWidth/a.leafLength,leaves=[];let upper=pet*.35+radius,lower=radius;
+  for(let side=0;side<2;side++){
+   const aa=az+side*Math.PI+(noise(i,k+side+50)-.5)*.18,pitch=.70+.85*noise(i,k+side+60),roll=(noise(i,k+side+70)-.5)*.5,color=kit.shade(rand,s.leafColor,.10),euler=new THREE.Euler(pitch,aa,roll,'YXZ');
+   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*.534565*ratio*len,(corner&2?1:0)*len,(corner&4?.05384:-.115001)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.35);lower=Math.max(lower,-point.y);}
+   leaves.push({aa,pitch,roll,color});
+  }
+  const ceiling=Math.min(h,s.leafHeight);if(ceiling<=.004)return false;const base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
+  const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.35*fit,base[2]+Math.cos(leaf.aa)*pet*fit]})),direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,stem,'petiole-pineapple');b.add('pineappleLeaf','leaf-pineapple-'+a.shootProfile,leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}return true;
  };
  const raceme=(base,az,len,i)=>{
   let old=base;const levels=5+Math.floor(noise(i,2)*4);
@@ -10536,25 +10548,27 @@ function drawPineappleSages(b,{info,s,detail,rand,month},kit){
    // Retained axes are a no-pruning example; bloom does not recreate the skeleton.
    if(!s.bloom)continue;
    for(let side=0;side<4;side++){
-    const aa=az+j*Math.PI/2+Math.floor(side/2)*Math.PI+(side%2-.5)*.47,ped=F*.12,pos=[at[0]+Math.sin(aa)*ped,at[1]+ped*.3,at[2]+Math.cos(aa)*ped],fl=F*(.82+.18*noise(i,j*31+side)),f=flowerFrame(b,pos,-.36+.36*noise(i,j*17+side),aa);
+    const aa=az+j*Math.PI/2+Math.floor(side/2)*Math.PI+(side%2-.5)*.47,ped=F*.12,pos=[at[0]+Math.sin(aa)*ped,at[1]+ped*.3,at[2]+Math.cos(aa)*ped],fl=F*(.82+.18*noise(i,j*31+side)),pitch=-.36+.36*noise(i,j*17+side),f=flowerFrame(b,pos,pitch,aa);
     b.branch(at,pos,fl*.014,stem,'pedicel-pineapple');f.add('pineappleCalyx','calyx-pineapple',a.flowerPalette.calyx,0,0,0,fl,fl,fl);
     if(j>=levels-1||noise(i,j*41+side)>.68){f.add('pineappleBud','bud-pineapple',s.flowerColor,0,0,0,fl*.78,fl*.78,fl*.78);continue;}
     for(const [shape,kind] of [['pineappleTube','tube-pineapple'],['pineappleHood','hood-pineapple'],['pineappleLip','petal-pineapple']])f.add(shape,kind,kit.shade(rand,s.flowerColor,.035),0,0,0,fl,fl,fl);
+    if(observe){const marker=sageLipInspection((t,u)=>pineappleSagePoint('pineappleLip',t,u),16,[fl,fl,fl],[0,0,0],0,40),point=marker.centre.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=point.x*.8+point.z;if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(marker.centre.toArray(),fl*1.30,marker.euler.x,marker.euler.y,marker.euler.z);}}
     f.branch([0,.09*fl,1.035*fl],[0,.06*fl,1.14*fl],fl*.006,'#dbad6b','stigma-pineapple');
    }
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*.9,rr=w*(.08+.22*Math.sqrt((i+.5)/n)),root=[Math.sin(az)*rr*.62,.004,Math.cos(az)*rr*.62],top=[Math.sin(az)*rr,h*(i%4===0?.28+.14*noise(i,4):.48+.25*noise(i,4)),Math.cos(az)*rr];let old=root;
+  const az=i*2.399963+(noise(i,1)-.5)*.9,rr=w*(.08+.22*Math.sqrt((i+.5)/n)),root=[Math.sin(az)*rr*.62,.004,Math.cos(az)*rr*.62],top=[Math.sin(az)*rr,h*(i%4===0?.28+.14*noise(i,4):.48+.25*noise(i,4)),Math.cos(az)*rr];let old=root,retainedPair=false;
   for(let j=1;j<=12;j++){
-   const t=j/12,at=mix(root,top,t);at[0]+=Math.sin(az+.9)*w*.035*Math.sin(t*Math.PI);at[2]+=Math.cos(az+.9)*w*.035*Math.sin(t*Math.PI);b.branch(old,at,Math.min(.0038,h*.007)*(1-t*.65),stem,'stem-pineapple');old=at;pair(at,az+j*Math.PI/2,L*(1-.25*t),i,j+20);
+   const t=j/12,at=mix(root,top,t);at[0]+=Math.sin(az+.9)*w*.035*Math.sin(t*Math.PI);at[2]+=Math.cos(az+.9)*w*.035*Math.sin(t*Math.PI);b.branch(old,at,Math.min(.0038,h*.007)*(1-t*.65),stem,'stem-pineapple');old=at;retainedPair=pair(at,az+j*Math.PI/2,L*(1-.25*t),i,j+20,root,retainedPair)||retainedPair;
    if(![3,6,9].includes(j))continue;
    const aa=az+(j===6?-1.15:1.25)+(noise(i,j+12)-.5)*1.0,reach=w*(.11+.025*noise(i,j+11)),end=[at[0]+Math.sin(aa)*reach,at[1]+h*(.13+.055*noise(i,j+13)),at[2]+Math.cos(aa)*reach];let prev=at;
-   for(let q=1;q<=8;q++){const tt=q/8,loc=mix(at,end,tt);loc[1]+=h*.015*Math.sin(tt*Math.PI);b.branch(prev,loc,Math.min(.0015,h*.005)*(1-tt*.4),stem,'branch-pineapple');prev=loc;pair(loc,aa+q*Math.PI/2,L*(1.03-q*.034),i,j*31+q);}
+   for(let q=1;q<=8;q++){const tt=q/8,loc=mix(at,end,tt);loc[1]+=h*.015*Math.sin(tt*Math.PI);b.branch(prev,loc,Math.min(.0015,h*.005)*(1-tt*.4),stem,'branch-pineapple');prev=loc;retainedPair=pair(loc,aa+q*Math.PI/2,L*(1.03-q*.034),i,j*31+q,root,retainedPair)||retainedPair;}
    raceme(end,aa,h*(.12+.06*noise(i,j+17)),i+j*57);
   }
   raceme(top,az,h*(.15+.06*noise(i,21)),i);
  }
+ if(inspection)inspection();
 }
 
 export function tallSagePoint(type,t,u){
@@ -17882,7 +17896,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='clevelandWhorls'){drawClevelandSage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='whiteSageShrub'){drawWhiteSage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='claryPanicles'){drawClarySages(b,{info,s,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='pineappleSageBranches'){drawPineappleSages(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='pineappleSageBranches'){drawPineappleSages(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='tallBlueSpires'){drawTallSages(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pratensisRosettes'){drawPratensis(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='smallSageMounds'){drawSmallSages(b,{info,s,p,detail,rand,month},kit);return;}
