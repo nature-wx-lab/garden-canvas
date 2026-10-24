@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.726';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.727';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.726';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.727';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -5357,14 +5357,32 @@ export function gilleniaPoint(type,t,u){
  const width=.5*sn**.72*(.72+.28*t)*(1-.13*(.5+.5*Math.cos(t*Math.PI*44)));
  return [u*width,t,.055*sn+.025*u*u*sn-.015*Math.exp(-u*u*60)*sn+.011*Math.cos((t-Math.abs(u)*.26)*Math.PI*16)*Math.abs(u)*sn];
 }
-function drawGillenia(b,{info,s,detail,rand,month},kit){
- const a=info.appearance,h=s.height,w=s.spread,size=Math.min(1,h/.45,w/.45),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,C=a.flowerLength*size,n=Math.max(5,Math.min(22,Math.round(16*detail*Math.sqrt(w/.60)))),post=a.calyxMonths.includes(month),pink=a.shootProfile==='pink';
+// Match the Float32 leaf vertices used by the renderer; yaw does not change their height.
+const gilleniaMicroAxis=new THREE.CylinderGeometry(1,1,1,6,1,false);
+const gilleniaVerticalCache=new Map();
+function gilleniaVerticalSupport(pitch){
+ if(gilleniaVerticalCache.has(pitch))return gilleniaVerticalCache.get(pitch);
+ let low=0,high=0;const co=Math.cos(pitch),si=Math.sin(pitch);
+ for(let row=0;row<=96;row++)for(let col=0;col<=32;col++){const v=gilleniaPoint('gilleniaLeaf',row/96,col/32*2-1),y=Math.fround(v[1])*co-Math.fround(v[2])*si;low=Math.min(low,y);high=Math.max(high,y);}
+ const result=[low,high];gilleniaVerticalCache.set(pitch,result);return result;
+}
+function drawGillenia(b,{info,s,p,detail,rand,month},kit){
+ const a=info.appearance,observe=['p-254995d9ed16','p-9c223c1ea724'].includes(p?.kind),h=s.height,w=s.spread,ceiling=Math.min(h,s.leafHeight),roots=[],tops=[],size=Math.min(1,h/.45,w/.45),L=a.leafLength*size,W=a.leafWidth*size,R=a.flowerRadius*size,C=a.flowerLength*size,n=Math.max(5,Math.min(22,Math.round(16*detail*Math.sqrt(w/.60)))),post=a.calyxMonths.includes(month),pink=a.shootProfile==='pink';
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const leaf=(at,az,i,k,scale=1)=>{
-  if(noise(i,k+700)>s.leafDensity)return;const pet=[at[0]+Math.sin(az)*L*.10*scale,at[1]+L*.04*scale,at[2]+Math.cos(az)*L*.10*scale];b.branch(at,pet,.0005*size*scale,a.stemColor,'petiole-gillenia');
+  if(noise(i,k+700)>s.leafDensity)return;
+  let base=at,fit=1;
+  if(observe){
+   let low=0,high=0;for(let j=0;j<3;j++){const ss=scale*(j===1?1:.83),span=gilleniaVerticalSupport(1.14+.16*noise(i,k+j));low=Math.min(low,L*.04*scale+span[0]*L*ss);high=Math.max(high,L*.04*scale+span[1]*L*ss);}
+   if(at[1]+high>ceiling-.00002||at[1]+low<0){const root=roots[i],top=tops[i],u=Math.max(0,Math.min(1,(at[1]-root[1])/Math.max(.000001,h*.98-root[1]))),y=root[1]+Math.max(0,ceiling*.30-root[1])*u;base=mix(root,top,Math.max(0,Math.min(1,(y-root[1])/(top[1]-root[1]))));}
+   fit=Math.max(0,Math.min(1,high>0?(ceiling-base[1]-.00002)/high:1,low<0?base[1]/-low:1));
+  }
+  const pet=[base[0]+Math.sin(az)*L*.10*scale*fit,base[1]+L*.04*scale*fit,base[2]+Math.cos(az)*L*.10*scale*fit],radius=observe?Math.min(.0005*size*scale,L*scale*fit*.08,base[1]*.25):.0005*size*scale,length=Math.hypot(...pet.map((v,k)=>v-base[k]));
+  if(observe&&length>0&&length<.0001){const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...pet.map((v,k)=>v-base[k])).normalize()),'YXZ');b.add(gilleniaMicroAxis,'petiole-gillenia',a.stemColor,(base[0]+pet[0])/2,(base[1]+pet[1])/2,(base[2]+pet[2])/2,radius,length,radius,rotation.x,rotation.y,rotation.z);}else b.branch(base,pet,radius,a.stemColor,'petiole-gillenia');
   const color=kit.shade(rand,s.leafColor,.035);
-  for(let j=0;j<3;j++){const aa=az+(j-1)*.84,ss=scale*(j===1?1:.83);flowerFrame(b,pet,1.14+.16*noise(i,k+j),aa).add('gilleniaLeaf','leaf-gillenia-'+a.shootProfile,color,0,0,0,W*ss,L*ss,L*ss);}
-  for(let j=0;j<2;j++)flowerFrame(b,at,.8,az+(j?1:-1)*1.2).add('gilleniaLeaf','stipule-gillenia',color,0,0,0,.0018*size,.0045*size,.0045*size);
+  for(let j=0;j<3;j++){const aa=az+(j-1)*.84,ss=scale*(j===1?1:.83);flowerFrame(b,pet,1.14+.16*noise(i,k+j),aa).add('gilleniaLeaf','leaf-gillenia-'+a.shootProfile,color,0,0,0,W*ss*fit,L*ss*fit,L*ss*fit);}
+  const span=gilleniaVerticalSupport(.8),stipuleFit=observe?Math.max(0,Math.min(1,(ceiling-base[1]-.00002)/(.0045*size*span[1]),span[0]<0?base[1]/(-.0045*size*span[0]):1)):1;
+  for(let j=0;j<2;j++)flowerFrame(b,base,.8,az+(j?1:-1)*1.2).add('gilleniaLeaf','stipule-gillenia',color,0,0,0,.0018*size*stipuleFit,.0045*size*stipuleFit,.0045*size*stipuleFit);
  };
  const flower=(at,az,i,k)=>{
   if(!(s.bloom||post)||noise(i,k+900)>(post?.55:s.flowerDensity))return;const f=flowerFrame(b,at,.58+.85*noise(i,k+40),az),calyx=post?'#995d4f':a.calyxColor;
@@ -5376,12 +5394,12 @@ function drawGillenia(b,{info,s,detail,rand,month},kit){
   for(let j=0;j<20;j++){const aa=j*2.4,r=C*(.13+.07*(j%3)/2),yy=C*(.76+.15*(j%3)/2);f.add(kit.bud,'anther-gillenia','#b8a47c',Math.sin(aa)*r,yy,Math.cos(aa)*r,.00022*size,.00035*size,.00022*size);}
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963,rr=w*.23*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.45,.008,Math.cos(az)*rr*.45],top=[Math.sin(az)*rr,h*(.67+.12*noise(i,1)),Math.cos(az)*rr];let prev=root;
+  const az=i*2.399963,rr=w*.23*Math.sqrt((i+.3)/n),root=[Math.sin(az)*rr*.45,observe?Math.min(.008,h*.10,ceiling*.12):.008,Math.cos(az)*rr*.45],oldRoot=[root[0],.008,root[2]],top=[Math.sin(az)*rr,h*(.67+.12*noise(i,1)),Math.cos(az)*rr];roots[i]=root;tops[i]=top;let prev=root;
   for(let j=1;j<=8;j++){
    const at=mix(root,top,j/8),la=az+j*2.40;b.branch(prev,at,Math.min(.0015,h*.004)*(1-j*.065),a.stemColor,'stem-gillenia');prev=at;
    leaf(at,la,i,j*300,1-j*.045);
-   if(j>=5){const aa=la,end=[at[0]+Math.sin(aa)*w*.12,at[1]+h*.10,at[2]+Math.cos(aa)*w*.12];let last=at;
-    for(let k=1;k<=3;k++){const pt=mix(at,end,k/3);b.branch(last,pt,Math.min(.00065,h*.002),a.stemColor,'branch-gillenia');leaf(pt,aa+k*2.40,i,j*900+k*50,.44);last=pt;}
+   if(j>=5){const aa=la,oldAt=mix(oldRoot,top,j/8),end=[oldAt[0]+Math.sin(aa)*w*.12,oldAt[1]+h*.10,oldAt[2]+Math.cos(aa)*w*.12];let last=at;
+    for(let k=1;k<=3;k++){const pt=mix(oldAt,end,k/3);b.branch(last,pt,Math.min(.00065,h*.002),a.stemColor,'branch-gillenia');leaf(pt,aa+k*2.40,i,j*900+k*50,.44);last=pt;}
     for(let k=0;k<7;k++){const ba=aa+k*2.4,dd=w*.045*Math.sqrt((k+.3)/7),tip=[end[0]+Math.sin(ba)*dd,end[1]+h*(.035+.035*noise(i,j*270+k)),end[2]+Math.cos(ba)*dd];b.branch(end,tip,Math.min(.00028,h*.001),a.stemColor,'pedicel-gillenia');flower(tip,ba,i,j*1800+k*120);}
    }
   }
@@ -18073,7 +18091,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='dropwortRosettes'){drawDropwort(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='ulmariaSprays'){drawUlmaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='filipendulaSprays'){drawFilipendula(b,{info,s,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='gilleniaSprays'){drawGillenia(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='gilleniaSprays'){drawGillenia(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='fireflyCymes'){drawFirefly(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='snowtipMat'){drawSnowtip(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='actaeaRacemes'){drawActaea(b,{info,s,detail,rand,month},kit);return;}
