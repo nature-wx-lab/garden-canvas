@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.665';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.666';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.665';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.666';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11482,12 +11482,20 @@ export function nemorosaPoint(type,t,u){
  return [u*.50*Math.pow(sn,.40),t*edge,.08*u*u*sn-.18*t*t];
 }
 
-function drawNemorosa(b,{info,s,detail,rand,month},kit){
+function drawNemorosa(b,{info,s,p,detail,rand,month},kit){
  if(s.groundDormant)return;
  const a=info.appearance,w=s.spread,h=s.height,winter=[12,1,2].includes(month),caradonna=a.shootProfile==='caradonna',snowHill=a.shootProfile==='snowHill';
  const L=Math.min(a.leafLength,w*.28),n=Math.max(6,Math.min(28,Math.round(17*detail*Math.pow(w/.4,.78))));
  const dry=winter||month>=10,stem=dry?a.winterStemColor:a.stemColor,flowerR=snowHill?Math.min(a.flowerRadius,h*.03):a.flowerRadius,flowerLen=snowHill?Math.min(a.flowerLength,h*.075):a.flowerLength;
- const blade=(at,yaw,len,pitch,basal=false)=>b.add('nemorosaLeaf',basal?'leaf-nemorosa-basal':'leaf-nemorosa',kit.shade(rand,s.leafColor,.040),...at,len*a.leafWidth/a.leafLength,len,len,pitch,yaw,(rand()-.5)*.12);
+ const observe=(p?.kind==='p-e8a3ee532b78'&&caradonna)||(p?.kind==='p-4a97a7aeca72'&&snowHill);let inspection=null,inspectionScore=-Infinity;
+ const blade=(at,yaw,len,pitch,basal=false,petioleBase=null)=>{
+  const color=kit.shade(rand,s.leafColor,.040),roll=(rand()-.5)*.12;
+  if(!observe){b.add('nemorosaLeaf',basal?'leaf-nemorosa-basal':'leaf-nemorosa',color,...at,len*a.leafWidth/a.leafLength,len,len,pitch,yaw,roll);return false;}
+  const ceiling=Math.min(h,s.leafHeight),base=petioleBase||at,delta=petioleBase?at.map((v,k)=>v-base[k]):[0,0,0],radius=petioleBase?.00048:0,ratio=a.leafWidth/a.leafLength,euler=new THREE.Euler(pitch,yaw,roll,'YXZ');let upper=Math.max(0,delta[1]+radius),lower=radius;
+  for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*.455782*ratio*len,(corner&2?1:0)*len,(corner&4?.093162:0)*len).applyEuler(euler);upper=Math.max(upper,point.y+delta[1]);lower=Math.max(lower,-point.y);}
+  if(ceiling<=.006||base[1]>=ceiling)return false;const fit=Math.min(1,(ceiling-base[1])/upper,lower>0?base[1]/lower:1),end=base.map((v,k)=>v+delta[k]*fit),direct=petioleBase&&new THREE.Vector3(...end).sub(new THREE.Vector3(...base)).length()<.0001;
+  if(petioleBase&&!direct)b.branch(base,end,radius*fit,stem,'petiole-nemorosa');b.add('nemorosaLeaf',basal?'leaf-nemorosa-basal':'leaf-nemorosa',color,...(direct?base:end),len*ratio*fit,len*fit,len*fit,pitch,yaw,roll);return true;
+ };
  for(let i=0;i<n;i++){
   const angle=i*2.399963,reach=Math.max(0,w*.44-L*.78)*Math.sqrt((i+.5)/n),root=[Math.sin(angle)*reach,.006,Math.cos(angle)*reach];
   const shape=k=>.5+.5*Math.sin((i+1)*12.9898+k*7.233),top=h*(.77+.19*shape(2));
@@ -11496,15 +11504,16 @@ function drawNemorosa(b,{info,s,detail,rand,month},kit){
   // The old flowering axes are not scaled into these small winter leaves.
   const basal=Math.round((winter?(caradonna||snowHill)?2:0:4)*detail);
   for(let j=0;j<basal;j++)blade(root,angle+j*2.399963,L*(winter?.40:.80),.65+j*.17,true);
-  let from=root;
+  let from=root,retainedStemPair=false;
   for(let j=1;j<=7;j++){
    const t=j/7*.59,at=axis(t);b.branch(from,at,.0018*(1-t*.5),stem,'stem-nemorosa');from=at;
    if(!winter&&shape(20+j)<s.leafDensity){
     const yaw=angle+j*Math.PI/2,len=L*(1-.76*t/.59)*(.85+.18*shape(40+j)),petiole=.003+.009*(1-t/.59);
+    const leafBase=observe&&at[1]>=Math.min(h,s.leafHeight)&&!retainedStemPair?root:at;let retained=false;
     for(const side of [-1,1]){
-     const az=yaw+(side<0?Math.PI:0),tip=[at[0]+Math.sin(az)*petiole,at[1]+petiole*.20,at[2]+Math.cos(az)*petiole];
-     b.branch(at,tip,.00048,stem,'petiole-nemorosa');blade(tip,az,len,.93+.34*t);
-    }
+     const az=yaw+(side<0?Math.PI:0),tip=[leafBase[0]+Math.sin(az)*petiole,leafBase[1]+petiole*.20,leafBase[2]+Math.cos(az)*petiole];
+     if(!observe)b.branch(at,tip,.00048,stem,'petiole-nemorosa');retained=blade(tip,az,len,.93+.34*t,false,observe?leafBase:null)||retained;
+    }retainedStemPair=retained||retainedStemPair;
    }
   }
   const floralStart=.59,whorls=snowHill?Math.max(8,Math.min(26,Math.round(top*.41/.006))):Math.max(14,Math.min(30,Math.round(top*.41/.012))),calyx=dry?'#836e58':caradonna?'#803e62':snowHill?'#97a67d':'#687456';
@@ -11517,7 +11526,7 @@ function drawNemorosa(b,{info,s,detail,rand,month},kit){
     for(let k=0;k<3;k++){
      const an=az+(k-1)*.47,tip=[at[0]+Math.sin(an)*.0014,at[1]+(k-1)*.0008,at[2]+Math.cos(an)*.0014];
      b.branch(at,tip,.00019,stem,'pedicel-nemorosa');
-     const f=flowerFrame(b,tip,1.03+.18*shape(j*7+k+70),an),r=flowerR*(.85+.15*(1-t)),tube=flowerLen*.56;
+     const pitch=1.03+.18*shape(j*7+k+70),f=flowerFrame(b,tip,pitch,an),r=flowerR*(.85+.15*(1-t)),tube=flowerLen*.56;
      f.add('nemorosaCalyx','calyx-nemorosa',calyx,0,0,0,r,tube*.63,r);
      // The uppermost whorls are buds, while lower whorls may already be spent.
      // No seed set or reproductive-organ counts are inferred from these photos.
@@ -11527,10 +11536,12 @@ function drawNemorosa(b,{info,s,detail,rand,month},kit){
      f.add('nemorosaTube','tube-nemorosa',s.flowerColor,0,0,0,r,tube,r);
      f.add('nemorosaHood','petal-nemorosa-upper',s.flowerColor,0,tube,0,r,flowerLen*.40,r);
      f.add('nemorosaLip','petal-nemorosa-lower',s.flowerColor,0,tube,0,r*1.45,flowerLen*.38,r,1.42,0,0);
+     if(observe){const marker=sageLipInspection((t,u)=>nemorosaPoint('nemorosaLip',t,u),20,[r*1.45,flowerLen*.38,r],[0,tube,0],1.42,48,14),point=marker.centre.clone().applyEuler(new THREE.Euler(pitch,an,0,'YXZ')).add(new THREE.Vector3(...tip)),score=point.x*.8+point.z;if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(marker.centre.toArray(),flowerLen*1.30,marker.euler.x,marker.euler.y,marker.euler.z);}}
     }
    }
   }
  }
+ if(inspection)inspection();
 }
 
 // Slender curved blades and two separate lips; dimensions are drawing estimates.
@@ -17877,7 +17888,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='autumnAnemone'){drawAutumnAnemone(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oxfordMat'){drawOxfordMat(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='melinisTussock'){drawMelinis(b,{info,s,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='adenophoraArches'){drawAdenophoraArches(b,{info,s,rand,month},kit);return;}
