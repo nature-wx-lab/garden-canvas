@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.631';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.632';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.631';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.632';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9828,7 +9828,7 @@ export function catmintPoint(type,t,u){
 function drawCatmint(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,junior=a.shootProfile==='junior',giant=a.shootProfile==='sixHills',pink=a.shootProfile==='pinkCandy',dusk=a.shootProfile==='dusk',blue=a.shootProfile==='blue',white=a.shootProfile==='white',lime=a.shootProfile==='limelight',faassenii=a.shootProfile==='faassenii',cold=!blue&&!faassenii&&[12,1,2].includes(month),L=Math.min(a.leafLength,h*.25,w*.16),headScale=blue||white||lime||faassenii?Math.min(1,h/(lime?.19:.22)):Math.min(1,h*(giant?.26:.34)/a.inflorescenceLength),F=a.flowerLength*headScale,n=Math.max(3,Math.min(28,Math.round((dusk?15:pink?20:giant?18:junior?22:24)*detail*Math.sqrt(w/(junior?.4:.65))*Math.min(1,h/(giant?.65:junior?.22:pink?.28:.36))))),stem=cold?a.winterStemColor:a.stemColor;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const fitGiant=giant&&['p-93be65945f4d','p-38412b54ce8d'].includes(p?.kind),fitSimple=(p?.kind==='p-4976f6b0ffe5'&&blue)||(p?.kind==='p-fd1b5aac2d40'&&white),fitOther=(p?.kind==='p-0a5dc2eead5d'&&pink)||(p?.kind==='p-87aa00823150'&&dusk),fitBroadLeaf=fitGiant||(fitOther&&dusk),fitWinter=fitGiant||(fitSimple&&white)||(fitOther&&pink),observe=(p?.kind==='p-40d0fce02917'&&faassenii)||fitGiant||fitSimple||fitOther;let inspection=null,inspectionScore=-Infinity;
+ const fitGiant=giant&&['p-93be65945f4d','p-38412b54ce8d'].includes(p?.kind),fitSimple=(p?.kind==='p-4976f6b0ffe5'&&blue)||(p?.kind==='p-fd1b5aac2d40'&&white),fitOther=(p?.kind==='p-0a5dc2eead5d'&&pink)||(p?.kind==='p-87aa00823150'&&dusk),fitWalker=(p?.kind==='p-14d3cdbb072b'&&a.shootProfile==='walkers')||(p?.kind==='p-a038f7c571ba'&&junior),fitBroadLeaf=fitGiant||(fitOther&&dusk),fitWinter=fitGiant||(fitSimple&&white)||(fitOther&&pink)||fitWalker,observe=(p?.kind==='p-40d0fce02917'&&faassenii)||fitGiant||fitSimple||fitOther||fitWalker;let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,basal=false,root=at,retainedPair=false)=>{
   if(!basal&&noise(i,k)>s.leafDensity)return false;
   if(!observe){for(let q=0;q<2;q++){
