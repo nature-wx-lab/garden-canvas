@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.649';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.650';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.649';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.650';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10787,7 +10787,7 @@ function sageLipInspection(point,cols,scale,offset,pitch){
 function drawCherrySage(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,amethyst=a.shootProfile==='amethystLips',sierra=a.shootProfile==='sierra',night=a.shootProfile==='nightMoth',hot=a.shootProfile==='hotLips'||amethyst,moon=a.shootProfile==='moonlight',christine=a.shootProfile==='christine',violin=a.shootProfile==='violin',plain=['violin','pinkBlush','pearlPink','pearlWhite','moonlight','soCool','christine'].includes(a.shootProfile),micro=hot||plain,thin=night?.67:1,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.19,w*.12),n=Math.max(violin?2:4,Math.min(28,Math.round((violin?10:night?11:18)*detail*Math.sqrt(w/.8)*(violin?Math.min(1,h/.35):1)))),stem=cold?a.winterStemColor:a.stemColor;
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const observe=(p?.kind==='p-1d9f9cba7fba'&&violin)||(p?.kind==='p-d1c41ce2384d'&&sierra)||(p?.kind==='p-b1a5190c3968'&&night)||(p?.kind==='p-d4496b4a1f5a'&&a.shootProfile==='hotLips')||(p?.kind==='p-e64e34dcc8b1'&&amethyst)||(p?.kind==='p-17d8d5a068fc'&&a.shootProfile==='greggii')||(p?.kind==='p-a2c155eac0a4'&&moon)||(p?.kind==='p-31fc17a4aa55'&&a.shootProfile==='soCool');let inspection=null,inspectionScore=-Infinity;
+ const observe=(p?.kind==='p-1d9f9cba7fba'&&violin)||(p?.kind==='p-d1c41ce2384d'&&sierra)||(p?.kind==='p-b1a5190c3968'&&night)||(p?.kind==='p-d4496b4a1f5a'&&a.shootProfile==='hotLips')||(p?.kind==='p-e64e34dcc8b1'&&amethyst)||(p?.kind==='p-17d8d5a068fc'&&a.shootProfile==='greggii')||(p?.kind==='p-a2c155eac0a4'&&moon)||(p?.kind==='p-31fc17a4aa55'&&a.shootProfile==='soCool')||(p?.kind==='p-4baa7d671c4b'&&a.shootProfile==='pinkBlush')||(p?.kind==='p-fc5045c35d84'&&a.shootProfile==='pearlPink');let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,root=at,retainedPair=false)=>{
   if(noise(i,k)>s.leafDensity)return false;
   if(!observe){for(let side=0;side<2;side++){const aa=az+side*Math.PI,pet=len*.13,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0005,h*.002),stem,'petiole-cherry');b.add(micro?'cherryHotLeaf':sierra||night?'cherryJamensisLeaf':'cherryGreggiiLeaf',moon?([10,11].includes(month)?'leaf-cherry-moon-autumn':'leaf-cherry-moon'):micro?'leaf-cherry-hot':sierra||night?'leaf-cherry-jamensis':'leaf-cherry-greggii',kit.shade(rand,moon&&[10,11].includes(month)&&noise(i,k+side+19)>.48?'#af5559':s.leafColor,.06),...end,len*a.leafWidth/a.leafLength,len,len,.75+.65*noise(i,k+side+44),aa,(noise(i,k+side+32)-.5)*.25);}return false;}
