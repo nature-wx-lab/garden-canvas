@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.655';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.656';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.655';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.656';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10670,15 +10670,28 @@ export function smallSagePoint(type,t,u){
  return [Math.cos(az)*r,Math.sin(az)*r,(calyx?.32:.57)*t+teeth];
 }
 
-function drawSmallSages(b,{info,s,detail,rand,month},kit){
+function drawSmallSages(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,profile=a.shootProfile,coah=profile==='coahuilensis',germ=profile==='germander',cold=[12,1,2].includes(month),stem=cold?a.winterStemColor:a.stemColor,L=Math.min(a.leafLength,h*.22,w*.15),F=Math.min(a.flowerLength,h*.14,w*.12),n=Math.max(5,Math.min(30,Math.round((coah?15:germ?22:20)*detail*Math.sqrt(w/.35))));
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const pair=(at,az,len,i,k)=>{
-  if(noise(i,k)>s.leafDensity)return;
+ const observe=(p?.kind==='p-5faf36670c76'&&coah)||(p?.kind==='p-a69b7655fd1e'&&germ);let inspection=null,inspectionScore=-Infinity;
+ const pair=(at,az,len,i,k,root=at,retainedPair=false)=>{
+  if(noise(i,k)>s.leafDensity)return false;
+  if(!observe){
   for(let side=0;side<2;side++){
    const aa=az+side*Math.PI+(noise(i,k+side+52)-.5)*.12,pet=len*.10,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.30,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0004,h*.002),stem,'petiole-small-sage');
    b.add(coah?'coahLeaf':germ?'germanderLeaf':'sinaloaLeaf','leaf-small-sage-'+profile,kit.shade(rand,s.leafColor,.065),...end,len*a.leafWidth/a.leafLength,len,len,.85+.60*noise(i,k+side+70),aa,(noise(i,k+side+35)-.5)*.35);
+  }return false;}
+  const pet=len*.10,radius=Math.min(.0004,h*.002),ratio=a.leafWidth/a.leafLength,leaves=[];let upper=pet*.30+radius,lower=radius;
+  for(let side=0;side<2;side++){
+   const aa=az+side*Math.PI+(noise(i,k+side+52)-.5)*.12,pitch=.85+.60*noise(i,k+side+70),roll=(noise(i,k+side+35)-.5)*.35,color=kit.shade(rand,s.leafColor,.065),euler=new THREE.Euler(pitch,aa,roll,'YXZ');
+   // Include the existing Germander blade hairs, with the unchanged narrow Coahuilensis surface.
+   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*(germ?.447034:.500001)*ratio*len,(corner&2?1:0)*len,(corner&4?(germ?.038535:.028705):-.070001)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.30);lower=Math.max(lower,-point.y);}
+   leaves.push({aa,pitch,roll,color});
   }
+  const ceiling=Math.min(h,s.leafHeight),base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
+  const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.30*fit,base[2]+Math.cos(leaf.aa)*pet*fit]})),direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,stem,'petiole-small-sage');b.add(coah?'coahLeaf':'germanderLeaf','leaf-small-sage-'+profile,leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
+  return true;
  };
  const raceme=(base,az,len,i)=>{
   let old=base;const levels=3+Math.floor(noise(i,7)*3);
@@ -10687,26 +10700,31 @@ function drawSmallSages(b,{info,s,detail,rand,month},kit){
    pair(at,az+j*Math.PI/2,L*(.30-j*.032),i,j+76);
    if(!s.bloom)continue;
    for(let side=0;side<2;side++){
-    const aa=az+j*Math.PI/2+side*Math.PI,ped=F*.16,pos=[at[0]+Math.sin(aa)*ped,at[1]+ped*.30,at[2]+Math.cos(aa)*ped],f=flowerFrame(b,pos,-.13+.35*noise(i,j+side+42),aa),fl=F*(.80+.20*noise(i,j+side+44));
+    const aa=az+j*Math.PI/2+side*Math.PI,ped=F*.16,pos=[at[0]+Math.sin(aa)*ped,at[1]+ped*.30,at[2]+Math.cos(aa)*ped],pitch=-.13+.35*noise(i,j+side+42),f=flowerFrame(b,pos,pitch,aa),fl=F*(.80+.20*noise(i,j+side+44));
     b.branch(at,pos,F*.015,stem,'pedicel-small-sage');f.add('smallSageCalyx','calyx-small-sage-'+profile,a.flowerPalette.calyx,0,0,0,fl,fl,fl);
     if(j===levels||noise(i,j*23+side+5)>(coah?.47:.60)){f.add('smallSageBud','bud-small-sage',s.flowerColor,0,0,0,fl*.75,fl*.75,fl*.75);continue;}
     f.add('smallSageTube','tube-small-sage',s.flowerColor,0,0,0,fl,fl,fl);f.add('smallSageHood','hood-small-sage',s.flowerColor,0,0,0,fl,fl,fl);f.add('smallSageLip','petal-small-sage-'+profile,s.flowerColor,0,0,0,fl*(germ?1.06:1),fl,fl);
+    if(observe){
+     const marker=sageLipInspection((t,u)=>smallSagePoint('smallSageLip',t,u),24,[fl*(germ?1.06:1),fl,fl],[0,0,0],0,40),atPoint=marker.centre.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=atPoint.x*.8+atPoint.z;
+     if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(marker.centre.toArray(),fl*1.30,marker.euler.x,marker.euler.y,marker.euler.z);}
+    }
     f.branch([0,.08*fl,.90*fl],[0,.025*fl,1.035*fl],fl*.007,'#dadaca','stigma-small-sage');
    }
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*1.2,rr=w*.31*Math.sqrt((i+.6)/n),root=[Math.sin(az)*rr*.24,.004,Math.cos(az)*rr*.24],top=[Math.sin(az)*rr,h*(.40+.30*noise(i,2)),Math.cos(az)*rr],wood=mix(root,top,.12);b.branch(root,wood,Math.min(.0022,h*.006),a.barkColor,'wood-small-sage');let old=wood;
+  const az=i*2.399963+(noise(i,1)-.5)*1.2,rr=w*.31*Math.sqrt((i+.6)/n),root=[Math.sin(az)*rr*.24,.004,Math.cos(az)*rr*.24],top=[Math.sin(az)*rr,h*(.40+.30*noise(i,2)),Math.cos(az)*rr],wood=mix(root,top,.12);b.branch(root,wood,Math.min(.0022,h*.006),a.barkColor,'wood-small-sage');let old=wood,retainedPair=false;
   const nodes=coah?8:10;
   for(let j=1;j<=nodes;j++){
-   const t=j/nodes,at=mix(wood,top,t);at[0]+=w*.025*Math.sin(t*Math.PI)*Math.sin(az+.6);at[2]+=w*.025*Math.sin(t*Math.PI)*Math.cos(az+.6);b.branch(old,at,Math.min(coah?.0009:.0012,h*.004)*(1-t*.4),stem,'stem-small-sage');old=at;pair(at,az+j*Math.PI/2,L*(.88-.3*t),i,j+15);
+   const t=j/nodes,at=mix(wood,top,t);at[0]+=w*.025*Math.sin(t*Math.PI)*Math.sin(az+.6);at[2]+=w*.025*Math.sin(t*Math.PI)*Math.cos(az+.6);b.branch(old,at,Math.min(coah?.0009:.0012,h*.004)*(1-t*.4),stem,'stem-small-sage');old=at;retainedPair=pair(at,az+j*Math.PI/2,L*(.88-.3*t),i,j+15,root,retainedPair)||retainedPair;
    if(j!==3&&j!==6)continue;
    const yaw=az+j*Math.PI/2+(noise(i,j+8)-.5)*.8,reach=w*(.09+.04*noise(i,j+12)),end=[at[0]+Math.sin(yaw)*reach,at[1]+h*(.12+.08*noise(i,j+18)),at[2]+Math.cos(yaw)*reach];let prev=at;
-   for(let q=1;q<=6;q++){const loc=mix(at,end,q/6);b.branch(prev,loc,Math.min(.0007,h*.0028),stem,'branch-small-sage');prev=loc;pair(loc,yaw+q*Math.PI/2,L*(.90-q*.07),i,j*29+q);}
+   for(let q=1;q<=6;q++){const loc=mix(at,end,q/6);b.branch(prev,loc,Math.min(.0007,h*.0028),stem,'branch-small-sage');prev=loc;retainedPair=pair(loc,yaw+q*Math.PI/2,L*(.90-q*.07),i,j*29+q,root,retainedPair)||retainedPair;}
    raceme(end,yaw,h*(.10+.04*noise(i,j+37)),i+j*57);
   }
   raceme(top,az,h*(.14+.06*noise(i,21)),i);
  }
+ if(inspection)inspection();
 }
 
 export function patensPoint(type,t,u){
@@ -10799,8 +10817,8 @@ export function cherrySagePoint(type,t,u){
 }
 
 // The inspection marker follows one existing Float32 triangle, including its face normal.
-function sageLipInspection(point,cols,scale,offset,pitch){
- const row=32,rotation=new THREE.Euler(pitch,0,0,'YXZ'),vertices=[[row/48,0],[(row+1)/48,0],[row/48,2/cols]].map(([t,u])=>new THREE.Vector3(...point(t,u).map(Math.fround)).multiply(new THREE.Vector3(...scale)).applyEuler(rotation).add(new THREE.Vector3(...offset))),centre=vertices[0].clone().add(vertices[1]).add(vertices[2]).multiplyScalar(1/3),normal=vertices[1].clone().sub(vertices[0]).cross(vertices[2].clone().sub(vertices[0])).normalize(),euler=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');
+function sageLipInspection(point,cols,scale,offset,pitch,rows=48){
+ const row=Math.floor(rows*2/3),rotation=new THREE.Euler(pitch,0,0,'YXZ'),vertices=[[row/rows,0],[(row+1)/rows,0],[row/rows,2/cols]].map(([t,u])=>new THREE.Vector3(...point(t,u).map(Math.fround)).multiply(new THREE.Vector3(...scale)).applyEuler(rotation).add(new THREE.Vector3(...offset))),centre=vertices[0].clone().add(vertices[1]).add(vertices[2]).multiplyScalar(1/3),normal=vertices[1].clone().sub(vertices[0]).cross(vertices[2].clone().sub(vertices[0])).normalize(),euler=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');
  return {centre,euler};
 }
 
@@ -17775,7 +17793,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='pineappleSageBranches'){drawPineappleSages(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='tallBlueSpires'){drawTallSages(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pratensisRosettes'){drawPratensis(b,{info,s,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='smallSageMounds'){drawSmallSages(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='smallSageMounds'){drawSmallSages(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='patensShoots'){drawPatens(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='cherrySageBranches'){drawCherrySage(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='officinalisMounds'){drawOfficinalis(b,{info,s,p,detail,rand,month},kit);return;}
