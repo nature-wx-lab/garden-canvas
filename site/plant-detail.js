@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.664';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.665';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.664';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.665';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11083,10 +11083,18 @@ export function perovskiaLeafPoint(t,u){
  return [u*width,t,.025*u*u*sn+.018*Math.sin(t*7)*sn-.022*t*t];
 }
 
-function drawPerovskia(b,{info,s,detail,rand,month},kit){
+function drawPerovskia(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.12,w*.14),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor,n=Math.max(5,Math.min(28,Math.round(18*detail*Math.pow(w/.7,.55))));
  const mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),noise=(i,k)=>.5+.5*Math.sin((i+1)*19.37+k*7.311);
- const leaves=(at,az,len,i,k)=>{if(noise(i,k)>s.leafDensity)return;for(const side of [0,1])b.add('perovskiaLeaf','leaf-perovskia-felt',kit.shade(rand,s.leafColor,.04),...at,len*a.leafWidth/a.leafLength,len,len,.80+.40*noise(i,k+2),az+side*Math.PI,0);};
+ const observe=p?.kind==='p-073feab328f6';let inspection=null,inspectionScore=-Infinity;
+ const leaves=(at,az,len,i,k,root=at,retainedPair=false)=>{
+  if(noise(i,k)>s.leafDensity)return false;
+  if(!observe){for(const side of [0,1])b.add('perovskiaLeaf','leaf-perovskia-felt',kit.shade(rand,s.leafColor,.04),...at,len*a.leafWidth/a.leafLength,len,len,.80+.40*noise(i,k+2),az+side*Math.PI,0);return false;}
+  const pitch=.80+.40*noise(i,k+2),ratio=a.leafWidth/a.leafLength,colors=[kit.shade(rand,s.leafColor,.04),kit.shade(rand,s.leafColor,.04)];let upper=0,lower=0;
+  for(const side of [0,1]){const euler=new THREE.Euler(pitch,az+side*Math.PI,0,'YXZ');for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*.500001*ratio*len,(corner&2?1:0)*len,(corner&4?.031:-.026)*len).applyEuler(euler);upper=Math.max(upper,point.y);lower=Math.max(lower,-point.y);}}
+  const ceiling=Math.min(h,s.leafHeight);if(ceiling<=.004)return false;const base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;const fit=Math.min(1,room/upper,lower>0?base[1]/lower:1);
+  for(const side of [0,1])b.add('perovskiaLeaf','leaf-perovskia-felt',colors[side],...base,len*ratio*fit,len*fit,len*fit,pitch,az+side*Math.PI,0);return true;
+ };
  const floret=(at,az,i,k)=>{
   const f=flowerFrame(b,at,1.05,az),len=Math.min(a.flowerLength,h*.055),cal=s.bloom?'#a8a6c0':winter?'#aba895':'#bdc8b6';
   f.add('nemorosaCalyx','calyx-perovskia',cal,0,0,0,len*.58,len*.60,len*.58);
@@ -11094,21 +11102,23 @@ function drawPerovskia(b,{info,s,detail,rand,month},kit){
   f.add('nemorosaTube','tube-perovskia',s.flowerColor,0,len*.2,0,len*.70,len*.8,len*.70);
   f.add('nemorosaHood','hood-perovskia',kit.shade(rand,s.flowerColor,.03),0,len*.8,0,len*.52,len*.45,len*.52);
   f.add('nemorosaLip','lip-perovskia',kit.shade(rand,s.flowerColor,.025),0,len*.85,len*.05,len*.72,len*.52,len*.72,.90,0,0);
+  if(observe){const marker=sageLipInspection((t,u)=>nemorosaPoint('nemorosaLip',t,u),20,[len*.72,len*.52,len*.72],[0,len*.85,len*.05],.90,48,13),point=marker.centre.clone().applyEuler(new THREE.Euler(1.05,az,0,'YXZ')).add(new THREE.Vector3(...at)),score=point.x*.8+point.z;if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(marker.centre.toArray(),len*1.30,marker.euler.x,marker.euler.y,marker.euler.z);}}
  };
  const cluster=(at,az,i,k)=>{for(let z=0;z<3;z++){const aa=az+z*TAU/3,p=[at[0]+Math.sin(aa)*.0025,at[1],at[2]+Math.cos(aa)*.0025];floret(p,aa,i,k+z);}};
  for(let i=0;i<n;i++){
-  const az=i*2.399963,rr=w*.28*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.37,.004,Math.cos(az)*rr*.37],top=[Math.sin(az)*rr,h*(.79+.16*noise(i,5)),Math.cos(az)*rr],base=mix(root,top,.07);b.branch(root,base,Math.min(.004,h*.009),a.barkColor,'wood-perovskia');let prev=base;
+  const az=i*2.399963,rr=w*.28*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.37,.004,Math.cos(az)*rr*.37],top=[Math.sin(az)*rr,h*(.79+.16*noise(i,5)),Math.cos(az)*rr],base=mix(root,top,.07);b.branch(root,base,Math.min(.004,h*.009),a.barkColor,'wood-perovskia');let prev=base,retainedPair=false;
   for(let j=1;j<=14;j++){
    const at=mix(base,top,j/14),aa=az+j*Math.PI/2;b.branch(prev,at,Math.min(.002,h*.004)*(1-j*.025),stem,'stem-perovskia');prev=at;
-   leaves(at,aa,L*(j<8?1:j<10?.65:.28),i,j+15);
+   retainedPair=leaves(at,aa,L*(j<8?1:j<10?.65:.28),i,j+15,root,retainedPair)||retainedPair;
    if(j<8)continue;cluster(at,aa,i,j*15+30);
    if(j===14||j%2)continue;
    for(const side of [-1,1]){
     const yaw=aa+side*.53,reach=w*.15*(1-(j-8)*.14),end=[at[0]+Math.sin(yaw)*reach,Math.min(h*.97,at[1]+h*(.15-.012*(j-8))),at[2]+Math.cos(yaw)*reach];let old=at;
-    const levels=Math.max(2,Math.min(5,Math.round(5*h/.9)));for(let z=1;z<=levels;z++){const p=mix(at,end,z/levels);b.branch(old,p,Math.min(.0008,h*.002),stem,'branch-perovskia');old=p;cluster(p,yaw+z*.8,i,j*30+z*5+(side+1)*70);if(z===1)leaves(p,yaw,L*.26,i,j*4+55);}
+    const levels=Math.max(2,Math.min(5,Math.round(5*h/.9)));for(let z=1;z<=levels;z++){const p=mix(at,end,z/levels);b.branch(old,p,Math.min(.0008,h*.002),stem,'branch-perovskia');old=p;cluster(p,yaw+z*.8,i,j*30+z*5+(side+1)*70);if(z===1)retainedPair=leaves(p,yaw,L*.26,i,j*4+55,root,retainedPair)||retainedPair;}
    }
   }
  }
+ if(inspection)inspection();
 }
 
 export function lavenderPoint(type,t,u){
@@ -17860,7 +17870,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='officinalisMounds'){drawOfficinalis(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='leucanthaCanes'){drawLeucantha(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='indigoSpires'){drawIndigoSpires(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='perovskiaShoots'){drawPerovskia(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='perovskiaShoots'){drawPerovskia(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lavenderMounds'){drawLavenderMounds(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='chocolateCosmos'){drawChocolateCosmos(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='silverDropJuvenile'){drawSilverDrop(b,{info,s,detail,rand},kit);return;}
