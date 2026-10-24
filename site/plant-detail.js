@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.705';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.706';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.705';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.706';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4788,7 +4788,7 @@ const bergeniaObovateCorners=(()=>{
 })();
 function drawSaxifragaceae(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const a=info.appearance,typ=a.shootProfile,sax=a.architecture==='saxifrageRosettes',h=s.height,w=s.spread,observe=p?.kind==='p-8df7e24225e1',cap=Math.min(h,s.leafHeight),rootY=observe?Math.min(.010,h*.10,cap*.12):.010,rhizomeY=observe?Math.min(.017,h*.15,cap*.20):.017;
+ const a=info.appearance,typ=a.shootProfile,sax=a.architecture==='saxifrageRosettes',h=s.height,w=s.spread,observe=['p-8df7e24225e1','p-f9b0afaaa4ca'].includes(p?.kind),cap=Math.min(h,s.leafHeight),rootY=observe?Math.min(.010,h*.10,cap*.12):.010,rhizomeY=observe?Math.min(.017,h*.15,cap*.20):.017;
  const L=Math.min(a.leafLength,w*(sax?.22:.44))*s.leafScale,stem=a.stemColor,crowns=[];
  const leaf=(base,an,size,age)=>{
   const rise=sax?Math.min(h*a.foliageHeightRatio,size*.48):Math.min(h*a.foliageHeightRatio*.60,L*.85)*(1-age*.85),pitch=(sax?.65:.30)+age*(sax?.90:1.20)+(rand()-.5)*.18,ratio=a.leafWidth/a.leafLength;let fit=1;

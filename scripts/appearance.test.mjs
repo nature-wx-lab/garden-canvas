@@ -13446,3 +13446,25 @@ test('DRAGONFLY Sakura thick leaves and petioles stay connected to rhizomes insi
  }
  assert.equal(models,45);const doc=emptyDocument(14,6);doc.plans.A.plants=[...c.sizes,...tiny].map((d,i)=>({...makePlant(c.id,705100+i,1+i*1.5,3),height:d[0],spread:d[1],leafHeight:d[2]}));doc.view.month=4;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-25.7'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);console.log('SAKURA_705_GEOMETRY '+JSON.stringify({models,actualVertices,attachedLeaves,attachedPetioles,diagnostics}));
 });
+const SNOW_TIME_706={id:'p-f9b0afaaa4ca',pid:70610,sizes:[[.35,.45,.3],[.08,.18,.04],[.35,.45,.005]]};
+test('Snow Time thick leaves and petioles stay connected to rhizomes inside independent saved dimensions',()=>{
+ const c=SNOW_TIME_706,tiny=[[.01,.1,.005],[.5,.1,.005],[.01,.6,.005],[.5,.1,.006]],cases=[...c.sizes.flatMap(dims=>Array.from({length:12},(_,i)=>({dims,month:i+1,reference:false}))),...tiny.flatMap(dims=>[1,10].map(month=>({dims,month,reference:false}))),{dims:c.sizes[1],month:10,reference:true}],eps=1e-7;let models=0,actualVertices=0,attachedLeaves=0,attachedPetioles=0;const diagnostics=[];
+ assert.deepEqual(CATALOG[c.id].height,[.2,.4]);assert.equal(CATALOG[c.id].spread,null);assert.equal(CATALOG[c.id].latin,'Bergenia cordifolia Snow Time');assert.deepEqual(CATALOG[c.id].bloom,[3,4,5,9,10,11]);assert.equal(CATALOG[c.id].sourceChecked,'2026-10-25');assert.ok(appearanceSummary(CATALOG[c.id]).includes('厚みと丸い縁'));
+ for(const {dims,month,reference}of cases){models++;const p={...makePlant(c.id,c.pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},original=structuredClone(p),s=stateAt(p,{month,year:1,reference}),g=plantModel(p,{month,year:1,reference}),matrix=new Matrix4();let minY=Infinity,maxY=-Infinity,radial=0,leafTop=-Infinity;const roots=[],petioles=[],rhizomes=[];
+  try{g.updateMatrixWorld(true);assert.equal(g.userData.architecture,'bergeniaRhizomes');const count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);assert.ok(count('scape-bergenia')>0&&count('panicle-bergenia')>0&&count('pedicel-bergenia')>0);assert.equal(count('petal-bergenia')>0,[3,4,5,9,10,11].includes(month));assert.ok(!g.children.some(m=>/^(fruit|seed|capsule)-/.test(m.userData.component)));
+   for(const mesh of g.children){const component=mesh.userData.component,leaf=component==='leaf-bergenia-glossy',petiole=component==='petiole-bergenia',rhizome=component==='rhizome-bergenia',pos=mesh.geometry.attributes.position.array;assert.ok(pos.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite)&&mesh.instanceMatrix.array.every(Number.isFinite));
+    for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);const m=matrix.elements;
+     if(leaf)roots.push([m[12],m[13],m[14]]);
+     if(petiole||rhizome){const ends=[-0.5,0.5].map(t=>[m[12]+m[4]*t,m[13]+m[5]*t,m[14]+m[6]*t]),radius=Math.hypot(m[0],m[1],m[2]);(petiole?petioles:rhizomes).push({ends,radius});}
+     for(let j=0;j<pos.length;j+=3){const x=m[0]*pos[j]+m[4]*pos[j+1]+m[8]*pos[j+2]+m[12],y=m[1]*pos[j]+m[5]*pos[j+1]+m[9]*pos[j+2]+m[13],z=m[2]*pos[j]+m[6]*pos[j+1]+m[10]*pos[j+2]+m[14];minY=Math.min(minY,y);maxY=Math.max(maxY,y);radial=Math.max(radial,Math.hypot(x,z));if(leaf||petiole)leafTop=Math.max(leafTop,y);actualVertices++;}
+    }
+   }
+   assert.ok(roots.length>0&&rhizomes.length===3);assert.equal(roots.length,petioles.length);assert.ok(minY>=-eps,'above soil '+JSON.stringify({dims,month,minY}));assert.ok(maxY<=s.height+eps,'saved full height '+JSON.stringify({dims,month,maxY,height:s.height}));assert.ok(radial*2<=s.spread+eps,'saved full width');assert.ok(leafTop<=Math.min(s.height,s.leafHeight)+eps,'leaf and petiole cap');
+   const distance=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i])),segmentDistance=(p,a,b)=>{const d=b.map((x,i)=>x-a[i]),n=d.reduce((v,x)=>v+x*x,0),t=n?Math.max(0,Math.min(1,d.reduce((v,x,i)=>v+x*(p[i]-a[i]),0)/n)):0;return distance(p,a.map((x,i)=>x+t*d[i]));};
+   for(const pt of roots){assert.ok(petioles.some(x=>distance(pt,x.ends[1])<eps),'real blade origin meets petiole tip');attachedLeaves++;}
+   for(const x of petioles){assert.ok(rhizomes.some(r=>segmentDistance(x.ends[0],...r.ends)<=r.radius+eps),'petiole base intersects thick rhizome');attachedPetioles++;}
+   assert.deepEqual(p,original);if(month===10&&!reference)diagnostics.push({dims,minY,maxY,actualSpread:radial*2,actualLeafHeight:leafTop,leaves:roots.length,petioles:petioles.length,scale:g.scale.toArray()});
+  }finally{dispose(g);}
+ }
+ assert.equal(models,45);const doc=emptyDocument(14,6);doc.plans.A.plants=[...c.sizes,...tiny].map((d,i)=>({...makePlant(c.id,706100+i,1+i*1.5,3),height:d[0],spread:d[1],leafHeight:d[2]}));doc.view.month=10;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-25.8'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);console.log('SNOW_TIME_706_GEOMETRY '+JSON.stringify({models,actualVertices,attachedLeaves,attachedPetioles,diagnostics}));
+});
