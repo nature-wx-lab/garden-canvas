@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.656';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.657';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.656';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.657';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10673,7 +10673,7 @@ export function smallSagePoint(type,t,u){
 function drawSmallSages(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,profile=a.shootProfile,coah=profile==='coahuilensis',germ=profile==='germander',cold=[12,1,2].includes(month),stem=cold?a.winterStemColor:a.stemColor,L=Math.min(a.leafLength,h*.22,w*.15),F=Math.min(a.flowerLength,h*.14,w*.12),n=Math.max(5,Math.min(30,Math.round((coah?15:germ?22:20)*detail*Math.sqrt(w/.35))));
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const observe=(p?.kind==='p-5faf36670c76'&&coah)||(p?.kind==='p-a69b7655fd1e'&&germ);let inspection=null,inspectionScore=-Infinity;
+ const observe=(p?.kind==='p-5faf36670c76'&&coah)||(p?.kind==='p-a69b7655fd1e'&&germ)||(p?.kind==='p-25b06ebb3b3e'&&profile==='sinaloa');let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,root=at,retainedPair=false)=>{
   if(noise(i,k)>s.leafDensity)return false;
   if(!observe){
@@ -10685,12 +10685,12 @@ function drawSmallSages(b,{info,s,p,detail,rand,month},kit){
   for(let side=0;side<2;side++){
    const aa=az+side*Math.PI+(noise(i,k+side+52)-.5)*.12,pitch=.85+.60*noise(i,k+side+70),roll=(noise(i,k+side+35)-.5)*.35,color=kit.shade(rand,s.leafColor,.065),euler=new THREE.Euler(pitch,aa,roll,'YXZ');
    // Include the existing Germander blade hairs, with the unchanged narrow Coahuilensis surface.
-   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*(germ?.447034:.500001)*ratio*len,(corner&2?1:0)*len,(corner&4?(germ?.038535:.028705):-.070001)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.30);lower=Math.max(lower,-point.y);}
+   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*(germ?.447034:coah?.500001:.513712)*ratio*len,(corner&2?1:0)*len,(corner&4?(germ?.038535:.028705):-.070001)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.30);lower=Math.max(lower,-point.y);}
    leaves.push({aa,pitch,roll,color});
   }
   const ceiling=Math.min(h,s.leafHeight),base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
   const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.30*fit,base[2]+Math.cos(leaf.aa)*pet*fit]})),direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
-  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,stem,'petiole-small-sage');b.add(coah?'coahLeaf':'germanderLeaf','leaf-small-sage-'+profile,leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,stem,'petiole-small-sage');b.add(coah?'coahLeaf':germ?'germanderLeaf':'sinaloaLeaf','leaf-small-sage-'+profile,leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
   return true;
  };
  const raceme=(base,az,len,i)=>{
