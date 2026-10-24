@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.711';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.712';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.711';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.712';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4873,26 +4873,31 @@ export function agapanthusPoint(type,t,u){
  return [Math.sin(angle*taper)*radius,t-(closed?0:.12*opening*opening),Math.cos(angle*taper)*radius];
 }
 
-function drawAgapanthus(b,{info,s,detail,rand},kit){
+// Match the Float32 support of the existing leaf mesh before fitting its rise.
+const agapanthusLeafYZ=Array.from({length:33*11},(_,i)=>{
+ const point=agapanthusPoint('leaf',Math.floor(i/11)/32,(i%11)/10*2-1);return [Math.fround(point[1]),Math.fround(point[2])];
+});
+function drawAgapanthus(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,green=s.leafColor,L=Math.min(a.leafLength,w*.55)*s.leafScale,stem=a.stemColor;
+ const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,observe=p?.kind==='p-e0e65a82a219',cap=Math.min(h,s.leafHeight),rootY=observe?Math.min(.008,h*.10,cap*.10):.008,green=s.leafColor,L=Math.min(a.leafLength,w*.55)*s.leafScale,stem=a.stemColor;
  const crowns=[],n=Math.max(3,Math.round((type==='summer'?7:5)*detail));
  const leafKind=type==='silver'&&[3,4,5,6,7].includes(s.month)?'leaf-agapanthus-margin':'leaf-agapanthus'+(type==='northern'?'-purplebase':'');
  for(let i=0;i<n;i++){
-  const az=i*2.399963,rr=w*.13*Math.sqrt((i+.2)/n),at=[Math.sin(az)*rr,.008,Math.cos(az)*rr];crowns.push(at);
+  const az=i*2.399963,rr=w*.13*Math.sqrt((i+.2)/n),at=[Math.sin(az)*rr,rootY,Math.cos(az)*rr];crowns.push(at);
   const leaves=type==='summer'?14:12;
   for(let k=0;k<leaves;k++){
    const size=L*(.60+.4*k/leaves),an=az+(k%2?Math.PI:0)+(rand()-.5)*.24,pitch=k<3?-.38:.02+rand()*.34;
    if(k!==0&&rand()>s.leafDensity)continue;
-   b.add('agapanthusLeaf',leafKind,kit.shade(rand,green,.055),at[0],at[1]+.002*k,at[2],Math.min(a.leafWidth,w*.075)*s.leafScale,size,size,pitch,an,0);
+   let fit=1;if(observe){let upper=0,lower=0;const co=Math.cos(pitch),si=Math.sin(pitch);for(const point of agapanthusLeafYZ){const y=(co*point[0]-si*point[1])*size;upper=Math.max(upper,y);lower=Math.max(lower,-y);}fit=Math.max(0,Math.min(1,upper>0?(cap-rootY-.00002)/upper:1,lower>0?rootY/lower:1));}
+   b.add('agapanthusLeaf',leafKind,kit.shade(rand,green,.055),at[0],observe?rootY:at[1]+.002*k,at[2],Math.min(a.leafWidth,w*.075)*s.leafScale*fit,size*fit,size*fit,pitch,an,0);
   }
  }
  const before=s.flowerBuds;if(!s.bloom&&!before)return;
- const heads=Math.max(2,Math.round((type==='summer'?8:type==='queen'||type==='umbrella'?5:6)*detail)),r=a.flowerRadius,hr=Math.min(a.headRadius,w*.22),pal=a.flowerPalette;
+ const heads=Math.max(2,Math.round((type==='summer'?8:type==='queen'||type==='umbrella'?5:6)*detail)),r=observe?Math.min(a.flowerRadius,h*.12):a.flowerRadius,hr=Math.min(a.headRadius,w*.22,observe?h*.22:Infinity),pal=a.flowerPalette;
  for(let i=0;i<heads;i++){
   const root=crowns[i%crowns.length],az=i*2.399963,top=[root[0]+Math.sin(az)*w*.23,h*(.69+rand()*.24)-hr*.40,root[2]+Math.cos(az)*w*.23];
-  if(before){top[1]*=.76;b.branch(root,top,Math.min(.008,h*.010),stem,'scape-agapanthus');b.add(kit.bud,'spathe-agapanthus','#849c65',...top,hr*.35,hr*.73,hr*.35);continue;}
-  b.branch(root,top,Math.min(.008,h*.010),stem,'scape-agapanthus');
+  if(before){top[1]*=.76;b.branch(root,top,Math.min(.008,h*.010,observe?rootY:Infinity),stem,'scape-agapanthus');b.add(kit.bud,'spathe-agapanthus','#849c65',...top,hr*.35,hr*.73,hr*.35);continue;}
+  b.branch(root,top,Math.min(.008,h*.010,observe?rootY:Infinity),stem,'scape-agapanthus');
   for(let q=0;q<2;q++)b.add('iberisEntire','bract-agapanthus','#b7ac89',...top,hr*.30,hr*.55,hr*.3,1.5,q*Math.PI+az,0);
   const count=Math.max(18,Math.round(pal.count*detail));
   for(let j=0;j<count;j++){
@@ -18024,7 +18029,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='lysimachiaShoots'){drawLysimachia(b,{info,s,view:{month},detail,rand},kit);return;}
  if(info.appearance?.architecture==='delphiniumSpires'){drawDelphinium(b,{info,s,p,detail,rand},kit);return;}
  if(['saxifrageRosettes','bergeniaRhizomes'].includes(info.appearance?.architecture)){drawSaxifragaceae(b,{info,s,p,detail,rand},kit);return;}
- if(info.appearance?.architecture==='agapanthusFans'){drawAgapanthus(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='agapanthusFans'){drawAgapanthus(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='tiarellaCrowns'){drawTiarella(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='heucheraCrowns'){drawHeuchera(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='heucherellaCrowns'){drawHeucherella(b,{info,s,detail,rand},kit);return;}
