@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.679';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.680';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.679';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.680';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -2016,7 +2016,7 @@ export function aromaticFlowerGeometry(type){
 }
 function drawAromaticShrubs(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,type=a.shootProfile,santo=type==='snowCoral'||type==='lambrook',gold=type==='gildedGold',mozart=type==='mozartBlue',h=s.height,w=s.spread,wood=[],leaves=[],heads=[],flowers=[];
- const observe=p?.kind==='p-0fe0203ab3f7'&&type==='rosemary',leafBases=new Map(),retainedCrowns=new Set();let inspection=null,inspectionScore=-Infinity;
+ const observe=(p?.kind==='p-0fe0203ab3f7'&&type==='rosemary')||(p?.kind==='p-7d77d4069d76'&&a.shootProfile==='gildedGold')||(p?.kind==='p-deb60399eed7'&&a.shootProfile==='mozartBlue'),leafBases=new Map(),retainedCrowns=new Set();let inspection=null,inspectionScore=-Infinity;
  const shoot=(root,az,rise,reach,order,crown=root)=>{
   const N=order===0?8:santo?6:9,path=t=>[root[0]+Math.sin(az+.09*t*t)*reach*t,root[1]+rise*t+h*(mozart?.09:.023)*Math.sin(t*Math.PI),root[2]+Math.cos(az+.09*t*t)*reach*t];
   for(let j=1;j<=N;j++){
