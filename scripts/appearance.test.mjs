@@ -13197,3 +13197,25 @@ test('Silver Sand actual leaves follow independent tiny foliage caps with attach
  }
  assert.equal(models,45);const doc=emptyDocument(14,6);doc.plans.A.plants=[...c.sizes,...tiny].map((d,i)=>({...makePlant('p-5caf8a404f18',694100+i,1+i*1.5,3),height:d[0],spread:d[1],leafHeight:d[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-24.79'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);console.log('SILVER_SAND_694_GEOMETRY '+JSON.stringify({models,actualVertices,attachedLeaves,diagnostics}));
 });
+
+
+const GROSSO_695={"id":"p-3c919c4a2d05","pid":69510,"sizes":[[0.8,0.8,0.48],[0.08,0.18,0.04],[0.8,0.8,0.005]]};
+test('Grosso actual leaves follow independent tiny foliage caps with attached opposite pairs and whole plants inside saved dimensions',()=>{
+ const c=GROSSO_695,tiny=[[.01,.1,.005],[.5,.1,.005],[.01,.6,.005],[.5,.1,.006]],cases=[...c.sizes.flatMap(dims=>Array.from({length:12},(_,i)=>({dims,month:i+1,reference:false}))),...tiny.flatMap(dims=>[1,6].map(month=>({dims,month,reference:false}))),{dims:c.sizes[1],month:6,reference:true}],eps=1e-7,attachmentTolerance2=(2e-7)**2;let models=0,actualVertices=0,attachedLeaves=0;const diagnostics=[];
+ assert.deepEqual(CATALOG[c.id].height,[.7,.9]);assert.deepEqual(CATALOG[c.id].spread,[.6,1]);assert.deepEqual(CATALOG[c.id].bloom,[5,6,7,8,9,10,11]);assert.equal(CATALOG[c.id].sourceChecked,'2026-10-24');assert.equal(CATALOG[c.id].source,'https://item.rakuten.co.jp/ogis/257gr/');assert.equal(CATALOG[c.id].appearance.flowerTiming,'season-reference');
+ for(const {dims,month,reference}of cases){models++;const p={...makePlant(c.id,c.pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},original=structuredClone(p),s=stateAt(p,{month,year:1,reference}),g=plantModel(p,{month,year:1,reference}),matrix=new Matrix4(),point=new Vector3(),tips=new Map(),roots=[];let leaves=0,minY=Infinity,maxY=-Infinity,radial=0,leafTop=-Infinity;const cell=v=>v.map(x=>Math.floor(x*1e6)),key=v=>v.join(',');
+  try{g.updateMatrixWorld(true);assert.equal(g.userData.architecture,'lavenderMounds');const count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);assert.equal(count('tube-lavender')>0,[5,6,7,8,9,10,11].includes(month));assert.equal(count('petal-lavender'),count('tube-lavender')*5);assert.ok(count('calyx-lavender')>0);assert.ok(count('fork-lavender')>0);
+   for(const mesh of g.children){const component=mesh.userData.component,leaf=component==='leaf-lavender',stem=/^(wood|shoot|twig|shortshoot)-lavender$/.test(component),pos=mesh.geometry.attributes.position.array;assert.ok(pos.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite)&&mesh.instanceMatrix.array.every(Number.isFinite));if(leaf){leaves+=mesh.count;assert.equal(mesh.count%2,0);}
+    for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);const m=matrix.elements;
+     if(stem)for(const sign of[-.5,.5]){const pt=[m[12]+sign*m[4],m[13]+sign*m[5],m[14]+sign*m[6]],k=key(cell(pt));if(!tips.has(k))tips.set(k,[]);tips.get(k).push(pt);}
+     if(leaf){const pt=[m[12],m[13],m[14]];roots.push(pt);if(i%2){const prev=roots.at(-2);assert.ok(pt.every((v,j)=>v===prev[j]),'opposite leaves share their real node');}}
+     for(let j=0;j<pos.length;j+=3){const x=m[0]*pos[j]+m[4]*pos[j+1]+m[8]*pos[j+2]+m[12],y=m[1]*pos[j]+m[5]*pos[j+1]+m[9]*pos[j+2]+m[13],z=m[2]*pos[j]+m[6]*pos[j+1]+m[10]*pos[j+2]+m[14];minY=Math.min(minY,y);maxY=Math.max(maxY,y);radial=Math.max(radial,Math.hypot(x,z));if(leaf)leafTop=Math.max(leafTop,y);actualVertices++;}
+    }
+   }
+   assert.ok(leaves>0);assert.ok(minY>=-eps,'all actual geometry above soil '+JSON.stringify({dims,month,reference,minY}));assert.ok(maxY<=s.height+eps,'actual height cap '+JSON.stringify({dims,month,reference,maxY,height:s.height}));assert.ok(radial*2<=s.spread+eps,'actual width cap');assert.ok(leafTop<=Math.min(s.height,s.leafHeight)+eps,'actual independent foliage ceiling');
+   for(const pt of roots){const b=cell(pt);let hit=false;for(let dx=-1;dx<=1&&!hit;dx++)for(let dy=-1;dy<=1&&!hit;dy++)for(let dz=-1;dz<=1&&!hit;dz++)for(const q of tips.get(key([b[0]+dx,b[1]+dy,b[2]+dz]))||[])if(pt.reduce((n,v,j)=>n+(v-q[j])**2,0)<=attachmentTolerance2){hit=true;break;}assert.ok(hit,'leaf node on an actual vegetative stem endpoint');attachedLeaves++;}
+   assert.deepEqual(p,original);if(month===6&&!reference)diagnostics.push({dims,minY,maxY,actualSpread:radial*2,actualLeafHeight:leafTop,leaves,scale:g.scale.toArray()});
+  }finally{dispose(g);}
+ }
+ assert.equal(models,45);const doc=emptyDocument(14,6);doc.plans.A.plants=[...c.sizes,...tiny].map((d,i)=>({...makePlant('p-3c919c4a2d05',695100+i,1+i*1.5,3),height:d[0],spread:d[1],leafHeight:d[2]}));doc.view.month=6;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-24.80'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);console.log('GROSSO_695_GEOMETRY '+JSON.stringify({models,actualVertices,attachedLeaves,diagnostics}));
+});
