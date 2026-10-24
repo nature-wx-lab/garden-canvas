@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.732';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.733';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.732';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.733';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11908,7 +11908,60 @@ export function lamiumPoint(type,t,u){
  return [u*width,t-.12*Math.pow(Math.abs(u),.7)*Math.exp(-t*6),.09*t*t+.085*Math.abs(u)*sn+rib+.009*Math.sin(t*19+u*5)*u*u*sn];
 }
 
-function drawLamium(b,{info,s,detail,rand},kit){
+const lamiumUnitAxis=new THREE.CylinderGeometry(1,1,1,6,1),lamiumUnitSquare=new THREE.CylinderGeometry(1,1,1,4,1),lamiumCapPoints=new Map();
+function lamiumCapSupport(type,size,ratio,pitch,yaw,roll){
+ let points=lamiumCapPoints.get(type);
+ if(!points){points=[];for(let i=0;i<=48;i++)for(let j=0;j<=20;j++)points.push(lamiumPoint(type,i/48,j/20*2-1).map(Math.fround));lamiumCapPoints.set(type,points);}
+ const e=new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(pitch,yaw,roll,'YXZ')).elements;let low=Infinity,high=-Infinity;
+ for(const p of points){const y=e[1]*p[0]*size*ratio+e[5]*p[1]*size+e[9]*p[2]*size;low=Math.min(low,y);high=Math.max(high,y);}return{low,high};
+}
+function drawSterlingLamium(b,{info,s,detail,rand},kit){
+ if(s.groundDormant)return;
+ const a=info.appearance,h=s.height,w=s.spread,ceiling=Math.min(s.height,s.leafHeight),stem=a.stemColor,L=Math.min(a.leafLength,w*.28)*s.leafScale;
+ const shoots=Math.max(4,Math.min(14,Math.round(7*detail*Math.pow(w/.3,.8)))),nodes=Math.max(3,Math.min(7,Math.round(w/.065))),rootY=Math.min(.006,h*.12,ceiling*.10);
+ const axis=(from,to,r,kind)=>{
+  const radius=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*.70),length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length<=0)return;
+  if(length>=.0001){b.branch(from,to,radius,stem,kind);return;}
+  const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');
+  b.add(['branch-lamium-sterling','stem-lamium'].includes(kind)?lamiumUnitSquare:lamiumUnitAxis,kind,stem,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,radius,length,radius,rotation.x,rotation.y,rotation.z);
+ };
+ const leafPair=(at,yaw,size,petiole,pitch=1.18,upper=false,path=[])=>{
+  const specs=[-1,1].map(side=>({angle:yaw+(side===1?0:Math.PI),color:kit.shade(rand,s.leafColor,.05),roll:(rand()-.5)*.16}));let low=-.00048,high=petiole*.30+.00048;
+  for(const spec of specs){const support=lamiumCapSupport(a.leafShape,size,a.leafWidth/a.leafLength,pitch,spec.angle,spec.roll);low=Math.min(low,petiole*.30+support.low);high=Math.max(high,petiole*.30+support.high);}
+  let node=at;
+  if(node[1]+high>ceiling-.00002&&path.length>1){
+   const target=Math.min(node[1],Math.max(path[0][1],ceiling*.15,ceiling-high-.00002));
+   for(let k=1;k<path.length;k++){const from=path[k-1],to=path[k];if(target>=Math.min(from[1],to[1])&&target<=Math.max(from[1],to[1])&&to[1]!==from[1]){const t=(target-from[1])/(to[1]-from[1]);node=from.map((v,i)=>v+(to[i]-v)*t);break;}}
+  }
+  const fit=Math.max(0,Math.min(1,(ceiling-node[1]-.00002)/high,low<0?node[1]/-low:1));
+  for(const spec of specs){const end=[node[0]+Math.sin(spec.angle)*petiole*fit,node[1]+petiole*.30*fit,node[2]+Math.cos(spec.angle)*petiole*fit];axis(node,end,.00048*fit,'petiole-lamium');b.add(a.leafShape,'leaf-lamium-sterling'+(upper?'-upper':''),spec.color,...end,size*a.leafWidth/a.leafLength*fit,size*fit,size*fit,pitch,spec.angle,spec.roll);}
+ };
+ for(let i=0;i<shoots;i++){
+  const angle=i*2.399963,reach=Math.max(.002,w*.34-L*.70),lift=h*(s.winter?.055:.13),nodesAt=[],paths=[],path=[[0,rootY,0]];let from=path[0];
+  for(let n=1;n<=nodes;n++){
+   const t=n/nodes,yaw=angle+.18*Math.sin(t*4+i),at=[Math.sin(yaw)*reach*t,Math.min(.006+lift*Math.sin(t*Math.PI),ceiling*.40),Math.cos(yaw)*reach*t];
+   axis(from,at,.0010*(1-t*.35),'branch-lamium-sterling');path.push(at);nodesAt.push(at);paths.push(path.slice());from=at;
+   if(rand()<s.leafDensity)leafPair(at,yaw+n*Math.PI/2,L*(.72+.24*t),a.petioleLength*s.leafScale,1.18,false,path);
+  }
+  if(!s.bloom)continue;
+  const baseIndex=Math.min(nodes-1,2+i%2),base=nodesAt[baseIndex],top=h*(.73+rand()*.15),flowerPath=paths[baseIndex].slice();let last=base;
+  for(let q=1;q<=4;q++){
+   const t=q/4,at=[base[0]+Math.sin(angle)*h*.13*t,base[1]+(top-base[1])*t,base[2]+Math.cos(angle)*h*.13*t];
+   axis(last,at,.00085*(1-t*.32),'stem-lamium');flowerPath.push(at);last=at;
+   const yaw=angle+q*Math.PI/2;leafPair(at,yaw,L*(.85-.47*t),a.petioleLength*(.65-.53*t),.95,true,flowerPath);
+   if(q<2)continue;
+   for(const side of [-1,1])for(let f=0;f<2;f++){
+    if(rand()>s.flowerDensity)continue;
+    const turn=yaw+(side===1?0:Math.PI)+(f-.5)*.60,offset=Math.min(.004,h*.10,w*.06),tip=[at[0]+Math.sin(turn)*offset,at[1]+Math.min(.001+f*.002,h*.09),at[2]+Math.cos(turn)*offset];
+    axis(at,tip,.00025,'pedicel-lamium');
+    detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r:Math.min(a.flowerRadius,h*.12,w*.10),color:s.flowerColor,shape:'lamiumLips',palette:{type:a.shootProfile,length:Math.min(a.flowerLength,h*.60)},tilt:1.16+(rand()-.5)*.18,yaw:turn},{...kit,rand});
+   }
+  }
+ }
+}
+
+function drawLamium(b,{info,s,p,detail,rand},kit){
+ if(p?.kind==='p-c309c35b2f9c'){drawSterlingLamium(b,{info,s,detail,rand},kit);return;}
  if(s.groundDormant)return;
  const a=info.appearance,sterling=a.shootProfile==='sterling',winter=s.winter,w=s.spread,h=s.height;
  const L=Math.min(a.leafLength,w*.28)*s.leafScale,leafKind='leaf-lamium-'+a.shootProfile,stem=a.stemColor;
@@ -18172,7 +18225,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='melinisTussock'){drawMelinis(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='adenophoraArches'){drawAdenophoraArches(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='gardenBellShoots'){drawGardenBellShoots(b,{info,s,rand,month,detail},kit);return;}
  if(info.appearance?.architecture==='lanternBellCrowns'){drawLanternBellCrowns(b,{info,s,rand,month,detail},kit);return;}

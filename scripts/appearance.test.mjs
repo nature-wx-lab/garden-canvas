@@ -3902,7 +3902,7 @@ test('Linaria keeps spurred bilabiate racemes and replaces winter flower stems w
   }
  }
 });
-test('Lamium keeps paired silver leaves on runners and axillary hooded flowers without winter double scaling',()=>{
+test('Lamium distinguishes compact Sterling shoots from Galeobdolon runners with paired leaves',()=>{
  const ids=['p-c309c35b2f9c','p-7084ea19721c'];
  for(const [i,id] of ids.entries()){
   const info=CATALOG[id],a=info.appearance,p=makePlant(id,17100+i,1,1);p.height=.2;p.spread=.42;p.leafHeight=.12;
@@ -3914,7 +3914,7 @@ test('Lamium keeps paired silver leaves on runners and axillary hooded flowers w
    const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
    const hood=count('petal-lamium-'+(i?'yellow':'purple')+'-hood'),leafMeshes=g.children.filter(m=>m.userData.component.startsWith('leaf-lamium-'));
    assert.equal(g.userData.architecture,'lamiumRunners');assert.equal(g.scale.x,1);assert.equal(g.scale.y,1);assert.equal(seasonAt(info,month).shootScale,1);
-   assert.ok(count('stolon-lamium')>0);assert.ok(count('root-lamium')>0);assert.equal(count('stem-lamium')>0,info.bloom.includes(month));
+   if(i){assert.ok(count('stolon-lamium')>0);assert.ok(count('root-lamium')>0);}else{assert.equal(count('stolon-lamium'),0);assert.equal(count('root-lamium'),0);assert.ok(count('branch-lamium-sterling')>0);}assert.equal(count('stem-lamium')>0,info.bloom.includes(month));
    assert.equal(hood>0,info.bloom.includes(month));assert.equal(count('sepal-lamium'),hood*5);assert.equal(count('anther-lamium'),hood*4);assert.equal(count('style-lamium'),hood);assert.equal(count('stigma-lamium'),hood*2);
    assert.equal(count('petal-lamium-'+(i?'yellow':'purple')+'-lower'),hood);assert.equal(count('petal-lamium-'+(i?'yellow':'purple')+'-side'),hood*2);
    assert.ok(leafMeshes.length);for(const mesh of leafMeshes)assert.equal(mesh.count%2,0);
@@ -13972,4 +13972,31 @@ test('Annual crimson clovers fit connected stem leaf junctions and tiny spikes w
   }
  }
  assert.equal(models,90);assert.equal(ended,36);for(const c of CLOVER_732){const old={...makePlant(c.id,c.pid,3,3),start:9};for(const month of[1,5,10]){const v={month,year:2,reference:false},g=plantModel(old,v);assert.equal(stateAt(old,v).present,false);assert.equal(g.children.length,0);dispose(g);}const newlySown={...old,id:c.pid+100,start:21};assert.equal(stateAt(newlySown,{month:5,year:2,reference:false}).present,true);assert.equal(stateAt(newlySown,{month:5,year:2,reference:false}).bloom,true);}const doc=emptyDocument(14,6);doc.plans.A.plants=CLOVER_732.flatMap((c,k)=>c.sizes.map((d,i)=>({...makePlant(c.id,732100+k*10+i,1+(k*3+i)*1.5,3),height:d[0],spread:d[1],leafHeight:d[2],start:9})));doc.view.month=5;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-25.34'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);console.log('CLOVER_732_GEOMETRY '+JSON.stringify({models,ended,actualVertices,leaflets,petioleSegments,stems,diagnostics}));
+});
+
+const LAMIUM_733=[{"id":"p-c309c35b2f9c","pid":73310,"label":"sterling-silver","sizes":[[0.15,0.45,0.1],[0.03,0.18,0.012],[0.15,0.45,0.005]],"months":[5,6],"inspectMonth":5,"height":[0.1,0.2],"spread":null}];
+test('Sterling Silver fits compact connected opposite leaves and flowers without false long runners',()=>{
+ let models=0,actualVertices=0,leavesTotal=0,petiolesTotal=0,branchesTotal=0;const diagnostics=[],eps=1e-7,c=LAMIUM_733[0],info=CATALOG[c.id];
+ assert.deepEqual(info.height,[.1,.2]);assert.equal(info.spread,null);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[5,6]);assert.deepEqual(info.colors,['pink','purple']);assert.equal(info.sourceChecked,'2026-10-25');assert.equal(info.appearance.habit,'clump');
+ const tiny=[[.01,.1,.005],[.1,.1,.005],[.01,.6,.005],[.1,.1,.006]],cases=[...c.sizes.flatMap(dims=>Array.from({length:12},(_,i)=>({dims,month:i+1,reference:false}))),...tiny.flatMap(dims=>[1,5].map(month=>({dims,month,reference:false}))),{dims:c.sizes[1],month:5,reference:true}];
+ const dist=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i]));
+ for(const{dims,month,reference}of cases){models++;const p={...makePlant(c.id,c.pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},original=structuredClone(p),s=stateAt(p,{month,year:1,reference}),g=plantModel(p,{month,year:1,reference}),matrix=new Matrix4();let minY=Infinity,maxY=-Infinity,radial=0,leafTop=-Infinity;const stems=[],froms=[],tos=[],leafOrigins=[],leafPairs=[];
+  try{
+   g.updateMatrixWorld(true);assert.equal(s.groundDormant,false);assert.equal(g.userData.surfaceInspectionDistance,undefined);
+   const count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0),leaves=count('leaf-lamium-sterling'),pet=count('petiole-lamium'),branches=count('branch-lamium-sterling'),hood=count('petal-lamium-purple-hood');
+   assert.ok(branches>0);assert.equal(leaves%2,0);assert.equal(leaves,pet);assert.equal(count('stolon-lamium'),0);assert.equal(count('root-lamium'),0);assert.equal(hood>0,[5,6].includes(month));assert.equal(count('sepal-lamium'),hood*5);assert.equal(count('anther-lamium'),hood*4);assert.equal(count('style-lamium'),hood);assert.equal(count('stigma-lamium'),hood*2);assert.equal(count('petal-lamium-purple-lower'),hood);assert.equal(count('petal-lamium-purple-side'),hood*2);
+   for(const mesh of g.children){const component=mesh.userData.component,foliage=component.startsWith('leaf-lamium-sterling')||component==='petiole-lamium',pos=mesh.geometry.attributes.position.array,pairOrigins=[];assert.ok(pos.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite)&&mesh.instanceMatrix.array.every(Number.isFinite));
+    for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);const m=matrix.elements,origin=[m[12],m[13],m[14]],ends=[-.5,.5].map(v=>[m[12]+m[4]*v,m[13]+m[5]*v,m[14]+m[6]*v]);if(['branch-lamium-sterling','stem-lamium'].includes(component))stems.push(ends);if(component==='petiole-lamium'){froms.push(ends[0]);tos.push(ends[1]);}if(component.startsWith('leaf-lamium-sterling')){leafOrigins.push(origin);pairOrigins.push(origin);}
+     for(let j=0;j<pos.length;j+=3){const x=m[0]*pos[j]+m[4]*pos[j+1]+m[8]*pos[j+2]+m[12],y=m[1]*pos[j]+m[5]*pos[j+1]+m[9]*pos[j+2]+m[13],z=m[2]*pos[j]+m[6]*pos[j+1]+m[10]*pos[j+2]+m[14];minY=Math.min(minY,y);maxY=Math.max(maxY,y);radial=Math.max(radial,Math.hypot(x,z));if(foliage)leafTop=Math.max(leafTop,y);actualVertices++;}
+    }
+    if(pairOrigins.length){assert.equal(pairOrigins.length%2,0);for(let i=0;i<pairOrigins.length;i+=2)leafPairs.push(pairOrigins.slice(i,i+2));}
+   }
+   assert.ok(minY>=-eps,'above soil '+JSON.stringify({dims,month,minY}));assert.ok(maxY<=s.height+eps,'full height '+JSON.stringify({dims,month,maxY}));assert.ok(radial*2<=s.spread+eps,'full width '+JSON.stringify({dims,month,width:radial*2}));assert.ok(leafTop<=Math.min(s.height,s.leafHeight)+eps,'independent leaf cap '+JSON.stringify({dims,month,leafTop}));
+   const onStem=pt=>stems.some(([a,b])=>{const d=b.map((x,i)=>x-a[i]),n=d.reduce((v,x)=>v+x*x,0),t=Math.max(0,Math.min(1,pt.reduce((v,x,i)=>v+(x-a[i])*d[i],0)/n));return dist(pt,a.map((x,i)=>x+d[i]*t))<eps;});
+   for(const pt of froms)assert.ok(onStem(pt),'petiole starts on an actual compact branch or rising flower stem');for(const pt of leafOrigins)assert.ok(tos.some(x=>dist(pt,x)<eps),'blade origin meets actual petiole tip');
+   for(const pair of leafPairs){const ix=pair.map(pt=>tos.findIndex(x=>dist(pt,x)<eps));assert.ok(ix.every(i=>i>=0));assert.ok(dist(froms[ix[0]],froms[ix[1]])<eps,'opposite leaves share an actual stem junction');const v=ix.map(i=>tos[i].map((x,k)=>x-froms[i][k]));assert.ok(v[0][0]*v[1][0]+v[0][2]*v[1][2]<0,'pair extends in opposite horizontal directions');}
+   leavesTotal+=leaves;petiolesTotal+=pet;branchesTotal+=branches;assert.deepEqual(p,original);if(month===5&&!reference)diagnostics.push({dims,minY,maxY,actualSpread:radial*2,actualLeafHeight:leafTop,leaves,petioles:pet,branches,scale:g.scale.toArray()});
+  }finally{dispose(g);}
+ }
+ assert.equal(models,45);const doc=emptyDocument(10,6);doc.plans.A.plants=c.sizes.map((d,i)=>({...makePlant(c.id,733100+i,2+i*2,3),height:d[0],spread:d[1],leafHeight:d[2]}));doc.view.month=5;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-25.35'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);console.log('LAMIUM_733_GEOMETRY '+JSON.stringify({models,actualVertices,leaves:leavesTotal,petioles:petiolesTotal,branches:branchesTotal,diagnostics}));
 });
