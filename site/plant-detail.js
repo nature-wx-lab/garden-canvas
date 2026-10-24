@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.698';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.699';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.698';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.699';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11407,7 +11407,7 @@ export function chocolateCosmosPoint(type,t,u){
 }
 
 function drawChocolateCosmos(b,{info,s,p,detail,rand,month},kit){
- const a=info.appearance,observe=p?.kind==='p-880f71a3aca2',cherry=a.shootProfile==='cherry',w=s.spread,h=s.height,ceiling=Math.min(h,s.leafHeight),oldL=Math.min(a.leafLength,w*.23,h*.27),L=Math.min(oldL,observe?s.leafHeight*.8:Infinity),winter=s.leafDensity===0,stem=winter?a.winterStemColor:a.stemColor;
+ const a=info.appearance,observe=['p-880f71a3aca2','p-6c18731257fe'].includes(p?.kind),cherry=a.shootProfile==='cherry',w=s.spread,h=s.height,ceiling=Math.min(h,s.leafHeight),oldL=Math.min(a.leafLength,w*.23,h*.27),L=Math.min(oldL,observe?s.leafHeight*.8:Infinity),winter=s.leafDensity===0,stem=winter?a.winterStemColor:a.stemColor;
  const n=Math.max(4,Math.min(20,Math.round((cherry?10:14)*detail*Math.pow(w/.4,.65)))),mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
  const shape=(i,k)=>.5+.5*Math.sin((i+1)*12.989+k*7.233);
  const vegetativeBranch=(from,to,r,color,kind)=>{if(observe){const horizontal=Math.hypot(to[0]-from[0],to[2]-from[2]);if(horizontal>0)r=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*Math.hypot(horizontal,to[1]-from[1])/horizontal);}b.branch(from,to,r,color,kind);};
