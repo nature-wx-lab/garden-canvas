@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.662';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.663';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.662';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.663';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10181,14 +10181,28 @@ function drawRoseSage(b,{info,s,detail,rand,month},kit){
  }
 }
 
-function drawGuaranitica(b,{info,s,detail,rand,month},kit){
+function drawGuaranitica(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.24,w*.23),F=Math.min(a.flowerLength,h*.12,w*.09),n=Math.max(2,Math.min(20,Math.round(13*detail*Math.sqrt(w/.8)*Math.min(1,h/.50))));
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const pair=(at,az,len,i,k)=>{
-  if(noise(i,k)>s.leafDensity)return;
-  for(let q=0;q<2;q++){
-   const aa=az+q*Math.PI,pet=len*.25,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.33,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0014,h*.0035),cold?a.winterStemColor:a.stemColor,'petiole-guaranitica');b.add('guaraniticaLeaf','leaf-guaranitica',kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,.78+.37*noise(i,k+q+64),aa,(noise(i,k+q+72)-.5)*.24);
+ const observe=(p?.kind==='p-34eb3ce89d23'&&a.shootProfile==='ogis')||(p?.kind==='p-09c384d3510f'&&a.shootProfile==='engei');let inspection=null,inspectionScore=-Infinity;
+ const pair=(at,az,len,i,k,root=at,retainedPair=false)=>{
+  if(noise(i,k)>s.leafDensity)return false;
+  if(!observe){
+   for(let q=0;q<2;q++){
+    const aa=az+q*Math.PI,pet=len*.25,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.33,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0014,h*.0035),cold?a.winterStemColor:a.stemColor,'petiole-guaranitica');b.add('guaraniticaLeaf','leaf-guaranitica',kit.shade(rand,s.leafColor,.035),...end,len*a.leafWidth/a.leafLength,len,len,.78+.37*noise(i,k+q+64),aa,(noise(i,k+q+72)-.5)*.24);
+   }return false;
   }
+  const pet=len*.25,radius=Math.min(.0014,h*.0035),ratio=a.leafWidth/a.leafLength,leaves=[];let upper=pet*.33+radius,lower=radius;
+  for(let q=0;q<2;q++){
+   const aa=az+q*Math.PI,pitch=.78+.37*noise(i,k+q+64),roll=(noise(i,k+q+72)-.5)*.24,color=kit.shade(rand,s.leafColor,.035),euler=new THREE.Euler(pitch,aa,roll,'YXZ');
+   // Include the original serrated blade and its slightly notched base.
+   for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*.571244*ratio*len,(corner&2?1:-.075001)*len,(corner&4?.060155:-.110001)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.33);lower=Math.max(lower,-point.y);}
+   leaves.push({aa,pitch,roll,color});
+  }
+  const ceiling=Math.min(h,s.leafHeight);if(ceiling<=.009)return false;
+  const base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
+  const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.33*fit,base[2]+Math.cos(leaf.aa)*pet*fit]})),direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,cold?a.winterStemColor:a.stemColor,'petiole-guaranitica');b.add('guaraniticaLeaf','leaf-guaranitica',leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}return true;
  };
  const raceme=(base,az,len,i)=>{
   let old=base;
@@ -10196,25 +10210,27 @@ function drawGuaranitica(b,{info,s,detail,rand,month},kit){
    const t=j/9,at=[base[0]+Math.sin(az)*w*.065*t*t,base[1]+len*(t-.09*t*t),base[2]+Math.cos(az)*w*.065*t*t];b.branch(old,at,Math.min(.0022,h*.004)*(1-t*.48),cold?a.winterStemColor:a.flowerPalette.axis,'axis-guaranitica');old=at;if(j<=2)pair(at,az+j*Math.PI/2,L*(.26-j*.08)*(cold?.5:1),i,j+190);
    if(!s.bloom)continue;
    for(let q=0;q<2;q++){
-    const aa=az+j*Math.PI/2+q*Math.PI,r=F*.17,fl=F*(.88+.12*noise(i,j*23+q)),pos=[at[0]+Math.sin(aa)*r,at[1],at[2]+Math.cos(aa)*r],f=flowerFrame(b,pos,-.12+.11*noise(i,j*19+q),aa);b.branch(at,pos,F*.018,a.flowerPalette.axis,'pedicel-guaranitica');f.add('guaraniticaCalyx','calyx-guaranitica',a.flowerPalette.calyx,0,0,0,fl,fl,fl);
+    const aa=az+j*Math.PI/2+q*Math.PI,r=F*.17,fl=F*(.88+.12*noise(i,j*23+q)),pos=[at[0]+Math.sin(aa)*r,at[1],at[2]+Math.cos(aa)*r],pitch=-.12+.11*noise(i,j*19+q),f=flowerFrame(b,pos,pitch,aa);b.branch(at,pos,F*.018,a.flowerPalette.axis,'pedicel-guaranitica');f.add('guaraniticaCalyx','calyx-guaranitica',a.flowerPalette.calyx,0,0,0,fl,fl,fl);
     if(j>=8||noise(i,j*37+q)>.76){f.add('guaraniticaBud','bud-guaranitica','#424d42',0,0,0,fl,fl,fl);continue;}
     f.add('guaraniticaTube','tube-guaranitica',s.flowerColor,0,0,0,fl,fl,fl);f.add('guaraniticaHood','hood-guaranitica',s.flowerColor,0,0,0,fl,fl,fl);f.add('guaraniticaLip','petal-guaranitica',s.flowerColor,0,0,0,fl,fl,fl);
+    if(observe){const marker=sageLipInspection((t,u)=>guaraniticaPoint('guaraniticaLip',t,u),24,[fl,fl,fl],[0,0,0],0,52),point=marker.centre.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=point.x*.8+point.z;if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(marker.centre.toArray(),fl*1.30,marker.euler.x,marker.euler.y,marker.euler.z);}}
     for(let side=-1;side<=1;side+=2){f.branch([side*.04*fl,.045*fl,.60*fl],[side*.055*fl,.13*fl,1.00*fl],fl*.009,'#8c8ab5','filament-guaranitica');f.branch([side*.055*fl,.13*fl,1.00*fl],[side*.06*fl,.10*fl,1.045*fl],fl*.015,'#d6cbbc','anther-guaranitica');}
     f.branch([0,.045*fl,.63*fl],[0,.07*fl,1.13*fl],fl*.006,'#6972a9','style-guaranitica');for(let side=-1;side<=1;side+=2)f.branch([0,.07*fl,1.13*fl],[side*.025*fl,.025*fl,1.19*fl],fl*.005,'#59629e','stigma-guaranitica');
    }
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*.65,r=w*.26*Math.sqrt((i+.5)/n),root=[Math.sin(az)*r*.35,.009,Math.cos(az)*r*.35],top=[Math.sin(az)*r,h*(.50+.15*noise(i,5)),Math.cos(az)*r];let old=root;
+  const az=i*2.399963+(noise(i,1)-.5)*.65,r=w*.26*Math.sqrt((i+.5)/n),root=[Math.sin(az)*r*.35,.009,Math.cos(az)*r*.35],top=[Math.sin(az)*r,h*(.50+.15*noise(i,5)),Math.cos(az)*r];let old=root,retainedPair=false;
   for(let j=1;j<=11;j++){
-   const t=j/11,at=mix(root,top,t);at[0]+=Math.sin(az+.7)*w*.023*Math.sin(t*Math.PI);b.branch(old,at,Math.min(.005,h*.009)*(1-t*.56),cold?a.winterStemColor:a.stemColor,'stem-guaranitica');old=at;if(j>1)pair(at,az+j*Math.PI/2,L*(.70+.28*Math.sin(t*Math.PI*.85))*(cold?.50:1),i,j+15);
+   const t=j/11,at=mix(root,top,t);at[0]+=Math.sin(az+.7)*w*.023*Math.sin(t*Math.PI);b.branch(old,at,Math.min(.005,h*.009)*(1-t*.56),cold?a.winterStemColor:a.stemColor,'stem-guaranitica');old=at;if(j>1)retainedPair=pair(at,az+j*Math.PI/2,L*(.70+.28*Math.sin(t*Math.PI*.85))*(cold?.50:1),i,j+15,root,retainedPair)||retainedPair;
    if(j!==5&&j!==8)continue;
    const aa=az+(j===5?1.1:-1.2),end=[at[0]+Math.sin(aa)*w*.12,at[1]+h*.11,at[2]+Math.cos(aa)*w*.12];let prev=at;
-   for(let q=1;q<=5;q++){const loc=mix(at,end,q/5);b.branch(prev,loc,Math.min(.0027,h*.005)*(1-q*.07),cold?a.winterStemColor:a.stemColor,'branch-guaranitica');prev=loc;pair(loc,aa+q*Math.PI/2,L*(.68+.18*Math.sin(q/5*Math.PI))*(cold?.5:1),i,j*37+q);}
+   for(let q=1;q<=5;q++){const loc=mix(at,end,q/5);b.branch(prev,loc,Math.min(.0027,h*.005)*(1-q*.07),cold?a.winterStemColor:a.stemColor,'branch-guaranitica');prev=loc;retainedPair=pair(loc,aa+q*Math.PI/2,L*(.68+.18*Math.sin(q/5*Math.PI))*(cold?.5:1),i,j*37+q,root,retainedPair)||retainedPair;}
    if(i%3===0&&j===8)raceme(end,aa,h*(.23+.045*noise(i,42)),i+65);
   }
   raceme(top,az,h*(.27+.07*noise(i,24)),i);
  }
+ if(inspection)inspection();
 }
 
 export function rustySagePoint(type,t,u){
@@ -17816,7 +17832,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='roseSageBracts'){drawRoseSage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='broadSagePanicles'){drawBroadSage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='rockinRacemes'){drawRockin(b,{info,s,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='guaraniticaShoots'){drawGuaranitica(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='guaraniticaShoots'){drawGuaranitica(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='rustySageCalyces'){drawRustySage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='discolorBranches'){drawDiscolorSage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='clevelandWhorls'){drawClevelandSage(b,{info,s,detail,rand,month},kit);return;}
