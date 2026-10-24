@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.669';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.670';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.669';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.670';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10414,22 +10414,26 @@ export function apianaPoint(type,t,u){
  return [Math.cos(az)*r,Math.sin(az)*r,(calyx?.30:.46)*t+teeth];
 }
 
-function drawWhiteSage(b,{info,s,detail,rand,month},kit){
+function drawWhiteSage(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,cold=[12,1,2].includes(month),L=Math.min(a.leafLength,h*.30,w*.20),F=Math.min(a.flowerLength,h*.08,w*.07),n=Math.max(4,Math.min(16,Math.round(10*detail*Math.sqrt(w/.55))));
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const pair=(at,az,len,i,k)=>{
-  if(noise(i,k)>s.leafDensity)return;
-  for(let q=0;q<2;q++){
-   const aa=az+q*Math.PI,pet=len*.14,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.45,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.001,h*.004),a.stemColor,'petiole-apiana');b.add('apianaLeaf','leaf-apiana',kit.shade(rand,s.leafColor,.04),...end,len*a.leafWidth/a.leafLength,len,len,.48+.67*noise(i,k+q+52),aa,(noise(i,k+q+61)-.5)*.30);
-  }
+ const observe=p?.kind==='p-049f19e562ef'&&a.shootProfile==='apiana';let inspection=null,inspectionScore=-Infinity;
+ const pair=(at,az,len,i,k,root=at,retainedPair=false)=>{
+  if(noise(i,k)>s.leafDensity)return false;
+  if(!observe){for(let q=0;q<2;q++){const aa=az+q*Math.PI,pet=len*.14,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.45,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.001,h*.004),a.stemColor,'petiole-apiana');b.add('apianaLeaf','leaf-apiana',kit.shade(rand,s.leafColor,.04),...end,len*a.leafWidth/a.leafLength,len,len,.48+.67*noise(i,k+q+52),aa,(noise(i,k+q+61)-.5)*.30);}return false;}
+  const pet=len*.14,radius=Math.min(.001,h*.004),ratio=a.leafWidth/a.leafLength,leaves=[];let upper=pet*.45+radius,lower=radius;
+  for(let q=0;q<2;q++){const aa=az+q*Math.PI,pitch=.48+.67*noise(i,k+q+52),roll=(noise(i,k+q+61)-.5)*.30,color=kit.shade(rand,s.leafColor,.04),euler=new THREE.Euler(pitch,aa,roll,'YXZ');for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*.471322*ratio*len,(corner&2?1:0)*len,(corner&4?.061514:-.140002)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.45);lower=Math.max(lower,-point.y);}leaves.push({aa,pitch,roll,color});}
+  const ceiling=Math.min(h,s.leafHeight);if(ceiling<=.008)return false;const base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.45*fit,base[2]+Math.cos(leaf.aa)*pet*fit]})),direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,a.stemColor,'petiole-apiana');b.add('apianaLeaf','leaf-apiana',leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}return true;
  };
  const cluster=(at,az,i,k)=>{
   for(let q=0;q<3;q++){
-   const aa=az+q*2.399,reach=F*(.30+.28*noise(i,k+q)),pos=[at[0]+Math.sin(aa)*reach,at[1]+q*F*.14,at[2]+Math.cos(aa)*reach],fl=F*(.85+.15*noise(i,k+q+77)),f=flowerFrame(b,pos,-.08+.20*noise(i,k+q+78),aa);
+   const aa=az+q*2.399,reach=F*(.30+.28*noise(i,k+q)),pos=[at[0]+Math.sin(aa)*reach,at[1]+q*F*.14,at[2]+Math.cos(aa)*reach],fl=F*(.85+.15*noise(i,k+q+77)),pitch=-.08+.20*noise(i,k+q+78),f=flowerFrame(b,pos,pitch,aa);
    b.branch(at,pos,F*.02,cold?a.winterStemColor:a.flowerPalette.axis,'pedicel-apiana');f.add('apianaCalyx','calyx-apiana',s.bloom?a.flowerPalette.calyx:'#ada28c',0,0,0,fl,fl,fl);
    if(!s.bloom)continue;
    if(noise(i,k*19+q)>.62){f.add('apianaBud','bud-apiana','#d5d9ce',0,0,0,fl*.8,fl*.8,fl*.8);continue;}
    f.add('apianaTube','tube-apiana',s.flowerColor,0,0,0,fl,fl,fl);f.add('apianaUpper','upper-apiana',s.flowerColor,0,0,0,fl,fl,fl);f.add('apianaLip','petal-apiana',s.flowerColor,0,0,0,fl,fl,fl);
+   if(observe){const marker=sageLipInspection((t,u)=>apianaPoint('apianaLip',t,u),20,[fl,fl,fl],[0,0,0],0,56,14),point=marker.centre.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=point.x*.8+point.z;if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(marker.centre.toArray(),fl*1.30,marker.euler.x,marker.euler.y,marker.euler.z);}}
    // White sage has a reduced upper lobe and long, divergent reproductive parts.
    for(let side=-1;side<=1;side+=2){f.branch([side*.05*fl,.08*fl,.47*fl],[side*.50*fl,.68*fl,.89*fl],fl*.009,'#b5a2bf','filament-apiana');f.branch([side*.50*fl,.68*fl,.89*fl],[side*.68*fl,1.0*fl,1.04*fl],fl*.013,'#827784','anther-apiana');}
    f.branch([0,.025*fl,.43*fl],[0,-.01*fl,1.63*fl],fl*.006,'#c6b4cb','style-apiana');for(let q=-1;q<=1;q+=2)f.branch([0,-.01*fl,1.63*fl],[q*.033*fl,-.07*fl,1.72*fl],fl*.0045,'#9d87aa','stigma-apiana');
@@ -10447,17 +10451,18 @@ function drawWhiteSage(b,{info,s,detail,rand,month},kit){
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5),rr=w*.25*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.4,.008,Math.cos(az)*rr*.4],top=[Math.sin(az)*rr,h*(.24+.12*noise(i,5)),Math.cos(az)*rr];let old=root;
+  const az=i*2.399963+(noise(i,1)-.5),rr=w*.25*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr*.4,.008,Math.cos(az)*rr*.4],top=[Math.sin(az)*rr,h*(.24+.12*noise(i,5)),Math.cos(az)*rr];let old=root,retainedPair=false;
   for(let j=1;j<=9;j++){
    const t=j/9,at=mix(root,top,t);at[0]+=w*.018*Math.sin(t*Math.PI)*Math.sin(az+.7);b.branch(old,at,Math.min(.006,h*.012)*(1-t*.57),j<3?a.barkColor:a.stemColor,j<3?'wood-apiana':'stem-apiana');old=at;
-   if(j>=3)pair(at,az+j*Math.PI/2,L*(.65+.32*Math.sin(t*Math.PI*.8)),i,j+15);
+   if(j>=3)retainedPair=pair(at,az+j*Math.PI/2,L*(.65+.32*Math.sin(t*Math.PI*.8)),i,j+15,root,retainedPair)||retainedPair;
    if(j!==4&&j!==6)continue;
    const aa=az+(j===4?1.3:-1.2),end=[at[0]+Math.sin(aa)*w*.13,at[1]+h*.10,at[2]+Math.cos(aa)*w*.13];let prev=at;
-   for(let q=1;q<=7;q++){const tt=q/7,loc=mix(at,end,tt);b.branch(prev,loc,Math.min(.0032,h*.007)*(1-tt*.4),a.stemColor,'branch-apiana');prev=loc;pair(loc,aa+q*Math.PI/2,L*(.55+.37*Math.sin(tt*Math.PI*.85)),i,j*31+q);}
+   for(let q=1;q<=7;q++){const tt=q/7,loc=mix(at,end,tt);b.branch(prev,loc,Math.min(.0032,h*.007)*(1-tt*.4),a.stemColor,'branch-apiana');prev=loc;retainedPair=pair(loc,aa+q*Math.PI/2,L*(.55+.37*Math.sin(tt*Math.PI*.85)),i,j*31+q,root,retainedPair)||retainedPair;}
    if(i%3===0&&j===6)panicle(end,aa,h*(.45+.10*noise(i,28)),i+73);
   }
   panicle(top,az,h*(.52+.09*noise(i,31)),i);
  }
+ if(inspection)inspection();
 }
 
 export function claryPoint(type,t,u){
@@ -17904,7 +17909,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='rustySageCalyces'){drawRustySage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='discolorBranches'){drawDiscolorSage(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='clevelandWhorls'){drawClevelandSage(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='whiteSageShrub'){drawWhiteSage(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='whiteSageShrub'){drawWhiteSage(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='claryPanicles'){drawClarySages(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pineappleSageBranches'){drawPineappleSages(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='tallBlueSpires'){drawTallSages(b,{info,s,p,detail,rand,month},kit);return;}
