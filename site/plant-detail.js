@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.658';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.659';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.658';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.659';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10617,7 +10617,7 @@ export function pratensisPoint(type,t,u){
 function drawPratensis(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,cold=[12,1,2].includes(month),mad=a.shootProfile==='madeline',L=Math.min(a.leafLength,h*.42,w*.35),F=Math.min(a.flowerLength,h*.17,w*.14),stem=cold?a.winterStemColor:a.stemColor,n=Math.max(3,Math.min(15,Math.round(9*detail*Math.sqrt(w/.36))));
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const observe=(p?.kind==='p-ff64e719fa5a'&&a.shootProfile==='twilight')||(p?.kind==='p-b70506dcea20'&&a.shootProfile==='skyDance');let inspection=null,inspectionScore=-Infinity;
+ const observe=(p?.kind==='p-ff64e719fa5a'&&a.shootProfile==='twilight')||(p?.kind==='p-b70506dcea20'&&a.shootProfile==='skyDance')||(p?.kind==='p-d803709691f9'&&a.shootProfile==='swanLake')||(p?.kind==='p-3569f46fcacc'&&a.shootProfile==='roseRhapsody');let inspection=null,inspectionScore=-Infinity;
  const leaf=(at,az,len,pitch,kind,color)=>{
   if(!observe){const pet=len*.20,end=[at[0]+Math.sin(az)*pet,at[1]+pet*.10,at[2]+Math.cos(az)*pet];b.branch(at,end,Math.min(.0012,h*.003),stem,'petiole-pratensis');b.add('pratensisLeaf',kind,kit.shade(rand,color,.055),...end,len*a.leafWidth/a.leafLength,len,len,pitch,az,0);return;}
   const sample=kit.shade(rand,color,.055),pet=len*.20,radius=Math.min(.0012,h*.003),ratio=a.leafWidth/a.leafLength,euler=new THREE.Euler(pitch,az,0,'YXZ');let upper=pet*.10+radius,lower=radius;
