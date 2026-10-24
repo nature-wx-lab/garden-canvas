@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.629';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.630';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.629';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.630';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9828,7 +9828,7 @@ export function catmintPoint(type,t,u){
 function drawCatmint(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,junior=a.shootProfile==='junior',giant=a.shootProfile==='sixHills',pink=a.shootProfile==='pinkCandy',dusk=a.shootProfile==='dusk',blue=a.shootProfile==='blue',white=a.shootProfile==='white',lime=a.shootProfile==='limelight',faassenii=a.shootProfile==='faassenii',cold=!blue&&!faassenii&&[12,1,2].includes(month),L=Math.min(a.leafLength,h*.25,w*.16),headScale=blue||white||lime||faassenii?Math.min(1,h/(lime?.19:.22)):Math.min(1,h*(giant?.26:.34)/a.inflorescenceLength),F=a.flowerLength*headScale,n=Math.max(3,Math.min(28,Math.round((dusk?15:pink?20:giant?18:junior?22:24)*detail*Math.sqrt(w/(junior?.4:.65))*Math.min(1,h/(giant?.65:junior?.22:pink?.28:.36))))),stem=cold?a.winterStemColor:a.stemColor;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const fitGiant=giant&&['p-93be65945f4d','p-38412b54ce8d'].includes(p?.kind),observe=(p?.kind==='p-40d0fce02917'&&faassenii)||fitGiant;let inspection=null,inspectionScore=-Infinity;
+ const fitGiant=giant&&['p-93be65945f4d','p-38412b54ce8d'].includes(p?.kind),fitSimple=(p?.kind==='p-4976f6b0ffe5'&&blue)||(p?.kind==='p-fd1b5aac2d40'&&white),fitWinter=fitGiant||(fitSimple&&white),observe=(p?.kind==='p-40d0fce02917'&&faassenii)||fitGiant||fitSimple;let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,basal=false,root=at,retainedPair=false)=>{
   if(!basal&&noise(i,k)>s.leafDensity)return false;
   if(!observe){for(let q=0;q<2;q++){
@@ -9872,14 +9872,14 @@ function drawCatmint(b,{info,s,p,detail,rand,month},kit){
  for(let i=0;i<n;i++){
   const az=i*2.399963+(noise(i,1)-.5)*.65,tier=Math.sqrt((i+.5)/n),rr=w*(faassenii?.25:giant?.29:.34)*tier,root=[Math.sin(az)*rr*(blue||white||lime||faassenii?.72:.31),.004,Math.cos(az)*rr*(blue||white||lime||faassenii?.72:.31)],top=[Math.sin(az)*rr,h*(faassenii?.49+.11*Math.sqrt(1-tier*tier)+.08*noise(i,5):giant?.57+.13*Math.sqrt(1-tier*tier)+.07*noise(i,5):dusk?.48+.18*Math.sqrt(1-tier*tier)+.06*noise(i,5):.34+.22*Math.sqrt(1-tier*tier)+.12*noise(i,5)),Math.cos(az)*rr];let old=root,retainedPair=false,firstStemTop=null;
   for(let j=1;j<=8;j++){
-   const t=(j+(j<8?(noise(i,j+220)-.5)*.6:0))/8,at=mix(root,top,t);at[0]+=Math.sin(az+.7)*w*.02*Math.sin(t*Math.PI);if(fitGiant&&j===1)firstStemTop=at.slice();b.branch(old,at,Math.min(.0015,h*.004)*(1-t*.46),stem,'stem-catmint');old=at;retainedPair=pair(at,az+j*Math.PI/2,L*(.68+.32*Math.sin(t*Math.PI))*(cold?.4:1),i,j+15,false,root,retainedPair)||retainedPair;
+   const t=(j+(j<8?(noise(i,j+220)-.5)*.6:0))/8,at=mix(root,top,t);at[0]+=Math.sin(az+.7)*w*.02*Math.sin(t*Math.PI);if(fitWinter&&j===1)firstStemTop=at.slice();b.branch(old,at,Math.min(.0015,h*.004)*(1-t*.46),stem,'stem-catmint');old=at;retainedPair=pair(at,az+j*Math.PI/2,L*(.68+.32*Math.sin(t*Math.PI))*(cold?.4:1),i,j+15,false,root,retainedPair)||retainedPair;
    if(j!==2&&j!==4&&j!==6)continue;const aa=az+(j===4?1.1:-1.1),end=[at[0]+Math.sin(aa)*w*.12,at[1]+h*.16,at[2]+Math.cos(aa)*w*.12];let prev=at;
    for(let q=1;q<=4;q++){const loc=mix(at,end,q/4);b.branch(prev,loc,Math.min(.0009,h*.0025)*(1-q*.08),stem,'branch-catmint');prev=loc;retainedPair=pair(loc,aa+q*Math.PI/2,L*(.82-q*.075)*(cold?.4:1),i,j*37+q,false,root,retainedPair)||retainedPair;}
    if(j>=4)retainedPair=raceme(end,aa,Math.min(a.inflorescenceLength*.65,h*(giant?.22:.27)),i+j*23,root,retainedPair)||retainedPair;
   }
   retainedPair=raceme(top,az,Math.min(a.inflorescenceLength,h*(giant?.26:.34))*(.88+.12*noise(i,24)),i,root,retainedPair)||retainedPair;
   if(cold&&!dusk&&i%3===0){
-   if(!fitGiant){for(let j=0;j<2;j++)pair([root[0],root[1]+j*.003,root[2]],az+j*Math.PI/2,Math.min(.012,h*.07)*(j?.7:1),i,300+j,true);}
+   if(!fitWinter){for(let j=0;j<2;j++)pair([root[0],root[1]+j*.003,root[2]],az+j*Math.PI/2,Math.min(.012,h*.07)*(j?.7:1),i,300+j,true);}
    else{let retainedBasal=false;for(let j=0;j<2;j++){
     // Follow the actual first curved-stem segment, whose X differs from the root-to-tip chord.
     const at=mix(root,firstStemTop,Math.min(1,j*.003/Math.max(firstStemTop[1]-root[1],1e-8)));retainedBasal=pair(at,az+j*Math.PI/2,Math.min(.012,h*.07)*(j?.7:1),i,300+j,true,root,retainedBasal)||retainedBasal;
