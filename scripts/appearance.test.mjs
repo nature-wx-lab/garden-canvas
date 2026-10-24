@@ -3983,7 +3983,7 @@ test('Tiarella keeps winter leaves, trailing runners and five-petalled ten-stame
   const a=info.appearance,p=makePlant(id,16807+i,2,2);p.height=info.height[1];p.leafHeight=p.height*a.foliageHeightRatio;p.spread=info.spread[1];assert.equal(info.bloomKnown,false);
   for(let month=1;month<=12;month++){
    const g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0);
-   assert.equal(!!g.userData.groundDormant,false);if(['p-892f07fc684a','p-15ec1d433d11'].includes(id))assert.ok(g.scale.x>0&&g.scale.x<=1);else assert.equal(g.scale.x,1);assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-tiarella-')));assert.equal(count('runner-tiarella')>0,a.habit==='trailing');
+   assert.equal(!!g.userData.groundDormant,false);if(['p-892f07fc684a','p-15ec1d433d11','p-362711f2d757'].includes(id))assert.ok(g.scale.x>0&&g.scale.x<=1);else assert.equal(g.scale.x,1);assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-tiarella-')));assert.equal(count('runner-tiarella')>0,a.habit==='trailing');
    const flowers=count('receptacle-tiarella');assert.equal(flowers>0,[5,6].includes(month));assert.equal(count('petal-tiarella'),flowers*5);assert.equal(count('sepal-tiarella'),flowers*5);assert.equal(count('anther-tiarella'),flowers*10);assert.equal(count('style-tiarella'),flowers*2);
    if(!flowers)assert.equal(count('scape-tiarella'),0);
    for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.instanceColor.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
@@ -14052,4 +14052,30 @@ test('Spring Symphony and Pink Skyrocket keep connected crown leaves in independ
  const doc=emptyDocument(10,6);doc.plans.A.plants=c.sizes.map((d,i)=>({...makePlant(c.id,735100+i,2+i*2,3),height:d[0],spread:d[1],leafHeight:d[2]}));doc.view.month=5;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-25.37'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
  }
  assert.equal(models,90);console.log('TIARELLA_735_GEOMETRY '+JSON.stringify({models,actualVertices,leaves:leavesTotal,petioles:petiolesTotal,scapes:scapesTotal,diagnostics}));
+});
+
+const TIARELLA_736=[{"id":"p-362711f2d757","pid":73610,"label":"sugar-spice","sizes":[[0.3,0.35,0.18],[0.03,0.18,0.012],[0.3,0.35,0.005]],"months":[5,6],"inspectMonth":5,"height":[0.2,0.35],"spread":[0.3,0.4]}];
+test('Sugar and Spice keeps connected crown leaves in independent caps and tiny complete racemes',()=>{
+ let models=0,actualVertices=0,leavesTotal=0,petiolesTotal=0,scapesTotal=0;const diagnostics=[],eps=1e-7,dist=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i]));
+ for(const c of TIARELLA_736){const info=CATALOG[c.id];assert.deepEqual(info.height,c.height);assert.deepEqual(info.spread,c.spread);assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[5,6]);assert.equal(info.sourceChecked,'2026-10-25');assert.equal(info.appearance.habit,'clump');assert.equal(info.appearance.status,'partial');assert.deepEqual(info.colors,c.id==='p-892f07fc684a'?['pink','white']:['pink']);
+ const tiny=[[.01,.1,.005],[.1,.1,.005],[.01,.6,.005],[.1,.1,.006]],cases=[...c.sizes.flatMap(dims=>Array.from({length:12},(_,i)=>({dims,month:i+1,reference:false}))),...tiny.flatMap(dims=>[1,5].map(month=>({dims,month,reference:false}))),{dims:c.sizes[1],month:5,reference:true}];
+ for(const{dims,month,reference}of cases){models++;const p={...makePlant(c.id,c.pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},original=structuredClone(p),s=stateAt(p,{month,year:1,reference}),g=plantModel(p,{month,year:1,reference}),matrix=new Matrix4();let minY=Infinity,maxY=-Infinity,radial=0,leafTop=-Infinity;const froms=[],tos=[],leafOrigins=[],scapeRoots=[];
+ try{
+  g.updateMatrixWorld(true);assert.equal(s.groundDormant,false);assert.equal(g.userData.surfaceInspectionDistance,undefined);
+  const count=k=>g.children.filter(m=>m.userData.component.startsWith(k)).reduce((n,m)=>n+m.count,0),leaves=count('leaf-tiarella-'),pet=count('petiole-tiarella'),scapes=count('scape-tiarella'),flowers=count('receptacle-tiarella'),buds=count('bud-tiarella');
+  assert.ok(leaves>=10);assert.equal(pet,leaves*2,'two connected petiole segments per blade');assert.equal(count('runner-tiarella'),0);assert.equal(scapes>0,[5,6].includes(month));assert.equal(count('raceme-tiarella'),scapes);assert.equal(count('pedicel-tiarella'),flowers+buds);assert.equal(count('petal-tiarella'),flowers*5);assert.equal(count('sepal-tiarella'),flowers*5);assert.equal(count('filament-tiarella'),flowers*10);assert.equal(count('anther-tiarella'),flowers*10);assert.equal(count('style-tiarella'),flowers*2);
+  for(const mesh of g.children){const component=mesh.userData.component,foliage=component.startsWith('leaf-tiarella-')||component==='petiole-tiarella',pos=mesh.geometry.attributes.position.array;assert.ok(pos.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite)&&mesh.instanceMatrix.array.every(Number.isFinite)&&mesh.instanceColor.array.every(Number.isFinite));
+   for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);const m=matrix.elements,origin=[m[12],m[13],m[14]],ends=[-.5,.5].map(v=>[m[12]+m[4]*v,m[13]+m[5]*v,m[14]+m[6]*v]);if(component==='petiole-tiarella'){froms.push(ends[0]);tos.push(ends[1]);}if(component==='scape-tiarella')scapeRoots.push(ends[0]);if(component.startsWith('leaf-tiarella-'))leafOrigins.push(origin);
+    for(let j=0;j<pos.length;j+=3){const x=m[0]*pos[j]+m[4]*pos[j+1]+m[8]*pos[j+2]+m[12],y=m[1]*pos[j]+m[5]*pos[j+1]+m[9]*pos[j+2]+m[13],z=m[2]*pos[j]+m[6]*pos[j+1]+m[10]*pos[j+2]+m[14];minY=Math.min(minY,y);maxY=Math.max(maxY,y);radial=Math.max(radial,Math.hypot(x,z));if(foliage)leafTop=Math.max(leafTop,y);actualVertices++;}
+   }
+  }
+  assert.ok(minY>=-eps,'above soil '+JSON.stringify({id:c.id,dims,month,minY}));assert.ok(maxY<=s.height+eps,'full height '+JSON.stringify({id:c.id,dims,month,maxY}));assert.ok(radial*2<=s.spread+eps,'full width '+JSON.stringify({id:c.id,dims,month,width:radial*2}));assert.ok(leafTop<=Math.min(s.height,s.leafHeight)+eps,'independent leaf cap '+JSON.stringify({id:c.id,dims,month,leafTop}));
+  const crownY=Math.min(.012,s.height*.08,Math.min(s.height,s.leafHeight)*.10)*g.scale.y,roots=froms.filter(pt=>Math.abs(pt[1]-crownY)<eps),crowns=[];assert.equal(roots.length,leaves);for(const pt of roots)if(!crowns.some(x=>dist(pt,x)<eps))crowns.push(pt);assert.equal(crowns.length,5,'five actual crown origins');for(const pt of scapeRoots)assert.ok(crowns.some(x=>dist(pt,x)<eps),'scape starts at actual crown');
+  for(const pt of leafOrigins)assert.ok(tos.some(x=>dist(pt,x)<eps),'blade origin meets actual petiole tip');for(const pt of froms)assert.ok(crowns.some(x=>dist(pt,x)<eps)||tos.some(x=>dist(pt,x)<eps),'petiole is connected to a crown or the previous segment');
+  leavesTotal+=leaves;petiolesTotal+=pet;scapesTotal+=scapes;assert.deepEqual(p,original);if(month===5&&!reference)diagnostics.push({id:c.id,dims,minY,maxY,actualSpread:radial*2,actualLeafHeight:leafTop,leaves,petioles:pet,scapes,scale:g.scale.toArray()});
+ }finally{dispose(g);}
+ }
+ const doc=emptyDocument(10,6);doc.plans.A.plants=c.sizes.map((d,i)=>({...makePlant(c.id,736100+i,2+i*2,3),height:d[0],spread:d[1],leafHeight:d[2]}));doc.view.month=5;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-25.38'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);
+ }
+ assert.equal(models,45);console.log('TIARELLA_736_GEOMETRY '+JSON.stringify({models,actualVertices,leaves:leavesTotal,petioles:petiolesTotal,scapes:scapesTotal,diagnostics}));
 });

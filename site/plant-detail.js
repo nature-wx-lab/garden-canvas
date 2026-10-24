@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.735';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.736';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.735';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.736';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -12921,7 +12921,7 @@ function tiarellaCapSupport(type,size,ratio,pitch,yaw,roll){
 }
 function drawTiarella(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const observed=['p-892f07fc684a','p-15ec1d433d11'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);
+ const observed=['p-892f07fc684a','p-15ec1d433d11','p-362711f2d757'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);
  const a=info.appearance,typ=a.shootProfile,trail=a.habit==='trailing',h=s.height,w=s.spread,lh=Math.min(s.leafHeight||h,h*a.foliageHeightRatio),L=Math.min(a.leafLength,w*.28)*s.leafScale,stem=a.stemColor;
  const kind=`leaf-tiarella-${a.leafShape}-${s.leafPatternColor.slice(1)}-center-${a.leafUnderside.slice(1)}-${a.leafTexture}`,crowns=[];
  const axis=(from,to,r,kind,color=stem)=>{
