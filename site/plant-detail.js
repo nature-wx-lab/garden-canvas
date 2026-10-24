@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.695';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.696';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.695';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.696';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11294,7 +11294,7 @@ function drawLavenderMerlot(b,{info,s,detail,rand,month},kit){
 
 function drawLavenderMounds(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance.shootProfile==='merlot'){drawLavenderMerlot(b,{info,s,detail,rand,month},kit);return;}
- const a=info.appearance,grosso=a.shootProfile==='grosso',sand=a.shootProfile==='silverSand',hidcote=p?.kind==='lavender'&&a.shootProfile==='hidcote',observe=hidcote||(p?.kind==='p-5caf8a404f18'&&sand)||(p?.kind==='p-3c919c4a2d05'&&grosso),h=s.height,w=s.spread,ceiling=Math.min(h,s.leafHeight),L=Math.min(a.leafLength,h*.12,w*.13,observe?s.leafHeight*.8:Infinity),spike=Math.min(a.inflorescenceLength,h*.18),winter=[12,1,2].includes(month);
+ const a=info.appearance,grosso=a.shootProfile==='grosso',sand=a.shootProfile==='silverSand',hidcote=p?.kind==='lavender'&&a.shootProfile==='hidcote',grossoObserved=p?.kind==='p-3c919c4a2d05'&&grosso,observe=hidcote||(p?.kind==='p-5caf8a404f18'&&sand)||(p?.kind==='p-3c919c4a2d05'&&grosso),h=s.height,w=s.spread,ceiling=Math.min(h,s.leafHeight),L=Math.min(a.leafLength,h*.12,w*.13,observe?s.leafHeight*.8:Infinity),spike=Math.min(a.inflorescenceLength,h*.18),winter=[12,1,2].includes(month);
  const mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),shape=(i,k)=>.5+.5*Math.sin((i+1)*14.989+k*7.233),n=Math.max(8,Math.min(68,Math.round((grosso?48:sand?24:42)*detail*Math.pow(w/.6,.55))));
  const vegetativeBranch=(from,to,r,color,kind)=>{if(observe){const horizontal=Math.hypot(to[0]-from[0],to[2]-from[2]);if(horizontal>0)r=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*Math.hypot(horizontal,to[1]-from[1])/horizontal);}b.branch(from,to,r,color,kind);};
  const pairs=(at,az,len)=>{
@@ -11310,17 +11310,17 @@ function drawLavenderMounds(b,{info,s,p,detail,rand,month},kit){
    const t=j/(levels-1),yy=spike*t,ring=(grosso?.0042:.0032)*(1-.45*t),q=sand?spike*(j===0?0:j===1?.28:.49+(j-2)*.17):j<2?yy*.90:yy;
    for(let z=0;z<6;z++){
     const yaw=z*TAU/6+j*.9,at=[Math.sin(yaw)*ring,q,Math.cos(yaw)*ring],calyx=s.bloom?(grosso?'#6e718d':sand?'#949993':'#5a5276'):'#887d67';
-    if(hidcote){
+    if(hidcote||grossoObserved){
      const F=Math.min(a.flowerLength,h*.025),root=[Math.sin(yaw)*Math.min(.00045,F*.07),q,Math.cos(yaw)*Math.min(.00045,F*.07)],pitch=1.15,fl=flowerFrame(f,root,pitch,yaw);
      const micro=(from,to,r,color,kind)=>{const v=new THREE.Vector3(...to).sub(new THREE.Vector3(...from)),len=v.length();if(!len)return;const mid=new THREE.Vector3(...from).add(new THREE.Vector3(...to)).multiplyScalar(.5),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.multiplyScalar(1/len)),'YXZ');fl.add('hidcoteAxis',kind,color,...mid.toArray(),r,len,r,e.x,e.y,e.z);};
-     fl.add('hidcoteCalyx','calyx-lavender',calyx,0,0,0,F,F,F);
-     for(let hair=0;hair<6;hair++){const u=hair*2.399,t=.20+hair*.11,pt=hidcoteCalyxPoint(t,u).map(v=>v*F);micro(pt,[pt[0]+Math.sin(u)*F*.028,pt[1]+F*.012,pt[2]+Math.cos(u)*F*.028],F*.0012,'#b8b4b8','calyx-hair-lavender');}
+     fl.add(grossoObserved?'grossoCalyx':'hidcoteCalyx','calyx-lavender',calyx,0,0,0,F,F,F);
+     if(!grossoObserved)for(let hair=0;hair<6;hair++){const u=hair*2.399,t=.20+hair*.11,pt=hidcoteCalyxPoint(t,u).map(v=>v*F);micro(pt,[pt[0]+Math.sin(u)*F*.028,pt[1]+F*.012,pt[2]+Math.cos(u)*F*.028],F*.0012,'#b8b4b8','calyx-hair-lavender');}
      if(!s.bloom||shape(i,j*6+z+k*80+100)>s.flowerDensity||j===levels-1)continue;
      let color;for(let l=0;l<5;l++){const shade=kit.shade(rand,s.flowerColor,.04);if(l===0)color=shade;}
-     fl.add('hidcoteCorolla','corolla-lavender-hidcote',color,0,0,0,F,F,F);
-     for(let st=0;st<4;st++){const front=st<2,side=st%2?1:-1,end=[side*F*.065,F*(front?.685:.635),F*(front?.045:-.045)];micro([side*F*.055,F*.32,end[2]],end,F*.006,'#ded4e4','filament-lavender');fl.add(kit.bud,'anther-lavender','#b4a1c2',...end,F*.025,F*.014,F*.018);}
-     micro([0,F*.20,0],[0,F*.68,0],F*.005,'#d4bfdc','style-lavender');for(const side of[-1,1])micro([0,F*.68,0],[side*F*.022,F*.705,F*.008],F*.004,'#d8c6df','stigma-lavender');
-     const row=29,column=50,C=80,R=32,vs=[[row,column],[row+1,column],[row,column+1]].map(([r,c])=>new THREE.Vector3(...hidcoteCorollaPoint(r/R,c/C*TAU).map(Math.fround)).multiplyScalar(F)),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),rot=new THREE.Euler(pitch,yaw,0,'YXZ'),headRot=new THREE.Euler(angle,az,0,'YXZ');
+     fl.add(grossoObserved?'grossoCorolla':'hidcoteCorolla',grossoObserved?'corolla-lavender-grosso':'corolla-lavender-hidcote',color,0,0,0,F,F,F);
+     for(let st=0;st<4;st++){const front=st<2,side=st%2?1:-1,end=[side*F*.065,F*(front?.685:.635),F*(front?.045:-.045)];micro([side*F*.055,F*.32,end[2]],end,F*.006,'#ded4e4',grossoObserved?'filament-lavender-grosso':'filament-lavender');fl.add(kit.bud,grossoObserved?'anther-lavender-grosso':'anther-lavender','#b4a1c2',...end,F*.025,F*.014,F*.018);}
+     micro([0,F*.20,0],[0,F*.68,0],F*.005,'#d4bfdc',grossoObserved?'style-lavender-grosso':'style-lavender');for(const side of[-1,1])micro([0,F*.68,0],[side*F*.022,F*.705,F*.008],F*.004,'#d8c6df',grossoObserved?'stigma-lavender-grosso':'stigma-lavender');
+     const row=grossoObserved?22:29,column=grossoObserved?38:50,C=grossoObserved?60:80,R=grossoObserved?24:32,vs=[[row,column],[row+1,column],[row,column+1]].map(([r,c])=>new THREE.Vector3(...hidcoteCorollaPoint(r/R,c/C*TAU).map(Math.fround)).multiplyScalar(F)),centre=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3),normal=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),rot=new THREE.Euler(pitch,yaw,0,'YXZ'),headRot=new THREE.Euler(angle,az,0,'YXZ');
      if(normal.clone().applyEuler(rot).applyEuler(headRot).y<0)normal.negate();
      const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ'),point=centre.clone().applyEuler(rot).add(new THREE.Vector3(...root)).applyEuler(headRot).add(new THREE.Vector3(...tip)),score=point.x*.8+point.z;
      if(score>inspectionScore){inspectionScore=score;inspection=()=>fl.flower(centre.toArray(),F*1.5,e.x,e.y,e.z);}
@@ -11381,6 +11381,14 @@ export function hidcoteFloralGeometry(type){
  const pos=[],uv=[],idx=[],R=type==='corolla'?32:20,C=80,point=type==='corolla'?hidcoteCorollaPoint:hidcoteCalyxPoint;
  for(let r=0;r<=R;r++)for(let c=0;c<=C;c++){pos.push(...point(r/R,c/C*TAU));uv.push(c/C,r/R);if(r<R&&c<C){const k=r*(C+1)+c;idx.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData.hidcoteFloral=type==='corolla'?{upper:2,lower:3,continuousTube:true,rows:R,columns:C}:{veins:13,upperToothEnlarged:true,rows:R,columns:C};return g;
+}
+
+// Grosso uses the genus lip arrangement, retaining its own unmeasured 6 mm drawing length.
+// No Hidcote cultivar size or calyx-hair claim is transferred to this hybrid.
+export function grossoFloralGeometry(type){
+ const pos=[],uv=[],idx=[],R=type==='corolla'?24:16,C=type==='corolla'?60:52,point=type==='corolla'?hidcoteCorollaPoint:hidcoteCalyxPoint;
+ for(let r=0;r<=R;r++)for(let c=0;c<=C;c++){pos.push(...point(r/R,c/C*TAU));uv.push(c/C,r/R);if(r<R&&c<C){const k=r*(C+1)+c;idx.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();g.userData.grossoFloral=type==='corolla'?{upper:2,lower:3,continuousTube:true,rows:R,columns:C}:{veins:13,upperToothEnlarged:true,rows:R,columns:C};return g;
 }
 
 export function chocolateCosmosPoint(type,t,u){
