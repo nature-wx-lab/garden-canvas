@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.734';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.735';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.734';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.735';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -12912,14 +12912,33 @@ export function tiarellaLeafPoint(type,t,angle){
  const r=t*edge;return [Math.sin(angle)*r,Math.cos(angle)*r,.07*r*r+.018*Math.sin(angle*2+.5)*r*r+.012*Math.sin(angle*17)*Math.pow(t,5)*edge];
 }
 
-function drawTiarella(b,{info,s,detail,rand},kit){
+const tiarellaUnitAxis=new THREE.CylinderGeometry(1,1,1,6,1),tiarellaCapPoints=new Map();
+function tiarellaCapSupport(type,size,ratio,pitch,yaw,roll){
+ let points=tiarellaCapPoints.get(type);
+ if(!points){points=[];for(let i=0;i<=20;i++)for(let j=0;j<=192;j++)points.push(tiarellaLeafPoint(type,i/20,j/192*TAU-Math.PI).map(Math.fround));tiarellaCapPoints.set(type,points);}
+ const e=new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(pitch,yaw,roll,'YXZ')).elements;let low=Infinity,high=-Infinity;
+ for(const p of points){const y=e[1]*p[0]*size*ratio+e[5]*p[1]*size+e[9]*p[2]*size;low=Math.min(low,y);high=Math.max(high,y);}return{low,high};
+}
+function drawTiarella(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
+ const observed=['p-892f07fc684a','p-15ec1d433d11'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);
  const a=info.appearance,typ=a.shootProfile,trail=a.habit==='trailing',h=s.height,w=s.spread,lh=Math.min(s.leafHeight||h,h*a.foliageHeightRatio),L=Math.min(a.leafLength,w*.28)*s.leafScale,stem=a.stemColor;
  const kind=`leaf-tiarella-${a.leafShape}-${s.leafPatternColor.slice(1)}-center-${a.leafUnderside.slice(1)}-${a.leafTexture}`,crowns=[];
+ const axis=(from,to,r,kind,color=stem)=>{
+  if(!observed){b.branch(from,to,r,color,kind);return;}
+  const radius=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*.7),length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length<=0)return;
+  if(length>=.0001){b.branch(from,to,radius,color,kind);return;}
+  const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');
+  b.add(tiarellaUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,radius,length,radius,rotation.x,rotation.y,rotation.z);
+ };
+ const organBuilder=observed?{add:(...v)=>b.add(...v),branch:(from,to,r,color,kind)=>axis(from,to,r,kind,color)}:b;
  const leaf=(root,angle,size,rise)=>{
   const reach=size*.45,tip=[root[0]+Math.sin(angle)*reach,root[1]+rise,root[2]+Math.cos(angle)*reach],bend=[root[0]+Math.sin(angle)*reach*.45,root[1]+rise*.72,root[2]+Math.cos(angle)*reach*.45];
-  b.branch(root,bend,.0011,stem,'petiole-tiarella');b.branch(bend,tip,.0008,stem,'petiole-tiarella');
-  b.add('tiarella-'+a.leafShape,kind,kit.shade(rand,s.leafColor,.045),...tip,size*a.leafWidth/a.leafLength,size,size,1.02+rand()*.85,angle,(rand()-.5)*.2);
+  const color=kit.shade(rand,s.leafColor,.045),pitch=1.02+rand()*.85,roll=(rand()-.5)*.2;let fit=1;
+  if(observed){const support=tiarellaCapSupport(a.leafShape,size,a.leafWidth/a.leafLength,pitch,angle,roll),low=Math.min(-.0011,rise+support.low),high=Math.max(rise+.0008,rise+support.high);fit=Math.max(0,Math.min(1,(ceiling-root[1]-.00002)/high,low<0?root[1]/-low:1));}
+  const at=tip.map((v,k)=>root[k]+(v-root[k])*fit),elbow=bend.map((v,k)=>root[k]+(v-root[k])*fit);
+  axis(root,elbow,.0011*fit,'petiole-tiarella');axis(elbow,at,.0008*fit,'petiole-tiarella');
+  b.add('tiarella-'+a.leafShape,kind,color,...at,size*a.leafWidth/a.leafLength*fit,size*fit,size*fit,pitch,angle,roll);
  };
  if(trail){
   const arms=Math.max(5,Math.round(9*detail));
@@ -12933,22 +12952,22 @@ function drawTiarella(b,{info,s,detail,rand},kit){
   }
  }else{
   for(let i=0;i<5;i++){
-   const az=i*2.399963,rr=i===0?0:Math.max(0,w*.5-L*1.1)*(.65+rand()*.3),root=[Math.sin(az)*rr,.012,Math.cos(az)*rr];crowns.push(root);
+   const az=i*2.399963,rr=i===0?0:Math.max(0,w*.5-L*1.1)*(.65+rand()*.3),root=[Math.sin(az)*rr,observed?Math.min(.012,h*.08,ceiling*.10):.012,Math.cos(az)*rr];crowns.push(root);
    const n=Math.max(10,Math.round(14*detail));
    for(let j=0;j<n;j++)if(j<2||rand()<s.leafDensity){const t=j/(n-1);leaf(root,az+j*2.399963,L*(.61+.39*t),lh*(.68-.51*t));}
   }
  }
  if(!s.bloom)return;
- const n=Math.max(3,Math.round((typ==='oregon'?5:trail?10:16)*detail)),r=a.flowerRadius;
+ const n=Math.max(3,Math.round((typ==='oregon'?5:trail?10:16)*detail)),r=observed?Math.min(a.flowerRadius,h*.10,w*.04):a.flowerRadius;
  for(let i=0;i<n;i++){
-  const root=crowns[(i*7)%crowns.length],az=i*2.399963,top=[root[0]+Math.sin(az)*w*.04,h*(.83+rand()*.16),root[2]+Math.cos(az)*w*.04],len=Math.min(a.inflorescenceLength,h*.56),bottom=[root[0],Math.max(root[1]+.01,top[1]-len),root[2]];
-  b.branch(root,bottom,.0011,stem,'scape-tiarella');b.branch(bottom,top,.0007,stem,'raceme-tiarella');
+  const root=crowns[(i*7)%crowns.length],az=i*2.399963,top=[root[0]+Math.sin(az)*w*.04,h*(.83+rand()*.16),root[2]+Math.cos(az)*w*.04],len=Math.min(a.inflorescenceLength,h*.56),bottom=[root[0],Math.max(root[1]+(observed?Math.min(.01,h*.10):.01),top[1]-len),root[2]];
+  axis(root,bottom,.0011,'scape-tiarella');axis(bottom,top,.0007,'raceme-tiarella');
   const count=Math.max(20,Math.round((trail?40:65)*detail));
   for(let j=0;j<count;j++){
-   const t=(j+.5)/count,an=j*2.399963,at=bottom.map((v,k)=>v+(top[k]-v)*t),rad=.005+(1-t)*.011,pt=[at[0]+Math.sin(an)*rad,at[1]+.002,at[2]+Math.cos(an)*rad];
-   b.branch(at,pt,.00019,stem,'pedicel-tiarella');
+   const t=(j+.5)/count,an=j*2.399963,at=bottom.map((v,k)=>v+(top[k]-v)*t),rad=observed?Math.min(.005+(1-t)*.011,h*.15,w*.08):.005+(1-t)*.011,pt=[at[0]+Math.sin(an)*rad,at[1]+(observed?Math.min(.002,h*.1):.002),at[2]+Math.cos(an)*rad];
+   axis(at,pt,.00019,'pedicel-tiarella');
    if(t>.83||rand()>s.flowerDensity){b.add(kit.bud,'bud-tiarella',a.flowerPalette.calyx,...pt,r*.29,r*.42,r*.29);continue;}
-   const f=flowerFrame(b,pt,.90+rand()*.35,an);
+   const f=flowerFrame(organBuilder,pt,.90+rand()*.35,an);
    f.add(kit.bud,'receptacle-tiarella','#c4c6ac',0,0,0,r*.20,r*.19,r*.20);
    for(let q=0;q<5;q++){
     const aa=q*TAU/5;
@@ -18123,7 +18142,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='delphiniumSpires'){drawDelphinium(b,{info,s,p,detail,rand},kit);return;}
  if(['saxifrageRosettes','bergeniaRhizomes'].includes(info.appearance?.architecture)){drawSaxifragaceae(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='agapanthusFans'){drawAgapanthus(b,{info,s,p,detail,rand},kit);return;}
- if(info.appearance?.architecture==='tiarellaCrowns'){drawTiarella(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='tiarellaCrowns'){drawTiarella(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='heucheraCrowns'){drawHeuchera(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='heucherellaCrowns'){drawHeucherella(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='iberisCorymbs'){drawIberis(b,{info,s,detail,rand},kit);return;}
