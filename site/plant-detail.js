@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.623';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.624';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.623';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.624';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9807,6 +9807,12 @@ export function catmintPoint(type,t,u){
   const crenate=1+.045*Math.cos(t*TAU*10),width=.60*sn**.69*(1-.29*t)*crenate;
   return [u*width,t-.065*Math.abs(u)*Math.exp(-t*10),.042*u*u*sn-.065*t*t+.008*Math.cos(t*49-Math.abs(u)*13)*sn*Math.abs(u)];
  }
+ if(type==='nervosaLip'){
+  // Photo-guided broad rounded end; proportions and the shallow paired display lobes are unmeasured.
+  // Preserve the attached quarter and actual observed Float32 vertex at t=.8125,u=0.
+  const q=Math.max(0,Math.min(1,(t-.25)/.75)),blend=q*q*(3-2*q),v=t*(1-.22*blend),arch=Math.max(0,Math.sin(Math.PI*v)),late=Math.max(0,Math.min(1,(t-.8125)/.1875)),edge=late*late*(3-2*late);
+  return [u*(.035+.265*arch**.6)*(1+.11*(1-blend)*Math.cos(u*Math.PI*3)),-.035-.18*t+.025*edge*t**4*(Math.exp(-u*u*40)+u**4),.62+.39*t-.035*t*t+.018*(Math.cos(u*Math.PI*5)*(1-blend)+blend)*t**4];
+ }
  if(type==='catmintLip')return [u*(.035+.265*sn**.6)*(1+.11*Math.cos(u*Math.PI*3)),-.035-.18*t,.62+.39*t-.035*t*t+.018*Math.cos(u*Math.PI*5)*t**4];
  if(type==='catmintHood')return [u*(.025+.15*sn),.06+.09*sn,.68+.24*t-.03*Math.exp(-u*u*90)*t**4];
  const az=(u+1)*Math.PI,calyx=type==='catmintCalyx',bud=type==='catmintBud',r=calyx?.060+.034*t:bud?.048+.057*sn**.75:.05+.074*t;
@@ -9906,10 +9912,10 @@ function drawTallNepeta(b,{info,s,p,detail,rand,month},kit){
     if(tuber||moon){const br=moon?.85:1.6;f.add(moon?'nervosaBract':'tuberosaBract',moon?'bract-nervosa':spent?'bract-tuberosa-spent':'bract-tuberosa',calyx,0,-fl*.05,-fl*.15,fl*br,fl*br,fl*br);}
     f.add('catmintCalyx',spent?'calyx-tall-nepeta-spent':'calyx-tall-nepeta',calyx,0,0,0,fl,fl,fl);if(spent)continue;
     if(!s.bloom||t>.94||noise(i,j*37+k)>(tuber?.56:.8)){f.add('catmintBud','bud-tall-nepeta',a.flowerPalette.bud,0,0,0,fl,fl,fl);continue;}
-    const color=tuber&&t>.74?'#baa0d9':s.flowerColor;f.add(dreams?'dreamsTube':'catmintTube','tube-tall-nepeta',color,0,0,0,fl,fl,fl);f.add(dreams?'dreamsHood':'catmintHood','hood-tall-nepeta',color,0,0,0,fl,fl,fl);f.add(dreams?'dreamsLip':'catmintLip',dreams?'petal-dreams':moon?'petal-nervosa':tuber?'petal-catmint':'petal-nuda',color,0,0,0,fl,fl,fl);
+    const color=tuber&&t>.74?'#baa0d9':s.flowerColor;f.add(dreams?'dreamsTube':'catmintTube','tube-tall-nepeta',color,0,0,0,fl,fl,fl);f.add(dreams?'dreamsHood':'catmintHood','hood-tall-nepeta',color,0,0,0,fl,fl,fl);f.add(dreams?'dreamsLip':moon?'nervosaLip':'catmintLip',dreams?'petal-dreams':moon?'petal-nervosa':tuber?'petal-catmint':'petal-nuda',color,0,0,0,fl,fl,fl);
     if(inspect){
      // Actual row26/column12 of the existing32x24 lower-lip surface, only for the eligible catalog entries.
-     const point=new THREE.Vector3(...catmintPoint(dreams?'dreamsLip':'catmintLip',.8125,0).map(Math.fround)).multiplyScalar(fl),atPoint=point.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=atPoint.x*.8+atPoint.z;
+     const point=new THREE.Vector3(...catmintPoint(dreams?'dreamsLip':moon?'nervosaLip':'catmintLip',.8125,0).map(Math.fround)).multiplyScalar(fl),atPoint=point.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=atPoint.x*.8+atPoint.z;
      if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),fl*1.2,Math.PI/2);}
     }
    }
