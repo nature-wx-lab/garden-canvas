@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.736';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.737';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.736';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.737';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -12921,7 +12921,7 @@ function tiarellaCapSupport(type,size,ratio,pitch,yaw,roll){
 }
 function drawTiarella(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const observed=['p-892f07fc684a','p-15ec1d433d11','p-362711f2d757'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);
+ const observed=['p-892f07fc684a','p-15ec1d433d11','p-362711f2d757','p-9ca28aa75d73','p-aca83753a789','p-c5c219f64e2d'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);
  const a=info.appearance,typ=a.shootProfile,trail=a.habit==='trailing',h=s.height,w=s.spread,lh=Math.min(s.leafHeight||h,h*a.foliageHeightRatio),L=Math.min(a.leafLength,w*.28)*s.leafScale,stem=a.stemColor;
  const kind=`leaf-tiarella-${a.leafShape}-${s.leafPatternColor.slice(1)}-center-${a.leafUnderside.slice(1)}-${a.leafTexture}`,crowns=[];
  const axis=(from,to,r,kind,color=stem)=>{
@@ -12943,10 +12943,10 @@ function drawTiarella(b,{info,s,p,detail,rand},kit){
  if(trail){
   const arms=Math.max(5,Math.round(9*detail));
   for(let i=0;i<arms;i++){
-   const angle=i*2.399963,reach=Math.max(0,w*.5-L*.70);let prev=[0,.012,0];
+   const angle=i*2.399963,reach=Math.max(0,w*.5-L*.70);let prev=[0,observed?Math.min(.012,h*.08,ceiling*.10):.012,0];
    for(let j=1;j<=7;j++){
-    const t=j/7,az=angle+.18*Math.sin(t*4+i),at=[Math.sin(az)*reach*t,.015+lh*.08*Math.sin(t*Math.PI),Math.cos(az)*reach*t];
-    b.branch(prev,at,.0015,stem,'runner-tiarella');prev=at;if(j%2===1)crowns.push(at);
+    const t=j/7,az=angle+.18*Math.sin(t*4+i),at=[Math.sin(az)*reach*t,observed?Math.min(.015,ceiling*.20)+Math.min(lh*.08,ceiling*.15)*Math.sin(t*Math.PI):.015+lh*.08*Math.sin(t*Math.PI),Math.cos(az)*reach*t];
+    axis(prev,at,.0015,'runner-tiarella');prev=at;if(j%2===1)crowns.push(at);
     for(let k=0;k<3;k++)if(rand()<s.leafDensity)leaf(at,az+k*2.399963,L*(.62+.28*rand()),lh*(.20+.20*rand()));
    }
   }
