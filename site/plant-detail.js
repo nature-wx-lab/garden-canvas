@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.644';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.645';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.644';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.645';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10845,7 +10845,7 @@ export function officinalisLeafPoint(t,u,narrow=false){
 function drawOfficinalis(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,profile=a.shootProfile,cold=[11,12,1,2].includes(month),summer=[7,8,9].includes(month),flowers=profile==='common'||profile==='purple'||profile==='nazareth',L=Math.min(a.leafLength,h*.30,w*.20),n=Math.max(5,Math.min(22,Math.round(18*detail*Math.sqrt(w/.45))));
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const fitFoliage=(p?.kind==='p-440d8df09615'&&profile==='nazareth')||(p?.kind==='p-0eb775c25ea5'&&profile==='common')||(p?.kind==='p-53939297e35e'&&profile==='purple'),observe=fitFoliage&&flowers;let inspection=null,inspectionScore=-Infinity;
+ const fitFoliage=(p?.kind==='p-440d8df09615'&&profile==='nazareth')||(p?.kind==='p-0eb775c25ea5'&&profile==='common')||(p?.kind==='p-53939297e35e'&&profile==='purple')||(p?.kind==='p-c8f358defee5'&&profile==='golden')||(p?.kind==='p-2cf86ddcb729'&&profile==='tricolor'),observe=fitFoliage&&flowers;let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,young=false,root=at,retainedPair=false)=>{
   if(noise(i,k)>s.leafDensity)return false;
   if(!fitFoliage){
