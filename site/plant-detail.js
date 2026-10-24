@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.630';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.631';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.630';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.631';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9828,13 +9828,13 @@ export function catmintPoint(type,t,u){
 function drawCatmint(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,junior=a.shootProfile==='junior',giant=a.shootProfile==='sixHills',pink=a.shootProfile==='pinkCandy',dusk=a.shootProfile==='dusk',blue=a.shootProfile==='blue',white=a.shootProfile==='white',lime=a.shootProfile==='limelight',faassenii=a.shootProfile==='faassenii',cold=!blue&&!faassenii&&[12,1,2].includes(month),L=Math.min(a.leafLength,h*.25,w*.16),headScale=blue||white||lime||faassenii?Math.min(1,h/(lime?.19:.22)):Math.min(1,h*(giant?.26:.34)/a.inflorescenceLength),F=a.flowerLength*headScale,n=Math.max(3,Math.min(28,Math.round((dusk?15:pink?20:giant?18:junior?22:24)*detail*Math.sqrt(w/(junior?.4:.65))*Math.min(1,h/(giant?.65:junior?.22:pink?.28:.36))))),stem=cold?a.winterStemColor:a.stemColor;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const fitGiant=giant&&['p-93be65945f4d','p-38412b54ce8d'].includes(p?.kind),fitSimple=(p?.kind==='p-4976f6b0ffe5'&&blue)||(p?.kind==='p-fd1b5aac2d40'&&white),fitWinter=fitGiant||(fitSimple&&white),observe=(p?.kind==='p-40d0fce02917'&&faassenii)||fitGiant||fitSimple;let inspection=null,inspectionScore=-Infinity;
+ const fitGiant=giant&&['p-93be65945f4d','p-38412b54ce8d'].includes(p?.kind),fitSimple=(p?.kind==='p-4976f6b0ffe5'&&blue)||(p?.kind==='p-fd1b5aac2d40'&&white),fitOther=(p?.kind==='p-0a5dc2eead5d'&&pink)||(p?.kind==='p-87aa00823150'&&dusk),fitBroadLeaf=fitGiant||(fitOther&&dusk),fitWinter=fitGiant||(fitSimple&&white)||(fitOther&&pink),observe=(p?.kind==='p-40d0fce02917'&&faassenii)||fitGiant||fitSimple||fitOther;let inspection=null,inspectionScore=-Infinity;
  const pair=(at,az,len,i,k,basal=false,root=at,retainedPair=false)=>{
   if(!basal&&noise(i,k)>s.leafDensity)return false;
   if(!observe){for(let q=0;q<2;q++){
    const aa=az+q*Math.PI,pet=len*.09,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.3,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.0007,h*.003),a.stemColor,basal?'petiole-catmint-winter':'petiole-catmint');b.add(giant||dusk?'giantCatmintLeaf':'catmintLeaf',lime?(basal?'leaf-lime-catmint-winter':'leaf-lime-catmint'):basal?'leaf-catmint-winter':'leaf-catmint',kit.shade(rand,s.leafColor,.045),...end,len*a.leafWidth/a.leafLength,len,len,.95+.42*noise(i,k+q+64),aa,(noise(i,k+q+72)-.5)*.32);
   }return false;}
-  const pet=len*.09,radius=Math.min(.0007,h*.003),ratio=a.leafWidth/a.leafLength,maxX=fitGiant?.5778:.627,minY=fitGiant?0:-.065,minZ=fitGiant?-.081:-.073,maxZ=fitGiant?.046:.05,leaves=[];let upper=pet*.3+radius,lower=radius;
+  const pet=len*.09,radius=Math.min(.0007,h*.003),ratio=a.leafWidth/a.leafLength,maxX=fitBroadLeaf?.5778:.627,minY=fitBroadLeaf?0:-.065,minZ=fitBroadLeaf?-.081:-.073,maxZ=fitBroadLeaf?.046:.05,leaves=[];let upper=pet*.3+radius,lower=radius;
   for(let q=0;q<2;q++){
    const aa=az+q*Math.PI,pitch=.95+.42*noise(i,k+q+64),roll=(noise(i,k+q+72)-.5)*.32,color=kit.shade(rand,s.leafColor,.045),euler=new THREE.Euler(pitch,aa,roll,'YXZ');
    // Bound the actual blade including roll: catmintLeaf X±.627,Y[-.065,1],Z[-.073,.05]; giantCatmintLeaf X±.5778,Y[0,1],Z[-.081,.046].
@@ -9845,7 +9845,7 @@ function drawCatmint(b,{info,s,p,detail,rand,month},kit){
   const ceiling=Math.min(h,s.leafHeight),base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
   const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.3*fit,base[2]+Math.cos(leaf.aa)*pet*fit]}));
   const direct=fitted.some(leaf=>new THREE.Vector3(...leaf.end).sub(new THREE.Vector3(...base)).length()<.0001);
-  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,a.stemColor,basal?'petiole-catmint-winter':'petiole-catmint');b.add(fitGiant?'giantCatmintLeaf':'catmintLeaf',basal?'leaf-catmint-winter':'leaf-catmint',leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
+  for(const leaf of fitted){if(!direct)b.branch(base,leaf.end,radius*fit,a.stemColor,basal?'petiole-catmint-winter':'petiole-catmint');b.add(fitBroadLeaf?'giantCatmintLeaf':'catmintLeaf',basal?'leaf-catmint-winter':'leaf-catmint',leaf.color,...(direct?base:leaf.end),len*ratio*fit,len*fit,len*fit,leaf.pitch,leaf.aa,leaf.roll);}
   return true;
  };
  const raceme=(base,az,len,i,root=base,retainedPair=false)=>{
