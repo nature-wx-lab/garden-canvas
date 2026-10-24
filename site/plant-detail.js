@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.710';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.711';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.710';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.711';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4790,7 +4790,7 @@ const bergeniaMicroAxis=new THREE.CylinderGeometry(1,1,1,6,1,false);
 
 function drawSaxifragaceae(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const a=info.appearance,typ=a.shootProfile,sax=a.architecture==='saxifrageRosettes',h=s.height,w=s.spread,observeSax=['p-a437b97beb3d','p-9d9359c0cad6'].includes(p?.kind),observe=observeSax||['p-8df7e24225e1','p-f9b0afaaa4ca','p-5710cb13f030','p-8b63abc96633'].includes(p?.kind),cap=Math.min(h,s.leafHeight),rootY=observe?Math.min(.010,h*.10,cap*.12):.010,rhizomeY=observe?Math.min(.017,h*.15,cap*.20):.017;
+ const a=info.appearance,typ=a.shootProfile,sax=a.architecture==='saxifrageRosettes',h=s.height,w=s.spread,observeSax=['p-a437b97beb3d','p-9d9359c0cad6','p-e95c78144a63'].includes(p?.kind),observe=observeSax||['p-8df7e24225e1','p-f9b0afaaa4ca','p-5710cb13f030','p-8b63abc96633'].includes(p?.kind),cap=Math.min(h,s.leafHeight),rootY=observe?Math.min(.010,h*.10,cap*.12):.010,rhizomeY=observe?Math.min(.017,h*.15,cap*.20):.017;
  const L=Math.min(a.leafLength,w*(sax?.22:.44))*s.leafScale,stem=a.stemColor,crowns=[];
  const tinyHair=(builder,from,to,r,color,kind)=>{
   const length=Math.hypot(to[0]-from[0],to[1]-from[1],to[2]-from[2]);if(!observe||length>=.00012){builder.branch(from,to,r,color,kind);return;}if(length<=0)return;
