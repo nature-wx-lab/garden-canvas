@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.728';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.729';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -367,7 +367,7 @@ Object.assign(TRAIT_VALUES,{narrow5:'細長い裂片に分かれる5裂葉',lace
 
 Object.assign(TRAIT_VALUES,{brunneraSilverMargin:'銀葉と緑の網状葉脈・クリーム色の覆輪',brunneraCorolla:'白い喉部と丸い5裂・短い筒の小花'});
 
-Object.assign(TRAIT_VALUES,{trifoliumLeaf:'丸〜倒卵形の小葉3枚（四つ葉が出る系統は4枚も）',cloverPeaHead:'小さな蝶形花が集まる頭花・花穂',cloverBlack:'黒紫の葉と細い緑の縁',cloverPink:'銀緑の葉・春秋のピンク色と暗色の中心',cloverRouge:'淡緑〜銀色の葉と赤紫の中央斑',cloverWine:'赤紫の葉と暗色の中心',cloverWilliams:'赤褐色と緑の葉',cloverGold:'黄金色の葉と淡い山形斑',cloverFour:'黒紫の四つ葉系統と緑の縁',cloverCrimson:'毛のある緑の三小葉'});
+Object.assign(TRAIT_VALUES,{trifoliumLeaf:'丸〜倒卵形の小葉3枚（四つ葉が出る系統は4枚も）',cloverPeaHead:'小さな蝶形花が集まる頭花・花穂',cloverBlack:'黒紫の葉と細い緑の縁',cloverPink:'銀緑の葉・春秋のピンク色と暗色の中心',cloverRouge:'淡緑〜銀色の葉と赤紫の中央斑',cloverWine:'赤紫の葉と付け根側の緑色の模様',cloverWilliams:'赤褐色と緑の葉',cloverGold:'黄金色の葉と淡い山形斑',cloverFour:'黒紫の四つ葉系統と緑の縁',cloverCrimson:'毛のある緑の三小葉'});
 
 Object.assign(TRAIT_VALUES,{mahoniaPinnate:'細長い小葉が左右と先端に並ぶ羽状複葉',mahoniaRaceme:'枝先から立つ黄色い小花の総状花序'});
 

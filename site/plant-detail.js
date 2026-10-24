@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.728';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.729';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.728';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.729';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4942,7 +4942,7 @@ export function trifoliumLeafPoint(t,u){
 const cloverMicroAxis=new THREE.CylinderGeometry(1,1,1,6,1,false);
 function drawClover(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const a=info.appearance,observe=['p-63ce870f4355','p-572cbb54cfae'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight),annual=a.architecture==='crimsonClover',typ=a.shootProfile,h=s.height*(annual?s.leafScale:1),w=s.spread*(annual?Math.sqrt(s.leafScale):1),L=a.leafLength*(annual?.7+.3*Math.sqrt(s.leafScale):.82+.18*s.leafDensity),stem=a.stemColor;
+ const a=info.appearance,observe=['p-63ce870f4355','p-572cbb54cfae','p-73722fb474af','p-c174ce80452f'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight),annual=a.architecture==='crimsonClover',typ=a.shootProfile,h=s.height*(annual?s.leafScale:1),w=s.spread*(annual?Math.sqrt(s.leafScale):1),L=a.leafLength*(annual?.7+.3*Math.sqrt(s.leafScale):.82+.18*s.leafDensity),stem=a.stemColor;
  const leaf=(node,angle,rise)=>{
   const reach=L*(.45+rand()*.5),four=!annual&&rand()<a.fourLeafShare,n=four?4:3,turns=four?[0,Math.PI/2,Math.PI,-Math.PI/2]:[-1.9,0,1.9],size=L*(.75+rand()*.25),colour=typ==='pink'&&s.seasonName!=='summer'&&rand()<.32?'#8fa486':s.leafColor;
   const specs=turns.map(turn=>({color:kit.shade(rand,colour,.035),pitch:annual?.85+rand()*.9:1.20+rand()*.38,yaw:angle+turn,roll:(rand()-.5)*.16}));let fit=1;
