@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.681';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.682';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.681';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.682';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -2084,8 +2084,8 @@ function drawAromaticShrubs(b,{info,s,p,detail,rand},kit){
    if(head.roll>s.flowerDensity*.62)continue;
    const stalk=Math.min(.15,h*.25),tip=[head.at[0]+Math.sin(head.az)*stalk*.15,head.at[1]+stalk,head.at[2]+Math.cos(head.az)*stalk*.15];b.branch(head.at,tip,Math.min(.00065,h*.006),a.stemColor,'peduncle-aromatic-santolina');const R=a.flowerRadius*Math.min(1,h/.25),f=flowerFrame(b,tip,.10,head.az);
    f.add(kit.bud,'involucre-aromatic-santolina','#a8a784',0,-R*.12,0,R,R*.38,R);
-   for(let j=0;j<64;j++){
-    const rr=R*Math.sqrt((j+.5)/64),az=j*2.399963,y=R*.70*Math.sqrt(Math.max(0,1-(rr/R)**2)),pt=[Math.sin(az)*rr,y,Math.cos(az)*rr],ff=flowerFrame({add:(...args)=>f.add(...args),branch:(...args)=>f.branch(...args)},pt,rr/R*.85,az),r=R*.11;
+   const florets=observeSanto?384:64;for(let j=0;j<florets;j++){
+    const rr=R*Math.sqrt((j+.5)/florets),az=j*2.399963,y=R*.70*Math.sqrt(Math.max(0,1-(rr/R)**2)),pt=[Math.sin(az)*rr,y,Math.cos(az)*rr],ff=flowerFrame({add:(...args)=>f.add(...args),branch:(...args)=>f.branch(...args)},pt,rr/R*.85,az),r=R*.11;
     ff.add('aromatic-flower-santolina','petal-aromatic-santolina',kit.shade(rand,s.flowerColor,.055),0,0,0,r,r*1.8,r);ff.add(kit.bud,'style-aromatic-santolina','#e0c868',0,r*1.9,0,r*.13,r*.23,r*.13);
     if(observeSanto){const rotation=new THREE.Euler(rr/R*.85,az,0,'YXZ'),centre=markerVertices.reduce((v,p)=>v.add(p.clone().multiply(new THREE.Vector3(r,r*1.8,r))),new THREE.Vector3()).multiplyScalar(1/3).applyEuler(rotation).add(new THREE.Vector3(...pt)),point=centre.clone().applyEuler(new THREE.Euler(.10,head.az,0,'YXZ')).add(new THREE.Vector3(...tip)),score=point.x*.8+point.z;if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(centre.toArray(),R*1.6,rotation.x,rotation.y,rotation.z);}}
    }
