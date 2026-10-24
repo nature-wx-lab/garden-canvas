@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.739';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.740';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.739';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.740';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -13002,7 +13002,7 @@ function heucherellaCapSupport(type,size,ratio,pitch,yaw,roll){
 }
 function drawHeucherella(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const observed=['p-b91527c69202','p-88a52b6656d9','p-90f931e479a8','p-e8558b083bc7'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);
+ const observed=['p-b91527c69202','p-88a52b6656d9','p-90f931e479a8','p-e8558b083bc7','p-9907bebed0eb','p-92899f7d7023','p-5f30e68ff24e'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);
  const a=info.appearance,typ=a.shootProfile,trailing=['copper','plum','yellowstone'].includes(typ),h=s.height,w=s.spread,lh=Math.min(s.leafHeight||h,h*a.foliageHeightRatio),L=Math.min(a.leafLength,w*.32)*s.leafScale;
  const leafKind=`leaf-heucherella-${a.leafShape}-${s.leafPatternColor.slice(1)}-${a.leafPattern}-${a.leafUnderside.slice(1)}-${a.leafTexture}`;
  const axis=(from,to,r,kind,color=a.stemColor)=>{
@@ -13027,8 +13027,8 @@ function drawHeucherella(b,{info,s,p,detail,rand},kit){
  if(trailing){
   const arms=Math.max(4,Math.round(8*detail));
   for(let i=0;i<arms;i++){
-   const angle=i*2.399963,reach=Math.max(0,w*.5-L*.70),nodes=[[0,.012,0]];
-   for(let k=1;k<=7;k++){const t=k/7,an=angle+Math.sin(t*4+i)*.17;nodes.push([Math.sin(an)*reach*t,.018+lh*.30*Math.sin(t*Math.PI),Math.cos(an)*reach*t]);b.branch(nodes[k-1],nodes[k],.002,a.stemColor,'runner-heucherella');}
+   const angle=i*2.399963,reach=Math.max(0,w*.5-L*.70),nodes=[[0,observed?Math.min(.012,h*.08,ceiling*.10):.012,0]];
+   for(let k=1;k<=7;k++){const t=k/7,an=angle+Math.sin(t*4+i)*.17;nodes.push([Math.sin(an)*reach*t,observed?Math.min(.018,ceiling*.20)+Math.min(lh*.30,ceiling*.60)*Math.sin(t*Math.PI):.018+lh*.30*Math.sin(t*Math.PI),Math.cos(an)*reach*t]);axis(nodes[k-1],nodes[k],.002,'runner-heucherella');}
    for(let k=1;k<=7;k++){
     const at=nodes[k];if(k===2||k===5)crowns.push(at);
     for(let j=0;j<2;j++)if(rand()<s.leafDensity)leaf(at,angle+(j?1:-1)*1.2,L*(.57+.35*k/7),true);
@@ -13048,7 +13048,7 @@ function drawHeucherella(b,{info,s,p,detail,rand},kit){
   axis(root,bottom,.0012,'scape-heucherella');axis(bottom,top,.0008,'raceme-heucherella');
   const count=Math.round((typ==='tapestry'?110:typ==='bridget'?90:65)*detail);
   for(let j=0;j<count;j++){
-   const t=(j+.5)/count,an=j*2.399963,at=bottom.map((v,k)=>v+(top[k]-v)*t),rad=observed?Math.min((.010+(1-t)*.014)*(typ==='tapestry'?1.45:1),h*.15,w*(typ==='tapestry'?.12:.08)):(.010+(1-t)*.014)*(typ==='tapestry'?1.45:1),pt=[at[0]+Math.sin(an)*rad,at[1]+(observed?Math.min(.003,h*.1):.003),at[2]+Math.cos(an)*rad];
+   const t=(j+.5)/count,an=j*2.399963,at=bottom.map((v,k)=>v+(top[k]-v)*t),rad=observed?Math.min((.010+(1-t)*.014)*(typ==='tapestry'?1.45:1),h*.15,w*(typ==='tapestry'||trailing?.12:.08)):(.010+(1-t)*.014)*(typ==='tapestry'?1.45:1),pt=[at[0]+Math.sin(an)*rad,at[1]+(observed?Math.min(.003,h*.1):.003),at[2]+Math.cos(an)*rad];
    axis(at,pt,.00022,'pedicel-heucherella');
    if(t>.86||rand()>s.flowerDensity){b.add(kit.bud,'bud-heucherella',s.flowerColor,...pt,r*.36,r*.50,r*.36);continue;}
    const pitch=1.78+rand()*.40,f=flowerFrame(organBuilder,pt,pitch,an),calyx=typ==='plum'?'#b888a5':s.flowerColor;
@@ -13058,7 +13058,7 @@ function drawHeucherella(b,{info,s,p,detail,rand},kit){
     f.add('iberisEntire','petal-heucherella',s.flowerColor,Math.sin(aa)*r*.32,r*.56,Math.cos(aa)*r*.32,r*.22,r*.83,r,.46,aa,0);
    }
    // Inspect a rendered petal above the lower foliage, preserving the mesh and RNG.
-   if(observed){
+   if(observed&&(!trailing||t>.6)){
     for(let q=0;q<5;q++){const aa=q*TAU/5+.63,point=new THREE.Vector3(...iberisPoint('entire',.85,0)).multiply(new THREE.Vector3(r*.22,r*.83,r)).applyEuler(new THREE.Euler(.46,aa,0,'YXZ')).add(new THREE.Vector3(Math.sin(aa)*r*.32,r*.56,Math.cos(aa)*r*.32)).applyEuler(new THREE.Euler(pitch,an,0,'YXZ')).add(new THREE.Vector3(...pt)),score=point.x*.8+point.z;if(!frontPetal||score>frontPetal.score)frontPetal={point,r,score};}
    }else if(i===inspectionStem&&t>.6&&inspectionTargets<16){
     const facing=[1,3].map(q=>{const aa=TAU*q/5+.63,n=new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(.46+Math.PI/2,aa,0,'YXZ')).applyEuler(new THREE.Euler(pitch,an,0,'YXZ'));return{aa,front:n.x*.8+n.z};}).reduce((best,v)=>v.front>best.front?v:best),aa=facing.aa,point=new THREE.Vector3(...iberisPoint('entire',.65,0)).multiply(new THREE.Vector3(r*.22,r*.83,r)).applyEuler(new THREE.Euler(.46,aa,0,'YXZ')).add(new THREE.Vector3(Math.sin(aa)*r*.32,r*.56,Math.cos(aa)*r*.32));
