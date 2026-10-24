@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.703';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.704';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -122,7 +122,7 @@ export function foliageKind(info){
 Object.assign(TRAIT_VALUES,{umbrellaBract:'茎の頂部に傘状に開く細長い苞',reducedSheath:'普通の葉は退化し、株元に鞘を残す',horsetailSheath:'節を囲む鞘と輪生する黒い小さな歯',twigRushBlade:'基部は厚く、先端は平たい硬い直立葉',protectedWinter:'寒期は屋内等へ移して保護（自然な休眠と区別）'});
 Object.assign(TRAIT_VALUES,{campionLeaf:'対生する幅広い葉',fireflyDouble:'細かな花弁が重なる八重花'});
 Object.assign(TRAIT_VALUES,{lavenderLinear:'細い線状の葉',lavenderSandLeaf:'銀白色の細い葉',lavenderMerlotLeaf:'切れ込みのある斑入りの葉',lavenderLips:'上下の唇に分かれる小花',gilleniaTrifoliate:'鋸歯のある3枚の小葉',gilleniaStar:'細い5枚の花弁が星形に開く花',rough:'粗い樹皮'});
-Object.assign(TRAIT_VALUES,{cosmosPinnatifid:'単葉と切れ込みのある葉の参考',cosmosHead:'舌状花と中心の筒状花が集まる頭花',silverDropLeaf:'対生する丸〜楕円の銀青色の幼葉',momoiroLeaf:'切れ込みと鋸歯のある細めの葉',whiteAnemoneLeaf:'切れ込みと鋸歯のある幅広い葉',anemoneSaucer:'花弁状の萼片と多数のおしべをもつ浅い花'});
+Object.assign(TRAIT_VALUES,{cosmosPinnatifid:'単葉と切れ込みのある葉の参考',cosmosHead:'舌状花と中心の筒状花が集まる頭花',silverDropLeaf:'対生する丸〜楕円の銀青色の幼葉',momoiroLeaf:'切れ込みと鋸歯のある細めの葉',whiteAnemoneLeaf:'切れ込みと鋸歯のある幅広い葉',melinisBlade:'株元から弓なりに伸びる細い葉',hairyPanicle:'毛のある小穂が枝分かれして広がる穂',anemoneSaucer:'花弁状の萼片と多数のおしべをもつ浅い花'});
 export function appearanceSummary(info){
  const a=info.appearance||{};
  return ['leafShape','leafPattern','persistence','flowerShape','habit','barkPattern'].filter(k=>a[k]).map(k=>`${TRAIT_LABELS[k]}：${TRAIT_VALUES[a[k]]||a[k]}`).join(' ／ ');

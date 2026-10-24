@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.703';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.704';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.703';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.704';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11627,8 +11627,15 @@ export function melinisPoint(t,u){
  return [u*.5*taper,t-.25*t*t,.20*t*t+fold+.001*Math.sin(t*14)*u];
 }
 
-function drawMelinis(b,{info,s,detail,rand,month},kit){
- const a=info.appearance,w=s.spread,h=s.height,cold=[12,1,2,3].includes(month),L=Math.min(a.leafLength,h*.62,w*.90);
+const melinisMicroAxis=new THREE.CylinderGeometry(1,1,1,6,1,false);
+function drawMelinis(b,{info,s,p,detail,rand,month},kit){
+ const a=info.appearance,observe=p?.kind==='p-7669ee22c4ab',w=s.spread,h=s.height,ceiling=Math.min(h,s.leafHeight),rootY=observe?Math.min(.003,h*.10,ceiling*.12):.003,cold=[12,1,2,3].includes(month),L=Math.min(a.leafLength,h*.62,w*.90);
+ const tinyAxis=(builder,from,to,r,color,kind)=>{
+  const length=Math.hypot(to[0]-from[0],to[1]-from[1],to[2]-from[2]);
+  if(!observe||length>=.00012){builder.branch(from,to,r,color,kind);return;}if(length<=0)return;
+  const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(to[0]-from[0],to[1]-from[1],to[2]-from[2]).normalize()),'YXZ');
+  builder.add(melinisMicroAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,rotation.x,rotation.y,rotation.z);
+ };
  const blades=Math.max(28,Math.min(170,Math.round(88*detail*Math.pow(w/.4,.72))));
  for(let j=0;j<blades;j++){
   const an=j*2.399963,rr=w*.13*Math.sqrt((j+.5)/blades),shape=.5+.5*Math.sin(j*17.13);
@@ -11637,7 +11644,14 @@ function drawMelinis(b,{info,s,detail,rand,month},kit){
   // convention; their natural fall and the survival of the crown are unknown.
   if(cold&&!green&&j%4!==0)continue;
   const len=L*(.62+.38*shape),colour=green?s.leafColor:a.winterStemColor;
-  b.add('melinisBlade',green?'leaf-melinis':'leaf-melinis-dry',kit.shade(rand,colour,.035),Math.sin(an)*rr,.003,Math.cos(an)*rr,a.leafWidth,len,len,.06+.22*shape,an,(shape-.5)*.18);
+  const pitch=.06+.22*shape,roll=(shape-.5)*.18;let fit=1;
+  if(observe){
+   // At these blade angles, vertical rise exceeds the curved z offset.
+   // Only the base width can project below its crown; keep those bounds correlated.
+   const cp=Math.cos(pitch),sp=Math.sin(pitch),sr=Math.abs(Math.sin(roll)),upper=cp*(a.leafWidth*.5*sr+.75*len*Math.cos(roll))+sp*.001*len,lower=cp*a.leafWidth*.5*sr;
+   fit=Math.max(0,Math.min(1,upper>0?(ceiling-rootY-.00004)/upper:1,lower>0?rootY/lower:1));
+  }
+  b.add('melinisBlade',green?'leaf-melinis':'leaf-melinis-dry',kit.shade(rand,colour,.035),Math.sin(an)*rr,rootY,Math.cos(an)*rr,a.leafWidth*fit,len*fit,len*fit,pitch,an,roll);
  }
  const heads=Math.max(7,Math.min(28,Math.round(20*detail*Math.pow(w/.4,.78))));
  for(let i=0;i<heads;i++){
@@ -11651,17 +11665,17 @@ function drawMelinis(b,{info,s,detail,rand,month},kit){
   const hair=s.bloom?new THREE.Color(a.flowerPalette.young).lerp(tint,.47):new THREE.Color('#c6bdaa');
   for(let j=0;j<13;j++){
    const t=(j+.4)/13,at=axis(start+(1-start)*t),yaw=an+j*2.399963,width=len*.23*Math.pow(Math.sin(Math.PI*t),.68)*(.76+.24*shape(j+5));
-   b.branch(previous,at,.00040*(1-t*.5),stem,'rachis-melinis');previous=at;
+   tinyAxis(b,previous,at,.00040*(1-t*.5),stem,'rachis-melinis');previous=at;
    for(let radial=0;radial<3;radial++){
-   const branchYaw=yaw+radial*TAU/3,end=[at[0]+Math.sin(branchYaw)*width,at[1]+len*.055,at[2]+Math.cos(branchYaw)*width];b.branch(at,end,.00023,stem,'branch-melinis');
+   const branchYaw=yaw+radial*TAU/3,end=[at[0]+Math.sin(branchYaw)*width,at[1]+len*.055,at[2]+Math.cos(branchYaw)*width];tinyAxis(b,at,end,.00023,stem,'branch-melinis');
    for(let k=0;k<5;k++){
     const q=(k+.5)/5,turn=branchYaw+(k%2?1:-1)*.75,spread=len*.05*(.55+.45*q),from=[at[0]+(end[0]-at[0])*q,at[1]+(end[1]-at[1])*q,at[2]+(end[2]-at[2])*q];
-    const pt=[from[0]+Math.sin(turn)*spread,from[1]+len*.040,from[2]+Math.cos(turn)*spread];b.branch(from,pt,.00012,stem,'pedicel-melinis');
+    const pt=[from[0]+Math.sin(turn)*spread,from[1]+len*.040,from[2]+Math.cos(turn)*spread];tinyAxis(b,from,pt,.00012,stem,'pedicel-melinis');
     const spikelet=Math.min(.0048,len*.05),f=flowerFrame(b,pt,.25+.35*shape(j*5+k+40),turn);
     f.add(kit.bud,'spikelet-melinis',tint,0,spikelet*.45,0,spikelet*.25,spikelet*.52,spikelet*.25);
     for(let z=0;z<5;z++){
      const az=z*2.399963,base=[0,spikelet*(.20+.12*z),0],tip=[Math.sin(az)*spikelet*.48,spikelet*(.80+.15*shape(z+j+70)),Math.cos(az)*spikelet*.48];
-     f.branch(base,tip,.000045,hair,'hair-melinis');
+     tinyAxis(f,base,tip,.000045,hair,'hair-melinis');
     }
    }
    }
@@ -18095,7 +18109,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='silverDropJuvenile'){drawSilverDrop(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='autumnAnemone'){drawAutumnAnemone(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oxfordMat'){drawOxfordMat(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='melinisTussock'){drawMelinis(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='melinisTussock'){drawMelinis(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='linariaRacemes'){drawLinaria(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='lamiumRunners'){drawLamium(b,{info,s,detail,rand},kit);return;}
