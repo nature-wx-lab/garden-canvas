@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.654';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.655';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.654';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.655';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10734,7 +10734,7 @@ export function patensPoint(type,t,u){
 function drawPatens(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.24,w*.22),F=Math.min(a.flowerLength,h*.16,w*.14),n=Math.max(3,Math.min(16,Math.round(8*detail*Math.sqrt(w/.5)))),ice=a.shootProfile==='pinkIce';
  const noise=(i,k)=>{const x=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return x-Math.floor(x);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const observe=(p?.kind==='p-9bc739787fc7'&&a.shootProfile==='gentian')||(p?.kind==='p-5a3386ff68f9'&&a.shootProfile==='cambridge');let inspection=null,inspectionScore=-Infinity;
+ const observe=(p?.kind==='p-9bc739787fc7'&&a.shootProfile==='gentian')||(p?.kind==='p-5a3386ff68f9'&&a.shootProfile==='cambridge')||(p?.kind==='p-da6c6c586e4c'&&a.shootProfile==='whiteTrophy')||(p?.kind==='p-2e265a3f22e9'&&ice);let inspection=null,inspectionScore=-Infinity;
  const leafPair=(at,az,len,i,k,root=at,retainedPair=false)=>{
   if(noise(i,k)>s.leafDensity)return false;
   if(!observe){for(let side=0;side<2;side++){const aa=az+side*Math.PI,pet=len*.14,end=[at[0]+Math.sin(aa)*pet,at[1]+pet*.1,at[2]+Math.cos(aa)*pet];b.branch(at,end,Math.min(.001,h*.0022),a.stemColor,'petiole-patens');b.add('patensLeaf','leaf-patens',kit.shade(rand,s.leafColor,.06),...end,len*a.leafWidth/a.leafLength,len,len,.80+.40*noise(i,k+side+44),aa,(noise(i,k+side+32)-.5)*.18);}return false;}
