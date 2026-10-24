@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.677';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.678';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.677';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.678';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11598,7 +11598,7 @@ function drawNemorosa(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,w=s.spread,h=s.height,winter=[12,1,2].includes(month),caradonna=a.shootProfile==='caradonna',snowHill=a.shootProfile==='snowHill';
  const L=Math.min(a.leafLength,w*.28),n=Math.max(6,Math.min(28,Math.round(17*detail*Math.pow(w/.4,.78))));
  const dry=winter||month>=10,stem=dry?a.winterStemColor:a.stemColor,flowerR=snowHill?Math.min(a.flowerRadius,h*.03):a.flowerRadius,flowerLen=snowHill?Math.min(a.flowerLength,h*.075):a.flowerLength;
- const observe=(p?.kind==='p-e8a3ee532b78'&&caradonna)||(p?.kind==='p-4a97a7aeca72'&&snowHill);let inspection=null,inspectionScore=-Infinity;
+ const observe=(p?.kind==='salvia'&&a.shootProfile==='species')||(p?.kind==='p-e8a3ee532b78'&&caradonna)||(p?.kind==='p-4a97a7aeca72'&&snowHill);let inspection=null,inspectionScore=-Infinity;
  const blade=(at,yaw,len,pitch,basal=false,petioleBase=null)=>{
   const color=kit.shade(rand,s.leafColor,.040),roll=(rand()-.5)*.12;
   if(!observe){b.add('nemorosaLeaf',basal?'leaf-nemorosa-basal':'leaf-nemorosa',color,...at,len*a.leafWidth/a.leafLength,len,len,pitch,yaw,roll);return false;}
