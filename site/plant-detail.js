@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.700';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.701';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.700';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.701';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -11508,30 +11508,33 @@ export function autumnAnemonePoint(type,t,u){
  return [u*width,t,.075*u*u*sn+.055*t*t+.016*Math.cos((t-Math.abs(u)*.24)*TAU*6)*Math.abs(u)*sn];
 }
 
-function drawAutumnAnemone(b,{info,s,detail,rand,month},kit){
- const a=info.appearance,momo=a.shootProfile==='momoiro',w=s.spread,h=s.height,L=Math.min(a.leafLength,w*.23,h*.30),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
+function drawAutumnAnemone(b,{info,s,p,detail,rand,month},kit){
+ const a=info.appearance,observe=p?.kind==='p-9fc86e59c35b',momo=a.shootProfile==='momoiro',w=s.spread,h=s.height,ceiling=Math.min(h,s.leafHeight),oldL=Math.min(a.leafLength,w*.23,h*.30),L=Math.min(oldL,observe?s.leafHeight*.8:Infinity),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
  const n=Math.max(4,Math.min(20,Math.round((momo?12:8)*detail*Math.pow(w/.45,.7))));
+ const vegetativeBranch=(from,to,r,color,kind)=>{if(observe){const horizontal=Math.hypot(to[0]-from[0],to[2]-from[2]);if(horizontal>0)r=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*Math.hypot(horizontal,to[1]-from[1])/horizontal);}b.branch(from,to,r,color,kind);};
  const compound=(root,az,length,pitch)=>{
-  const pet=length*.85,at=[root[0]+Math.sin(az)*pet*.66,root[1]+pet*.75,root[2]+Math.cos(az)*pet*.66];b.branch(root,at,.0009,a.stemColor,'petiole-anemone');
+  if(observe){let upper=0,lower=0;for(const side of[-1,0,1]){const smaller=side?.82:1,rotation=new THREE.Euler(pitch,az+side*.87,0,'YXZ');for(let k=0;k<8;k++){const v=new THREE.Vector3((k&1?1:-1)*.5*a.leafWidth/a.leafLength*length*smaller,(k&2?1:0)*length*smaller,(k&4?.146:-.016)*length*smaller).applyEuler(rotation);upper=Math.max(upper,length*(.85*.75+.025)+v.y);lower=Math.max(lower,-(length*(.85*.75+.025)+v.y));}}length*=Math.max(0,Math.min(1,upper>0?(ceiling-root[1]-.00004)/upper:1,lower>0?root[1]/lower:1));}
+  const pet=length*.85,at=[root[0]+Math.sin(az)*pet*.66,root[1]+pet*.75,root[2]+Math.cos(az)*pet*.66];vegetativeBranch(root,at,observe?Math.min(.0009,length*.12):.0009,a.stemColor,'petiole-anemone');
   for(const side of [-1,0,1]){
-   const an=az+side*.87,smaller=side?.82:1,base=[at[0]+Math.sin(an)*length*.10,at[1]+length*.025,at[2]+Math.cos(an)*length*.10];
-   b.branch(at,base,.0005,a.stemColor,'petiolule-anemone');
-   b.add(momo?'momoiroLeaf':'whiteAnemoneLeaf',momo?'leaf-anemone-narrow':'leaf-anemone-broad',kit.shade(rand,s.leafColor,.045),...base,length*smaller*a.leafWidth/a.leafLength,length*smaller,length*smaller,pitch,an,0);
+   const an=az+side*.87,smaller=side?.82:1,base=[at[0]+Math.sin(an)*length*.10,at[1]+length*.025,at[2]+Math.cos(an)*length*.10],color=kit.shade(rand,s.leafColor,.045);
+   if(observe&&length<=.00001)continue;
+   vegetativeBranch(at,base,observe?Math.min(.0005,length*.12):.0005,a.stemColor,'petiolule-anemone');
+   b.add(momo?'momoiroLeaf':'whiteAnemoneLeaf',momo?'leaf-anemone-narrow':'leaf-anemone-broad',color,...base,length*smaller*a.leafWidth/a.leafLength,length*smaller,length*smaller,pitch,an,0);
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963,shape=k=>.5+.5*Math.sin((i+1)*16.989+k*7.233),rr=Math.max(.003,w*.37-L*.9)*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr];
+  const az=i*2.399963,shape=k=>.5+.5*Math.sin((i+1)*16.989+k*7.233),rr=Math.max(.003,w*.37-oldL*.9)*Math.sqrt((i+.5)/n),root=[Math.sin(az)*rr,observe?Math.min(.004,h*.02,ceiling*.12):.004,Math.cos(az)*rr];
   // Root and flowering-stem identities stay fixed when month or leaf amount
   // changes. Monthly emergence and the fall of old stems remain uncalibrated.
   if(s.leafDensity>0)for(let j=0;j<4;j++)if(shape(j+11)<s.leafDensity)compound(root,az+j*1.8,L*(.65+.35*shape(j+20)),.81+.22*shape(j+25));
-  const top=h*(.77+.19*shape(1)),base=[root[0]+Math.sin(az)*w*.02,h*(.31+.25*shape(4)),root[2]+Math.cos(az)*w*.02];
-  b.branch(root,base,.00165,stem,'stem-anemone');
+  const top=h*(.77+.19*shape(1)),originalBaseY=h*(.31+.25*shape(4)),base=[root[0]+Math.sin(az)*w*.02,observe?Math.min(originalBaseY,ceiling*.70):originalBaseY,root[2]+Math.cos(az)*w*.02];
+  vegetativeBranch(root,base,.00165,stem,'stem-anemone');
   if(s.leafDensity>0&&shape(31)<s.leafDensity)for(let k=0;k<3;k++)compound(base,az+k*TAU/3,L*.57,1.0);
   const tips=[];
   for(let k=0;k<3;k++){
    const an=az+k*TAU/3,reach=Math.min(w*.14,h*.10)*(k===0?.30:1),end=[base[0]+Math.sin(an)*reach,top*(k===0?1:.88+.05*shape(k+42)),base[2]+Math.cos(an)*reach];
    const joint=base.map((v,d)=>v+(end[d]-v)*.58);b.branch(base,joint,.0011,stem,'fork-anemone');b.branch(joint,end,.00076,stem,'pedicel-anemone');tips.push({end,an,bud:k===2&&i%2===0});
-   if(k===0&&momo){const extra=[joint[0]+Math.sin(an+1.1)*w*.06,joint[1]+h*.22,joint[2]+Math.cos(an+1.1)*w*.06];b.branch(joint,extra,.00065,stem,'pedicel-anemone');tips.push({end:extra,an:an+1.1,bud:i%3===0});}
+   if(k===0&&momo){const extra=[joint[0]+Math.sin(an+1.1)*w*.06,observe?originalBaseY+(end[1]-originalBaseY)*.58+h*.22:joint[1]+h*.22,joint[2]+Math.cos(an+1.1)*w*.06];b.branch(joint,extra,.00065,stem,'pedicel-anemone');tips.push({end:extra,an:an+1.1,bud:i%3===0});}
   }
   for(const [k,{end,an,bud} ] of tips.entries()){
    if(!s.bloom)continue;
@@ -18085,7 +18088,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='lavenderMounds'){drawLavenderMounds(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='chocolateCosmos'){drawChocolateCosmos(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='silverDropJuvenile'){drawSilverDrop(b,{info,s,p,detail,rand},kit);return;}
- if(info.appearance?.architecture==='autumnAnemone'){drawAutumnAnemone(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='autumnAnemone'){drawAutumnAnemone(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='oxfordMat'){drawOxfordMat(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='melinisTussock'){drawMelinis(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='nemorosaWhorls'){drawNemorosa(b,{info,s,p,detail,rand,month},kit);return;}
