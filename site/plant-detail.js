@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.678';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.679';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.678';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.679';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -2014,22 +2014,23 @@ export function aromaticFlowerGeometry(type){
  }else surface(7,20,(t,u)=>{const az=u*TAU,r=.36+.18*t**4,y=t+(t>.7?(t-.7)*.38*Math.cos(az*5):0);return [Math.sin(az)*r,y,Math.cos(az)*r,u,t];});
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.aromaticFlower=type==='rosemary'?{upper:2,lower:3,stamens:2}:{disk:true,ray:false,lobes:5};return g;
 }
-function drawAromaticShrubs(b,{info,s,detail,rand},kit){
+function drawAromaticShrubs(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,type=a.shootProfile,santo=type==='snowCoral'||type==='lambrook',gold=type==='gildedGold',mozart=type==='mozartBlue',h=s.height,w=s.spread,wood=[],leaves=[],heads=[],flowers=[];
- const shoot=(root,az,rise,reach,order)=>{
+ const observe=p?.kind==='p-0fe0203ab3f7'&&type==='rosemary',leafBases=new Map(),retainedCrowns=new Set();let inspection=null,inspectionScore=-Infinity;
+ const shoot=(root,az,rise,reach,order,crown=root)=>{
   const N=order===0?8:santo?6:9,path=t=>[root[0]+Math.sin(az+.09*t*t)*reach*t,root[1]+rise*t+h*(mozart?.09:.023)*Math.sin(t*Math.PI),root[2]+Math.cos(az+.09*t*t)*reach*t];
   for(let j=1;j<=N;j++){
    const t=j/N,at=path(t),roll=rand();wood.push({from:path((j-1)/N),to:at,r:h*(order===0?.0043:order===1?.0012:.00055)*(1-t*.6),old:order===0});
    if(order>0||santo&&j>=2){
     const number=santo?6:2;
     for(let side=0;side<number;side++){
-     const an=az+j*(santo?2.399963:Math.PI/2)+side*(santo?2.399963:Math.PI),leafAt=santo?path(Math.max(0,t-side*.16/N)):at;leaves.push({at:leafAt,az:an,roll,size:.82+rand()*.18,young:j>=N-2});
-     if(!santo&&j<7)for(let k=0;k<2;k++)leaves.push({at,az:an+(k?-.3:.3),roll,size:.35+rand()*.13,young:false});
+     const an=az+j*(santo?2.399963:Math.PI/2)+side*(santo?2.399963:Math.PI),leafAt=santo?path(Math.max(0,t-side*.16/N)):at;leaves.push({at:leafAt,az:an,roll,size:.82+rand()*.18,young:j>=N-2,crown});
+     if(!santo&&j<7)for(let k=0;k<2;k++)leaves.push({at,az:an+(k?-.3:.3),roll,size:.35+rand()*.13,young:false,crown});
     }
     if(!santo&&j>=3&&j<=7)flowers.push({at,az:az+j*Math.PI/2,roll});
    }
-   if(order===0&&j>=2&&j<=7){const sign=j%2?1:-1;shoot(at,az+sign*(.48+rand()*.28),h*(santo?.055:mozart?.14:.13),w*(santo?.09:mozart?.16:.095),1);}
-   if(order===1&&j===4)shoot(at,az-.8,h*(santo?.043:.07),w*(santo?.05:.055),2);
+   if(order===0&&j>=2&&j<=7){const sign=j%2?1:-1;shoot(at,az+sign*(.48+rand()*.28),h*(santo?.055:mozart?.14:.13),w*(santo?.09:mozart?.16:.095),1,crown);}
+   if(order===1&&j===4)shoot(at,az-.8,h*(santo?.043:.07),w*(santo?.05:.055),2,crown);
   }
   if(santo&&order===1)heads.push({at:path(1),az,roll:rand()});
  };
@@ -2062,8 +2063,13 @@ function drawAromaticShrubs(b,{info,s,detail,rand},kit){
  for(const q of wood)b.branch(q.from,q.to,Math.max(.0002,q.r),q.old?a.barkColor:a.stemColor,q.old?'wood-aromatic-'+type:santo?'stem-aromatic-silver':'stem-aromatic-square');
  for(const n of leaves){
   if(n.roll>s.leafDensity)continue;
-  const L=a.leafLength*n.size*s.leafScale*(santo?Math.min(1,h/.25,w/.3):1),f=flowerFrame(b,n.at,santo?.42+n.roll*.72:.40+n.roll*.45,n.az),pattern=gold?(n.young?s.leafPatternColor:'#6e854b'):null,kind=santo?'leaf-aromatic-santolina':'leaf-aromatic-rosemary'+(gold?'-margin-'+pattern.slice(1):'')+'-underside-'+a.leafUnderside.slice(1);
-  f.add('aromatic-leaf-'+(santo?'santolina':'rosemary'),kind,kit.shade(rand,s.leafColor,.025),0,0,0,santo?L:L*a.leafWidth/a.leafLength,L,L,.08,0,(n.roll-.5)*.18);
+  const L=a.leafLength*n.size*s.leafScale*(santo?Math.min(1,h/.25,w/.3):1),pattern=gold?(n.young?s.leafPatternColor:'#6e854b'):null,kind=santo?'leaf-aromatic-santolina':'leaf-aromatic-rosemary'+(gold?'-margin-'+pattern.slice(1):'')+'-underside-'+a.leafUnderside.slice(1),color=kit.shade(rand,s.leafColor,.025);
+  if(!observe){const f=flowerFrame(b,n.at,santo?.42+n.roll*.72:.40+n.roll*.45,n.az);f.add('aromatic-leaf-'+(santo?'santolina':'rosemary'),kind,color,0,0,0,santo?L:L*a.leafWidth/a.leafLength,L,L,.08,0,(n.roll-.5)*.18);continue;}
+  const ceiling=Math.min(h,s.leafHeight);if(ceiling<=.015)continue;let base=leafBases.get(n.at);
+  if(!base){base=n.at[1]>=ceiling&&!retainedCrowns.has(n.crown)?n.crown:n.at;leafBases.set(n.at,base);}
+  const room=ceiling-base[1];if(room<=0)continue;const ratio=a.leafWidth/a.leafLength,pitch=.48+n.roll*.45,roll=(n.roll-.5)*.18,euler=new THREE.Euler(pitch,n.az,roll,'YXZ');let upper=0,lower=0;
+  for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?1:-1)*.5*ratio*L,(corner&2?1:0)*L,(corner&4?0:-.083972)*L).applyEuler(euler);upper=Math.max(upper,point.y);lower=Math.max(lower,-point.y);}
+  const fit=Math.min(1,room/upper,lower>0?base[1]/lower:1);b.add('aromatic-leaf-rosemary',kind,color,...base,L*ratio*fit,L*fit,L*fit,pitch,n.az,roll);retainedCrowns.add(n.crown);
  }
  if(!s.bloom)return;
  if(santo){
@@ -2080,8 +2086,9 @@ function drawAromaticShrubs(b,{info,s,detail,rand},kit){
   for(const flower of flowers){
    if(flower.roll>s.flowerDensity*(mozart?.62:.42))continue;
    for(let side=0;side<2;side++){
-    const az=flower.az+side*Math.PI,tip=[flower.at[0]+Math.sin(az)*.005,flower.at[1]+.002,flower.at[2]+Math.cos(az)*.005];b.branch(flower.at,tip,.00035,a.stemColor,'pedicel-aromatic-rosemary');const f=flowerFrame(b,tip,1.1+flower.roll*.28,az),R=a.flowerLength;
+    const az=flower.az+side*Math.PI,tip=[flower.at[0]+Math.sin(az)*.005,flower.at[1]+.002,flower.at[2]+Math.cos(az)*.005];b.branch(flower.at,tip,.00035,a.stemColor,'pedicel-aromatic-rosemary');const pitch=1.1+flower.roll*.28,f=flowerFrame(b,tip,pitch,az),R=a.flowerLength;
     f.add(kit.bud,'calyx-aromatic-rosemary','#899170',0,0,0,.0024,.003,.0024);f.add('aromatic-flower-rosemary','petal-aromatic-rosemary',s.flowerColor,0,.001,0,R,R,R);
+    if(observe){const marker=sageLipInspection((t,u)=>{const sn=Math.sin(Math.PI*t);return[u*.46*Math.pow(sn,.53)*(1+.04*Math.sin(t*48)),.4-.13*t+.075*sn*u*u,.23+.64*t];},12,[R,R,R],[0,.001,0],0,18),point=marker.centre.clone().applyEuler(new THREE.Euler(pitch,az,0,'YXZ')).add(new THREE.Vector3(...tip)),score=point.x*.8+point.z;if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(marker.centre.toArray(),R*1.30,marker.euler.x,marker.euler.y,marker.euler.z);}}
     for(const side of [-1,1]){
      const points=[[side*R*.15,R*.37,0],[side*R*.18,R*.80,R*.08],[side*R*.17,R*1.03,R*.28]];for(let k=1;k<points.length;k++)f.branch(points[k-1],points[k],.00021,'#afb2cf','filament-aromatic-rosemary');f.add(kit.bud,'anther-aromatic-rosemary','#999fbd',...points[2],.00052,.00046,.00063);
     }
@@ -2089,6 +2096,7 @@ function drawAromaticShrubs(b,{info,s,detail,rand},kit){
    }
   }
  }
+ if(inspection)inspection();
 }
 
 export function icLeafPoint(type,t,u){
@@ -17858,7 +17866,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='texturedMints'){drawTexturedMints(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='buddleja'){drawBuddleja(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='fragrantVines'){drawFragrantVines(b,{info,s,detail,rand},kit);return;}
- if(info.appearance?.architecture==='aromaticShrubs'){drawAromaticShrubs(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='aromaticShrubs'){drawAromaticShrubs(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='illiciumCeanothus'){drawIlliciumCeanothus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='blueShrubs'){drawBlueShrubs(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='privetOleander'){drawPrivetOleander(b,{info,s,detail,rand},kit);return;}
