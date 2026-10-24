@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.688';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.689';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.688';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.689';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -22460,7 +22460,7 @@ const OREGANO_REFERENCE_PROFILES={
  bristolCross:{leaf:.013,bract:.0065,chain:.150,pairs:24,green:'#becba8',greenOnly:true,smallLeaf:true,long:true}
 };
 function drawOreganoReferences(b,{info,s,p,detail,month},kit){
- const a=info.appearance,type=a.flowerPalette.type,P=OREGANO_REFERENCE_PROFILES[type],h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(P.leaf,h*.13,w*.09,s.leafHeight*.8)*scale,R=Math.min(.0011,h*.006,w*.004),stem=a.stemColor,winter=[12,1,2].includes(month),observe=(p?.kind==='p-61ac0afd62cf'&&type==='kentBeauty')||(p?.kind==='p-4fb1522b3f57'&&type==='rotundifolium')||(p?.kind==='p-28b16fa47650'&&type==='kirigami')||(p?.kind==='p-340ab07b41fa'&&type==='rotundifolium')||(p?.kind==='p-e5129f458763'&&type==='kentBeauty')||(p?.kind==='p-530f90269022'&&type==='herrenhausen');let headIndex=0,flowerIndex=0,inspection=null,inspectionScore=-Infinity;
+ const a=info.appearance,type=a.flowerPalette.type,P=OREGANO_REFERENCE_PROFILES[type],h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(P.leaf,h*.13,w*.09,s.leafHeight*.8)*scale,R=Math.min(.0011,h*.006,w*.004),stem=a.stemColor,winter=[12,1,2].includes(month),observe=(p?.kind==='p-61ac0afd62cf'&&type==='kentBeauty')||(p?.kind==='p-4fb1522b3f57'&&type==='rotundifolium')||(p?.kind==='p-28b16fa47650'&&type==='kirigami')||(p?.kind==='p-340ab07b41fa'&&type==='rotundifolium')||(p?.kind==='p-e5129f458763'&&type==='kentBeauty')||(p?.kind==='p-530f90269022'&&type==='herrenhausen')||(p?.kind==='p-233b7cad0cfb'&&type==='dictamnus');let headIndex=0,flowerIndex=0,inspection=null,inspectionScore=-Infinity;
  const leaf=(node,az,len)=>{
   if(observe){len=Math.min(len,Math.max(0,Math.min(h,s.leafHeight)-node[1]-.00004)/.22);if(len<=.00001)return;}
   const pet=observe&&len*.10*Math.hypot(1,.08)<.0001?0:len*.10,at=[node[0]+Math.sin(az)*pet,node[1]+pet*.08,node[2]+Math.cos(az)*pet],f=flowerFrame(b,at,-.10,az),shape=P.felt?'oreganoFeltLeaf':P.smallLeaf?'oreganoSmallLeaf':'oreganoRoundLeaf';b.branch(node,at,Math.min(R*.30,len*.018),stem,'petiole-oregano');f.add(shape,'leaf-oregano-'+type,s.leafColor,0,0,0,len,len,len);
