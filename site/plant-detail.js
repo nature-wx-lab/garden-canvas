@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.751';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.752';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.751';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.752';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -13319,7 +13319,7 @@ function aquilegiaGroundRoot(from,to,r){
 }
 function drawAquilegia(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const observed=['p-fa90805ca0e8','p-5fb031cbf04a','p-485f5ee72b09'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);let frontPetal=null;
+ const observed=['p-fa90805ca0e8','p-5fb031cbf04a','p-485f5ee72b09','p-2e81e09ebbd3','p-0cc6b0532748','p-59a0cf40e2e0'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);let frontPetal=null;
  const a=info.appearance,type=a.shootProfile,small=type==='ecalcarata',h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.21)*s.leafScale,green=s.leafColor,stem=a.stemColor;
  const leaf=(at,az,len,biternate=true,pitch=.82)=>{
   const parts=[],dst=observed?{add:(...v)=>parts.push({type:'leaf',v}),branch:(...v)=>parts.push({type:'axis',v})}:b;
@@ -13360,7 +13360,7 @@ function drawAquilegia(b,{info,s,p,detail,rand},kit){
   const an=i*2.399963,rr=w*.11*Math.sqrt(rand()),base=[Math.sin(an)*rr,.009,Math.cos(an)*rr],height=h*(.68+.23*rand()),reach=w*(small?.19:.12),nodes=[];
   for(let j=0;j<=5;j++){
    const t=j/5,pt=[base[0]+Math.sin(an)*reach*t*t,height*t,base[2]+Math.cos(an)*reach*t*t];nodes.push(pt);
-   if(j){if(observed&&j===1)nodes[0]=aquilegiaGroundRoot(nodes[0],pt,.0012);b.branch(nodes[j-1],pt,small?.0005:.0012,stem,'stem-aquilegia');if(j<5&&rand()<s.leafDensity){let attach=pt;if(observed){const y=Math.max(nodes[0][1],Math.min(pt[1],ceiling*.15*j/4)),q=nodes.findIndex((n,k)=>k>0&&n[1]>=y),from=nodes[Math.max(0,q-1)],to=nodes[Math.max(1,q)],t=(y-from[1])/(to[1]-from[1]);attach=from.map((v,k)=>v+(to[k]-v)*t);}leaf(attach,an+j*2.399963,L*(.8-j*.13),j<3,.76);}}
+   if(j){if(observed&&j===1)nodes[0]=aquilegiaGroundRoot(nodes[0],pt,small?.0005:.0012);b.branch(nodes[j-1],pt,small?.0005:.0012,stem,'stem-aquilegia');if(j<5&&rand()<s.leafDensity){let attach=pt;if(observed){const y=Math.max(nodes[0][1],Math.min(pt[1],ceiling*.15*j/4)),q=nodes.findIndex((n,k)=>k>0&&n[1]>=y),from=nodes[Math.max(0,q-1)],to=nodes[Math.max(1,q)],t=(y-from[1])/(to[1]-from[1]);attach=from.map((v,k)=>v+(to[k]-v)*t);}leaf(attach,an+j*2.399963,L*(.8-j*.13),j<3,.76);}}
   }
   for(let k=0;k<(small?7:4);k++){
    const az=an+k*2.399963,start=nodes[3+k%3],side=w*(small?.20:.16)*(.4+rand()*.6),up=h*(.08+rand()*.13),nodding=!['winky','chrysantha','koralle'].includes(type),pitch=nodding?Math.PI-.3-rand()*.4:type==='koralle'?1.25+rand()*.35:.18+rand()*.68,end=[start[0]+Math.sin(az)*side,start[1]+up-(nodding?h*.03:0),start[2]+Math.cos(az)*side],middle=[(start[0]+end[0])*.5,start[1]+up,(start[2]+end[2])*.5];
