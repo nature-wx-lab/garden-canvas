@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.819';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.820';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.819';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.820';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17712,22 +17712,30 @@ export function freesiaReferencePoint(type,t,u){
  const upper=type==='freesiaUpperLobe',inner=type==='freesiaInnerLobe',az=u*Math.PI/6*Math.max(0,1-t)**.48,r=.33+(upper?.60:inner?.42:.52)*Math.sin(t*Math.PI*.60);
  return [Math.sin(az)*r,1.15+(upper?.56:inner?.60:.42)*t-(upper?.04:inner?.03:.12)*t*t*t,Math.cos(az)*r];
 }
-function drawFreesiaReferences(b,{info,s,detail,rand},kit){
+const freesiaObservedSamples={},freesiaObservedTriangles=[];
+for(const shape of ['freesiaFanLeaf','freesiaCurvedTube','freesiaUpperLobe','freesiaLowerLobe','freesiaInnerLobe']){const cols=shape==='freesiaCurvedTube'?72:32,points=[];for(let i=0;i<=56;i++)for(let j=0;j<=cols;j++)points.push(freesiaReferencePoint(shape,i/56,j/cols*2-1).map(Math.fround));freesiaObservedSamples[shape]=points;if(shape==='freesiaLowerLobe')for(let i=0;i<56;i++)for(let j=0;j<32;j++){const k=i*33+j;for(const vertices of [[k,k+33,k+1],[k+1,k+33,k+34]])freesiaObservedTriangles.push({faceIndex:(i*32+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}
+function drawFreesiaReferences(b,{p,info,s,detail,rand},kit){
  const type=info.appearance.flowerPalette.type,double=type==='peachQueen',h=s.height,w=s.spread,n=Math.max(2,Math.round(4*detail)),green=s.leafDensity<.5?'#aba674':s.leafColor;
+ const observed=['p-21250dff15b3','p-1b6da361575a'].includes(p.kind),ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.15,w/.1),surfaces=[],lobeInstances={};
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(v[0]!=='freesiaLowerLobe'||!v[1].endsWith('-lower'))return;const kind=v[1],instanceId=lobeInstances[kind]||0;lobeInstances[kind]=instanceId+1;const[shape,k,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*2.5,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=freesiaObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Freesia rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
  for(let i=0;i<n;i++){
-  const yaw=i*2.399,R=w*.21*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R];
+  const yaw=i*2.399,R=w*.21*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,observed?Math.min(.001,ceiling*.05):.001,Math.cos(yaw)*R];
   if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(5*s.leafDensity));j++){
-   const rank=Math.floor(j/2),ang=yaw+(j%2)*Math.PI,L=Math.min(.36,s.leafHeight/.90,w)*s.leafScale*(1-rank*.08),W=Math.min(.014,L*.055),f=flowerFrame(b,[root[0]+Math.sin(yaw)*rank*.0015,.001+rank*.001,root[2]+Math.cos(yaw)*rank*.0015],.035+rank*.075,ang);
+   const rank=Math.floor(j/2),ang=yaw+(j%2)*Math.PI,L=Math.min(.36,s.leafHeight/.90,w)*s.leafScale*(1-rank*.08),W=Math.min(.014,L*.055),leafRoot=[root[0]+Math.sin(yaw)*rank*.0015*(observed?micro:1),root[1]+rank*.001*(observed?micro:1),root[2]+Math.cos(yaw)*rank*.0015*(observed?micro:1)],leafParts=[],leafOut=observed?{add:(...organ)=>leafParts.push({organ}),branch:(...line)=>leafParts.push({line})}:b,f=flowerFrame(leafOut,leafRoot,.035+rank*.075,ang);
    f.add('freesiaFanLeaf','leaf-freesia-reference',kit.shade(rand,green,.025),0,0,0,W,L,L);
-   for(const u of [-.6,0,.6]){let p=freesiaReferencePoint('freesiaFanLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00006];for(let k=1;k<=15;k++){p=freesiaReferencePoint('freesiaFanLeaf',.02+k*.065,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00006];f.branch(from,to,.000045,'#9ab18d','vein-leaf-freesia-reference');from=to;}}
+   for(const u of [-.6,0,.6]){let p=freesiaReferencePoint('freesiaFanLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00006*(observed?micro:1)];for(let k=1;k<=15;k++){p=freesiaReferencePoint('freesiaFanLeaf',.02+k*.065,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00006*(observed?micro:1)];f.branch(from,to,.000045*(observed?micro:1),'#9ab18d','vein-leaf-freesia-reference');from=to;}}
+   if(observed)fitAssembly(leafParts,leafRoot,ceiling,organs);
   }
   if(!s.bloom)continue;
-  const L=Math.min(.026,h*.15),base=[root[0],h*(.70+rand()*.035),root[2]],spike=t=>[base[0]+Math.sin(yaw)*w*.30*t*t,base[1]+h*.10*t,base[2]+Math.cos(yaw)*w*.30*t*t];b.branch(root,base,Math.min(.0018,h*.008),'#7e9b6d','scape-freesia-reference');let prev=base;
+  const parts=[],out=observed?{add:(...organ)=>parts.push({organ}),branch:(...line)=>{if(Math.hypot(...line[1].map((v,k)=>v-line[0][k]))>0)parts.push({line});}}:b;
+  const L=Math.min(.026,h*.15),base=[root[0],h*(.70+rand()*.035),root[2]],spike=t=>[base[0]+Math.sin(yaw)*w*.30*t*t,base[1]+h*.10*t,base[2]+Math.cos(yaw)*w*.30*t*t];out.branch(root,base,Math.min(.0018,h*.008),'#7e9b6d','scape-freesia-reference');let prev=base;
   for(let j=0;j<6;j++){
-   const at=spike(j/5);b.branch(prev,at,L*.035,'#8ba573','rachis-freesia-reference');prev=at;b.add('narrow','bract-freesia-reference','#8ba475',...at,L*.16,L*.45,L*.45,.45,yaw,0);
-   const end=[at[0]+Math.sin(yaw)*L*.20,at[1]+L*.12,at[2]+Math.cos(yaw)*L*.20];b.branch(at,end,L*.025,'#9bad7c','pedicel-freesia-reference');
-   if(j>=4){b.add(kit.bud,'bud-freesia-reference',j===5?'#9fb17b':s.flowerColor,...end,L*.15,L*(j===5?.40:.62),L*.15,.45,yaw,0);continue;}
-   const pitch=.50+j*.07,f=flowerFrame(b,end,pitch,yaw),innerCount=double?3+((i+j)%2)*3:0;if(j===3)f.flower([0,L*.85,L*.14],L*1.25);
+   const at=spike(j/5);out.branch(prev,at,L*.035,'#8ba573','rachis-freesia-reference');prev=at;out.add('narrow','bract-freesia-reference','#8ba475',...at,L*.16,L*.45,L*.45,.45,yaw,0);
+   const end=[at[0]+Math.sin(yaw)*L*.20,at[1]+L*.12,at[2]+Math.cos(yaw)*L*.20];out.branch(at,end,L*.025,'#9bad7c','pedicel-freesia-reference');
+   if(j>=4){out.add(kit.bud,'bud-freesia-reference',j===5?'#9fb17b':s.flowerColor,...end,L*.15,L*(j===5?.40:.62),L*.15,.45,yaw,0);continue;}
+   const pitch=.50+j*.07,f=flowerFrame(out,end,pitch,yaw),innerCount=double?3+((i+j)%2)*3:0;if(j===3&&!observed)f.flower([0,L*.85,L*.14],L*1.25);
    f.add(kit.bud,'ovary-inferior-freesia-reference','#91a578',0,-L*.04,0,L*.075,L*.09,L*.075);f.add('freesiaCurvedTube','tube-freesia-reference-'+type,s.flowerColor,0,0,0,L,L,L);
    for(let k=0;k<6;k++){
     const lower=[0,1,5].includes(k),upper=k===3;f.add(upper?'freesiaUpperLobe':'freesiaLowerLobe','tepal-freesia-reference-'+type+(lower?'-lower':'-upper'),s.flowerColor,0,0,L*.14,L,L,L,0,k*TAU/6,0);
@@ -17741,7 +17749,9 @@ function drawFreesiaReferences(b,{info,s,detail,rand},kit){
     const az=(k-1)*.8,tip=[Math.sin(az)*L*.13,L*1.48,-L*.05+Math.cos(az)*L*.05];f.branch(from,tip,L*.009,'#eee9d9','style-branch-freesia-reference');for(const side of [-1,1]){const end=[tip[0]+side*L*.045,tip[1]+L*.035,tip[2]+L*.035];f.branch(tip,end,L*.008,'#eee9d9','stigma-tip-freesia-reference');}
    }
   }
+  if(observed)fitAssembly(parts,root,h,organs);
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of freesiaObservedTriangles){const row=Math.floor(triangle.faceIndex/64);if(row<10||row>42)continue;const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<0)normal.negate();if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
 }
 export function miniIrisPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
@@ -18964,7 +18974,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='somekawaIris'){drawSomekawaIris(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='irisReferenceForms'){drawIrisReferenceForms(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='retailLilyReferences'){drawRetailLilyReferences(b,{info,s,detail,rand},kit);return;}
- if(a.architecture==='freesiaReferences'){drawFreesiaReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='freesiaReferences'){drawFreesiaReferences(b,{p,info,s,detail,rand},kit);return;}
  if(a.architecture==='miniIrisReferences'){drawMiniIrisReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='hyacinthReferences'){drawHyacinthReferences(b,{p,info,s,detail,rand},kit);return;}
  if(a.architecture==='narcissusCupReferences'){drawNarcissusCupReferences(b,{info,s,detail,rand},kit);return;}
