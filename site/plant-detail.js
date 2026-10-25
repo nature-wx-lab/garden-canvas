@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.807';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.808';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.807';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.808';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -18306,25 +18306,37 @@ export function fawnLilyPoint(type,t,u){
  if(type==='fawnReflexedTepal')return [u*.20*Math.sin(Math.PI*t)**.65,.28*Math.sin(Math.PI*t)-.46*t**3+.055*u*u*Math.sin(Math.PI*t),t];
  const wide=.5*Math.sin(Math.PI*t)**.60*(1+.025*Math.cos(t*34));return [u*wide,.80*Math.sin(t*1.3),.55*t+.050*u*u*Math.sin(Math.PI*t)+.010*Math.cos(u*19)*Math.sin(Math.PI*t)];
 }
+// Renderer-matched broad leaves and reflexed tepals for the two fawn lilies.
+const fawnObservedSamples={},fawnObservedTriangles=[];
+for(const shape of ['fawnOvateLeaf','fawnReflexedTepal']){const cols=20,points=[];for(let i=0;i<=56;i++)for(let j=0;j<=cols;j++)points.push(fawnLilyPoint(shape,i/56,j/cols*2-1).map(Math.fround));fawnObservedSamples[shape]=points;if(shape==='fawnReflexedTepal')for(let i=0;i<56;i++)for(let j=0;j<cols;j++){const k=i*(cols+1)+j;for(const vertices of [[k,k+1,k+cols+1],[k+1,k+cols+2,k+cols+1]])fawnObservedTriangles.push({faceIndex:(i*cols+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}
 function drawFawnLilies(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,white=a.flowerPalette?.white,n=Math.max(1,Math.round(3*detail)),green=s.leafDensity<.4?'#b2a96a':s.leafColor;
+ const ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.15,w/.1),surfaces=[];let tepalInstance=0;
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(v[0]!=='fawnReflexedTepal')return;const instanceId=tepalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*2.1,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=fawnObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Fawn lily rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
+
  for(let i=0;i<n;i++){
-  const an=i*2.399,rr=w*.12*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,.001,Math.cos(an)*rr],top=h*(.85+rand()*.07),L=Math.min(a.leafLength||.16,h*.68,w*.65,s.leafHeight*1.5)*s.leafScale;
+  const an=i*2.399,rr=w*.12*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,Math.min(.001,ceiling*.05),Math.cos(an)*rr],top=h*(.85+rand()*.07),L=Math.min(a.leafLength||.16,h*.68,w*.65,s.leafHeight*1.5)*s.leafScale;
   if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(2*s.leafDensity));j++){
-   const length=L*(.90+rand()*.10),yaw=an+j*Math.PI+.2,f=flowerFrame(b,root,.12,yaw),W=length*.46;
+   const length=L*(.90+rand()*.10),yaw=an+j*Math.PI+.2,leafParts=[],leafOrgans={add:(...organ)=>leafParts.push({organ}),branch:(...line)=>leafParts.push({line})},f=flowerFrame(leafOrgans,root,.12,yaw),W=length*.46;
    f.add('fawnOvateLeaf',white?'leaf-fawn-white':'leaf-fawn-pagoda',kit.shade(rand,green,.03),0,0,0,W,length,length);
-   for(const u of [-.66,-.33,0,.33,.66]){let p=fawnLilyPoint('fawnOvateLeaf',.02,u),from=[p[0]*W,p[1]*length,p[2]*length+.00007];for(let k=1;k<=11;k++){p=fawnLilyPoint('fawnOvateLeaf',.02+k*.087,u);const to=[p[0]*W,p[1]*length,p[2]*length+.00007];f.branch(from,to,.00005,'#8da27c','vein-leaf-fawn');from=to;}}
+   for(const u of [-.66,-.33,0,.33,.66]){let p=fawnLilyPoint('fawnOvateLeaf',.02,u),from=[p[0]*W,p[1]*length,p[2]*length+.00007*micro];for(let k=1;k<=11;k++){p=fawnLilyPoint('fawnOvateLeaf',.02+k*.087,u);const to=[p[0]*W,p[1]*length,p[2]*length+.00007*micro];f.branch(from,to,.00005*micro,'#8da27c','vein-leaf-fawn');from=to;}}
+   fitAssembly(leafParts,root,ceiling,organs);
   }
-  if(!s.bloom)continue;const shaft=[root[0]+Math.sin(an)*h*.025,top*.60,root[2]+Math.cos(an)*h*.025];b.branch(root,shaft,.00155,'#788767','scape-fawn');
+  if(!s.bloom)continue;const parts=[],out={add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})},shaft=[root[0]+Math.sin(an)*h*.025,top*.60,root[2]+Math.cos(an)*h*.025];out.branch(root,shaft,.00155*micro,'#788767','scape-fawn');
   const flowers=white?3:5;
   for(let j=0;j<flowers;j++){
    const t=(j+.5)/flowers,yaw=an+j*2.399,base=[shaft[0],top*(.60+t*.26),shaft[2]],reach=Math.min(w*.19,.060)*(1-t*.2),tip=[base[0]+Math.sin(yaw)*reach,top*(.65+t*.24),base[2]+Math.cos(yaw)*reach],arch=[base[0]+Math.sin(yaw)*reach*.68,Math.max(base[1],tip[1])+h*.10,base[2]+Math.cos(yaw)*reach*.68];
-   if(j)b.branch(shaft,base,.0010,'#7d886a','axis-fawn');let from=base;for(let k=1;k<=14;k++){const q=k/14,to=base.map((v,axis)=>(1-q)**2*v+2*(1-q)*q*arch[axis]+q*q*tip[axis]);b.branch(from,to,.00065,'#7d886a','pedicel-fawn');from=to;}
+   if(j)out.branch(shaft,base,.0010*micro,'#7d886a','axis-fawn');let from=base;for(let k=1;k<=14;k++){const q=k/14,to=base.map((v,axis)=>(1-q)**2*v+2*(1-q)*q*arch[axis]+q*q*tip[axis]);out.branch(from,to,.00065*micro,'#7d886a','pedicel-fawn');from=to;}
    const r=Math.min(a.flowerRadius||.0275,h*.14);
-   if(j===flowers-1)b.add(kit.bud,'bud-fawn',s.flowerColor,...tip,r*.16,r*.60,r*.16,2.50,yaw,0);
-   else detailedFlower(b,{x:tip[0],y:tip[1],z:tip[2],r,color:s.flowerColor,shape:'reflexFawnLily',palette:{white},tilt:.10+rand()*.12,yaw},{...kit,rand});
+   if(j===flowers-1)out.add(kit.bud,'bud-fawn',s.flowerColor,...tip,r*.16,r*.60,r*.16,2.50,yaw,0);
+   else detailedFlower(out,{markInspection:false,x:tip[0],y:tip[1],z:tip[2],r,color:s.flowerColor,shape:'reflexFawnLily',palette:{white},tilt:.10+rand()*.12,yaw},{...kit,rand});
   }
+  fitAssembly(parts,root,h,organs);
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of fawnObservedTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
+
 }
 export function earlySquillPoint(type,t,u){
  if(type==='squillPerianthTube'){const r=.15+.035*t;return [Math.sin(u)*r,t*.20,Math.cos(u)*r];}
