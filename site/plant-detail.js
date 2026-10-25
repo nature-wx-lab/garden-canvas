@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.756';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.757';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.756';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.757';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4726,13 +4726,13 @@ for(let row=0;row<48;row++)for(let col=0;col<18;col++)for(let half=0;half<2;half
 }
 function drawDelphinium(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const observed=['p-54918635b6af','p-aedc6ad21e16','p-ee94a14e7b4a'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight),a=info.appearance,typ=a.shootProfile,fine=a.flowerPalette.open,h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.36)*s.leafScale;
+ const observed=['p-54918635b6af','p-aedc6ad21e16','p-ee94a14e7b4a','p-6c1f697002ea','p-7ab92c7156f3','p-f3e9a60bb693'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight),a=info.appearance,typ=a.shootProfile,fine=a.flowerPalette.open,h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.36)*s.leafScale;
  let sepalInstance=0,flowerSerial=0,activeFlower=0;const surfaceByFlower=new Map();
  const axis=(from,to,r,color,kind)=>observed?delphiniumObservedAxis(b,from,to,r,color,kind):b.branch(from,to,r,color,kind);
  const organs=observed?{branch:axis,add:(...v)=>{
-  b.add(...v);const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v;if(kind!=='sepal-delphinium')return;const instanceId=sepalInstance++;
+  b.add(...v);const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v;if(kind!==(typ==='green'?'sepal-delphinium-greenedge':'sepal-delphinium'))return;const instanceId=sepalInstance++;
   const matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const e=matrix.elements,dx=e[0]*.8+e[1]*.45+e[2],dy=e[4]*.8+e[5]*.45+e[6],dz=e[8]*.8+e[9]*.45+e[10],translation=e[12]*.8+e[13]*.45+e[14];
-  let frontSurface=surfaceByFlower.get(activeFlower);for(const triangle of delphiniumSepalTriangles){const q=triangle.centroid,score=translation+q[0]*dx+q[1]*dy+q[2]*dz,clear=e[13]+q[0]*e[1]+q[1]*e[5]+q[2]*e[9]>ceiling+sy*.10;if(!frontSurface||clear&&!frontSurface.clear||clear===frontSurface.clear&&score>frontSurface.score)frontSurface={matrix,triangle,score,clear,radius:Math.max(sx,sy,sz)*.6,instanceId};}surfaceByFlower.set(activeFlower,frontSurface);
+  let frontSurface=surfaceByFlower.get(activeFlower);for(const triangle of delphiniumSepalTriangles){const q=triangle.centroid,score=translation+q[0]*dx+q[1]*dy+q[2]*dz,clear=e[13]+q[0]*e[1]+q[1]*e[5]+q[2]*e[9]>ceiling+sy*.10;if(!frontSurface||clear&&!frontSurface.clear||clear===frontSurface.clear&&score>frontSurface.score)frontSurface={matrix,triangle,score,clear,radius:Math.max(sx,sy,sz)*.6,instanceId,component:kind};}surfaceByFlower.set(activeFlower,frontSurface);
  }}:b;
  const green=s.leafColor,palette=a.flowerPalette,color=a.flowerOptions?.[p.id%a.flowerOptions.length]||s.flowerColor,heads=typ==='pacific'?3:5;
  const leaf=(base,an,len,pitch,stem=null)=>{
@@ -4796,7 +4796,7 @@ function drawDelphinium(b,{info,s,p,detail,rand},kit){
    const young=s.flowerBuds||t>.80||t>.40&&rand()>s.flowerDensity;flower(end,an,rr,young,t);
   }
  }
- for(const frontSurface of [...surfaceByFlower.values()].sort((a,b)=>Number(b.clear)-Number(a.clear)||b.score-a.score).slice(0,8)){const{matrix,triangle}=frontSurface,points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();if(normal.dot(new THREE.Vector3(.8,.45,1))<0)normal.negate();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');b.flower?.(point.toArray(),frontSurface.radius,e.x,e.y,e.z,{component:'sepal-delphinium',instanceId:frontSurface.instanceId,faceIndex:triangle.faceIndex,vertices:triangle.vertices,cameraAxis:[.8,.45,1]});}
+ for(const frontSurface of [...surfaceByFlower.values()].sort((a,b)=>Number(b.clear)-Number(a.clear)||b.score-a.score).slice(0,8)){const{matrix,triangle}=frontSurface,points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();if(normal.dot(new THREE.Vector3(.8,.45,1))<0)normal.negate();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');b.flower?.(point.toArray(),frontSurface.radius,e.x,e.y,e.z,{component:frontSurface.component,instanceId:frontSurface.instanceId,faceIndex:triangle.faceIndex,vertices:triangle.vertices,cameraAxis:[.8,.45,1]});}
 }
 
 export function saxifrageLeafPoint(type,t,angle){
