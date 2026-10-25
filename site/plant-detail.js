@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.779';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.780';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.779';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.780';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9439,12 +9439,26 @@ export function springPhloxPoint(type,t,u){
  return [u*.52*sn**.90*(1-.15*t),t,.085*t*t+.03*u*u*sn];
 }
 
-function drawSpringPhlox(b,{info,s,detail,rand,month},kit){
+// Actual 36x18 Float32 foliage and indexed flower-lobe surfaces.
+const springLeafSamples=[],springLobeTriangles=[];
+for(let i=0;i<=36;i++)for(let j=0;j<=18;j++)springLeafSamples.push(springPhloxPoint('springPhloxLeaf',i/36,j/18*2-1).map(Math.fround));
+for(let row=0;row<36;row++)for(let col=0;col<18;col++)for(let half=0;half<2;half++){const cells=half?[[row,col+1],[row+1,col],[row+1,col+1]]:[[row,col],[row+1,col],[row,col+1]];springLobeTriangles.push({vertices:cells.map(([i,j])=>i*19+j),points:cells.map(([i,j])=>springPhloxPoint('springPhloxLobe',i/36,j/18*2-1).map(Math.fround)),faceIndex:(row*18+col)*2+half});}
+function drawSpringPhlox(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,pilosa=a.shootProfile==='pilosa',h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.25,w*.15),R=a.flowerRadius*Math.min(1,h/.20),F=a.flowerLength*Math.min(1,h/.20),n=Math.max(3,Math.min(22,Math.round((pilosa?15:19)*detail*Math.sqrt(w/.5)*Math.min(1,h/.23))));
  const ceiling=Math.min(h,s.leafHeight),floor=Math.min(.007,.30*ceiling),runnerFit=Math.min(1,Math.max(0,.55*ceiling-floor)/(.005+.028*h)),unchanged=floor===.007&&runnerFit===1,mapY=y=>unchanged?y:floor+(y-.007)*runnerFit;
- let inspection=null,inspectionScore=-Infinity;
+ const observed=['p-51c603bd1c65','p-a7c8251be5c6'].includes(p?.kind),lowCap=observed&&s.leafDensity>0&&ceiling<=a.leafLength*.5;
+ const axis=(...args)=>observed?delphiniumObservedAxis(b,...args):b.branch(...args);
+ const placeLeaf=(parts,at,az,paths=null)=>{
+  const samples=[];for(const part of parts){if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;for(let j=0;j<pos.count;j++)samples.push(new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);for(const q of springLeafSamples)samples.push(new THREE.Vector3(...q).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}}
+  const measure=angle=>{const rotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(Math.cos(az),0,-Math.sin(az)),angle);let low=0,high=0;for(const q of samples){const y=q.clone().applyQuaternion(rotation).y;low=Math.min(low,y);high=Math.max(high,y);}return{low,high,rotation};};
+  const full=bounds=>!paths&&lowCap?(bounds.high-bounds.low<=ceiling-2e-9?[at[0],-bounds.low+1e-9,at[2]]:null):at[1]+bounds.low>=0&&at[1]+bounds.high<=ceiling?at:paths?calaminthaNearestStem(paths,-bounds.low+1e-9,ceiling-bounds.high-1e-9,at):bounds.high-bounds.low<=ceiling-2e-9?[at[0],-bounds.low+1e-9,at[2]]:null;
+  let angle=0,bounds=measure(0),base=full(bounds),fit=1;const candidates=[{angle,bounds}];if(!base)for(const adjusted of [.25,.5,.75,1]){const trial=measure(adjusted);candidates.push({angle:adjusted,bounds:trial});base=full(trial);if(base){angle=adjusted;bounds=trial;break;}}
+  if(!base){let best=-1;for(const candidate of candidates){const{low,high}=candidate.bounds,desired=high>low?(ceiling-2e-9)*(-low)/(high-low):at[1],lines=paths||[[[at[0],0,at[2]],[at[0],ceiling,at[2]]]];for(const line of lines){const lower=Math.max(0,Math.min(line[0][1],line[1][1])),upper=Math.min(ceiling,Math.max(line[0][1],line[1][1]));if(lower>upper)continue;const y=Math.max(lower,Math.min(upper,desired)),point=calaminthaNearestStem([line],y,y,at);if(!point)continue;const amount=Math.max(0,Math.min(1,high>0?(ceiling-point[1]-2e-9)/high:1,low<0?(point[1]-1e-9)/-low:1));if(amount>best){best=amount;base=point;angle=candidate.angle;bounds=candidate.bounds;}}}if(!base||best<=0)throw new Error('Spring Phlox leaf pair has no fitted attachment '+JSON.stringify({id:p.kind,month,h,w,ceiling,at}));fit=best;if(!paths)base=[at[0],-bounds.low*fit+1e-9,at[2]];}
+  const original=base===at&&angle===0&&fit===1,point=q=>new THREE.Vector3(...q).sub(new THREE.Vector3(...at)).applyQuaternion(bounds.rotation).multiplyScalar(fit).add(new THREE.Vector3(...base)).toArray();for(const part of parts)if(part.line){if(original)axis(...part.line);else{const[from,to,r,color,kind]=part.line;axis(point(from),point(to),r*fit,color,kind);}}else if(original)b.add(...part.organ);else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,q=bounds.rotation.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ');b.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,e.x,e.y,e.z);}
+ };
+ let inspection=null,inspectionScore=-Infinity,petalInstance=0;const surfaces=[],organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(!v[1].startsWith('petal-spring-phlox-'))return;const instanceId=petalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:R*2,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const pair=(at,az,len,i,k)=>{
+ const pair=(at,az,len,i,k,paths=null)=>{
   if(noise(i,k)>s.leafDensity)return;
   const pet=len*.025,radius=Math.min(.0005,h*.003),ratio=a.leafWidth/a.leafLength,leaves=[];let bound=pet*.3+radius;
   for(let side=0;side<2;side++){
@@ -9453,6 +9467,7 @@ function drawSpringPhlox(b,{info,s,detail,rand,month},kit){
    const rise=Math.max(0,cp*Math.cos(roll))+.52*ratio*Math.abs(cp*Math.sin(roll))+.115*Math.max(0,-sp);
    bound=Math.max(bound,pet*.3+len*rise);leaves.push({aa,pitch,roll,color});
   }
+  if(observed){const parts=[];for(const leaf of leaves){const end=[at[0]+Math.sin(leaf.aa)*pet,at[1]+pet*.3,at[2]+Math.cos(leaf.aa)*pet];parts.push({line:[at,end,radius,a.stemColor,'petiole-spring-phlox']},{organ:['springPhloxLeaf',pilosa?'leaf-spring-phlox-hairy':'leaf-spring-phlox',leaf.color,...end,len*ratio,len,len,leaf.pitch,leaf.aa,leaf.roll]});}placeLeaf(parts,at,az,paths);return;}
   // Consume both original shades before an upper pair is omitted.
   const room=ceiling-at[1];if(room<=0)return;
   const fit=Math.min(1,room/Math.max(bound,1e-8)),fitted=leaves.map(leaf=>({...leaf,end:[at[0]+Math.sin(leaf.aa)*pet*fit,at[1]+pet*.3*fit,at[2]+Math.cos(leaf.aa)*pet*fit]}));
@@ -9463,8 +9478,8 @@ function drawSpringPhlox(b,{info,s,detail,rand,month},kit){
   if(!s.bloom&&!a.budMonths.includes(month))return;
   const reach=Math.min(w*.10,h*.18),sites=pilosa?7:9;
   for(let j=0;j<sites;j++){
-   const aa=az+j*2.399963,rr=reach*Math.sqrt((j+.35)/sites),mid=[base[0]+Math.sin(aa)*rr*.55,base[1]+h*.045,base[2]+Math.cos(aa)*rr*.55],end=[base[0]+Math.sin(aa)*rr,base[1]+h*(.075+.07*noise(i,j+80)),base[2]+Math.cos(aa)*rr];b.branch(base,mid,Math.min(.0007,h*.0025),a.stemColor,'cyme-spring-phlox');b.branch(mid,end,Math.min(.00035,h*.0017),a.stemColor,'pedicel-spring-phlox');
-   const f=flowerFrame(b,end,.05+noise(i,j+100)*.65,aa),radius=R*(.85+.15*noise(i,j+130)),fl=F*(.85+.15*noise(i,j+120));
+   const aa=az+j*2.399963,rr=reach*Math.sqrt((j+.35)/sites),mid=[base[0]+Math.sin(aa)*rr*.55,base[1]+h*.045,base[2]+Math.cos(aa)*rr*.55],end=[base[0]+Math.sin(aa)*rr,base[1]+h*(.075+.07*noise(i,j+80)),base[2]+Math.cos(aa)*rr];axis(base,mid,Math.min(.0007,h*.0025),a.stemColor,'cyme-spring-phlox');axis(mid,end,Math.min(.00035,h*.0017),a.stemColor,'pedicel-spring-phlox');
+   const f=flowerFrame(organs,end,.05+noise(i,j+100)*.65,aa),radius=R*(.85+.15*noise(i,j+130)),fl=F*(.85+.15*noise(i,j+120));
    if(!s.bloom||noise(i,j+60)>.88){f.add(kit.bud,'bud-spring-phlox',a.flowerPalette.bud,0,fl*.35,0,radius*.17,fl*.7,radius*.17);continue;}
    const age=noise(i,j+150),color=pilosa?s.flowerColor:new THREE.Color(a.flowerPalette.young).lerp(new THREE.Color(age>.7?a.flowerPalette.old:a.flowerPalette.mature),age>.7?(age-.7)/.3:age/.7);
    f.add('tube',pilosa?'tube-spring-phlox-hairy':'tube-spring-phlox',color,0,0,0,radius*.22,fl/1.09,radius*.22);f.add('woodlandMintTube','calyx-spring-phlox',a.flowerPalette.calyx,0,0,0,radius*.31,fl*.43,radius*.31);
@@ -9476,19 +9491,20 @@ function drawSpringPhlox(b,{info,s,detail,rand,month},kit){
    }
    f.add('tube','eye-spring-phlox',a.flowerPalette.eye,0,fl*.97,0,radius*(pilosa?.12:.26),fl*.026,radius*(pilosa?.12:.26));
    const point=new THREE.Vector3(...springPhloxPoint('springPhloxLobe',.75,0).map(Math.fround)).multiply(new THREE.Vector3(lobe0.sx,lobe0.sy,lobe0.sz)).applyEuler(new THREE.Euler(Math.PI/2,lobe0.yaw,0,'YXZ')).add(new THREE.Vector3(0,fl,0)),score=end[0]*.8+end[2];
-   if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),R*2);}
+   if(!observed&&score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),R*2);}
   }
  };
  for(let i=0;i<n;i++){
   const az=i*2.399963+(noise(i,1)-.5)*.7,tier=Math.sqrt((i+.5)/n),rr=w*.34*tier,root=[Math.sin(az)*rr*.35,.007,Math.cos(az)*rr*.35],end=[Math.sin(az)*rr,.012,Math.cos(az)*rr];let old=[root[0],mapY(root[1]),root[2]];
   for(let j=1;j<=4;j++){
-   const at=mix(root,end,j/4);at[1]+=h*.028*Math.sin(j/4*Math.PI);at[1]=mapY(at[1]);b.branch(old,at,Math.min(.0012,h*.004),a.stemColor,'runner-spring-phlox');old=at;pair(at,az+j*Math.PI/2,L*.75,i,j+25);
+   const at=mix(root,end,j/4);at[1]+=h*.028*Math.sin(j/4*Math.PI);at[1]=mapY(at[1]);axis(old,at,Math.min(.0012,h*.004),a.stemColor,'runner-spring-phlox');const runnerPath=[[old,at]];old=at;pair(at,az+j*Math.PI/2,L*.75,i,j+25,runnerPath);
    if(j!==2&&j!==4)continue;
-   const aa=az+(j===2?-.4:.4),top=[at[0]+Math.sin(aa)*w*.045,at[1]+h*(.42+.21*Math.sqrt(1-tier*tier)+.11*noise(i,j+4)),at[2]+Math.cos(aa)*w*.045];let prev=at;
-   for(let q=1;q<=6;q++){const t=(q+(q<6?(noise(i,q+j*10)-.5)*.6:0))/6,loc=mix(at,top,t);loc[0]+=Math.sin(aa+1)*w*.022*Math.sin(t*Math.PI);b.branch(prev,loc,Math.min(.001,h*.0036)*(1-t*.48),a.stemColor,'stem-spring-phlox');prev=loc;pair(loc,aa+q*Math.PI/2,L*(.85-.30*t),i,j*29+q);}
+   const aa=az+(j===2?-.4:.4),top=[at[0]+Math.sin(aa)*w*.045,at[1]+h*(.42+.21*Math.sqrt(1-tier*tier)+.11*noise(i,j+4)),at[2]+Math.cos(aa)*w*.045];let prev=at;const own=[];
+   for(let q=1;q<=6;q++){const t=(q+(q<6?(noise(i,q+j*10)-.5)*.6:0))/6,loc=mix(at,top,t);loc[0]+=Math.sin(aa+1)*w*.022*Math.sin(t*Math.PI);axis(prev,loc,Math.min(.001,h*.0036)*(1-t*.48),a.stemColor,'stem-spring-phlox');own.push([prev,loc]);prev=loc;pair(loc,aa+q*Math.PI/2,L*(.85-.30*t),i,j*29+q,own);}
    cyme(top,aa,i*3+j);
   }
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of springLobeTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
  inspection?.();
 }
 
@@ -18606,7 +18622,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='doubleRaggedRobin'){drawRaggedRobin(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pinnatePolemonium'){drawPolemonium(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='carolinaPhloxHeads'){drawCarolinaPhlox(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='springPhloxTrails'){drawSpringPhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='springPhloxTrails'){drawSpringPhlox(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='bronzeSnapdragons'){drawBronzeSnapdragons(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='silverSnapdragons'){drawSilverSnapdragons(b,{info,s,p,detail,rand},kit);return;}
