@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.766';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.767';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.766';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.767';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -8757,7 +8757,7 @@ for(let i=0;i<actaeaAntherGeometry.index.count;i+=3){const vertices=[0,1,2].map(
 actaeaAntherGeometry.dispose();
 function drawActaea(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,sheba=a.shootProfile==='sheba',carbon=a.shootProfile==='carbonella',bronze=['brunette','pink','negligee','atropurpurea','carbonella'].includes(a.shootProfile),pink=a.shootProfile==='pink',seed=a.seedHeadMonths?.includes(month),h=s.height,w=s.spread,size=Math.min(1,h/1.1,w/.65),L=a.leafLength*size,W=a.leafWidth*size,F=a.flowerLength*size,IL=a.inflorescenceLength*size,n=Math.max(3,Math.min(10,Math.round(6*detail*Math.sqrt(w/.65)))),winter=[12,1,2].includes(month),stem=winter?a.winterStemColor:a.stemColor;
- const observed=['p-91dc7c5afdd5','p-446df64cf3d9','p-3ae1ef0d1c75','p-10912a2f9745','p-84162264d849','p-36a4693472e6'].includes(p?.kind),ceiling=Math.min(h,s.leafHeight),lowCap=observed&&s.leafDensity>0&&ceiling<=a.leafLength*.5;
+ const observed=['p-91dc7c5afdd5','p-446df64cf3d9','p-3ae1ef0d1c75','p-10912a2f9745','p-84162264d849','p-36a4693472e6','p-aa840ce6b9a8'].includes(p?.kind),ceiling=Math.min(h,s.leafHeight),lowCap=observed&&s.leafDensity>0&&ceiling<=a.leafLength*.5;
  const axis=(from,to,r,color,kind)=>observed?delphiniumObservedAxis(b,from,to,r,color,kind):b.branch(from,to,r,color,kind);
  const ground=(from,to,r)=>{if(!lowCap)return from;from=[from[0],Math.min(from[1],ceiling*.10),from[2]];for(let pass=0;pass<32;pass++){const matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;let min=Infinity;for(let j=0;j<pos.count;j++)min=Math.min(min,new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y);if(min>=0)break;from[1]+=-min+1e-10;}return from;};
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
