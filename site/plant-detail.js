@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.791';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.792';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.791';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.792';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -21604,18 +21604,19 @@ function drawAquaticReeds(b,{info,s,detail,rand},kit){
  }
  const n=Math.max(4,Math.round((hyemale?52:horsetail?74:rush?15:papyrus?19:25)*detail*(rush?1:s.leafDensity)));
  for(let i=0;i<n;i++){
-  const an=i*2.399,rr=w*(horsetail?.32:.24)*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,.002,Math.cos(an)*rr],height=h*(horsetail?.53+rand()*.45:papyrus?.61+rand()*.29:umbrella?.52+rand()*.39:.82+rand()*.17),reach=w*(hyemale?.025:horsetail?.055:papyrus?.10:umbrella?.07:.025),path=t=>[root[0]+Math.sin(an)*reach*t*t,height*t,root[2]+Math.cos(an)*reach*t*t],tip=path(1),radius=hyemale?Math.min(.004,Math.max(.00125,h*.004)):horsetail?.0017:papyrus?.0024:umbrella?.0023:.0018;
-  let old=root;for(let k=1;k<=12;k++){const at=path(k/12);line(old,at,radius*(1-.18*k/12));old=at;}
+  const an=i*2.399,rr=w*(horsetail?.32:.24)*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,hyemale?Math.min(.002,h*.01):.002,Math.cos(an)*rr],height=h*(horsetail?.53+rand()*.45:papyrus?.61+rand()*.29:umbrella?.52+rand()*.39:.82+rand()*.17),reach=w*(hyemale?.025:horsetail?.055:papyrus?.10:umbrella?.07:.025),path=t=>[root[0]+Math.sin(an)*reach*t*t,height*t,root[2]+Math.cos(an)*reach*t*t],tip=path(1),micro=hyemale?Math.min(1,h/.30,w/.10):1,radius=hyemale?Math.min(.004,Math.max(.00125,h*.004))*micro:horsetail?.0017:papyrus?.0024:umbrella?.0023:.0018;
+  const own=[];let old=root;for(let k=1;k<=12;k++){const at=path(k/12);line(old,at,radius*(1-.18*k/12));if(hyemale)own.push([old,at]);old=at;}
   if(horsetail){
    const joints=hyemale?Math.max(4,Math.min(12,Math.round(height/.06))):12;
    for(let k=1;k<=joints;k++){
-    const t=k/(joints+1),at=path(t),r=radius*(1-.18*t),f=flowerFrame(b,at,0,an);
+    const t=k/(joints+1),r=radius*(1-.18*t);let at=path(t),f;
+    if(hyemale){const index=Math.min(11,Math.floor(t*12)),[from,to]=own[index],u=t*12-index;at=from.map((v,i)=>v+(to[i]-v)*u);const direction=new THREE.Vector3(...to).sub(new THREE.Vector3(...from)).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction),'YXZ');f=flowerFrame(b,at,e.x,e.y,e.z);}else f=flowerFrame(b,at,0,an);
     if(hyemale){
-     const length=Math.min(.012,Math.max(.008,height*.015));
-     f.add('horsetailCulm','hyemale-sheath','#aab0a2',0,0,0,r*1.10,length*.72,r*1.10);
+     const length=Math.min(.012,Math.max(.008,height*.015))*micro;
+     f.add('horsetailCulm','hyemale-sheath','#b3ae98',0,0,0,r*1.10,length*.72,r*1.10);
      for(const sign of [-1,1])f.add('horsetailCulm','hyemale-black-band','#292e25',0,sign*length*.43,0,r*1.13,length*.14,r*1.13);
      // Persistent teeth on the youngest upper nodes; older teeth may shed.
-     if(k>joints-3)for(let j=0;j<24;j++){const aa=j*TAU/24;f.add('horsetailSheath','hyemale-sheath-tooth','#30352b',Math.sin(aa)*r,length*.5,Math.cos(aa)*r,.0022,.0020,.0022,.02,aa,0);}
+     if(k>joints-3)for(let j=0;j<24;j++){const aa=j*TAU/24;f.add('horsetailSheath','hyemale-sheath-tooth','#30352b',Math.sin(aa)*r,length*.5,Math.cos(aa)*r,.0022*micro,.0020*micro,.0022*micro,.02,aa,0);}
     }else{
      f.add('horsetailCulm','sheath','#758866',0,-.0017,0,r*1.10,.0034,r*1.10);
      for(let j=0;j<18;j++){const aa=j*TAU/18;f.add('horsetailSheath','sheathTooth','#393f2d',Math.sin(aa)*r,.0001,Math.cos(aa)*r,.0015,.0022,.0015,.05,aa,0);}
