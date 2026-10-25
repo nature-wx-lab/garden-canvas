@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.752';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.753';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.752';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.753';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -13319,7 +13319,7 @@ function aquilegiaGroundRoot(from,to,r){
 }
 function drawAquilegia(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const observed=['p-fa90805ca0e8','p-5fb031cbf04a','p-485f5ee72b09','p-2e81e09ebbd3','p-0cc6b0532748','p-59a0cf40e2e0'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);let frontPetal=null;
+ const observed=['p-fa90805ca0e8','p-5fb031cbf04a','p-485f5ee72b09','p-2e81e09ebbd3','p-0cc6b0532748','p-59a0cf40e2e0','p-791734a4114e','p-ed6dd54215de','p-f2a9bde5c764'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);let frontPetal=null;
  const a=info.appearance,type=a.shootProfile,small=type==='ecalcarata',h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.21)*s.leafScale,green=s.leafColor,stem=a.stemColor;
  const leaf=(at,az,len,biternate=true,pitch=.82)=>{
   const parts=[],dst=observed?{add:(...v)=>parts.push({type:'leaf',v}),branch:(...v)=>parts.push({type:'axis',v})}:b;
