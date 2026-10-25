@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.776';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.777';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.776';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.777';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9230,47 +9230,56 @@ export function raggedRobinPoint(type,t,u){
  }
  const az=(u+1)*Math.PI,r=(.12+.065*sn)*(1+.07*Math.cos(az*10));return [Math.sin(az)*r,t,Math.cos(az)*r];
 }
-function drawRaggedRobin(b,{info,s,detail,rand,month},kit){
+// Match the retained Float32 leaf mesh and each actual deeply divided petal triangle.
+const raggedRobinLeafSamples=[],raggedRobinPetalTriangles=[];
+for(let i=0;i<=36;i++)for(let j=0;j<=80;j++)raggedRobinLeafSamples.push(raggedRobinPoint('raggedRobinLeaf',i/36,j/80*2-1).map(Math.fround));
+for(let row=0;row<36;row++)for(let col=0;col<80;col++)for(let half=0;half<2;half++){const cells=half?[[row,col+1],[row+1,col],[row+1,col+1]]:[[row,col],[row+1,col],[row,col+1]];raggedRobinPetalTriangles.push({vertices:cells.map(([i,j])=>i*81+j),points:cells.map(([i,j])=>raggedRobinPoint('raggedRobinPetal',i/36,j/80*2-1).map(Math.fround)),faceIndex:(row*80+col)*2+half});}
+function drawRaggedRobin(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,n=Math.max(3,Math.min(14,Math.round(9*detail*Math.sqrt(w/.25)*Math.min(1,h/.3)))),L=Math.min(a.leafLength,w*.34,h*.3),R=a.flowerRadius*Math.min(1,h/.25),F=a.flowerLength*Math.min(1,h/.25);
- let inspection=null,inspectionScore=-Infinity;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const leaf=(at,aa,len,i,k)=>{
+ const observed=p?.kind==='p-55783b7fea00',ceiling=Math.min(h,s.leafHeight),lowCap=observed&&s.leafDensity>0&&ceiling<=a.leafLength*.5;
+ const axis=(...args)=>observed?delphiniumObservedAxis(b,...args):b.branch(...args);
+ const ground=(from,to,r)=>{if(!lowCap)return from;from=[from[0],Math.min(from[1],ceiling*.10),from[2]];for(let pass=0;pass<32;pass++){const matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;let min=Infinity;for(let j=0;j<pos.count;j++)min=Math.min(min,new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y);if(min>=0)break;from[1]+=-min+1e-10;}return from;};
+ const placeLeaves=(parts,at,az,paths)=>{
+  if(!parts.length)return;const samples=[];for(const v of parts){const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);for(const q of raggedRobinLeafSamples)samples.push(new THREE.Vector3(...q).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}
+  const measure=angle=>{const rotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(Math.cos(az),0,-Math.sin(az)),angle);let low=0,high=0;for(const q of samples){const y=q.clone().applyQuaternion(rotation).y;low=Math.min(low,y);high=Math.max(high,y);}return{low,high,rotation};};
+  const full=bounds=>!paths&&lowCap?(bounds.high-bounds.low<=ceiling-2e-9?[at[0],-bounds.low+1e-9,at[2]]:null):at[1]+bounds.low>=0&&at[1]+bounds.high<=ceiling?at:paths?calaminthaNearestStem(paths,-bounds.low+1e-9,ceiling-bounds.high-1e-9,at):bounds.high-bounds.low<=ceiling-2e-9?[at[0],-bounds.low+1e-9,at[2]]:null;
+  let bounds=measure(0),base=full(bounds),fit=1,angle=0;const candidates=[{angle,bounds}];if(!base)for(const adjusted of [.25,.5,.75,1]){const trial=measure(adjusted);candidates.push({angle:adjusted,bounds:trial});base=full(trial);if(base){angle=adjusted;bounds=trial;break;}}
+  if(!base){let best=-1;for(const candidate of candidates){const{low,high}=candidate.bounds,desired=high>low?(ceiling-2e-9)*(-low)/(high-low):at[1];for(const line of paths||[[[at[0],0,at[2]],[at[0],ceiling,at[2]]]]){const lower=Math.max(0,Math.min(line[0][1],line[1][1])),upper=Math.min(ceiling,Math.max(line[0][1],line[1][1]));if(lower>upper)continue;const y=Math.max(lower,Math.min(upper,desired)),point=calaminthaNearestStem([line],y,y,at);if(!point)continue;const amount=Math.max(0,Math.min(1,high>0?(ceiling-point[1]-2e-9)/high:1,low<0?(point[1]-1e-9)/-low:1));if(amount>best){best=amount;base=point;bounds=candidate.bounds;angle=candidate.angle;}}}if(!base||best<=0)throw new Error('Petit Henri leaves have no fitted attachment '+JSON.stringify({h,w,ceiling,at}));fit=best;if(!paths)base=[at[0],-bounds.low*fit+1e-9,at[2]];}
+  for(const v of parts){if(base===at&&angle===0&&fit===1){b.add(...v);continue;}const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,q=bounds.rotation.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),point=new THREE.Vector3(x,y,z).sub(new THREE.Vector3(...at)).applyQuaternion(bounds.rotation).multiplyScalar(fit).add(new THREE.Vector3(...base));b.add(shape,kind,color,...point.toArray(),sx*fit,sy*fit,sz*fit,e.x,e.y,e.z);}
+ };
+ let petalInstance=0;const surfaces=[],organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(v[1]!=='petal-ragged-robin')return;const instanceId=petalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:R*.6,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
+ const leaf=(at,aa,len,i,k,paths=null,parts=null)=>{
   if(noise(i,k)>s.leafDensity)return;
-  // Consume the original shade draw even when the independent leaf ceiling hides this leaf.
-  const color=kit.shade(rand,s.leafColor,.035),room=Math.min(s.height,s.leafHeight)-at[1];if(room<=0)return;
-  const pitch=.85+.28*noise(i,k+3),roll=(noise(i,k+7)-.5)*.2,cp=Math.cos(pitch),sp=Math.sin(pitch),ratio=a.leafWidth/a.leafLength;
-  // YXZ: yaw does not affect height; the blade has |x|<=.5, 0<=y<=1 and 0<=z<=.075.
-  const rise=Math.max(0,cp*Math.cos(roll))+.5*Math.abs(cp*Math.sin(roll)*ratio)+.075*Math.max(0,-sp);
-  len=Math.min(len,room/Math.max(rise,1e-8));
-  b.add('raggedRobinLeaf','leaf-ragged-robin',color,...at,len*ratio,len,len,pitch,aa,roll);
+  const color=kit.shade(rand,s.leafColor,.035),pitch=.85+.28*noise(i,k+3),roll=(noise(i,k+7)-.5)*.2,ratio=a.leafWidth/a.leafLength;
+  if(!observed){const room=Math.min(s.height,s.leafHeight)-at[1];if(room<=0)return;const cp=Math.cos(pitch),sp=Math.sin(pitch),rise=Math.max(0,cp*Math.cos(roll))+.5*Math.abs(cp*Math.sin(roll)*ratio)+.075*Math.max(0,-sp);len=Math.min(len,room/Math.max(rise,1e-8));b.add('raggedRobinLeaf','leaf-ragged-robin',color,...at,len*ratio,len,len,pitch,aa,roll);return;}
+  const v=['raggedRobinLeaf','leaf-ragged-robin',color,...at,len*ratio,len,len,pitch,aa,roll];if(parts)parts.push(v);else placeLeaves([v],at,aa,paths);
  };
  const flower=(at,az,i,k)=>{
-  if(!s.bloom)return;const f=flowerFrame(b,at,.18+.7*noise(i,k+3),az),r=R*(.9+.1*noise(i,k+5));
+  if(!s.bloom)return;const f=flowerFrame(organs,at,.18+.7*noise(i,k+3),az),r=R*(.9+.1*noise(i,k+5));
   f.add('raggedRobinCalyx','calyx-ragged-robin',a.flowerPalette.calyx,0,0,0,F,F,F);
   if(noise(i,k+17)>.85){f.add(kit.bud,'bud-ragged-robin',a.flowerPalette.bud,0,F*.8,0,r*.18,F*.45,r*.18);return;}
   for(let level=0;level<3;level++)for(let j=0;j<7;j++){
    const aa=az+j*TAU/7+level*.63+(noise(i,k+j+level*10)-.5)*.40,len=r*(1-level*.19)*(.84+.16*noise(i,k+j+80)),rx=Math.PI/2-.06-level*.18+(noise(i,k+j+30)-.5)*.50,rz=(noise(i,k+j+60)-.5)*.30,offset=r*(level===2?.012:level===1?.055:.10),origin=[Math.sin(aa)*offset,F+level*r*.12,Math.cos(aa)*offset];
    f.add('raggedRobinPetal','petal-ragged-robin',s.flowerColor,...origin,len,len,len,rx,aa,rz);
-   if(level===0&&j===0){
-    // An actual row27/column30 surface vertex; use the outward side of its local XY reference plane.
-    const rotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,aa,rz,'YXZ')),point=new THREE.Vector3(...raggedRobinPoint('raggedRobinPetal',.75,-.25)).multiplyScalar(len).applyQuaternion(rotation).add(new THREE.Vector3(...origin)),outward=rotation.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2)),e=new THREE.Euler().setFromQuaternion(outward,'YXZ'),score=at[0]*.8+at[2];
-    if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),len*1.1,e.x,e.y,e.z);}
-   }
+
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963,rr=w*.20*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr],top=[root[0]+Math.sin(az)*w*.045,h*(.65+.17*noise(i,2)),root[2]+Math.cos(az)*w*.045];let prev=root;
+  const az=i*2.399963,rr=w*.20*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr],top=[root[0]+Math.sin(az)*w*.045,h*(.65+.17*noise(i,2)),root[2]+Math.cos(az)*w*.045];let prev=root;const own=[];
   for(let j=0;j<7;j++)leaf(root,az+j*2.4,L*(.72+.28*noise(i,j+4)),i,j+22);
   for(let j=1;j<=6;j++){
-   const q=(j+(j<6?(noise(i,j+8)-.5)*.4:0))/6,at=mix(root,top,q);b.branch(prev,at,Math.min(.0011,h*.003)*(1-q*.45),a.stemColor,'stem-ragged-robin');prev=at;
-   for(let side=0;side<2;side++)leaf(at,az+j*Math.PI/2+side*Math.PI,L*(.55-.3*q),i,j+40);
+   const q=(j+(j<6?(noise(i,j+8)-.5)*.4:0))/6,at=mix(root,top,q),radius=Math.min(.0011,h*.003)*(1-q*.45),from=observed&&j===1?ground(prev,at,radius):prev;axis(from,at,radius,a.stemColor,'stem-ragged-robin');own.push([from,at]);prev=at;
+   const pair=[],pairAz=az+j*Math.PI/2;for(let side=0;side<2;side++)leaf(at,pairAz+side*Math.PI,L*(.55-.3*q),i,j+40,own,pair);if(observed)placeLeaves(pair,at,pairAz,own);
    if(j===4||j===5)for(let side=0;side<2;side++){
-    const aa=az+j*Math.PI/2+side*Math.PI,len=Math.min(w*.19,h*.14),end=[at[0]+Math.sin(aa)*len,at[1]+h*.10,at[2]+Math.cos(aa)*len];b.branch(at,end,Math.min(.0007,h*.0019),a.stemColor,'branch-ragged-robin');flower(end,aa,i,j*13+side*7);
-    const tip=[end[0]+Math.sin(aa+.7)*len*.34,end[1]+h*.065,end[2]+Math.cos(aa+.7)*len*.34];b.branch(end,tip,Math.min(.00035,h*.0013),a.stemColor,'pedicel-ragged-robin');flower(tip,aa+.7,i,j*25+side*7);
+    const aa=az+j*Math.PI/2+side*Math.PI,len=Math.min(w*.19,h*.14),end=[at[0]+Math.sin(aa)*len,at[1]+h*.10,at[2]+Math.cos(aa)*len];axis(at,end,Math.min(.0007,h*.0019),a.stemColor,'branch-ragged-robin');flower(end,aa,i,j*13+side*7);
+    const tip=[end[0]+Math.sin(aa+.7)*len*.34,end[1]+h*.065,end[2]+Math.cos(aa+.7)*len*.34];axis(end,tip,Math.min(.00035,h*.0013),a.stemColor,'pedicel-ragged-robin');flower(tip,aa+.7,i,j*25+side*7);
    }
   }flower(top,az,i,200);
  }
- if(inspection)inspection();
+
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of raggedRobinPetalTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
+
 }
 
 export function polemoniumPoint(type,t,u){
@@ -18562,7 +18571,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='richardsoniiTrails'){drawRichardsonii(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='phuopsisHeads'){drawPhuopsis(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='alchemillaCymes'){drawAlchemilla(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='doubleRaggedRobin'){drawRaggedRobin(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='doubleRaggedRobin'){drawRaggedRobin(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pinnatePolemonium'){drawPolemonium(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='carolinaPhloxHeads'){drawCarolinaPhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='springPhloxTrails'){drawSpringPhlox(b,{info,s,detail,rand,month},kit);return;}
