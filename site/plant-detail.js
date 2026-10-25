@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.793';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.794';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.793';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.794';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -18061,35 +18061,45 @@ export function convallariaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  return [u*.5*sn**.64,t-.10*t*t*t,.16*t*t+.012*u*u*sn];
 }
+// Samples use the exact renderer grids and Float32 coordinates.
+const convallariaLeafSamples=[],convallariaBellSamples=[],convallariaBellTriangles=[];
+for(let i=0;i<=48;i++)for(let j=0;j<=24;j++)convallariaLeafSamples.push(convallariaPoint('convallariaLeaf',i/48,j/12-1).map(Math.fround));
+{const positions=convallariaBellSamples;for(let i=0;i<=48;i++)for(let j=0;j<=72;j++)positions.push(convallariaPoint('convallariaBell',i/48,j/72*TAU).map(Math.fround));for(let i=0;i<48;i++)for(let j=0;j<72;j++){const k=i*73+j;for(const vertices of [[k,k+1,k+73],[k+1,k+74,k+73]])convallariaBellTriangles.push({faceIndex:(i*72+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>positions[v])});}}
 function drawConvallariaClusters(b,{info,s,detail,rand},kit){
- const h=s.height,w=s.spread,n=Math.max(2,Math.round(5*detail)),green=s.leafDensity<.4?'#aaa46e':s.leafColor;
+ const h=s.height,w=s.spread,n=Math.max(2,Math.round(5*detail)),green=s.leafDensity<.4?'#aaa46e':s.leafColor,ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.15,w/.10),surfaces=[];let bellInstance=0;
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(v[1]!=='perianth-convallaria')return;const instanceId=bellInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*1.1,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter=b)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=shape==='convallariaLeaf'?convallariaLeafSamples:shape==='convallariaBell'?convallariaBellSamples:shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z])));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Convallaria rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;line(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
  for(let i=0;i<n;i++){
-  const yaw=i*2.399,rr=w*.26*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*rr,.001,Math.cos(yaw)*rr],petiole=Math.min(h*.26,s.leafHeight*.28),top=[root[0],petiole,root[2]];
+  const yaw=i*2.399,rr=w*.26*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*rr,Math.min(.001,ceiling*.05),Math.cos(yaw)*rr],petiole=Math.min(h*.26,s.leafHeight*.28),top=[root[0],petiole,root[2]];
   if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(2*s.leafDensity));j++){
-   const angle=yaw+j*Math.PI,L=Math.min(.13,Math.max(.006,s.leafHeight-petiole)/.88,w*.65)*s.leafScale*(.90+j*.10),W=Math.min(.047,L*.40),f=flowerFrame(b,top,.17+j*.17,angle);
-   b.branch(root,top,.0012,green,'petiole-convallaria');
+   const angle=yaw+j*Math.PI,L=Math.min(.13,Math.max(.006,s.leafHeight-petiole)/.88,w*.65)*s.leafScale*(.90+j*.10),W=Math.min(.047,L*.40),parts=[{line:[root,top,.0012*micro,green,'petiole-convallaria']}],collector={add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})},f=flowerFrame(collector,top,.17+j*.17,angle);
    f.add('convallariaLeaf','leaf-convallaria',kit.shade(rand,green,.025),0,0,0,W,L,L);
    for(const u of [-.65,-.32,0,.32,.65]){
-    let p=convallariaPoint('convallariaLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00004];
-    for(let k=1;k<=15;k++){p=convallariaPoint('convallariaLeaf',.02+k*.065,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00004];f.branch(from,to,.000035,'#8f9c7a','vein-leaf-convallaria');from=to;}
+    let p=convallariaPoint('convallariaLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00004*micro];
+    for(let k=1;k<=15;k++){p=convallariaPoint('convallariaLeaf',.02+k*.065,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00004*micro];f.branch(from,to,.000035*micro,'#8f9c7a','vein-leaf-convallaria');from=to;}
    }
+   fitAssembly(parts,root,ceiling);
   }
   if(!s.bloom)continue;
+  const flowerParts=[],flowerOrgans={add:(...organ)=>flowerParts.push({organ}),branch:(...line)=>flowerParts.push({line})};
   const axis=t=>[root[0]+Math.sin(yaw)*w*.16*t**4,h*1.10*(t-.25*t**6),root[2]+Math.cos(yaw)*w*.16*t**4];let previous=root;
-  for(let k=1;k<=22;k++){const to=axis(k/22);b.branch(previous,to,.0008,'#789452','scape-convallaria');previous=to;}
+  for(let k=1;k<=22;k++){const to=axis(k/22);flowerOrgans.branch(previous,to,.0008*micro,'#789452','scape-convallaria');previous=to;}
   for(let j=0;j<6;j++){
    const at=axis(.48+j*.082),reach=Math.min(.020,h*.12)*(1-j*.035),cluster=[at[0]+Math.sin(yaw)*reach,at[1]+reach*.05,at[2]+Math.cos(yaw)*reach];
-   b.branch(at,cluster,.00045,'#8e9f64','cluster-branch-convallaria');
-   b.add('narrow','bract-convallaria','#afbd8b',...at,.0015,h*.035,.0015,.40,yaw+Math.PI,0);
+   flowerOrgans.branch(at,cluster,.00045*micro,'#8e9f64','cluster-branch-convallaria');
+   flowerOrgans.add('narrow','bract-convallaria','#afbd8b',...at,.0015*micro,h*.035,.0015*micro,.40,yaw+Math.PI,0);
    for(let k=0;k<3;k++){
     const an=yaw+(k-1)*.85,offset=reach*.38,end=[cluster[0]+Math.sin(an)*offset,cluster[1]-offset*(.1+k*.12),cluster[2]+Math.cos(an)*offset],control=[cluster[0]+Math.sin(an)*offset*.5,cluster[1]+offset*.6,cluster[2]+Math.cos(an)*offset*.5];let from=cluster;
-    for(let q=1;q<=8;q++){const t=q/8,to=cluster.map((v,a)=>(1-t)**2*v+2*(1-t)*t*control[a]+t*t*end[a]);b.branch(from,to,.00025,'#97a96f','pedicel-convallaria');from=to;}
+    for(let q=1;q<=8;q++){const t=q/8,to=cluster.map((v,a)=>(1-t)**2*v+2*(1-t)*t*control[a]+t*t*end[a]);flowerOrgans.branch(from,to,.00025*micro,'#97a96f','pedicel-convallaria');from=to;}
     const L=Math.min(.008,h*.07)*(1-j*.02);
-    if(j===5)b.add(kit.bud,'bud-convallaria','#cbd5a5',...end,L*.22,L*.42,L*.22,.25,an,0);
-    else {const f=flowerFrame(b,end,Math.PI+.18+k*.32,an);f.add('convallariaBell','perianth-convallaria',s.flowerColor,0,0,0,L,L,L);}
+    if(j===5)flowerOrgans.add(kit.bud,'bud-convallaria','#cbd5a5',...end,L*.22,L*.42,L*.22,.25,an,0);
+    else {const f=flowerFrame(flowerOrgans,end,Math.PI+.18+k*.32,an);f.add('convallariaBell','perianth-convallaria',s.flowerColor,0,0,0,L,L,L);}
    }
   }
+  fitAssembly(flowerParts,root,h,organs);
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of convallariaBellTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
 }
 export function fritillariaPoint(type,t,u){
  if(type==='fritUvaBody')return fritillariaPoint('fritUvaTepal',t*.82,u);
