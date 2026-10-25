@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.782';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.783';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.782';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.783';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -10211,11 +10211,26 @@ export function physostegiaPoint(type,t,u){
  return [Math.cos(az)*radius,Math.sin(az)*radius+.04*t*t,calyx?.31*t-.04*Math.cos(az*5)*t**8:bud?.18+.43*t:.80*t];
 }
 
-function drawPhysostegia(b,{info,s,detail,rand,month},kit){
+// Match the rendered72x24 leaf and40x24 lower-lip surfaces.
+const physostegiaLeafSamples=[],physostegiaLipTriangles=[],physostegiaUnitStem=new THREE.CylinderGeometry(1,1,1,4,1);
+for(let i=0;i<=72;i++)for(let j=0;j<=24;j++)physostegiaLeafSamples.push(physostegiaPoint('physostegiaLeaf',i/72,j/24*2-1).map(Math.fround));
+for(let row=0;row<40;row++)for(let col=0;col<24;col++)for(let half=0;half<2;half++){const cells=half?[[row,col+1],[row+1,col],[row+1,col+1]]:[[row,col],[row+1,col],[row,col+1]];physostegiaLipTriangles.push({vertices:cells.map(([i,j])=>i*25+j),points:cells.map(([i,j])=>physostegiaPoint('physostegiaLip',i/40,j/24*2-1).map(Math.fround)),faceIndex:(row*24+col)*2+half});}
+function drawPhysostegia(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.19,w*.20),F=a.flowerLength*Math.min(1,h/.36),n=Math.max(3,Math.min(24,Math.round(18*detail*Math.sqrt(w/.4)*Math.min(1,h/.5)))),stem=a.stemColor;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- let inspection=null,inspectionScore=-Infinity;
- const ceiling=Math.min(h,s.leafHeight),pair=(at,az,len,i,k,basal,root,retainedPair)=>{
+ const observed=p?.kind==='p-2170af3d50b2',ceiling=Math.min(h,s.leafHeight),lowCap=observed&&s.leafDensity>0&&ceiling<=a.leafLength*.5;
+ const axis=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(!observed||length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(['stem-physostegia','branch-physostegia','axis-physostegia'].includes(kind)?'mintSquareStem':delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const ground=(from,to,r)=>{if(!lowCap)return from;from=[from[0],Math.min(from[1],ceiling*.10),from[2]];for(let pass=0;pass<32;pass++){const matrix=calaminthaLineMatrix(from,to,r),pos=physostegiaUnitStem.attributes.position;let min=Infinity;for(let j=0;j<pos.count;j++)min=Math.min(min,new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y);if(min>=0)break;from[1]+=-min+1e-10;}return from;};
+ const placeLeaf=(parts,at,az,paths=null)=>{
+  const samples=[];for(const part of parts){if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;for(let j=0;j<pos.count;j++)samples.push(new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);for(const q of physostegiaLeafSamples)samples.push(new THREE.Vector3(...q).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}}
+  const measure=angle=>{const rotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(Math.cos(az),0,-Math.sin(az)),angle);let low=0,high=0;for(const q of samples){const y=q.clone().applyQuaternion(rotation).y;low=Math.min(low,y);high=Math.max(high,y);}return{low,high,rotation};};
+  const full=bounds=>!paths&&lowCap?(bounds.high-bounds.low<=ceiling-2e-9?[at[0],-bounds.low+1e-9,at[2]]:null):at[1]+bounds.low>=0&&at[1]+bounds.high<=ceiling?at:paths?calaminthaNearestStem(paths,-bounds.low+1e-9,ceiling-bounds.high-1e-9,at):bounds.high-bounds.low<=ceiling-2e-9?[at[0],-bounds.low+1e-9,at[2]]:null;
+  let angle=0,bounds=measure(0),base=full(bounds),fit=1;const candidates=[{angle,bounds}];if(!base)for(const adjusted of [.25,.5,.75,1]){const trial=measure(adjusted);candidates.push({angle:adjusted,bounds:trial});base=full(trial);if(base){angle=adjusted;bounds=trial;break;}}
+  if(!base){let best=-1;for(const candidate of candidates){const{low,high}=candidate.bounds,desired=high>low?(ceiling-2e-9)*(-low)/(high-low):at[1],lines=paths||[[[at[0],0,at[2]],[at[0],ceiling,at[2]]]];for(const line of lines){const lower=Math.max(0,Math.min(line[0][1],line[1][1])),upper=Math.min(ceiling,Math.max(line[0][1],line[1][1]));if(lower>upper)continue;const y=Math.max(lower,Math.min(upper,desired)),point=calaminthaNearestStem([line],y,y,at);if(!point)continue;const amount=Math.max(0,Math.min(1,high>0?(ceiling-point[1]-2e-9)/high:1,low<0?(point[1]-1e-9)/-low:1));if(amount>best){best=amount;base=point;angle=candidate.angle;bounds=candidate.bounds;}}}if(!base||best<=0)throw new Error('Physostegia leaf pair has no fitted attachment '+JSON.stringify({id:p.kind,month,h,w,ceiling,at}));fit=best;if(!paths)base=[at[0],-bounds.low*fit+1e-9,at[2]];}
+  const original=base===at&&angle===0&&fit===1,point=q=>new THREE.Vector3(...q).sub(new THREE.Vector3(...at)).applyQuaternion(bounds.rotation).multiplyScalar(fit).add(new THREE.Vector3(...base)).toArray();for(const part of parts)if(part.line){if(original)axis(...part.line);else{const[from,to,r,color,kind]=part.line;axis(point(from),point(to),r*fit,color,kind);}}else if(original)b.add(...part.organ);else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,q=bounds.rotation.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ');b.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,e.x,e.y,e.z);}
+ };
+ let inspection=null,inspectionScore=-Infinity,lipInstance=0;const surfaces=[],organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(v[1]!=='petal-physostegia')return;const instanceId=lipInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:sy*1.2,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
+ const pair=(at,az,len,i,k,basal,root,retainedPair,paths=null)=>{
   const pet=len*.025,radius=Math.min(.0006,h*.003),ratio=a.leafWidth/a.leafLength,leaves=[];let upper=pet*.4+radius,lower=radius;
   for(let q=0;q<2;q++){
    const aa=az+q*Math.PI,pitch=basal?.55+noise(i,k+q)*.5:.95+.42*noise(i,k+q),roll=(noise(i,k+q+70)-.5)*.28,color=kit.shade(rand,s.leafColor,.035),euler=new THREE.Euler(pitch,aa,roll,'YXZ');
@@ -10223,6 +10238,7 @@ function drawPhysostegia(b,{info,s,detail,rand,month},kit){
    for(let corner=0;corner<8;corner++){const point=new THREE.Vector3((corner&1?.578:-.578)*ratio*len,corner&2?len:0,(corner&4?.044:-.082)*len).applyEuler(euler);upper=Math.max(upper,point.y+pet*.4);lower=Math.max(lower,-point.y);}
    leaves.push({aa,pitch,roll,color});
   }
+  if(observed){const parts=[];for(const leaf of leaves){const end=[at[0]+Math.sin(leaf.aa)*pet,at[1]+pet*.4,at[2]+Math.cos(leaf.aa)*pet];parts.push({line:[at,end,radius,stem,basal?'petiole-physostegia-basal':'petiole-physostegia']},{organ:['physostegiaLeaf',basal?'leaf-physostegia-basal':'leaf-physostegia',leaf.color,...end,len*ratio,len,len,leaf.pitch,leaf.aa,leaf.roll]});}placeLeaf(parts,at,az,paths);return true;}
   // Consume both original shades before a high pair is omitted; later flowers retain their RNG sequence.
   const base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)return false;
   const fit=Math.min(1,room/upper,base[1]/lower),fitted=leaves.map(leaf=>({...leaf,end:[base[0]+Math.sin(leaf.aa)*pet*fit,base[1]+pet*.4*fit,base[2]+Math.cos(leaf.aa)*pet*fit]}));
@@ -10233,32 +10249,33 @@ function drawPhysostegia(b,{info,s,detail,rand,month},kit){
  const spike=(base,az,len,i)=>{
   let old=base;const levels=18;
   for(let j=0;j<=levels;j++){
-   const t=(j+(j>0&&j<levels?(noise(i,j+90)-.5)*.32:0))/levels,at=[base[0]+Math.sin(az)*len*.10*t*t,base[1]+len*t,base[2]+Math.cos(az)*len*.10*t*t];if(j)b.branch(old,at,Math.min(.0013,h*.003)*(1-t*.5),stem,'axis-physostegia');old=at;
+   const t=(j+(j>0&&j<levels?(noise(i,j+90)-.5)*.32:0))/levels,at=[base[0]+Math.sin(az)*len*.10*t*t,base[1]+len*t,base[2]+Math.cos(az)*len*.10*t*t];if(j)axis(old,at,Math.min(.0013,h*.003)*(1-t*.5),stem,'axis-physostegia');old=at;
    if(!s.bloom&&!a.budMonths.includes(month))continue;
    for(let k=0;k<2;k++){
-    const aa=az+(j%2)*Math.PI/2+k*Math.PI+(noise(i,j*23+k)-.5)*.14,pos=[at[0]+Math.sin(aa)*F*.09,at[1],at[2]+Math.cos(aa)*F*.09],fl=F*(.86+.14*noise(i,j*11+k)),pitch=-.2+(noise(i,j*19+k)-.5)*.52,f=flowerFrame(b,pos,pitch,aa);
+    const aa=az+(j%2)*Math.PI/2+k*Math.PI+(noise(i,j*23+k)-.5)*.14,pos=[at[0]+Math.sin(aa)*F*.09,at[1],at[2]+Math.cos(aa)*F*.09],fl=F*(.86+.14*noise(i,j*11+k)),pitch=-.2+(noise(i,j*19+k)-.5)*.52,f=flowerFrame(organs,pos,pitch,aa);
     f.add('physostegiaCalyx','calyx-physostegia',a.flowerPalette.calyx,0,0,0,fl,fl,fl);
     if(!s.bloom||t>.87||noise(i,j*31+k)>.85){f.add('physostegiaBud','bud-physostegia',a.flowerPalette.bud,0,0,0,fl,fl,fl);continue;}
     f.add('physostegiaTube','tube-physostegia',s.flowerColor,0,0,0,fl,fl,fl);f.add('physostegiaHood','hood-physostegia',s.flowerColor,0,0,0,fl,fl,fl);f.add('physostegiaLip','petal-physostegia',s.flowerColor,0,0,0,fl,fl,fl);
     // Actual row32/column12 of the existing40x24 lower-lip surface.
     const point=new THREE.Vector3(...physostegiaPoint('physostegiaLip',.8,0).map(Math.fround)).multiplyScalar(fl),atPoint=point.clone().applyEuler(new THREE.Euler(pitch,aa,0,'YXZ')).add(new THREE.Vector3(...pos)),score=atPoint.x*.8+atPoint.z;
-    if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),fl*1.2,Math.PI/2);}
+    if(!observed&&score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),fl*1.2,Math.PI/2);}
    }
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*.5,tier=Math.sqrt((i+.5)/n),rr=w*.29*tier,root=[Math.sin(az)*rr*.82,.004,Math.cos(az)*rr*.82],top=[Math.sin(az)*rr,h*(.46+.12*Math.sqrt(1-tier*tier)+.10*noise(i,3)),Math.cos(az)*rr];let old=root,retainedPair=false;
+  const az=i*2.399963+(noise(i,1)-.5)*.5,tier=Math.sqrt((i+.5)/n),rr=w*.29*tier,root=[Math.sin(az)*rr*.82,.004,Math.cos(az)*rr*.82],top=[Math.sin(az)*rr,h*(.46+.12*Math.sqrt(1-tier*tier)+.10*noise(i,3)),Math.cos(az)*rr];let old=root,retainedPair=false;const own=[];
   for(let j=1;j<=10;j++){
-   const t=(j+(j<10?(noise(i,j+220)-.5)*.5:0))/10,at=mix(root,top,t);b.branch(old,at,Math.min(.0021,h*.004)*(1-t*.4),stem,'stem-physostegia');old=at;retainedPair=pair(at,az+j*Math.PI/2,L*(.74+.26*Math.sin(t*Math.PI)),i,j+20,false,root,retainedPair)||retainedPair;
+   const t=(j+(j<10?(noise(i,j+220)-.5)*.5:0))/10,at=mix(root,top,t),stemRadius=Math.min(.0021,h*.004)*(1-t*.4),from=observed&&j===1?ground(old,at,stemRadius):old;axis(from,at,stemRadius,stem,'stem-physostegia');own.push([from,at]);old=at;retainedPair=pair(at,az+j*Math.PI/2,L*(.74+.26*Math.sin(t*Math.PI)),i,j+20,false,root,retainedPair,own)||retainedPair;
    if(j!==7||i%3===0)continue;
-   for(let k=0;k<2;k++){const aa=az+(k?1.3:-1.3),end=[at[0]+Math.sin(aa)*w*.10,at[1]+h*.15,at[2]+Math.cos(aa)*w*.10];let prev=at;for(let q=1;q<=3;q++){const loc=mix(at,end,q/3);b.branch(prev,loc,Math.min(.0011,h*.0025)*(1-q*.1),stem,'branch-physostegia');prev=loc;retainedPair=pair(loc,aa+q*Math.PI/2,L*(.65-q*.10),i,j*29+k*7+q,false,root,retainedPair)||retainedPair;}spike(end,aa,Math.min(a.inflorescenceLength*.64,h*.23),i+50+k*37);}
+   for(let k=0;k<2;k++){const aa=az+(k?1.3:-1.3),end=[at[0]+Math.sin(aa)*w*.10,at[1]+h*.15,at[2]+Math.cos(aa)*w*.10];let prev=at;const branchOwn=[];for(let q=1;q<=3;q++){const loc=mix(at,end,q/3);axis(prev,loc,Math.min(.0011,h*.0025)*(1-q*.1),stem,'branch-physostegia');branchOwn.push([prev,loc]);prev=loc;retainedPair=pair(loc,aa+q*Math.PI/2,L*(.65-q*.10),i,j*29+k*7+q,false,root,retainedPair,[...own,...branchOwn])||retainedPair;}spike(end,aa,Math.min(a.inflorescenceLength*.64,h*.23),i+50+k*37);}
   }
   spike(top,az,Math.min(a.inflorescenceLength,h*.32)*(.81+.19*noise(i,65)),i);
   if([11,12,1,2].includes(month)&&i%3===0){let retainedBasal=false;for(let j=0;j<3;j++){
    // Existing basal heights follow the rendered main-stem line instead of floating beside its lean.
-   const at=mix(root,top,Math.min(1,j*.006/Math.max(top[1]-root[1],1e-8)));retainedBasal=pair(at,az+j*Math.PI/2,Math.min(.027,h*.12)*(1-j*.22),i,300+j,true,root,retainedBasal)||retainedBasal;
+   const nominal=mix(root,top,Math.min(1,j*.006/Math.max(top[1]-root[1],1e-8))),at=observed&&lowCap&&j===0?own[0][0]:nominal;retainedBasal=pair(at,az+j*Math.PI/2,Math.min(.027,h*.12)*(1-j*.22),i,300+j,true,root,retainedBasal,own)||retainedBasal;
   }}
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of physostegiaLipTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
  inspection?.();
 }
 
@@ -18652,7 +18669,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='oleariaSmoky'){drawOleariaSmoky(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='mahoniaCanes'){drawMahoniaCanes(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pajamasCymes'){drawPajamas(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='physostegiaRows'){drawPhysostegia(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='physostegiaRows'){drawPhysostegia(b,{info,s,p,detail,rand,month},kit);return;}
  if(['tallNepetaSpires','nervosaHeads','subsessilisWhorls'].includes(info.appearance?.architecture)){drawTallNepeta(b,{info,s,p,detail,rand,month},kit);return;}
  if(['catmintMounds','giantCatmintShoots','pinkCatmintBranches','simpleCatmintBranches','limeCatmintMound','uprightFaassenii'].includes(info.appearance?.architecture)){drawCatmint(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='rupestrisBranches'){drawRupestris(b,{info,s,p,detail,rand,month},kit);return;}
