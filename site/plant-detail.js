@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.810';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.811';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.810';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.811';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15493,7 +15493,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  if(shape==='earlySquillFlower'){
   const f=flowerFrame(b,[x,y,z],tilt,yaw),glory=palette.glory,tube=glory?r*.20:0;
   if(glory)f.add('squillPerianthTube','perianth-tube-squill','#eeeeeb',0,0,0,r,r,r);
-  for(let j=0;j<6;j++)f.add(glory?'glorySnowTepal':'smallSquillTepal',glory?'petal-squill-eye':'petal-squill-striped',color,0,tube,0,r*(j%2?1:.88),r,r,glory?1.34:1.23,j*TAU/6,0);
+  for(let j=0;j<6;j++)f.add(glory?(palette.pinkGiant?'pinkGloryTepal':'glorySnowTepal'):'smallSquillTepal',glory?'petal-squill-eye':'petal-squill-striped',color,0,tube,0,r*(j%2?1:.88),r,r,glory?1.34:1.23,j*TAU/6,0);
   f.add(bud,'ovary-squill','#87a271',0,r*.10,0,r*.14,r*.18,r*.14);
   for(let j=0;j<6;j++){
    const an=j*TAU/6,rr=r*(glory?.18:.21),L=r*(glory?(j%2?.21:.25):.40),f2=flowerFrame(f,[Math.sin(an)*rr,tube,Math.cos(an)*rr],0,an);
@@ -18341,17 +18341,17 @@ function drawFawnLilies(b,{info,s,detail,rand},kit){
 export function earlySquillPoint(type,t,u){
  if(type==='squillPerianthTube'){const r=.15+.035*t;return [Math.sin(u)*r,t*.20,Math.cos(u)*r];}
  if(type==='squillFlatFilament')return [u*.50*(.80+.20*Math.sin(Math.PI*t)),t,-.26*t];
- const leaf=type==='smallSquillLeaf',width=leaf?.5*Math.pow(Math.max(0,1-t),.35)*Math.min(1,.55+t*4):(type==='glorySnowTepal'?.28:.22)*Math.sin(Math.PI*t)**.60;
+ const leaf=type==='smallSquillLeaf',pink=type==='pinkGloryTepal',width=leaf?.5*Math.pow(Math.max(0,1-t),.35)*Math.min(1,.55+t*4):(type==='glorySnowTepal'?.28:.22)*Math.sin(Math.PI*t)**(pink?.78:.60);
  return [u*width,t,(leaf?.23:.07)*t*t+.07*u*u*Math.sin(Math.PI*t)+.004*Math.cos(u*25)*Math.sin(Math.PI*t)];
 }
 // Renderer-matched grids keep the striped squill and white-eye reference profiles separate.
 const squillObservedSamples={},squillObservedTriangles={};
-for(const shape of ['smallSquillLeaf','smallSquillTepal','glorySnowTepal','squillFlatFilament','squillPerianthTube']){const tube=shape==='squillPerianthTube',cols=tube?48:16,points=[];for(let i=0;i<=40;i++)for(let j=0;j<=cols;j++)points.push(earlySquillPoint(shape,i/40,tube?j/cols*TAU:j/cols*2-1).map(Math.fround));squillObservedSamples[shape]=points;if(['smallSquillTepal','glorySnowTepal'].includes(shape))for(let i=0;i<40;i++)for(let j=0;j<cols;j++){const k=i*(cols+1)+j;for(const vertices of [[k,k+1,k+cols+1],[k+1,k+cols+2,k+cols+1]])(squillObservedTriangles[shape]??=[]).push({faceIndex:(i*cols+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}
+for(const shape of ['smallSquillLeaf','smallSquillTepal','glorySnowTepal','pinkGloryTepal','squillFlatFilament','squillPerianthTube']){const tube=shape==='squillPerianthTube',cols=tube?48:16,points=[];for(let i=0;i<=40;i++)for(let j=0;j<=cols;j++)points.push(earlySquillPoint(shape,i/40,tube?j/cols*TAU:j/cols*2-1).map(Math.fround));squillObservedSamples[shape]=points;if(['smallSquillTepal','glorySnowTepal','pinkGloryTepal'].includes(shape))for(let i=0;i<40;i++)for(let j=0;j<cols;j++){const k=i*(cols+1)+j;for(const vertices of [[k,k+1,k+cols+1],[k+1,k+cols+2,k+cols+1]])(squillObservedTriangles[shape]??=[]).push({faceIndex:(i*cols+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}
 function drawEarlySquills(b,{p,info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,glory=a.flowerPalette?.glory,n=Math.max(2,Math.round(7*detail)),green=s.leafDensity<.4&&!s.bloom?'#b9ad60':s.leafColor;
- const observed=['p-789e60b36291','p-db9489e27120'].includes(p.kind),ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.125,w/.1),surfaces=[];let tepalInstance=0;
+ const observed=['p-789e60b36291','p-db9489e27120','p-19ea7408e3ef'].includes(p.kind),ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.125,w/.1),surfaces=[];let tepalInstance=0;
  const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
- const organs={branch:line,add:(...v)=>{b.add(...v);if(!['smallSquillTepal','glorySnowTepal'].includes(v[0]))return;const instanceId=tepalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:sy*2.0,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(!['smallSquillTepal','glorySnowTepal','pinkGloryTepal'].includes(v[0]))return;const instanceId=tepalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:sy*2.0,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
  const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=squillObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Early squill rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
 
  for(let i=0;i<n;i++){
@@ -18362,13 +18362,13 @@ function drawEarlySquills(b,{p,info,s,detail,rand},kit){
    for(const u of [-.5,0,.5]){let prev=earlySquillPoint('smallSquillLeaf',.02,u);prev=[prev[0]*W,prev[1]*L,prev[2]*L+.00006*(observed?micro:1)];for(let k=1;k<=9;k++){const p=earlySquillPoint('smallSquillLeaf',.02+k*.105,u),to=[p[0]*W,p[1]*L,p[2]*L+.00006*(observed?micro:1)];f.branch(prev,to,.00004*(observed?micro:1),'#a2b293','vein-leaf-squill');prev=to;}}
    if(observed)fitAssembly(leafParts,root,ceiling,organs);
   }
-  if(!s.bloom)continue;const parts=[],out=observed?{add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})}:b;let previous=root;for(let k=1;k<=12;k++){const to=point(k/12);out.branch(previous,to,.00115*(observed?micro:1)*(1-k/24),green,'scape-squill');previous=to;}
+  if(!s.bloom)continue;const parts=[],out=observed?{add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})}:b;let previous=root;for(let k=1;k<=12;k++){const to=point(k/12);out.branch(previous,to,.00115*(observed?micro:1)*(1-k/24),a.stemColor||green,'scape-squill');previous=to;}
   const flowers=a.flowerPalette?.flowers||7;
   for(let j=0;j<flowers;j++){
    const t=.28+(j+.5)/flowers*.68,yaw=an+j*2.399,base=point(t),reach=Math.min(.023,w*.13)*(1-j/flowers*.45),at=[base[0]+Math.sin(yaw)*reach,base[1]+reach*.24,base[2]+Math.cos(yaw)*reach],r=Math.min(.012,h*.11);
-   out.branch(base,at,.00040*(observed?micro:1),green,'pedicel-squill');out.add('narrow','bract-squill',green,...base,r*.045,r*.15,r*.08,.75,yaw,0);
+   out.branch(base,at,.00040*(observed?micro:1),a.stemColor||green,'pedicel-squill');out.add('narrow','bract-squill',green,...base,r*.045,r*.15,r*.08,.75,yaw,0);
    if(j>=flowers-(glory&&flowers===10?2:1))out.add(kit.bud,'bud-squill',s.flowerColor,...at,r*.17,r*.43,r*.17,.50,yaw,0);
-   else detailedFlower(out,{markInspection:!observed,x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'earlySquillFlower',palette:{glory},tilt:.45+rand()*.45,yaw},{...kit,rand});
+   else detailedFlower(out,{markInspection:!observed,x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'earlySquillFlower',palette:{glory,pinkGiant:p.kind==='p-19ea7408e3ef'},tilt:.45+rand()*.45,yaw},{...kit,rand});
   }
   if(observed)fitAssembly(parts,root,h,organs);
  }
