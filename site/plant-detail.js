@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.799';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.800';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.799';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.800';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -18151,8 +18151,8 @@ export function spanishBluebellPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),curl=Math.max(0,(t-.80)/.20);
  if(type==='spanishBasalTube'){const rr=.10+.02*t;return [Math.sin(u)*rr,.07*t,Math.cos(u)*rr];}
  if(type!=='spanishStrapLeaf'){
-  const curled=type==='spanishCurledTepal',pink=type==='spanishPinkTepal',white=type==='spanishWhiteTepal',radius=.12+(white?.48:curled?.23:pink?.29:.38)*t**1.35+(curled?.15:pink?.14:0)*curl**1.4;
-  return [u*(.065*(1-t)+.20*sn**.42),.06+(white?.82:.92)*t-(curled?.21:pink?.18:0)*curl*curl,radius+.022*u*u*sn];
+  const curled=type==='spanishCurledTepal',pink=type==='spanishPinkTepal',white=type==='spanishWhiteTepal',radius=.12+(white?.27:curled?.23:pink?.29:.38)*t**(white?1.1:1.35)+(curled?.15:pink?.14:white?.16:0)*curl**1.4;
+  return [u*(white?.055*(1-t)+.10*sn**.62:.065*(1-t)+.20*sn**.42),.06+(white?.87:.92)*t-(curled?.21:pink?.18:white?.18:0)*curl*curl,radius+.022*u*u*sn];
  }
  return [u*.5*(.72+.28*sn)*Math.max(0,1-t)**.60,.82*Math.sin(t*1.5),.60*t**1.25+.008*u*u*sn];
 }
