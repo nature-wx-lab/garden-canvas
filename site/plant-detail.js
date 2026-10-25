@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.761';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.762';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.761';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.762';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4678,8 +4678,8 @@ const lysimachiaPetalTriangles=[];
 for(let row=0;row<14;row++)for(let col=0;col<12;col++)for(let half=0;half<2;half++){const cells=half?[[row,col+1],[row+1,col],[row+1,col+1]]:[[row,col],[row+1,col],[row,col+1]],points=cells.map(([i,j])=>lysimachiaPetalPoint(i,j));lysimachiaPetalTriangles.push({points,centroid:[0,1,2].map(k=>(points[0][k]+points[1][k]+points[2][k])/3),vertices:cells.map(([i,j])=>i*13+j),faceIndex:(row*12+col)*2+half});}
 function drawLysimachia(b,{info,s,p,view,detail,rand},kit){
  if(s.groundDormant)return;
- const observed=['p-947cc0cecc32','p-e1d9cedbce7e','p-7bbecc1cddaf','p-234972690351','p-d7b8447f6cf2','p-63d4f1d8e428'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight),a=info.appearance,typ=a.shootProfile,tall=['alexander','firecracker'].includes(typ),cold=[12,1,2,3].includes(view.month),rosette=typ==='firecracker'&&cold,h=s.height,w=s.spread,L=a.leafLength*s.leafScale,green=s.leafColor;
- const nextSizeContract=['p-234972690351','p-d7b8447f6cf2','p-63d4f1d8e428'].includes(p?.kind),lowCap=nextSizeContract?ceiling<=L*.5:ceiling<=L;
+ const observed=['p-947cc0cecc32','p-e1d9cedbce7e','p-7bbecc1cddaf','p-234972690351','p-d7b8447f6cf2','p-63d4f1d8e428','p-adc20e319e31','p-6eb1d41872c1'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight),a=info.appearance,typ=a.shootProfile,tall=['alexander','firecracker'].includes(typ),cold=[12,1,2,3].includes(view.month),rosette=typ==='firecracker'&&cold,h=s.height,w=s.spread,L=a.leafLength*s.leafScale,green=s.leafColor;
+ const nextSizeContract=['p-234972690351','p-d7b8447f6cf2','p-63d4f1d8e428','p-adc20e319e31','p-6eb1d41872c1'].includes(p?.kind),lowCap=nextSizeContract?ceiling<=L*.5:ceiling<=L;
  const axis=(from,to,r,color,kind)=>observed?delphiniumObservedAxis(b,from,to,r,color,kind):b.branch(from,to,r,color,kind);
  const stem=(from,to,r,kind,ground=false)=>{
   if(observed){r=Math.min(r,h*.04,w*.02);if(ground&&lowCap){from=[from[0],Math.min(from[1],ceiling*.10),from[2]];for(let pass=0;pass<32;pass++){const matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;let min=Infinity;for(let j=0;j<pos.count;j++)min=Math.min(min,new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y);if(min>=0)break;from[1]+=-min+1e-10;}}}
@@ -4734,7 +4734,7 @@ function drawLysimachia(b,{info,s,p,view,detail,rand},kit){
   }markSurfaces();return;
  }
  const paths=Math.max(5,Math.round(16*detail)),nodes=Math.max(5,Math.min(18,Math.round(w/(typ==='aurea'?.035:.045)))),arms=[];
- const flatten=observed&&['p-e1d9cedbce7e','p-7bbecc1cddaf','p-234972690351','p-d7b8447f6cf2'].includes(p.kind)&&lowCap,actualPoint=q=>flatten?[q[0],Math.min(q[1],ceiling*.30),q[2]]:q;
+ const flatten=observed&&['p-e1d9cedbce7e','p-7bbecc1cddaf','p-234972690351','p-d7b8447f6cf2','p-adc20e319e31','p-6eb1d41872c1'].includes(p.kind)&&lowCap,actualPoint=q=>flatten?[q[0],Math.min(q[1],ceiling*.30),q[2]]:q;
  const trail=(root,an,reach,steps,lift,parents=[])=>{
   let prev=actualPoint(root);const own=[];for(let j=0;j<steps;j++){
    const t=(j+1)/steps,az=an+.26*Math.sin(t*4.5+an),at=[root[0]+Math.sin(az)*reach*t,.009+Math.sin(t*Math.PI/2)*lift,root[2]+Math.cos(az)*reach*t],actual=actualPoint(at),from=stem(prev,actual,.0011,'runner-lysimachia',observed&&j===0&&parents.length===0&&!flatten);if(observed)own.push([from,actual]);prev=actual;
