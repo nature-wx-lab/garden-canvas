@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.801';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.802';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.801';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.802';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -18156,7 +18156,7 @@ export function spanishBluebellPoint(type,t,u){
  }
  return [u*.5*(.72+.28*sn)*Math.max(0,1-t)**.60,.82*Math.sin(t*1.5),.60*t**1.25+.008*u*u*sn];
 }
-// Renderer-matched strap leaves and outer tepal surfaces for the two retail references.
+// Renderer-matched strap leaves and outer tepal surfaces for the retail Spanish references.
 const spanishObservedSamples={},spanishObservedTriangles={};
 for(const shape of ['spanishStrapLeaf','spanishBroadTepal','spanishWhiteTepal','spanishPinkTepal','spanishCurledTepal','spanishBasalTube']){const cols=shape==='spanishBasalTube'?48:20,points=[];for(let i=0;i<=48;i++)for(let j=0;j<=cols;j++)points.push(spanishBluebellPoint(shape,i/48,shape==='spanishBasalTube'?j/cols*TAU:j/cols*2-1).map(Math.fround));spanishObservedSamples[shape]=points;if(shape.endsWith('Tepal')){const triangles=[];for(let i=0;i<48;i++)for(let j=0;j<cols;j++){const k=i*(cols+1)+j;for(const vertices of [[k,k+1,k+cols+1],[k+1,k+cols+2,k+cols+1]])triangles.push({faceIndex:(i*cols+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}spanishObservedTriangles[shape]=triangles;}}
 function drawSpanishBluebells(b,{info,s,p,detail,rand},kit){
@@ -18198,27 +18198,39 @@ export function englishBluebellPoint(type,t,u){
  }
  return [u*.5*(.62+.38*sn)*Math.max(0,1-t)**.60,.80*Math.sin(t*1.4),.60*t**1.4+.004*u*u*sn];
 }
+// Renderer-matched geometry for the retail English bluebell reference.
+const englishObservedSamples={},englishObservedTriangles=[];
+for(const shape of ['bluebellStrapLeaf','bluebellReflexedTepal','bluebellBasalTube']){const cols=shape==='bluebellBasalTube'?48:20,points=[];for(let i=0;i<=48;i++)for(let j=0;j<=cols;j++)points.push(englishBluebellPoint(shape,i/48,shape==='bluebellBasalTube'?j/cols*TAU:j/cols*2-1).map(Math.fround));englishObservedSamples[shape]=points;if(shape==='bluebellReflexedTepal')for(let i=0;i<48;i++)for(let j=0;j<cols;j++){const k=i*(cols+1)+j;for(const vertices of [[k,k+1,k+cols+1],[k+1,k+cols+2,k+cols+1]])englishObservedTriangles.push({faceIndex:(i*cols+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}
 function drawEnglishBluebells(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,n=Math.max(2,Math.round(5*detail)),green=s.leafDensity<.4?'#b7ad72':s.leafColor;
+ const ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.15,w/.10),surfaces=[];let tepalInstance=0;
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(v[1]!=='petal-bluebell')return;const instanceId=tepalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*1.45,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=englishObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('English bluebell rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
  for(let i=0;i<n;i++){
-  const yaw=i*2.399,rr=w*.25*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*rr,.001,Math.cos(yaw)*rr];
+  const yaw=i*2.399,rr=w*.25*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*rr,Math.min(.001,ceiling*.05),Math.cos(yaw)*rr];
   if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(4*s.leafDensity));j++){
-   const L=Math.min(a.leafLength||.35,s.leafHeight/.80,h*1.6,w*.90)*s.leafScale*(.86+rand()*.14),W=Math.min(.015,L*.06),f=flowerFrame(b,root,.04+j*.035,yaw+j*2.399);
+   const L=Math.min(a.leafLength||.35,s.leafHeight/.80,h*1.6,w*.90)*s.leafScale*(.86+rand()*.14),W=Math.min(.015,L*.06),leafParts=[],leafOrgans={add:(...organ)=>leafParts.push({organ}),branch:(...line)=>leafParts.push({line})},f=flowerFrame(leafOrgans,root,.04+j*.035,yaw+j*2.399);
    f.add('bluebellStrapLeaf','leaf-bluebell',kit.shade(rand,green,.03),0,0,0,W,L,L);
-   for(const u of [-.5,0,.5]){let p=englishBluebellPoint('bluebellStrapLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005];for(let k=1;k<=11;k++){p=englishBluebellPoint('bluebellStrapLeaf',.02+k*.087,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(from,to,.000045,'#92a17c','vein-leaf-bluebell');from=to;}}
+   for(const u of [-.5,0,.5]){let p=englishBluebellPoint('bluebellStrapLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005*micro];for(let k=1;k<=11;k++){p=englishBluebellPoint('bluebellStrapLeaf',.02+k*.087,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005*micro];f.branch(from,to,.000045*micro,'#92a17c','vein-leaf-bluebell');from=to;}}
+   fitAssembly(leafParts,root,ceiling,organs);
   }
   if(!s.bloom)continue;
+  const parts=[],out={add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})};
   const axis=t=>[root[0]+Math.sin(yaw)*w*.20*t**4,h*1.17*(t-.25*t**6),root[2]+Math.cos(yaw)*w*.20*t**4];let previous=root;
-  for(let j=1;j<=22;j++){const to=axis(j/22);b.branch(previous,to,.00085,'#648951','scape-bluebell');previous=to;}
+  for(let j=1;j<=22;j++){const to=axis(j/22);out.branch(previous,to,.00085*micro,'#648951','scape-bluebell');previous=to;}
   for(let j=0;j<6;j++){
    const t=.46+j*.096,at=axis(t),an=yaw+(j%2?.20:-.20),reach=Math.min(.0095,h*.065)*(1-j*.035),end=[at[0]+Math.sin(an)*reach,at[1]-reach*.26,at[2]+Math.cos(an)*reach],control=[at[0]+Math.sin(an)*reach*.55,at[1]+reach*.55,at[2]+Math.cos(an)*reach*.55];let from=at;
-   for(let k=1;k<=9;k++){const u=k/9,to=at.map((v,ax)=>(1-u)**2*v+2*(1-u)*u*control[ax]+u*u*end[ax]);b.branch(from,to,.00035,'#82936a','pedicel-bluebell');from=to;}
-   for(let k=0;k<2;k++)b.add('narrow','bract-bluebell','#8a9b7a',...at,.001,reach*(k?.65:1.10),.001,.55+k*.2,an+(k?-.2:.2),0);
+   for(let k=1;k<=9;k++){const u=k/9,to=at.map((v,ax)=>(1-u)**2*v+2*(1-u)*u*control[ax]+u*u*end[ax]);out.branch(from,to,.00035*micro,'#82936a','pedicel-bluebell');from=to;}
+   for(let k=0;k<2;k++)out.add('narrow','bract-bluebell','#8a9b7a',...at,.001*micro,reach*(k?.65:1.10),.001*micro,.55+k*.2,an+(k?-.2:.2),0);
    const L=Math.min(a.flowerLength||.018,h*.16)*(1-j*.015);
-   if(j===5)b.add(kit.bud,'bud-bluebell','#8879ad',end[0],end[1]+L*.34,end[2],L*.13,L*.43,L*.13,-.18,an,0);
-   else detailedFlower(b,{x:end[0],y:end[1],z:end[2],r:L,color:s.flowerColor,shape:'englishBluebellFlower',tilt:.10+rand()*.12,yaw:an},{...kit,rand});
+   if(j===5)out.add(kit.bud,'bud-bluebell','#8879ad',end[0],end[1]+L*.34,end[2],L*.13,L*.43,L*.13,-.18,an,0);
+   else detailedFlower(out,{markInspection:false,x:end[0],y:end[1],z:end[2],r:L,color:s.flowerColor,shape:'englishBluebellFlower',tilt:.10+rand()*.12,yaw:an},{...kit,rand});
   }
+  fitAssembly(parts,root,h,organs);
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of englishObservedTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
+
 }
 export function tecophilaeaPoint(type,t,u){
  if(type==='tecoTube'){const radius=.10+.17*t**1.7;return [Math.sin(u)*radius,t,Math.cos(u)*radius];}
