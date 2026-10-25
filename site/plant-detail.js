@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.822';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.823';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.822';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.823';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17983,32 +17983,42 @@ export function camassiaPoint(type,t,u){
  }
  return [u*.12*sn**.65,.07*sn-.045*t*t+.014*u*u*sn,.05+.95*t];
 }
-function drawCamassiaRacemes(b,{info,s,detail,rand},kit){
+const camassiaObservedSamples={},camassiaObservedTriangles=[];
+for(const shape of ['camassiaStrapLeaf','camassiaTepal','camassiaSpentTepal']){const points=[];for(let i=0;i<=48;i++)for(let j=0;j<=24;j++)points.push(camassiaPoint(shape,i/48,j/24*2-1).map(Math.fround));camassiaObservedSamples[shape]=points;if(shape==='camassiaTepal')for(let i=0;i<48;i++)for(let j=0;j<24;j++){const k=i*25+j;for(const vertices of [[k,k+1,k+25],[k+1,k+26,k+25]])camassiaObservedTriangles.push({faceIndex:(i*24+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}
+function drawCamassiaRacemes(b,{p,info,s,detail,rand},kit){
  const h=s.height,w=s.spread,n=Math.max(2,Math.round(3*detail)),month=s.month,green=s.leafDensity<.5?'#b1ac74':s.leafColor;
+ const observed=p.kind==='p-b97cacc25ab1',ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.15,w/.1),surfaces=[],lobeInstances={};
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(v[0]!=='camassiaTepal')return;const kind=v[1],instanceId=lobeInstances[kind]||0;lobeInstances[kind]=instanceId+1;const[shape,k,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*2.2,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=camassiaObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Camassia rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
  for(let i=0;i<n;i++){
-  const yaw=i*2.399,R=w*.21*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R];
+  const yaw=i*2.399,R=w*.21*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,observed?Math.min(.001,ceiling*.05):.001,Math.cos(yaw)*R];
   if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(7*s.leafDensity));j++){
-   const L=Math.min(.60,s.leafHeight/.82,w*1.2)*s.leafScale*(.85+rand()*.15),W=Math.min(.025,L*.045),f=flowerFrame(b,root,.02+j*.010,yaw+j*2.399);
+   const L=Math.min(.60,s.leafHeight/.82,w*1.2)*s.leafScale*(.85+rand()*.15),W=Math.min(.025,L*.045),leafParts=[],leafOut=observed?{add:(...organ)=>leafParts.push({organ}),branch:(...line)=>leafParts.push({line})}:b,f=flowerFrame(leafOut,root,.02+j*.010,yaw+j*2.399);
    f.add('camassiaStrapLeaf','leaf-camassia',kit.shade(rand,green,.03),0,0,0,W,L,L);
-   for(const u of [-.55,0,.55]){let p=camassiaPoint('camassiaStrapLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005];for(let k=1;k<=15;k++){p=camassiaPoint('camassiaStrapLeaf',.02+k*.065,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(from,to,.00005,'#91a28c','vein-leaf-camassia');from=to;}}
+   for(const u of [-.55,0,.55]){let p=camassiaPoint('camassiaStrapLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005*(observed?micro:1)];for(let k=1;k<=15;k++){p=camassiaPoint('camassiaStrapLeaf',.02+k*.065,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005*(observed?micro:1)];f.branch(from,to,.00005*(observed?micro:1),'#91a28c','vein-leaf-camassia');from=to;}}
+   if(observed)fitAssembly(leafParts,root,ceiling,organs);
   }
   if(!s.bloom&&month!==6)continue;
+  const parts=[],out=observed?{add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})}:b;
   const top=h*(.90+rand()*.07),axis=t=>[root[0]+Math.sin(yaw)*h*.015*t*t,top*t,root[2]+Math.cos(yaw)*h*.015*t*t];let previous=root;
-  for(let k=1;k<=24;k++){const to=axis(k/24);b.branch(previous,to,.0015,'#72946d','scape-camassia');previous=to;}
+  for(let k=1;k<=24;k++){const to=axis(k/24);out.branch(previous,to,.0015*(observed?micro:1),'#72946d','scape-camassia');previous=to;}
   for(let j=0;j<18;j++){
-   const at=axis(.60+j*.020),an=yaw+j*2.399,reach=Math.min(.035,w*.11)*(1-j*.02),end=[at[0]+Math.sin(an)*reach,at[1]+reach*.26,at[2]+Math.cos(an)*reach];b.branch(at,end,.0005,'#91a479','pedicel-camassia');b.add('narrow','bract-camassia','#9eae89',...at,.0015,reach*.8,.0015,.8,an,0);
+   const at=axis(.60+j*.020),an=yaw+j*2.399,reach=Math.min(.035,w*.11)*(1-j*.02),end=[at[0]+Math.sin(an)*reach,at[1]+reach*.26,at[2]+Math.cos(an)*reach];out.branch(at,end,.0005*(observed?micro:1),'#91a479','pedicel-camassia');out.add('narrow','bract-camassia','#9eae89',...at,.0015*(observed?micro:1),reach*.8,.0015*(observed?micro:1),.8,an,0);
    const L=Math.min(.025,h*.075),open=s.bloom&&(month===4?j<6:j>=6&&j<12),spent=month===5&&j<6||month===6&&j>=12;
    if(open){
-    const f=flowerFrame(b,end,.95+rand()*.15,an);f.add(kit.bud,'ovary-camassia','#88a35f',0,L*.07,0,L*.075,L*.12,L*.075);
+    const f=flowerFrame(out,end,.95+rand()*.15,an);f.add(kit.bud,'ovary-camassia','#88a35f',0,L*.07,0,L*.075,L*.12,L*.075);
     for(let k=0;k<6;k++){
      const angle=k*TAU/6,petal=flowerFrame(f,[0,k%2?L*.009:0,0],0,angle);petal.add('camassiaTepal','petal-camassia',kit.shade(rand,s.flowerColor,.025),0,0,0,L,L,L);
      const rr=L*.07,base=[Math.sin(angle)*rr,L*.05,Math.cos(angle)*rr],tip=[Math.sin(angle)*L*.30,L*.57,Math.cos(angle)*L*.30];f.branch(base,tip,L*.009,'#e4e4ce','filament-camassia');f.add(kit.bud,'anther-camassia','#dcc26c',...tip,L*.025,L*.085,L*.025,.70,angle,0);
     }
     f.branch([0,L*.12,0],[0,L*.69,0],L*.008,'#c8d1a0','style-camassia');for(let k=0;k<3;k++){const an=k*TAU/3;f.branch([0,L*.69,0],[Math.sin(an)*L*.025,L*.72,Math.cos(an)*L*.025],L*.004,'#d1d8b1','stigma-camassia');}
-   }else if(spent){const f=flowerFrame(b,end,.8,an);for(let k=0;k<6;k++)f.add('camassiaSpentTepal','spent-tepal-camassia','#9b927d',0,0,0,L,L,L,0,k*TAU/6,0);}
-   else if(s.bloom)b.add(kit.bud,'bud-camassia',j>14?'#b2bf86':'#7e7eaf',...end,L*.13,L*.38,L*.13,.3,an,0);
+   }else if(spent){const f=flowerFrame(out,end,.8,an);for(let k=0;k<6;k++)f.add('camassiaSpentTepal','spent-tepal-camassia','#9b927d',0,0,0,L,L,L,0,k*TAU/6,0);}
+   else if(s.bloom)out.add(kit.bud,'bud-camassia',j>14?'#b2bf86':'#7e7eaf',...end,L*.13,L*.38,L*.13,.3,an,0);
   }
+  if(observed)fitAssembly(parts,root,h,organs);
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of camassiaObservedTriangles){const row=Math.floor(triangle.faceIndex/48);if(row<8||row>36)continue;const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<0)normal.negate();if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
 }
 export function autumnCyclamenPoint(type,t,u){
  if(type.endsWith('Leaf')){
@@ -18993,7 +19003,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='narcissusReferences'){drawNarcissusReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='borderTulipCrowns'){drawBorderTulips(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='retailTulipCrowns'){drawRetailTulips(b,{info,s,detail,rand},kit);return;}
- if(a.architecture==='camassiaRacemes'){drawCamassiaRacemes(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='camassiaRacemes'){drawCamassiaRacemes(b,{p,info,s,detail,rand},kit);return;}
  if(a.architecture==='autumnCyclamenCrowns'){drawAutumnCyclamens(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='coumCrowns'){drawCoumCrowns(b,{info,s,p,detail,rand},kit);return;}
  if(a.architecture==='convallariaClusters'){drawConvallariaClusters(b,{info,s,detail,rand},kit);return;}
