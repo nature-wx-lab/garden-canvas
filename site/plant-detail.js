@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.811';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.812';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.811';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.812';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -18380,25 +18380,37 @@ export function grapeHyacinthPoint(type,t,u){
  const azure=type==='grapeAzure',an=u,edge=t**16,teeth=.5+.5*Math.cos(an*6),rad=azure?.13+.76*Math.sin(t*Math.PI/2)**.85:t<.65?.16+.74*Math.sin(t*Math.PI/.90)**.70:.25+.46*((1-t)/.35)**1.4;
  return [Math.sin(an)*(rad+edge*teeth*.065),t*1.65+edge*teeth*(azure?.19:.075),Math.cos(an)*(rad+edge*teeth*.065)];
 }
-function drawGrapeHyacinths(b,{info,s,detail,rand},kit){
+// Renderer-matched upright leaves and fused bell surface for the two Azureum references.
+const azureObservedSamples={},azureObservedTriangles=[];
+for(const shape of ['grapeLeafUpright','grapeAzure']){const leaf=shape==='grapeLeafUpright',cols=leaf?16:72,points=[];for(let i=0;i<=44;i++)for(let j=0;j<=cols;j++)points.push(grapeHyacinthPoint(shape,i/44,leaf?j/cols*2-1:j/cols*TAU).map(Math.fround));azureObservedSamples[shape]=points;if(!leaf)for(let i=0;i<44;i++)for(let j=0;j<cols;j++){const k=i*(cols+1)+j;for(const vertices of [[k,k+1,k+cols+1],[k+1,k+cols+2,k+cols+1]])azureObservedTriangles.push({faceIndex:(i*cols+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}
+function drawGrapeHyacinths(b,{p,info,s,detail,rand},kit){
  const a=info.appearance,palette=a.flowerPalette||{},azure=a.flowerShape==='grapeAzure',h=s.height,w=s.spread,n=Math.max(2,Math.round(7*detail)),long=!!palette.longLeaf,leafType=long?'grapeLeafArch':'grapeLeafUpright',green=s.leafDensity<.4?'#b1aa5d':s.leafColor;
+ const observed=['p-040659e18f2b','p-91482789209b'].includes(p.kind),ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.15,w/.1),surfaces=[];let tepalInstance=0;
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(v[0]!=='grapeAzure')return;const instanceId=tepalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*2.0,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=azureObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Muscari Azureum rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
+
  for(let i=0;i<n;i++){
-  const an=i*2.399,rr=w*.22*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,.001,Math.cos(an)*rr],top=h*(.85+rand()*.14),leafCount=Math.max(2,Math.round((azure?3:5)*s.leafDensity));
+  const an=i*2.399,rr=w*.22*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,observed?Math.min(.001,ceiling*.05):.001,Math.cos(an)*rr],top=h*(.85+rand()*.14),leafCount=Math.max(2,Math.round((azure?3:5)*s.leafDensity));
   if(s.leafDensity>0)for(let j=0;j<leafCount;j++){
-   const yaw=an+j*2.399,L=Math.min(h*(long?1.08:.72),w*(long?1.5:1.1))*(.82+rand()*.18)*s.leafScale,W=Math.min(palette.width||.009,L*.20),f=flowerFrame(b,root,.06+(1-s.leafDensity)*.22,yaw);
+   const yaw=an+j*2.399,L=Math.min(h*(long?1.08:.72),w*(long?1.5:1.1))*(.82+rand()*.18)*s.leafScale,W=Math.min(palette.width||.009,L*.20),leafParts=[],leafOrgans={add:(...organ)=>leafParts.push({organ}),branch:(...line)=>leafParts.push({line})},f=flowerFrame(observed?leafOrgans:b,root,.06+(1-s.leafDensity)*.22,yaw);
    f.add(leafType,'leaf-grape',kit.shade(rand,green,.035),0,0,0,W,L,L);
-   for(const q of [-.5,0,.5]){let previous=grapeHyacinthPoint(leafType,.02,q);previous=[previous[0]*W,previous[1]*L,previous[2]*L+.00005];for(let k=1;k<=9;k++){const p=grapeHyacinthPoint(leafType,.02+k*.105,q),to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(previous,to,.000035,'#9bad80','vein-leaf-grape');previous=to;}}
+   for(const q of [-.5,0,.5]){let previous=grapeHyacinthPoint(leafType,.02,q);previous=[previous[0]*W,previous[1]*L,previous[2]*L+.00005*(observed?micro:1)];for(let k=1;k<=9;k++){const p=grapeHyacinthPoint(leafType,.02+k*.105,q),to=[p[0]*W,p[1]*L,p[2]*L+.00005*(observed?micro:1)];f.branch(previous,to,.000035*(observed?micro:1),'#9bad80','vein-leaf-grape');previous=to;}}
+   if(observed)fitAssembly(leafParts,root,ceiling,organs);
   }
   if(!s.bloom)continue;
-  const length=Math.min(palette.head||.06,h*.38),base=top-length,stem='#859967';b.branch(root,[root[0],top,root[2]],.00115,stem,'scape-grape');
+  const parts=[],out=observed?{add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})}:b,length=Math.min(palette.head||.06,h*.38),base=top-length,stem='#859967';out.branch(root,[root[0],top,root[2]],.00115*(observed?micro:1),stem,'scape-grape');
   const count=azure?48:72;
   for(let j=0;j<count;j++){
    const t=(j+.5)/count,yaw=an+j*2.399,R=Math.min(azure?.006:.0075,w*.08)*(.50+.50*Math.sin(Math.PI*t)),at=[root[0]+Math.sin(yaw)*R,base+t*length,root[2]+Math.cos(yaw)*R],tip=t>(palette.whiteTop||.85),color=tip?palette.tip||s.flowerColor:palette.earlyColor&&t>.55?palette.earlyColor:s.flowerColor,r=Math.min(a.flowerRadius||.0035,h*.029)*(1-t*.18);
-   b.branch([root[0],at[1],root[2]],at,.00022,stem,'pedicel-grape');
-   if(t>.94)b.add(kit.bud,'bud-grape',color,...at,r*.68,r*.85,r*.68);
-   else detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color,shape:a.flowerShape,palette:{tipFlower:tip},tilt:azure?2.35:2.10,yaw},{...kit,rand});
+   out.branch([root[0],at[1],root[2]],at,.00022*(observed?micro:1),stem,'pedicel-grape');
+   if(t>.94)out.add(kit.bud,'bud-grape',color,...at,r*.68,r*.85,r*.68);
+   else detailedFlower(out,{markInspection:!observed,x:at[0],y:at[1],z:at[2],r,color,shape:a.flowerShape,palette:{tipFlower:tip},tilt:azure?2.35:2.10,yaw},{...kit,rand});
   }
+  if(observed)fitAssembly(parts,root,h,organs);
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of azureObservedTriangles){const row=Math.floor(triangle.faceIndex/144);if(row<8||row>36)continue;const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<0)normal.negate();if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
+
 }
 function drawSpringRacemes(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,hy=a.architecture==='hyacinth',freesia=a.architecture==='freesia',palette=a.flowerPalette||{},n=Math.max(2,Math.round((hy?3:freesia?5:8)*detail)),heads=[];
@@ -18962,7 +18974,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='acisAutumnScapes'){drawAcis(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='reflexedFawnLilies'){drawFawnLilies(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='earlySquillRacemes'){drawEarlySquills(b,{p,info,s,detail,rand},kit);return;}
- if(a.architecture==='grapeHyacinthSpikes'){drawGrapeHyacinths(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='grapeHyacinthSpikes'){drawGrapeHyacinths(b,{p,info,s,detail,rand},kit);return;}
  if(['muscari','hyacinth','freesia'].includes(a.architecture)){drawSpringRacemes(b,{info,s,detail,rand},kit);return;}
  if(['miniIris','beardedIris','snakeIris','dietes','blackberryLily'].includes(a.architecture)){drawIrises(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='treeDahlia'){drawEmperorDahlia(b,{info,s,rand},kit);return;}
