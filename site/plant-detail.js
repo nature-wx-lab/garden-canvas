@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.774';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.775';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.774';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.775';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9103,24 +9103,41 @@ export function phuopsisPoint(type,t,u){
  const az=u*Math.PI,r=.042+.025*t*t+.045*t**8;
  return [Math.sin(az)*r,t,Math.cos(az)*r];
 }
-function drawPhuopsis(b,{info,s,detail,rand},kit){
+// Fit each complete apparent whorl against the actual leaf and square-axis vertices.
+const phuopsisLeafSamples=[],phuopsisUnitAxis=new THREE.CylinderGeometry(.62,1,1,4,2);phuopsisUnitAxis.userData.angularSyringa=true;
+for(let i=0;i<=18;i++)for(let j=0;j<=24;j++)phuopsisLeafSamples.push(phuopsisPoint('phuopsisLeaf',i/18,j/24*2-1).map(Math.fround));
+function drawPhuopsis(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.11,h*.18),W=L*a.leafWidth/a.leafLength,F=a.flowerLength*Math.min(1,h/.15),H=a.headRadius*Math.min(1,h/.15);
  const n=Math.max(8,Math.min(68,Math.round(48*detail*Math.sqrt(w/.55)))),noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const whorl=(at,az,i,k,scale=1)=>{
+ const observed=p?.kind==='p-f15425251931',ceiling=Math.min(h,s.leafHeight),lowCap=observed&&s.leafDensity>0&&ceiling<=a.leafLength*.5;
+ const axis=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(!observed||length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(kind.endsWith('-square')?phuopsisUnitAxis:delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const ground=(from,to,r)=>{if(!lowCap)return from;from=[from[0],Math.min(from[1],ceiling*.10),from[2]];for(let pass=0;pass<32;pass++){const matrix=calaminthaLineMatrix(from,to,r),pos=phuopsisUnitAxis.attributes.position;let min=Infinity;for(let j=0;j<pos.count;j++)min=Math.min(min,new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y);if(min>=0)break;from[1]+=-min+1e-10;}return from;};
+ const placeLeaves=(parts,at,az,paths)=>{
+  if(!parts.length)return;const samples=[];for(const v of parts){const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);for(const q of phuopsisLeafSamples)samples.push(new THREE.Vector3(...q).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}
+  const measure=angle=>{const rotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(Math.cos(az),0,-Math.sin(az)),angle);let low=0,high=0;for(const q of samples){const y=q.clone().applyQuaternion(rotation).y;low=Math.min(low,y);high=Math.max(high,y);}return{low,high,rotation};};
+  const full=bounds=>at[1]+bounds.low>=0&&at[1]+bounds.high<=ceiling?at:calaminthaNearestStem(paths,-bounds.low+1e-9,ceiling-bounds.high-1e-9,at);
+  let bounds=measure(0),base=full(bounds),fit=1,angle=0;const candidates=[{angle,bounds}];if(!base)for(const adjusted of [.25,.5,.75,1]){const trial=measure(adjusted);candidates.push({angle:adjusted,bounds:trial});base=full(trial);if(base){angle=adjusted;bounds=trial;break;}}
+  if(!base){let best=-1;for(const candidate of candidates){const{low,high}=candidate.bounds,desired=high>low?(ceiling-2e-9)*(-low)/(high-low):at[1];for(const line of paths){const lower=Math.max(0,Math.min(line[0][1],line[1][1])),upper=Math.min(ceiling,Math.max(line[0][1],line[1][1]));if(lower>upper)continue;const y=Math.max(lower,Math.min(upper,desired)),point=calaminthaNearestStem([line],y,y,at);if(!point)continue;const amount=Math.max(0,Math.min(1,high>0?(ceiling-point[1]-2e-9)/high:1,low<0?(point[1]-1e-9)/-low:1));if(amount>best){best=amount;base=point;bounds=candidate.bounds;angle=candidate.angle;}}}if(!base||best<=0)throw new Error('Phuopsis whorl has no fitted node '+JSON.stringify({h,w,ceiling,at}));fit=best;}
+  for(const v of parts){if(base===at&&angle===0&&fit===1){b.add(...v);continue;}const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,q=bounds.rotation.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),point=new THREE.Vector3(x,y,z).sub(new THREE.Vector3(...at)).applyQuaternion(bounds.rotation).multiplyScalar(fit).add(new THREE.Vector3(...base));b.add(shape,kind,color,...point.toArray(),sx*fit,sy*fit,sz*fit,e.x,e.y,e.z);}
+ };
+ let stigmaInstance=0;const surfaces=[],organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(v[1]!=='stigma-phuopsis')return;const instanceId=stigmaInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,instanceId,radius:H*.22,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
+ const whorl=(at,az,i,k,scale=1,paths=null)=>{
+  const parts=[],target=observed?{add:(...v)=>parts.push(v)}:b;
   // Two opposite leaves and leaflike stipules form the apparent whorl.
   const count=noise(i,k+20)>.55?6:8;
   for(let j=0;j<count;j++){
    if(noise(i,k+j+60)>s.leafDensity)continue;
    const angle=az+j*TAU/count,ll=L*scale*(.82+.18*noise(i,k+j)),kind=j===0||j===count/2?'leaf-phuopsis':'leaf-phuopsis-stipule';
-   b.add('phuopsisLeaf',kind,kit.shade(rand,s.leafColor,.035),...at,W*scale,ll,ll,1.19+.18*noise(i,k+j+40),angle,(noise(i,k+j+30)-.5)*.18);
+   target.add('phuopsisLeaf',kind,kit.shade(rand,s.leafColor,.035),...at,W*scale,ll,ll,1.19+.18*noise(i,k+j+40),angle,(noise(i,k+j+30)-.5)*.18);
   }
+  if(observed)placeLeaves(parts,at,az,paths);
  };
  const head=(at,az,i)=>{
   if(!s.bloom)return;
   const count=42+Math.floor(noise(i,90)*10),core=H*.20;
   for(let j=0;j<8;j++)b.add('phuopsisLeaf','bract-phuopsis',s.leafColor,...at,W*.85,L*.48,L*.48,1.95,az+j*TAU/8,0);
   for(let j=0;j<count;j++){
-   const angle=az+j*2.399963,tilt=Math.acos(1-(j+.5)/count*1.42),dir=[Math.sin(tilt)*Math.sin(angle),Math.cos(tilt),Math.sin(tilt)*Math.cos(angle)],origin=at.map((v,k)=>v+dir[k]*core),f=flowerFrame(b,origin,tilt,angle),len=F*(.88+.12*noise(i,j+200)),color=kit.shade(rand,s.flowerColor,.045);
+   const angle=az+j*2.399963,tilt=Math.acos(1-(j+.5)/count*1.42),dir=[Math.sin(tilt)*Math.sin(angle),Math.cos(tilt),Math.sin(tilt)*Math.cos(angle)],origin=at.map((v,k)=>v+dir[k]*core),f=flowerFrame(organs,origin,tilt,angle),len=F*(.88+.12*noise(i,j+200)),color=kit.shade(rand,s.flowerColor,.045);
    // The head consists of separate, connected tubular corollas; no solid sphere.
    f.add('phuopsisTube','tube-phuopsis',color,0,0,0,len,len,len);
    const lobe=len*.155;
@@ -9137,14 +9154,15 @@ function drawPhuopsis(b,{info,s,detail,rand},kit){
   }
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963,rr=w*.35*Math.sqrt((i+.4)/n),root=[Math.sin(az)*rr*.56,.004,Math.cos(az)*rr*.56],tip=[Math.sin(az)*rr,h*(.48+.28*noise(i,3)),Math.cos(az)*rr];let prev=root;
+  const az=i*2.399963,rr=w*.35*Math.sqrt((i+.4)/n),root=[Math.sin(az)*rr*.56,.004,Math.cos(az)*rr*.56],tip=[Math.sin(az)*rr,h*(.48+.28*noise(i,3)),Math.cos(az)*rr];let prev=root;const own=[];
   for(let j=1;j<=7;j++){
    const q=j/7,at=mix(root,tip,q);at[1]=.004+(tip[1]-.004)*q**2;at[0]+=Math.sin(q*Math.PI)*w*.035*(noise(i,4)-.5);at[2]+=Math.sin(q*Math.PI)*w*.035*(noise(i,5)-.5);
-   b.branch(prev,at,Math.min(.00072,h*.004)*(1-q*.45),a.stemColor,'stem-phuopsis-square');prev=at;
-   whorl(at,az+j*.31,i,j*100,1-q*.24);
-   if(j===4||j===5){const aa=az+(j===4?1:-1)*.85,end=[at[0]+Math.sin(aa)*w*.045,at[1]+h*.09,at[2]+Math.cos(aa)*w*.045];b.branch(at,end,Math.min(.0004,h*.0022),a.stemColor,'branch-phuopsis-square');whorl(mix(at,end,.46),aa,i,800+j*100,.85);whorl(end,aa,i,900+j*100,.8);}
+   const radius=Math.min(.00072,h*.004)*(1-q*.45),from=observed&&j===1?ground(prev,at,radius):prev;axis(from,at,radius,a.stemColor,'stem-phuopsis-square');own.push([from,at]);prev=at;
+   whorl(at,az+j*.31,i,j*100,1-q*.24,own);
+   if(j===4||j===5){const aa=az+(j===4?1:-1)*.85,end=[at[0]+Math.sin(aa)*w*.045,at[1]+h*.09,at[2]+Math.cos(aa)*w*.045];axis(at,end,Math.min(.0004,h*.0022),a.stemColor,'branch-phuopsis-square');const paths=own.concat([[at,end]]);whorl(mix(at,end,.46),aa,i,800+j*100,.85,paths);whorl(end,aa,i,900+j*100,.8,paths);}
   }head(tip,az,i);
  }
+ for(const entry of surfaces){let front=null;for(const triangle of actaeaAntherTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z;if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front={point,normal,triangle,score};}if(!front)continue;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:'stigma-phuopsis',instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
 }
 
 // A single palmately veined blade, not separate compound leaflets.
@@ -18525,7 +18543,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='unifloraMats'){drawUniflora(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='maitaiCrowns'){drawMaitai(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='richardsoniiTrails'){drawRichardsonii(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='phuopsisHeads'){drawPhuopsis(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='phuopsisHeads'){drawPhuopsis(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='alchemillaCymes'){drawAlchemilla(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='doubleRaggedRobin'){drawRaggedRobin(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pinnatePolemonium'){drawPolemonium(b,{info,s,detail,rand,month},kit);return;}
