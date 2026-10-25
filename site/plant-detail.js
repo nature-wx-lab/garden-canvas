@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.778';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.779';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.778';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.779';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9371,14 +9371,29 @@ export function carolinaPhloxPoint(type,t,u){
  }
  return [u*.50*sn**.80*(1-.18*t),t,.09*t*t+.038*u*u*sn-.010*Math.exp(-u*u*65)*sn];
 }
-function drawCarolinaPhlox(b,{info,s,detail,rand,month},kit){
+// Render-matched leaf vertices and indexed lobe triangles; dimensions stay illustrative.
+const carolinaLeafSamples=[],carolinaLobeTriangles=[];
+for(let i=0;i<=36;i++)for(let j=0;j<=18;j++)carolinaLeafSamples.push(carolinaPhloxPoint('carolinaPhloxLeaf',i/36,j/18*2-1).map(Math.fround));
+for(let row=0;row<36;row++)for(let col=0;col<18;col++)for(let half=0;half<2;half++){const cells=half?[[row,col+1],[row+1,col],[row+1,col+1]]:[[row,col],[row+1,col],[row,col+1]];carolinaLobeTriangles.push({vertices:cells.map(([i,j])=>i*19+j),points:cells.map(([i,j])=>carolinaPhloxPoint('carolinaPhloxLobe',i/36,j/18*2-1).map(Math.fround)),faceIndex:(row*18+col)*2+half});}
+function drawCarolinaPhlox(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,bill=a.shootProfile==='billBaker',n=Math.max(3,Math.min(26,Math.round((bill?22:20)*detail*Math.sqrt(w/.45)*Math.min(1,h/.3)))),L=Math.min(a.leafLength,h*.26,w*.18),R=a.flowerRadius*Math.min(1,h/.25),F=a.flowerLength*Math.min(1,h/.25);
- let inspection=null,inspectionScore=-Infinity;
+ const observed=['p-206a889e8582','p-1901fb76113c'].includes(p?.kind),ceiling=Math.min(h,s.leafHeight),lowCap=observed&&s.leafDensity>0&&ceiling<=a.leafLength*.5;
+ const axis=(...args)=>observed?delphiniumObservedAxis(b,...args):b.branch(...args);
+ const ground=(from,to,r)=>{if(!lowCap)return from;from=[from[0],Math.min(from[1],ceiling*.10),from[2]];for(let pass=0;pass<32;pass++){const matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;let min=Infinity;for(let j=0;j<pos.count;j++)min=Math.min(min,new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y);if(min>=0)break;from[1]+=-min+1e-10;}return from;};
+ const placeLeaf=(parts,at,az,paths=null)=>{
+  const samples=[];for(const part of parts){if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;for(let j=0;j<pos.count;j++)samples.push(new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);for(const q of carolinaLeafSamples)samples.push(new THREE.Vector3(...q).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}}
+  const measure=angle=>{const rotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(Math.cos(az),0,-Math.sin(az)),angle);let low=0,high=0;for(const q of samples){const y=q.clone().applyQuaternion(rotation).y;low=Math.min(low,y);high=Math.max(high,y);}return{low,high,rotation};};
+  const full=bounds=>!paths&&lowCap?(bounds.high-bounds.low<=ceiling-2e-9?[at[0],-bounds.low+1e-9,at[2]]:null):at[1]+bounds.low>=0&&at[1]+bounds.high<=ceiling?at:paths?calaminthaNearestStem(paths,-bounds.low+1e-9,ceiling-bounds.high-1e-9,at):bounds.high-bounds.low<=ceiling-2e-9?[at[0],-bounds.low+1e-9,at[2]]:null;
+  let angle=0,bounds=measure(0),base=full(bounds),fit=1;const candidates=[{angle,bounds}];if(!base)for(const adjusted of [.25,.5,.75,1]){const trial=measure(adjusted);candidates.push({angle:adjusted,bounds:trial});base=full(trial);if(base){angle=adjusted;bounds=trial;break;}}
+  if(!base){let best=-1;for(const candidate of candidates){const{low,high}=candidate.bounds,desired=high>low?(ceiling-2e-9)*(-low)/(high-low):at[1],lines=paths||[[[at[0],0,at[2]],[at[0],ceiling,at[2]]]];for(const line of lines){const lower=Math.max(0,Math.min(line[0][1],line[1][1])),upper=Math.min(ceiling,Math.max(line[0][1],line[1][1]));if(lower>upper)continue;const y=Math.max(lower,Math.min(upper,desired)),point=calaminthaNearestStem([line],y,y,at);if(!point)continue;const amount=Math.max(0,Math.min(1,high>0?(ceiling-point[1]-2e-9)/high:1,low<0?(point[1]-1e-9)/-low:1));if(amount>best){best=amount;base=point;angle=candidate.angle;bounds=candidate.bounds;}}}if(!base||best<=0)throw new Error('Carolina Phlox leaf pair has no fitted attachment '+JSON.stringify({id:p.kind,month,h,w,ceiling,at}));fit=best;if(!paths)base=[at[0],-bounds.low*fit+1e-9,at[2]];}
+  const original=base===at&&angle===0&&fit===1,point=q=>new THREE.Vector3(...q).sub(new THREE.Vector3(...at)).applyQuaternion(bounds.rotation).multiplyScalar(fit).add(new THREE.Vector3(...base)).toArray();for(const part of parts)if(part.line){if(original)axis(...part.line);else{const[from,to,r,color,kind]=part.line;axis(point(from),point(to),r*fit,color,kind);}}else if(original)b.add(...part.organ);else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,q=bounds.rotation.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ');b.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,e.x,e.y,e.z);}
+ };
+ let inspection=null,inspectionScore=-Infinity,petalInstance=0;const surfaces=[],organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(!v[1].startsWith('petal-carolina-phlox-'))return;const instanceId=petalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:R*2,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);};
  for(let i=0;i<n;i++){
-  const az=i*2.399963+(noise(i,1)-.5)*.35,rr=w*.32*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr],top=h*(.63+.16*noise(i,2)),lean=w*(.025+.045*noise(i,3)),point=t=>[root[0]+Math.sin(az)*lean*t*t,root[1]+top*t,root[2]+Math.cos(az)*lean*t*t];let prev=root,retainedPair=false;
+  const az=i*2.399963+(noise(i,1)-.5)*.35,rr=w*.32*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr],top=h*(.63+.16*noise(i,2)),lean=w*(.025+.045*noise(i,3)),point=t=>[root[0]+Math.sin(az)*lean*t*t,root[1]+top*t,root[2]+Math.cos(az)*lean*t*t];let prev=root,retainedPair=false;const own=[];
   for(let j=1;j<=8;j++){
-   const t=(j+(j<8?(noise(i,j+7)-.5)*.5:0))/8,at=point(t);b.branch(prev,at,Math.min(.00125,h*.0038)*(1-t*.5),a.stemColor,'stem-carolina-phlox');prev=at;
+   const t=(j+(j<8?(noise(i,j+7)-.5)*.5:0))/8,at=point(t),stemRadius=Math.min(.00125,h*.0038)*(1-t*.5),from=observed&&j===1?ground(prev,at,stemRadius):prev;axis(from,at,stemRadius,a.stemColor,'stem-carolina-phlox');own.push([from,at]);prev=at;
    if(noise(i,j+30)>s.leafDensity)continue;
    const len=L*(.92-.42*t),pet=len*.015,radius=Math.min(.0004,h*.002),ratio=a.leafWidth/a.leafLength,leaves=[];let bound=pet*.3+radius;
    for(let side=0;side<2;side++){
@@ -9387,6 +9402,7 @@ function drawCarolinaPhlox(b,{info,s,detail,rand,month},kit){
     const rise=Math.max(0,cp*Math.cos(roll))+.50*ratio*Math.abs(cp*Math.sin(roll))+.010*Math.max(0,sp)+.128*Math.max(0,-sp);
     bound=Math.max(bound,pet*.3+len*rise);leaves.push({aa,pitch,roll,color});
    }
+   if(observed){const parts=[];for(const leaf of leaves){const end=[at[0]+Math.sin(leaf.aa)*pet,at[1]+pet*.3,at[2]+Math.cos(leaf.aa)*pet];parts.push({line:[at,end,radius,a.stemColor,'petiole-carolina-phlox']},{organ:['carolinaPhloxLeaf','leaf-carolina-phlox',leaf.color,...end,len*ratio,len,len,leaf.pitch,leaf.aa,leaf.roll]});}placeLeaf(parts,at,az+j*Math.PI/2,own);continue;}
    // Both original shades are consumed even when this upper pair is omitted.
    // Keep only the first eligible pair at the unchanged root if a low ceiling excludes every leaf node.
    const ceiling=Math.min(s.height,s.leafHeight),base=at[1]>=ceiling&&!retainedPair?root:at,room=ceiling-base[1];if(room<=0)continue;
@@ -9398,17 +9414,18 @@ function drawCarolinaPhlox(b,{info,s,detail,rand,month},kit){
   if(!s.bloom)continue;
   const base=point(1),rad=Math.min(w*.105,h*.16),rise=h*.10,sites=bill?15:18;
   for(let j=0;j<sites;j++){
-   const aa=az+j*2.399963,tier=Math.sqrt((j+.2)/sites),radial=rad*tier,join=[base[0],base[1]+rise*(1-tier)*.55,base[2]],at=[base[0]+Math.sin(aa)*radial,base[1]+rise*(.35+.65*Math.sqrt(1-tier*tier)),base[2]+Math.cos(aa)*radial];b.branch(base,join,Math.min(.00065,h*.002),a.stemColor,'axis-carolina-phlox');b.branch(join,at,Math.min(.00035,h*.0015),a.stemColor,'pedicel-carolina-phlox');
-   const f=flowerFrame(b,at,.12+tier*.65,aa),fl=F*(.86+.14*noise(i,j+110)),r=R*(.88+.12*noise(i,j+140));
+   const aa=az+j*2.399963,tier=Math.sqrt((j+.2)/sites),radial=rad*tier,join=[base[0],base[1]+rise*(1-tier)*.55,base[2]],at=[base[0]+Math.sin(aa)*radial,base[1]+rise*(.35+.65*Math.sqrt(1-tier*tier)),base[2]+Math.cos(aa)*radial];axis(base,join,Math.min(.00065,h*.002),a.stemColor,'axis-carolina-phlox');axis(join,at,Math.min(.00035,h*.0015),a.stemColor,'pedicel-carolina-phlox');
+   const f=flowerFrame(organs,at,.12+tier*.65,aa),fl=F*(.86+.14*noise(i,j+110)),r=R*(.88+.12*noise(i,j+140));
    f.add('woodlandMintTube','calyx-carolina-phlox',a.flowerPalette.calyx,0,0,0,r*.32,fl*.45,r*.32);
    if(noise(i,j+80)>.88){f.add(kit.bud,'bud-carolina-phlox',a.flowerPalette.bud,0,fl*.35,0,r*.22,fl*.70,r*.22);continue;}
    f.add('tube','tube-carolina-phlox',a.flowerPalette.tube,0,0,0,r*.22,fl/1.09,r*.22);
    for(let k=0;k<5;k++){const ba=k*TAU/5;f.add('carolinaPhloxLobe',bill?'petal-carolina-phlox-pink':'petal-carolina-phlox-white',s.flowerColor,0,fl,0,r,r,r,Math.PI/2,ba,0);f.add('narrow','sepal-carolina-phlox',a.flowerPalette.calyx,Math.sin(ba)*r*.07,fl*.34,Math.cos(ba)*r*.07,r*.1,fl*.26,fl*.26,.18,ba,0);}
    f.add('tube','eye-carolina-phlox',a.flowerPalette.eye,0,fl*.99,0,r*.12,fl*.025,r*.12);
    const point=new THREE.Vector3(...carolinaPhloxPoint('carolinaPhloxLobe',.75,0).map(Math.fround)).multiplyScalar(r).applyEuler(new THREE.Euler(Math.PI/2,0,0,'YXZ')).add(new THREE.Vector3(0,fl,0)),score=at[0]*.8+at[2];
-   if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),R*2);}
+   if(!observed&&score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),R*2);}
   }
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of carolinaLobeTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
  inspection?.();
 }
 
@@ -18588,7 +18605,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='alchemillaCymes'){drawAlchemilla(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='doubleRaggedRobin'){drawRaggedRobin(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pinnatePolemonium'){drawPolemonium(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='carolinaPhloxHeads'){drawCarolinaPhlox(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='carolinaPhloxHeads'){drawCarolinaPhlox(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='springPhloxTrails'){drawSpringPhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='bronzeSnapdragons'){drawBronzeSnapdragons(b,{info,s,p,detail,rand,month},kit);return;}
