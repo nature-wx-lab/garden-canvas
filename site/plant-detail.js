@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.823';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.824';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.823';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.824';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17774,17 +17774,25 @@ export function miniIrisPoint(type,t,u){
  if(standard)return [u*(gold?.16:frozen?.085:.13)*sn**.55,1.22*t,.20*Math.sin(t*3.8)+.025*u*u*sn];
  return [u*(.035+.34*sn**.6)*t**.28,.20*Math.sin(t*Math.PI)-.38*t**3+.045*u*u*sn,.05+.95*t];
 }
-function drawMiniIrisReferences(b,{info,s,detail,rand},kit){
+const miniIrisObservedSamples={},miniIrisObservedTriangles={};
+for(const shape of ['miniIrisSquareLeaf','miniIrisStyle','miniIrisCrest','frozenMiniFall','frozenMiniStandard','hodgkinMiniFall','hodgkinMiniStandard']){const leaf=shape==='miniIrisSquareLeaf',cols=leaf?16:32,points=[];for(let i=0;i<=56;i++)for(let j=0;j<=cols;j++)points.push(miniIrisPoint(shape,i/56,j/cols*2-1).map(Math.fround));miniIrisObservedSamples[shape]=points;if(shape.endsWith('MiniFall')){const triangles=miniIrisObservedTriangles[shape]=[];for(let i=0;i<56;i++)for(let j=0;j<32;j++){const k=i*33+j;for(const vertices of [[k,k+33,k+1],[k+1,k+33,k+34]])triangles.push({faceIndex:(i*32+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}}
+function drawMiniIrisReferences(b,{p,info,s,detail,rand},kit){
  const type=info.appearance.flowerPalette.pattern,h=s.height,w=s.spread,n=Math.max(2,Math.round(6*detail)),green=s.leafDensity<.5?'#aaa580':s.leafColor;
+ const observed=['p-5ab42afe5e28','p-5b3272352a33'].includes(p.kind),ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.15,w/.1),surfaces=[],lobeInstances={};
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(!['frozenMiniFall','hodgkinMiniFall'].includes(v[0]))return;const kind=v[1],instanceId=lobeInstances[kind]||0;lobeInstances[kind]=instanceId+1;const[shape,k,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:sy*1.6,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=miniIrisObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Mini iris rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
  for(let i=0;i<n;i++){
-  const yaw=i*2.399,R=w*.28*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],L=Math.min(.030,h*.26),at=[root[0]+Math.sin(yaw)*h*.018,h*(.90+rand()*.05)-L*1.22,root[2]+Math.cos(yaw)*h*.018];
+  const yaw=i*2.399,R=w*.28*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,observed?Math.min(.001,ceiling*.05):.001,Math.cos(yaw)*R],L=Math.min(.030,h*.26),at=[root[0]+Math.sin(yaw)*h*.018,h*(.90+rand()*.05)-L*1.22,root[2]+Math.cos(yaw)*h*.018];
   if(s.leafDensity>0)for(let j=0;j<2;j++){
-   const len=Math.min(.32,s.leafHeight/.98,w*1.8)*(s.bloom?.64:1)*s.leafScale*(.92+rand()*.08),width=Math.min(.0032,len*.033),f=flowerFrame(b,[root[0]+(j-.5)*width*.8,.001,root[2]],.035+j*.025,yaw+j*Math.PI);
+   const len=Math.min(.32,s.leafHeight/.98,w*1.8)*(s.bloom?.64:1)*s.leafScale*(.92+rand()*.08),width=Math.min(.0032,len*.033),leafRoot=[root[0]+(j-.5)*width*.8,root[1],root[2]],leafParts=[],leafOut=observed?{add:(...organ)=>leafParts.push({organ})}:b,f=flowerFrame(leafOut,leafRoot,.035+j*.025,yaw+j*Math.PI);
    f.add('miniIrisSquareLeaf','leaf-mini-iris-reference',kit.shade(rand,green,.025),0,0,0,width,len,width);
+   if(observed)fitAssembly(leafParts,leafRoot,ceiling,organs);
   }
   if(!s.bloom)continue;
-  b.branch(root,at,Math.min(.0012,h*.009),'#7d986e','scape-mini-iris-reference');b.add('narrow','spathe-mini-iris-reference','#a2ae79',at[0],at[1]-L*.45,at[2],L*.13,L*.7,L*.7,.18,yaw,0);b.flower?.([at[0],at[1]+L*.40,at[2]],L*1.32,0,yaw);
-  const f=flowerFrame(b,at,0,yaw),baseColor=type==='hodgkin'?'#c9dce8':type==='painted'?'#e0deed':type==='frozen'?'#ecece5':'#eee6be';
+  const parts=[],out=observed?{add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})}:b;
+  out.branch(root,at,Math.min(.0012,h*.009),'#7d986e','scape-mini-iris-reference');out.add('narrow','spathe-mini-iris-reference','#a2ae79',at[0],at[1]-L*.45,at[2],L*.13,L*.7,L*.7,.18,yaw,0);if(!observed)out.flower?.([at[0],at[1]+L*.40,at[2]],L*1.32,0,yaw);
+  const f=flowerFrame(out,at,0,yaw),baseColor=type==='hodgkin'?'#c9dce8':type==='painted'?'#e0deed':type==='frozen'?'#ecece5':'#eee6be';
   f.add(kit.bud,'ovary-inferior-mini-iris-reference','#98aa6f',0,-L*.57,0,L*.095,L*.18,L*.095);f.branch([0,-L*.40,0],[0,0,0],L*.065,'#b8c3a3','tube-mini-iris-reference');
   for(let k=0;k<3;k++){
    const az=k*TAU/3,part=flowerFrame(f,[0,0,0],0,az),std=flowerFrame(f,[0,0,0],0,az+Math.PI/3);
@@ -17792,7 +17800,9 @@ function drawMiniIrisReferences(b,{info,s,detail,rand},kit){
    for(const side of [-1,1])part.add('miniIrisCrest','crest-mini-iris-reference',baseColor,side*L*.045,L*.405,L*.646,L,L,L,-.12,side*.45,0);
    part.branch([0,L*.03,L*.10],[0,L*.23,L*.43],L*.011,'#c6c6a1','filament-mini-iris-reference');part.add(kit.bud,'anther-mini-iris-reference','#c7b785',0,L*.23,L*.43,L*.022,L*.03,L*.13);
   }
+  if(observed)fitAssembly(parts,root,h,organs);
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of miniIrisObservedTriangles[entry.shape]){const row=Math.floor(triangle.faceIndex/64);if(row<10||row>44)continue;const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<0)normal.negate();if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
 }
 export function hyacinthReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
@@ -18995,7 +19005,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='irisReferenceForms'){drawIrisReferenceForms(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='retailLilyReferences'){drawRetailLilyReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='freesiaReferences'){drawFreesiaReferences(b,{p,info,s,detail,rand},kit);return;}
- if(a.architecture==='miniIrisReferences'){drawMiniIrisReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='miniIrisReferences'){drawMiniIrisReferences(b,{p,info,s,detail,rand},kit);return;}
  if(a.architecture==='hyacinthReferences'){drawHyacinthReferences(b,{p,info,s,detail,rand},kit);return;}
  if(a.architecture==='narcissusCupReferences'){drawNarcissusCupReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='nativeLilyReferences'){drawNativeLilyReferences(b,{info,s,detail,rand},kit);return;}
