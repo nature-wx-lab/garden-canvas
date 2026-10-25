@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.790';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.791';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.790';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.791';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16493,7 +16493,9 @@ export function meadowTrifoliumPoint(type,t,u){
   return [Math.sin(a)*r*(claws?1:1+.035*Math.cos(a*ribs)),(claws?.28:.30)*t,Math.cos(a)*r*(claws?1:1+.035*Math.cos(a*ribs))];
  }
  const standard=type.endsWith('Standard'),wing=type==='meadowPeaWing',camp=type==='campestreMeadowStandard';
- if(standard)return [u*(camp?.32:.26)*sn**.55,.94*t,.06+(camp?.24:.18)*sn+.08*u*u*sn];
+ // Campestre's hop-like standards keep a broad rounded rim and shallow paper folds.
+ if(standard&&camp)return [u*.35*Math.sin(Math.PI*t*.92)**.45,.94*t-.12*u*u*t**6,.06+.24*sn+.08*u*u*sn+.015*Math.cos(u*Math.PI*6)*sn];
+ if(standard)return [u*.26*sn**.55,.94*t,.06+.18*sn+.08*u*u*sn];
  if(wing)return [u*.15*sn**.60,.74*t,.03+.13*sn+.05*u*u*sn];
  return [u*.095*sn**.55,.63*t,.12+.10*sn+.05*u*u*sn];
 }
