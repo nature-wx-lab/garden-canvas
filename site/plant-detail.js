@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.787';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.788';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.787';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.788';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16545,25 +16545,32 @@ export function bronzeArmeriaPoint(type,t,u){
  if(type==='armeriaBract')return [u*.22*sn**.52,-.15*t,.06+.65*t];
  return [u*.30*sn**.56,.19+.10*sn+.035*u*u*sn,.13+.77*t];
 }
+// Match the rendered Float32 grids; leaf spread and flower counts remain illustrative.
+const armeriaLeafSamples=[],armeriaPetalTriangles=[];
+for(let i=0;i<=40;i++)for(let j=0;j<=24;j++)armeriaLeafSamples.push(bronzeArmeriaPoint('armeriaFineLeaf',i/40,j/12-1).map(Math.fround));
+{const positions=[];for(let i=0;i<=40;i++)for(let j=0;j<=24;j++)positions.push(bronzeArmeriaPoint('armeriaPinkPetal',i/40,j/12-1).map(Math.fround));for(let i=0;i<40;i++)for(let j=0;j<24;j++){const k=i*25+j;for(const vertices of [[k,k+25,k+1],[k+1,k+25,k+26]]){const points=vertices.map(v=>positions[v]),a=new THREE.Vector3(...points[1]).sub(new THREE.Vector3(...points[0])),b=new THREE.Vector3(...points[2]).sub(new THREE.Vector3(...points[0]));if(a.cross(b).lengthSq()>1e-22)armeriaPetalTriangles.push({faceIndex:(i*24+j)*2+(vertices[0]===k?0:1),vertices,points});}}}
+
 function drawBronzeArmeria(b,{info,s,detail,rand},kit){
- const h=s.height,w=s.spread,crowns=Math.max(20,Math.round(28*detail)),green=s.leafColor;
+ const h=s.height,w=s.spread,crowns=Math.max(20,Math.round(28*detail)),green=s.leafColor,ceiling=Math.min(h,s.leafHeight),surfaces=[];let petalInstance=0;
+ const axis=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:axis,add:(...v)=>{b.add(...v);if(v[1]!=='petal-bronze-armeria')return;const instanceId=petalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*1.85,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitLeaf=(root,pitch,yaw,width,len)=>{const rotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ'));let fit=1;for(const point of armeriaLeafSamples){const q=new THREE.Vector3(point[0]*width,point[1]*len,point[2]*len).applyQuaternion(rotation);if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}if(!(fit>0))throw Error('Armeria basal leaf has no fitting room');return fit;};
  for(let i=0;i<crowns;i++){
-  const yaw=i*2.399,R=w*.24*Math.sqrt((i+.5)/crowns),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],leaves=Math.max(12,Math.round(30*s.leafDensity));
+  const yaw=i*2.399,R=w*.20*Math.sqrt((i+.5)/crowns),root=[Math.sin(yaw)*R,Math.min(.001,ceiling*.03),Math.cos(yaw)*R],leaves=Math.max(12,Math.round(30*s.leafDensity));
   for(let j=0;j<leaves;j++){
-   const len=Math.min(.13,s.leafHeight/.81,w*.75)*s.leafScale*(.78+rand()*.22),width=Math.min(.0024,len*.025),f=flowerFrame(b,root,.025+rand()*.15,yaw+j*2.399);f.add('armeriaFineLeaf','leaf-bronze-armeria',kit.shade(rand,green,.035),0,0,0,width,len,len);
+   const len=Math.min(.13,s.leafHeight/.81,w*.75)*s.leafScale*(.78+rand()*.22)*(.72+.28*Math.sqrt(1-(i+.5)/crowns)),width=Math.min(.0024,len*.025),pitch=.20+(j%5)*.20+rand()*.08,az=yaw+j*2.399,fit=fitLeaf(root,pitch,az,width,len),f=flowerFrame(b,root,pitch,az);f.add('armeriaFineLeaf','leaf-bronze-armeria',kit.shade(rand,green,.035),0,0,0,width*fit,len*fit,len*fit);
   }
  }
  if(!s.bloom)return;
  const heads=Math.max(8,Math.round(16*detail)),HR=Math.min(.011,w*.07,h*.08),L=Math.min(.0048,h*.045);
  for(let i=0;i<heads;i++){
-  const yaw=i*2.399,R=w*.27*Math.sqrt((i+.5)/heads),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],top=h*(.91-.12*(i%3))-HR,head=[root[0]+Math.sin(yaw)*h*.025,top,root[2]+Math.cos(yaw)*h*.025];b.branch(root,head,Math.min(.00085,h*.005),'#8a8274','scape-bronze-armeria');b.add('armeriaScapeSheath','sheath-bronze-armeria','#9e807c',head[0],top-HR*1.8,head[2],HR*.30,HR*1.8,HR*.30);
-  const frame=flowerFrame(b,head,0,yaw);
+  const yaw=i*2.399,R=w*.27*Math.sqrt((i+.5)/heads),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],top=h*(.91-.12*(i%3))-HR,head=[root[0]+Math.sin(yaw)*h*.025,top,root[2]+Math.cos(yaw)*h*.025];axis(root,head,Math.min(.00085,h*.005),'#8a8274','scape-bronze-armeria');b.add('armeriaScapeSheath','sheath-bronze-armeria','#9e807c',head[0],top-HR*1.8,head[2],HR*.30,HR*1.8,HR*.30);
+  const frame=flowerFrame(organs,head,0,yaw);
   for(let k=0;k<12;k++)frame.add('armeriaBract','bract-bronze-armeria',k%2?'#b49391':'#9b747c',0,-HR*.16,0,HR,HR,HR,-.15,k*TAU/12,0);
   const florets=23;
   for(let j=0;j<florets;j++){
-   const y=.20+.80*(j+.5)/florets,ring=Math.sqrt(1-y*y),az=j*2.399+yaw,at=[head[0]+Math.sin(az)*ring*HR,head[1]+y*HR*.75,head[2]+Math.cos(az)*ring*HR],pitch=Math.acos(y),f=flowerFrame(b,at,pitch,az);b.branch(head,at,L*.040,'#b99f9e','pedicel-bronze-armeria');
+   const y=.20+.80*(j+.5)/florets,ring=Math.sqrt(1-y*y),az=j*2.399+yaw,at=[head[0]+Math.sin(az)*ring*HR,head[1]+y*HR*.75,head[2]+Math.cos(az)*ring*HR],pitch=Math.acos(y),f=flowerFrame(organs,at,pitch,az);axis(head,at,L*.040,'#b99f9e','pedicel-bronze-armeria');
    if(j%8===5){f.add(kit.bud,'bud-bronze-armeria','#bf6d99',0,L*.20,0,L*.23,L*.28,L*.23);continue;}
-   if(i===0&&j===florets-3)f.flower([0,L*.20,0],L*1.15);
    f.add('armeriaPaperyCalyx','calyx-bronze-armeria','#be9ca7',0,-L*.12,0,L,L,L);f.add('armeriaCorollaBase','corolla-base-bronze-armeria',s.flowerColor,0,0,0,L,L,L);f.add(kit.bud,'ovary-superior-bronze-armeria','#c7b28f',0,L*.04,0,L*.055,L*.07,L*.055);
    for(let k=0;k<5;k++){
     const az=k*TAU/5,rr=L*.10,tip=[Math.sin(az)*rr,L*.33,Math.cos(az)*rr];f.add('armeriaPinkPetal','petal-bronze-armeria',kit.shade(rand,s.flowerColor,.022),0,0,0,L,L,L,0,az,0);f.branch([Math.sin(az)*rr*.7,L*.18,Math.cos(az)*rr*.7],tip,L*.010,'#dfb7cb','filament-bronze-armeria');f.add(kit.bud,'anther-bronze-armeria','#d9ba9e',...tip,L*.020,L*.033,L*.020);
@@ -16571,6 +16578,7 @@ function drawBronzeArmeria(b,{info,s,detail,rand},kit){
    }
   }
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of armeriaPetalTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
 }
 
 export function asclepiasPoint(type,t,u){
