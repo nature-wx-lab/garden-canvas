@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.777';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.778';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.777';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.778';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9287,11 +9287,26 @@ export function polemoniumPoint(type,t,u){
  const az=(u+1)*Math.PI,flair=Math.sin(t*Math.PI/2),lobes=1-.19*(1-Math.cos(5*az))*.5*t**4,r=(.13+.87*flair)*lobes;
  return [Math.sin(az)*r,.025+.23*t-.025*Math.cos(5*az)*t**6,Math.cos(az)*r];
 }
-function drawPolemonium(b,{info,s,detail,rand,month},kit){
+// Render-matched feather blades and complete five-lobed corolla triangles.
+const polemoniumLeafSamples=[],polemoniumCorollaTriangles=[];
+for(let i=0;i<=36;i++)for(let j=0;j<=80;j++)polemoniumLeafSamples.push(polemoniumPoint('polemoniumLeaflet',i/36,j/80*2-1).map(Math.fround));
+for(let row=0;row<36;row++)for(let col=0;col<80;col++)for(let half=0;half<2;half++){const cells=half?[[row,col+1],[row+1,col],[row+1,col+1]]:[[row,col],[row+1,col],[row,col+1]];polemoniumCorollaTriangles.push({vertices:cells.map(([i,j])=>i*81+j),points:cells.map(([i,j])=>polemoniumPoint('polemoniumCorolla',i/36,j/80*2-1).map(Math.fround)),faceIndex:(row*80+col)*2+half});}
+function drawPolemonium(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,apricot=a.shootProfile==='apricotDelight',n=Math.max(3,Math.min(12,Math.round(8*detail*Math.sqrt(w/.3)*Math.min(1,h/.30)))),whole=Math.min(a.leafLength,w*.38,h*.35),R=a.flowerRadius*Math.min(1,h/.25),F=a.flowerLength*Math.min(1,h/.25);
- let inspection=null,inspectionScore=-Infinity;
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const pinnate=(at,az,len,i,k)=>{
+ const observed=['p-75ae35f9a68c','p-6d87364deb8c'].includes(p?.kind),ceiling=Math.min(h,s.leafHeight),lowCap=observed&&s.leafDensity>0&&ceiling<=a.leafLength*.5,winter=[12,1,2].includes(month);
+ const axis=(...args)=>observed?delphiniumObservedAxis(b,...args):b.branch(...args);
+ const ground=(from,to,r)=>{if(!lowCap)return from;from=[from[0],Math.min(from[1],ceiling*.10),from[2]];for(let pass=0;pass<32;pass++){const matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;let min=Infinity;for(let j=0;j<pos.count;j++)min=Math.min(min,new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y);if(min>=0)break;from[1]+=-min+1e-10;}return from;};
+ const placeLeaf=(parts,at,az,paths=null)=>{
+  const samples=[];for(const part of parts){if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;for(let j=0;j<pos.count;j++)samples.push(new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);for(const q of polemoniumLeafSamples)samples.push(new THREE.Vector3(...q).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}}
+  const measure=angle=>{const rotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(Math.cos(az),0,-Math.sin(az)),angle);let low=0,high=0;for(const q of samples){const y=q.clone().applyQuaternion(rotation).y;low=Math.min(low,y);high=Math.max(high,y);}return{low,high,rotation};};
+  const full=bounds=>!paths&&lowCap?(bounds.high-bounds.low<=ceiling-2e-9?[at[0],-bounds.low+1e-9,at[2]]:null):at[1]+bounds.low>=0&&at[1]+bounds.high<=ceiling?at:paths?calaminthaNearestStem(paths,-bounds.low+1e-9,ceiling-bounds.high-1e-9,at):bounds.high-bounds.low<=ceiling-2e-9?[at[0],-bounds.low+1e-9,at[2]]:null;
+  let angle=0,bounds=measure(0),base=full(bounds),fit=1;const candidates=[{angle,bounds}];if(!base)for(const adjusted of [.25,.5,.75,1]){const trial=measure(adjusted);candidates.push({angle:adjusted,bounds:trial});base=full(trial);if(base){angle=adjusted;bounds=trial;break;}}
+  if(!base){let best=-1;for(const candidate of candidates){const{low,high}=candidate.bounds,desired=high>low?(ceiling-2e-9)*(-low)/(high-low):at[1],lines=paths||[[[at[0],0,at[2]],[at[0],ceiling,at[2]]]];for(const line of lines){const lower=Math.max(0,Math.min(line[0][1],line[1][1])),upper=Math.min(ceiling,Math.max(line[0][1],line[1][1]));if(lower>upper)continue;const y=Math.max(lower,Math.min(upper,desired)),point=calaminthaNearestStem([line],y,y,at);if(!point)continue;const amount=Math.max(0,Math.min(1,high>0?(ceiling-point[1]-2e-9)/high:1,low<0?(point[1]-1e-9)/-low:1));if(amount>best){best=amount;base=point;angle=candidate.angle;bounds=candidate.bounds;}}}if(!base||best<=0)throw new Error('Polemonium feather has no fitted attachment '+JSON.stringify({id:p.kind,month,h,w,ceiling,at}));fit=best;if(!paths)base=[at[0],-bounds.low*fit+1e-9,at[2]];}
+  const original=base===at&&angle===0&&fit===1,point=q=>new THREE.Vector3(...q).sub(new THREE.Vector3(...at)).applyQuaternion(bounds.rotation).multiplyScalar(fit).add(new THREE.Vector3(...base)).toArray();for(const part of parts)if(part.line){if(original)axis(...part.line);else{const[from,to,r,color,kind]=part.line;axis(point(from),point(to),r*fit,color,kind);}}else if(original)b.add(...part.organ);else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,q=bounds.rotation.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ');b.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,e.x,e.y,e.z);}
+ };
+ let corollaInstance=0;const surfaces=[],organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(!v[1].startsWith('petal-polemonium-'))return;const instanceId=corollaInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:R*2,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
+ const pinnate=(at,az,len,i,k,paths=null)=>{
   if(noise(i,k)>s.leafDensity)return;
   const end=[at[0]+Math.sin(az)*len*.82,at[1]+len*.42,at[2]+Math.cos(az)*len*.82],pairs=7,parts=[];let prev=at,bound=0;
   for(let j=1;j<=pairs+1;j++){
@@ -9309,22 +9324,20 @@ function drawPolemonium(b,{info,s,detail,rand,month},kit){
    else leaflet(.90,az,0);
    parts.push({from:prev,to:mid,radius,ll,width,leaflets});prev=mid;
   }
+  if(observed){const pieces=[];for(const part of parts){pieces.push({line:[part.from,part.to,part.radius,a.stemColor,'rachis-polemonium']});for(const leaf of part.leaflets)pieces.push({organ:['polemoniumLeaflet','leaf-polemonium',leaf.color,...part.to,part.width,part.ll,part.ll,leaf.pitch,leaf.yaw,leaf.roll]});}placeLeaf(pieces,at,az,paths);return;}
   const room=Math.min(s.height,s.leafHeight)-at[1];if(room<=0)return;
   const fit=Math.min(1,room/Math.max(bound,1e-8)),point=p=>fit===1?p:p.map((v,j)=>at[j]+(v-at[j])*fit),fitted=parts.map(part=>({...part,from:point(part.from),to:point(part.to)}));
   // Match batch.branch's cutoff before emitting anything, so no leaflet loses its supporting axis.
   if(fitted.some(part=>new THREE.Vector3(...part.to).sub(new THREE.Vector3(...part.from)).length()<.0001))return;
   for(const part of fitted){
-   b.branch(part.from,part.to,part.radius*fit,a.stemColor,'rachis-polemonium');
+   axis(part.from,part.to,part.radius*fit,a.stemColor,'rachis-polemonium');
    for(const leaf of part.leaflets)b.add('polemoniumLeaflet','leaf-polemonium',leaf.color,...part.to,part.width*fit,part.ll*fit,part.ll*fit,leaf.pitch,leaf.yaw,leaf.roll);
   }
  };
  const flower=(at,az,i,k)=>{
-  const f=flowerFrame(b,at,.75+.45*noise(i,k+10),az),r=R*(.85+.15*noise(i,k+20)),color=apricot?new THREE.Color(a.flowerPalette.young).lerp(new THREE.Color(a.flowerPalette.mature),noise(i,k+30)):s.flowerColor;
+  const f=flowerFrame(organs,at,.75+.45*noise(i,k+10),az),r=R*(.85+.15*noise(i,k+20)),color=apricot?new THREE.Color(a.flowerPalette.young).lerp(new THREE.Color(a.flowerPalette.mature),noise(i,k+30)):s.flowerColor;
   if(noise(i,k+40)>.88){f.add(kit.bud,'bud-polemonium',a.flowerPalette.bud,0,F*.35,0,r*.31,F,r*.31);return;}
   f.add('polemoniumCorolla',apricot?'petal-polemonium-apricot':'petal-polemonium-purple',color,0,0,0,r,F/.45,r);
-  // Actual row27/column16 of the existing36x80 corolla; retain its frame's +Y reference axis.
-  const point=new THREE.Vector3(...polemoniumPoint('polemoniumCorolla',.75,-.6).map(Math.fround)).multiply(new THREE.Vector3(r,F/.45,r)),score=at[0]*.8+at[2];
-  if(score>inspectionScore){inspectionScore=score;inspection=()=>f.flower(point.toArray(),R*2);}
 
   for(let j=0;j<5;j++){
    const aa=j*TAU/5;f.add('narrow','sepal-polemonium',a.flowerPalette.calyx,0,0,0,r*.18,F*.7,F*.7,Math.PI/2-.3,aa,0);
@@ -9333,18 +9346,20 @@ function drawPolemonium(b,{info,s,detail,rand,month},kit){
  };
  const cluster=(at,az,i,key)=>{
   if(!s.bloom)return;
-  for(let j=0;j<4;j++){const aa=az+j*2.40,rr=Math.min(w*.055,h*.06)*(j?1:.1),tip=[at[0]+Math.sin(aa)*rr,at[1]+h*(.018+.022*noise(i,key+j)),at[2]+Math.cos(aa)*rr];b.branch(at,tip,Math.min(.0004,h*.0017),a.stemColor,'pedicel-polemonium');flower(tip,aa,i,key+j*13);}
+  for(let j=0;j<4;j++){const aa=az+j*2.40,rr=Math.min(w*.055,h*.06)*(j?1:.1),tip=[at[0]+Math.sin(aa)*rr,at[1]+h*(.018+.022*noise(i,key+j)),at[2]+Math.cos(aa)*rr];axis(at,tip,Math.min(.0004,h*.0017),a.stemColor,'pedicel-polemonium');flower(tip,aa,i,key+j*13);}
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963,rr=w*.18*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr],top=[root[0]+Math.sin(az)*w*.08,h*(.65+.17*noise(i,3)),root[2]+Math.cos(az)*w*.08];let prev=root;
+  const az=i*2.399963,rr=w*.18*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.004,Math.cos(az)*rr],top=[root[0]+Math.sin(az)*w*.08,h*(.65+.17*noise(i,3)),root[2]+Math.cos(az)*w*.08];let prev=root;const own=[];
   pinnate(root,az,whole,i,91);pinnate(root,az+1.7,whole*.85,i,92);
+  if(observed&&!apricot&&winter)continue;
   for(let j=1;j<=7;j++){
-   const q=(j+(j<7?(noise(i,j+20)-.5)*.4:0))/7,at=mix(root,top,q);b.branch(prev,at,Math.min(.0014,h*.0035)*(1-q*.5),a.stemColor,'stem-polemonium');prev=at;
-   if(j===2||j===4||j===6)pinnate(at,az+j*2.4,whole*(.85-.45*q),i,j+110);
-   if(j===5||j===6){const aa=az+j*2.4,len=Math.min(w*(apricot?.17:.11),h*.12),tip=[at[0]+Math.sin(aa)*len,at[1]+h*.09,at[2]+Math.cos(aa)*len];b.branch(at,tip,Math.min(.0008,h*.0024),a.stemColor,'branch-polemonium');pinnate(at,aa,whole*.35,i,j+150);cluster(tip,aa,i,j*35);}
+   const q=(j+(j<7?(noise(i,j+20)-.5)*.4:0))/7,at=mix(root,top,q),radius=Math.min(.0014,h*.0035)*(1-q*.5),from=observed&&j===1?ground(prev,at,radius):prev;axis(from,at,radius,a.stemColor,'stem-polemonium');own.push([from,at]);prev=at;
+   if(j===2||j===4||j===6)pinnate(at,az+j*2.4,whole*(.85-.45*q),i,j+110,own);
+   if(j===5||j===6){const aa=az+j*2.4,len=Math.min(w*(apricot?.17:.11),h*.12),tip=[at[0]+Math.sin(aa)*len,at[1]+h*.09,at[2]+Math.cos(aa)*len];axis(at,tip,Math.min(.0008,h*.0024),a.stemColor,'branch-polemonium');pinnate(at,aa,whole*.35,i,j+150,own);cluster(tip,aa,i,j*35);}
   }cluster(top,az,i,300);
  }
- if(inspection)inspection();
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of polemoniumCorollaTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
+
 }
 
 export function carolinaPhloxPoint(type,t,u){
@@ -18572,7 +18587,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='phuopsisHeads'){drawPhuopsis(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='alchemillaCymes'){drawAlchemilla(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='doubleRaggedRobin'){drawRaggedRobin(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='pinnatePolemonium'){drawPolemonium(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='pinnatePolemonium'){drawPolemonium(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='carolinaPhloxHeads'){drawCarolinaPhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='springPhloxTrails'){drawSpringPhlox(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='paniclePhlox'){drawPaniclePhlox(b,{info,s,detail,rand,month},kit);return;}

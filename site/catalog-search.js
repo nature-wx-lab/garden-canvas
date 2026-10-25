@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.777';
+import {treeProfile} from './tree-profiles.js?v=0.9.778';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -214,7 +214,7 @@ export function seasonAt(info,month){
  if(a.architecture==='phuopsisHeads'){scale=1;phase=[12,1,2].includes(month)?'国内の低温管理苗の少ない残葉と茎の参考（完全落葉する場合もあり、残存量・月境界は未校正）':'輪生状の細葉・葉状托葉と桃色の筒花の頭花（長い花柱、切戻し・自然増殖・年次成長は未予測）';}
  if(a.architecture==='alchemillaCymes'){scale=1;phase='ひだのある単葉と黄緑の小花（花弁なし・萼と副萼各4枚、剪定と月別生育は未予測）';}
  if(a.architecture==='doubleRaggedRobin'){scale=1;phase=[12,1,2].includes(month)?'国内の紅葉した少ない残葉と未剪定の茎の参考（残存量・月境界は未校正）':'細い根出葉と分枝する茎・細裂する白八重花（花弁数は近似、秋の返り咲き・剪定は未予測）';}
- if(a.architecture==='pinnatePolemonium'){scale=1;phase=[12,1,2].includes(month)?'国内寒冷地の少ない羽状葉と茎を参考表示（暖地は常緑・海外の落葉表記と地域差あり）':'小葉が並ぶ羽状複葉と5裂花（葉色・花齢による色・残葉量は近似、剪定と年次成長は未予測）';}
+ if(a.architecture==='pinnatePolemonium'){scale=1;phase=[12,1,2].includes(month)?(a.shootProfile==='purpleRain'?'国内の冬苗の低い羽状葉と花茎を省く管理例（未剪定の成株とは異なり地域差あり）':'国内寒冷地の少ない羽状葉と茎を参考表示（冬写真未確認・暖地や海外と地域差あり）'):'小葉が並ぶ羽状複葉と5裂花（葉色・花齢による色・残葉量は近似、剪定と年次成長は未予測）';}
  if(a.architecture==='carolinaPhloxHeads'){scale=1;phase=[12,1,2].includes(month)?'国内寒冷地の少ない残葉と茎の参考（暖地は常緑・残葉量と成茎の残存は未校正）':'細い直立茎と対生葉・丸い頂生花房（自然増殖・年次成長・剪定は未予測）';}
  if(a.architecture==='springPhloxTrails'){scale=1;phase=[12,1,2].includes(month)?'国内の寒冷地・低温管理の苗案内に合わせ地上部なしを参考表示（暖地の常緑・半常緑とは異なる）':'細い対生葉・横に伸びる茎と枝先の花房（自然増殖・色変化の時期・年次成長は未予測）';}
  if(a.architecture==='physostegiaRows'){scale=1;phase='細い対生葉と4列の桃色の筒花、秋冬の小さな芽（成茎の冬姿は未確認のため保持、常緑性を保証しない）';}
