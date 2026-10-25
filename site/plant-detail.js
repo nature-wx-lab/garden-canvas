@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.747';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.748';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.747';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.748';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -13197,7 +13197,7 @@ function astilbeObservedAxis(b,from,to,r,color,kind,unitOnly=false){
 }
 function drawAstilbe(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const observed=['p-d7f5b281e46c','p-b1991b29a607','p-84c4127e9c9e'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight),organBuilder=observed?{add:(...v)=>b.add(...v),branch:(...v)=>astilbeObservedAxis(b,...v),flower:(...v)=>b.flower?.(...v)}:b;
+ const observed=['p-d7f5b281e46c','p-b1991b29a607','p-84c4127e9c9e','p-a1cbe28f90c6','p-b2887e0b4dbf','p-e96b4eb7ee1d'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight),organBuilder=observed?{add:(...v)=>b.add(...v),branch:(...v)=>astilbeObservedAxis(b,...v),flower:(...v)=>b.flower?.(...v)}:b;
  const a=info.appearance,pal=a.flowerPalette,h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.19)*s.leafScale,green=s.leafColor,stem=a.stemColor,blend=(x,y,t)=>new THREE.Color(x).lerp(new THREE.Color(y),t).getStyle();let frontFloret=null;
  const leaf=(at,an,len,compound=true)=>{
   const parts=[],dst=observed?{add:(...v)=>parts.push({type:'leaf',v}),branch:(...v)=>parts.push({type:'axis',v})}:b;
