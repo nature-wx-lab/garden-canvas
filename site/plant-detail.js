@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.744';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.745';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.744';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.745';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -13111,7 +13111,7 @@ function iberisCapSupport(type,len,ratio,pitch,yaw){
 }
 function drawIberis(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const observed=['p-8b51fff607a6','p-568a5f2af1e5'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);
+ const observed=['p-8b51fff607a6','p-568a5f2af1e5','p-4cbad797febb','p-130143e942df'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);
  const a=info.appearance,type=a.shootProfile,annual=['amara','umbellata'].includes(type),tall=annual||type==='mermaid'||type==='pinkice',h=s.height*(annual?s.leafDensity===0?1:s.leafScale:1),w=s.spread*(annual?s.leafDensity===0?1:Math.max(.3,s.leafScale):1),L=Math.min(a.leafLength,w*.22)*s.leafScale,stem=a.stemColor,leafKind=a.leafTexture==='glossy'?'leaf-iberis-glossy':'leaf-iberis',leafShape=['amara','mermaid'].includes(type)?'iberisToothed':'iberisEntire',after=s.seedHeads,show=s.bloom||after;
  const axis=(from,to,r,color,kind)=>{
   if(!observed){b.branch(from,to,r,color,kind);return;}
