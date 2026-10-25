@@ -1,7 +1,7 @@
-import { EXPANDED_CATALOG, BASE_POPULARITY, RETIRED_GARDEN_PLANTS } from './catalog-data.js?v=0.9.743';
-import {attachAppearance} from './appearance.js?v=0.9.743';
+import { EXPANDED_CATALOG, BASE_POPULARITY, RETIRED_GARDEN_PLANTS } from './catalog-data.js?v=0.9.744';
+import {attachAppearance} from './appearance.js?v=0.9.744';
 // Public botanical facts; monthly boundaries and procedural geometry are display conventions.
-export const CATALOG_VERSION='2026-10-25.46';
+export const CATALOG_VERSION='2026-10-25.47';
 const nc='https://plants.ces.ncsu.edu/plants/';
 const mo='https://plantfinder.mobot.org/PlantFinderDetails.aspx?taxonid=';
 const BASE_CATALOG={
