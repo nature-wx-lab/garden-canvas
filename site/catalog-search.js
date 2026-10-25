@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.788';
+import {treeProfile} from './tree-profiles.js?v=0.9.789';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -140,7 +140,7 @@ export function seasonAt(info,month){
   density=[12,1,2].includes(month)?.55:month===3?.35:1;scale=month===3?.55:month===4?.7:1;
   phase=[12,1,2].includes(month)?'寒冷期に一部の葉を残す参考（葉量・月境界は未校正）':month===3?'休眠後の葉の展開（表示目安）':month===4?'芽出し・葉の展開':month===11?'地上部が枯れる時期':'葉が茂る時期';
  }
- if(a.architecture==='nonRepensTrifolium'){phase=density===0?'地上部のない冬の参考（残葉・越年性と発芽月は未確認）':a.flowerPalette.type==='rubens'?'立ち上がる多年草の3出複葉と長い花穂（冬姿・季節の伸長は参考）':'一年草の現在の株を参考表示（翌年の発芽・こぼれ種の更新は未予測）';}
+ if(a.architecture==='nonRepensTrifolium'){phase=[12,1,2,3].includes(month)?'低温管理苗の説明を参考に一部の葉を残す表示（成株の冬姿・葉量は未校正）':a.flowerPalette.type==='rubens'?'立ち上がる多年草の3出複葉と長い花穂（季節の伸長比は参考）':'一年草の現在の株を参考表示（秋の実生・翌年のこぼれ種の更新は未予測）';}
  if(a.architecture==='asclepiasReferences'){
   if(a.flowerPalette.type==='speciosa'){
    if([3,4].includes(month))density=0;else if(month===5)density=.15;else if(month===6)density=.65;

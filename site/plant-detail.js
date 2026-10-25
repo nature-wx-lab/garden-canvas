@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.788';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.789';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.788';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.789';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16497,16 +16497,23 @@ export function meadowTrifoliumPoint(type,t,u){
  if(wing)return [u*.15*sn**.60,.74*t,.03+.13*sn+.05*u*u*sn];
  return [u*.095*sn**.55,.63*t,.12+.10*sn+.05*u*u*sn];
 }
+// Actual renderer leaf/stipule grids for complete three-leaf assemblies.
+const meadowLeafSamples={};for(const shape of ['rubensMeadowLeaf','campestreMeadowLeaf','arvenseMeadowLeaf','meadowStipule']){const points=[];for(let i=0;i<=32;i++)for(let j=0;j<=24;j++)points.push(meadowTrifoliumPoint(shape,i/32,j/12-1).map(Math.fround));meadowLeafSamples[shape]=points;}
 function drawMeadowTrifolium(b,{info,s,detail,rand,month},kit){
- const type=info.appearance.flowerPalette.type,red=type==='rubens',camp=type==='campestre',arv=type==='arvense',h=s.height,w=s.spread,growth=month<=3?.20:month===4?.58:1,HL=Math.min(red?.062:camp?.007:.019,h*.18),HR=Math.min(red?.0075:camp?.003:.0018,w*.04),L=Math.min(red?.0080:camp?.0040:.0032,h*.065),n=Math.max(red?5:camp?5:4,Math.round((red?8:camp?7:5)*detail)),LF=Math.min(red?.065:camp?.012:.020,h*.14,w*.18)*s.leafScale,green=s.leafColor,stem=red?'#799569':camp?'#8c9e72':'#98a18b';
- const leaf=(node,az)=>{
-  const P=Math.max(.0007,Math.min(red?.015:camp?.010:.006,LF*.65)),tip=[node[0]+Math.sin(az)*P,node[1]+P*.35,node[2]+Math.cos(az)*P];b.branch(node,tip,Math.min(.00040,LF*.025),stem,'petiole-meadow-trifolium');
-  const stipLen=red?LF*.48:camp?LF*.40:LF*.30;for(const side of [-1,1]){const f=flowerFrame(b,node,.20,az+side*.55);f.add('meadowStipule','stipule-meadow-trifolium',green,side*LF*.03,0,0,stipLen,stipLen,stipLen);}
+ const type=info.appearance.flowerPalette.type,red=type==='rubens',camp=type==='campestre',arv=type==='arvense',h=s.height,w=s.spread,growth=month<=3?.20:month===4?.58:1,HL=Math.min(red?.062:camp?.007:.019,h*.18),HR=Math.min(red?.0075:camp?.003:.0018,w*.04),L=Math.min(red?.0080:camp?.0040:.0032,h*.065),n=Math.max(red?5:camp?5:4,Math.round((red?8:camp?7:5)*detail)),LF=Math.min(red?.065:camp?.022:.020,h*.14,w*.18)*s.leafScale,green=s.leafColor,stem=red?'#799569':camp?'#8c9e72':'#98a18b';
+ const ceiling=Math.min(h,s.leafHeight),axis=(from,to,r,color,kind)=>{if(kind==='stem-meadow-trifolium'||kind==='branch-meadow-trifolium'){const bounds=calaminthaLineMatrix(from,to,1),pos=delphiniumUnitAxis.attributes.position,be=bounds.elements;for(let i=0;i<pos.count;i++){const endY=(from[1]+to[1])/2+be[5]*pos.getY(i),radialY=be[1]*pos.getX(i)+be[9]*pos.getZ(i);if(radialY<0)r=Math.min(r,Math.max(0,endY-2e-9)/-radialY);}}const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const fitLeaf=(parts,node)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);points=meadowLeafSamples[shape].map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...node));if(q.y>0)fit=Math.min(fit,(ceiling-node[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(node[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(node[0]*q.x+node[2]*q.z),C=node[0]**2+node[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Trifoliate assembly has no fitting room');const point=q=>q.map((v,k)=>node[k]+(v-node[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;axis(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;b.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
+ const organsAxis=axis;
+ const leaf=(nominal,az,own)=>{
+  const lowest=Math.min(...own.flatMap(line=>line.map(q=>q[1]))),targetY=Math.max(lowest,Math.min(ceiling-1e-7,nominal[1])),node=calaminthaNearestStem(own,targetY,targetY,nominal);if(!node)throw Error('Trifoliate own stem unavailable');const parts=[],leafBatch={branch:(...v)=>parts.push({line:v}),add:(...v)=>parts.push({organ:v})};
+  const P=Math.max(.0007,Math.min(red?.015:camp?.010:.006,LF*.65)),tip=[node[0]+Math.sin(az)*P,node[1]+P*.35,node[2]+Math.cos(az)*P];leafBatch.branch(node,tip,Math.min(.00040,LF*.025),stem,'petiole-meadow-trifolium');
+  const stipLen=red?LF*.48:camp?LF*.40:LF*.30;for(const side of [-1,1]){const f=flowerFrame(leafBatch,node,.20,az+side*.55);f.add('meadowStipule','stipule-meadow-trifolium',green,side*LF*.03,0,0,stipLen,stipLen,stipLen);}
   for(let k=0;k<3;k++){
-   const an=az+(k-1)*1.18,pLen=camp?(k===1?.003:.0006):arv?.0005:.0008,origin=[tip[0]+Math.sin(an)*pLen,tip[1]+pLen*.12,tip[2]+Math.cos(an)*pLen],f=flowerFrame(b,origin,-.15+(k-1)*.04,an),shape=type+'MeadowLeaf',len=LF*(.86+rand()*.14),width=len*(red?.27:camp?.68:.20);b.branch(tip,origin,Math.min(.00020,LF*.012),stem,'petiolule-meadow-trifolium');f.add(shape,'leaflet-meadow-trifolium-'+type,kit.shade(rand,green,.025),0,0,0,width,len,len);
+   const an=az+(k-1)*1.18,pLen=camp?(k===1?.003:.0006):arv?.0005:.0008,origin=[tip[0]+Math.sin(an)*pLen,tip[1]+pLen*.12,tip[2]+Math.cos(an)*pLen],f=flowerFrame(leafBatch,origin,-.15+(k-1)*.04,an),shape=type+'MeadowLeaf',len=LF*(.86+rand()*.14),width=len*(red?.27:camp?.68:.20);leafBatch.branch(tip,origin,Math.min(.00020,LF*.012),stem,'petiolule-meadow-trifolium');f.add(shape,'leaflet-meadow-trifolium-'+type,kit.shade(rand,green,.025),0,0,0,width,len,len);
    const point=(t,u)=>{const p=meadowTrifoliumPoint(shape,t,u);return [p[0]*width,p[1]*len+.000035,p[2]*len];};let prev=point(.02,0);for(let q=1;q<=12;q++){const to=point(.02+q*.079,0);f.branch(prev,to,.000022,'#a5b299','vein-meadow-trifolium');prev=to;}
    for(let q=0;q<6;q++)for(const side of [-1,1]){const t=.12+q*.12,p0=point(t,0),p1=point(t+.04,side*.52),p2=point(t+.08,side*.89);f.branch(p0,p1,.000017,'#9eae94','vein-meadow-trifolium');f.branch(p1,p2,.000015,'#9eae94','vein-meadow-trifolium');}
   }
+  fitLeaf(parts,node);
  };
  const head=(base,yaw)=>{
   const florets=red?144:camp?40:96;
@@ -16525,13 +16532,13 @@ function drawMeadowTrifolium(b,{info,s,detail,rand,month},kit){
   }
  };
  for(let i=0;i<n;i++){
-  const yaw=i*2.399,R=w*(red?.16:.12)*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],top=Math.max(.010,h*(red?.91:camp?.76:.80)*growth-HL),reach=w*(red?.025:camp?.25:.20),axis=t=>[root[0]+Math.sin(yaw)*reach*t*t,top*t,root[2]+Math.cos(yaw)*reach*t*t];let prev=root;
-  for(let j=1;j<=24;j++){const to=axis(j/24);b.branch(prev,to,Math.min(red?.0018:camp?.00065:.0011,h*.007),stem,'stem-meadow-trifolium');prev=to;}
-  const leafTop=Math.min(s.leafHeight,top*.96);for(let j=0;j<6;j++){const y=leafTop*(.12+.17*j);leaf(axis(y/top),yaw+j*2.399);}
+  const yaw=i*2.399,R=w*(red?.16:.12)*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,Math.min(.001,ceiling*.05),Math.cos(yaw)*R],top=Math.max(.010,h*(red?.91:camp?.76:.80)*growth-HL),reach=w*(red?.025:camp?.25:.20),axis=t=>[root[0]+Math.sin(yaw)*reach*t*t,top*t,root[2]+Math.cos(yaw)*reach*t*t];let prev=root;
+  const own=[];for(let j=1;j<=24;j++){const to=axis(j/24);organsAxis(prev,to,Math.min(red?.0018:camp?.00065:.0011,h*.007),stem,'stem-meadow-trifolium');own.push([prev,to]);prev=to;}
+  const leafTop=Math.min(s.leafHeight,top*.96);for(let j=0;j<6;j++){const y=leafTop*(.12+.17*j);leaf(axis(y/top),yaw+j*2.399,own);}
   if(s.bloom)head(axis(1),yaw);
   if(!red)for(let j=0;j<(camp?3:2);j++){
-   const t=camp?.30+j*.22:.42+j*.27,at=axis(t),an=yaw+(j?1:-1)*.95,end=[at[0]+Math.sin(an)*w*.17,top*(camp?.78+j*.08:.78+j*.12),at[2]+Math.cos(an)*w*.17];let from=at;
-   for(let k=1;k<=8;k++){const z=k/8,to=[at[0]+(end[0]-at[0])*z,at[1]+(end[1]-at[1])*z,at[2]+(end[2]-at[2])*z];b.branch(from,to,Math.min(.0007,h*.0045),stem,'branch-meadow-trifolium');if(k===3||k===6)leaf(to,an+k*2.399);from=to;}
+   const t=camp?.30+j*.22:.42+j*.27,nominalAt=axis(t),attachY=Math.min(nominalAt[1],ceiling*.38),at=calaminthaNearestStem(own,attachY,attachY,nominalAt),an=yaw+(j?1:-1)*.95,end=[at[0]+Math.sin(an)*w*.17,top*(camp?.78+j*.08:.78+j*.12),at[2]+Math.cos(an)*w*.17];let from=at;
+   const branch=[];for(let k=1;k<=8;k++){const z=k/8,to=[at[0]+(end[0]-at[0])*z,at[1]+(end[1]-at[1])*z,at[2]+(end[2]-at[2])*z];organsAxis(from,to,Math.min(.0007,h*.0045),stem,'branch-meadow-trifolium');branch.push([from,to]);from=to;}for(const k of [3,6]){const nominal=branch[k-1][1].slice();if(end[1]>ceiling)nominal[1]=at[1]+(Math.min(end[1],ceiling*.85)-at[1])*k/8;leaf(nominal,an+k*2.399,branch);}
    if(s.bloom)head(end,an);
   }
  }
