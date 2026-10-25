@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.763';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.764';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.763';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.764';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4907,7 +4907,7 @@ function drawSaxifragaceae(b,{info,s,p,detail,rand},kit){
    tinyHair(f,q,[q[0]+Math.sin(angle)*.0011*fit,q[1]+Math.cos(angle)*.0011*fit,q[2]+.0007*fit],.00009*fit,'#bac3a8',sax?'hair-saxifrage':'hair-bergenia');
   }
  };
- const inspectFlower=['p-8df7e24225e1','p-8b63abc96633','p-f9b0afaaa4ca'].includes(p?.kind);let petalInstance=0,flowerSerial=0,activeFlower=0;const surfaces=new Map();
+ const inspectFlower=['p-8df7e24225e1','p-8b63abc96633','p-f9b0afaaa4ca','p-5710cb13f030'].includes(p?.kind);let petalInstance=0,flowerSerial=0,activeFlower=0;const surfaces=new Map();
  const flowerOrgans=inspectFlower?{branch:(...v)=>b.branch(...v),add:(...v)=>{b.add(...v);const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v;if(kind!=='petal-bergenia')return;const instanceId=petalInstance++,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);let entry=surfaces.get(activeFlower);if(!entry){entry={score:-Infinity,parts:[]};surfaces.set(activeFlower,entry);}entry.score=Math.max(entry.score,x*.8+y*.45+z);entry.parts.push({matrix,instanceId,radius:Math.max(sx,sy,sz)*.6});}}:b;
  const n=sax?7:4;
  for(let i=0;i<n;i++){
