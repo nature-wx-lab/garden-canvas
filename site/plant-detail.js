@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.817';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.818';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.817';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.818';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17783,31 +17783,41 @@ export function hyacinthReferencePoint(type,t,u){
  const arc=t*Math.PI*1.30,angle=u*Math.PI/6*Math.max(0,1-t)**.5,r=.165+.31*(1-Math.cos(arc));
  return [Math.sin(angle)*r,.65+.31*Math.sin(arc),Math.cos(angle)*r];
 }
-function drawHyacinthReferences(b,{info,s,detail,rand},kit){
+const hyacinthObservedSamples={},hyacinthObservedTriangles=[];
+for(const shape of ['hyacinthThickLeaf','hyacinthFusedTube','hyacinthReflexLobe']){const cols=shape==='hyacinthFusedTube'?48:24,points=[];for(let i=0;i<=48;i++)for(let j=0;j<=cols;j++)points.push(hyacinthReferencePoint(shape,i/48,j/cols*2-1).map(Math.fround));hyacinthObservedSamples[shape]=points;if(shape==='hyacinthReflexLobe')for(let i=0;i<48;i++)for(let j=0;j<24;j++){const k=i*25+j;for(const vertices of [[k,k+25,k+1],[k+1,k+25,k+26]])hyacinthObservedTriangles.push({faceIndex:(i*24+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}
+function drawHyacinthReferences(b,{p,info,s,detail,rand},kit){
  const type=info.appearance.flowerPalette.type,h=s.height,w=s.spread,n=Math.max(2,Math.round(3*detail)),green=s.leafDensity<.5?'#ada676':s.leafColor;
+ const observed=['p-89a52aa63fc6','p-292e2b8d70b9'].includes(p.kind),ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.15,w/.1),surfaces=[],lobeInstances={};
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(v[0]!=='hyacinthReflexLobe')return;const kind=v[1],instanceId=lobeInstances[kind]||0;lobeInstances[kind]=instanceId+1;const[shape,k,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*1.5,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=hyacinthObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Hyacinth rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
  for(let i=0;i<n;i++){
-  const yaw=i*2.399,R=w*.26*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R];
+  const yaw=i*2.399,R=w*.26*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,observed?Math.min(.001,ceiling*.05):.001,Math.cos(yaw)*R];
   if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(5*s.leafDensity));j++){
-   const L=Math.min(.28,s.leafHeight/.85,w*.95)*s.leafScale*(.88+rand()*.12),W=Math.min(.030,L*.19),f=flowerFrame(b,root,.05+j*.025,yaw+j*2.399);
+   const L=Math.min(.28,s.leafHeight/.85,w*.95)*s.leafScale*(.88+rand()*.12),W=Math.min(.030,L*.19),leafParts=[],leafOut=observed?{add:(...organ)=>leafParts.push({organ}),branch:(...line)=>leafParts.push({line})}:b,f=flowerFrame(leafOut,root,.05+j*.025,yaw+j*2.399);
    f.add('hyacinthThickLeaf','leaf-hyacinth-reference',kit.shade(rand,green,.025),0,0,0,W,L,L);
-   for(const u of [-.6,-.3,0,.3,.6]){let p=hyacinthReferencePoint('hyacinthThickLeaf',.025,u),from=[p[0]*W,p[1]*L,p[2]*L+.00007];for(let k=1;k<=14;k++){p=hyacinthReferencePoint('hyacinthThickLeaf',.025+k*.068,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00007];f.branch(from,to,.000045,'#9ab08b','vein-leaf-hyacinth-reference');from=to;}}
+   for(const u of [-.6,-.3,0,.3,.6]){let p=hyacinthReferencePoint('hyacinthThickLeaf',.025,u),from=[p[0]*W,p[1]*L,p[2]*L+.00007*(observed?micro:1)];for(let k=1;k<=14;k++){p=hyacinthReferencePoint('hyacinthThickLeaf',.025+k*.068,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00007*(observed?micro:1)];f.branch(from,to,.000045*(observed?micro:1),'#9ab08b','vein-leaf-hyacinth-reference');from=to;}}
+   if(observed)fitAssembly(leafParts,root,ceiling,organs);
   }
   if(!s.bloom)continue;
   const top=h*(.90+rand()*.04),axis=t=>[root[0]+Math.sin(yaw)*h*.015*t*t,top*t,root[2]+Math.cos(yaw)*h*.015*t*t],L=Math.min(.021,h*.135);
-  let from=root;for(let j=1;j<=18;j++){const to=axis(j/18);b.branch(from,to,Math.min(.004,h*.02),'#789568','scape-hyacinth-reference');from=to;}
+  const parts=[],out=observed?{add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})}:b;
+  let from=root;for(let j=1;j<=18;j++){const to=axis(j/18);out.branch(from,to,Math.min(.004,h*.02),'#789568','scape-hyacinth-reference');from=to;}
   const flowers=32,buds=4;
   for(let j=0;j<flowers+buds;j++){
-   const an=yaw+j*2.399,frac=j/(flowers+buds-1),at=axis(.39+.58*frac),end=[at[0]+Math.sin(an)*L*.43,at[1]+L*.05,at[2]+Math.cos(an)*L*.43];b.branch(at,end,L*.045,'#91a06c','pedicel-hyacinth-reference');
-   b.add('narrow','bract-hyacinth-reference','#8eaa75',...at,L*.06,L*.24,L*.24,.65,an,0);
-   if(j>=flowers){b.add(kit.bud,'bud-hyacinth-reference',s.flowerColor,...end,L*.16,L*.34,L*.16,.15,an,0);continue;}
-   const pitch=1.38+(1-frac)*.26,fl=flowerFrame(b,end,pitch,an);if(j===24)b.flower?.(end,L*.98,pitch,an);
+   const an=yaw+j*2.399,frac=j/(flowers+buds-1),at=axis(.39+.58*frac),end=[at[0]+Math.sin(an)*L*.43,at[1]+L*.05,at[2]+Math.cos(an)*L*.43];out.branch(at,end,L*.045,'#91a06c','pedicel-hyacinth-reference');
+   out.add('narrow','bract-hyacinth-reference','#8eaa75',...at,L*.06,L*.24,L*.24,.65,an,0);
+   if(j>=flowers){out.add(kit.bud,'bud-hyacinth-reference',s.flowerColor,...end,L*.16,L*.34,L*.16,.15,an,0);continue;}
+   const pitch=1.38+(1-frac)*.26,fl=flowerFrame(out,end,pitch,an);if(j===24&&!observed)b.flower?.(end,L*.98,pitch,an);
    fl.add('hyacinthFusedTube','tube-hyacinth-reference-'+type,s.flowerColor,0,0,0,L,L,L);
    for(let k=0;k<6;k++)fl.add('hyacinthReflexLobe','lobe-hyacinth-reference-'+type,s.flowerColor,0,0,0,L,L,L,0,k*TAU/6,0);
    fl.add(kit.bud,'ovary-superior-hyacinth-reference','#8ca16b',0,L*.10,0,L*.085,L*.08,L*.085);
    for(let k=0;k<6;k++){const az=k*TAU/6,end=[Math.sin(az)*L*.10,L*.48,Math.cos(az)*L*.10];fl.branch([Math.sin(az)*L*.13,L*.32,Math.cos(az)*L*.13],end,L*.008,'#c1b6a1','filament-hyacinth-reference');fl.add(kit.bud,'anther-hyacinth-reference','#c2a467',...end,L*.017,L*.036,L*.018,.05,az,0);}
    fl.branch([0,L*.15,0],[0,L*.36,0],L*.008,'#b9b99a','style-hyacinth-reference');
   }
+  if(observed)fitAssembly(parts,root,h,organs);
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of hyacinthObservedTriangles){const row=Math.floor(triangle.faceIndex/48);if(row<8||row>36)continue;const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<0)normal.negate();if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
 }
 export function narcissusCupPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
@@ -18956,7 +18966,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='retailLilyReferences'){drawRetailLilyReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='freesiaReferences'){drawFreesiaReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='miniIrisReferences'){drawMiniIrisReferences(b,{info,s,detail,rand},kit);return;}
- if(a.architecture==='hyacinthReferences'){drawHyacinthReferences(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='hyacinthReferences'){drawHyacinthReferences(b,{p,info,s,detail,rand},kit);return;}
  if(a.architecture==='narcissusCupReferences'){drawNarcissusCupReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='nativeLilyReferences'){drawNativeLilyReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='martagonReferences'){drawMartagonReferences(b,{info,s,detail,rand},kit);return;}
