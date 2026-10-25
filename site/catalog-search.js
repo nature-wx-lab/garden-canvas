@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.772';
+import {treeProfile} from './tree-profiles.js?v=0.9.773';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -209,7 +209,7 @@ export function seasonAt(info,month){
  if(a.architecture==='astrantiaUmbels'){scale=1;phase='掌状の株元葉と総苞に囲まれた小花（花齢・花量・剪定・成長は参考）';}
  if(a.architecture==='cerintheCymes'){scale=1;phase=[12,1,2].includes(month)?'保護された早春苗を参考にした残葉（成株の冬姿・霜害は未確認）':'互生する丸い銀緑葉と青紫の苞・下向きの筒花（一年草の表示枠、実寿命・連続開花は未予測）';}
  if(a.architecture==='unifloraMats'){scale=1;phase=[12,1,2].includes(month)?a.shootProfile==='swan'?'冬苗写真の枯色の茎と少数の紅葉（残存量は参考）':'国内低温管理の地上部なしの参考（暖地は常緑、月境界は未校正）':'低く広がる対生葉と膨らんだ萼・品種別の白花（剪定と生育は未予測）';}
- if(a.architecture==='maitaiCrowns'){scale=1;phase=[12,1,2].includes(month)?'冬の少ない株元葉と未剪定の茎の参考（冬姿写真・残存量は未確認）':month===6?'夏の小さな一重花の参考（5弁への切替時期・実温度は未校正）':'大きな先端小葉のある株元葉と杏〜桃の半八重花（花齢・花数・成長は参考）';}
+ if(a.architecture==='maitaiCrowns'){scale=1;phase=[12,1,2].includes(month)?'国内掲載の低温管理苗の少ない根出葉（長い花茎は整理した参考、未剪定成株は未確認）':month===6?'夏の小さな一重花の参考（5弁への切替時期・実温度は未校正）':'大きな先端小葉のある株元葉と杏〜桃の半八重花（花齢・花数・成長は参考）';}
  if(a.architecture==='richardsoniiTrails'){scale=1;phase=[1,2].includes(month)?'国内低温管理の少ない残葉と茎の参考（落葉する場合もあり、冬姿写真・残存量・月境界は未確認）':'横へ伸びる茎と上2裂・下3裂の青花（国内の春〜初冬を参考表示、夏の花量・切戻し再開花は未校正）';}
  if(a.architecture==='phuopsisHeads'){scale=1;phase=[12,1,2].includes(month)?'国内の低温管理苗の少ない残葉と茎の参考（完全落葉する場合もあり、残存量・月境界は未校正）':'輪生状の細葉・葉状托葉と桃色の筒花の頭花（長い花柱、切戻し・自然増殖・年次成長は未予測）';}
  if(a.architecture==='alchemillaCymes'){scale=1;phase='ひだのある単葉と黄緑の小花（花弁なし・萼と副萼各4枚、剪定と月別生育は未予測）';}
