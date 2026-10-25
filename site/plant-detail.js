@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.783';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.784';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.783';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.784';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16663,20 +16663,36 @@ export function pinkRainLilyPoint(type,t,u){
  if(type==='rainLilyFusedTube'){const a=u*Math.PI,r=.085+.035*t;return [Math.sin(a)*r,.24*t,Math.cos(a)*r];}
  const inner=type==='rainLilyInnerTepal';return [u*(inner?.20:.23)*sn**.68,.24+.44*Math.sin(t*Math.PI*.5)-.13*t**3+.025*u*u*sn+.0012*Math.cos(u*26+t*.5)*sn,.12+.88*t];
 }
-function drawPinkRainLily(b,{info,s,detail,rand},kit){
- const h=s.height,w=s.spread,L=Math.min(.047,h*.28),n=Math.max(2,Math.round(3*detail)),green=s.leafColor;
+
+// Render-matched48x32 Float32 surfaces; these remain display approximations.
+const rainLilyLeafSamples=[],rainLilyTepalTriangles={};
+for(let row=0;row<=48;row++)for(let col=0;col<=32;col++)rainLilyLeafSamples.push(pinkRainLilyPoint('rainLilyChannelLeaf',row/48,col/16-1).map(Math.fround));
+for(const type of ['rainLilyInnerTepal','rainLilyOuterTepal']){
+ const positions=[];for(let row=0;row<=48;row++)for(let col=0;col<=32;col++)positions.push(pinkRainLilyPoint(type,row/48,col/16-1).map(Math.fround));
+ const triangles=[];for(let row=0;row<48;row++)for(let col=0;col<32;col++){const k=row*33+col;for(const vertices of [[k,k+33,k+1],[k+1,k+33,k+34]]){const points=vertices.map(i=>positions[i]),a=new THREE.Vector3(...points[1]).sub(new THREE.Vector3(...points[0])),b=new THREE.Vector3(...points[2]).sub(new THREE.Vector3(...points[0]));if(a.cross(b).lengthSq()>1e-22)triangles.push({faceIndex:(row*32+col)*2+(vertices[0]===k?0:1),vertices,points});}}rainLilyTepalTriangles[type]=triangles;
+}
+
+function drawPinkRainLily(b,{info,s,p,detail,rand},kit){
+ const h=s.height,w=s.spread,L=Math.min(.047,h*.28),n=Math.max(2,Math.round(3*detail)),green=s.leafColor,observed=p?.kind==='p-987a5efcad48',ceiling=Math.min(h,s.leafHeight),surfaces=[],instances={};
+ const axis=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(!observed||length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(!v[1].startsWith('tepal-pink-rain-lily-'))return;const instanceId=instances[v[1]]||0;instances[v[1]]=instanceId+1;const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:sy*1.24,score:x*.45+y+z*.65});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
+ const fitLeaf=(root,pitch,yaw,width,len)=>{
+  const rotation=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),samples=rainLilyLeafSamples.map(q=>new THREE.Vector3(q[0]*width,q[1]*len,q[2]*len).applyQuaternion(rotation));
+  for(const u of [-.6,0,.6]){let p=pinkRainLilyPoint('rainLilyChannelLeaf',.02,u),from=[p[0]*width,p[1]*len,p[2]*len+.00004];for(let k=1;k<=20;k++){p=pinkRainLilyPoint('rainLilyChannelLeaf',.02+k*.048,u);const to=[p[0]*width,p[1]*len,p[2]*len+.00004],worldFrom=new THREE.Vector3(...from).applyQuaternion(rotation).toArray(),worldTo=new THREE.Vector3(...to).applyQuaternion(rotation).toArray(),matrix=calaminthaLineMatrix(worldFrom,worldTo,.000028),pos=delphiniumUnitAxis.attributes.position;for(let j=0;j<pos.count;j++)samples.push(new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix));from=to;}}
+  let fit=1;for(const q of samples){if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]*root[0]+root[2]*root[2]-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}if(!(fit>0))throw Error('Rain lily basal assembly has no fitting room');return fit;
+ };
  for(let i=0;i<n;i++){
   const yaw=i*2.399,R=w*.18*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],leaves=5+i%2;
   for(let j=0;j<leaves;j++){
-   const len=Math.min(.29,s.leafHeight/ .63,w*.92)*(.86+rand()*.14),width=Math.min(.006,len*.030),f=flowerFrame(b,root,.02+j*.012,yaw+j*2.399);
-   f.add('rainLilyChannelLeaf','leaf-pink-rain-lily',kit.shade(rand,green,.025),0,0,0,width,len,len);
-   for(const u of [-.6,0,.6]){let p=pinkRainLilyPoint('rainLilyChannelLeaf',.02,u),from=[p[0]*width,p[1]*len,p[2]*len+.00004];for(let k=1;k<=20;k++){p=pinkRainLilyPoint('rainLilyChannelLeaf',.02+k*.048,u);const to=[p[0]*width,p[1]*len,p[2]*len+.00004];f.branch(from,to,.000028,'#93a17f','vein-pink-rain-lily');from=to;}}
+   const len=Math.min(.29,s.leafHeight/ .63,w*.92)*(.86+rand()*.14),width=Math.min(.006,len*.030),pitch=.02+j*.012,az=yaw+j*2.399,fit=observed?fitLeaf(root,pitch,az,width,len):1,f=flowerFrame(organs,root,pitch,az);
+   f.add('rainLilyChannelLeaf','leaf-pink-rain-lily',kit.shade(rand,green,.025),0,0,0,width*fit,len*fit,len*fit);
+   for(const u of [-.6,0,.6]){let p=pinkRainLilyPoint('rainLilyChannelLeaf',.02,u),from=[p[0]*width,p[1]*len,p[2]*len+.00004];for(let k=1;k<=20;k++){p=pinkRainLilyPoint('rainLilyChannelLeaf',.02+k*.048,u);const to=[p[0]*width,p[1]*len,p[2]*len+.00004];f.branch(from.map(v=>v*fit),to.map(v=>v*fit),.000028*fit,'#93a17f','vein-pink-rain-lily');from=to;}}
   }
   if(!s.bloom)continue;
-  const scapeH=h*(.66-.025*(i%2)),joint=[root[0]+Math.sin(yaw)*h*.012,scapeH-L*.38,root[2]+Math.cos(yaw)*h*.012],at=[joint[0],scapeH,joint[2]],pitch=.13+(i%2)*.10,f=flowerFrame(b,at,pitch,yaw);
+  const scapeH=h*(.66-.025*(i%2)),joint=[root[0]+Math.sin(yaw)*h*.012,scapeH-L*.38,root[2]+Math.cos(yaw)*h*.012],at=[joint[0],scapeH,joint[2]],pitch=.13+(i%2)*.10,f=flowerFrame(organs,at,pitch,yaw);
   b.branch(root,joint,Math.min(.0016,h*.0075),'#74946a','scape-pink-rain-lily');b.branch(joint,at,Math.min(.0013,h*.006),'#8b9f71','pedicel-pink-rain-lily');b.add('narrow','spathe-pink-rain-lily','#bdad8e',...joint,L*.075,L*.72,L*.72,.28,yaw+.25,0);
-  f.flower([0,L*.26,0],L*1.12);f.add(kit.bud,'ovary-inferior-pink-rain-lily','#86a16e',0,-L*.04,0,L*.105,L*.13,L*.105);f.add('rainLilyFusedTube','tube-pink-rain-lily','#d5dca2',0,0,0,L,L,L);
-  for(let k=0;k<6;k++)f.add(k%2?'rainLilyInnerTepal':'rainLilyOuterTepal','tepal-pink-rain-lily',kit.shade(rand,s.flowerColor,.018),0,0,0,L,L*(.95+rand()*.06),L,0,k*TAU/6,0);
+  if(!observed)f.flower([0,L*.26,0],L*1.12);f.add(kit.bud,'ovary-inferior-pink-rain-lily','#86a16e',0,-L*.04,0,L*.105,L*.13,L*.105);f.add('rainLilyFusedTube','tube-pink-rain-lily','#d5dca2',0,0,0,L,L,L);
+  for(let k=0;k<6;k++)f.add(k%2?'rainLilyInnerTepal':'rainLilyOuterTepal',observed?'tepal-pink-rain-lily-'+(k%2?'inner':'outer'):'tepal-pink-rain-lily',kit.shade(rand,s.flowerColor,.018),0,0,0,L,L*(.95+rand()*.06),L,0,k*TAU/6,0);
   for(let k=0;k<6;k++){
    const az=k*TAU/6,rr=L*.25,base=[Math.sin(az)*L*.10,L*.24,Math.cos(az)*L*.10],end=[Math.sin(az)*rr,L*(.73+.025*(k%2)),Math.cos(az)*rr],start=base;let from=start;
    for(let q=1;q<=12;q++){const t=q/12,bow=Math.sin(Math.PI*t)*L*.08,to=[base[0]+(end[0]-base[0])*t+Math.sin(az)*bow,base[1]+(end[1]-base[1])*t,base[2]+(end[2]-base[2])*t+Math.cos(az)*bow];f.branch(from,to,L*.010,'#e3d58c','filament-pink-rain-lily');from=to;}
@@ -16685,6 +16701,8 @@ function drawPinkRainLily(b,{info,s,detail,rand},kit){
   const styEnd=[L*.09,L*.86,L*.025];let from=[0,L*.10,0];for(let q=1;q<=12;q++){const t=q/12,to=[styEnd[0]*t*t,L*.10+(styEnd[1]-L*.10)*t,styEnd[2]*t];f.branch(from,to,L*.012,'#e0dfbf','style-pink-rain-lily');from=to;}
   for(let k=0;k<3;k++){const az=k*TAU/3,end=[styEnd[0]+Math.sin(az)*L*.13,styEnd[1]-L*.02,styEnd[2]+Math.cos(az)*L*.13];f.branch(styEnd,end,L*.018,'#eee7d9','stigma-pink-rain-lily');}
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of rainLilyTepalTriangles[entry.shape]){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.45+point.y+point.z*.65,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.45,1,.65))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.45,1,.65).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.45,1,.65]});}
+
 }
 
 export const DOUBLE_TULIP_PROFILES={popcorn:{inner:18,height:.94,width:.47,flare:.48,edge:.018},whiteValley:{inner:10,height:.83,width:.53,flare:.64,edge:.030},lilacBlue:{inner:24,height:.72,width:.51,flare:.70,edge:.020},creamUpstar:{inner:18,height:.72,width:.53,flare:.72,edge:.020},foxtrot:{inner:22,height:.92,width:.52,flare:.60,edge:.024},finola:{inner:24,height:.82,width:.54,flare:.68,edge:.028},blackHero:{inner:14,height:.98,width:.47,flare:.48,edge:.016}};
@@ -18744,7 +18762,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='bronzeArmeria'){drawBronzeArmeria(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='asclepiasReferences'){drawAsclepiasReferences(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='parrotBranchTulips'){drawParrotBranchTulips(b,{info,s,detail,rand},kit);return;}
- if(a.architecture==='pinkRainLily'){drawPinkRainLily(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='pinkRainLily'){drawPinkRainLily(b,{info,s,p,detail,rand},kit);return;}
  if(a.architecture==='doubleTulipReferences'){drawDoubleTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='minorTulipReferences'){drawMinorTulipReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='slenderTulipReferences'){drawSlenderTulipReferences(b,{info,s,detail,rand},kit);return;}
