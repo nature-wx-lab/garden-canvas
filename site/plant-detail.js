@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.814';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.815';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.814';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.815';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -18992,7 +18992,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='chloranthus'){drawChloranthus(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='acaenaMat'){drawAcaena(b,{info,s,detail,rand},kit);return;}
  if(['whiteMignonette','yellowMignonette'].includes(a.architecture)){drawReseda(b,{info,s,detail,rand},kit);return;}
- if(a.architecture==='snowdrop'){drawSnowdrops(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='snowdrop'){drawSnowdrops(b,{p,info,s,detail,rand},kit);return;}
  if(a.architecture==='quakingGrass'){drawQuakingGrass(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='ribbonReed'||a.architecture==='canaryGrass'){drawReedGrasses(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='trailingMallow'||a.architecture==='globeMallow'){drawSmallMallows(b,{info,s,detail,rand},kit);return;}
@@ -21039,25 +21039,38 @@ function drawNakedScapes(b,{info,s,detail,rand},kit){
 // Leaf bases roll in G. elwesii; Hippolyta has pleated leaves. These are not interchangeable.
 export function snowdropPoint(type,x,y){
  const leaf=type.startsWith('snowdropLeaf'),pleat=type==='snowdropLeafPleated';
- if(leaf){const roll=type==='snowdropLeafConvolute'?Math.exp(-y*9):0,angle=x*4.6*roll;return [roll>.001?Math.sin(angle)/4.6:x,y,.045*y*y+.065*Math.abs(x)+roll*(1-Math.cos(angle))/4.6+(pleat?.030*Math.cos(x*25)*Math.sin(Math.PI*y):0)];}
+ if(leaf){const observed=type==='snowdropLeafElwesii',roll=type==='snowdropLeafConvolute'||observed?Math.exp(-y*9):0,angle=x*4.6*roll,denominator=observed?4.6*roll:4.6;return [roll>.001?Math.sin(angle)/denominator:x,y,.045*y*y+.065*Math.abs(x)+(observed?(roll>.001?(1-Math.cos(angle))/denominator:0):roll*(1-Math.cos(angle))/4.6)+(pleat?.030*Math.cos(x*25)*Math.sin(Math.PI*y):0)];}
  return [x,y,(type==='snowdropDouble'?.065:.12)*y*y+.50*x*x+(type==='snowdropDouble'?.018*Math.cos(x*32)*y:0)];
 }
-function drawSnowdrops(b,{info,s,detail,rand},kit){
+// Exact renderer grids keep rooted Elwesii leaves, spathes and pendant flowers connected within independent dimensions.
+const snowdropObservedSamples={},snowdropObservedTriangles=[];
+for(const type of ['snowdropLeafConvolute','snowdropLeafElwesii','snowdropOuter','snowdropInner','snowdropSpathe']){const points=[],leaf=type.startsWith('snowdropLeaf');for(let i=0;i<=48;i++)for(let j=0;j<=18;j++){const y=i/48,u=j/18*2-1,wide=leaf?.5*Math.min(1,.45+y*6)*Math.pow(Math.max(0,1-y),.30):type==='snowdropSpathe'?.45*Math.sin(Math.PI*y)**.70:.5*Math.sin(Math.PI*y)**.53*(.70+.30*y),yy=type==='snowdropInner'?y-.075*Math.exp(-u*u*30)*y**14:y;points.push(snowdropPoint(type,u*wide,yy).map(Math.fround));}snowdropObservedSamples[type]=points;if(type==='snowdropOuter')for(let i=0;i<48;i++)for(let j=0;j<18;j++){const k=i*19+j;for(const vertices of [[k,k+19,k+1],[k+1,k+19,k+20]])snowdropObservedTriangles.push({faceIndex:(i*18+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}
+function drawSnowdrops(b,{p,info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,double=a.flowerLayers>1,large=a.leafShape==='snowdropBroad',green=s.leafDensity<.4&&!s.bloom?'#b3ad65':s.leafColor,n=Math.max(2,Math.round(7*detail));
  const type=a.leafShape==='snowdropPleated'?'snowdropLeafPleated':large?'snowdropLeafBroad':'snowdropLeafConvolute';
+ const observed=['p-aac0769c3974','p-51376e6758ea'].includes(p.kind),ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.15,w/.1),surfaces=[];let tepalInstance=0;
+ const leafType=observed?'snowdropLeafElwesii':type;
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(v[0]!=='snowdropOuter')return;const instanceId=tepalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*1.8,score:x*.8+y*.25+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=snowdropObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Snowdrop rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
  for(let i=0;i<n;i++){
   const angle=i*2.399,rr=w*.23*Math.sqrt((i+.5)/n),x=Math.sin(angle)*rr,z=Math.cos(angle)*rr,top=h*(.84+rand()*.10),length=Math.min(h*.78,s.leafHeight*1.40)*s.leafScale;
   if(s.leafDensity>0)for(const side of [-1,1]){
-   const L=length*(.87+rand()*.13),W=Math.min(.022,L*.20),at=[x+Math.sin(angle)*side*.0013,.001,z+Math.cos(angle)*side*.0013],f=flowerFrame(b,at,.18+(1-s.leafDensity)*.30,angle+(side<0?Math.PI:0));
-   f.add(type,'leaf-snowdrop',kit.shade(rand,green,.035),0,0,0,W,L,L);
-   for(const q of [-.27,0,.27]){let prev=snowdropPoint(type,q,.02);prev=[prev[0]*W,prev[1]*L,prev[2]*L+.00005];for(let j=1;j<=7;j++){const t=.02+j*.13,p=snowdropPoint(type,q*(1-t*.65),t),to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(prev,to,.000045,'#a6b4a3','vein-leaf-snowdrop');prev=to;}}
+   const L=length*(.87+rand()*.13),W=Math.min(.022,L*.20),at=[x+Math.sin(angle)*side*.0013*(observed?micro:1),observed?Math.min(.001,ceiling*.05):.001,z+Math.cos(angle)*side*.0013*(observed?micro:1)],leafParts=[],leafOrgans={add:(...organ)=>leafParts.push({organ}),branch:(...line)=>leafParts.push({line})},f=flowerFrame(observed?leafOrgans:b,at,.18+(1-s.leafDensity)*.30,angle+(side<0?Math.PI:0));
+   f.add(leafType,'leaf-snowdrop',kit.shade(rand,green,.035),0,0,0,W,L,observed?W:L);
+   for(const q of [-.27,0,.27]){let prev=snowdropPoint(leafType,q,.02);prev=[prev[0]*W,prev[1]*L,prev[2]*(observed?W:L)+.00005*(observed?micro:1)];for(let j=1;j<=7;j++){const t=.02+j*.13,p=snowdropPoint(leafType,q*(1-t*.65),t),to=[p[0]*W,p[1]*L,p[2]*(observed?W:L)+.00005*(observed?micro:1)];f.branch(prev,to,.000045*(observed?micro:1),'#a6b4a3','vein-leaf-snowdrop');prev=to;}}
+   if(observed)fitAssembly(leafParts,at,ceiling,organs);
   }
   if(!s.bloom)continue;
+  const parts=[],out=observed?{add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})}:b;
   const curve=t=>[x+Math.sin(angle)*h*.13*Math.sin(t*Math.PI/2),top-h*.10+Math.sin(t*Math.PI)*h*.12,z+Math.cos(angle)*h*.13*Math.sin(t*Math.PI/2)],bend=curve(0);
-  b.branch([x,0,z],bend,.0011,green,'scape-snowdrop');let from=bend;for(let j=1;j<=14;j++){const to=curve(j/14);b.branch(from,to,.00065,green,'pedicel-snowdrop');from=to;}
-  const spathe=Math.min(.035,h*.20);for(const side of [-1,1])b.add('snowdropSpathe','spathe-snowdrop','#b9c3a0',...bend,spathe*.20,spathe,spathe,.65,angle+side*.16,side*.05);
-  detailedFlower(b,{x:from[0],y:from[1],z:from[2],r:Math.min(large?.028:.023,h*.16),shape:'snowdrop',layers:double?3:1,palette:{large,sex:!large&&!double}},{...kit,rand});
+  out.branch([x,0,z],bend,.0011*(observed?micro:1),green,'scape-snowdrop');let from=bend;for(let j=1;j<=14;j++){const to=curve(j/14);out.branch(from,to,.00065*(observed?micro:1),green,'pedicel-snowdrop');from=to;}
+  const spathe=Math.min(.035,h*.20);for(const side of [-1,1])out.add('snowdropSpathe','spathe-snowdrop','#b9c3a0',...bend,spathe*.20,spathe,spathe,.65,angle+side*.16,side*.05);
+  detailedFlower(out,{markInspection:!observed,x:from[0],y:from[1],z:from[2],r:Math.min(large?.028:.023,h*.16),shape:'snowdrop',layers:double?3:1,palette:{large,sex:!large&&!double}},{...kit,rand});
+  if(observed)fitAssembly(parts,[x,0,z],h,organs);
  }
+
+ for(const entry of surfaces){const cameraAxis=entry.matrix.elements[13]>.13?[.8,-.08,1]:[.8,.45,1],direction=new THREE.Vector3(...cameraAxis).normalize();let front=null;const faces=[];for(const triangle of snowdropObservedTriangles){const row=Math.floor(triangle.faceIndex/36),column=Math.floor(triangle.faceIndex/2)%18;if(row<12||row>38||column<5||column>12)continue;const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.dot(direction),face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(direction)<0)normal.negate();if(!front||score>front.score)front=face;}if(!front)continue;for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis});}
 }
 
 function drawFans(b,{info,s,detail,rand},kit){
