@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.797';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.798';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.797';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.798';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -18113,7 +18113,7 @@ export function fritillariaPoint(type,t,u){
  const cirrose=type==='fritCirroseLeaf',broad=type==='fritWideLeaf',q=Math.max(0,(t-.68)/.32),theta=q*TAU;
  return [u*.5*sn**(broad?.48:.75)*(cirrose&&t>.68?(1-q)**.7:1),cirrose&&t>.68?.68+.12*Math.sin(theta):t,.075*t*t+(cirrose&&t>.68?.12*(1-Math.cos(theta)):0)+.010*u*u*sn];
 }
-// Exact renderer samples for the two inspected retail species.
+// Exact renderer samples for the inspected Fritillaria species.
 const fritObservedSamples={},fritObservedTriangles={};
 for(const shape of ['fritWideLeaf','fritLanceLeaf','fritCirroseLeaf','fritPalliTepal','fritUvaBody','fritUvaHem','fritAcmoTepal','fritBaimoTepal']){const points=[];for(let i=0;i<=64;i++)for(let j=0;j<=24;j++)points.push(fritillariaPoint(shape,i/64,j/12-1).map(Math.fround));fritObservedSamples[shape]=points;if(!shape.endsWith('Leaf')){const triangles=[];for(let i=0;i<64;i++)for(let j=0;j<24;j++){const k=i*25+j;for(const vertices of [[k,k+1,k+25],[k+1,k+26,k+25]])triangles.push({faceIndex:(i*24+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}fritObservedTriangles[shape]=triangles;}}
 function drawFritillarias(b,{info,s,p,detail,rand},kit){
