@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.802';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.803';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.802';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.803';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -18238,19 +18238,30 @@ export function tecophilaeaPoint(type,t,u){
  if(type==='tecoTepal')return [u*(.14*(1-t)+.30*Math.sin(Math.PI*t)**.60),.70*t-.20*t*t+.055*u*u*Math.sin(Math.PI*t),.27+.73*t];
  return [u*.5*Math.pow(Math.max(0,1-t),.28)*Math.min(1,.55+t*5),t,.22*t*t+.065*u*u*Math.sin(Math.PI*t)+.006*Math.cos(u*22)*Math.sin(Math.PI*t)];
 }
-function drawTecophilaea(b,{info,s,detail,rand},kit){
+// Renderer-matched geometry for the two Ogihara Tecophilaea references.
+const tecoObservedSamples={},tecoObservedTriangles=[];
+for(const shape of ['tecoGutterLeaf','tecoTube','tecoTepal','tecoStaminode']){const cols=shape==='tecoTube'?60:18,points=[];for(let i=0;i<=44;i++)for(let j=0;j<=cols;j++)points.push(tecophilaeaPoint(shape,i/44,shape==='tecoTube'?j/cols*TAU:j/cols*2-1).map(Math.fround));tecoObservedSamples[shape]=points;if(shape==='tecoTepal')for(let i=0;i<44;i++)for(let j=0;j<cols;j++){const k=i*(cols+1)+j;for(const vertices of [[k,k+1,k+cols+1],[k+1,k+cols+2,k+cols+1]])tecoObservedTriangles.push({faceIndex:(i*cols+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}
+function drawTecophilaea(b,{p,info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,n=Math.max(2,Math.round(7*detail)),green=s.leafDensity<.4&&!s.bloom?'#b8ad70':s.leafColor;
+ const observed=['p-0c17f5e6428b','p-d60390169c0f'].includes(p.kind),ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.075,w/.1),surfaces=[];let tepalInstance=0;
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(!v[1].startsWith('petal-teco-'))return;const instanceId=tepalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*2.1,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=tecoObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Tecophilaea rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
+
  for(let i=0;i<n;i++){
-  const an=i*2.399,rr=w*.34*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,.001,Math.cos(an)*rr];
+  const an=i*2.399,rr=w*.34*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,observed?Math.min(.001,ceiling*.05):.001,Math.cos(an)*rr];
   if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round((2+i%2)*s.leafDensity));j++){
-   const L=Math.min(a.leafLength||.10,s.leafHeight,h*.90,w*.8)*s.leafScale*(.85+rand()*.15),W=Math.min(.010,L*.14),f=flowerFrame(b,root,.14+j*.07,an+j*2.399);
+   const L=Math.min(a.leafLength||.10,s.leafHeight,h*.90,w*.8)*s.leafScale*(.85+rand()*.15),W=Math.min(.010,L*.14),leafParts=[],leafOrgans={add:(...organ)=>leafParts.push({organ}),branch:(...line)=>leafParts.push({line})},f=flowerFrame(observed?leafOrgans:b,root,.14+j*.07,an+j*2.399);
    f.add('tecoGutterLeaf','leaf-teco',kit.shade(rand,green,.03),0,0,0,W,L,L);
-   for(const u of [-.5,0,.5]){let p=tecophilaeaPoint('tecoGutterLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005];for(let k=1;k<=9;k++){p=tecophilaeaPoint('tecoGutterLeaf',.02+k*.105,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(from,to,.00004,'#9eae8c','vein-leaf-teco');from=to;}}
+   for(const u of [-.5,0,.5]){let p=tecophilaeaPoint('tecoGutterLeaf',.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005*(observed?micro:1)];for(let k=1;k<=9;k++){p=tecophilaeaPoint('tecoGutterLeaf',.02+k*.105,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005*(observed?micro:1)];f.branch(from,to,.00004*(observed?micro:1),'#9eae8c','vein-leaf-teco');from=to;}}
+   if(observed)fitAssembly(leafParts,root,ceiling,organs);
   }
-  if(!s.bloom)continue;const r=Math.min(a.flowerRadius||.0175,h*.26),base=[root[0],Math.max(.006,h*(.72+rand()*.18)-r),root[2]];b.branch(root,base,.00085,'#728b53','scape-teco');
-  b.add('narrow','bract-teco',green,base[0],base[1]*.54,base[2],.0018,h*.20,.0018,.22,an,0);b.add('narrow','bracteole-teco',green,base[0],base[1]*.88,base[2],.0012,h*.10,.0012,.23,an+Math.PI,0);
-  detailedFlower(b,{x:base[0],y:base[1],z:base[2],r,color:s.flowerColor,shape:'tecoFunnel',palette:a.flowerPalette,tilt:.20+rand()*.35,yaw:an},{...kit,rand});
- }
+  if(!s.bloom)continue;const r=Math.min(a.flowerRadius||.0175,h*.26),base=[root[0],Math.max(.006,h*(.72+rand()*.18)-r),root[2]],parts=[],out=observed?{add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})}:b;out.branch(root,base,.00085*(observed?micro:1),'#728b53','scape-teco');
+  out.add('narrow','bract-teco',green,base[0],base[1]*.54,base[2],.0018*(observed?micro:1),h*.20,.0018*(observed?micro:1),.22,an,0);out.add('narrow','bracteole-teco',green,base[0],base[1]*.88,base[2],.0012*(observed?micro:1),h*.10,.0012*(observed?micro:1),.23,an+Math.PI,0);
+  detailedFlower(out,{markInspection:!observed,x:base[0],y:base[1],z:base[2],r,color:s.flowerColor,shape:'tecoFunnel',palette:a.flowerPalette,tilt:.20+rand()*.35,yaw:an},{...kit,rand});
+  if(observed)fitAssembly(parts,root,h,organs);
+ } for(const entry of surfaces){let front=null;const faces=[];for(const triangle of tecoObservedTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
+
 }
 export function acisPoint(type,t,u){
  if(type==='acisFiliformLeaf'){
@@ -18910,7 +18921,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='fritillariaShoots'){drawFritillarias(b,{info,s,p,detail,rand},kit);return;}
  if(a.architecture==='spanishBluebellRacemes'){drawSpanishBluebells(b,{info,s,p,detail,rand},kit);return;}
  if(a.architecture==='englishBluebellArches'){drawEnglishBluebells(b,{info,s,detail,rand},kit);return;}
- if(a.architecture==='tecophilaeaClumps'){drawTecophilaea(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='tecophilaeaClumps'){drawTecophilaea(b,{p,info,s,detail,rand},kit);return;}
  if(a.architecture==='acisAutumnScapes'){drawAcis(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='reflexedFawnLilies'){drawFawnLilies(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='earlySquillRacemes'){drawEarlySquills(b,{info,s,detail,rand},kit);return;}
