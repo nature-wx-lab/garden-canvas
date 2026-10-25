@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.762';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.763';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.762';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.763';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4881,6 +4881,10 @@ const saxifragaceaeLeafCorners=Object.fromEntries(['bergeniaObovate','bergeniaRo
 }));
 const bergeniaMicroAxis=new THREE.CylinderGeometry(1,1,1,6,1,false);
 
+function bergeniaPetalPoint(row,col){const t=row/14,u=col/4*2-1,width=Math.pow(Math.sin(Math.PI*t),.58)*.4;return [u*width,t,.28*t*t+.18*u*u*Math.sin(Math.PI*t)+.014*Math.cos(t*24+Math.abs(u)*8)*Math.abs(u)].map(Math.fround);}
+const bergeniaPetalTriangles=[];
+for(let row=0;row<14;row++)for(let col=0;col<4;col++)for(let half=0;half<2;half++){const cells=half?[[row+1,col],[row+1,col+1],[row,col+1]]:[[row,col],[row+1,col],[row,col+1]],points=cells.map(([i,j])=>bergeniaPetalPoint(i,j));bergeniaPetalTriangles.push({points,centroid:[0,1,2].map(k=>(points[0][k]+points[1][k]+points[2][k])/3),vertices:cells.map(([i,j])=>i*5+j),faceIndex:(row*4+col)*2+half});}
+
 function drawSaxifragaceae(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
  const a=info.appearance,typ=a.shootProfile,sax=a.architecture==='saxifrageRosettes',h=s.height,w=s.spread,observeSax=['p-a437b97beb3d','p-9d9359c0cad6','p-e95c78144a63'].includes(p?.kind),observe=observeSax||['p-8df7e24225e1','p-f9b0afaaa4ca','p-5710cb13f030','p-8b63abc96633'].includes(p?.kind),cap=Math.min(h,s.leafHeight),rootY=observe?Math.min(.010,h*.10,cap*.12):.010,rhizomeY=observe?Math.min(.017,h*.15,cap*.20):.017;
@@ -4903,6 +4907,8 @@ function drawSaxifragaceae(b,{info,s,p,detail,rand},kit){
    tinyHair(f,q,[q[0]+Math.sin(angle)*.0011*fit,q[1]+Math.cos(angle)*.0011*fit,q[2]+.0007*fit],.00009*fit,'#bac3a8',sax?'hair-saxifrage':'hair-bergenia');
   }
  };
+ const inspectFlower=['p-8df7e24225e1','p-8b63abc96633','p-f9b0afaaa4ca'].includes(p?.kind);let petalInstance=0,flowerSerial=0,activeFlower=0;const surfaces=new Map();
+ const flowerOrgans=inspectFlower?{branch:(...v)=>b.branch(...v),add:(...v)=>{b.add(...v);const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v;if(kind!=='petal-bergenia')return;const instanceId=petalInstance++,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);let entry=surfaces.get(activeFlower);if(!entry){entry={score:-Infinity,parts:[]};surfaces.set(activeFlower,entry);}entry.score=Math.max(entry.score,x*.8+y*.45+z);entry.parts.push({matrix,instanceId,radius:Math.max(sx,sy,sz)*.6});}}:b;
  const n=sax?7:4;
  for(let i=0;i<n;i++){
   const az=i*2.399963,reach=i===0?0:Math.max(0,w*.48-L*.76)*Math.sqrt(i/n),at=[Math.sin(az)*reach,rootY,Math.cos(az)*reach];crowns.push(at);
@@ -4919,7 +4925,7 @@ function drawSaxifragaceae(b,{info,s,p,detail,rand},kit){
  const spent=!sax&&!s.bloom&&!s.flowerBuds,scapeColor=spent?'#84694f':stem;
  const heads=Math.max(2,Math.round((sax?5:typ==='snow'?7:5)*detail)),r=observe?Math.min(a.flowerRadius,h*(observeSax?.22:.45)):a.flowerRadius;
  const flower=(pt,pitch,yaw,young=false)=>{
-  const f=flowerFrame(b,pt,pitch,yaw),calyx=sax?'#8a6571':typ==='snow'?'#8ba76e':'#9b5066';
+  if(inspectFlower)activeFlower=flowerSerial++;const f=flowerFrame(flowerOrgans,pt,pitch,yaw),calyx=sax?'#8a6571':typ==='snow'?'#8ba76e':'#9b5066';
   if(young){f.add(kit.bud,sax?'bud-saxifrage':'bud-bergenia',calyx,0,r*.2,0,r*.19,r*.28,r*.19);return;}
   if(sax){
    for(const sign of [-1,1])f.add('narrow','petal-saxifrage-long','#eeeade',0,0,0,r*.36,r*(sign<0?1.35:1.18),r,1.58,sign*.34,0);
@@ -4954,6 +4960,11 @@ function drawSaxifragaceae(b,{info,s,p,detail,rand},kit){
    }
   }
  }
+ if(inspectFlower)for(const entry of [...surfaces.values()].sort((a,b)=>b.score-a.score).slice(0,8)){
+  let front=null;for(const part of entry.parts){const e=part.matrix.elements,dx=e[0]*.8+e[1]*.45+e[2],dy=e[4]*.8+e[5]*.45+e[6],dz=e[8]*.8+e[9]*.45+e[10],translation=e[12]*.8+e[13]*.45+e[14];for(const triangle of bergeniaPetalTriangles){const q=triangle.centroid,score=translation+q[0]*dx+q[1]*dy+q[2]*dz,clear=e[13]+q[0]*e[1]+q[1]*e[5]+q[2]*e[9]>cap;if(!front||clear&&!front.clear||clear===front.clear&&score>front.score)front={...part,triangle,score,clear};}}
+  if(!front)continue;const points=front.triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(front.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();if(normal.dot(new THREE.Vector3(.8,.45,1))<0)normal.negate();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');b.flower?.(point.toArray(),front.radius,e.x,e.y,e.z,{component:'petal-bergenia',instanceId:front.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});
+ }
+
 }
 
 export function agapanthusPoint(type,t,u){
