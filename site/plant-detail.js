@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.775';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.776';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.775';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.776';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9171,14 +9171,29 @@ export function alchemillaPoint(type,t,u){
  const az=u*Math.PI*.94,lobes=.94+.06*Math.cos(az*10),teeth=1-.023*(.5+.5*Math.cos(az*90)),r=t*lobes*teeth;
  return [Math.sin(az)*r,Math.cos(az)*r,.065*t*t+.042*Math.cos(az*10)*t-.008*Math.cos(az*20)*t];
 }
-function drawAlchemilla(b,{info,s,detail,rand,month},kit){
+// Use the exact existing pleated Float32 blade while fitting each blade with its real petiole.
+const alchemillaLeafSamples=[];
+for(let i=0;i<=24;i++)for(let j=0;j<=180;j++)alchemillaLeafSamples.push(alchemillaPoint('alchemillaLeaf',i/24,j/180*2-1).map(Math.fround));
+function drawAlchemilla(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength*.5,w*.13,h*.21),n=Math.max(3,Math.min(12,Math.round(11*detail*Math.sqrt(w/.65)*Math.min(1,h/.3)))),R=a.flowerRadius*Math.min(1,h/.25),F=a.flowerLength*Math.min(1,h/.25);
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t);
- const leaf=(base,tip,aa,r,i,k)=>{if(noise(i,k)>s.leafDensity)return;b.branch(base,tip,Math.min(.0014,h*.0038),a.stemColor,'petiole-alchemilla');b.add('alchemillaLeaf','leaf-alchemilla',kit.shade(rand,s.leafColor,.035),...tip,r,r,r,1.18+.25*noise(i,k+3),aa,(noise(i,k+7)-.5)*.32);};
+ const observed=p?.kind==='p-e6bf0391c2fe',ceiling=Math.min(h,s.leafHeight),lowCap=observed&&s.leafDensity>0&&ceiling<=a.leafLength*.5;
+ const axis=(...args)=>observed?delphiniumObservedAxis(b,...args):b.branch(...args);
+ const ground=(from,to,r)=>{if(!lowCap)return from;from=[from[0],Math.min(from[1],ceiling*.10),from[2]];for(let pass=0;pass<32;pass++){const matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;let min=Infinity;for(let j=0;j<pos.count;j++)min=Math.min(min,new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y);if(min>=0)break;from[1]+=-min+1e-10;}return from;};
+ const placeLeaf=(parts,at,az,paths=null)=>{
+  const samples=[];for(const part of parts){if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;for(let j=0;j<pos.count;j++)samples.push(new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);for(const q of alchemillaLeafSamples)samples.push(new THREE.Vector3(...q).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}}
+  const measure=angle=>{const rotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(Math.cos(az),0,-Math.sin(az)),angle);let low=0,high=0;for(const q of samples){const y=q.clone().applyQuaternion(rotation).y;low=Math.min(low,y);high=Math.max(high,y);}return{low,high,rotation};};
+  const full=bounds=>!paths&&lowCap?(bounds.high-bounds.low<=ceiling-2e-9?[at[0],-bounds.low+1e-9,at[2]]:null):at[1]+bounds.low>=0&&at[1]+bounds.high<=ceiling?at:paths?calaminthaNearestStem(paths,-bounds.low+1e-9,ceiling-bounds.high-1e-9,at):bounds.high-bounds.low<=ceiling-2e-9?[at[0],-bounds.low+1e-9,at[2]]:null;
+  let angle=0,bounds=measure(0),base=full(bounds),fit=1;const candidates=[{angle,bounds}];if(!base)for(const adjusted of [.25,.5,.75,1]){const trial=measure(adjusted);candidates.push({angle:adjusted,bounds:trial});base=full(trial);if(base){angle=adjusted;bounds=trial;break;}}
+  if(!base){let best=-1;for(const candidate of candidates){const{low,high}=candidate.bounds,desired=high>low?(ceiling-2e-9)*(-low)/(high-low):at[1],lines=paths||[[[at[0],0,at[2]],[at[0],ceiling,at[2]]]];for(const line of lines){const lower=Math.max(0,Math.min(line[0][1],line[1][1])),upper=Math.min(ceiling,Math.max(line[0][1],line[1][1]));if(lower>upper)continue;const y=Math.max(lower,Math.min(upper,desired)),point=calaminthaNearestStem([line],y,y,at);if(!point)continue;const amount=Math.max(0,Math.min(1,high>0?(ceiling-point[1]-2e-9)/high:1,low<0?(point[1]-1e-9)/-low:1));if(amount>best){best=amount;base=point;angle=candidate.angle;bounds=candidate.bounds;}}}if(!base||best<=0)throw new Error('Alchemilla leaf has no fitted attachment '+JSON.stringify({id:p.kind,month,h,w,ceiling,at}));fit=best;if(!paths)base=[at[0],-bounds.low*fit+1e-9,at[2]];}
+  const original=base===at&&angle===0&&fit===1,point=q=>new THREE.Vector3(...q).sub(new THREE.Vector3(...at)).applyQuaternion(bounds.rotation).multiplyScalar(fit).add(new THREE.Vector3(...base)).toArray();for(const part of parts)if(part.line){if(original)axis(...part.line);else{const[from,to,r,color,kind]=part.line;axis(point(from),point(to),r*fit,color,kind);}}else if(original)b.add(...part.organ);else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,q=bounds.rotation.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ');b.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,e.x,e.y,e.z);}
+ };
+ let antherInstance=0;const surfaces=[],organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(v[1]!=='anther-alchemilla')return;const instanceId=antherInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,instanceId,radius:R*1.8,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
+ const leaf=(base,tip,aa,r,i,k,paths=null)=>{if(noise(i,k)>s.leafDensity)return;const parts=[],target=observed?{branch:(...v)=>parts.push({line:v}),add:(...v)=>parts.push({organ:v})}:b;target.branch(base,tip,Math.min(.0014,h*.0038),a.stemColor,'petiole-alchemilla');target.add('alchemillaLeaf','leaf-alchemilla',kit.shade(rand,s.leafColor,.035),...tip,r,r,r,1.18+.25*noise(i,k+3),aa,(noise(i,k+7)-.5)*.32);if(observed)placeLeaf(parts,base,aa,paths);};
  const cluster=(at,az,i,k)=>{if(!s.bloom)return;const count=12;
   for(let j=0;j<count;j++){
-   const aa=az+j*2.4,rr=Math.min(.007,w*.020)*Math.sqrt((j+.3)/count),tip=[at[0]+Math.sin(aa)*rr,at[1]+h*.012+R*(1+noise(i,k+j)),at[2]+Math.cos(aa)*rr];b.branch(at,tip,Math.min(.00024,h*.0007),a.stemColor,'pedicel-alchemilla');
-   const f=flowerFrame(b,tip,.3+.8*noise(i,k+j+20),aa);f.add(kit.bud,'hypanthium-alchemilla',s.flowerColor,0,F*.2,0,F*.32,F*.62,F*.32);
+   const aa=az+j*2.4,rr=Math.min(.007,w*.020)*Math.sqrt((j+.3)/count),tip=[at[0]+Math.sin(aa)*rr,at[1]+h*.012+R*(1+noise(i,k+j)),at[2]+Math.cos(aa)*rr];axis(at,tip,Math.min(.00024,h*.0007),a.stemColor,'pedicel-alchemilla');
+   const f=flowerFrame(organs,tip,.3+.8*noise(i,k+j+20),aa);f.add(kit.bud,'hypanthium-alchemilla',s.flowerColor,0,F*.2,0,F*.32,F*.62,F*.32);
    for(let q=0;q<4;q++){
     const ang=q*TAU/4;f.add('alchemillaSepal','sepal-alchemilla',s.flowerColor,0,F*.55,0,R,R,R,Math.PI/2-.14,ang,0);f.add('alchemillaSepal','epicalyx-alchemilla',s.flowerColor,0,F*.40,0,R*.85,R*.85,R*.85,Math.PI/2+.12,ang+Math.PI/4,0);
     const x=Math.sin(ang)*R*.3,z=Math.cos(ang)*R*.3;f.branch([x,F*.55,z],[x,F*.95,z],R*.035,'#dae39a','filament-alchemilla');f.add(kit.bud,'anther-alchemilla','#e1dd88',x,F*.95,z,R*.09,R*.09,R*.07);
@@ -9191,16 +9206,18 @@ function drawAlchemilla(b,{info,s,detail,rand,month},kit){
   const aa=j*2.399963,rr=w*.32*Math.sqrt((j+.4)/leaves),r=L*(.72+.28*noise(j,5)),tip=[Math.sin(aa)*rr,h*(.18+.18*(1-rr/(w*.35)))+.012,Math.cos(aa)*rr],base=[tip[0]*.35,.005,tip[2]*.35];leaf(base,tip,aa,r,j,19);
  }
  for(let i=0;i<n;i++){
-  const az=i*2.399963,rr=w*.19*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.005,Math.cos(az)*rr],top=[root[0]+Math.sin(az)*w*.08,h*(.66+.17*noise(i,3)),root[2]+Math.cos(az)*w*.08];let prev=root;
+  const az=i*2.399963,rr=w*.19*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.005,Math.cos(az)*rr],top=[root[0]+Math.sin(az)*w*.08,h*(.66+.17*noise(i,3)),root[2]+Math.cos(az)*w*.08];let prev=root;const own=[];
   for(let j=1;j<=5;j++){
-   const q=j/5,at=mix(root,top,q);b.branch(prev,at,Math.min(.0014,h*.004)*(1-q*.55),a.stemColor,'stem-alchemilla');prev=at;
-   if(j<5){const aa=az+j*2.4,tip=[at[0]+Math.sin(aa)*L*.4,at[1]+L*.18,at[2]+Math.cos(aa)*L*.4];leaf(at,tip,aa,L*(.7-.35*q),i,j+61);}
+   const q=j/5,at=mix(root,top,q),radius=Math.min(.0014,h*.004)*(1-q*.55),from=observed&&j===1?ground(prev,at,radius):prev;axis(from,at,radius,a.stemColor,'stem-alchemilla');own.push([from,at]);prev=at;
+   if(j<5){const aa=az+j*2.4,tip=[at[0]+Math.sin(aa)*L*.4,at[1]+L*.18,at[2]+Math.cos(aa)*L*.4];leaf(at,tip,aa,L*(.7-.35*q),i,j+61,own);}
    if(j>=3)for(let arm=0;arm<3;arm++){
-    const aa=az+j*2.4+arm*TAU/3,len=Math.min(w*.13,h*.20)*( .8+.2*noise(i,j+arm+27)),end=[at[0]+Math.sin(aa)*len,at[1]+h*.075,at[2]+Math.cos(aa)*len];b.branch(at,end,Math.min(.00065,h*.0018),a.stemColor,'branch-alchemilla');
-    for(let q=0;q<3;q++){const a2=aa+(q-1)*.85,tip=[end[0]+Math.sin(a2)*len*.38,end[1]+h*.034, end[2]+Math.cos(a2)*len*.38];b.branch(end,tip,Math.min(.00038,h*.0012),a.stemColor,'cymule-alchemilla');cluster(tip,a2,i,j*80+arm*21+q*6);}
+    const aa=az+j*2.4+arm*TAU/3,len=Math.min(w*.13,h*.20)*( .8+.2*noise(i,j+arm+27)),end=[at[0]+Math.sin(aa)*len,at[1]+h*.075,at[2]+Math.cos(aa)*len];axis(at,end,Math.min(.00065,h*.0018),a.stemColor,'branch-alchemilla');
+    for(let q=0;q<3;q++){const a2=aa+(q-1)*.85,tip=[end[0]+Math.sin(a2)*len*.38,end[1]+h*.034, end[2]+Math.cos(a2)*len*.38];axis(end,tip,Math.min(.00038,h*.0012),a.stemColor,'cymule-alchemilla');cluster(tip,a2,i,j*80+arm*21+q*6);}
    }
   }cluster(top,az,i,400);
  }
+ for(const entry of surfaces){let front=null;for(const triangle of actaeaAntherTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z;if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front={point,normal,triangle,score};}if(!front)continue;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:'anther-alchemilla',instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
+
 }
 
 export function raggedRobinPoint(type,t,u){
@@ -18544,7 +18561,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='maitaiCrowns'){drawMaitai(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='richardsoniiTrails'){drawRichardsonii(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='phuopsisHeads'){drawPhuopsis(b,{info,s,p,detail,rand},kit);return;}
- if(info.appearance?.architecture==='alchemillaCymes'){drawAlchemilla(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='alchemillaCymes'){drawAlchemilla(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='doubleRaggedRobin'){drawRaggedRobin(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='pinnatePolemonium'){drawPolemonium(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='carolinaPhloxHeads'){drawCarolinaPhlox(b,{info,s,detail,rand,month},kit);return;}
