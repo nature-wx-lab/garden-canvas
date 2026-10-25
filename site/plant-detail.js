@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.821';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.822';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.821';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.822';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16370,20 +16370,30 @@ function drawTessen(b,{info,s,detail,rand},kit){
  }
 }
 
-function drawSmallSpringBulbs(b,{info,s,detail,rand},kit){
+const crocusObservedSamples={},crocusObservedTriangles=[];
+for(const shape of ['crocusLinear','crocusCup']){const leaf=shape==='crocusLinear',points=[];for(let i=0;i<=40;i++)for(let j=0;j<=18;j++){const t=i/40,u=j/18*2-1,sn=Math.max(0,Math.sin(Math.PI*t)),width=leaf?.50*sn**.18:.52*sn**.43,radius=leaf?.21*t*t:.025+.67*Math.sin(t*1.8),height=leaf?t:1.22*t;points.push([u*width,height,radius+(leaf?.045:-.20)*u*u*sn].map(Math.fround));}crocusObservedSamples[shape]=points;if(!leaf)for(let i=0;i<40;i++)for(let j=0;j<18;j++){const k=i*19+j;for(const vertices of [[k,k+19,k+1],[k+1,k+19,k+20]])crocusObservedTriangles.push({faceIndex:(i*18+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}
+function drawSmallSpringBulbs(b,{p,info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,palette=a.flowerPalette||{},crocus=a.architecture==='earlyCrocus',sara=palette.pattern==='sara',n=crocus?8:palette.variants?6:3;
+ const observed=p.kind==='p-5a34fd922abd',ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.15,w/.1),surfaces=[],lobeInstances={};
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(v[0]!=='crocusCup')return;const kind=v[1],instanceId=lobeInstances[kind]||0;lobeInstances[kind]=instanceId+1;const[shape,k,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*2.0,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=crocusObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Crocus rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
  for(let i=0;i<n;i++){
   const yaw=i*2.399,rr=Math.sqrt(i/n)*Math.min(w*.25,crocus?.055:.09),x=Math.sin(yaw)*rr,z=Math.cos(yaw)*rr,r=Math.min(a.flowerRadius,h*(crocus?.28:.24)),flowerHeight=r*(crocus?1.22:sara?1.4:1.72),top=h*(.89+rand()*.11),head=[x+Math.sin(yaw)*h*.035,top-flowerHeight,z+Math.cos(yaw)*h*.035];
   const leafCount=crocus?6:3;
   for(let j=0;j<leafCount;j++){
    const t=crocus?0:j*.12,at=[x,t*h,z],angle=yaw+j*(crocus?2.399:Math.PI),len=Math.min(a.leafLength,h*(crocus?1.05:sara?.90:.77))*(.86+rand()*.14),width=palette.leafWidth*(j===2&&!crocus?.65:1);
-   b.add(crocus?'crocusLinear':sara?'saraLeaf':'speciesTulipLeaf',crocus?'leaf-crocus-stripe':'leaf-lilium-parallel',kit.shade(rand,s.leafColor,.032),...at,width,len,len,crocus?.18+rand()*.30:sara?.76+j*.10:.30+j*.14,angle,0);
+   const leafParts=[],leafOut=observed?{add:(...organ)=>leafParts.push({organ})}:b;leafOut.add(crocus?'crocusLinear':sara?'saraLeaf':'speciesTulipLeaf',crocus?'leaf-crocus-stripe':'leaf-lilium-parallel',kit.shade(rand,s.leafColor,.032),...at,width,len,len,crocus?.18+rand()*.30:sara?.76+j*.10:.30+j*.14,angle,0);
+   if(observed)fitAssembly(leafParts,at,ceiling,organs);
   }
   if(!s.bloom)continue;
-  b.branch([x,0,z],head,crocus?.0011:.002,'#7a955c',crocus?'perianthTube':'scape');
+  const parts=[],out=observed?{add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})}:b,root=[x,observed?Math.min(.0008,ceiling*.05):0,z];
+  out.branch(root,head,crocus?.0011:.002,'#7a955c',crocus?'perianthTube':'scape');
   const variant=palette.variants?.[i%palette.variants.length]||{},p={...palette,...variant};
-  detailedFlower(b,{x:head[0],y:head[1],z:head[2],r,color:variant.color||s.flowerColor,shape:a.flowerShape,palette:p,tilt:.04+rand()*.10,yaw},{...kit,rand});
+  detailedFlower(out,{markInspection:!observed,x:head[0],y:head[1],z:head[2],r,color:variant.color||s.flowerColor,shape:a.flowerShape,palette:p,tilt:.04+rand()*.10,yaw},{...kit,rand});
+  if(observed)fitAssembly(parts,root,h,organs);
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of crocusObservedTriangles){const row=Math.floor(triangle.faceIndex/36);if(row<10||row>34)continue;const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<0)normal.negate();if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
 }
 
 function drawLilies(b,{info,s,detail,rand},kit){
@@ -18931,7 +18941,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='persianShield'){drawPersianShield(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='narcissus'){drawNarcissus(b,{info,s,detail,rand},kit);return;}
  if(['orientalLily','trumpetLily','nativeLily','martagonLily'].includes(a.architecture)){drawLilies(b,{info,s,detail,rand},kit);return;}
- if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{info,s,detail,rand},kit);return;}
+ if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{p,info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='nonRepensTrifolium'){drawMeadowTrifolium(b,{info,s,detail,rand,month},kit);return;}
