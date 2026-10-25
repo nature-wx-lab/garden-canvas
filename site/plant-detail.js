@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.794';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.795';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.794';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.795';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -18113,28 +18113,39 @@ export function fritillariaPoint(type,t,u){
  const cirrose=type==='fritCirroseLeaf',broad=type==='fritWideLeaf',q=Math.max(0,(t-.68)/.32),theta=q*TAU;
  return [u*.5*sn**(broad?.48:.75)*(cirrose&&t>.68?(1-q)**.7:1),cirrose&&t>.68?.68+.12*Math.sin(theta):t,.075*t*t+(cirrose&&t>.68?.12*(1-Math.cos(theta)):0)+.010*u*u*sn];
 }
-function drawFritillarias(b,{info,s,detail,rand},kit){
+// Exact renderer samples for the two inspected retail species.
+const fritObservedSamples={},fritObservedTriangles={};
+for(const shape of ['fritWideLeaf','fritLanceLeaf','fritPalliTepal','fritUvaBody','fritUvaHem']){const points=[];for(let i=0;i<=64;i++)for(let j=0;j<=24;j++)points.push(fritillariaPoint(shape,i/64,j/12-1).map(Math.fround));fritObservedSamples[shape]=points;if(!shape.endsWith('Leaf')){const triangles=[];for(let i=0;i<64;i++)for(let j=0;j<24;j++){const k=i*25+j;for(const vertices of [[k,k+1,k+25],[k+1,k+26,k+25]])triangles.push({faceIndex:(i*24+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}fritObservedTriangles[shape]=triangles;}}
+function drawFritillarias(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,type=a.flowerPalette?.type||'palli',palli=type==='palli',uva=type==='uva',baimo=type==='baimo',n=Math.max(2,Math.round(3*detail)),green=s.leafDensity<.4?'#b4ad72':s.leafColor,leafTop=Math.min(s.leafHeight,h*.86),scale=s.bloom?1:s.shootScale;
+ const observed=p?.kind==='p-0d93a9210ea7'||p?.kind==='p-6dfe99a51da0',ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.2,w/.10),surfaces=[];let surfaceInstance=0;
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(!observed||length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(v[1]!== (uva?'petal-frit-uva-body':'petal-frit-palli'))return;const instanceId=surfaceInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:sy*1.45,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=fritObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Fritillaria rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
  for(let i=0;i<n;i++){
-  const yaw=i*2.399,rr=w*.16*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*rr,.001,Math.cos(yaw)*rr],top=h*(.90+rand()*.07)*scale,axis=t=>[root[0]+Math.sin(yaw)*h*.025*t*t,top*t,root[2]+Math.cos(yaw)*h*.025*t*t];let previous=root;
-  for(let j=1;j<=20;j++){const to=axis(j/20);b.branch(previous,to,baimo?.0017:palli?.0015:.0012,a.stemColor||'#739257','stem-fritillaria');previous=to;}
+  const yaw=i*2.399,rr=w*.16*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*rr,observed?Math.min(.001,ceiling*.05):.001,Math.cos(yaw)*rr],top=h*(.90+rand()*.07)*scale,axis=t=>[root[0]+Math.sin(yaw)*h*.025*t*t,top*t,root[2]+Math.cos(yaw)*h*.025*t*t];let previous=root;const parts=[],out=observed?{add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})}:b,own=[];const pointOnStem=y=>{y=Math.max(root[1]+1e-8,Math.min(y,ceiling-1e-8));const segment=own.find(([from,to])=>y>=from[1]&&y<=to[1])||own[0],[from,to]=segment,ratio=(y-from[1])/(to[1]-from[1]);return from.map((v,k)=>v+(to[k]-v)*ratio);};
+  for(let j=1;j<=20;j++){const to=axis(j/20);out.branch(previous,to,(baimo?.0017:palli?.0015:.0012)*(observed?micro:1),a.stemColor||'#739257','stem-fritillaria');if(observed)own.push([previous,to]);previous=to;}
   const nodes=baimo?[{t:.12,n:2},{t:.28,n:2},{t:.44,n:3},{t:.60,n:3},{t:.74,n:3},{t:.88,n:3}]:Array.from({length:uva?4:palli?10:8},(_,j)=>({t:.1+j*(uva?.23:palli?.084:.108),n:1}));
   if(s.leafDensity>0)for(const [ni,node] of nodes.entries())for(let j=0;j<Math.max(1,Math.round(node.n*s.leafDensity));j++){
    if(node.n===1&&ni>0&&ni%Math.max(1,Math.round(1/s.leafDensity))!==0)continue;
-   const y=leafTop*node.t*scale,at=axis(y/top),angle=yaw+(baimo?j*TAU/node.n:ni*2.399),upper=baimo&&ni>=3,geometry=upper?'fritCirroseLeaf':palli?'fritWideLeaf':'fritLanceLeaf',L=Math.min(a.leafLength||.10,h*(palli?.5:.34),w*.65,Math.max(.006,leafTop*scale-y)*1.75)*s.leafScale*(.85+rand()*.15),W=Math.min(palli?.028:uva?.014:.011,L*(palli?.34:uva?.15:.11)),f=flowerFrame(b,at,.88+rand()*.15,angle);
+   const y=leafTop*node.t*scale,at=observed?pointOnStem(y):axis(y/top),angle=yaw+(baimo?j*TAU/node.n:ni*2.399),upper=baimo&&ni>=3,geometry=upper?'fritCirroseLeaf':palli?'fritWideLeaf':'fritLanceLeaf',L=Math.min(a.leafLength||.10,h*(palli?.5:.34),w*.65,Math.max(.006,leafTop*scale-y)*1.75)*s.leafScale*(.85+rand()*.15),W=Math.min(palli?.028:uva?.014:.011,L*(palli?.34:uva?.15:.11)),leafParts=[],leafOrgans=observed?{add:(...organ)=>leafParts.push({organ}),branch:(...line)=>leafParts.push({line})}:b,f=flowerFrame(leafOrgans,at,.88+rand()*.15,angle);
    f.add(geometry,'leaf-frit-'+(palli?'palli':upper?'cirrose':'linear'),kit.shade(rand,green,.03),0,0,0,W,L,L);
-   for(const u of [-.5,0,.5]){let p=fritillariaPoint(geometry,.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005];for(let k=1;k<=15;k++){p=fritillariaPoint(geometry,.02+k*.065,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005];f.branch(from,to,.000045,'#98aa83','vein-leaf-fritillaria');from=to;}}
+   for(const u of [-.5,0,.5]){let p=fritillariaPoint(geometry,.02,u),from=[p[0]*W,p[1]*L,p[2]*L+.00005*(observed?micro:1)];for(let k=1;k<=15;k++){p=fritillariaPoint(geometry,.02+k*.065,u);const to=[p[0]*W,p[1]*L,p[2]*L+.00005*(observed?micro:1)];f.branch(from,to,.000045*(observed?micro:1),'#98aa83','vein-leaf-fritillaria');from=to;}}
+   if(observed)fitAssembly(leafParts,at,ceiling,out);
   }
-  if(!s.bloom)continue;
+  if(!s.bloom){if(observed)fitAssembly(parts,root,h,organs);continue;}
   const count=baimo?4:palli?3:2,L=Math.min(palli?.04:type==='acmo'?.035:uva?.025:.028,h*.24);
   for(let j=0;j<count;j++){
    const t=baimo?.70+j*.075:.81+j*.075,at=axis(t),an=yaw+j*2.399,reach=Math.min(palli?.03:uva?.017:.025,w*.16),end=[at[0]+Math.sin(an)*reach,at[1]-h*.018,at[2]+Math.cos(an)*reach],control=[at[0]+Math.sin(an)*reach*.65,at[1]+h*.05,at[2]+Math.cos(an)*reach*.65];let from=at;
-   for(let k=1;k<=12;k++){const u=k/12,to=at.map((v,ax)=>(1-u)**2*v+2*(1-u)*u*control[ax]+u*u*end[ax]);b.branch(from,to,.00055,'#7d9c65','pedicel-fritillaria');from=to;}
-   b.add('narrow','bract-fritillaria',green,...at,.002,h*.065,.002,.72,an+Math.PI,0);
-   if(!uva&&j===count-1)b.add(kit.bud,'bud-fritillaria',palli?'#b3c37c':s.flowerColor,...end,L*.12,L*.34,L*.12,.25,an,0);
-   else detailedFlower(b,{x:end[0],y:end[1],z:end[2],r:L,color:s.flowerColor,shape:'fritillariaBell',palette:{type},tilt:baimo?.35:.10+rand()*.12,yaw:an},{...kit,rand});
+   for(let k=1;k<=12;k++){const u=k/12,to=at.map((v,ax)=>(1-u)**2*v+2*(1-u)*u*control[ax]+u*u*end[ax]);out.branch(from,to,.00055*(observed?micro:1),'#7d9c65','pedicel-fritillaria');from=to;}
+   out.add('narrow','bract-fritillaria',green,...at,.002*(observed?micro:1),h*.065,.002*(observed?micro:1),.72,an+Math.PI,0);
+   if(!uva&&j===count-1)out.add(kit.bud,'bud-fritillaria',palli?'#b3c37c':s.flowerColor,...end,L*.12,L*.34,L*.12,.25,an,0);
+   else detailedFlower(out,{markInspection:!observed,x:end[0],y:end[1],z:end[2],r:L,color:s.flowerColor,shape:'fritillariaBell',palette:{type},tilt:baimo?.35:.10+rand()*.12,yaw:an},{...kit,rand});
   }
+  if(observed)fitAssembly(parts,root,h,organs);
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of fritObservedTriangles[entry.shape]){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
+
 }
 export function spanishBluebellPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),curl=Math.max(0,(t-.80)/.20);
@@ -18873,7 +18884,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='autumnCyclamenCrowns'){drawAutumnCyclamens(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='coumCrowns'){drawCoumCrowns(b,{info,s,p,detail,rand},kit);return;}
  if(a.architecture==='convallariaClusters'){drawConvallariaClusters(b,{info,s,detail,rand},kit);return;}
- if(a.architecture==='fritillariaShoots'){drawFritillarias(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='fritillariaShoots'){drawFritillarias(b,{info,s,p,detail,rand},kit);return;}
  if(a.architecture==='spanishBluebellRacemes'){drawSpanishBluebells(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='englishBluebellArches'){drawEnglishBluebells(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='tecophilaeaClumps'){drawTecophilaea(b,{info,s,detail,rand},kit);return;}
