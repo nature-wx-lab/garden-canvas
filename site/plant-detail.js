@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.785';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.786';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.785';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.786';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16602,11 +16602,11 @@ function drawAsclepiasReferences(b,{info,s,p,detail,rand,month},kit){
  const fitPair=(parts,at)=>{let low=0,high=0;for(const part of parts){if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;for(let j=0;j<pos.count;j++){const y=new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y-at[1];low=Math.min(low,y);high=Math.max(high,y);}}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);for(const q of incarnataLeafSamples){const y=new THREE.Vector3(...q).applyMatrix4(matrix).y-at[1];low=Math.min(low,y);high=Math.max(high,y);}}}const fit=Math.min(1,high>0?(ceiling-at[1]-1e-8)/high:1,low<0?(at[1]-1e-8)/-low:1);if(!(fit>0))throw Error('Asclepias own-stem pair cannot fit '+JSON.stringify({id:p.kind,month,h,w,ceiling,at}));const point=q=>q.map((v,k)=>at[k]+(v-at[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;axis(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;b.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
  const organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(v[1]!=='hood-asclepias-'+type)return;const instanceId=hoodInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:sy*1.55,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
  for(let i=0;i<n;i++){
-  const yaw=i*2.399,R=w*.16*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],axisPoint=t=>[root[0]+Math.sin(yaw)*stemH*.025*t*t,stemH*t,root[2]+Math.cos(yaw)*stemH*.025*t*t];let from=root;
+  const yaw=i*2.399,R=w*.16*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],shootH=observed?stemH*(1-i*.065):stemH,axisPoint=t=>[root[0]+Math.sin(yaw)*shootH*.025*t*t,shootH*t,root[2]+Math.cos(yaw)*shootH*.025*t*t];let from=root;
   const own=[];for(let k=1;k<=24;k++){const to=axisPoint(k/24),r=Math.min(spec?.0038:.0030,h*.006),actualFrom=k===1?ground(from,to,r):from;axis(actualFrom,to,r,stem,'stem-asclepias');own.push([actualFrom,to]);from=to;}
-  const nodes=6,lh=Math.min(s.leafHeight,stemH*.88),leafLen=Math.min(spec?.23:tub?.14:.18,h*(spec?.23:.18),w*.43)*s.leafScale;
+  const nodes=6,lh=Math.min(s.leafHeight,shootH*.88),leafLen=Math.min(spec?.23:tub?.14:.18,h*(spec?.23:.18),w*.43)*s.leafScale;
   for(let j=0;j<nodes;j++){
-   const y=lh*(.13+.135*j),nominal=axisPoint(y/stemH),at=observed?(calaminthaNearestStem(own,Math.max(own[0][0][1],Math.min(ceiling-1e-8,y)),Math.max(own[0][0][1],Math.min(ceiling-1e-8,y)),nominal)||nominal):nominal,leaves=tub?1:2,az=yaw+j*(tub?2.399:Math.PI/2),len=leafLen*(.84+.16*Math.sin(Math.PI*(j+.5)/nodes)),width=len*(spec?.48:tub?.24:.22);
+   const y=lh*(observed?.12+.17*j:.13+.135*j),nominal=axisPoint(y/shootH),at=observed?(calaminthaNearestStem(own,Math.max(own[0][0][1],Math.min(ceiling-1e-8,y)),Math.max(own[0][0][1],Math.min(ceiling-1e-8,y)),nominal)||nominal):nominal,leaves=tub?1:2,az=yaw+j*(tub?2.399:Math.PI/2),len=leafLen*(.84+.16*Math.sin(Math.PI*(j+.5)/nodes)),width=len*(spec?.48:tub?.24:.22);
    const parts=[],leafBatch=observed?{branch:(...v)=>parts.push({line:v}),add:(...v)=>parts.push({organ:v})}:b;
    for(let k=0;k<leaves;k++){
     const an=az+k*Math.PI,petiole=Math.min(.011,len*.05),origin=[at[0]+Math.sin(an)*petiole,at[1],at[2]+Math.cos(an)*petiole],f=flowerFrame(leafBatch,origin,-.12+(j%3)*.035,an),shape=spec?'milkweedBroadLeaf':'milkweedNarrowLeaf';leafBatch.branch(at,origin,.00045,stem,'petiole-asclepias');f.add(shape,'leaf-asclepias-'+type,kit.shade(rand,green,.023),0,0,0,width,len,len);
@@ -16619,7 +16619,8 @@ function drawAsclepiasReferences(b,{info,s,p,detail,rand,month},kit){
   if(!s.bloom)continue;
   const heads=spec?3:tub?4:3;
   for(let j=0;j<heads;j++){
-   const az=yaw+j*2.399,attach=axisPoint(spec?.58+j*.15:.66),reach=Math.min(w*.17,h*.13),head=spec?[attach[0]+Math.sin(az)*reach,attach[1]+HR*.45,attach[2]+Math.cos(az)*reach]:[axisPoint(1)[0]+Math.sin(az)*reach*(j?1:.18),h*(tub?.84:.90)-j*HR*.40,axisPoint(1)[2]+Math.cos(az)*reach*(j?1:.18)];axis(attach,head,Math.min(.0018,h*.004),stem,'peduncle-asclepias');
+   // Photo-guided terminal/side branches and unequal shoot heights; not measured clone ratios.
+   const az=yaw+j*2.399,reach=Math.min(w*.17,h*.13),nominalAttach=axisPoint(observed?(j===0?1:j===1?.81:.64):spec?.58+j*.15:.66),attach=observed?(j===0?own[own.length-1][1]:calaminthaNearestStem(own,nominalAttach[1],nominalAttach[1],nominalAttach)||nominalAttach):nominalAttach,level=axisPoint(j===0?1:j===1?.86:.70),head=observed?[level[0]+Math.sin(az)*reach*(j?1:.18),j===0?level[1]+HR*.55:attach[1]+Math.min(h*.10,HR*3.5),level[2]+Math.cos(az)*reach*(j?1:.18)]:spec?[attach[0]+Math.sin(az)*reach,attach[1]+HR*.45,attach[2]+Math.cos(az)*reach]:[axisPoint(1)[0]+Math.sin(az)*reach*(j?1:.18),h*(tub?.84:.90)-j*HR*.40,axisPoint(1)[2]+Math.cos(az)*reach*(j?1:.18)];axis(attach,head,Math.min(.0018,h*.004),stem,'peduncle-asclepias');
    const florets=spec?28:tub?42:45;
    for(let q=0;q<florets;q++){
     const v=(q+.5)/florets,yy=spec?1-2*v:.20+.80*v,ring=Math.sqrt(Math.max(0,1-yy*yy)),phi=q*2.399+az,at=[head[0]+Math.sin(phi)*ring*HR,head[1]+yy*HR*(spec?1:.55),head[2]+Math.cos(phi)*ring*HR],pitch=Math.acos(yy),f=flowerFrame(organs,at,pitch,phi);axis(head,at,Math.min(.00045,L*.055),'#90a481','pedicel-asclepias');
