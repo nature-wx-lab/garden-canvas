@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.773';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.774';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.773';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.774';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9051,13 +9051,30 @@ export function richardsoniiPoint(type,t,u){
  const broad=type==='richardsoniiBasal',teeth=broad?1-.11*(.5+.5*Math.cos(t*Math.PI*12)):1;
  return [u*.5*sn**(broad?.61:.83)*(.7+.3*t)*teeth,t,.05*t*t+.025*u*u*sn];
 }
-function drawRichardsonii(b,{info,s,detail,rand,month},kit){
+// Match the actual Float32 leaf meshes and lower-corolla triangles used by the renderer.
+const richardsoniiLeafSamples={};
+for(const type of ['richardsoniiBasal','richardsoniiLeaf']){const samples=[];for(let i=0;i<=28;i++)for(let j=0;j<=24;j++)samples.push(richardsoniiPoint(type,i/28,j/24*2-1).map(Math.fround));richardsoniiLeafSamples[type]=samples;}
+const richardsoniiPetalTriangles=[];
+for(let row=0;row<28;row++)for(let col=0;col<24;col++)for(let half=0;half<2;half++){const cells=half?[[row,col+1],[row+1,col],[row+1,col+1]]:[[row,col],[row+1,col],[row,col+1]];richardsoniiPetalTriangles.push({vertices:cells.map(([i,j])=>i*25+j),points:cells.map(([i,j])=>richardsoniiPoint('richardsoniiLower',i/28,j/24*2-1).map(Math.fround)),faceIndex:(row*24+col)*2+half});}
+function drawRichardsonii(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,h=s.height,w=s.spread,L=Math.min(a.leafLength,h*.24,w*.08),R=a.flowerRadius*Math.min(1,h/.07),F=a.flowerLength*Math.min(1,h/.07),n=Math.max(7,Math.min(36,Math.round(23*detail*Math.sqrt(w/.25))));
  const noise=(i,k)=>{const v=Math.sin((i+1)*127.1+k*311.7)*43758.5453;return v-Math.floor(v);},mix=(p,q,t)=>p.map((v,k)=>v+(q[k]-v)*t),stemColor=[12,1,2].includes(month)?a.winterStemColor:a.stemColor;
- const leaf=(at,az,i,k,q)=>{if(noise(i,k+100)>s.leafDensity)return;const basal=q<.42,ll=L*(basal?1:.62),width=ll*(basal?.58:.22);b.add(basal?'richardsoniiBasal':'richardsoniiLeaf',basal?'leaf-richardsonii-basal':'leaf-richardsonii-upper',kit.shade(rand,s.leafColor,.04),...at,width,ll,ll,.95+.30*noise(i,k+70),az,(noise(i,k+50)-.5)*.3);};
+ const observed=p?.kind==='p-fb328e7a0f52',ceiling=Math.min(h,s.leafHeight),lowCap=observed&&s.leafDensity>0&&ceiling<=a.leafLength*.5;
+ const axis=(...args)=>observed?delphiniumObservedAxis(b,...args):b.branch(...args);
+ const ground=(from,to,r)=>{if(!lowCap)return from;from=[from[0],Math.min(from[1],ceiling*.10),from[2]];for(let pass=0;pass<32;pass++){const matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;let min=Infinity;for(let j=0;j<pos.count;j++)min=Math.min(min,new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y);if(min>=0)break;from[1]+=-min+1e-10;}return from;};
+ const placeLeaves=(parts,at,az,paths)=>{
+  if(!parts.length)return;const samples=[];for(const v of parts){const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);for(const q of richardsoniiLeafSamples[shape])samples.push(new THREE.Vector3(...q).applyMatrix4(matrix).sub(new THREE.Vector3(...at)));}
+  const measure=angle=>{const rotation=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(Math.cos(az),0,-Math.sin(az)),angle);let low=0,high=0;for(const q of samples){const y=q.clone().applyQuaternion(rotation).y;low=Math.min(low,y);high=Math.max(high,y);}return{low,high,rotation};};
+  const full=bounds=>at[1]+bounds.low>=0&&at[1]+bounds.high<=ceiling?at:calaminthaNearestStem(paths,-bounds.low+1e-9,ceiling-bounds.high-1e-9,at);
+  let bounds=measure(0),base=full(bounds),fit=1,angle=0;const candidates=[{angle,bounds}];if(!base)for(const adjusted of [.25,.5,.75,1]){const trial=measure(adjusted);candidates.push({angle:adjusted,bounds:trial});base=full(trial);if(base){angle=adjusted;bounds=trial;break;}}
+  if(!base){let best=-1;for(const candidate of candidates){const{low,high}=candidate.bounds,desired=high>low?(ceiling-2e-9)*(-low)/(high-low):at[1];for(const line of paths){const lower=Math.max(0,Math.min(line[0][1],line[1][1])),upper=Math.min(ceiling,Math.max(line[0][1],line[1][1]));if(lower>upper)continue;const y=Math.max(lower,Math.min(upper,desired)),point=calaminthaNearestStem([line],y,y,at);if(!point)continue;const amount=Math.max(0,Math.min(1,high>0?(ceiling-point[1]-2e-9)/high:1,low<0?(point[1]-1e-9)/-low:1));if(amount>best){best=amount;base=point;bounds=candidate.bounds;angle=candidate.angle;}}}if(!base||best<=0)throw new Error('Richardsonii leaf has no fitted attachment '+JSON.stringify({h,w,ceiling,at}));fit=best;}
+  for(const v of parts){if(base===at&&angle===0&&fit===1){b.add(...v);continue;}const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,q=bounds.rotation.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),point=new THREE.Vector3(x,y,z).sub(new THREE.Vector3(...at)).applyQuaternion(bounds.rotation).multiplyScalar(fit).add(new THREE.Vector3(...base));b.add(shape,kind,color,...point.toArray(),sx*fit,sy*fit,sz*fit,e.x,e.y,e.z);}
+ };
+ let petalInstance=0;const surfaces=[],organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(v[1]!=='petal-richardsonii-lower')return;const instanceId=petalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:R*.35,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
+ const leaf=(at,az,i,k,q,paths)=>{if(noise(i,k+100)>s.leafDensity)return;const basal=q<.42,ll=L*(basal?1:.62),width=ll*(basal?.58:.22),v=[basal?'richardsoniiBasal':'richardsoniiLeaf',basal?'leaf-richardsonii-basal':'leaf-richardsonii-upper',kit.shade(rand,s.leafColor,.04),...at,width,ll,ll,.95+.30*noise(i,k+70),az,(noise(i,k+50)-.5)*.3];if(observed)placeLeaves([v],at,az,paths);else b.add(...v);};
  const flower=(at,az,i,k)=>{
   if(!s.bloom||noise(i,k+901)>s.flowerDensity)return;
-  const f=flowerFrame(b,at,1.05+.35*noise(i,k+800),az),color=kit.shade(rand,s.flowerColor,.03);
+  const f=flowerFrame(organs,at,1.05+.35*noise(i,k+800),az),color=kit.shade(rand,s.flowerColor,.03);
   if(noise(i,k+600)>.88){f.add(kit.bud,'bud-richardsonii','#9eb673',0,F*.4,0,F*.19,F*.55,F*.19);return;}
   f.add('richardsoniiTube','tube-richardsonii',color,0,0,0,F,F,F);
   // The three broad lower lobes and two narrow upper lobes retain bilateral symmetry.
@@ -9067,14 +9084,15 @@ function drawRichardsonii(b,{info,s,detail,rand,month},kit){
   for(let j=0;j<5;j++)f.add('richardsoniiLeaf','sepal-richardsonii',a.stemColor,0,F*.10,0,F*.13,F*.78,F*.78,.35,j*TAU/5,0);
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399963,rr=w*.36*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr*.36,.004,Math.cos(az)*rr*.36],top=[Math.sin(az)*rr,h*(.47+.27*noise(i,9)),Math.cos(az)*rr];let prev=root;
+  const az=i*2.399963,rr=w*.36*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr*.36,.004,Math.cos(az)*rr*.36],top=[Math.sin(az)*rr,h*(.47+.27*noise(i,9)),Math.cos(az)*rr];let prev=root;const own=[];
   for(let j=1;j<=7;j++){
    const q=j/7,at=mix(root,top,q);at[1]=.004+(top[1]-.004)*Math.sin(q*Math.PI*.57);at[0]+=Math.sin(q*Math.PI)*w*.025*(noise(i,5)-.5);
-   b.branch(prev,at,Math.min(.00062,h*.006)*(1-q*.52),stemColor,'stem-richardsonii');prev=at;const aa=az+j*2.399963;leaf(at,aa,i,j*100,q);
-   if(j>=3&&j%2===1){const end=[at[0]+Math.sin(aa)*w*.085,at[1]+h*.07,at[2]+Math.cos(aa)*w*.085];b.branch(at,end,Math.min(.00030,h*.003),stemColor,'pedicel-richardsonii');flower(end,aa,i,j*151);}
-   if(j===3||j===5){const aa2=az+(j===3?1:-1)*1.2,end=[at[0]+Math.sin(aa2)*w*.13,at[1]+h*.12,at[2]+Math.cos(aa2)*w*.13];let last=at;for(let k=1;k<=3;k++){const v=mix(at,end,k/3);b.branch(last,v,Math.min(.00039,h*.004)*(1-k*.12),stemColor,'branch-richardsonii');leaf(v,aa2+k*2.4,i,j*900+k*100,.3+k*.2);last=v;}flower(end,aa2,i,j*1111);}
+   const radius=Math.min(.00062,h*.006)*(1-q*.52),from=observed&&j===1?ground(prev,at,radius):prev;axis(from,at,radius,stemColor,'stem-richardsonii');own.push([from,at]);prev=at;const aa=az+j*2.399963;leaf(at,aa,i,j*100,q,own);
+   if(j>=3&&j%2===1){const end=[at[0]+Math.sin(aa)*w*.085,at[1]+h*.07,at[2]+Math.cos(aa)*w*.085];axis(at,end,Math.min(.00030,h*.003),stemColor,'pedicel-richardsonii');flower(end,aa,i,j*151);}
+   if(j===3||j===5){const aa2=az+(j===3?1:-1)*1.2,end=[at[0]+Math.sin(aa2)*w*.13,at[1]+h*.12,at[2]+Math.cos(aa2)*w*.13];let last=at;const branch=[];for(let k=1;k<=3;k++){const v=mix(at,end,k/3);axis(last,v,Math.min(.00039,h*.004)*(1-k*.12),stemColor,'branch-richardsonii');branch.push([last,v]);leaf(v,aa2+k*2.4,i,j*900+k*100,.3+k*.2,own.concat(branch));last=v;}flower(end,aa2,i,j*1111);}
   }
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of richardsoniiPetalTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
 }
 
 // Narrow leaflike whorls and discrete tubular flowers of the spreading Phuopsis mat.
@@ -18506,7 +18524,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='cerintheCymes'){drawCerinthe(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='unifloraMats'){drawUniflora(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='maitaiCrowns'){drawMaitai(b,{info,s,p,detail,rand,month},kit);return;}
- if(info.appearance?.architecture==='richardsoniiTrails'){drawRichardsonii(b,{info,s,detail,rand,month},kit);return;}
+ if(info.appearance?.architecture==='richardsoniiTrails'){drawRichardsonii(b,{info,s,p,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='phuopsisHeads'){drawPhuopsis(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='alchemillaCymes'){drawAlchemilla(b,{info,s,detail,rand,month},kit);return;}
  if(info.appearance?.architecture==='doubleRaggedRobin'){drawRaggedRobin(b,{info,s,detail,rand,month},kit);return;}
