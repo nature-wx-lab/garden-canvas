@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.750';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.751';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.750';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.751';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -13301,11 +13301,29 @@ function aquilegiaFlower(b,at,a,col,pitch,yaw,rand,kit){
  }
 }
 
-function drawAquilegia(b,{info,s,detail,rand},kit){
+const aquilegiaUnitAxis=new THREE.CylinderGeometry(.62,1,1,7,2),aquilegiaLeafSamples=[];
+for(let i=0;i<=40;i++)for(let j=0;j<=10;j++)aquilegiaLeafSamples.push(aquilegiaPoint('leaf',i/40,j/10*2-1).map(Math.fround));
+function aquilegiaObservedAxis(b,from,to,r,color,kind){
+ const radius=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*.7),length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length<=0)return;
+ const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');
+ b.add(aquilegiaUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,radius,length,radius,rotation.x,rotation.y,rotation.z);
+}
+function aquilegiaGroundRoot(from,to,r){
+ const root=[...from],position=aquilegiaUnitAxis.attributes.position,up=new THREE.Vector3(0,1,0);
+ for(let pass=0;pass<16;pass++){
+  const va=new THREE.Vector3(...root),vb=new THREE.Vector3(...to),dir=vb.clone().sub(va),matrix=new THREE.Matrix4().compose(va.add(vb).multiplyScalar(.5),new THREE.Quaternion().setFromUnitVectors(up,dir.clone().normalize()),new THREE.Vector3(r,dir.length(),r));matrix.elements=matrix.elements.map(Math.fround);let low=Infinity;
+  for(let i=0;i<position.count;i++)low=Math.min(low,new THREE.Vector3().fromBufferAttribute(position,i).applyMatrix4(matrix).y);
+  if(low>=0)break;root[1]+=-low+1e-8;
+ }
+ return root;
+}
+function drawAquilegia(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
+ const observed=['p-fa90805ca0e8','p-5fb031cbf04a','p-485f5ee72b09'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight);let frontPetal=null;
  const a=info.appearance,type=a.shootProfile,small=type==='ecalcarata',h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.21)*s.leafScale,green=s.leafColor,stem=a.stemColor;
  const leaf=(at,az,len,biternate=true,pitch=.82)=>{
-  const f=flowerFrame(b,at,-pitch,az),leaflet=(base,angle,ll)=>{
+  const parts=[],dst=observed?{add:(...v)=>parts.push({type:'leaf',v}),branch:(...v)=>parts.push({type:'axis',v})}:b;
+  const f=flowerFrame(dst,observed?[0,0,0]:at,-pitch,az),leaflet=(base,angle,ll)=>{
    const end=[base[0]+Math.sin(angle)*ll*.30,base[1]+Math.cos(angle)*ll*.30,base[2]];f.branch(base,end,.00035,stem,'petiolule-aquilegia');
    f.add('aquilegiaLeaflet','leaf-aquilegia',kit.shade(rand,green,.055),...end,ll*a.leafWidth/a.leafLength,ll,ll,0,0,-angle);
   };
@@ -13315,24 +13333,43 @@ function drawAquilegia(b,{info,s,detail,rand},kit){
    f.branch(origin,tip,.0004,stem,'leafRachis-aquilegia');
    if(biternate)for(let k=-1;k<=1;k++)leaflet(tip,an+k*.92,len*(j===0?1:.86)*(k===0?1:.85));else leaflet(tip,an,len*.83);
   }
+  if(!observed)return;
+  let low=0,high=0;
+  for(const part of parts){
+   if(part.type==='axis'){const[from,to,r]=part.v;low=Math.min(low,from[1]-r,to[1]-r);high=Math.max(high,from[1]+r,to[1]+r);continue;}
+   const[shape,kind,color,x,y,z,sx,sy,sz,rx,ry,rz]=part.v,e=new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')).elements;
+   for(const q of aquilegiaLeafSamples){const yy=y+e[1]*q[0]*sx+e[5]*q[1]*sy+e[9]*q[2]*sz;low=Math.min(low,yy);high=Math.max(high,yy);}
+  }
+  const fit=Math.max(0,Math.min(1,high>0?(ceiling-at[1]-.00001)/high:1,low<0?at[1]/-low:1)),point=q=>q.map((v,k)=>at[k]+v*fit);
+  for(const part of parts){if(part.type==='axis'){const[from,to,r,color,kind]=part.v;aquilegiaObservedAxis(b,point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx,ry,rz]=part.v;b.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}}
  };
+ // Intercept the final composed add transform; instance matrices and surface vertices are Float32.
+ const organs=observed?{branch:(from,to,r,color,kind)=>{if(Math.hypot(...to.map((v,k)=>v-from[k]))>=.0001)b.branch(from,to,r,color,kind);else aquilegiaObservedAxis(b,from,to,r,color,kind);},add:(...v)=>{
+  b.add(...v);const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v;if(!kind.startsWith('petal-aquilegia'))return;
+  const matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);
+  const points=[[30,4],[30,5],[31,4]].map(([i,j])=>new THREE.Vector3(...aquilegiaPoint(shape==='aquilegiaPointed'?'pointed':'rounded',i/40,j/10*2-1).map(Math.fround)).applyMatrix4(matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),towards=new THREE.Vector3(.8,.18,1).normalize();if(normal.dot(towards)<0)normal.negate();
+  const clear=point.y>ceiling+sy*.1,score=point.x*.8+point.z+point.y*.1;
+  if(!frontPetal||clear&&!frontPetal.clear||clear===frontPetal.clear&&score>frontPetal.score)frontPetal={point,normal,radius:Math.max(sx,sy,sz)*.6,clear,score};
+ }}:b;
+ const flowerAppearance=observed?{...a,flowerRadius:Math.min(a.flowerRadius,h*.12,w*.05)}:a;
  const leaves=Math.max(5,Math.round((small?10:22)*detail));
- for(let i=0;i<leaves;i++)if(i===0||rand()<s.leafDensity){const an=i*2.399963,rr=w*.19*Math.sqrt(rand());leaf([Math.sin(an)*rr,.009,Math.cos(an)*rr],an,L*(.70+.3*rand()),true,.57+rand()*.57);}
+ for(let i=0;i<leaves;i++)if(i===0||rand()<s.leafDensity){const an=i*2.399963,rr=w*.19*Math.sqrt(rand());leaf([Math.sin(an)*rr,observed?Math.min(.009,h*.08,ceiling*.10):.009,Math.cos(an)*rr],an,L*(.70+.3*rand()),true,.57+rand()*.57);}
  if(!s.bloom)return;
  const stems=Math.max(3,Math.round((small?9:type==='winky'?9:type==='canadensis'?8:7)*detail));
  for(let i=0;i<stems;i++){
   const an=i*2.399963,rr=w*.11*Math.sqrt(rand()),base=[Math.sin(an)*rr,.009,Math.cos(an)*rr],height=h*(.68+.23*rand()),reach=w*(small?.19:.12),nodes=[];
   for(let j=0;j<=5;j++){
    const t=j/5,pt=[base[0]+Math.sin(an)*reach*t*t,height*t,base[2]+Math.cos(an)*reach*t*t];nodes.push(pt);
-   if(j){b.branch(nodes[j-1],pt,small?.0005:.0012,stem,'stem-aquilegia');if(j<5&&rand()<s.leafDensity)leaf(pt,an+j*2.399963,L*(.8-j*.13),j<3,.76);}
+   if(j){if(observed&&j===1)nodes[0]=aquilegiaGroundRoot(nodes[0],pt,.0012);b.branch(nodes[j-1],pt,small?.0005:.0012,stem,'stem-aquilegia');if(j<5&&rand()<s.leafDensity){let attach=pt;if(observed){const y=Math.max(nodes[0][1],Math.min(pt[1],ceiling*.15*j/4)),q=nodes.findIndex((n,k)=>k>0&&n[1]>=y),from=nodes[Math.max(0,q-1)],to=nodes[Math.max(1,q)],t=(y-from[1])/(to[1]-from[1]);attach=from.map((v,k)=>v+(to[k]-v)*t);}leaf(attach,an+j*2.399963,L*(.8-j*.13),j<3,.76);}}
   }
   for(let k=0;k<(small?7:4);k++){
    const az=an+k*2.399963,start=nodes[3+k%3],side=w*(small?.20:.16)*(.4+rand()*.6),up=h*(.08+rand()*.13),nodding=!['winky','chrysantha','koralle'].includes(type),pitch=nodding?Math.PI-.3-rand()*.4:type==='koralle'?1.25+rand()*.35:.18+rand()*.68,end=[start[0]+Math.sin(az)*side,start[1]+up-(nodding?h*.03:0),start[2]+Math.cos(az)*side],middle=[(start[0]+end[0])*.5,start[1]+up,(start[2]+end[2])*.5];
    let prev=start;for(let j=1;j<=6;j++){const t=j/6,q=1-t,pt=start.map((v,d)=>q*q*v+2*q*t*middle[d]+t*t*end[d]);b.branch(prev,pt,small?.00035:.00065,stem,'pedicel-aquilegia');prev=pt;}
-   if((i+k)%7===0||rand()>s.flowerDensity)b.add(kit.bud,'flowerBud-aquilegia',type==='barlow'?'#8b9281':s.flowerColor,...end,a.flowerRadius*.29,a.flowerRadius*.48,a.flowerRadius*.29,pitch,az,0);
-   else aquilegiaFlower(b,end,a,s.flowerColor,pitch,az,rand,kit);
+   if((i+k)%7===0||rand()>s.flowerDensity)b.add(kit.bud,'flowerBud-aquilegia',type==='barlow'?'#8b9281':s.flowerColor,...end,flowerAppearance.flowerRadius*.29,flowerAppearance.flowerRadius*.48,flowerAppearance.flowerRadius*.29,pitch,az,0);
+   else aquilegiaFlower(organs,end,flowerAppearance,s.flowerColor,pitch,az,rand,kit);
   }
  }
+ if(frontPetal){const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),frontPetal.normal),'YXZ');b.flower?.(frontPetal.point.toArray(),frontPetal.radius,e.x,e.y,e.z);}
 }
 
 export function dianthusLeafPoint(t,u){
@@ -18217,7 +18254,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='heucherellaCrowns'){drawHeucherella(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='iberisCorymbs'){drawIberis(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='astilbePlumes'){drawAstilbe(b,{info,s,p,detail,rand},kit);return;}
- if(info.appearance?.architecture==='aquilegiaCymes'){drawAquilegia(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.architecture==='aquilegiaCymes'){drawAquilegia(b,{info,s,p,detail,rand},kit);return;}
  if(info.appearance?.architecture==='dianthusCymes'){drawDianthus(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='verbenaBranches'){drawVerbena(b,{info,s,detail,rand},kit);return;}
  if(info.appearance?.architecture==='scabiousHabit'){drawScabious(b,{info,s,p,detail,rand},kit);return;}
