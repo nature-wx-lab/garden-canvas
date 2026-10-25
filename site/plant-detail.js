@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.784';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.785';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.784';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.785';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16585,30 +16585,46 @@ export function asclepiasPoint(type,t,u){
  if(type.endsWith('Hood')){const tub=type==='milkweedTuberosaHood',a=u*Math.PI*.80,r=.11+.03*sn;return [Math.sin(a)*r,.14+(tub?.65:.51)*t+.024*Math.cos(a)*t,.26+Math.cos(a)*r];}
  const sepal=type==='milkweedSepal',spec=type==='milkweedSpeciosaPetal';return [u*(sepal?.10:spec?.24:.29)*sn**(sepal?.85:.65),.08-(sepal?.30:spec?.61:.55)*t+.035*u*u*sn,.16+(sepal?.34:spec?.76:.69)*Math.sin(t*Math.PI*.62)];
 }
-function drawAsclepiasReferences(b,{info,s,detail,rand,month},kit){
+
+// Match the existing32x24 leaf and32x40 hood buffers; organ proportions are illustrative.
+const incarnataLeafSamples=[],incarnataHoodTriangles=[];
+for(let i=0;i<=32;i++)for(let j=0;j<=24;j++)incarnataLeafSamples.push(asclepiasPoint('milkweedNarrowLeaf',i/32,j/12-1).map(Math.fround));
+{
+ const positions=[];for(let i=0;i<=32;i++)for(let j=0;j<=40;j++)positions.push(asclepiasPoint('milkweedIncarnataHood',i/32,j/20-1).map(Math.fround));
+ for(let i=0;i<32;i++)for(let j=0;j<40;j++){const k=i*41+j;for(const vertices of [[k,k+1,k+41],[k+1,k+42,k+41]]){const points=vertices.map(v=>positions[v]),a=new THREE.Vector3(...points[1]).sub(new THREE.Vector3(...points[0])),b=new THREE.Vector3(...points[2]).sub(new THREE.Vector3(...points[0]));if(a.cross(b).lengthSq()>1e-22)incarnataHoodTriangles.push({faceIndex:(i*40+j)*2+(vertices[0]===k?0:1),vertices,points});}}
+}
+
+function drawAsclepiasReferences(b,{info,s,p,detail,rand,month},kit){
  const a=info.appearance,type=a.flowerPalette.type,spec=type==='speciosa',tub=type==='tuberosa',ice=type==='iceBallet',h=s.height,w=s.spread,n=Math.max(2,Math.round(3*detail)),elongation=month<=3?.20:month===4?.58:1,stemH=h*.92*elongation,green=s.leafDensity<.5?'#a0a083':s.leafColor,stem=spec?'#91aa9c':ice?'#6f8e5c':tub?'#718c58':'#84697a',L=Math.min(spec?.0105:tub?.0048:.0045,h*.025),HR=Math.min(spec?.028:tub?.020:.019,w*.14,h*.12);
+ const observed=['p-4f2eb34e4df0','p-895d1bc617cd'].includes(p?.kind),ceiling=Math.min(h,s.leafHeight),surfaces=[];let hoodInstance=0;
+ const axis=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(!observed||length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const ground=(from,to,r)=>{if(!observed||ceiling>.02)return from;from=[from[0],Math.min(from[1],ceiling*.05),from[2]];for(let pass=0;pass<32;pass++){const matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;let min=Infinity;for(let j=0;j<pos.count;j++)min=Math.min(min,new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y);if(min>=0)break;from[1]+=-min+1e-10;}return from;};
+ const fitPair=(parts,at)=>{let low=0,high=0;for(const part of parts){if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;for(let j=0;j<pos.count;j++){const y=new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y-at[1];low=Math.min(low,y);high=Math.max(high,y);}}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);for(const q of incarnataLeafSamples){const y=new THREE.Vector3(...q).applyMatrix4(matrix).y-at[1];low=Math.min(low,y);high=Math.max(high,y);}}}const fit=Math.min(1,high>0?(ceiling-at[1]-1e-8)/high:1,low<0?(at[1]-1e-8)/-low:1);if(!(fit>0))throw Error('Asclepias own-stem pair cannot fit '+JSON.stringify({id:p.kind,month,h,w,ceiling,at}));const point=q=>q.map((v,k)=>at[k]+(v-at[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;axis(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;b.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
+ const organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(v[1]!=='hood-asclepias-'+type)return;const instanceId=hoodInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:sy*1.55,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
  for(let i=0;i<n;i++){
-  const yaw=i*2.399,R=w*.16*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],axis=t=>[root[0]+Math.sin(yaw)*stemH*.025*t*t,stemH*t,root[2]+Math.cos(yaw)*stemH*.025*t*t];let from=root;
-  for(let k=1;k<=24;k++){const to=axis(k/24);b.branch(from,to,Math.min(spec?.0038:.0030,h*.006),stem,'stem-asclepias');from=to;}
+  const yaw=i*2.399,R=w*.16*Math.sqrt((i+.5)/n),root=[Math.sin(yaw)*R,.001,Math.cos(yaw)*R],axisPoint=t=>[root[0]+Math.sin(yaw)*stemH*.025*t*t,stemH*t,root[2]+Math.cos(yaw)*stemH*.025*t*t];let from=root;
+  const own=[];for(let k=1;k<=24;k++){const to=axisPoint(k/24),r=Math.min(spec?.0038:.0030,h*.006),actualFrom=k===1?ground(from,to,r):from;axis(actualFrom,to,r,stem,'stem-asclepias');own.push([actualFrom,to]);from=to;}
   const nodes=6,lh=Math.min(s.leafHeight,stemH*.88),leafLen=Math.min(spec?.23:tub?.14:.18,h*(spec?.23:.18),w*.43)*s.leafScale;
   for(let j=0;j<nodes;j++){
-   const y=lh*(.13+.135*j),at=axis(y/stemH),leaves=tub?1:2,az=yaw+j*(tub?2.399:Math.PI/2),len=leafLen*(.84+.16*Math.sin(Math.PI*(j+.5)/nodes)),width=len*(spec?.48:tub?.24:.22);
+   const y=lh*(.13+.135*j),nominal=axisPoint(y/stemH),at=observed?(calaminthaNearestStem(own,Math.max(own[0][0][1],Math.min(ceiling-1e-8,y)),Math.max(own[0][0][1],Math.min(ceiling-1e-8,y)),nominal)||nominal):nominal,leaves=tub?1:2,az=yaw+j*(tub?2.399:Math.PI/2),len=leafLen*(.84+.16*Math.sin(Math.PI*(j+.5)/nodes)),width=len*(spec?.48:tub?.24:.22);
+   const parts=[],leafBatch=observed?{branch:(...v)=>parts.push({line:v}),add:(...v)=>parts.push({organ:v})}:b;
    for(let k=0;k<leaves;k++){
-    const an=az+k*Math.PI,petiole=Math.min(.011,len*.05),origin=[at[0]+Math.sin(an)*petiole,at[1],at[2]+Math.cos(an)*petiole],f=flowerFrame(b,origin,-.12+(j%3)*.035,an),shape=spec?'milkweedBroadLeaf':'milkweedNarrowLeaf';b.branch(at,origin,.00045,stem,'petiole-asclepias');f.add(shape,'leaf-asclepias-'+type,kit.shade(rand,green,.023),0,0,0,width,len,len);
+    const an=az+k*Math.PI,petiole=Math.min(.011,len*.05),origin=[at[0]+Math.sin(an)*petiole,at[1],at[2]+Math.cos(an)*petiole],f=flowerFrame(leafBatch,origin,-.12+(j%3)*.035,an),shape=spec?'milkweedBroadLeaf':'milkweedNarrowLeaf';leafBatch.branch(at,origin,.00045,stem,'petiole-asclepias');f.add(shape,'leaf-asclepias-'+type,kit.shade(rand,green,.023),0,0,0,width,len,len);
     const point=(t,u)=>{const p=asclepiasPoint(shape,t,u);return [p[0]*width,p[1]*len+.00006,p[2]*len];};let prev=point(.01,0);
     for(let q=1;q<=20;q++){const to=point(.01+q*.048,0);f.branch(prev,to,spec?.00012:.000055,spec?'#b7c8bc':'#94a68a','vein-asclepias');prev=to;}
     for(let q=0;q<8;q++)for(const side of [-1,1]){const t=.09+q*.093,p0=point(t,0),p1=point(t+.05,side*.55),p2=point(t+.10,side*.90);f.branch(p0,p1,.000035,spec?'#acbeb2':'#8fa384','vein-asclepias');f.branch(p1,p2,.000030,spec?'#acbeb2':'#8fa384','vein-asclepias');}
    }
+   if(observed)fitPair(parts,at);
   }
   if(!s.bloom)continue;
   const heads=spec?3:tub?4:3;
   for(let j=0;j<heads;j++){
-   const az=yaw+j*2.399,attach=axis(spec?.58+j*.15:.66),reach=Math.min(w*.17,h*.13),head=spec?[attach[0]+Math.sin(az)*reach,attach[1]+HR*.45,attach[2]+Math.cos(az)*reach]:[axis(1)[0]+Math.sin(az)*reach*(j?1:.18),h*(tub?.84:.90)-j*HR*.40,axis(1)[2]+Math.cos(az)*reach*(j?1:.18)];b.branch(attach,head,Math.min(.0018,h*.004),stem,'peduncle-asclepias');
+   const az=yaw+j*2.399,attach=axisPoint(spec?.58+j*.15:.66),reach=Math.min(w*.17,h*.13),head=spec?[attach[0]+Math.sin(az)*reach,attach[1]+HR*.45,attach[2]+Math.cos(az)*reach]:[axisPoint(1)[0]+Math.sin(az)*reach*(j?1:.18),h*(tub?.84:.90)-j*HR*.40,axisPoint(1)[2]+Math.cos(az)*reach*(j?1:.18)];axis(attach,head,Math.min(.0018,h*.004),stem,'peduncle-asclepias');
    const florets=spec?28:tub?42:45;
    for(let q=0;q<florets;q++){
-    const v=(q+.5)/florets,yy=spec?1-2*v:.20+.80*v,ring=Math.sqrt(Math.max(0,1-yy*yy)),phi=q*2.399+az,at=[head[0]+Math.sin(phi)*ring*HR,head[1]+yy*HR*(spec?1:.55),head[2]+Math.cos(phi)*ring*HR],pitch=Math.acos(yy),f=flowerFrame(b,at,pitch,phi);b.branch(head,at,Math.min(.00045,L*.055),'#90a481','pedicel-asclepias');
+    const v=(q+.5)/florets,yy=spec?1-2*v:.20+.80*v,ring=Math.sqrt(Math.max(0,1-yy*yy)),phi=q*2.399+az,at=[head[0]+Math.sin(phi)*ring*HR,head[1]+yy*HR*(spec?1:.55),head[2]+Math.cos(phi)*ring*HR],pitch=Math.acos(yy),f=flowerFrame(organs,at,pitch,phi);axis(head,at,Math.min(.00045,L*.055),'#90a481','pedicel-asclepias');
     if(q%6===5){f.add(kit.bud,'bud-asclepias-'+type,spec?'#beb9b4':ice?'#e0e1c5':tub?'#d59b55':'#af668f',0,L*.28,0,L*.31,L*.36,L*.31);continue;}
-    if(i===0&&j===0&&q===(spec?0:florets-2))f.flower([0,L*.25,0],L*(spec?1.55:1.25));
+    if(!observed&&i===0&&j===0&&q===(spec?0:florets-2))f.flower([0,L*.25,0],L*(spec?1.55:1.25));
     f.add('milkweedCorollaBase','corolla-base-asclepias',s.flowerColor,0,0,0,L,L,L);f.add('milkweedColumn','gynostegium-asclepias',spec?'#a28c90':ice?'#d9d1b5':tub?'#cdb77c':'#c0a6ae',0,0,0,L,L,L);
     for(let k=0;k<5;k++){
      const an=k*TAU/5,petal=spec?'milkweedSpeciosaPetal':'milkweedPetal',hood=spec?'milkweedSpeciosaHood':tub?'milkweedTuberosaHood':'milkweedIncarnataHood',crown=spec?'#dfcbd8':ice?'#e9e4d2':tub?'#ffb13c':'#e8dedc';f.add('milkweedSepal','sepal-asclepias','#91a17b',0,-L*.015,0,L,L,L,0,an+Math.PI/5,0);f.add(petal,'corolla-lobe-asclepias-'+type,kit.shade(rand,s.flowerColor,.015),0,0,0,L,L,L,0,an,0);f.add(hood,'hood-asclepias-'+type,crown,0,0,0,L,L,L,0,an,0);
@@ -16617,6 +16633,8 @@ function drawAsclepiasReferences(b,{info,s,detail,rand,month},kit){
    }
   }
  }
+
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of incarnataHoodTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
 }
 
 export function parrotBranchTulipPoint(type,t,u){
@@ -18760,7 +18778,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='nonRepensTrifolium'){drawMeadowTrifolium(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='bronzeArmeria'){drawBronzeArmeria(b,{info,s,detail,rand},kit);return;}
- if(a.architecture==='asclepiasReferences'){drawAsclepiasReferences(b,{info,s,detail,rand,month},kit);return;}
+ if(a.architecture==='asclepiasReferences'){drawAsclepiasReferences(b,{info,s,p,detail,rand,month},kit);return;}
  if(a.architecture==='parrotBranchTulips'){drawParrotBranchTulips(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='pinkRainLily'){drawPinkRainLily(b,{info,s,p,detail,rand},kit);return;}
  if(a.architecture==='doubleTulipReferences'){drawDoubleTulipReferences(b,{info,s,detail,rand},kit);return;}
