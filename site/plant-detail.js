@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.805';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.807';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.805';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.807';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -18273,23 +18273,34 @@ export function acisPoint(type,t,u){
  const inner=type==='acisInnerTepal',width=Math.max(inner?.055:0,.29*Math.sin(Math.PI*t)**.52),notch=inner?.07*Math.exp(-u*u*12)*t**12:0;
  return [u*width,t*1.55-notch,.95*t+.04*u*u*Math.sin(Math.PI*t)];
 }
+// Renderer-matched thread leaves and outer tepal triangles for autumn Acis.
+const acisObservedSamples={},acisObservedTriangles=[];
+for(const shape of ['acisFiliformLeaf','acisOuterTepal','acisInnerTepal']){const cols=shape==='acisFiliformLeaf'?24:18,points=[];for(let i=0;i<=44;i++)for(let j=0;j<=cols;j++)points.push(acisPoint(shape,i/44,shape==='acisFiliformLeaf'?j/cols:j/cols*2-1).map(Math.fround));acisObservedSamples[shape]=points;if(shape==='acisOuterTepal')for(let i=0;i<44;i++)for(let j=0;j<cols;j++){const k=i*(cols+1)+j;for(const vertices of [[k,k+1,k+cols+1],[k+1,k+cols+2,k+cols+1]])acisObservedTriangles.push({faceIndex:(i*cols+j)*2+(vertices[0]===k?0:1),vertices,points:vertices.map(v=>points[v])});}}
 function drawAcis(b,{info,s,detail,rand},kit){
  const a=info.appearance,h=s.height,w=s.spread,n=Math.max(2,Math.round(7*detail)),green=s.leafDensity<.4&&!s.bloom?'#b6b075':'#648148';
+ const ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.25,w/.1),surfaces=[];let tepalInstance=0;
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(v[0]!=='acisOuterTepal')return;const instanceId=tepalInstance++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*2.1,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=acisObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Acis rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
+
  for(let i=0;i<n;i++){
-  const an=i*2.399,rr=w*.22*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,.001,Math.cos(an)*rr],top=h*(.83+rand()*.14);
+  const an=i*2.399,rr=w*.22*Math.sqrt((i+.5)/n),root=[Math.sin(an)*rr,Math.min(.001,ceiling*.05),Math.cos(an)*rr],top=h*(.83+rand()*.14);
   if(s.leafDensity>0)for(let j=0;j<Math.max(1,Math.round(4*s.leafDensity));j++){
-   const L=Math.min(a.leafLength||.22,s.leafHeight,h*.90,w*1.5)*(1-rand()*.18)*s.leafScale;b.add('acisFiliformLeaf','leaf-acis',kit.shade(rand,green,.025),...root,L,L,L,.06+rand()*.18,an+j*2.399,0);
+   const L=Math.min(a.leafLength||.22,s.leafHeight,h*.90,w*1.5)*(1-rand()*.18)*s.leafScale,leafParts=[{organ:['acisFiliformLeaf','leaf-acis',kit.shade(rand,green,.025),...root,L,L,L,.06+rand()*.18,an+j*2.399,0]}];fitAssembly(leafParts,root,ceiling,organs);
   }
-  if(!s.bloom)continue;const point=t=>[root[0]+Math.sin(an)*h*.025*t,top*t,root[2]+Math.cos(an)*h*.025*t];let from=root;
-  for(let j=1;j<=14;j++){const t=j/14,to=point(t);b.branch(from,to,.00055,t<.8?'#708951':'#9a8278','scape-acis');from=to;}
+  if(!s.bloom)continue;const parts=[],out={add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})},point=t=>[root[0]+Math.sin(an)*h*.025*t,top*t,root[2]+Math.cos(an)*h*.025*t];let from=root;
+  for(let j=1;j<=14;j++){const t=j/14,to=point(t);out.branch(from,to,.00055*micro,t<.8?'#708951':'#9a8278','scape-acis');from=to;}
   for(let j=0;j<3;j++){
    const yaw=an+j*2.399,reach=Math.min(.035,w*.17)*(1-j*.17),at=[from[0]+Math.sin(yaw)*reach,top-h*(.05+j*.035),from[2]+Math.cos(yaw)*reach],arch=[from[0]+Math.sin(yaw)*reach*.7,top+h*.055,from[2]+Math.cos(yaw)*reach*.7];let previous=from;
-   for(let k=1;k<=14;k++){const t=k/14,to=from.map((v,axis)=>(1-t)**2*v+2*(1-t)*t*arch[axis]+t*t*at[axis]);b.branch(previous,to,.00030,'#82915e','pedicel-acis');previous=to;}
+   for(let k=1;k<=14;k++){const t=k/14,to=from.map((v,axis)=>(1-t)**2*v+2*(1-t)*t*arch[axis]+t*t*at[axis]);out.branch(previous,to,.00030*micro,'#82915e','pedicel-acis');previous=to;}
    const r=Math.min(a.flowerRadius||.006,h*.055);
-   if(j===2)b.add(kit.bud,'bud-acis','#e6e9ce',...at,r*.27,r*.60,r*.27,2.8,yaw,0);
-   else detailedFlower(b,{x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'acisAutumnBell',tilt:.10,yaw},{...kit,rand});
+   if(j===2)out.add(kit.bud,'bud-acis','#e6e9ce',...at,r*.27,r*.60,r*.27,2.8,yaw,0);
+   else detailedFlower(out,{markInspection:false,x:at[0],y:at[1],z:at[2],r,color:s.flowerColor,shape:'acisAutumnBell',tilt:.10,yaw},{...kit,rand});
   }
+  fitAssembly(parts,root,h,organs);
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of acisObservedTriangles){const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<=0)continue;if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
+
 }
 export function fawnLilyPoint(type,t,u){
  if(type==='fawnReflexedTepal')return [u*.20*Math.sin(Math.PI*t)**.65,.28*Math.sin(Math.PI*t)-.46*t**3+.055*u*u*Math.sin(Math.PI*t),t];
