@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.746';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.747';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.746';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.747';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -13187,30 +13187,52 @@ export function astilbeFloretGeometry(){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.astilbeFloret=true;return g;
 }
 
+const astilbeUnitAxis=new THREE.CylinderGeometry(.62,1,1,7,2),astilbeLeafSamples=[];
+for(let i=0;i<=40;i++)for(let j=0;j<=10;j++)astilbeLeafSamples.push(astilbeLeafPoint(i/40,j/10*2-1).map(Math.fround));
+function astilbeObservedAxis(b,from,to,r,color,kind,unitOnly=false){
+ const radius=Math.min(r,Math.max(0,Math.min(from[1],to[1]))*.7),length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length<=0)return;
+ if(!unitOnly&&length>=.0001){b.branch(from,to,radius,color,kind);return;}
+ const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');
+ b.add(astilbeUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,radius,length,radius,rotation.x,rotation.y,rotation.z);
+}
 function drawAstilbe(b,{info,s,p,detail,rand},kit){
  if(s.groundDormant)return;
- const a=info.appearance,pal=a.flowerPalette,h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.19)*s.leafScale,green=s.leafColor,stem=a.stemColor,blend=(x,y,t)=>new THREE.Color(x).lerp(new THREE.Color(y),t).getStyle();
+ const observed=['p-d7f5b281e46c','p-b1991b29a607','p-84c4127e9c9e'].includes(p?.kind),ceiling=Math.min(s.height,s.leafHeight),organBuilder=observed?{add:(...v)=>b.add(...v),branch:(...v)=>astilbeObservedAxis(b,...v),flower:(...v)=>b.flower?.(...v)}:b;
+ const a=info.appearance,pal=a.flowerPalette,h=s.height,w=s.spread,L=Math.min(a.leafLength,w*.19)*s.leafScale,green=s.leafColor,stem=a.stemColor,blend=(x,y,t)=>new THREE.Color(x).lerp(new THREE.Color(y),t).getStyle();let frontFloret=null;
  const leaf=(at,an,len,compound=true)=>{
-  const f=flowerFrame(b,at,-(.52+rand()*.6),an),axis=len*(compound?2.1:1.3);
+  const parts=[],dst=observed?{add:(...v)=>parts.push({type:'leaf',v}),branch:(...v)=>parts.push({type:'axis',v})}:b;
+  const f=flowerFrame(dst,observed?[0,0,0]:at,-(.52+rand()*.6),an),axis=len*(compound?2.1:1.3);
   f.branch([0,0,0],[0,axis,0],.00085,stem,'petiole-astilbe');
   for(let j=-1;j<=1;j++){
    const az=j*.83,from=[0,axis*(j===0?1:.73),0],ll=len*(j===0?1:.87),end=[Math.sin(az)*ll*.9,from[1]+Math.cos(az)*ll*.9,0];
    f.branch(from,end,.0006,stem,'rachis-astilbe');
-   for(let k=compound?-1:0;k<= (compound?1:0);k++){
+   for(let k=compound?-1:0;k<=(compound?1:0);k++){
     const ang=az+k*.9,base=[end[0]+Math.sin(ang)*ll*.22,end[1]+Math.cos(ang)*ll*.22,0],size=ll*(k===0?1:.76);
     f.branch(end,base,.0003,stem,'petiolule-astilbe');f.add('astilbeLeaflet',a.leafTexture==='glossy'?'leaf-astilbe-glossy':'leaf-astilbe',kit.shade(rand,green,.04),...base,size*a.leafWidth/a.leafLength,size,size,0,0,-ang);
    }
   }
+  if(!observed)return;
+  let low=0,high=0;
+  for(const part of parts){
+   if(part.type==='axis'){const[from,to,r]=part.v;low=Math.min(low,from[1]-r,to[1]-r);high=Math.max(high,from[1]+r,to[1]+r);continue;}
+   const[shape,kind,color,x,y,z,sx,sy,sz,rx,ry,rz]=part.v,e=new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')).elements;
+   for(const q of astilbeLeafSamples){const yy=y+e[1]*q[0]*sx+e[5]*q[1]*sy+e[9]*q[2]*sz;low=Math.min(low,yy);high=Math.max(high,yy);}
+  }
+  const fit=Math.max(0,Math.min(1,high>0?(ceiling-at[1]-.00001)/high:1,low<0?at[1]/-low:1)),point=q=>q.map((v,k)=>at[k]+v*fit);
+  for(const part of parts){
+   if(part.type==='axis'){const[from,to,r,color,kind]=part.v;astilbeObservedAxis(b,point(from),point(to),r*fit,color,kind,true);}
+   else{const[shape,kind,color,x,y,z,sx,sy,sz,rx,ry,rz]=part.v;b.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}
+  }
  };
  const leaves=Math.max(6,Math.round(42*detail));
- for(let i=0;i<leaves;i++)if(i===0||rand()<s.leafDensity){const an=i*2.399963,rr=w*.22*Math.sqrt(rand());leaf([Math.sin(an)*rr,.009,Math.cos(an)*rr],an,L*(.67+rand()*.33));}
+ for(let i=0;i<leaves;i++)if(i===0||rand()<s.leafDensity){const an=i*2.399963,rr=w*.22*Math.sqrt(rand());leaf([Math.sin(an)*rr,observed?Math.min(.009,h*.08,ceiling*.10):.009,Math.cos(an)*rr],an,L*(.67+rand()*.33));}
  const before=s.month===Math.min(...a.flowerMonths)-1,after=s.seedHeads;
  if(!s.bloom&&!before&&!after)return;
  const n=Math.max(4,Math.round((a.shootProfile==='irrlicht'?13:9)*detail)),flower=pal.plantColors?pal.plantColors[(p?.id||0)%pal.plantColors.length]:s.flowerColor;
  for(let i=0;i<n;i++){
-  const an=i*2.399963,rr=w*.25*Math.sqrt(rand()),base=[Math.sin(an)*rr,.008,Math.cos(an)*rr],pl=Math.min(a.inflorescenceLength,h*.48)*(before?.58:1),topH=h*(.72+.24*rand())*(before?.65:1),root=[base[0]+Math.sin(an)*w*.06,topH-pl,base[2]+Math.cos(an)*w*.06];
-  b.branch(base,root,.0018,stem,'stem-astilbe');for(let j=1;j<=3;j++)if(rand()<s.leafDensity){const t=j/4,at=base.map((v,k)=>v+(root[k]-v)*t);leaf(at,an+j*2.399963,L*(.73-j*.12),j<3);}
-  const frame=flowerFrame(b,root,.05+rand()*.18,an),curve=pal.arching?.36:.035,path=t=>[0,pl*t,pl*curve*t*t];let last=path(0);
+  const an=i*2.399963,rr=w*.25*Math.sqrt(rand()),base=[Math.sin(an)*rr,observed?Math.min(.008,h*.08,ceiling*.10):.008,Math.cos(an)*rr],pl=Math.min(a.inflorescenceLength,h*.48)*(before?.58:1),topH=h*(.72+.24*rand())*(before?.65:1),root=[base[0]+Math.sin(an)*w*.06,topH-pl,base[2]+Math.cos(an)*w*.06];
+  organBuilder.branch(base,root,.0018,stem,'stem-astilbe');for(let j=1;j<=3;j++)if(rand()<s.leafDensity){const t=observed?Math.min(j/4,Math.max(0,(ceiling*.65-base[1])/(root[1]-base[1]))*j/3):j/4,at=base.map((v,k)=>v+(root[k]-v)*t);leaf(at,an+j*2.399963,L*(.73-j*.12),j<3);}
+  const framePitch=.05+rand()*.18,frame=flowerFrame(organBuilder,root,framePitch,an),curve=pal.arching?.36:.035,path=t=>[0,pl*t,pl*curve*t*t];let last=path(0);
   for(let j=1;j<=12;j++){const at=path(j/12);frame.branch(last,at,.00075*(1-j/20),stem,'panicleAxis-astilbe');last=at;}
   const age=(i*.37)%1,tint=after?pal.dry:before?(a.shootProfile==='lime'?'#9e6571':'#a1ad79'):pal.opening?blend(pal.opening,pal.mature||flower,age):flower;
   for(let j=0;j<20;j++){
@@ -13218,15 +13240,21 @@ function drawAstilbe(b,{info,s,p,detail,rand},kit){
    frame.branch(at,end,.00045,stem,'panicleBranch-astilbe');
    const count=Math.max(2,Math.round((9+23*(1-t))*detail));
    for(let k=0;k<count;k++){
-    const u=(k+.3)/count,node=at.map((v,d)=>v+(end[d]-v)*u),sideAz=az+(k%2?1:-1)*.9,sub=branchLength*.30*(1-u)+.002,tip=[node[0]+Math.sin(sideAz)*sub,node[1]+sub*.5,node[2]+Math.cos(sideAz)*sub];frame.branch(node,tip,.0002,stem,'panicleTwig-astilbe');
+    const u=(k+.3)/count,node=at.map((v,d)=>v+(end[d]-v)*u),sideAz=az+(k%2?1:-1)*.9,sub=branchLength*.30*(1-u)+(observed?Math.min(.002,h*.08):.002),tip=[node[0]+Math.sin(sideAz)*sub,node[1]+sub*.5,node[2]+Math.cos(sideAz)*sub];frame.branch(node,tip,.0002,stem,'panicleTwig-astilbe');
     for(let q=0;q<5;q++){
-     const fa=q*TAU/5+k*1.2,rad=.0054,pt=[tip[0]+Math.sin(fa)*rad,tip[1]+(q-2)*.0018,tip[2]+Math.cos(fa)*rad],size=a.flowerRadius*(.75+rand()*.35);
-     if(before||after)frame.add(kit.bud,before?'flowerBud-astilbe':'seedHead-astilbe',tint,...pt,size*.55,size*.80,size*.55);
-     else frame.add('astilbeFloret','petal-astilbe',kit.shade(rand,tint,.03),...pt,size,size,size,.50+rand()*1.4,fa,0);
+     const fa=q*TAU/5+k*1.2,rad=observed?Math.min(.0054,h*.10):.0054,pt=[tip[0]+Math.sin(fa)*rad,tip[1]+(q-2)*(observed?Math.min(.0018,h*.04):.0018),tip[2]+Math.cos(fa)*rad],size=(observed?Math.min(a.flowerRadius,h*.08,w*.03):a.flowerRadius)*(.75+rand()*.35);
+     if(before||after){const safeSize=observed?Math.min(size,Math.max(0,root[1]+Math.cos(framePitch)*pt[1]-Math.sin(framePitch)*pt[2])*.98/Math.hypot(.80*Math.cos(framePitch),.55*Math.sin(framePitch))):size;frame.add(kit.bud,before?'flowerBud-astilbe':'seedHead-astilbe',tint,...pt,safeSize*.55,safeSize*.80,safeSize*.55);}
+     else if(!observed)frame.add('astilbeFloret','petal-astilbe',kit.shade(rand,tint,.03),...pt,size,size,size,.50+rand()*1.4,fa,0);
+     else{
+      const color=kit.shade(rand,tint,.03),pitch=.50+rand()*1.4;frame.add('astilbeFloret','petal-astilbe',color,...pt,size,size,size,pitch,fa,0);
+      const point=new THREE.Vector3(0,Math.fround(.465),Math.fround(.69)).multiplyScalar(size).applyEuler(new THREE.Euler(pitch,fa,0,'YXZ')).add(new THREE.Vector3(...pt)).applyEuler(new THREE.Euler(framePitch,an,0,'YXZ')).add(new THREE.Vector3(...root)),score=point.x*.8+point.z,clear=point.y>ceiling+size*.1;
+      if(!frontFloret||clear&&!frontFloret.clear||clear===frontFloret.clear&&score>frontFloret.score)frontFloret={point,size,score,clear};
+     }
     }
    }
   }
  }
+ if(frontFloret){const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(.8,.25,1).normalize()),'YXZ');b.flower?.(frontFloret.point.toArray(),frontFloret.size*.6,e.x,e.y,e.z);}
 }
 
 export function aquilegiaPoint(type,t,u){
