@@ -16034,3 +16034,24 @@ test('Retail glomerata actual leaves and stems fit independent tiny caps and obs
  }
  console.log('RETAIL_GLOMERATA_841 '+JSON.stringify(results));
 });
+
+test('Retail white divaricata keeps domestic source values flower discovery and conflicting winter evidence separate from named cultivars',()=>{
+ const id='p-55c7993c246b',c=CATALOG[id],a=c.appearance;
+ assert.equal(c.latin,'Phlox divaricata');assert.deepEqual(c.height,[.3,.3]);assert.deepEqual(c.spread,[.5,.5]);assert.deepEqual(c.bloom,[4,5,6]);assert.equal(c.bloomKnown,true);assert.equal(c.source,'https://www.engei.net/products/detail?id=236690');assert.equal(c.sourceChecked,'2026-10-27');assert.equal(a.status,'partial');assert.equal(a.shootProfile,'retailWhite');assert.equal(a.sources[a.basis.arrangement].url,'https://plants.ces.ncsu.edu/plants/phlox-divaricata/');assert.equal(a.sources[a.basis.flowerMonths].url,c.source);assert.match(a.sourceConflict,/Hairs Present No/);assert.match(a.sourceConflict,/半常緑.*落葉.*不一致/);assert.match(a.sourceConflict,/未実測/);assert.match(a.sourceConflict,/同一株12か月実物照合0/);assert.ok(a.unconfirmed.every(n=>!/Float32|RNG|HTTP|行列/.test(n)));assert.deepEqual(searchCatalog(CATALOG,{query:'フロックス ディバリカータ ホワイト',color:'white'}).filter(([key])=>key===id).map(([key])=>key),[id]);assert.ok(!searchCatalog(CATALOG,{query:c.label,color:'unknown'}).some(([key])=>key===id));assert.equal(CATALOG['p-30c8577fcdcb'].appearance.shootProfile,'whitePerfume');assert.notEqual(c.latin,CATALOG['p-30c8577fcdcb'].latin);
+ const p={...makePlant(id,84710,3,3),height:.3,spread:.5,leafHeight:.18},before=structuredClone(p);
+ for(let month=1;month<=12;month++){const s=stateAt(p,{year:1,month,reference:false});assert.equal(s.bloom,[4,5,6].includes(month));assert.equal(s.groundDormant,false);assert.ok(s.leafDensity>0);if([1,2,12].includes(month)){assert.match(s.phase,/国内商品.*不一致/);assert.ok(!s.phase.includes('英国'));}if(s.bloom)assert.match(s.phase,/国内販売元.*4〜6月/);}assert.deepEqual(p,before);
+});
+test('Retail white divaricata actual paired leaves fused flowers and winter reduction respect independent input caps',()=>{
+ const id='p-55c7993c246b',sizes=[[.3,.5,.18],[.03,.18,.012],[.3,.5,.005],[.005,.005,.005]],matrix=new Matrix4(),v=new Vector3();
+ for(const dims of sizes)for(const month of [5,1]){const p={...makePlant(id,84710,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),g=plantModel(p,{year:1,month,reference:false});
+  try{g.updateMatrixWorld(true);const count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),leaves=count('leaf-woodland-phlox-ref-retailWhite'),tubes=count('corolla-tube-woodland-phlox-ref');assert.ok(leaves>0&&leaves%2===0);assert.equal(tubes>0,month===5);assert.equal(count('corolla-lobe-woodland-phlox-ref'),tubes*5);assert.equal(count('throat-ring-woodland-phlox-ref'),tubes);assert.equal(!!g.userData.flowerTargets?.length,month===5);assert.ok(!g.children.some(m=>/anther|filament|style|stigma|fruit|seed|petiole/.test(m.userData.component)));let leafTop=0;
+   for(const m of g.children){for(const arr of[m.instanceMatrix.array,m.geometry.attributes.position.array,m.geometry.attributes.normal.array])assert.ok(arr.every(Number.isFinite));const pos=m.geometry.attributes.position;for(let i=0;i<m.count;i++){m.getMatrixAt(i,matrix);matrix.premultiply(m.matrixWorld);for(let j=0;j<pos.count;j++){v.fromBufferAttribute(pos,j).applyMatrix4(matrix);assert.ok(v.y>=-1e-7&&v.y<=p.height+1e-6,id+' height '+dims+' '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)*2<=p.spread+1e-6,id+' width '+dims);if(m.userData.component==='leaf-woodland-phlox-ref-retailWhite')leafTop=Math.max(leafTop,v.y);}}}assert.ok(leafTop<=p.leafHeight+1e-6);assert.deepEqual(p,before);
+  }finally{dispose(g);}
+ }
+});
+test('Retail white divaricata flower observation intersects a rendered corolla at normal and small inputs',()=>{
+ for(const dims of [[.3,.5,.18],[.03,.18,.012]]){const p={...makePlant('p-55c7993c246b',84710,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},g=plantModel(p,{year:1,month:5,reference:false});
+  try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);for(const aspect of [.8,1.65]){const pose=flowerInspectionView(g,aspect,40);assert.ok(pose);const camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(g,true).find(h=>{const z=-h.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.equal(hit?.object.userData.component,'corolla-lobe-woodland-phlox-ref','visible corolla '+dims+' '+aspect);}}
+  finally{dispose(g);}
+ }
+});

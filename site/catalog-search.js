@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.846';
+import {treeProfile} from './tree-profiles.js?v=0.9.847';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -333,7 +333,7 @@ export function seasonAt(info,month){
  if(a.architecture==='ogisMonardaColourReferences'){scale=1;phase=a.seedHeadMonths?.includes(month)?'長野の未剪定の成株で丸い花後の頭と茎を残す参考（冬の残葉量・月境界は未校正、切戻し苗は別条件）':bloom?'夏を6～8月へ換算した二唇形小花の写真例（花色別商品で品種未固定、明示月ではない）':'対生の鋸歯葉と春に花殻を整理した参考（月境界・成長量は未予測）';}
  if(a.architecture==='retailMonardaReferences'){scale=1;phase=[1,2,12].includes(month)?(a.shootProfile==='pink'?'冬に地上部が枯れる販売苗を参考にした落葉と残した茎（残存量・花殻・冬芽は未確認）':'冬姿未確認のため花のない暖期の葉姿を保持する未検証参考（常緑・越冬成功の断定なし）'):bloom?'国内販売元の明示花期・対生の鋸歯葉と苞に囲まれた二唇形小花の参考（属の形態、商品実測ではない）':'花のない茎葉の参考（伸長・花後の花殻・種子・月別葉量は未校正）';}
  if(a.architecture==='ruelliaTropicstarReference'){scale=1;phase=[1,2,12].includes(month)?'温度を保護した冬の残葉の参考（戸外の生存や全国一律の越冬は未予測）':bloom?'国内販売元の8～10月の5裂漏斗花と細い対生葉の参考（1日花の時間変化は未再現）':'細い対生葉と分岐茎の参考（月別の葉量・成長量は未校正）';}
- if(a.architecture==='woodlandPhloxReferences'){scale=1;phase=[1,2,12].includes(month)?(a.shootProfile==='montrose'?'国内販売元の冬のロゼットを選んだ参考（月別の葉量は未校正）':'英国品種資料の半常緑性を選んだ冬の保護参考（日本の地植えの越冬保証ではない）'):bloom?(a.shootProfile==='montrose'?'国内販売元に明記された3～5月の淡青色の花と白覆輪の参考':'英国品種資料の季節表現を月へ換算した花の参考（国内の明示月ではない）'):'対生葉のはう茎と立つ茎の参考（節の発根・成長量は未予測）';}
+ if(a.architecture==='woodlandPhloxReferences'){scale=1;phase=[1,2,12].includes(month)?(a.shootProfile==='retailWhite'?'国内商品本文の半常緑と表の落葉が不一致のため、少葉を選んだ冬の未検証参考（月別の残葉量・越冬は未予測）':a.shootProfile==='montrose'?'国内販売元の冬のロゼットを選んだ参考（月別の葉量は未校正）':'英国品種資料の半常緑性を選んだ冬の保護参考（日本の地植えの越冬保証ではない）'):bloom?(a.shootProfile==='retailWhite'?'国内販売元に明記された4〜6月頃の白い5裂花と淡桃紫の喉部の参考':a.shootProfile==='montrose'?'国内販売元に明記された3～5月の淡青色の花と白覆輪の参考':'英国品種資料の季節表現を月へ換算した花の参考（国内の明示月ではない）'):'対生葉のはう茎と立つ茎の参考（節の発根・成長量は未予測）';}
  if(a.architecture==='mallowReferences'){scale=1;phase=groundDormant?'ブルーファウンテンの低温管理で枯れ茎を整理した冬の参考（未剪定株は別条件）':[1,2,12].includes(month)?(a.shootProfile==='zebrina'?'ゼブリナの保護した切戻し株の少ない根出葉の参考（国内の冬姿は未検証）':'ビバーフェルムの保護した少葉の未検証参考（寿命・葉の残り方は未確認）'):bloom?'初夏の5枚の花弁と濃い筋の参考（国内の明示月ではない）':'掌状の葉と伸びる枝の参考（年次成長・秋の再開花は未予測）';}
  if(a.architecture==='retailPeachBellReferences'){scale=1;phase=bloom?'国内販売元に明記された5～6月の白花・青花の参考（同一株の開花日は未予測）':[1,2,12].includes(month)?'冬の小さなロゼットを残す保護条件の参考（寒冷時の完全落葉は別条件）':[9,10,11].includes(month)?'花茎を整理して根出葉を残す管理参考（自然な消失時期ではない）':'根出葉と細い茎葉の参考（芽出し・蕾の月境界は未観測）';}
  if(a.architecture==='fineAmsoniaReferences'){scale=1;phase=groundDormant?'冬の枯れ茎を株元で整理した管理参考（自然消失・越冬成功を保証しません）':a.shootProfile==='hubrichtii'?(month<=5?'低い位置の開花・蕾と糸葉の参考（月境界・実際の草丈は未校正）':month===6?'低い花茎と伸びる新枝の参考（年内変化で年次成長ではない）':'花後に伸びる糸葉の枝と黄葉の参考（月別の成長量は未予測）'):'高い位置の小花群・互生する細葉と黄葉の参考（新葉の縁毛・月別葉量は未校正）';}

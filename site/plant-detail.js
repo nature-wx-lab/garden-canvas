@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.846';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.847';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.846';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.847';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26741,7 +26741,7 @@ export function woodlandPhloxReferencePoint(type,t,u){
  const az=u*Math.PI,rad=.82+.18*Math.sin(Math.PI*t*.7);return[Math.sin(az)*rad,t,Math.cos(az)*rad];
 }
 function drawWoodlandPhloxReferences(b,{info,s,month,rand},kit){
- const a=info.appearance,cfg=a.flowerPalette,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),profile=a.shootProfile,inspectionFlower={whitePerfume:1,bluePerfume:9,montrose:0}[profile],mont=profile==='montrose',blue=profile==='bluePerfume',winter=[1,2,12].includes(month),live=!!s.bloom,budding=!!s.flowerBuds,SR=Math.min(.0011,h*.007,w*.006,LH*.015),TL=Math.min(cfg.tubeLength,h*.09,w*.04),TR=Math.min(.0011,TL*.10),PL=Math.min(cfg.lobeLength,h*.07,w*.03),PW=PL*cfg.lobeWidth/cfg.lobeLength,CL=Math.min(.005,TL*.50),tag='-woodland-phlox-ref',stem=a.stemColor,leafType=mont?'gcWoodlandPhloxLeafMontroseRef':blue?'gcWoodlandPhloxLeafBlueRef':'gcWoodlandPhloxLeafWhiteRef',lobeType=mont?'gcWoodlandPhloxLobeMontroseRef':blue?'gcWoodlandPhloxLobeBlueRef':'gcWoodlandPhloxLobeWhiteRef';
+ const a=info.appearance,cfg=a.flowerPalette,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),profile=a.shootProfile,inspectionFlower={whitePerfume:1,bluePerfume:9,montrose:0,retailWhite:1}[profile],retail=profile==='retailWhite',mont=profile==='montrose',blue=profile==='bluePerfume',winter=[1,2,12].includes(month),live=!!s.bloom,budding=!!s.flowerBuds,SR=Math.min(.0011,h*.007,w*.006,LH*.015),TL=Math.min(cfg.tubeLength,h*.09,w*.04),TR=Math.min(.0011,TL*.10),PL=Math.min(cfg.lobeLength,h*.07,w*.03),PW=PL*cfg.lobeWidth/cfg.lobeLength,CL=Math.min(.005,TL*.50),tag='-woodland-phlox-ref',stem=a.stemColor,leafType=mont?'gcWoodlandPhloxLeafMontroseRef':blue?'gcWoodlandPhloxLeafBlueRef':'gcWoodlandPhloxLeafWhiteRef',lobeType=mont?'gcWoodlandPhloxLobeMontroseRef':blue?'gcWoodlandPhloxLobeBlueRef':'gcWoodlandPhloxLobeWhiteRef';
  const line=(frame,from,to,r,kind,color=stem)=>{if(!frame)r=Math.min(r,Math.max(0,Math.min(from[1],to[1])*.7));if(r<=1e-12)return;const p=new THREE.Vector3(...from),v=new THREE.Vector3(...to).sub(p);if(v.lengthSq()<1e-20)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),v.clone().normalize()),'YXZ');(frame||b).add('gcWoodlandPhloxStemRef',kind+tag,color,...p.addScaledVector(v,.5).toArray(),r,v.length(),r,e.x,e.y,e.z);};
  const leaf=(node,yaw,ratio,cream)=>{
   const L=Math.min(a.leafLength*ratio,w*.13,LH*.65,Math.max(0,LH-node[1])*.80),W=L*a.leafWidth/a.leafLength;if(L<1e-10)return;const f=flowerFrame(b,node,-.15,yaw),kind='leaf'+tag+'-'+profile+(cream?'-cream':'');f.add(leafType,kind,cream?cfg.marginColor:kit.shade(rand,s.leafColor,.025),0,0,0,W,L,L);
@@ -26765,8 +26765,8 @@ function drawWoodlandPhloxReferences(b,{info,s,month,rand},kit){
   for(let k=1;k<=cfg.runnerNodes;k++){const t=k/cfg.runnerNodes,node=root.map((v,j)=>v+(tip[j]-v)*t);line(null,prev,node,SR*.75,'creeping-stem');if(k/cfg.runnerNodes<=s.leafDensity)for(const side of [0,1])leaf(node,yaw+k*Math.PI/2+side*Math.PI,.95,cream);prev=node;}
   if(winter)continue;
   for(let si=0;si<cfg.floweringShootsPerRunner;si++){
-   const rt=cfg.floweringShootsPerRunner===1?.50:.30+si*.25,start=root.map((v,j)=>v+(tip[j]-v)*rt),heightFactor=.86+.14*((i+si*2)%3)/2,top=[start[0],Math.max(SR*2,h*.80*heightFactor-TL-PL),start[2]],leafTop=Math.min(LH*.90,top[1]*.96);line(null,start,top,SR,'flower-stem');
-   for(let k=1;k<=cfg.shootNodes;k++){const t=k/cfg.shootNodes,node=[start[0],start[1]+Math.max(0,leafTop-start[1])*t,start[2]];if(k/cfg.shootNodes<=s.leafDensity)for(const side of [0,1])leaf(node,yaw+k*Math.PI/2+side*Math.PI,1-.3*t,cream);}
+   const rt=cfg.floweringShootsPerRunner===1?.50:.30+si*.25,start=root.map((v,j)=>v+(tip[j]-v)*rt),heightFactor=.86+.14*((i+si*2)%3)/2,top=[start[0]+(retail?Math.sin(yaw+si*.8)*w*.055:0),Math.max(SR*2,retail&&!live&&!budding?Math.min(h*.65,LH*.78)*heightFactor:h*.80*heightFactor-TL-PL),start[2]+(retail?Math.cos(yaw+si*.8)*w*.055:0)],leafTop=Math.min(LH*.90,top[1]*.96);line(null,start,top,SR,'flower-stem');
+   for(let k=1;k<=cfg.shootNodes;k++){const t=k/cfg.shootNodes,ny=start[1]+Math.max(0,leafTop-start[1])*t,nt=retail?(ny-start[1])/Math.max(1e-12,top[1]-start[1]):0,node=retail?[start[0]+(top[0]-start[0])*nt,ny,start[2]+(top[2]-start[2])*nt]:[start[0],ny,start[2]];if(k/cfg.shootNodes<=s.leafDensity)for(const side of [0,1])leaf(node,yaw+k*Math.PI/2+side*Math.PI,1-.3*t,cream);}
    if(!live&&!budding)continue;
    for(let branch=0;branch<3;branch++){const az=yaw+branch*TAU/3,reach=Math.min(.014,w*.07,h*.08),end=[top[0]+Math.sin(az)*reach,top[1]+reach*.35,top[2]+Math.cos(az)*reach];line(null,top,end,SR*.28,'cyme-branch');for(let j=0;j<3;j++){const aa=az+j*2.399963,PD=Math.min(.004,w*.015,h*.025),at=[end[0]+Math.sin(aa)*PD,end[1]+PD*(.30+j*.20),end[2]+Math.cos(aa)*PD];line(null,end,at,SR*.15,'pedicel');flower(at,aa);}}
   }
