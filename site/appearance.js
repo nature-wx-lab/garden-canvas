@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.844';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.845';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -74,6 +74,7 @@ Object.assign(TRAIT_VALUES,{vincaJennyLeaf:'光沢のある無斑の披針形〜
 Object.assign(TRAIT_VALUES,{vincaLeaf:'丸みのある基部と尖る先端を持つ卵形の対生葉',vincaMargin:'緑の中心と不規則な白クリームの覆輪',vincaCenter:'淡黄クリームの中斑と不規則な暗緑の外縁・緑の島',vincaPinwheel:'細い花筒から片側へ流れる風車形の5裂花冠'});
 Object.assign(TRAIT_VALUES,{openingActPinkadot:'ピンクアドットの分枝する株姿の参考',openingActRomance:'ロマンスの分枝する株姿の参考',openingActStar:'淡色の花冠中央に濃桃色の星模様の参考'});
 Object.assign(TRAIT_VALUES,{evaCullumReference:'エバクルーンの桃色の目と円錐状の花房の参考',elizabethPhloxReference:'エリザベスの淡い覆輪葉と桃色の花房の参考',olympusPhloxReference:'オリンパスの覆輪葉・赤い新葉・白い目の花の参考'});
+Object.assign(TRAIT_VALUES,{annualPhloxReferences:'一年草フロックスの一回の開花期までの参考',annualPhloxIsabellina:'イザベリーナの淡色の花と柔らかな分枝の参考',annualPhloxCherryCaramel:'チェリーキャラメルの赤い目と柔らかな分枝の参考',annualPhloxLeaf:'下部は対生・上部は互生し、付け根で茎を抱く毛のある単葉の参考',lowerOppositeUpperAlternate:'下部の葉は対生・上部は互生（種資料の参考）',annualPhloxEye:'クリーム色の花の中央に赤紫色の目の参考'});
 Object.assign(TRAIT_VALUES,{paniclePhloxLeaf:'全縁で先が尖り、側脈が葉縁へ湾曲する対生葉',paniclePhloxFlower:'長い花筒と平らに開く5裂花冠・5裂の萼',phloxSplash:'白地に桃色の細い放射筋と不規則な色の区画'});
 Object.assign(TRAIT_VALUES,{linariaLeaf:'細い灰緑の線形葉',linariaLips:'後方に細い距を持つ小さな二唇形花'});
 Object.assign(TRAIT_VALUES,{heliLinear:'白い毛に覆われ縁が巻く細長い葉',heliBroad:'縁が反り白い毛に覆われる幅広の銀緑葉',heliPapery:'白い乾いた質感の苞が重なる黄色い中心の頭花'});
