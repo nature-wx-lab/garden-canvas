@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.848';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.849';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.848';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.849';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16402,6 +16402,69 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
 }
 
+export function nigerCultivarReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='gcNigerCultivarBladeRef'){
+  const teeth=1+.065*Math.max(0,(t-.35)/.65)*(1-Math.abs(2*((t*11)%1)-1));
+  return[u*.5*sn**.58*teeth,.025*sn+.018*u*u*sn,t];
+ }
+ const inner=type==='gcNigerCultivarInnerRef',width=.5*sn**.46*(.55+.45*t);
+ return[u*width,(inner?.24:.15)*t*t+.025*sn*(1-u*u)+.013*Math.sin(t*19+u*4)*u*u*sn,t];
+}
+export const nigerCultivarStemUnit=new THREE.CylinderGeometry(1,1,1,7,1);
+const nigerCultivarSamples=Object.fromEntries(['gcNigerCultivarBladeRef','gcNigerCultivarOuterRef','gcNigerCultivarInnerRef'].map(type=>[type,Array.from({length:33*21},(_,j)=>nigerCultivarReferencePoint(type,Math.floor(j/21)/32,j%21/20*2-1).map(Math.fround))]));
+function drawNigerCultivarReferences(b,{info,s,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),twin=a.shootProfile==='twinSpirits',tag='-niger-cultivar',stem='#768b64',SR=Math.min(.0025,h*.012,w*.012,LH*.05),profile=a.shootProfile;
+ const matrixFor=p=>{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=p,m=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));m.elements=m.elements.map(Math.fround);return m;};
+ const axisPart=(from,to,r,kind,color=stem)=>{const p=new THREE.Vector3(...from),d=new THREE.Vector3(...to).sub(p);if(d.lengthSq()<1e-22||r<=0)return null;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');return['gcNigerCultivarStemRef',kind+tag,color,...p.addScaledVector(d,.5).toArray(),r,d.length(),r,e.x,e.y,e.z];};
+ const line=(out,from,to,r,kind,color)=>{const p=axisPart(from,to,r,kind,color);if(p)out.push(p);};
+ const curve=(out,from,bend,to,r,kind)=>{let previous=from;for(let j=1;j<=12;j++){const t=j/12,next=from.map((v,k)=>(1-t)**2*v+2*(1-t)*t*bend[k]+t*t*to[k]);line(out,previous,next,r*(1-j/48),kind);previous=next;}};
+ const emit=parts=>{for(const p of parts)b.add(...p);};
+ const fitLeaves=(parts,root)=>{
+  let fit=1;
+  for(const p of parts){const matrix=matrixFor(p),points=p[0]==='gcNigerCultivarStemRef'?Array.from({length:nigerCultivarStemUnit.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(nigerCultivarStemUnit.attributes.position,i).toArray()):nigerCultivarSamples[p[0]];
+   for(const point of points){const q=new THREE.Vector3(...point).applyMatrix4(matrix).sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(LH-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-2e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}
+  }
+  if(!(fit>0))throw Error('Niger basal leaf assembly cannot fit');
+  emit(parts.map(p=>{const v=[...p];for(let k=0;k<3;k++){v[3+k]=root[k]+(p[3+k]-root[k])*fit;v[6+k]=p[6+k]*fit;}return v;}));
+ };
+ // Protected, leaf-retaining winter scenario; cold-region old-leaf loss is not a fixed monthly rule.
+ if(s.leafDensity>0)for(let i=0;i<7;i++){
+  const yaw=i*2.399963+(rand()-.5)*.20,root=[Math.sin(yaw)*w*.045,SR*1.4,Math.cos(yaw)*w*.045],end=[Math.sin(yaw)*w*(.08+rand()*.06),LH*(.30+rand()*.30),Math.cos(yaw)*w*(.10+rand()*.03)],L=Math.min(.09,w*.24,LH*1.5),parts=[];
+  curve(parts,root,[end[0]*.55,LH*.40,end[2]*.55],end,SR*.55,'petiole');
+  for(let k=0;k<7;k++){
+   const off=(k-3)/3,az=yaw+off*1.38,reach=L*.055*Math.abs(off),at=[end[0]+Math.sin(az)*reach,end[1],end[2]+Math.cos(az)*reach],len=L*(.78+.22*Math.cos(off*1.4)),W=len*.45;
+   if(reach)line(parts,end,at,SR*.22,'leaf-axis');
+   parts.push(['gcNigerCultivarBladeRef','leaf'+tag,kit.shade(rand,s.leafColor,.025),...at,W,len,len,-.10-rand()*.22,az,(rand()-.5)*.10]);
+  }
+  fitLeaves(parts,root);
+ }
+ if(!s.bloom)return;
+ const R=Math.min(.035,h*.15,w*.085),surfaces=[];
+ const flower=(at,yaw,index)=>{
+  const pitch=1.12+(index%3)*.17,rot=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),to=q=>new THREE.Vector3(...q).applyQuaternion(rot).add(new THREE.Vector3(...at));
+  const organ=(shape,kind,color,origin,scale,az=0)=>{const q=rot.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),p=[shape,kind,color,...to(origin).toArray(),...scale,e.x,e.y,e.z];b.add(...p);return matrixFor(p);};
+  const aged=twin&&index%3===2,base=aged?'#e1bf91':'#f0eee3',inner=aged?'#d6b784':'#eeeadd',kind='sepal'+tag+'-'+profile;
+  for(let k=0;k<5;k++){
+   const az=k*TAU/5+(index%2)*.13;organ('gcNigerCultivarOuterRef',kind,kit.shade(rand,base,.012),[0,0,0],[R*1.36,R,R],az);
+   // Flower inspection uses the exposed inner petaloid surface below.
+  }
+  // Counts and relative sizes are a drawing arrangement, not measured cultivar organ counts.
+  const n=twin?19:12;
+  for(let k=0;k<n;k++){const t=k/(n-1),az=k*2.399963+.15,L=R*(twin?.88:.59)*(1-t*.27),component='petaloid'+tag+'-'+profile,matrix=organ('gcNigerCultivarInnerRef',component,kit.shade(rand,inner,.018),[0,R*(.025+t*.10),0],[L*(twin?.82:.60),L,L],az);if(index<3&&k>=n-2){const vertices=[24*21+10,25*21+10,24*21+11],points=vertices.map(v=>new THREE.Vector3(...nigerCultivarSamples.gcNigerCultivarInnerRef[v]).applyMatrix4(matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,instanceId:index*n+k,vertices,faceIndex:(24*20+10)*2,component,camera:new THREE.Vector3(0,1,0).applyQuaternion(rot).normalize()});}}
+  const f=flowerFrame({add:b.add,branch:(from,to,r,color,kind)=>{const p=axisPart(from,to,r,kind,color);if(p)b.add(...p);}},at,pitch,yaw);
+  for(let k=0;k<36;k++){const az=k*2.399963,r=R*(.10+.11*(k%4)/3),tip=[Math.sin(az)*r,R*(.20+.10*(k%5)/4),Math.cos(az)*r];f.branch([0,R*.08,0],tip,R*.007,'#ded5b4','filament');f.add('gcNigerCultivarRoundRef','anther'+tag,'#d4b959',...tip,R*.020,R*.025,R*.014);}
+  // Nectary identity, carpel number and fruit development are not resolved for these double flowers.
+ };
+ let index=0;
+ for(let i=0;i<5;i++){
+  const yaw=i*2.399963+.25,root=[Math.sin(yaw)*w*.055,SR*1.4,Math.cos(yaw)*w*.055],top=[Math.sin(yaw)*w*.17,h*(.79+.025*(i%3)),Math.cos(yaw)*w*.17],parts=[];
+  curve(parts,root,[top[0]*.45,top[1]*.65,top[2]*.45],top,Math.min(.0023,h*.012,w*.008),'scape');emit(parts);flower(top,yaw,index++);
+  if(i%3===0){const t=.72,node=root.map((v,k)=>(1-t)**2*v+2*(1-t)*t*[top[0]*.45,top[1]*.65,top[2]*.45][k]+t*t*top[k]),az=yaw+.85,side=[node[0]+Math.sin(az)*R*1.1,node[1]+R*.65,node[2]+Math.cos(az)*R*1.1],out=[];curve(out,node,[side[0],side[1]+R*.22,side[2]],side,Math.min(.0015,h*.008,w*.005),'pedicel');emit(out);flower(side,az,index++);}
+ }
+ for(const v of surfaces){const normal=v.normal.clone(),camera=v.camera;if(normal.dot(camera)<0)normal.negate();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');b.flower?.(v.point.toArray(),R*1.3,e.x,e.y,e.z,{component:v.component,instanceId:v.instanceId,vertices:v.vertices,faceIndex:v.faceIndex,cameraAxis:camera.toArray()});}
+}
+
 function drawHelleboreProfiles(b,{info,s,detail,rand},kit){
  const a=info.appearance,palette=a.flowerPalette||{},h=s.height,w=s.spread,caulescent=palette.caulescent,fine=palette.fine,green=s.leafColor,stem=a.stemColor||'#6e8b53';
  const compound=(at,yaw,size,bract=false)=>{
@@ -18801,6 +18864,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ogisMonardaColourReferences'){drawOgisMonardaColourReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='retailMonardaReferences'){drawRetailMonardaReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='ruelliaTropicstarReference'){drawRuelliaTropicstarReference(b,{info,s,month,rand},kit);return;}
+ if(info.appearance?.architecture==='nigerCultivarReferences'){drawNigerCultivarReferences(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='woodlandPhloxReferences'){drawWoodlandPhloxReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='mallowReferences'){drawMallowReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='retailPeachBellReferences'){drawRetailPeachBellReferences(b,{info,s,month,rand},kit);return;}
