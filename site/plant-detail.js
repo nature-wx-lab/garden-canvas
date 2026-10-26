@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.831';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.832';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.831';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.832';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -18088,7 +18088,7 @@ export function coumPoint(type,t,u){
 const coumRetailLeafSamples=[],coumRetailPetalTriangles=[];for(let i=0;i<=44;i++)for(let j=0;j<=72;j++)coumRetailLeafSamples.push(coumPoint('coumLeaf',i/44,j/72*Math.PI*2).map(Math.fround));
 {const positions=[];for(let i=0;i<=44;i++)for(let j=0;j<=24;j++)positions.push(coumPoint('coumRetailPetal',i/44,j/12-1).map(Math.fround));for(let i=0;i<44;i++)for(let j=0;j<24;j++){const k=i*25+j;for(const vertices of [[k,k+1,k+25],[k+1,k+26,k+25]]){const points=vertices.map(v=>positions[v]),a=new THREE.Vector3(...points[1]).sub(new THREE.Vector3(...points[0])),b=new THREE.Vector3(...points[2]).sub(new THREE.Vector3(...points[0]));if(a.cross(b).lengthSq()>1e-22)coumRetailPetalTriangles.push({faceIndex:(i*24+j)*2+(vertices[0]===k?0:1),vertices,points});}}}
 function drawCoumCrowns(b,{info,s,p,detail,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,palette=a.flowerPalette||{},green=s.leafDensity<.5?'#a6ad72':s.leafColor,leaves=Math.max(1,Math.round(14*detail*s.leafDensity)),observed=['p-1b84c5e5770c','p-23f96ddcce81','p-667dac04d733'].includes(p?.kind),ceiling=Math.min(h,s.leafHeight),rootLeaf=[0,Math.min(.002,ceiling*.05),0],micro=Math.min(1,h/.1),surfaces=[],petalInstances={'petal-coum-nose':0,'petal-coum-plain':0};
+ const a=info.appearance,h=s.height,w=s.spread,palette=a.flowerPalette||{},green=s.leafDensity<.5?'#a6ad72':s.leafColor,leaves=Math.max(1,Math.round(14*detail*s.leafDensity)),observed=['p-1b84c5e5770c','p-23f96ddcce81','p-667dac04d733','p-b29df262e029','p-8a74ddfb5619'].includes(p?.kind),ceiling=Math.min(h,s.leafHeight),rootLeaf=[0,Math.min(.002,ceiling*.05),0],micro=Math.min(1,h/.1),surfaces=[],petalInstances={'petal-coum-nose':0,'petal-coum-plain':0};
  const axis=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(!observed||length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
  const organsAxis=axis;
  const organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(v[1]!=='petal-coum-nose'&&v[1]!=='petal-coum-plain')return;const instanceId=petalInstances[v[1]]++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*1.55,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
