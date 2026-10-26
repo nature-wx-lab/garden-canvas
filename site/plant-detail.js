@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.840';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.841';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.840';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.841';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -12713,6 +12713,43 @@ export function clusterBellPoint(type,t,u){
  const basal=type==='clusterBellBasalLeaf',width=(basal?.27:.23)*Math.pow(sn,basal?.58:.70)*(.95+.05*Math.cos(t*57));
  return [u*width,t,.06*t*t+.07*u*u*sn+.009*Math.cos((t-Math.abs(u)*.15)*38)*Math.abs(u)*sn];
 }
+// Used only for the two source-qualified domestic retail entries.
+const retailClusterCupTriangles=[];{
+ const points=[];for(let i=0;i<=64;i++)for(let j=0;j<=60;j++)points.push(clusterBellPoint('clusterBellCup',i/64,j/60*TAU).map(Math.fround));
+ for(let i=0;i<64;i++)for(let j=0;j<60;j++){const k=i*61+j;for(const[side,vertices]of[[0,[k,k+61,k+1]],[1,[k+1,k+61,k+62]]]){const p=vertices.map(v=>points[v]),cross=new THREE.Vector3(...p[1]).sub(new THREE.Vector3(...p[0])).cross(new THREE.Vector3(...p[2]).sub(new THREE.Vector3(...p[0])));if(cross.lengthSq()>1e-22)retailClusterCupTriangles.push({faceIndex:(i*60+j)*2+side,vertices,points:p});}}
+}
+function drawRetailClusterBellShoots(b,{info,s,p,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,ceiling=Math.min(h,s.leafHeight),scale=s.leafScale,R=Math.min(.0012,h*.004,w*.004,ceiling*.08),L=Math.min(.11,h*.30,w*.23,ceiling*.80)*scale,n=Math.max(2,Math.round(4*detail)),surfaces=[];let cupInstance=0;
+ const exactBranch=(from,to,r,color,kind)=>{const start=new THREE.Vector3(...from),end=new THREE.Vector3(...to),direction=end.clone().sub(start),length=direction.length();if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const middle=start.add(end).multiplyScalar(.5),rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize()),'YXZ');b.add('clusterBellFineStem',kind,color,...middle.toArray(),r,length,r,rotation.x,rotation.y,rotation.z);};
+ const observed={branch:exactBranch,add:(...v)=>{b.add(...v);const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v;if(kind!=='petal-cup-cluster-bell')return;const instanceId=cupInstance++,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({instanceId,matrix,radius:Math.max(sx,sy,sz)*1.3,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const leaf=(node,len,pitch,yaw,basal)=>{
+  const pet=basal?len*.18:0,at=[node[0]+Math.sin(yaw)*pet,node[1]+pet*.45,node[2]+Math.cos(yaw)*pet];if(basal)b.branch(node,at,Math.min(R*.30,len*.015),a.stemColor,'petiole-basal-cluster-bell');
+  const shape=basal?'clusterBellBasalLeaf':'clusterBellStemLeaf',f=flowerFrame(b,at,pitch,yaw);f.add(shape,(basal?'leaf-basal-':'leaf-stem-')+'cluster-bell',kit.shade(rand,s.leafColor,.035),0,0,0,len,len,len);
+  let previous=[0,0,0];for(let k=1;k<=8;k++){const point=clusterBellPoint(shape,k/8,0).map(v=>v*len);point[2]-=len*.003;f.branch(previous,point,Math.min(R*.10,len*.004),'#91a56d','vein-cluster-bell');previous=point;}
+ };
+ const head=(at,terminal)=>{
+  const fit=Math.min(1,h*.12/(Math.min(a.flowerLength,h*.14)+.018),w*.10/(Math.min(.026,w*.10)+Math.min(a.flowerRadius,w*.04))),point=v=>v.map((x,i)=>at[i]+(x-at[i])*fit),organs={branch:(from,to,r,color,kind)=>observed.branch(point(from),point(to),r*fit,color,kind),add:(shape,kind,color,x,y,z,sx,sy,sz,...rotation)=>observed.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,...rotation)};
+  drawClusterBellHead(organs,at,terminal,{info,s,w,rand,detail},kit);
+ };
+ for(let j=0;j<n;j++){
+  const yaw=j*2.399,rad=w*.13*Math.sqrt((j+.5)/n)*scale,root=[Math.sin(yaw)*rad,R+1e-7,Math.cos(yaw)*rad];
+  for(let k=0;k<6;k++)if((k+.15)/6<s.leafDensity)leaf(root,L*(.76+(k%3)*.10),.98,yaw+k*2.399,true);
+  if(!s.bloom)continue;
+  const nodes=[root,...[.20,.35,.50].map(t=>[root[0]+Math.sin(yaw)*w*.02*t,Math.max(root[1],ceiling*t*scale),root[2]+Math.cos(yaw)*w*.02*t]),[root[0]+Math.sin(yaw)*w*.035,h*.68,root[2]+Math.cos(yaw)*w*.035],[root[0]+Math.sin(yaw)*w*.04,h*.79,root[2]+Math.cos(yaw)*w*.04]];
+  for(let k=1;k<nodes.length;k++){b.branch(nodes[k-1],nodes[k],R*(1-k*.07),a.stemColor,'stem-cluster-bell');if(k<=3&&s.leafDensity>0)leaf(nodes[k],Math.min(L*.52,Math.max(0,ceiling*scale-nodes[k][1])*.70),.66,yaw+k*2.399,false);}
+  head(nodes.at(-1),true);
+  for(const k of[4])for(const side of[-1,1]){const node=nodes[k],az=yaw+side*1.05,tip=[node[0]+Math.sin(az)*w*.065,node[1]+h*.025,node[2]+Math.cos(az)*w*.065];b.branch(node,tip,R*.45,a.stemColor,'head-peduncle-cluster-bell');head(tip,false);}
+ }
+ const direction=new THREE.Vector3(.8,.45,1).normalize();
+ for(const entry of surfaces){
+  let front=null;const faces=[];
+  for(const triangle of retailClusterCupTriangles){const row=Math.floor(triangle.faceIndex/120);if(row<8||row>59)continue;const points=triangle.points.map(v=>new THREE.Vector3(...v).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.dot(direction);if(normal.dot(direction)<0)normal.negate();const face={triangle,points,point,normal,score};faces.push(face);if(!front||score>front.score)front=face;}
+  if(!front)continue;
+  for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}
+  const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:'petal-cup-cluster-bell',instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});
+ }
+}
+
 function drawClusterBellUnit(b,at,r,L,color,open,twister,pitch,yaw,detail,rand,kit,edge,calyxColor){
  const f=flowerFrame(b,at,pitch,yaw),tag='cluster-bell';
  f.add(kit.bud,'inferior-ovary-'+tag,'#6d874d',0,-.002,0,.0025,.003,.0025);
@@ -18955,7 +18992,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='noddingBellRacemes'){drawNoddingBellRacemes(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='alpineBellMats'){drawAlpineBellMats(b,{info,s,rand,detail},kit);return;}
  if(info.appearance?.architecture==='milkBellPanicles'){drawMilkBellPanicles(b,{info,s,rand,month,detail},kit);return;}
- if(info.appearance?.architecture==='clusterBellShoots'){drawClusterBellShoots(b,{info,s,rand,month,detail},kit);return;}
+ if(info.appearance?.architecture==='clusterBellShoots'){if(['p-0e0745695900','p-57f55f513457'].includes(p?.kind))drawRetailClusterBellShoots(b,{info,s,p,rand,month,detail},kit);else drawClusterBellShoots(b,{info,s,rand,month,detail},kit);return;}
  if(info.appearance?.architecture==='harebellThreads'){drawHarebellThreads(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='peachBellRacemes'){drawPeachBellRacemes(b,{info,s,rand,month},kit);return;}
  if(info.appearance?.architecture==='tapienRunners'){drawTapienRunners(b,{info,s,detail,rand},kit);return;}

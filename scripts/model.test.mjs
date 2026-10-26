@@ -16,7 +16,7 @@ test('water-surface flowering disappears at the same depth boundary as the rende
 });
 test('recent released catalog saves preserve both plans and camera without mutating input',()=>{
  const doc=fixture();doc.plans.A.plants[0].height=.83;doc.plans.A.plants[0].leafHeight=.4;doc.plans.A.plants[0].price=1245;doc.plans.A.plants[0].locked=true;doc.plans.B=clone(doc.plans.A);doc.plans.B.plants[0].id=2;doc.active='B';doc.view={...doc.view,month:9,year:3,camera:{position:[4,3,5],target:[0,0,0]}};
- for(const revision of ['2026-10-18.10','2026-10-18.12','2026-10-26.44','2026-10-26.45','2026-10-26.46','2026-10-26.47','2026-10-26.48','2026-10-26.49','2026-10-26.50','2026-10-26.51','2026-10-26.52','2026-10-26.53','2026-10-26.54']){const saved={...clone(doc),catalogVersion:revision},before=clone(saved),opened=validateDocument(saved);assert.deepEqual(saved,before);assert.deepEqual(opened,{...doc,catalogVersion:CATALOG_VERSION});}
+ for(const revision of ['2026-10-18.10','2026-10-18.12','2026-10-26.44','2026-10-26.45','2026-10-26.46','2026-10-26.47','2026-10-26.48','2026-10-26.49','2026-10-26.50','2026-10-26.51','2026-10-26.52','2026-10-26.53','2026-10-26.54','2026-10-26.55']){const saved={...clone(doc),catalogVersion:revision},before=clone(saved),opened=validateDocument(saved);assert.deepEqual(saved,before);assert.deepEqual(opened,{...doc,catalogVersion:CATALOG_VERSION});}
  const unsupported={...clone(doc),catalogVersion:'2099-01-01.999'},before=clone(unsupported);assert.throws(()=>validateDocument(unsupported));assert.deepEqual(unsupported,before);
 });
 
