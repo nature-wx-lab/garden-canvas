@@ -1,10 +1,19 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.824';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.824';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.830';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.830';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
+export function viewportIntersects(rect,width,height){
+ return width>0&&height>0&&rect.width>0&&rect.height>0&&rect.right>0&&rect.bottom>0&&rect.left<width&&rect.top<height;
+}
+export function resizeSceneViewport(camera,controls,renderer,width,height){
+ if(!Number.isFinite(width)||!Number.isFinite(height)||width<=0||height<=0)return false;
+ const aspect=width/height,previousAspect=Number.isFinite(camera.aspect)&&camera.aspect>0?camera.aspect:aspect,ratio=Math.max(1,1.6/aspect)/Math.max(1,1.6/previousAspect);
+ camera.position.sub(controls.target).multiplyScalar(ratio).add(controls.target);
+ renderer.setSize(width,height,false);camera.aspect=aspect;camera.updateProjectionMatrix();return true;
+}
 export function keepCameraAboveGround(camera,target){
  if(camera.position.y<CAMERA_FLOOR+1e-7){camera.position.y=CAMERA_FLOOR+1e-7;camera.lookAt(target);}
 }
@@ -84,9 +93,10 @@ export function pondMaskCode(plan){
 }
 export function createScene(container,onPick){
   const scene=new THREE.Scene();scene.background=new THREE.Color('#cbd2c6');scene.fog=new THREE.Fog('#cbd2c6',100,600);
-  const camera=new THREE.PerspectiveCamera(40,container.clientWidth/container.clientHeight,.01,650);
+  const initialWidth=Math.max(1,container.clientWidth),initialHeight=Math.max(1,container.clientHeight);
+  const camera=new THREE.PerspectiveCamera(40,initialWidth/initialHeight,.01,650);
   const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.setSize(container.clientWidth,container.clientHeight,false);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
+  renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.setSize(initialWidth,initialHeight,false);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
   renderer.domElement.setAttribute('aria-label','風に揺れる庭の3Dキャンバス');container.append(renderer.domElement);
   const controls=new OrbitControls(camera,renderer.domElement);controls.maxPolarAngle=CAMERA_MAX_POLAR;controls.minDistance=.12;controls.maxDistance=400;controls.enableDamping=false;
   const hemisphere=new THREE.HemisphereLight('#e6efff','#77704b',.95);scene.add(hemisphere);
@@ -108,7 +118,7 @@ export function createScene(container,onPick){
   sky.material.fragmentShader=sky.material.fragmentShader.replace(';#include',';\n#include');scene.add(sky);
   const backdrop=new THREE.Mesh(new THREE.PlaneGeometry(180,180),new THREE.MeshStandardMaterial({color:BACKDROP_COLOR,roughness:1}));backdrop.rotation.x=-Math.PI/2;backdrop.position.y=-.19;backdrop.receiveShadow=true;scene.add(backdrop);
   let pondClips=[];
-  let dirty=true,root=null,plants=null,draft=null,plan=null,view=null,selection=null,visible=true,windLevel=1,frameCount=0,lastDraw=0,lastTick=0,elapsed=0;
+  let dirty=true,root=null,plants=null,draft=null,plan=null,view=null,selection=null,visible=true,windLevel=1,frameCount=0,lastDraw=0,lastTick=0,elapsed=0,lastVisibilityCheck=-Infinity;
   const textureStatus=document.createElement('div');textureStatus.className='texture-status';textureStatus.textContent='芝と土の質感を読み込み中…';textureStatus.setAttribute('role','status');container.append(textureStatus);
   let texturesLoaded=0,textureFailed=false;container.dataset.textures='loading';
   const loader=new THREE.TextureLoader();
@@ -121,7 +131,9 @@ export function createScene(container,onPick){
     },undefined,()=>{textureFailed=true;container.dataset.textures='fallback';textureStatus.textContent='地面の質感を読み込めず簡易表示中。保存後に再読込できます。';dirty=true;});
   }
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');windLevel=reduced.matches?0:1;wind.strength.value=windLevel;
-  const visibilityObserver=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;dirty=true;lastTick=0;},{threshold:0});visibilityObserver.observe(container);
+  // Observer notifications invalidate the cache; current geometry owns visibility.
+  // A missed notification must not leave a resized canvas permanently suspended.
+  const visibilityObserver=new IntersectionObserver(()=>{lastVisibilityCheck=-Infinity;dirty=true;lastTick=0;},{threshold:0});visibilityObserver.observe(container);
   document.addEventListener('visibilitychange',()=>{lastTick=0;dirty=true;});
   reduced.addEventListener('change',e=>{if(e.matches){setWind(0);container.dispatchEvent(new CustomEvent('wind-reduced'));}});
   controls.addEventListener('change',()=>{keepCameraAboveGround(camera,controls.target);fitShadow();dirty=true;});
@@ -203,12 +215,14 @@ export function createScene(container,onPick){
     }
     camera.position.y=Math.max(.1,camera.position.y);camera.lookAt(controls.target);controls.update();dirty=true;return true;
   }
-  new ResizeObserver(()=>{const aspect=container.clientWidth/container.clientHeight,ratio=Math.max(1,1.6/aspect)/Math.max(1,1.6/camera.aspect);camera.position.sub(controls.target).multiplyScalar(ratio).add(controls.target);renderer.setSize(container.clientWidth,container.clientHeight,false);camera.aspect=aspect;camera.updateProjectionMatrix();fitShadow();dirty=true;}).observe(container);
+  new ResizeObserver(()=>{lastVisibilityCheck=-Infinity;dirty=true;if(resizeSceneViewport(camera,controls,renderer,container.clientWidth,container.clientHeight))fitShadow();}).observe(container);
   const ray=new THREE.Raycaster(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0),pointers=new Set();let start=null;
   renderer.domElement.addEventListener('pointerdown',e=>{pointers.add(e.pointerId);start=pointers.size===1?{id:e.pointerId,x:e.clientX,y:e.clientY}:null;});renderer.domElement.addEventListener('pointermove',e=>{if(start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)>=5)start=null;});renderer.domElement.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);start=null;});renderer.domElement.addEventListener('pointerup',e=>{pointers.delete(e.pointerId);if(start&&e.pointerId===start.id&&plan){const rect=renderer.domElement.getBoundingClientRect();ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);const point=ray.ray.intersectPlane(plane,new THREE.Vector3());let id=null;const hits=ray.intersectObjects(plants.children,true);if(hits.length){let obj=hits[0].object;while(obj&&!obj.userData.plantId)obj=obj.parent;id=obj?.userData.plantId??null;}if(point)onPick({x:Math.round((point.x+plan.width/2)*10)/10,z:Math.round((point.z+plan.depth/2)*10)/10,id});}start=null;});
   container.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();camera.position.sub(controls.target).applyAxisAngle(up,e.key==='ArrowLeft'?.12:-.12).add(controls.target);controls.update();dirty=true;}});
   renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();container.dispatchEvent(new CustomEvent('render-failed'));});renderer.setAnimationLoop(now=>{
-    if(document.hidden||!visible){lastTick=0;return;}
+    if(document.hidden){lastTick=0;return;}
+    if((dirty&&visible)||now-lastVisibilityCheck>=250){const nextVisible=viewportIntersects(container.getBoundingClientRect(),innerWidth,innerHeight);if(nextVisible&&!visible)dirty=true;visible=nextVisible;lastVisibilityCheck=now;}
+    if(!visible){lastTick=0;return;}
     const moving=windLevel>0;if(!moving&&!dirty){lastTick=0;return;}
     const interval=1000/(plan?.plants.length>40?24:30);if(!dirty&&now-lastDraw<interval)return;
     if(moving&&lastTick)elapsed+=Math.min(.1,(now-lastTick)/1000);lastTick=now;wind.time.value=elapsed;

@@ -16,7 +16,7 @@ test('water-surface flowering disappears at the same depth boundary as the rende
 });
 test('recent released catalog saves preserve both plans and camera without mutating input',()=>{
  const doc=fixture();doc.plans.A.plants[0].height=.83;doc.plans.A.plants[0].leafHeight=.4;doc.plans.A.plants[0].price=1245;doc.plans.A.plants[0].locked=true;doc.plans.B=clone(doc.plans.A);doc.plans.B.plants[0].id=2;doc.active='B';doc.view={...doc.view,month:9,year:3,camera:{position:[4,3,5],target:[0,0,0]}};
- for(const revision of ['2026-10-18.10','2026-10-18.12']){const saved={...clone(doc),catalogVersion:revision},before=clone(saved),opened=validateDocument(saved);assert.deepEqual(saved,before);assert.deepEqual(opened,{...doc,catalogVersion:CATALOG_VERSION});}
+ for(const revision of ['2026-10-18.10','2026-10-18.12','2026-10-26.44']){const saved={...clone(doc),catalogVersion:revision},before=clone(saved),opened=validateDocument(saved);assert.deepEqual(saved,before);assert.deepEqual(opened,{...doc,catalogVersion:CATALOG_VERSION});}
  const unsupported={...clone(doc),catalogVersion:'2099-01-01.999'},before=clone(unsupported);assert.throws(()=>validateDocument(unsupported));assert.deepEqual(unsupported,before);
 });
 
@@ -127,7 +127,28 @@ test('water zones preserve old soil plans and strictly validate new surface kind
  const bad=clone(d);bad.plans.A.zones[0].depth=3;assert.throws(()=>validateDocument(bad));
 });
 
-import {pondMaskCode,CAMERA_FLOOR,CAMERA_MAX_POLAR,keepCameraAboveGround,flowerInspectionView,flowerInspectionDistanceFloor,restoreCameraPose} from '../site/scene.js';
+import {pondMaskCode,CAMERA_FLOOR,CAMERA_MAX_POLAR,keepCameraAboveGround,flowerInspectionView,flowerInspectionDistanceFloor,restoreCameraPose,viewportIntersects,resizeSceneViewport} from '../site/scene.js';
+test('viewport visibility uses current nonzero bounds and excludes offscreen and edge-only rectangles',()=>{
+ const rect=(left,top,width,height)=>({left,top,width,height,right:left+width,bottom:top+height});
+ assert.equal(viewportIntersects(rect(288,183.5,685,418),1000,760),true,'current visible bounds recover a stale nonintersection');
+ assert.equal(viewportIntersects(rect(12,1172.5,2,418),1000,760),false,'the earlier offscreen bounds remain suspended');
+ assert.equal(viewportIntersects(rect(-100,-100,101,101),1000,760),true,'a partly visible pixel is inside the viewport');
+ for(const bounds of [rect(-100,20,100,100),rect(20,-100,100,100),rect(1000,20,100,100),rect(20,760,100,100),rect(20,20,0,100),rect(20,20,100,0)])assert.equal(viewportIntersects(bounds,1000,760),false);
+ for(const [width,height]of [[0,760],[1000,0],[-1,760],[1000,-1]])assert.equal(viewportIntersects(rect(20,20,100,100),width,height),false);
+});
+test('viewport resize preserves finite camera state across zero size mobile and desktop transitions',()=>{
+ const camera=new PerspectiveCamera(40,683/416,.01,650),controls={target:new Vector3(1,.5,-2)},sizes=[],renderer={setSize:(...args)=>sizes.push(args)};
+ camera.position.set(4,3,5);const target=controls.target.toArray(),originalPosition=camera.position.clone();
+ const snapshot=()=>({position:camera.position.toArray(),aspect:camera.aspect,projection:camera.projectionMatrix.toArray(),sizes:sizes.map(size=>[...size])});
+ const invalid=[[0,0],[0,416],[683,0],[-1,416],[683,NaN],[Infinity,416]];
+ for(const [width,height]of invalid){const before=snapshot();assert.equal(resizeSceneViewport(camera,controls,renderer,width,height),false);assert.deepEqual(snapshot(),before,'invalid dimensions must not clear the renderer or poison the camera');}
+ for(const [width,height]of [[683,416],[360,640],[683,416]]){
+  const aspect=width/height,ratio=Math.max(1,1.6/aspect)/Math.max(1,1.6/camera.aspect),expected=camera.position.clone().sub(controls.target).multiplyScalar(ratio).add(controls.target);
+  assert.equal(resizeSceneViewport(camera,controls,renderer,width,height),true);assert.equal(camera.aspect,aspect);assert.ok(camera.position.distanceTo(expected)<1e-10,'normal resize retains the existing framing formula');assert.deepEqual(sizes.at(-1),[width,height,false]);assert.deepEqual(controls.target.toArray(),target);assert.ok(camera.position.toArray().every(Number.isFinite));assert.ok(camera.projectionMatrix.elements.every(Number.isFinite));
+ }
+ assert.equal(sizes.length,3);assert.ok(camera.position.distanceTo(originalPosition)<1e-10,'returning to desktop restores its previous framing');
+ const before=snapshot();assert.equal(resizeSceneViewport(camera,controls,renderer,0,0),false);assert.deepEqual(snapshot(),before,'a later zero-size observation also preserves the valid view');
+});
 test('flower observation fits upright hanging and low anchors above ground without changing saved gardens',()=>{
  for(const aspect of [.6,1,2])for(const [height,axis]of [[.025,[0,1,0]],[.40,[0,-1,0]],[1.2,[0,-.8,.6]]]){
   const group=new Group();group.position.set(2,.012,-3);group.rotation.y=.6;group.scale.setScalar(.7);group.userData.flowerTargets=[{origin:[.02,height,.01],axis,radius:.04}];const before=JSON.stringify(group.userData.flowerTargets),pose=flowerInspectionView(group,aspect),camera=new PerspectiveCamera(40,aspect,.01,650);assert.ok(pose);assert.ok(pose.position.every(Number.isFinite));assert.ok(pose.target.every(Number.isFinite));assert.ok(pose.position[1]>=CAMERA_FLOOR);assert.equal(JSON.stringify(group.userData.flowerTargets),before);camera.position.fromArray(pose.position);camera.lookAt(new Vector3(...pose.target));camera.updateMatrixWorld();const target=new Vector3(...pose.target).project(camera);assert.ok(Math.abs(target.x)<1e-8&&Math.abs(target.y)<1e-8,'flower target remains centered after ground clamping');assert.ok(target.z>-1&&target.z<1,'target stays inside camera clipping');

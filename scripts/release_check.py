@@ -58,7 +58,7 @@ def audit():
         if f'./{name}?v={version}' not in html:fail('cache version missing from HTML')
     for path in ['site/app.js','site/model.js','site/catalog.js','site/catalog-data.js','site/catalog-search.js','site/botanical-models.js','site/tree-model.js','site/tree-profiles.js','site/scene.js','site/vegetation.js','site/appearance-data.js','site/appearance.js','site/plant-detail.js']:
         source=(ROOT/path).read_text()
-        for module in re.findall(r"from ['\"](\./[^'\"]+)['\"]",source):
+        for module in re.findall(r"\bfrom\s*['\"](\./[^'\"]+)['\"]",source):
             if not module.startswith('./vendor/') and not module.endswith('?v='+version):fail('cache version missing from module import')
         if re.search(r'\b(?:fetch|XMLHttpRequest|WebSocket|sendBeacon|eval)\s*\(|\.innerHTML\s*=|navigator\.geolocation',source):fail(path+' introduces an unreviewed network or injection surface')
     commits=git('rev-list','--all').decode().splitlines()
