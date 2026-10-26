@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.835';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.836';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.835';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.836';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -19016,7 +19016,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(a.architecture==='heliopsisReferences'){drawHeliopsisReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='echinopsReferences'){drawEchinopsReferences(b,{info,s,detail},kit);return;}
  if(a.architecture==='oreganoBractReferences'){drawOreganoReferences(b,{info,s,p,detail,month},kit);return;}
- if(a.architecture==='swanAnemoneReferences'){drawSwanAnemones(b,{info,s,detail},kit);return;}
+ if(a.architecture==='swanAnemoneReferences'){drawSwanAnemones(b,{info,s,p,detail},kit);return;}
  if(a.architecture==='gardenAnemoneReferences'){drawGardenAnemones(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='alliumReferences'){drawAlliumReferences(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='daylilyReferences'){drawDaylilyReferences(b,{info,s,detail,rand,month},kit);return;}
@@ -23529,8 +23529,10 @@ export function swanAnemonePoint(type,t,u){
  const frilled=type!=='swanRoundSepal',width=(frilled?.49:.51)*sn**.54;
  return [u*width*(1+(frilled?.035:0)*Math.sin(t*18+u*3)),.12*t*t+.045*u*u*sn+(frilled?.075:0)*Math.abs(u)**3*Math.sin(t*23+u*7)*sn,t];
 }
-function drawSwanAnemones(b,{info,s,detail},kit){
- const a=info.appearance,type=a.flowerPalette.type,dream=type==='dreamingSwan',ruffled=type==='ruffledSwan',regal=type==='regalSwan',h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(.115,h*.26,w*.23,s.leafHeight*.70)*scale,F=Math.min(a.flowerRadius,h*.11,w*.17)*scale,R=Math.min(.0018,h*.005,w*.006),n=Math.max(2,Math.round(4*detail)),stem=a.stemColor,back=regal?'8065ae':dream?'8973b2':'8590c3';let hi=0;
+const elfinSwanSepalTriangles=[];{const positions=[];for(let i=0;i<=48;i++)for(let j=0;j<=32;j++)positions.push(swanAnemonePoint('swanFrilledSepal',i/48,j/16-1).map(Math.fround));for(let i=0;i<48;i++)for(let j=0;j<32;j++){const k=i*33+j;for(const[face,vertices]of[[0,[k,k+33,k+1]],[1,[k+1,k+33,k+34]]]){const points=vertices.map(v=>positions[v]),a=new THREE.Vector3(...points[1]).sub(new THREE.Vector3(...points[0])),b=new THREE.Vector3(...points[2]).sub(new THREE.Vector3(...points[0]));if(a.cross(b).lengthSq()>1e-22)elfinSwanSepalTriangles.push({faceIndex:(i*32+j)*2+face,vertices,points});}}}
+function drawSwanAnemones(b,{info,s,p,detail},kit){
+ const a=info.appearance,type=a.flowerPalette.type,dream=type==='dreamingSwan',ruffled=type==='ruffledSwan',regal=type==='regalSwan',elfin=type==='elfinSwan',observed=elfin&&p?.kind==='p-c630feb75f30',h=s.height,w=s.spread,scale=s.leafScale,L=Math.min(.115,h*.26,w*.23,s.leafHeight*.70)*scale,F=Math.min(a.flowerRadius,h*.11,w*.17)*scale,R=Math.min(.0018,h*.005,w*.006),n=Math.max(2,Math.round(4*detail)),stem=a.stemColor,back=elfin?'8879b0':regal?'8065ae':dream?'8973b2':'8590c3',surfaces=[],sepalInstances=new Map();let hi=0;
+ const organs=observed?{branch:(...v)=>b.branch(...v),add:(...v)=>{b.add(...v);const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v;if(!kind.startsWith('sepal-swan-elfinSwan'))return;const instanceId=sepalInstances.get(kind)||0;sepalInstances.set(kind,instanceId+1);const matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({shape,kind,instanceId,matrix,radius:F*1.8,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
  const leaflet=(at,az,len,kind)=>{
   const f=flowerFrame(b,at,-.10,az);f.add('swanLeaflet',kind,s.leafColor,0,0,0,len,len,len);
   let prev=[0,0,0];for(let j=1;j<=10;j++){const q=swanAnemonePoint('swanLeaflet',j/10,0).map(v=>v*len);q[1]+=.00004;f.branch(prev,q,Math.min(R*.09,len*.004),'#9aac7b','midrib-swan');prev=q;}
@@ -23543,22 +23545,23 @@ function drawSwanAnemones(b,{info,s,detail},kit){
  };
  const head=(at,az,bud=false)=>{
   if(bud){b.add(kit.bud,'bud-swan-'+type,'#9896aa',...at,F*.19,F*.24,F*.19,.30,az,0);return;}
-  const idx=hi++,f=flowerFrame(b,at,.24+(idx%4)*.43,az),shape=regal||type==='wildSwan'?'swanRoundSepal':'swanFrilledSepal',inner=dream?(idx%3===2?7:5):ruffled&&idx%4===3?1:0;
-  if(idx===0)f.flower([0,F*.12,0],F*1.18);
-  for(let j=0;j<5;j++){const size=[.96,1.04,.92,1.01,.99][j],kind='sepal-swan-'+type+(j%2===0?'-back-'+back:'');f.add(shape,kind,s.flowerColor,0,0,0,F*size,F*size,F*size,0,j*TAU/5,0);}
-  for(let j=0;j<inner;j++){const len=F*(dream?.78:.67);f.add('swanFrilledSepal','sepal-swan-'+type,s.flowerColor,0,F*.035,0,len,len,len,-.06,j*TAU/inner+.56,0);}
+  const idx=hi++,f=flowerFrame(organs,at,.24+(idx%4)*.43,az),shape=regal||type==='wildSwan'?'swanRoundSepal':'swanFrilledSepal',inner=elfin?5:dream?(idx%3===2?7:5):ruffled&&idx%4===3?1:0;
+  if(idx===0&&!observed)f.flower([0,F*.12,0],F*1.18);
+  for(let j=0;j<5;j++){const size=[.96,1.04,.92,1.01,.99][j],kind='sepal-swan-'+type+(elfin||j%2===0?'-back-'+back:'');f.add(shape,kind,s.flowerColor,0,0,0,F*size,F*size,F*size,0,j*TAU/5,0);}
+  for(let j=0;j<inner;j++){const len=F*(dream?.78:.67);f.add('swanFrilledSepal','sepal-swan-'+type+(elfin?'-back-'+back:''),s.flowerColor,0,F*.035,0,len,len,len,-.06,j*TAU/inner+.56,0);}
   f.add(kit.bud,'receptacle-swan','#a5b552',0,F*.11,0,F*.18,F*.08,F*.18);
   for(let j=0;j<36;j++){const t=(j+.5)/36,y=F*(.15+.07*(1-t)),az2=j*2.399,r=F*.17*Math.sqrt(t);f.add(kit.bud,'carpel-swan','#b0bf61',Math.sin(az2)*r,y,Math.cos(az2)*r,F*.018,F*.025,F*.018);}
   for(let j=0;j<60;j++){const az2=j*2.399,r=F*(.24+(j%3)*.033),tip=[Math.sin(az2)*r,F*(.15+(j%4)*.025),Math.cos(az2)*r];f.branch([Math.sin(az2)*F*.17,F*.05,Math.cos(az2)*F*.17],tip,F*.006,'#ddbe4d','filament-swan');f.add(kit.bud,'anther-swan','#dfb52e',...tip,F*.022,F*.025,F*.018,.18,az2,0);}
  };
  for(let i=0;i<n;i++){
-  const az=i*2.399,rad=w*.10*Math.sqrt(i/n)*scale,root=[Math.sin(az)*rad,Math.min(.001,h*.02),Math.cos(az)*rad];
+  const az=i*2.399,rad=w*.10*Math.sqrt(i/n)*scale,root=[Math.sin(az)*rad,observed?Math.min(h*.02,Math.max(.001,R+1e-7)):Math.min(.001,h*.02),Math.cos(az)*rad];
   for(let j=0;j<3;j++)if((j+.2)/3<s.leafDensity)basal(root,az+j*2.399);
   if(!s.bloom)continue;
   const collar=[root[0]+Math.sin(az)*w*.025*scale,Math.min(s.leafHeight*.78,h*.62)*scale,root[2]+Math.cos(az)*w*.025*scale];b.branch(root,collar,R,stem,'stem-swan-'+type);
   if(s.leafDensity>0)for(let j=0;j<3;j++){const yaw=az+j*TAU/3,pet=L*.09,at=[collar[0]+Math.sin(yaw)*pet,collar[1]+pet*.08,collar[2]+Math.cos(yaw)*pet];b.branch(collar,at,R*.25,stem,'involucre-stalk-swan');leaflet(at,yaw,L*.48,'involucre-swan-'+type);}
   for(let j=0;j<3;j++){const yaw=az+(j-1)*.72,reach=w*(j===1?.035:.17)*scale,at=[collar[0]+Math.sin(yaw)*reach,h*(j===1?.93:.71+(j===2?.08:0))*scale-F*.04,collar[2]+Math.cos(yaw)*reach];b.branch(collar,at,R*.55,stem,'peduncle-swan');head(at,yaw,j===2&&i%2===1);}
  }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of elfinSwanSepalTriangles){const row=Math.floor(triangle.faceIndex/64);if(row<8||row>38)continue;const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z;if(normal.dot(new THREE.Vector3(.8,.45,1))<0)normal.negate();const face={point,normal,triangle,points,score};faces.push(face);if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
 }
 export function echinaceaPoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
