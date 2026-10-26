@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.832';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.833';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.832';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.833';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -18088,7 +18088,7 @@ export function coumPoint(type,t,u){
 const coumRetailLeafSamples=[],coumRetailPetalTriangles=[];for(let i=0;i<=44;i++)for(let j=0;j<=72;j++)coumRetailLeafSamples.push(coumPoint('coumLeaf',i/44,j/72*Math.PI*2).map(Math.fround));
 {const positions=[];for(let i=0;i<=44;i++)for(let j=0;j<=24;j++)positions.push(coumPoint('coumRetailPetal',i/44,j/12-1).map(Math.fround));for(let i=0;i<44;i++)for(let j=0;j<24;j++){const k=i*25+j;for(const vertices of [[k,k+1,k+25],[k+1,k+26,k+25]]){const points=vertices.map(v=>positions[v]),a=new THREE.Vector3(...points[1]).sub(new THREE.Vector3(...points[0])),b=new THREE.Vector3(...points[2]).sub(new THREE.Vector3(...points[0]));if(a.cross(b).lengthSq()>1e-22)coumRetailPetalTriangles.push({faceIndex:(i*24+j)*2+(vertices[0]===k?0:1),vertices,points});}}}
 function drawCoumCrowns(b,{info,s,p,detail,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,palette=a.flowerPalette||{},green=s.leafDensity<.5?'#a6ad72':s.leafColor,leaves=Math.max(1,Math.round(14*detail*s.leafDensity)),observed=['p-1b84c5e5770c','p-23f96ddcce81','p-667dac04d733','p-b29df262e029','p-8a74ddfb5619'].includes(p?.kind),ceiling=Math.min(h,s.leafHeight),rootLeaf=[0,Math.min(.002,ceiling*.05),0],micro=Math.min(1,h/.1),surfaces=[],petalInstances={'petal-coum-nose':0,'petal-coum-plain':0};
+ const a=info.appearance,h=s.height,w=s.spread,palette=a.flowerPalette||{},green=s.leafDensity<.5?'#a6ad72':s.leafColor,leaves=Math.max(1,Math.round(14*detail*s.leafDensity)),observed=['p-1b84c5e5770c','p-23f96ddcce81','p-667dac04d733','p-b29df262e029','p-8a74ddfb5619','p-3ba3afe2f737'].includes(p?.kind),ceiling=Math.min(h,s.leafHeight),rootLeaf=[0,Math.min(.002,ceiling*.05),0],micro=Math.min(1,h/.1),surfaces=[],petalInstances={'petal-coum-nose':0,'petal-coum-plain':0};
  const axis=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(!observed||length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
  const organsAxis=axis;
  const organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(v[1]!=='petal-coum-nose'&&v[1]!=='petal-coum-plain')return;const instanceId=petalInstances[v[1]]++,[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,kind,instanceId,radius:sy*1.55,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
@@ -18104,7 +18104,7 @@ function drawCoumCrowns(b,{info,s,p,detail,rand},kit){
   const yaw=j*2.399,R=w*.15*Math.sqrt((j+.5)/n),root=[Math.sin(yaw)*R,observed?Math.min(.001,h*.01):.001,Math.cos(yaw)*R],L=Math.min(.014,h*.18),height=h*(.70+rand()*.12),axis=t=>[root[0]+Math.sin(yaw)*L*.5*t, height*t,root[2]+Math.cos(yaw)*L*.5*t],top=axis(1);let from=root;
   for(let k=1;k<=15;k++){const to=axis(k/15);organsAxis(from,to,.00065*(observed?micro:1),'#795365','peduncle-coum');from=to;}
   let end;for(let k=1;k<=10;k++){const t=k/10,theta=t*Math.PI;end=[top[0]+Math.sin(yaw)*L*.35*(1-Math.cos(theta)),top[1]+L*.35*Math.sin(theta),top[2]+Math.cos(yaw)*L*.35*(1-Math.cos(theta))];organsAxis(from,end,.00055*(observed?micro:1),'#795365','neck-coum');from=end;}
-  const f=flowerFrame(organs,[end[0],end[1]-L*.25,end[2]],0,yaw),plain=palette.white&&j%4===0,color=palette.white?(j%3===0&&!plain?'#e6d7e5':'#eeede8'):palette.retail?(observed?s.flowerColor:['#e3a6c4','#d475a9','#ca4b96'][j%3]):j%3===0?'#d2a4d0':j%3===1?'#c484ba':'#b86baa';
+  const f=flowerFrame(organs,[end[0],end[1]-L*.25,end[2]],0,yaw),plain=palette.white&&j%4===0,color=palette.white?(j%3===0&&!plain?'#e6d7e5':'#eeede8'):palette.retail?(observed?s.flowerColor:['#e3a6c4','#d475a9','#ca4b96'][j%3]):observed&&palette.koumy?s.flowerColor:j%3===0?'#d2a4d0':j%3===1?'#c484ba':'#b86baa';
   if(j>=n-2){f.add(kit.bud,'bud-coum',palette.white?'#d6c9d0':'#9e6389',0,0,0,L*.18,L*.48,L*.18,.65,0,0);continue;}
   if(!observed&&j===0)f.flower([0,L*.06,0],L*.95,1.70,0);
   f.add('coumTube',plain?'corolla-tube-coum-plain':'corolla-tube-coum-nose',plain?'#e9e8df':'#6b2d58',0,0,0,L,L,L);
