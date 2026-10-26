@@ -22193,8 +22193,39 @@ function drawWoodlandMints(b,{info,s,detail,rand},kit){
  }
 }
 
-function drawSpringOrchidBulb(b,{info,s,detail,rand},kit){
+export function puschkiniaInspectionPoint(type,t,u){
+ const sn=Math.max(0,Math.sin(t*Math.PI));
+ if(type==='puschkiniaCorona'){const an=(u+1)*.5*TAU,rad=.20+.10*t;return [Math.sin(an)*rad,t*(.39+.048*Math.cos(an*6)),Math.cos(an)*rad];}
+ const leaf=type==='puschkiniaStrap',width=(leaf?.5:.39)*Math.pow(sn,leaf?.7:.60);return [u*width,t,leaf?.06*u*u*sn+.36*t*t*t:.08*u*u*sn+.04*t*t];
+}
+const puschkiniaObservedSamples={},puschkiniaObservedTriangles=[];
+for(const shape of ['puschkiniaStrap','puschkiniaTepal','puschkiniaCorona']){const points=[];for(let i=0;i<=36;i++)for(let j=0;j<=64;j++)points.push(puschkiniaInspectionPoint(shape,i/36,j/64*2-1).map(Math.fround));puschkiniaObservedSamples[shape]=points;if(shape==='puschkiniaTepal')for(let i=0;i<36;i++)for(let j=0;j<64;j++){const k=i*65+j;for(const[di,vertices]of [[k,k+65,k+1],[k+1,k+65,k+66]].entries())puschkiniaObservedTriangles.push({faceIndex:(i*64+j)*2+di,vertices,points:vertices.map(v=>points[v])});}}
+function drawObservedPuschkinia(b,{p,info,s,detail,rand},kit){
+ const a=info.appearance,h=s.height,w=s.spread,green=s.leafColor,stem=a.stemColor,n=Math.max(2,Math.round(6*detail)),scale=s.leafScale,ceiling=Math.min(h,s.leafHeight),micro=Math.min(1,h/.15,w/.1),surfaces=[],lobeInstances={};
+ const line=(from,to,r,color,kind)=>{const length=Math.hypot(...to.map((v,k)=>v-from[k]));if(length>=.0001){b.branch(from,to,r,color,kind);return;}if(length<=0)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(...to.map((v,k)=>v-from[k])).normalize()),'YXZ');b.add(delphiniumUnitAxis,kind,color,(from[0]+to[0])/2,(from[1]+to[1])/2,(from[2]+to[2])/2,r,length,r,e.x,e.y,e.z);};
+ const organs={branch:line,add:(...v)=>{b.add(...v);if(!['puschkiniaTepal'].includes(v[0]))return;const kind=v[1],instanceId=lobeInstances[kind]||0;lobeInstances[kind]=instanceId+1;const[shape,k,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:sy*1.65,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}};
+ const fitAssembly=(parts,root,ceiling,emitter)=>{let fit=1;for(const part of parts){let points;if(part.line){const[from,to,r]=part.line,matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;points=Array.from({length:pos.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(matrix));}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);const samples=puschkiniaObservedSamples[shape]|| (shape?.attributes?.position?Array.from({length:shape.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(shape.attributes.position,i).toArray()):[-1,1].flatMap(x=>[-1,1].flatMap(y=>[-1,1].map(z=>[x,y,z]))));points=samples.map(q=>new THREE.Vector3(...q).applyMatrix4(matrix));}for(const point of points){const q=point.sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(ceiling-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-1e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Puschkinia rooted assembly cannot fit');const point=q=>fit===1?q:q.map((v,k)=>root[k]+(v-root[k])*fit);for(const part of parts)if(part.line){const[from,to,r,color,kind]=part.line;emitter.branch(point(from),point(to),r*fit,color,kind);}else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ;emitter.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,rx,ry,rz);}};
+ for(let i=0;i<n;i++){
+  const an=i*2.399,rr=w*.29*Math.sqrt((i+.5)/n),x=Math.sin(an)*rr,z=Math.cos(an)*rr,top=h*(.80+rand()*.18);
+  for(const side of [-1,1]){const len=Math.min(a.leafLength,top*.95)*(.85+rand()*.15)*scale,root=[x+side*.002*micro,Math.min(.003,ceiling*.05),z],parts=[],out={add:(...organ)=>parts.push({organ})};out.add('puschkiniaStrap','leaf',s.month>=5?'#9eab6d':green,...root,a.leafWidth*micro,len,len,.22,an+side*Math.PI/2,0);fitAssembly(parts,root,ceiling,organs);}
+  if(!s.bloom)continue;
+  for(let axis=0;axis<2;axis++){
+   const az=an+axis*2.4,bx=x+Math.sin(az)*.009*micro,bz=z+Math.cos(az)*.009*micro,tall=top*(axis?.85:1),root=[bx,Math.min(.004,h*.04),bz],parts=[],out={add:(...organ)=>parts.push({organ}),branch:(...line)=>parts.push({line})};
+   out.branch(root,[bx,tall,bz],.0009*micro,stem,'floralScape');
+   for(let j=0;j<10;j++){
+    const t=j/10,turn=az+j*2.399,at=[bx,tall*(.42+t*.54),bz],end=[bx+Math.sin(turn)*.006*micro,at[1]+.002*micro,bz+Math.cos(turn)*.006*micro];out.branch(at,end,.00032*micro,stem,'pedicel');
+    if(j===9){out.add(kit.bud,'flowerBud','#c5d7d9',...end,.0021*micro,.0035*micro,.0021*micro,.20,turn,0);continue;}
+    detailedFlower(out,{x:end[0],y:end[1],z:end[2],shape:a.flowerShape,color:s.flowerColor,r:a.flowerRadius*micro,tilt:1.25+(rand()-.5)*.2,yaw:turn},{...kit,rand});
+   }
+   fitAssembly(parts,root,h,organs);
+  }
+ }
+ for(const entry of surfaces){let front=null;const faces=[];for(const triangle of puschkiniaObservedTriangles){const row=Math.floor(triangle.faceIndex/128);if(row<6||row>30)continue;const points=triangle.points.map(q=>new THREE.Vector3(...q).applyMatrix4(entry.matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),score=point.x*.8+point.y*.45+point.z,face={point,normal,triangle,points,score};faces.push(face);if(normal.dot(new THREE.Vector3(.8,.45,1))<0)normal.negate();if(!front||score>front.score)front=face;}if(!front)continue;const direction=new THREE.Vector3(.8,.45,1).normalize();for(let pass=0;pass<4;pass++){const origin=front.point.clone().add(direction),ray=new THREE.Ray(origin,direction.clone().negate());let nearest=null;for(const face of faces){const point=ray.intersectTriangle(...face.points,false,new THREE.Vector3());if(!point)continue;const distance=point.distanceToSquared(origin);if(!nearest||distance<nearest.distance)nearest={face,distance};}if(!nearest||nearest.face.triangle.faceIndex===front.triangle.faceIndex)break;front=nearest.face;}const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),front.normal),'YXZ');b.flower?.(front.point.toArray(),entry.radius,e.x,e.y,e.z,{component:entry.kind,instanceId:entry.instanceId,faceIndex:front.triangle.faceIndex,vertices:front.triangle.vertices,cameraAxis:[.8,.45,1]});}
+}
+
+function drawSpringOrchidBulb(b,{p,info,s,detail,rand},kit){
  if(s.groundDormant)return;
+ if(['p-a7106714e1f1','p-d4013ed52006'].includes(p.kind)){drawObservedPuschkinia(b,{p,info,s,detail,rand},kit);return;}
  const a=info.appearance,orchid=a.architecture==='bletillaShoots',h=s.height,w=s.spread,green=s.leafColor,stem=a.stemColor,n=Math.max(2,Math.round((orchid?5:6)*detail)),scale=s.leafScale;
  for(let i=0;i<n;i++){
   const an=i*2.399,rr=w*(orchid?.20:.29)*Math.sqrt((i+.5)/n),x=Math.sin(an)*rr,z=Math.cos(an)*rr,top=h*(.80+rand()*.18)*(orchid?scale:1);
