@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.842';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.843';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.842';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.843';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -9513,9 +9513,9 @@ const panicleLeafSamples=[],panicleLobeTriangles=[];
 for(let i=0;i<=36;i++)for(let j=0;j<=14;j++)panicleLeafSamples.push(paniclePhloxPoint('paniclePhloxLeaf',i/36,j/14*2-1).map(Math.fround));
 for(let row=0;row<20;row++)for(let col=0;col<14;col++)for(let half=0;half<2;half++){const cells=half?[[row,col+1],[row+1,col],[row+1,col+1]]:[[row,col],[row+1,col],[row,col+1]];panicleLobeTriangles.push({vertices:cells.map(([i,j])=>i*15+j),points:cells.map(([i,j])=>paniclePhloxPoint('paniclePhloxLobe',i/20,j/14*2-1).map(Math.fround)),faceIndex:(row*14+col)*2+half});}
 function drawPaniclePhlox(b,{info,s,p,detail,rand,month},kit){
- const a=info.appearance,h=s.height,w=s.spread,winter=[12,1,2].includes(month),growth=month===3?.25:month===4?.55:month===5?.83:1;
+ const a=info.appearance,h=s.height,w=s.spread,hybrid=['p-a78d88d48f5e','p-a86ec7d82580'].includes(p.kind),winter=[12,1,2].includes(month),growth=month===3?.25:month===4?.55:month===5?.83:1;
  const n=Math.max(3,Math.min(12,Math.round(6*detail*Math.pow(w/.4,.70)))),L=Math.min(a.leafLength,w*.28),stem=winter?a.winterStemColor:a.stemColor,flowerScale=Math.min(1,h/.25),flowerRadius=a.flowerRadius*flowerScale,flowerLength=a.flowerLength*flowerScale;
- const observed=['p-289e28874872','p-5960a0205273','p-a80ce5615f08'].includes(p?.kind),ceiling=Math.min(h,s.leafHeight),lowCap=observed&&s.leafDensity>0&&ceiling<=a.leafLength*.5;
+ const observed=hybrid||['p-289e28874872','p-5960a0205273','p-a80ce5615f08'].includes(p?.kind),ceiling=Math.min(h,s.leafHeight),lowCap=observed&&s.leafDensity>0&&ceiling<=a.leafLength*.5;
  const axis=(...args)=>observed?delphiniumObservedAxis(b,...args):b.branch(...args);
  const ground=(from,to,r)=>{if(!lowCap)return from;from=[from[0],Math.min(from[1],ceiling*.10),from[2]];for(let pass=0;pass<32;pass++){const matrix=calaminthaLineMatrix(from,to,r),pos=delphiniumUnitAxis.attributes.position;let min=Infinity;for(let j=0;j<pos.count;j++)min=Math.min(min,new THREE.Vector3().fromBufferAttribute(pos,j).applyMatrix4(matrix).y);if(min>=0)break;from[1]+=-min+1e-10;}return from;};
  const placeLeaf=(parts,at,az,paths=null)=>{
@@ -9526,7 +9526,7 @@ function drawPaniclePhlox(b,{info,s,p,detail,rand,month},kit){
   if(!base){let best=-1;for(const candidate of candidates){const{low,high}=candidate.bounds,desired=high>low?(ceiling-2e-9)*(-low)/(high-low):at[1],lines=paths||[[[at[0],0,at[2]],[at[0],ceiling,at[2]]]];for(const line of lines){const lower=Math.max(0,Math.min(line[0][1],line[1][1])),upper=Math.min(ceiling,Math.max(line[0][1],line[1][1]));if(lower>upper)continue;const y=Math.max(lower,Math.min(upper,desired)),point=calaminthaNearestStem([line],y,y,at);if(!point)continue;const amount=Math.max(0,Math.min(1,high>0?(ceiling-point[1]-2e-9)/high:1,low<0?(point[1]-1e-9)/-low:1));if(amount>best){best=amount;base=point;angle=candidate.angle;bounds=candidate.bounds;}}}if(!base||best<=0)throw new Error('Panicle Phlox leaf pair has no fitted attachment '+JSON.stringify({id:p.kind,month,h,w,ceiling,at}));fit=best;if(!paths)base=[at[0],-bounds.low*fit+1e-9,at[2]];}
   const original=base===at&&angle===0&&fit===1,point=q=>new THREE.Vector3(...q).sub(new THREE.Vector3(...at)).applyQuaternion(bounds.rotation).multiplyScalar(fit).add(new THREE.Vector3(...base)).toArray();for(const part of parts)if(part.line){if(original)axis(...part.line);else{const[from,to,r,color,kind]=part.line;axis(point(from),point(to),r*fit,color,kind);}}else if(original)b.add(...part.organ);else{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=part.organ,q=bounds.rotation.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ');b.add(shape,kind,color,...point([x,y,z]),sx*fit,sy*fit,sz*fit,e.x,e.y,e.z);}
  };
- let inspection=null,inspectionScore=-Infinity;const surfaces=[],instances=new Map(),organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(!(v[1]==='petal-panicle-phlox'||v[1].startsWith('petal-phlox-picasso-')))return;const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,instanceId=instances.get(kind)||0;instances.set(kind,instanceId+1);const matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:flowerRadius*2,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
+ let inspection=null,inspectionScore=-Infinity;const surfaces=[],instances=new Map(),organs=observed?{branch:axis,add:(...v)=>{b.add(...v);if(!(v[1]==='petal-panicle-phlox'||v[1].startsWith('petal-phlox-picasso-')||v[1].startsWith('petal-opening-act-')))return;const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=v,instanceId=instances.get(kind)||0;instances.set(kind,instanceId+1);const matrix=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));matrix.elements=matrix.elements.map(Math.fround);surfaces.push({matrix,shape,kind,instanceId,radius:flowerRadius*2,score:x*.8+y*.45+z});surfaces.sort((a,b)=>b.score-a.score);if(surfaces.length>8)surfaces.pop();}}:b;
  const leafPair=(at,angle,len,upper,pitch,root,retainedPair,paths=null)=>{
   const petiole=upper?.0008:.003,radius=.00055,ratio=a.leafWidth/a.leafLength,leaves=[];let upperBound=.001+radius,lowerBound=radius;
   for(const side of [0,Math.PI]){
@@ -9549,18 +9549,18 @@ function drawPaniclePhlox(b,{info,s,p,detail,rand,month},kit){
  for(let i=0;i<n;i++){
   // Structural variation is fixed per stem, independent of seasonal leaf/flower density.
   const shape=k=>.5+.5*Math.sin((i+1)*12.9898+k*7.233);
-  const az=i*2.399963,rr=w*.20*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.003,Math.cos(az)*rr],top=h*(.79+shape(0)*.13),body=(winter?top*.86:s.bloom?top*.76:top*.90)*(winter?1:growth);
-  const point=t=>[root[0]+Math.sin(az)*w*.035*t*t,root[1]+body*t,root[2]+Math.cos(az)*w*.035*t*t];let from=root,retainedPair=false;const own=[];
+  const az=i*2.399963,rr=w*(hybrid?.30:.20)*Math.sqrt((i+.35)/n),root=[Math.sin(az)*rr,.003,Math.cos(az)*rr],top=h*(hybrid?(.62+.28*(1-rr/(w*.30))+.05*shape(0))*(winter?1:growth):.79+shape(0)*.13),body=(winter?top*.86:s.bloom?top*.76:top*.90)*(winter||hybrid?1:growth);
+  const point=t=>[root[0]+Math.sin(az)*w*(hybrid?.10:.035)*t*t,root[1]+body*t,root[2]+Math.cos(az)*w*(hybrid?.10:.035)*t*t];let from=root,retainedPair=false;const own=[];
   for(let j=1;j<=8;j++){
    const t=(j+(j===8?0:(shape(j)-.5)*.32))/8,at=point(t),stemRadius=.00165*(1-t*.35),base=observed&&j===1?ground(from,at,stemRadius):from;axis(base,at,stemRadius,stem,winter?'dry-stem-panicle-phlox':'stem-panicle-phlox');own.push([base,at]);from=at;
-   if(!winter&&(j<3||rand()<s.leafDensity))retainedPair=leafPair(at,az+j*Math.PI/2,L*(s.bloom&&j===8?.30:.98-.46*t)*(.65+.35*growth),j>5,1.22-.43*t,root,retainedPair,own)||retainedPair;
+   if((!winter&&(j<3||rand()<s.leafDensity))||(hybrid&&winter&&j===1&&s.leafDensity>0))retainedPair=leafPair(at,az+j*Math.PI/2,L*(hybrid&&winter?.32:1)*(s.bloom&&j===8?.30:.98-.46*t)*(.65+.35*growth),j>5,1.22-.43*t,root,retainedPair,own)||retainedPair;
   }
   // Retained dead stems are illustrative. They are not a pruning event or a
   // miniature living shoot; actual winter persistence is not quantified.
   if(winter||!s.bloom)continue;
   const R=Math.min(a.headRadius*flowerScale,w*.18),rise=top-body,headAxis=from;
   const floret=(at,angle,tilt,index)=>{
-   const age=(index%3+rand()*.7)/3,color=a.shootProfile==='blueParadise'?new THREE.Color(a.flowerPalette.young).lerp(new THREE.Color(a.flowerPalette.mature),age):s.flowerColor;
+   const age=(index%3+rand()*.7)/3,color=hybrid?a.flowerPalette.corolla:a.shootProfile==='blueParadise'?new THREE.Color(a.flowerPalette.young).lerp(new THREE.Color(a.flowerPalette.mature),age):s.flowerColor;
    detailedFlower(organs,{x:at[0],y:at[1],z:at[2],r:flowerRadius,color,shape:'paniclePhloxFlower',palette:{...a.flowerPalette,length:flowerLength,pattern:index%3,phase:i*97+index*13},tilt,yaw:angle,markInspection:false,onInspectionTarget:register=>{const score=at[0]*.8+at[2];if(!observed&&score>inspectionScore){inspectionScore=score;inspection=register;}}},{...kit,rand});
   };
   let previous=headAxis;
@@ -14719,7 +14719,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   return;
  }
  if(shape==='paniclePhloxFlower'){
-  const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length,pk=palette.splash?'petal-phlox-picasso-'+palette.pattern:'petal-panicle-phlox';
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),L=palette.length,pk=palette.openingAct?'petal-opening-act-'+palette.openingAct:palette.splash?'petal-phlox-picasso-'+palette.pattern:'petal-panicle-phlox';
   const phase=Number.isFinite(palette.phase)?palette.phase:0,noise=k=>{const value=Math.sin((phase+1)*12.9898+k*7.233)*43758.5453;return value-Math.floor(value);};let lobe0;
   f.add('tube','tube-panicle-phlox',palette.tube||color,0,0,0,r*.30,L/1.09,r*.30);
   f.add('woodlandMintTube','calyx-panicle-phlox','#6f8657',0,0,0,r*.46,L*.44,r*.46);
