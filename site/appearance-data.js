@@ -3063,7 +3063,65 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "花は当該写真の静的な配色例です。黄色い雄しべや葉の斑を花の地色と混同せず、花の個体差・変色速度を予測していません。",
     "葉付きの有茎を残し、花後に上部の花序を整理する管理例です。夏の葉減り・冬の紅葉・春の新葉量は未校正で、果実・種子・雌しべや根の詳細は未再現です。"
   ]
-},"p-a7214f3d68a8":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"},{"url":"https://item.rakuten.co.jp/ogis/100lks/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"persistence":1,"phenologyRegion":1},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"persistence":"semiEvergreen","phenologyRegion":"grower-cold","unconfirmed":["leafPattern"]},"p-2b74afbb1b43":{
+},"p-a7214f3d68a8":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/100lks/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.floraiberica.es/floraiberica/texto/pdfs/01_036_01_Helleborus.pdf",
+      "scope": "species"
+    },
+    {
+      "url": "https://www.rhs.org.uk/plants/8572/helleborus-lividus/details",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 1,
+    "leaflets": 1,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "lividusReferences",
+  "shootProfile": "coral",
+  "leafShape": "lividusCaulineTrifoliateReference",
+  "leaflets": 3,
+  "leafColor": "#5d7b70",
+  "leafPattern": "lividusCoralSectorReference",
+  "flowerShape": "lividusCoralMosaicCupReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "stemColor": "#8b5d73",
+  "phenologyRegion": "grower-cold",
+  "sourceConflict": "国内の高さ20〜30cm・幅20〜30cmを採用。今回の当該販売ページは花径を数値で示していないため、3Dの花径を実測値とはしていません。晩冬〜春の2〜5月への区分、保護条件での残葉は近似で、低温管理の紅葉を全国の固定月へ換算していません。",
+  "unconfirmed": [
+    "カレイドスコープサンゴの本文と3写真から、クリーム〜白の丸い5萼に入る桃紅の不規則な面と筋、緑の3小葉へ入る白〜クリームの斑と緑の散り、赤みを帯びる茎や葉斑を参考にしています。花の模様は個体差があるという説明を保ち、全個体で同じ模様とはしていません。",
+    "同じ販売株を12か月追った実測、年次成長、株分け・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "茎3本・各2組の3小葉、計18小葉、9花と3蕾、32雄しべ・8蜜腺は花器を区別する参考配置で、品種の実測計数値や固定された花数ではありません。",
+    "3小葉の非対称、白い斑と緑の散り、桃紅の色味は近似です。秋の苗写真は複数株の例で、同じクローンの経時変化ではありません。葉の赤み・冬の紅葉率・月別の斑の比率や若葉の量を固定していません。",
+    "桃紅と白〜クリームの花は当該開花写真の静的な配色例です。白い葉斑や黄色い雄しべを花色へ転用せず、模様の発生率や変色速度を予測していません。",
+    "葉付きの有茎を残し、花後に上部の花序を整理する管理例です。夏の葉減り・冬の紅葉・春の新葉量は未校正で、果実・種子・雌しべや根の詳細は未再現です。"
+  ]
+},"p-2b74afbb1b43":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/100lke/",

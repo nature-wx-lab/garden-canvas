@@ -2371,7 +2371,56 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-a7214f3d68a8":{"label":"クリスマスローズ リビダス カレイドスコープ サンゴ","latin":"Helleborus lividus 'Kaleidoscope Coral'","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.2,0.3],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":true,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2607","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ リビダス カレイドスコープ サンゴ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-2b74afbb1b43":{
+},"p-a7214f3d68a8":{
+  "label": "クリスマスローズ リビダス カレイドスコープ サンゴ",
+  "latin": "Helleborus lividus 'Kaleidoscope Coral'",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.2,
+    0.3
+  ],
+  "spread": [
+    0.2,
+    0.3
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#dcc3c8",
+  "leafColor": "#5d7b70",
+  "variegated": true,
+  "colors": [
+    "pink",
+    "white",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "unknown",
+  "growth": "年次成長は未確認",
+  "season": "冬～春",
+  "care": "高温多湿を避け、夏の葉減りや低温管理苗の紅葉は栽培条件によって異なります。3Dの残葉は保護条件の参考で、露地の越冬成功や毎月の葉量を予測していません。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ区分した参考です。数字で明記された開花月や同じ株の連続開花の実測ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/100lks/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-27",
+  "aliases": [
+    "クリスマスローズ リビダス カレイドスコープ サンゴ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-2b74afbb1b43":{
   "label": "クリスマスローズ リビダス カレイドスコープ エメラルド",
   "latin": "Helleborus lividus 'Kaleidoscope Emerald'",
   "genre": "クリスマスローズ",
