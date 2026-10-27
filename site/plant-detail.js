@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.863';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.864';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.863';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.864';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16408,14 +16408,15 @@ export function foetidusReferencePoint(type,t,u){
   const phi=u*Math.PI/5*1.12,r=.63*Math.max(0,Math.sin(Math.PI*t*.82))**.55;
   return[Math.sin(phi)*r,t*(1-.06*u*u),Math.cos(phi)*r];
  }
+ if(type==='gcFoetidusMinionLeafRef'){const phase=(t*7+.035)%1,tooth=Math.max(0,1-Math.abs(phase-.70)/.24);return[u*.5*sn**.60*(.90+.10*t)*(1+.13*tooth*Math.abs(u)**6),.018*sn+.014*u*u*sn-.085*t*t,t];}
  if(type==='gcFoetidusBractRef')return[u*.5*sn**.52*(1.16-.25*t),.045*sn-.07*t*t,t];
  const phase=(t*9+.035)%1,tooth=Math.max(0,1-Math.abs(phase-.71)/.20),edge=.98+.075*tooth;
  return[u*.5*sn**.66*(.82+.20*t)*(1+(edge-1)*Math.abs(u)**6),.018*sn+.014*u*u*sn-.085*t*t,t];
 }
 export const foetidusStemUnit=new THREE.CylinderGeometry(1,1,1,7,1);
-const foetidusSamples=Object.fromEntries(['gcFoetidusLeafRef','gcFoetidusBractRef','gcFoetidusSepalRef'].map(type=>[type,Array.from({length:33*21},(_,j)=>foetidusReferencePoint(type,Math.floor(j/21)/32,j%21/20*2-1).map(Math.fround))]));
+const foetidusSamples=Object.fromEntries(['gcFoetidusLeafRef','gcFoetidusMinionLeafRef','gcFoetidusBractRef','gcFoetidusSepalRef'].map(type=>[type,Array.from({length:33*21},(_,j)=>foetidusReferencePoint(type,Math.floor(j/21)/32,j%21/20*2-1).map(Math.fround))]));
 function drawFoetidusReferences(b,{info,s,rand},kit){
- const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),gold=info.appearance.shootProfile==='goldBullion',profile=gold?'goldBullion':'basic',tag='-foetidus-ref',stem=gold?'#b7c66c':'#7b975f',SR=Math.min(.003,h*.008,w*.006,LH*.04),surfaces=[];
+ const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),profile=info.appearance.shootProfile,gold=['goldBullion','minionRouge'].includes(profile),minion=profile==='minionRouge',red=profile==='redStar',tag='-foetidus-ref',stem=minion?'#b5bd6b':red?'#82445d':gold?'#b7c66c':'#7b975f',SR=Math.min(.003,h*.008,w*.006,LH*.04),surfaces=[];
  const stream=seed=>{let q=seed>>>0;return()=>{q=(q+0x6d2b79f5)>>>0;let x=Math.imul(q^(q>>>15),q|1);x^=x+Math.imul(x^(x>>>7),x|61);return((x^(x>>>14))>>>0)/4294967296;};},seed=Math.floor(rand()*4294967296),leafRand=stream(seed^0x51eaf123),flowerRand=stream(seed^0x7f10a937);
  const matrixFor=p=>{const m=new THREE.Matrix4().compose(new THREE.Vector3(...p.slice(3,6)),new THREE.Quaternion().setFromEuler(new THREE.Euler(...p.slice(9,12),'YXZ')),new THREE.Vector3(...p.slice(6,9)));m.elements=m.elements.map(Math.fround);return m;};
  const line=(out,from,to,r,kind,color=stem)=>{const root=new THREE.Vector3(...from),d=new THREE.Vector3(...to).sub(root);if(d.lengthSq()<1e-22)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');out.push(['gcFoetidusStemRef',kind+tag,color,...root.addScaledVector(d,.5).toArray(),r,d.length(),r,e.x,e.y,e.z]);};
@@ -16424,7 +16425,7 @@ function drawFoetidusReferences(b,{info,s,rand},kit){
  const fitLeaves=(parts,root)=>{let fit=1;for(const p of parts){const matrix=matrixFor(p),points=p[0]==='gcFoetidusStemRef'?Array.from({length:foetidusStemUnit.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(foetidusStemUnit.attributes.position,i).toArray()):foetidusSamples[p[0]];for(const point of points){const q=new THREE.Vector3(...point).applyMatrix4(matrix).sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(LH-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-2e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Foetidus leaf assembly cannot fit');emit(parts.map(p=>{const v=[...p];for(let k=0;k<3;k++){v[3+k]=root[k]+(p[3+k]-root[k])*fit;v[6+k]=p[6+k]*fit;}return v;}));};
  let flowerIndex=0;
  const flower=(at,yaw)=>{const index=flowerIndex++,R=Math.min(.018,h*.04,w*.04),length=R*1.0,pitch=2.33+(index%5)*.10,rot=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),to=q=>new THREE.Vector3(...q).applyQuaternion(rot).add(new THREE.Vector3(...at));
-  for(let k=0;k<5;k++){const az=k*TAU/5,q=rot.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),p=['gcFoetidusSepalRef','sepal'+tag+'-'+profile,kit.shade(flowerRand,gold?'#d3db80':'#bfce9c',.012),...at,R,length,R,e.x,e.y,e.z];b.add(...p);
+  for(let k=0;k<5;k++){const az=k*TAU/5,q=rot.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),p=['gcFoetidusSepalRef','sepal'+tag+'-'+profile,kit.shade(flowerRand,minion?'#d7d77e':gold?'#d3db80':'#bfce9c',.012),...at,R,length,R,e.x,e.y,e.z];b.add(...p);
    if(index>=10&&index<13&&k<2){const row=14,cell=row*21+10,vertices=[cell,cell+1,cell+21],m=matrixFor(p),points=vertices.map(v=>new THREE.Vector3(...foetidusSamples.gcFoetidusSepalRef[v]).applyMatrix4(m)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),opening=new THREE.Vector3(0,1,0).applyQuaternion(rot),camera=normal.y<0?normal.clone().negate():normal.clone();surfaces.push({point,normal,camera,instanceId:index*5+k,vertices,faceIndex:(row*20+10)*2,radius:R*2.4});}
   }
   // Three carpels follow the species reference; the remaining counts are drawing arrangements.
@@ -16436,13 +16437,13 @@ function drawFoetidusReferences(b,{info,s,rand},kit){
   const shootFactor=[.86,1,.93,.82,.96][i],shootHeight=h*shootFactor,yaw=i*2.399963+.23,base=[Math.sin(yaw)*w*.055,SR*1.4,Math.cos(yaw)*w*.055],nodes=[base,...[.18,.41,.64].map((v,j)=>[Math.sin(yaw)*w*(.04+j*.018),Math.min(LH*v*shootFactor,shootHeight*.43),Math.cos(yaw)*w*(.04+j*.018)]),[Math.sin(yaw)*w*.11,shootHeight*(.54+i*.008),Math.cos(yaw)*w*.11]],out=[];
   for(let j=1;j<nodes.length;j++)line(out,nodes[j-1],nodes[j],j===nodes.length-1?Math.min(.003,h*.008,w*.006):SR,'stem');emit(out);
   if(s.leafDensity>0)for(let j=1;j<=3;j++){
-   const root=nodes[j],az=yaw+j*.72,end=[root[0]+Math.sin(az)*w*.075,root[1]+LH*.08,root[2]+Math.cos(az)*w*.075],parts=[],L=Math.min(.18,w*.26,LH),phase=(i+j)%4;curve(parts,root,[end[0],end[1]+LH*.03,end[2]],end,SR*.55,'petiole',gold?'#bd8f98':stem);
-   for(let k=0;k<7;k++){const side=k-3,angle=az+side*.55,len=L*(1-Math.abs(side)*.07),col=gold?['#c3cd58','#aebf4e','#d4d879','#a4b862'][(phase+k)%4]:'#355a46';parts.push(['gcFoetidusLeafRef','leaf'+tag+'-'+profile+'-'+((phase+k)%4),kit.shade(leafRand,col,.012),...end,len*.16,len,len,.18+leafRand()*.10,angle,(leafRand()-.5)*.035]);}fitLeaves(parts,root);
+   const root=nodes[j],az=yaw+j*.72,end=[root[0]+Math.sin(az)*w*.075,root[1]+LH*.08,root[2]+Math.cos(az)*w*.075],parts=[],L=Math.min(.18,w*.26,LH),phase=(i+j)%4;curve(parts,root,[end[0],end[1]+LH*.03,end[2]],end,SR*.55,'petiole',minion?'#bb8791':gold?'#bd8f98':stem);
+   for(let k=0;k<7;k++){const side=k-3,angle=az+side*.55,len=L*(1-Math.abs(side)*.07),col=minion?['#d3d963','#c0cd4e','#dce17d','#b7c75a'][(phase+k)%4]:red?['#4f7169','#466960','#626c59','#3f6259'][(phase+k)%4]:gold?['#c3cd58','#aebf4e','#d4d879','#a4b862'][(phase+k)%4]:'#355a46';parts.push([minion?'gcFoetidusMinionLeafRef':'gcFoetidusLeafRef','leaf'+tag+'-'+profile+'-'+((phase+k)%4),kit.shade(leafRand,col,.012),...end,len*(minion?.20:.16),len,len,.18+leafRand()*.10,angle,(leafRand()-.5)*.035]);}fitLeaves(parts,root);
   }
   if(s.bloom){
    const top=nodes.at(-1),low=nodes.at(-2),bractY=Math.min(top[1],LH*.70),t=(bractY-low[1])/(top[1]-low[1]),root=low.map((v,k)=>v+(top[k]-v)*t),bracts=[],BL=Math.min(.055,w*.10,LH*.42);
-   for(let j=0;j<3;j++){const az=yaw+j*TAU/3;bracts.push(['gcFoetidusBractRef','bract'+tag+'-'+profile,gold?'#c9d573':'#a9c47c',...root,BL*.65,BL,BL,-.28,az,0]);}fitLeaves(bracts,root);
-   for(let arm=0;arm<3;arm++){const az=yaw+(arm-1)*.83,fork=[top[0]+Math.sin(az)*w*.105,shootHeight*(.74+arm*.018),top[2]+Math.cos(az)*w*.105],parts=[];const actualBranch=curve(parts,top,[fork[0],fork[1]-h*.04,fork[2]],fork,Math.min(.0018,h*.005,w*.004),'branch');emit(parts);const branchRoots=actualBranch.filter(v=>v[1]<=LH*.92),extraL=Math.min(.065,w*.12,LH*.40);for(let pair=0;pair<2;pair++){const bractRoot=branchRoots[Math.floor((branchRoots.length-1)*(.55+pair*.45))]||root,extraBracts=[];for(let k=0;k<2;k++)extraBracts.push(['gcFoetidusBractRef','bract'+tag+'-'+profile,gold?'#c9d573':'#a9c47c',...bractRoot,extraL*.75,extraL,extraL,-.82-pair*.18,az+(k?1:-1)*(.52+pair*.14),0]);fitLeaves(extraBracts,bractRoot);}
+   for(let j=0;j<3;j++){const az=yaw+j*TAU/3;bracts.push(['gcFoetidusBractRef','bract'+tag+'-'+profile,minion?'#d6da70':gold?'#c9d573':'#a9c47c',...root,BL*.65,BL,BL,-.28,az,0]);}fitLeaves(bracts,root);
+   for(let arm=0;arm<3;arm++){const az=yaw+(arm-1)*.83,fork=[top[0]+Math.sin(az)*w*.105,shootHeight*(.74+arm*.018),top[2]+Math.cos(az)*w*.105],parts=[];const actualBranch=curve(parts,top,[fork[0],fork[1]-h*.04,fork[2]],fork,Math.min(.0018,h*.005,w*.004),'branch');emit(parts);const branchRoots=actualBranch.filter(v=>v[1]<=LH*.92),extraL=Math.min(.065,w*.12,LH*.40);for(let pair=0;pair<2;pair++){const bractRoot=branchRoots[Math.floor((branchRoots.length-1)*(.55+pair*.45))]||root,extraBracts=[];for(let k=0;k<2;k++)extraBracts.push(['gcFoetidusBractRef','bract'+tag+'-'+profile,minion?'#d6da70':gold?'#c9d573':'#a9c47c',...bractRoot,extraL*.75,extraL,extraL,-.82-pair*.18,az+(k?1:-1)*(.52+pair*.14),0]);fitLeaves(extraBracts,bractRoot);}
     for(let j=0;j<3;j++){const angle=az+(j-1)*.58,reach=w*(.035+.018*j),at=[fork[0]+Math.sin(angle)*reach,fork[1]+shootHeight*(.055+j*.022),fork[2]+Math.cos(angle)*reach],p=[];curve(p,fork,[at[0],at[1]+h*.015,at[2]],at,Math.min(.0013,h*.0035,w*.003),'pedicel');emit(p);flower(at,angle);}
    }
    const at=[top[0],shootHeight*.89,top[2]],parts=[];curve(parts,top,[at[0],at[1]-h*.04,at[2]],at,Math.min(.0013,h*.0035,w*.003),'pedicel');emit(parts);flower(at,yaw);const bud=[top[0]+Math.sin(yaw)*w*.035,shootHeight*.94,top[2]+Math.cos(yaw)*w*.035],p=[];line(p,top,bud,Math.min(.0012,h*.003,w*.003),'pedicel');emit(p);b.add('gcFoetidusRoundRef','bud'+tag,gold?'#c1ce6c':'#a8c176',...bud,Math.min(.006,h*.016,w*.014),Math.min(.008,h*.021,w*.018),Math.min(.006,h*.016,w*.014));
