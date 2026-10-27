@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.858';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.859';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -702,3 +702,5 @@ Object.assign(TRAIT_VALUES,{sterniiThreeLeaflets:'茎上の3小葉・銀青灰�
 Object.assign(TRAIT_VALUES,{sterniiRockiesLeaflets:'茎上の3小葉・銀灰の幅広い葉と深く尖る鋸歯'});
 
 Object.assign(TRAIT_VALUES,{sterniiSpottedLeaflets:'茎上の3小葉・緑の地に白や桃の細かな斑',sterniiGoldenLeaflets:'茎上の3小葉・緑〜黄の葉と赤紫の脈（写真の一例）',sterniiPinkSepals:'うつむく桃系の5萼と疎らな房（写真の一例）'});
+
+Object.assign(TRAIT_VALUES,{sterniiPinkWhiteLeaflets:'茎上の3小葉・細かな白斑と桃色の葉の写真例',sterniiAuroraLeaflets:'茎上の3小葉・白粉と緑・黄・桃の葉の写真例',sterniiMariageLeaflets:'茎上の3小葉・曙斑と白い吹掛け状の斑の写真例',sterniiGreenSepals:'緑系の5萼と黄色い中心・うつむく疎らな花房の写真例',sterniiPaleSepals:'淡い緑白色の5萼と黄色い中心・桃色を帯びる縁の写真例'});
