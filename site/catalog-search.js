@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.884';
+import {treeProfile} from './tree-profiles.js?v=0.9.885';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -24,6 +24,8 @@ export function seasonAt(info,month){
  if(a.foliageMonths){
   density=a.foliageMonths.includes(month)?1:0;scale=1;
   phase=density?'資料の葉の展開期':'葉のない時期';
+ }else if(a.persistence==='coldLeaflessHelleboreReference'){
+  density=[12,1].includes(month)?0:1;scale=1;phase=density===0?'低温管理の落葉参考（暖地では残葉する場合）':'葉のある管理参考（春夏秋の葉量は未校正）';
  }else if(a.persistence==='autumnHellebore'){
   density=[1,1,1,1,1,.50,0,0,0,.25,.70,1][m];scale=month===10?.35:month===11?.75:1;
   phase=density===0?'夏休眠・地上部のない時期':month===10?'10月からの秋の葉出し':month===6?'6〜7月の枯れ込み':'秋〜春の葉';
@@ -333,6 +335,7 @@ export function seasonAt(info,month){
  if(a.architecture==='ogisMonardaColourReferences'){scale=1;phase=a.seedHeadMonths?.includes(month)?'長野の未剪定の成株で丸い花後の頭と茎を残す参考（冬の残葉量・月境界は未校正、切戻し苗は別条件）':bloom?'夏を6～8月へ換算した二唇形小花の写真例（花色別商品で品種未固定、明示月ではない）':'対生の鋸歯葉と春に花殻を整理した参考（月境界・成長量は未予測）';}
  if(a.architecture==='retailMonardaReferences'){scale=1;phase=[1,2,12].includes(month)?(a.shootProfile==='pink'?'冬に地上部が枯れる販売苗を参考にした落葉と残した茎（残存量・花殻・冬芽は未確認）':'冬姿未確認のため花のない暖期の葉姿を保持する未検証参考（常緑・越冬成功の断定なし）'):bloom?'国内販売元の明示花期・対生の鋸歯葉と苞に囲まれた二唇形小花の参考（属の形態、商品実測ではない）':'花のない茎葉の参考（伸長・花後の花殻・種子・月別葉量は未校正）';}
  if(a.architecture==='ruelliaTropicstarReference'){scale=1;phase=[1,2,12].includes(month)?'温度を保護した冬の残葉の参考（戸外の生存や全国一律の越冬は未予測）':bloom?'国内販売元の8～10月の5裂漏斗花と細い対生葉の参考（1日花の時間変化は未再現）':'細い対生葉と分岐茎の参考（月別の葉量・成長量は未校正）';}
+ if(a.architecture==='wildHelleboreReferences'&&a.shootProfile==='odorus'){scale=1;density=1;phase=bloom?'根生葉と別に伸びる花軸と黄緑の皿形花の参考（晩冬〜春を2〜5月へ換算）':'花後に上部の花軸を整理し、健康な根生葉を残す保護管理の参考（寒冷時の落葉率・新葉量は未予測）';}
  if(a.architecture==='argutifoliusReferences'){scale=1;density=1;phase=bloom?'国内販売元の晩冬〜春を2〜5月へ換算した、緑の杯状花の房咲きの参考（花数・連続開花は未予測）':[12,1,2].includes(month)?'葉付きの有茎と厚い3小葉を残す保護条件の冬姿の参考（低温苗の紅葉・寒害・残葉率は未予測）':'葉付きの有茎を残し上部の花房を花後に整理した管理例の参考（夏の葉減り・新葉量は未予測）';}
  if(a.architecture==='lividusReferences'){scale=1;density=1;phase=bloom?'国内販売元の晩冬〜春を2〜5月へ換算した、うつむく花の参考（銀葉型の花は基本種共通との本文に基づく）':[12,1,2].includes(month)?'葉付きの有茎と3小葉を残す保護条件の冬姿の参考（低温での紅葉・寒害と残葉率は未予測）':'葉付きの有茎を残し上部の花序を花後に整理した管理例の参考（夏の葉減り・新葉量は未予測）';}
  if(a.architecture==='nigerCultivarReferences'){scale=1;phase=bloom?'国内販売元の冬〜春を12〜5月へ換算した八重花の参考（葉は保護条件・同じ株の花期や若株の花形は未予測）':[12,1,2].includes(month)?'低温のハウス苗で葉を残す保護条件の参考（寒冷地の古葉落葉・露地の越冬は別条件）':'花後の花茎を整理し根生葉を残す参考（月別の展葉量・自然な花茎消失日は未予測）';}
