@@ -2947,7 +2947,181 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "流通上のHelleborus ×glandorfensisと氷の薔薇の表記を保ちます。本文はニゲルとオリエンタリス系、コメントはバラディアエとガーデンハイブリッドの交配と説明しており、記述の粒度が異なります。直接の交配親や登録クローンの同定を独自に確定していません。"
   ],
   "leafPattern": "glandorfensisPlainVeinedReference"
-},"p-c5dd453a7754":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/100ls/","scope":"catalog-entry"},{"url":"https://www.floraiberica.es/floraiberica/texto/pdfs/01_036_01_Helleborus.pdf","scope":"species"},{"url":"https://www.rhs.org.uk/plants/8572/helleborus-lividus/details","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"leafShape":1,"leaflets":1,"leafColor":0,"leafPattern":0,"flowerShape":0,"flowerMonths":0,"habit":0,"lifeForm":0,"persistence":0,"stemColor":0,"phenologyRegion":0},"status":"partial","architecture":"lividusReferences","shootProfile":"wild","leafShape":"lividusCaulineTrifoliateReference","leaflets":3,"leafColor":"#718674","leafPattern":"lividusWhiteVeinReference","flowerShape":"lividusNoddingCupReference","flowerMonths":[2,3,4,5],"habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","stemColor":"#8c6470","phenologyRegion":"grower-cold","sourceConflict":"国内販売元の草丈・株張り各20〜30cmを使用し、RHSの45cmやFlora ibericaの野生株30〜60cm、海外の開花月で上書きしません。晩冬〜春の2〜5月への換算は表示上の近似です。商品写真の葉面の紫色だけから葉の表を全面紫にせず、植物誌の表の白斑と裏の淡紫色を区別します。低温管理苗の紅葉と、保護条件で葉付きの茎を残す3Dは別の条件です。","unconfirmed":["同じ販売株を12か月追った実測、年次成長、株分け後の株姿、剪定後の再生は未確認","茎3本・各2組の3小葉、花数・雄しべ数・蜜腺数・花径は描画上の配置や種の補足で販売株の実測値ではありません","側小葉の非対称、銀白網目の幅と密度、葉裏の淡紫色は近似で、若葉・古葉・紅葉率の月別予測はしません","持続性の茎を保持し、花後に上部の花序だけを整理する管理例。自然な枯れ込み月、果実・種子・雌しべの詳細は未再現","晩冬〜春の2〜5月への月換算、保護条件の冬の残葉、夏の葉減りと春の新葉量は未校正"]},"p-226d0d4e0ad6":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"},{"url":"https://item.rakuten.co.jp/ogis/100lgr/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"persistence":1,"phenologyRegion":1},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"persistence":"semiEvergreen","phenologyRegion":"grower-cold","unconfirmed":[]},"p-780b82cc94dd":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"},{"url":"https://item.rakuten.co.jp/ogis/100lg/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"persistence":1,"phenologyRegion":1},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"persistence":"semiEvergreen","phenologyRegion":"grower-cold","unconfirmed":["leafPattern"]},"p-a7214f3d68a8":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"},{"url":"https://item.rakuten.co.jp/ogis/100lks/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"persistence":1,"phenologyRegion":1},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"persistence":"semiEvergreen","phenologyRegion":"grower-cold","unconfirmed":["leafPattern"]},"p-2b74afbb1b43":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"},{"url":"https://item.rakuten.co.jp/ogis/100lke/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"persistence":1,"phenologyRegion":1},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"persistence":"semiEvergreen","phenologyRegion":"grower-cold","unconfirmed":["leafPattern"]},"p-50bd3366ac61":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/102s/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/8565/helleborus-argutifolius/details","scope":"species"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-argutifolius/","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"leafShape":1,"leaflets":1,"leafColor":0,"leafPattern":0,"flowerShape":0,"flowerMonths":0,"habit":0,"lifeForm":0,"persistence":0,"stemColor":0,"phenologyRegion":0},"status":"partial","architecture":"argutifoliusReferences","shootProfile":"wild","leafShape":"argutifoliusSpinyTrifoliateReference","leaflets":3,"leafColor":"#52755d","leafPattern":"argutifoliusGreenNetworkReference","flowerShape":"argutifoliusGreenCupReference","flowerMonths":[2,3,4,5],"habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","stemColor":"#76935c","phenologyRegion":"grower-cold","sourceConflict":"国内販売元の草丈30〜60cm・株張り40〜60cmを採り、RHSの1m等の海外成株値で上書きしません。国内の現行学名欄はHelleborus lividus ssp. argutifolius(corsicus)、RHSはH. argutifoliusと表記し、異名欄はH. corsicus、H. lividus subsp. corsicusです。これらの表記差を残し、リビダスの商品へ統合しません。NC Stateの簡易同定欄の多数の小葉という記述と本文の3小葉に差があり、RHS・本文・国内写真に合う3小葉を採用しました。晩冬〜春の2〜5月への換算と、保護条件で葉を残す姿は表示上の参考です。","unconfirmed":["同じ国内販売株を12か月追った実測、年次成長、株分け後の株姿、剪定後の再生は未確認","茎3本・各3組の3小葉、房の花数・蜜腺数・雄しべ数・花径は描画上の配置や種の補足で販売株の固定数・実測値ではありません","厚い小葉の粗い刺状の鋸歯、反り、網目の幅と密度は近似。若葉・古葉・冬の紅葉率は未予測","葉付きの有茎を残し、花後に上部の花房を整理する管理例。自然な花茎の枯れ込み月、雌しべ・果実・種子は未再現","北米資料の寿命4〜5年・花房15〜30輪・海外の数値月を、国内販売株の自動寿命や固定花数・月別の実測へ変換しません","写真の萼の傷みや欠けは品種固定の花形にせず、同じ株の開花や葉色の年周変化も検証済みとはしません"]},"p-742a3a234719":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/100cv/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/8565/helleborus-argutifolius/details","scope":"species"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-argutifolius/","scope":"species"},{"url":"https://www.rhs.org.uk/plants/126064/helleborus-argutifolius-silver-leaved/details","scope":"catalog-entry"}],"basis":{"architecture":0,"shootProfile":0,"leafShape":1,"leaflets":1,"leafColor":0,"leafPattern":0,"flowerShape":0,"flowerMonths":0,"habit":0,"lifeForm":0,"persistence":0,"stemColor":0,"phenologyRegion":0},"status":"partial","architecture":"argutifoliusReferences","shootProfile":"silver","leafShape":"argutifoliusSpinyTrifoliateReference","leaflets":3,"leafColor":"#b3c0b5","leafPattern":"argutifoliusSilverNetworkReference","flowerShape":"argutifoliusGreenCupReference","flowerMonths":[2,3,4,5],"habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","stemColor":"#76935c","phenologyRegion":"grower-cold","sourceConflict":"国内販売元の草丈25〜50cm・株張り40〜60cmを採り、RHSの60cmや0.5〜1mで上書きしません。RHSの現在の見出しはsilver-leavedで、通称にSilver Lace、名称状態にSynonymとあります。国内の販売名と写真を優先し、海外の同一クローンや正式登録名の確認には格上げしません。NC Stateの簡易同定欄の多数の小葉という記述と本文の3小葉に差があり、RHS・本文・国内写真に合う3小葉を採用しました。晩冬〜春の2〜5月への換算と、保護条件で葉を残す姿は表示上の参考です。","unconfirmed":["同じ国内販売株を12か月追った実測、年次成長、株分け後の株姿、剪定後の再生は未確認","茎3本・各3組の3小葉、房の花数・蜜腺数・雄しべ数・花径は描画上の配置や種の補足で販売株の固定数・実測値ではありません","厚い小葉の粗い刺状の鋸歯、反り、網目の幅と密度は近似。若葉・古葉・冬の紅葉率は未予測","葉付きの有茎を残し、花後に上部の花房を整理する管理例。自然な花茎の枯れ込み月、雌しべ・果実・種子は未再現","北米資料の寿命4〜5年・花房15〜30輪・海外の数値月を、国内販売株の自動寿命や固定花数・月別の実測へ変換しません","写真の萼の傷みや欠けは品種固定の花形にせず、同じ株の開花や葉色の年周変化も検証済みとはしません"]},"p-258bfc776b37":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/100me/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/8565/helleborus-argutifolius/details","scope":"species"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-argutifolius/","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"leafShape":1,"leaflets":1,"leafColor":0,"leafPattern":0,"flowerShape":0,"flowerMonths":0,"habit":0,"lifeForm":0,"persistence":0,"stemColor":0,"phenologyRegion":0},"status":"partial","architecture":"argutifoliusReferences","shootProfile":"metallic","leafShape":"argutifoliusSpinyTrifoliateReference","leaflets":3,"leafColor":"#9cb6a7","leafPattern":"argutifoliusEmeraldNetworkReference","flowerShape":"argutifoliusGreenCupReference","flowerMonths":[2,3,4,5],"habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","stemColor":"#76935c","phenologyRegion":"grower-cold","sourceConflict":"国内販売元の草丈25〜50cm・株張り40〜60cmを採り、海外の種一般の1m等で上書きしません。晩冬〜春の2〜5月への換算は表示上の近似です。掲載の2026年10月1日の再販売・9cm苗から選抜育成した規格の説明は、その掲載時の履歴です。全株の同一クローンや同一の銀葉発色、将来の入荷を証明しません。主写真と追加写真の一枚は同じ開花写真の別トリミングで、別季節の観測ではありません。種資料内の多数の小葉という簡易欄と3小葉の本文には差があり、国内写真・RHS・本文に合う3小葉を使います。","unconfirmed":["同じ国内販売株を12か月追った実測、年次成長、株分け後の株姿、剪定後の再生は未確認","茎3本・各3組の3小葉、房の花数・蜜腺数・雄しべ数・花径は描画上の配置や種の補足で販売株の固定数・実測値ではありません","斑の大小・密度・網目・葉の反り・鋸歯・表裏の色差は写真比率の近似。斑の多い葉と緑主体の葉の出現率、遺伝的安定性は未確認","銀緑の濃さ・青み・網目に写真ごとの差がありますが、同じ株の月別発色や入力サイズ・株齢との対応は未確認","保護条件で有茎を残し、花後に上部花序を整理する管理例。夏の葉減り、自然な花茎の枯れ込み月、果実・種子・雌しべの詳細は未再現","北米の種一般の固定花数・寿命4〜5年・数値月を、国内品種の自動寿命や開花保証へ変換しません"]},"p-bd17f705b0d7":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/102sf/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/8565/helleborus-argutifolius/details","scope":"species"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-argutifolius/","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"leafShape":1,"leaflets":1,"leafColor":0,"leafPattern":0,"flowerShape":0,"flowerMonths":0,"habit":0,"lifeForm":0,"persistence":0,"stemColor":0,"phenologyRegion":0},"status":"partial","architecture":"argutifoliusReferences","shootProfile":"pacificFrost","leafShape":"argutifoliusSpinyTrifoliateReference","leaflets":3,"leafColor":"#648269","leafPattern":"spots","flowerShape":"argutifoliusGreenCupReference","flowerMonths":[2,3,4,5],"habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","stemColor":"#c5cca2","phenologyRegion":"grower-cold","sourceConflict":"国内販売元の草丈25〜50cm・株張り40〜60cmを採り、海外の種一般の1m等で上書きしません。晩冬〜春の2〜5月への換算は表示上の近似です。販売本文と開花写真に基づく白に近い淡緑の花を、白・緑の検索へ反映しています。写真の黄みは独立した黄色花品種の確認には使いません。白が多い新葉と緑が多い葉は別の写真例で、同じ株の月別変化を検証済みとはしません。種資料内の多数の小葉という簡易欄と3小葉の本文には差があり、国内写真・RHS・本文に合う3小葉を使います。","unconfirmed":["同じ国内販売株を12か月追った実測、年次成長、株分け後の株姿、剪定後の再生は未確認","茎3本・各3組の3小葉、房の花数・蜜腺数・雄しべ数・花径は描画上の配置や種の補足で販売株の固定数・実測値ではありません","斑の大小・密度・網目・葉の反り・鋸歯・表裏の色差は写真比率の近似。斑の多い葉と緑主体の葉の出現率、遺伝的安定性は未確認","白い新葉と緑主体の葉の写真例は、同じ株の月・葉齢・温度・入力サイズによる発色規則ではありません","保護条件で有茎を残し、花後に上部花序を整理する管理例。夏の葉減り、自然な花茎の枯れ込み月、果実・種子・雌しべの詳細は未再現","北米の種一般の固定花数・寿命4〜5年・数値月を、国内品種の自動寿命や開花保証へ変換しません"]},"p-da8fd6c60fd3":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/100cd/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/8565/helleborus-argutifolius/details","scope":"species"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-argutifolius/","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"leafShape":1,"leaflets":1,"leafColor":0,"leafPattern":0,"flowerShape":0,"flowerMonths":0,"habit":0,"lifeForm":0,"persistence":0,"stemColor":0,"phenologyRegion":0},"status":"partial","architecture":"argutifoliusReferences","shootProfile":"stardust","leafShape":"argutifoliusSpinyTrifoliateReference","leaflets":3,"leafColor":"#648269","leafPattern":"spots","flowerShape":"argutifoliusGreenCupReference","flowerMonths":[2,3,4,5],"habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","stemColor":"#9caf7a","phenologyRegion":"grower-cold","sourceConflict":"国内販売元の草丈25〜50cm・株張り40〜60cmを採り、海外の種一般の1m等で上書きしません。晩冬〜春の2〜5月への換算は表示上の近似です。白の多い新葉・緑の多い葉・桃色の新葉縁と葉柄は写真例です。桃色を全株・全月へ固定せず、小さい入力を若株や特定の葉齢に読み替えません。パシフィックフロスト等の別商品へ統合しません。種資料内の多数の小葉という簡易欄と3小葉の本文には差があり、国内写真・RHS・本文に合う3小葉を使います。","unconfirmed":["同じ国内販売株を12か月追った実測、年次成長、株分け後の株姿、剪定後の再生は未確認","茎3本・各3組の3小葉、房の花数・蜜腺数・雄しべ数・花径は描画上の配置や種の補足で販売株の固定数・実測値ではありません","斑の大小・密度・網目・葉の反り・鋸歯・表裏の色差は写真比率の近似。斑の多い葉と緑主体の葉の出現率、遺伝的安定性は未確認","白い新葉や桃色の縁・葉柄を伴う写真例は、同じ株の月・葉齢・温度・入力サイズによる発色規則ではありません","保護条件で有茎を残し、花後に上部花序を整理する管理例。夏の葉減り、自然な花茎の枯れ込み月、果実・種子・雌しべの詳細は未再現","北米の種一般の固定花数・寿命4〜5年・数値月を、国内品種の自動寿命や開花保証へ変換しません"]},"p-02566855a4d1":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"},{"url":"https://item.rakuten.co.jp/ogis/100cf/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":1,"leafShape":0,"leafTexture":0,"petals":0,"persistence":1,"phenologyRegion":1,"stemColor":1},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"persistence":"semiEvergreen","phenologyRegion":"grower-cold","stemColor":"#985754","unconfirmed":["leafPattern"]},"p-d72aa1609d01":{
+},"p-c5dd453a7754":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/100ls/","scope":"catalog-entry"},{"url":"https://www.floraiberica.es/floraiberica/texto/pdfs/01_036_01_Helleborus.pdf","scope":"species"},{"url":"https://www.rhs.org.uk/plants/8572/helleborus-lividus/details","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"leafShape":1,"leaflets":1,"leafColor":0,"leafPattern":0,"flowerShape":0,"flowerMonths":0,"habit":0,"lifeForm":0,"persistence":0,"stemColor":0,"phenologyRegion":0},"status":"partial","architecture":"lividusReferences","shootProfile":"wild","leafShape":"lividusCaulineTrifoliateReference","leaflets":3,"leafColor":"#718674","leafPattern":"lividusWhiteVeinReference","flowerShape":"lividusNoddingCupReference","flowerMonths":[2,3,4,5],"habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","stemColor":"#8c6470","phenologyRegion":"grower-cold","sourceConflict":"国内販売元の草丈・株張り各20〜30cmを使用し、RHSの45cmやFlora ibericaの野生株30〜60cm、海外の開花月で上書きしません。晩冬〜春の2〜5月への換算は表示上の近似です。商品写真の葉面の紫色だけから葉の表を全面紫にせず、植物誌の表の白斑と裏の淡紫色を区別します。低温管理苗の紅葉と、保護条件で葉付きの茎を残す3Dは別の条件です。","unconfirmed":["同じ販売株を12か月追った実測、年次成長、株分け後の株姿、剪定後の再生は未確認","茎3本・各2組の3小葉、花数・雄しべ数・蜜腺数・花径は描画上の配置や種の補足で販売株の実測値ではありません","側小葉の非対称、銀白網目の幅と密度、葉裏の淡紫色は近似で、若葉・古葉・紅葉率の月別予測はしません","持続性の茎を保持し、花後に上部の花序だけを整理する管理例。自然な枯れ込み月、果実・種子・雌しべの詳細は未再現","晩冬〜春の2〜5月への月換算、保護条件の冬の残葉、夏の葉減りと春の新葉量は未校正"]},"p-226d0d4e0ad6":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/100lgr/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.floraiberica.es/floraiberica/texto/pdfs/01_036_01_Helleborus.pdf",
+      "scope": "species"
+    },
+    {
+      "url": "https://www.rhs.org.uk/plants/8572/helleborus-lividus/details",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 1,
+    "leaflets": 1,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "lividusReferences",
+  "shootProfile": "green",
+  "leafShape": "lividusCaulineTrifoliateReference",
+  "leaflets": 3,
+  "leafColor": "#68836c",
+  "leafPattern": "lividusWhiteVeinReference",
+  "flowerShape": "lividusGreenCupReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "stemColor": "#7f9273",
+  "phenologyRegion": "grower-cold",
+  "sourceConflict": "国内の高さ20〜30cm・幅20〜30cmを採用。今回の当該販売ページは花径を数値で示していないため、3Dの花径を実測値とはしていません。晩冬〜春の2〜5月への区分、保護条件での残葉は近似で、低温管理の紅葉を全国の固定月へ換算していません。",
+  "unconfirmed": [
+    "グリーン選抜の本文と2写真から、丸い淡緑のカップ状5萼、緑の多い茎、白い葉脈網と鋸歯のある3小葉を参考にしています。緑系という名称から花や葉を白斑品種へ読み替えていません。",
+    "同じ販売株を12か月追った実測、年次成長、株分け・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "茎3本・各2組の3小葉、計18小葉、9花と3蕾、32雄しべ・8蜜腺は花器を区別する参考配置で、品種の実測計数値や固定された花数ではありません。",
+    "3小葉の非対称、網目・黄色や白の斑の分布、葉裏と光沢は写真・種の資料を参考にした近似です。異なる株の斑を同じ株の月別変化や比率へ変換せず、全体の黄化や低温時の赤みも固定月にしていません。",
+    "花は当該写真の静的な配色例です。黄色い雄しべや葉の斑を花の地色と混同せず、花の個体差・変色速度を予測していません。",
+    "葉付きの有茎を残し、花後に上部の花序を整理する管理例です。夏の葉減り・冬の紅葉・春の新葉量は未校正で、果実・種子・雌しべや根の詳細は未再現です。"
+  ]
+},"p-780b82cc94dd":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/100lg/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.floraiberica.es/floraiberica/texto/pdfs/01_036_01_Helleborus.pdf",
+      "scope": "species"
+    },
+    {
+      "url": "https://www.rhs.org.uk/plants/8572/helleborus-lividus/details",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 1,
+    "leaflets": 1,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "lividusReferences",
+  "shootProfile": "golden",
+  "leafShape": "lividusCaulineTrifoliateReference",
+  "leaflets": 3,
+  "leafColor": "#71885f",
+  "leafPattern": "lividusGoldenSectorReference",
+  "flowerShape": "lividusGreyPinkCupReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "stemColor": "#8d6871",
+  "phenologyRegion": "grower-cold",
+  "sourceConflict": "国内の高さ20〜30cm・幅20〜30cmを採用。今回の当該販売ページは花径を数値で示していないため、3Dの花径を実測値とはしていません。晩冬〜春の2〜5月への区分、保護条件での残葉は近似で、低温管理の紅葉を全国の固定月へ換算していません。",
+  "unconfirmed": [
+    "ゴールデンリーフの本文と2写真から、緑〜黄の不規則な斑と全体が黄になる葉の例、灰色がかった桃の5萼と緑を帯びる外面、赤みのある茎と葉裏を参考にしています。黄色い葉を黄色い花色へ転用していません。",
+    "同じ販売株を12か月追った実測、年次成長、株分け・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "茎3本・各2組の3小葉、計18小葉、9花と3蕾、32雄しべ・8蜜腺は花器を区別する参考配置で、品種の実測計数値や固定された花数ではありません。",
+    "3小葉の非対称、網目・黄色や白の斑の分布、葉裏と光沢は写真・種の資料を参考にした近似です。異なる株の斑を同じ株の月別変化や比率へ変換せず、全体の黄化や低温時の赤みも固定月にしていません。",
+    "花は当該写真の静的な配色例です。黄色い雄しべや葉の斑を花の地色と混同せず、花の個体差・変色速度を予測していません。",
+    "葉付きの有茎を残し、花後に上部の花序を整理する管理例です。夏の葉減り・冬の紅葉・春の新葉量は未校正で、果実・種子・雌しべや根の詳細は未再現です。"
+  ]
+},"p-a7214f3d68a8":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"},{"url":"https://item.rakuten.co.jp/ogis/100lks/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"persistence":1,"phenologyRegion":1},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"persistence":"semiEvergreen","phenologyRegion":"grower-cold","unconfirmed":["leafPattern"]},"p-2b74afbb1b43":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/100lke/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.floraiberica.es/floraiberica/texto/pdfs/01_036_01_Helleborus.pdf",
+      "scope": "species"
+    },
+    {
+      "url": "https://www.rhs.org.uk/plants/8572/helleborus-lividus/details",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 1,
+    "leaflets": 1,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "lividusReferences",
+  "shootProfile": "emerald",
+  "leafShape": "lividusCaulineTrifoliateReference",
+  "leaflets": 3,
+  "leafColor": "#59786a",
+  "leafPattern": "lividusCreamSectorReference",
+  "flowerShape": "lividusGreenCupReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "stemColor": "#799177",
+  "phenologyRegion": "grower-cold",
+  "sourceConflict": "国内の高さ20〜30cm・幅20〜30cmを採用。今回の当該販売ページは花径を数値で示していないため、3Dの花径を実測値とはしていません。晩冬〜春の2〜5月への区分、保護条件での残葉は近似で、低温管理の紅葉を全国の固定月へ換算していません。",
+  "unconfirmed": [
+    "カレイドスコープエメラルドの本文と3写真から、緑の丸い5萼、緑の茎、緑の小葉へ入る白〜クリームの広い不規則な斑と緑の細かな散りを参考にしています。白い葉斑を白い花色へ転用していません。",
+    "同じ販売株を12か月追った実測、年次成長、株分け・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "茎3本・各2組の3小葉、計18小葉、9花と3蕾、32雄しべ・8蜜腺は花器を区別する参考配置で、品種の実測計数値や固定された花数ではありません。",
+    "3小葉の非対称、網目・黄色や白の斑の分布、葉裏と光沢は写真・種の資料を参考にした近似です。異なる株の斑を同じ株の月別変化や比率へ変換せず、全体の黄化や低温時の赤みも固定月にしていません。",
+    "花は当該写真の静的な配色例です。黄色い雄しべや葉の斑を花の地色と混同せず、花の個体差・変色速度を予測していません。",
+    "葉付きの有茎を残し、花後に上部の花序を整理する管理例です。夏の葉減り・冬の紅葉・春の新葉量は未校正で、果実・種子・雌しべや根の詳細は未再現です。"
+  ]
+},"p-50bd3366ac61":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/102s/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/8565/helleborus-argutifolius/details","scope":"species"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-argutifolius/","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"leafShape":1,"leaflets":1,"leafColor":0,"leafPattern":0,"flowerShape":0,"flowerMonths":0,"habit":0,"lifeForm":0,"persistence":0,"stemColor":0,"phenologyRegion":0},"status":"partial","architecture":"argutifoliusReferences","shootProfile":"wild","leafShape":"argutifoliusSpinyTrifoliateReference","leaflets":3,"leafColor":"#52755d","leafPattern":"argutifoliusGreenNetworkReference","flowerShape":"argutifoliusGreenCupReference","flowerMonths":[2,3,4,5],"habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","stemColor":"#76935c","phenologyRegion":"grower-cold","sourceConflict":"国内販売元の草丈30〜60cm・株張り40〜60cmを採り、RHSの1m等の海外成株値で上書きしません。国内の現行学名欄はHelleborus lividus ssp. argutifolius(corsicus)、RHSはH. argutifoliusと表記し、異名欄はH. corsicus、H. lividus subsp. corsicusです。これらの表記差を残し、リビダスの商品へ統合しません。NC Stateの簡易同定欄の多数の小葉という記述と本文の3小葉に差があり、RHS・本文・国内写真に合う3小葉を採用しました。晩冬〜春の2〜5月への換算と、保護条件で葉を残す姿は表示上の参考です。","unconfirmed":["同じ国内販売株を12か月追った実測、年次成長、株分け後の株姿、剪定後の再生は未確認","茎3本・各3組の3小葉、房の花数・蜜腺数・雄しべ数・花径は描画上の配置や種の補足で販売株の固定数・実測値ではありません","厚い小葉の粗い刺状の鋸歯、反り、網目の幅と密度は近似。若葉・古葉・冬の紅葉率は未予測","葉付きの有茎を残し、花後に上部の花房を整理する管理例。自然な花茎の枯れ込み月、雌しべ・果実・種子は未再現","北米資料の寿命4〜5年・花房15〜30輪・海外の数値月を、国内販売株の自動寿命や固定花数・月別の実測へ変換しません","写真の萼の傷みや欠けは品種固定の花形にせず、同じ株の開花や葉色の年周変化も検証済みとはしません"]},"p-742a3a234719":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/100cv/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/8565/helleborus-argutifolius/details","scope":"species"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-argutifolius/","scope":"species"},{"url":"https://www.rhs.org.uk/plants/126064/helleborus-argutifolius-silver-leaved/details","scope":"catalog-entry"}],"basis":{"architecture":0,"shootProfile":0,"leafShape":1,"leaflets":1,"leafColor":0,"leafPattern":0,"flowerShape":0,"flowerMonths":0,"habit":0,"lifeForm":0,"persistence":0,"stemColor":0,"phenologyRegion":0},"status":"partial","architecture":"argutifoliusReferences","shootProfile":"silver","leafShape":"argutifoliusSpinyTrifoliateReference","leaflets":3,"leafColor":"#b3c0b5","leafPattern":"argutifoliusSilverNetworkReference","flowerShape":"argutifoliusGreenCupReference","flowerMonths":[2,3,4,5],"habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","stemColor":"#76935c","phenologyRegion":"grower-cold","sourceConflict":"国内販売元の草丈25〜50cm・株張り40〜60cmを採り、RHSの60cmや0.5〜1mで上書きしません。RHSの現在の見出しはsilver-leavedで、通称にSilver Lace、名称状態にSynonymとあります。国内の販売名と写真を優先し、海外の同一クローンや正式登録名の確認には格上げしません。NC Stateの簡易同定欄の多数の小葉という記述と本文の3小葉に差があり、RHS・本文・国内写真に合う3小葉を採用しました。晩冬〜春の2〜5月への換算と、保護条件で葉を残す姿は表示上の参考です。","unconfirmed":["同じ国内販売株を12か月追った実測、年次成長、株分け後の株姿、剪定後の再生は未確認","茎3本・各3組の3小葉、房の花数・蜜腺数・雄しべ数・花径は描画上の配置や種の補足で販売株の固定数・実測値ではありません","厚い小葉の粗い刺状の鋸歯、反り、網目の幅と密度は近似。若葉・古葉・冬の紅葉率は未予測","葉付きの有茎を残し、花後に上部の花房を整理する管理例。自然な花茎の枯れ込み月、雌しべ・果実・種子は未再現","北米資料の寿命4〜5年・花房15〜30輪・海外の数値月を、国内販売株の自動寿命や固定花数・月別の実測へ変換しません","写真の萼の傷みや欠けは品種固定の花形にせず、同じ株の開花や葉色の年周変化も検証済みとはしません"]},"p-258bfc776b37":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/100me/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/8565/helleborus-argutifolius/details","scope":"species"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-argutifolius/","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"leafShape":1,"leaflets":1,"leafColor":0,"leafPattern":0,"flowerShape":0,"flowerMonths":0,"habit":0,"lifeForm":0,"persistence":0,"stemColor":0,"phenologyRegion":0},"status":"partial","architecture":"argutifoliusReferences","shootProfile":"metallic","leafShape":"argutifoliusSpinyTrifoliateReference","leaflets":3,"leafColor":"#9cb6a7","leafPattern":"argutifoliusEmeraldNetworkReference","flowerShape":"argutifoliusGreenCupReference","flowerMonths":[2,3,4,5],"habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","stemColor":"#76935c","phenologyRegion":"grower-cold","sourceConflict":"国内販売元の草丈25〜50cm・株張り40〜60cmを採り、海外の種一般の1m等で上書きしません。晩冬〜春の2〜5月への換算は表示上の近似です。掲載の2026年10月1日の再販売・9cm苗から選抜育成した規格の説明は、その掲載時の履歴です。全株の同一クローンや同一の銀葉発色、将来の入荷を証明しません。主写真と追加写真の一枚は同じ開花写真の別トリミングで、別季節の観測ではありません。種資料内の多数の小葉という簡易欄と3小葉の本文には差があり、国内写真・RHS・本文に合う3小葉を使います。","unconfirmed":["同じ国内販売株を12か月追った実測、年次成長、株分け後の株姿、剪定後の再生は未確認","茎3本・各3組の3小葉、房の花数・蜜腺数・雄しべ数・花径は描画上の配置や種の補足で販売株の固定数・実測値ではありません","斑の大小・密度・網目・葉の反り・鋸歯・表裏の色差は写真比率の近似。斑の多い葉と緑主体の葉の出現率、遺伝的安定性は未確認","銀緑の濃さ・青み・網目に写真ごとの差がありますが、同じ株の月別発色や入力サイズ・株齢との対応は未確認","保護条件で有茎を残し、花後に上部花序を整理する管理例。夏の葉減り、自然な花茎の枯れ込み月、果実・種子・雌しべの詳細は未再現","北米の種一般の固定花数・寿命4〜5年・数値月を、国内品種の自動寿命や開花保証へ変換しません"]},"p-bd17f705b0d7":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/102sf/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/8565/helleborus-argutifolius/details","scope":"species"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-argutifolius/","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"leafShape":1,"leaflets":1,"leafColor":0,"leafPattern":0,"flowerShape":0,"flowerMonths":0,"habit":0,"lifeForm":0,"persistence":0,"stemColor":0,"phenologyRegion":0},"status":"partial","architecture":"argutifoliusReferences","shootProfile":"pacificFrost","leafShape":"argutifoliusSpinyTrifoliateReference","leaflets":3,"leafColor":"#648269","leafPattern":"spots","flowerShape":"argutifoliusGreenCupReference","flowerMonths":[2,3,4,5],"habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","stemColor":"#c5cca2","phenologyRegion":"grower-cold","sourceConflict":"国内販売元の草丈25〜50cm・株張り40〜60cmを採り、海外の種一般の1m等で上書きしません。晩冬〜春の2〜5月への換算は表示上の近似です。販売本文と開花写真に基づく白に近い淡緑の花を、白・緑の検索へ反映しています。写真の黄みは独立した黄色花品種の確認には使いません。白が多い新葉と緑が多い葉は別の写真例で、同じ株の月別変化を検証済みとはしません。種資料内の多数の小葉という簡易欄と3小葉の本文には差があり、国内写真・RHS・本文に合う3小葉を使います。","unconfirmed":["同じ国内販売株を12か月追った実測、年次成長、株分け後の株姿、剪定後の再生は未確認","茎3本・各3組の3小葉、房の花数・蜜腺数・雄しべ数・花径は描画上の配置や種の補足で販売株の固定数・実測値ではありません","斑の大小・密度・網目・葉の反り・鋸歯・表裏の色差は写真比率の近似。斑の多い葉と緑主体の葉の出現率、遺伝的安定性は未確認","白い新葉と緑主体の葉の写真例は、同じ株の月・葉齢・温度・入力サイズによる発色規則ではありません","保護条件で有茎を残し、花後に上部花序を整理する管理例。夏の葉減り、自然な花茎の枯れ込み月、果実・種子・雌しべの詳細は未再現","北米の種一般の固定花数・寿命4〜5年・数値月を、国内品種の自動寿命や開花保証へ変換しません"]},"p-da8fd6c60fd3":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/100cd/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/8565/helleborus-argutifolius/details","scope":"species"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-argutifolius/","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"leafShape":1,"leaflets":1,"leafColor":0,"leafPattern":0,"flowerShape":0,"flowerMonths":0,"habit":0,"lifeForm":0,"persistence":0,"stemColor":0,"phenologyRegion":0},"status":"partial","architecture":"argutifoliusReferences","shootProfile":"stardust","leafShape":"argutifoliusSpinyTrifoliateReference","leaflets":3,"leafColor":"#648269","leafPattern":"spots","flowerShape":"argutifoliusGreenCupReference","flowerMonths":[2,3,4,5],"habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","stemColor":"#9caf7a","phenologyRegion":"grower-cold","sourceConflict":"国内販売元の草丈25〜50cm・株張り40〜60cmを採り、海外の種一般の1m等で上書きしません。晩冬〜春の2〜5月への換算は表示上の近似です。白の多い新葉・緑の多い葉・桃色の新葉縁と葉柄は写真例です。桃色を全株・全月へ固定せず、小さい入力を若株や特定の葉齢に読み替えません。パシフィックフロスト等の別商品へ統合しません。種資料内の多数の小葉という簡易欄と3小葉の本文には差があり、国内写真・RHS・本文に合う3小葉を使います。","unconfirmed":["同じ国内販売株を12か月追った実測、年次成長、株分け後の株姿、剪定後の再生は未確認","茎3本・各3組の3小葉、房の花数・蜜腺数・雄しべ数・花径は描画上の配置や種の補足で販売株の固定数・実測値ではありません","斑の大小・密度・網目・葉の反り・鋸歯・表裏の色差は写真比率の近似。斑の多い葉と緑主体の葉の出現率、遺伝的安定性は未確認","白い新葉や桃色の縁・葉柄を伴う写真例は、同じ株の月・葉齢・温度・入力サイズによる発色規則ではありません","保護条件で有茎を残し、花後に上部花序を整理する管理例。夏の葉減り、自然な花茎の枯れ込み月、果実・種子・雌しべの詳細は未再現","北米の種一般の固定花数・寿命4〜5年・数値月を、国内品種の自動寿命や開花保証へ変換しません"]},"p-02566855a4d1":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"},{"url":"https://item.rakuten.co.jp/ogis/100cf/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":1,"leafShape":0,"leafTexture":0,"petals":0,"persistence":1,"phenologyRegion":1,"stemColor":1},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"persistence":"semiEvergreen","phenologyRegion":"grower-cold","stemColor":"#985754","unconfirmed":["leafPattern"]},"p-d72aa1609d01":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/100s/",
