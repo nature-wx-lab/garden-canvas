@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.901';
+import {treeProfile} from './tree-profiles.js?v=0.9.902';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -359,6 +359,7 @@ export function seasonAt(info,month){
  if(a.architecture==='lividusReferences'){scale=1;density=1;phase=bloom?'国内販売元の晩冬〜春を2〜5月へ換算した、うつむく花の参考（銀葉型の花は基本種共通との本文に基づく）':[12,1,2].includes(month)?'葉付きの有茎と3小葉を残す保護条件の冬姿の参考（低温での紅葉・寒害と残葉率は未予測）':'葉付きの有茎を残し上部の花序を花後に整理した管理例の参考（夏の葉減り・新葉量は未予測）';}
  if(a.architecture==='nigerCultivarReferences'){scale=1;phase=bloom?'国内販売元の冬〜春を12〜5月へ換算した八重花の参考（葉は保護条件・同じ株の花期や若株の花形は未予測）':[12,1,2].includes(month)?'低温のハウス苗で葉を残す保護条件の参考（寒冷地の古葉落葉・露地の越冬は別条件）':'花後の花茎を整理し根生葉を残す参考（月別の展葉量・自然な花茎消失日は未予測）';}
  if(a.architecture==='nigerCultivarReferences'&&['seedDouble','variegata','marble'].includes(a.shootProfile)){scale=1;phase=a.shootProfile==='marble'?'国内販売元の冬〜春は花期の参考案内。品種の花姿は未確認のため3Dは葉脈に沿う白斑の葉だけを表示（葉は保護条件）':bloom?(a.shootProfile==='seedDouble'?'実生で花形に幅のある白い八重花の写真例（冬〜春の月換算・葉は保護条件）':'不規則な刷毛目状の斑と白い一重の萼片の写真例（冬〜春の月換算・葉は保護条件）'):'花後に花茎を整理して葉を残す管理の参考（月別の葉量・斑の変化・古葉落葉は未予測）';}
+ if(a.architecture==='nigerCultivarReferences'&&a.shootProfile==='lovelyWhite'){scale=1;density=1;phase=bloom?'国内販売の白い一重花と緑の蜜腺の写真参考（冬〜春を12〜5月へ仮換算・実生株の開花年は未予測）':'花茎を整理し健康な緑の根生葉を残す保護株の参考（日本の残葉率・新葉量と正確な月は未校正）';}
  if(a.architecture==='nigerCultivarReferences'&&a.shootProfile==='snowDrift'){scale=1;phase=bloom?'15cm大苗の実物写真を参考にした細弁の白い八重花（冬〜春の月換算・葉は保護条件）':'細めの小葉と花後に花茎を整理した管理の参考（小苗のラベル・正確な展葉量・古葉落葉月は未採用・未予測）';}
  if(a.architecture==='woodlandPhloxReferences'){scale=1;phase=[1,2,12].includes(month)?(a.shootProfile==='retailWhite'?'国内商品本文の半常緑と表の落葉が不一致のため、少葉を選んだ冬の未検証参考（月別の残葉量・越冬は未予測）':a.shootProfile==='montrose'?'国内販売元の冬のロゼットを選んだ参考（月別の葉量は未校正）':'英国品種資料の半常緑性を選んだ冬の保護参考（日本の地植えの越冬保証ではない）'):bloom?(a.shootProfile==='retailWhite'?'国内販売元に明記された4〜6月頃の白い5裂花と淡桃紫の喉部の参考':a.shootProfile==='montrose'?'国内販売元に明記された3～5月の淡青色の花と白覆輪の参考':'英国品種資料の季節表現を月へ換算した花の参考（国内の明示月ではない）'):'対生葉のはう茎と立つ茎の参考（節の発根・成長量は未予測）';}
  if(a.architecture==='mallowReferences'){scale=1;phase=groundDormant?'ブルーファウンテンの低温管理で枯れ茎を整理した冬の参考（未剪定株は別条件）':[1,2,12].includes(month)?(a.shootProfile==='zebrina'?'ゼブリナの保護した切戻し株の少ない根出葉の参考（国内の冬姿は未検証）':'ビバーフェルムの保護した少葉の未検証参考（寿命・葉の残り方は未確認）'):bloom?'初夏の5枚の花弁と濃い筋の参考（国内の明示月ではない）':'掌状の葉と伸びる枝の参考（年次成長・秋の再開花は未予測）';}

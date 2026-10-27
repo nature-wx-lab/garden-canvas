@@ -6080,7 +6080,68 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "花期の冬〜春は12〜5月の仮区分で、全国共通の実測月ではありません。苗の規格・来季の開花・成熟サイズと計画年数を対応付けません。",
     "販売元と育種元の学名・結実説明の差は未解決のまま残します。花齢の退色・濃化や別写真の違いを月別変化にせず、果実・種子・根は未再現です。"
   ]
-},"p-d2914fa6a0cc":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-niger/","scope":"species"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leaflets":0,"leafColor":0,"petals":0,"persistence":0},"status":"attributes","arrangement":"alternate","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leaflets":8,"leafColor":"#557847","petals":5,"persistence":"evergreen","unconfirmed":[]},"p-47384cda62a5":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/100snd/","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/100sns/","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-niger/","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"flowerShape":0,"leafShape":0,"habit":2,"compoundType":2,"leafTexture":2,"leafColor":0,"persistence":0,"phenologyRegion":0,"flowerMonths":0,"flowerTiming":0,"scientificName":0},"status":"partial","architecture":"nigerCultivarReferences","shootProfile":"snowDrift","flowerShape":"nigerSnowDriftReference","leafShape":"nigerSnowDriftLeafReference","habit":"clump","compoundType":"palmate","leafTexture":"glossy","leafColor":"#415b3b","persistence":"semiEvergreen","phenologyRegion":"grower-cold","flowerMonths":[1,2,3,4,5,12],"flowerTiming":"season-reference","scientificName":"Helleborus niger 'Snow Drift'","sourceConflict":"大苗ページの実際に開花した15cm鉢苗と接写の細弁八重花を主参考としています。小苗写真の印刷ラベルは一重・桃色に見えますが、小苗そのものの開花写真ではないため形態根拠には採りません。未開花の小苗全ての花形や、別登録のニゲル ダブルと同じクローンであることは確認していません。","unconfirmed":["細い花弁状部分と小葉の寸法・枚数・重なりは写真を参考にした近似で、固定した3層や品種の実測器官数ではありません。","大苗本文の栄養繁殖という記載はこの資料の条件です。小さい入力寸法から苗齢や実際の花形を推定しません。","冬は低温ハウスの大苗写真で葉が残る保護条件を表示します。寒冷地の古葉落葉・露地の越冬・残葉率と月境界は未校正です。","冬〜春を12〜5月へ換算しています。花後は花茎を整理した管理例で、自然な花茎消失日・果実・種子・年次成長は未予測です。","小葉7枚と花数は描画例です。春の新葉の量・夏の減葉・出蕾の月別変化と、花の内側の器官同定は未検証です。","2024年から販売という記載は販売元の導入年で、登録年や同じ株の年間観測ではありません。"]},"p-860543030bc6":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=250","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/101rs/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":2,"flowerPattern":1,"phenologyRegion":2},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","flowerPattern":"spots","phenologyRegion":"grower-cold","unconfirmed":[]},"p-5215ff6cfa7c":{
+},"p-d2914fa6a0cc":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/minibonsai/dt6e11/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus-niger/",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafPattern": 0,
+    "leafColor": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "habit": 1,
+    "lifeForm": 1,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "persistence": 1,
+    "phenologyRegion": 0,
+    "scientificName": 0
+  },
+  "status": "partial",
+  "architecture": "nigerCultivarReferences",
+  "shootProfile": "lovelyWhite",
+  "leafShape": "lovelyWhiteDividedReference",
+  "leafPattern": "lovelyWhiteGreenVeinReference",
+  "leafColor": "#4e6d44",
+  "flowerShape": "lovelyWhiteSingleCupReference",
+  "flowerMonths": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    12
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "compoundType": "palmate",
+  "leafTexture": "glossy",
+  "persistence": "uncalibratedHelleboreLeafReference",
+  "phenologyRegion": "国内販売の白い花・緑葉を参考に、葉を残す保護株を表示します。冬〜春の12〜5月は仮換算で、日本の同じ株の月別記録・越冬成功ではありません。",
+  "scientificName": "Helleborus niger 'Lovely White'",
+  "sourceConflict": "実生3年生は販売する苗の規格で、計画開始から3年目の姿ではありません。3掲載画像のうち1枚は印刷ラベルで、花・葉の実物写真と分けます。元資料サイトはメンテナンス中で、高さ15〜25cmを今回再確認できないため高さ・株幅は未確認に戻します。種資料の寸法や桃花をこの品種へ転用しません。",
+  "unconfirmed": [
+    "白い幅広の5萼・緑の基部、黄の葯、緑の筒状蜜腺と、幅広く鋸歯のある緑の分裂葉を実物2写真から参考にします。正確な径・色・花の向きと株ごとの均一性は未照合です。",
+    "同一株の年間実物照合0。撮影月がない別写真や印刷ラベルを月別の連続写真にはしません。",
+    "根生6群に各5小葉を接続する30小葉、5花茎と分枝2花の合計7花は描画上の配置です。種資料の7〜9小葉を固定せず、写真に見える5小葉を参考にし、本数・比率は未実測です。",
+    "1花の5萼・48葯と8本の筒状蜜腺は描画例です。蜜腺は種資料の器官説明で補助し、果実・種子・根と未確認の心皮数は描きません。",
+    "冬〜春の12〜5月は描画のための仮区分です。施肥時期2月・4〜5月・10月を開花月へ変換せず、早咲き・多花性を固定した日付や花数の保証にしません。",
+    "葉を残す健康な保護株の参考です。月別の残葉率・寒害・剪定日・新葉量・夏越しの確率と、花後の自然な花茎消失日は未予測です。",
+    "元資料の高さ15〜25cmは再確認できず、現行販売ページに生育後寸法はありません。種の寸法・実生3年生の苗規格を成株寸法や計画年次の成長曲線へ置き換えません。"
+  ]
+},"p-47384cda62a5":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/100snd/","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/100sns/","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-niger/","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"flowerShape":0,"leafShape":0,"habit":2,"compoundType":2,"leafTexture":2,"leafColor":0,"persistence":0,"phenologyRegion":0,"flowerMonths":0,"flowerTiming":0,"scientificName":0},"status":"partial","architecture":"nigerCultivarReferences","shootProfile":"snowDrift","flowerShape":"nigerSnowDriftReference","leafShape":"nigerSnowDriftLeafReference","habit":"clump","compoundType":"palmate","leafTexture":"glossy","leafColor":"#415b3b","persistence":"semiEvergreen","phenologyRegion":"grower-cold","flowerMonths":[1,2,3,4,5,12],"flowerTiming":"season-reference","scientificName":"Helleborus niger 'Snow Drift'","sourceConflict":"大苗ページの実際に開花した15cm鉢苗と接写の細弁八重花を主参考としています。小苗写真の印刷ラベルは一重・桃色に見えますが、小苗そのものの開花写真ではないため形態根拠には採りません。未開花の小苗全ての花形や、別登録のニゲル ダブルと同じクローンであることは確認していません。","unconfirmed":["細い花弁状部分と小葉の寸法・枚数・重なりは写真を参考にした近似で、固定した3層や品種の実測器官数ではありません。","大苗本文の栄養繁殖という記載はこの資料の条件です。小さい入力寸法から苗齢や実際の花形を推定しません。","冬は低温ハウスの大苗写真で葉が残る保護条件を表示します。寒冷地の古葉落葉・露地の越冬・残葉率と月境界は未校正です。","冬〜春を12〜5月へ換算しています。花後は花茎を整理した管理例で、自然な花茎消失日・果実・種子・年次成長は未予測です。","小葉7枚と花数は描画例です。春の新葉の量・夏の減葉・出蕾の月別変化と、花の内側の器官同定は未検証です。","2024年から販売という記載は販売元の導入年で、登録年や同じ株の年間観測ではありません。"]},"p-860543030bc6":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=250","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/101rs/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":2,"flowerPattern":1,"phenologyRegion":2},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","flowerPattern":"spots","phenologyRegion":"grower-cold","unconfirmed":[]},"p-5215ff6cfa7c":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/100gm/",

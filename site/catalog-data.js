@@ -4772,7 +4772,48 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-d2914fa6a0cc":{"label":"クリスマスローズ(原種系) ニゲル(ニガー)ラブリーホワイト","latin":"Helleborus niger 'Lovely White'","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"evergreen","height":[0.15,0.25],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#cbc2b7","leafColor":"#577d42","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：冬～春","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=378","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-47384cda62a5":{"label":"クリスマスローズ(原種系)ニゲル スノー ドリフト","latin":"Helleborus niger  'Snow Drift'","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.2,0.3],"spread":[0.3,0.4],"bloom":[1,2,3,4,5,12],"bloomKnown":false,"flower":"#f0eee3","leafColor":"#577d42","variegated":false,"colors":["white"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"15cm大苗の写真を参考にした細弁の八重花と細めの小葉。冬は保護条件の残葉。","care":"草丈20〜30cm・株張り30〜40cm前後は生育後の目安です。15cm大苗の実物写真を主参考とし、小苗のラベル写真は花形の根拠に使っていません。低温ハウス苗と露地は別条件で、寒冷地では古葉が落ちます。","bloomText":"国内販売元の冬〜春を12〜5月へ整理した参考（明示月ではない）","bloomBasis":"国内の季節表現を参考換算。温室の早咲き・同じ個体の開花記録ではありません。","source":"https://item.rakuten.co.jp/ogis/100snd/","publisher":"おぎはら植物園（楽天市場店・大苗資料）","sourceChecked":"2026-10-27","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-860543030bc6":{"label":"クリスマスローズ(実生) 赤系","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"evergreen","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#cbc2b7","leafColor":"#577d42","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：晩冬～春","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=250","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-5215ff6cfa7c":{
+},"p-d2914fa6a0cc":{
+  "label": "クリスマスローズ(原種系) ニゲル(ニガー)ラブリーホワイト",
+  "latin": "Helleborus niger 'Lovely White'",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": null,
+  "spread": null,
+  "bloom": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    12
+  ],
+  "bloomKnown": false,
+  "flower": "#f1f0e6",
+  "leafColor": "#4e6d44",
+  "variegated": false,
+  "colors": [
+    "white"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年ごとの成長量は未確認",
+  "season": "白い一重の浅い杯状花と、緑の分裂葉の保護株の参考",
+  "care": "ニゲルの選抜で、多花性・早咲き・コンパクトという販売元の案内と、白い花・緑の分裂葉の実物写真を参考にします。実生3年生の苗規格を計画年数へ対応付けず、株ごとの花形・成長差を予測しません。元資料の高さ15〜25cmは今回再確認できず、高さ・株幅は未確認として手入力します。",
+  "bloomText": "冬〜春を12〜5月へ仮換算した参考（この販売ページに開花の数値月はありません）",
+  "bloomBasis": "旧資料の季節表現とニゲルの種資料を補助にした月区分。施肥月2・4〜5・10月は花期へ転用しません。",
+  "source": "https://item.rakuten.co.jp/minibonsai/dt6e11/",
+  "publisher": "園芸百貨店何でも揃うこぼんさい",
+  "sourceChecked": "2026-10-28",
+  "aliases": [],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-47384cda62a5":{"label":"クリスマスローズ(原種系)ニゲル スノー ドリフト","latin":"Helleborus niger  'Snow Drift'","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.2,0.3],"spread":[0.3,0.4],"bloom":[1,2,3,4,5,12],"bloomKnown":false,"flower":"#f0eee3","leafColor":"#577d42","variegated":false,"colors":["white"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"15cm大苗の写真を参考にした細弁の八重花と細めの小葉。冬は保護条件の残葉。","care":"草丈20〜30cm・株張り30〜40cm前後は生育後の目安です。15cm大苗の実物写真を主参考とし、小苗のラベル写真は花形の根拠に使っていません。低温ハウス苗と露地は別条件で、寒冷地では古葉が落ちます。","bloomText":"国内販売元の冬〜春を12〜5月へ整理した参考（明示月ではない）","bloomBasis":"国内の季節表現を参考換算。温室の早咲き・同じ個体の開花記録ではありません。","source":"https://item.rakuten.co.jp/ogis/100snd/","publisher":"おぎはら植物園（楽天市場店・大苗資料）","sourceChecked":"2026-10-27","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-860543030bc6":{"label":"クリスマスローズ(実生) 赤系","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"evergreen","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#cbc2b7","leafColor":"#577d42","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：晩冬～春","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=250","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-5215ff6cfa7c":{
   "label": "ムルチフィダス",
   "latin": "Helleborus multifidus",
   "genre": "クリスマスローズ",
