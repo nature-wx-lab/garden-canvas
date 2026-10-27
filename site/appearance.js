@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.862';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.863';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -708,3 +708,5 @@ Object.assign(TRAIT_VALUES,{sterniiPinkWhiteLeaflets:'茎上の3小葉・細か�
 Object.assign(TRAIT_VALUES,{sterniiNeoKaleidoscopeLeaflets:'茎上の幅広い3小葉・白い面と緑の島状斑の写真例',sterniiIndigoLeaflets:'茎上の3小葉・青灰の銀葉と中程度の粗い鋸歯の写真例',sterniiOrangeLeaflets:'茎上の3小葉・黄白の地に緑の細斑の写真例',sterniiIndigoGeneralSepals:'交雑群の資料を参考にした5萼の房咲き（品種の開花写真は未照合）'});
 
 Object.assign(TRAIT_VALUES,{sterniiSeedLeaflets:'茎上の3小葉・緑〜銀緑と淡い脈の実生参考例',sterniiSeedSepals:'交雑群の5萼と疎らな花房・淡緑白と桃を帯びる実生参考例'});
+
+Object.assign(TRAIT_VALUES,{foetidusNarrowPalmateReference:'有茎に付く細い掌状の7小葉（種資料の7〜10から置く参考例）',foetidusBellReference:'小さな淡緑の5萼の鐘形花・暗赤紫の縁がある実生参考例',foetidusGoldBellReference:'英国品種資料の黄緑の鐘形花（個別開花写真は未照合）'});
