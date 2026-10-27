@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.870';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.871';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -721,4 +721,4 @@ Object.assign(TRAIT_VALUES,{lemonnieraeParadeniaCupReference:'白い幅広の5�
 
 Object.assign(TRAIT_VALUES,{nigercorsTrifoliateReference:'幅広く鋸歯のある3小葉の配置例（固定数は未検証）',nigercorsPointedLimeCupReference:'横向きの白〜緑の5萼（剣弁寄りの一例）',nigercorsRoundLimeCupReference:'横向きのライム白の幅広い5萼'});
 
-Object.assign(TRAIT_VALUES,{ericsmithiiSilverTrifoliateReference:'銀灰を帯びる鋸歯のある3小葉の配置例（固定数は未検証）',ericsmithiiBlueTrifoliateReference:'青みの強い幅広い3小葉の配置例（厚み・固定数は未検証）',ericsmithiiCreamAgeCupReference:'クリーム〜緑と赤みを帯びる丸い5萼（花齢の推移は未予測）',ericsmithiiMontePinkBackCupReference:'白〜緑の丸い5萼と桃を帯びる背面（写真の一例）',ericsmithiiMarlonPinkBackCupReference:'黄色味のある白〜緑の5萼と桃を帯びる背面',ericsmithiiPinkFrostFaceReference:'クリームの縁と桃を帯びる丸い5萼（温度・花齢の推移は未予測）',ericsmithiiPirouetteColourReference:'白〜桃と緑の5萼（配色の変化速度は未予測）',ericsmithiiJokerPinkBackReference:'クリーム〜緑の5萼と淡く桃を帯びる背面'});
+Object.assign(TRAIT_VALUES,{ericsmithiiSilverTrifoliateReference:'銀灰を帯びる鋸歯のある3小葉の配置例（固定数は未検証）',ericsmithiiBlueTrifoliateReference:'青みの強い幅広い3小葉の配置例（厚み・固定数は未検証）',ericsmithiiCreamAgeCupReference:'クリーム〜緑と赤みを帯びる丸い5萼（花齢の推移は未予測）',ericsmithiiMontePinkBackCupReference:'白〜緑の丸い5萼と桃を帯びる背面（写真の一例）',ericsmithiiMarlonPinkBackCupReference:'黄色味のある白〜緑の5萼と桃を帯びる背面',ericsmithiiPinkFrostFaceReference:'クリームの縁と桃を帯びる丸い5萼（温度・花齢の推移は未予測）',ericsmithiiPirouetteColourReference:'白〜桃と緑の5萼（配色の変化速度は未予測）',ericsmithiiJokerPinkBackReference:'クリーム〜緑の5萼と淡く桃を帯びる背面',ericsmithiiBroadFiveBasalReference:'幅広い5小葉の根生葉と3小葉の茎葉の配置例（固定数・厚みは未検証）',ericsmithiiFiveBasalReference:'5小葉の根生葉と3小葉の茎葉の配置例（固定数は未検証）',ericsmithiiStarSepalReference:'白〜クリームと緑・桃を帯びる星形の5萼',ericsmithiiMoonbeamPointedReference:'白〜桃・赤みを帯びる先のある5萼（個体差あり）',ericsmithiiFrostyCupReference:'丸い白〜桃・緑のカップ状5萼と桃を帯びる背面'});
