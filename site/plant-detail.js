@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.852';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.853';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.852';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.853';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16402,6 +16402,40 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
 }
 
+export function argutifoliusReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='gcArgutifoliusSepalRef')return[u*.5*sn**.43*(.84+.16*t),.52*t*t+.035*sn*(1-u*u),t];
+ const side=type==='gcArgutifoliusLeftRef'?-1:type==='gcArgutifoliusRightRef'?1:0,phase=(t*8+.04*side)%1,spine=Math.max(0,1-Math.abs(phase-.70)/.24),edge=.95+.10*spine;
+ // Coarse spines are confined to the outline; the blade interior stays continuous.
+ return[u*.5*sn**.62*(1.25-.48*t)*(1+side*Math.sign(u)*.14)*(1+(edge-1)*Math.abs(u)**6),.050*sn+.020*u*u*sn-.13*t*t,t];
+}
+
+export const argutifoliusStemUnit=new THREE.CylinderGeometry(1,1,1,7,1);
+const argutifoliusSamples=Object.fromEntries(['gcArgutifoliusCentralRef','gcArgutifoliusLeftRef','gcArgutifoliusRightRef','gcArgutifoliusSepalRef'].map(type=>[type,Array.from({length:33*21},(_,j)=>argutifoliusReferencePoint(type,Math.floor(j/21)/32,j%21/20*2-1).map(Math.fround))]));
+function drawArgutifoliusReferences(b,{info,s,rand},kit){
+ const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),silver=info.appearance.shootProfile==='silver',tag='-argutifolius-ref',stem='#76935c',SR=Math.min(.003,h*.009,w*.009,LH*.04),surfaces=[];
+ const matrixFor=p=>{const m=new THREE.Matrix4().compose(new THREE.Vector3(...p.slice(3,6)),new THREE.Quaternion().setFromEuler(new THREE.Euler(...p.slice(9,12),'YXZ')),new THREE.Vector3(...p.slice(6,9)));m.elements=m.elements.map(Math.fround);return m;};
+ const line=(out,from,to,r,kind,color=stem)=>{const root=new THREE.Vector3(...from),d=new THREE.Vector3(...to).sub(root);if(d.lengthSq()<1e-22)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');out.push(['gcArgutifoliusStemRef',kind+tag,color,...root.addScaledVector(d,.5).toArray(),r,d.length(),r,e.x,e.y,e.z]);};
+ const curve=(out,from,bend,to,r,kind)=>{let prev=from;for(let j=1;j<=10;j++){const t=j/10,next=from.map((v,k)=>(1-t)**2*v+2*(1-t)*t*bend[k]+t*t*to[k]);line(out,prev,next,r*(1-j/50),kind);prev=next;}};
+ const emit=parts=>{for(const p of parts)b.add(...p);};
+ const fitLeaves=(parts,root)=>{let fit=1;for(const p of parts){const matrix=matrixFor(p),points=p[0]==='gcArgutifoliusStemRef'?Array.from({length:argutifoliusStemUnit.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(argutifoliusStemUnit.attributes.position,i).toArray()):argutifoliusSamples[p[0]];for(const point of points){const q=new THREE.Vector3(...point).applyMatrix4(matrix).sub(new THREE.Vector3(...root));if(q.y>0)fit=Math.min(fit,(LH-root[1]-2e-9)/q.y);if(q.y<0)fit=Math.min(fit,(root[1]-2e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)fit=Math.min(fit,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(fit>0))throw Error('Argutifolius cauline leaf assembly cannot fit');emit(parts.map(p=>{const v=[...p];for(let k=0;k<3;k++){v[3+k]=root[k]+(p[3+k]-root[k])*fit;v[6+k]=p[6+k]*fit;}return v;}));};
+ let flowerIndex=0;
+ const flower=(at,yaw)=>{const index=flowerIndex++,R=Math.min(.027,h*.072,w*.065),pitch=1.78+(index%3)*.10,rot=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),to=q=>new THREE.Vector3(...q).applyQuaternion(rot).add(new THREE.Vector3(...at));
+  for(let k=0;k<5;k++){const az=k*TAU/5+.11*(index%2),q=rot.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),p=['gcArgutifoliusSepalRef','sepal'+tag,kit.shade(rand,'#c6d99b',.018),...at,R*1.35,R,R,e.x,e.y,e.z];b.add(...p);
+   if(index<3&&k<2){const vertices=[14*21+10,15*21+10,14*21+11],m=matrixFor(p),points=vertices.map(v=>new THREE.Vector3(...argutifoliusSamples.gcArgutifoliusSepalRef[v]).applyMatrix4(m)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),camera=h<.1?(normal.y<0?normal.clone().negate():normal.clone()):new THREE.Vector3(0,1,0).applyQuaternion(rot);surfaces.push({point,normal,camera,instanceId:index*5+k,vertices,faceIndex:(14*20+10)*2,radius:R*1.50});}
+  }
+  // Counts are a drawing arrangement, not measurements of the stock or species.
+  for(let k=0;k<32;k++){const az=k*2.399963,r=R*(.12+.16*(k%4)/3),tip=[Math.sin(az)*r,R*(.29+.15*(k%5)/4),Math.cos(az)*r],out=[];line(out,to([0,R*.09,0]).toArray(),to(tip).toArray(),R*.009,'filament','#dde6b7');emit(out);b.add('gcArgutifoliusRoundRef','anther'+tag,'#d9d6a0',...to(tip).toArray(),R*.026,R*.032,R*.019);}
+  for(let k=0;k<8;k++){const az=k*TAU/8,r=R*.35,e=new THREE.Euler().setFromQuaternion(rot,'YXZ');b.add('gcArgutifoliusNectaryRef','nectary'+tag,'#90ae60',...to([Math.sin(az)*r,R*.17,Math.cos(az)*r]).toArray(),R*.055,R*.17,R*.055,e.x,e.y,e.z);}
+ };
+ // Persistent leafy cauline axes; flowering branches are a post-flowering management reference.
+ for(let i=0;i<3;i++){const yaw=i*2.399963+.24,base=[Math.sin(yaw)*w*.035,SR*1.4,Math.cos(yaw)*w*.035],nodes=[base,...[.18,.41,.65].map((v,j)=>[Math.sin(yaw)*w*(.045+j*.022),Math.min(LH*v,h*.52),Math.cos(yaw)*w*(.045+j*.022)]),[Math.sin(yaw)*w*.12,h*(.58+i*.018),Math.cos(yaw)*w*.12]],out=[];for(let j=1;j<nodes.length;j++)line(out,nodes[j-1],nodes[j],SR,'stem');emit(out);
+  if(s.leafDensity>0)for(let j=1;j<=3;j++){const root=nodes[j],az=yaw+(j%2?.75:-.68)+j*.25,end=[root[0]+Math.sin(az)*w*.10,root[1]+LH*.12,root[2]+Math.cos(az)*w*.10],parts=[],L=Math.min(.14,w*.27,LH*.95);curve(parts,root,[end[0],end[1]+LH*.06,end[2]],end,SR*.55,'petiole');for(let k=0;k<3;k++){const side=k-1,angle=az+side*1.10,reach=L*.085*Math.abs(side),at=[end[0]+Math.sin(angle)*reach,end[1],end[2]+Math.cos(angle)*reach];if(reach)line(parts,end,at,SR*.25,'leaf-axis');parts.push([['gcArgutifoliusLeftRef','gcArgutifoliusCentralRef','gcArgutifoliusRightRef'][k],'leaf'+tag+'-'+(silver?'silver':'wild')+'-'+((i+j+k)%4),kit.shade(rand,silver?'#b3c0b5':'#52755d',.025),...at,L*(side?.78:.84),L,L,-.12-rand()*.35,angle,(rand()-.5)*.08]);}fitLeaves(parts,root);}
+  if(s.bloom){const node=nodes.at(-1);for(let j=0;j<5;j++){const angle=yaw+(j-2)*.54,at=[node[0]+Math.sin(angle)*w*(.075+.018*(j%3)),h*(.74+.035*j+.018*i),node[2]+Math.cos(angle)*w*(.075+.018*(j%3))],parts=[];curve(parts,node,[at[0],at[1]+h*.025,at[2]],at,SR*.7,'pedicel');emit(parts);flower(at,angle);}const bud=[node[0],h*.76,node[2]],parts=[];line(parts,node,bud,SR*.6,'pedicel');emit(parts);b.add('gcArgutifoliusRoundRef','bud'+tag,'#9db97c',...bud,Math.min(.006,h*.03,w*.025),Math.min(.008,h*.04,w*.03),Math.min(.006,h*.03,w*.025));}
+ }
+ for(const v of surfaces){const normal=v.normal.clone();if(normal.dot(v.camera)<0)normal.negate();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),normal),'YXZ');b.flower?.(v.point.toArray(),v.radius,e.x,e.y,e.z,{component:'sepal'+tag,instanceId:v.instanceId,vertices:v.vertices,faceIndex:v.faceIndex,cameraAxis:v.camera.normalize().toArray()});}
+}
+
 export function lividusReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='gcLividusSepalRef')return[u*.5*sn**.48*(.78+.22*t),.32*t*t+.025*sn*(1-u*u),t];
@@ -18897,6 +18931,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ogisMonardaColourReferences'){drawOgisMonardaColourReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='retailMonardaReferences'){drawRetailMonardaReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='ruelliaTropicstarReference'){drawRuelliaTropicstarReference(b,{info,s,month,rand},kit);return;}
+ if(info.appearance?.architecture==='argutifoliusReferences'){drawArgutifoliusReferences(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='lividusReferences'){drawLividusReferences(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='nigerCultivarReferences'){drawNigerCultivarReferences(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='woodlandPhloxReferences'){drawWoodlandPhloxReferences(b,{info,s,month,rand},kit);return;}
