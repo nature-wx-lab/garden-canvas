@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.900';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.901';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.900';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.901';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17038,6 +17038,7 @@ function drawLividusReferences(b,{info,s,rand},kit){
 }
 
 export function nigerCultivarReferencePoint(type,t,u){
+ if(type==='gcGeppakuBladeRef'){const sn=Math.max(0,Math.sin(Math.PI*t)),tooth=Math.max(0,1-Math.abs(((t*9+.025)%1)-.70)/.24);return[u*.5*sn**.68*(.78+.32*t)*(1+.20*tooth*Math.max(0,(t-.28)/.72)*Math.abs(u)**6),.030*sn+.018*u*u*sn-.035*t*t,t];}
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='gcNigerCultivarBladeRef'){
   const teeth=1+.065*Math.max(0,(t-.35)/.65)*(1-Math.abs(2*((t*11)%1)-1));
@@ -17048,9 +17049,9 @@ export function nigerCultivarReferencePoint(type,t,u){
  return[u*width,(inner?.24:.15)*t*t+.025*sn*(1-u*u)+.013*Math.sin(t*19+u*4)*u*u*sn,t];
 }
 export const nigerCultivarStemUnit=new THREE.CylinderGeometry(1,1,1,7,1);
-const nigerCultivarSamples=Object.fromEntries(['gcNigerCultivarBladeRef','gcNigerCultivarOuterRef','gcNigerCultivarInnerRef','gcNigerSnowOuterRef','gcNigerSnowInnerRef'].map(type=>[type,Array.from({length:33*21},(_,j)=>nigerCultivarReferencePoint(type,Math.floor(j/21)/32,j%21/20*2-1).map(Math.fround))]));
+const nigerCultivarSamples=Object.fromEntries(['gcNigerCultivarBladeRef','gcNigerCultivarOuterRef','gcNigerCultivarInnerRef','gcNigerSnowOuterRef','gcNigerSnowInnerRef','gcGeppakuBladeRef'].map(type=>[type,Array.from({length:33*21},(_,j)=>nigerCultivarReferencePoint(type,Math.floor(j/21)/32,j%21/20*2-1).map(Math.fround))]));
 function drawNigerCultivarReferences(b,{info,s,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),twin=a.shootProfile==='twinSpirits',snow=a.shootProfile==='snowDrift',single=a.shootProfile==='variegata',marble=a.shootProfile==='marble',seedDouble=a.shootProfile==='seedDouble',variegated=single||marble,tag='-niger-cultivar',stem=variegated?'#896454':'#768b64',SR=Math.min(.0025,h*.012,w*.012,LH*.05),profile=a.shootProfile;
+ const a=info.appearance,geppaku=a.shootProfile==='geppaku',whiteSeason=![6,7,8,9].includes(s.month),h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),twin=a.shootProfile==='twinSpirits',snow=a.shootProfile==='snowDrift',single=a.shootProfile==='variegata',marble=a.shootProfile==='marble',seedDouble=a.shootProfile==='seedDouble',variegated=single||marble||geppaku,tag='-niger-cultivar',stem=geppaku?'#8a8b64':variegated?'#896454':'#768b64',SR=Math.min(.0025,h*.012,w*.012,LH*.05),profile=a.shootProfile;
  const matrixFor=p=>{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=p,m=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));m.elements=m.elements.map(Math.fround);return m;};
  const axisPart=(from,to,r,kind,color=stem)=>{const p=new THREE.Vector3(...from),d=new THREE.Vector3(...to).sub(p);if(d.lengthSq()<1e-22||r<=0)return null;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');return['gcNigerCultivarStemRef',kind+tag,color,...p.addScaledVector(d,.5).toArray(),r,d.length(),r,e.x,e.y,e.z];};
  const line=(out,from,to,r,kind,color)=>{const p=axisPart(from,to,r,kind,color);if(p)out.push(p);};
@@ -17065,17 +17066,17 @@ function drawNigerCultivarReferences(b,{info,s,rand},kit){
   emit(parts.map(p=>{const v=[...p];for(let k=0;k<3;k++){v[3+k]=root[k]+(p[3+k]-root[k])*fit;v[6+k]=p[6+k]*fit;}return v;}));
  };
  // Protected, leaf-retaining winter scenario; cold-region old-leaf loss is not a fixed monthly rule.
- if(s.leafDensity>0)for(let i=0;i<7;i++){
+ if(s.leafDensity>0)for(let i=0;i<(geppaku?6:7);i++){
   const yaw=i*2.399963+(rand()-.5)*.20,root=[Math.sin(yaw)*w*.045,SR*1.4,Math.cos(yaw)*w*.045],end=[Math.sin(yaw)*w*(.08+rand()*.06),LH*(.30+rand()*.30),Math.cos(yaw)*w*(.10+rand()*.03)],L=Math.min(.09,w*.24,LH*1.5),parts=[];
   curve(parts,root,[end[0]*.55,LH*.40,end[2]*.55],end,SR*.55,'petiole');
-  for(let k=0;k<7;k++){
-   const off=(k-3)/3,az=yaw+off*1.38,reach=L*.055*Math.abs(off),at=[end[0]+Math.sin(az)*reach,end[1],end[2]+Math.cos(az)*reach],len=L*(.78+.22*Math.cos(off*1.4)),W=len*(variegated?.60:snow?.33:.45);
+  for(let k=0;k<(geppaku?5:7);k++){
+   const off=geppaku?(k-2)/2:(k-3)/3,az=yaw+off*1.38,reach=L*.055*Math.abs(off),at=[end[0]+Math.sin(az)*reach,end[1],end[2]+Math.cos(az)*reach],len=L*(.78+.22*Math.cos(off*1.4)),W=len*(geppaku?.53:variegated?.60:snow?.33:.45);
    if(reach)line(parts,end,at,SR*.22,'leaf-axis');
-   parts.push(['gcNigerCultivarBladeRef',variegated?'leaf-niger-'+profile+'-ref-'+((i+k)%4):'leaf'+tag,kit.shade(rand,s.leafColor,.025),...at,W,len,len,-.10-rand()*.22,az,(rand()-.5)*.10]);
+   parts.push([geppaku?'gcGeppakuBladeRef':'gcNigerCultivarBladeRef',geppaku?'leaf-geppaku-ref-'+(whiteSeason&&i>=2?'white':'green')+'-'+((i+k)%3):variegated?'leaf-niger-'+profile+'-ref-'+((i+k)%4):'leaf'+tag,kit.shade(rand,geppaku&&(!whiteSeason||i<2)?'#4e7152':s.leafColor,.025),...at,W,len,len,-.10-rand()*.22,az,(rand()-.5)*.10]);
   }
   fitLeaves(parts,root);
  }
- if(!s.bloom||marble)return;
+ if(!s.bloom||marble||geppaku)return;
  const R=Math.min(.035,h*.15,w*.085),surfaces=[],outerShape=snow?'gcNigerSnowOuterRef':'gcNigerCultivarOuterRef',innerShape=snow?'gcNigerSnowInnerRef':'gcNigerCultivarInnerRef';let innerInstance=0;
  const flower=(at,yaw,index)=>{
   const pitch=1.12+(index%3)*.17,rot=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),to=q=>new THREE.Vector3(...q).applyQuaternion(rot).add(new THREE.Vector3(...at));
