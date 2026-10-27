@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.903';
+import {treeProfile} from './tree-profiles.js?v=0.9.904';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -355,6 +355,7 @@ export function seasonAt(info,month){
  if(a.shootProfile==='briarRoseAshwoodensis'){scale=1;density=1;phase=bloom?'Briar Roseの緑の基部・白筋・桃色の帯の写真例（固有花期不明で2〜4月は描画上の仮区分）':'花後の花茎を描かず根生葉を残す管理参考（常緑性・残葉率・剪定日・新葉量は未確認）';}
  if(['iceBreakerRuby','strawberryMoon'].includes(a.shootProfile)){scale=1;density=1;phase=bloom?(a.shootProfile==='iceBreakerRuby'?'国内の冬〜春を12〜5月へ換算した赤い丸萼と黄の蜜腺（花径の表・本文に記載差あり）':'国内の冬〜春を12〜5月へ換算した桃色の丸萼（花齢の赤み・学名差は月に固定しない）'):'低温管理の展葉株を残す参考（春夏の減葉・新葉量・冬の紅葉と正確な月は未再現）';}
  if(a.architecture==='nigerCultivarReferences'&&a.shootProfile==='geppaku'){scale=1;density=1;phase=[6,7,8,9].includes(month)?'初夏を6〜9月へ仮区分した緑葉の参考（移行日・白葉率は未実測、花姿未固定で3Dは葉のみ）':'10月頃〜5月頃の白い展開葉と古い緑葉の参考（割合・境界日は未実測、実生で3Dの花は表示しない）';}
+ if(a.architecture==='winterbellsReferences'&&a.shootProfile==='rhsSahinii'){scale=1;density=1;phase=bloom?'RHSの交配種サヒニの緑の杯状花・英国2〜4月の文章参考（植物写真・日本の月別は未照合）':'交配種サヒニの暗緑の革質葉を残す英国の文章参考（残葉率・茎の整理日と再生は未校正）';}
  if(a.architecture==='argutifoliusReferences'){scale=1;density=1;phase=bloom?'国内販売元の晩冬〜春を2〜5月へ換算した、緑の杯状花の房咲きの参考（花数・連続開花は未予測）':[12,1,2].includes(month)?'葉付きの有茎と厚い3小葉を残す保護条件の冬姿の参考（低温苗の紅葉・寒害・残葉率は未予測）':'葉付きの有茎を残し上部の花房を花後に整理した管理例の参考（夏の葉減り・新葉量は未予測）';}
  if(a.architecture==='lividusReferences'){scale=1;density=1;phase=bloom?'国内販売元の晩冬〜春を2〜5月へ換算した、うつむく花の参考（銀葉型の花は基本種共通との本文に基づく）':[12,1,2].includes(month)?'葉付きの有茎と3小葉を残す保護条件の冬姿の参考（低温での紅葉・寒害と残葉率は未予測）':'葉付きの有茎を残し上部の花序を花後に整理した管理例の参考（夏の葉減り・新葉量は未予測）';}
  if(a.architecture==='nigerCultivarReferences'&&a.shootProfile!=='geppaku'){scale=1;phase=bloom?'国内販売元の冬〜春を12〜5月へ換算した八重花の参考（葉は保護条件・同じ株の花期や若株の花形は未予測）':[12,1,2].includes(month)?'低温のハウス苗で葉を残す保護条件の参考（寒冷地の古葉落葉・露地の越冬は別条件）':'花後の花茎を整理し根生葉を残す参考（月別の展葉量・自然な花茎消失日は未予測）';}

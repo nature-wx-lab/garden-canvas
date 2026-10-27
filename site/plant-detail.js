@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.903';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.904';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.903';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.904';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16486,13 +16486,13 @@ function drawBallardiaeReferences(b,{s,rand,info},kit){
 }
 
 export function winterbellsReferencePoint(type,t,u){
- const sn=Math.max(0,Math.sin(Math.PI*t));if(type==='gcWinterbellsSepalRef'){const phi=-u*Math.PI/5*1.10,r=.76*Math.sin(Math.PI*t*.75)**.55*(1-.08*Math.abs(u)**6*t*t);return[Math.sin(phi)*r,t*(1-.16*u*u),Math.cos(phi)*r];}
+ const sn=Math.max(0,Math.sin(Math.PI*t));if(type==='gcRhsSahiniiSepalRef'){const phi=-u*Math.PI/5*1.12,r=1.02*Math.sin(Math.PI*t*.45)**.70;return[Math.sin(phi)*r,.64*t*(1-.08*u*u),Math.cos(phi)*r];}if(type==='gcRhsSahiniiBladeRef'){const teeth=1+.065*Math.max(0,(t-.40)/.60)*(1-Math.abs(2*((t*10)%1)-1));return[u*.5*sn**.70*(.80+.20*t)*teeth,.030*sn+.015*u*u*sn-.045*t*t,t];}if(type==='gcWinterbellsSepalRef'){const phi=-u*Math.PI/5*1.10,r=.76*Math.sin(Math.PI*t*.75)**.55*(1-.08*Math.abs(u)**6*t*t);return[Math.sin(phi)*r,t*(1-.16*u*u),Math.cos(phi)*r];}
  const tooth=Math.max(0,1-Math.abs(((t*11+.035)%1)-.71)/.23);return[u*.5*sn**.62*(.90+.10*t)*(1+.08*tooth*Math.max(0,(t-.45)/.55)*Math.abs(u)**6),.035*sn+.014*u*u*sn-.060*t*t,t];
 }
 export const winterbellsStemUnit=new THREE.CylinderGeometry(1,1,1,7,1);
-const winterbellsSamples=Object.fromEntries(['gcWinterbellsBladeRef','gcWinterbellsSepalRef'].map(type=>[type,Array.from({length:33*21},(_,j)=>winterbellsReferencePoint(type,Math.floor(j/21)/32,j%21/20*2-1).map(Math.fround))]));
+const winterbellsSamples=Object.fromEntries(['gcWinterbellsBladeRef','gcWinterbellsSepalRef','gcRhsSahiniiBladeRef','gcRhsSahiniiSepalRef'].map(type=>[type,Array.from({length:33*21},(_,j)=>winterbellsReferencePoint(type,Math.floor(j/21)/32,j%21/20*2-1).map(Math.fround))]));
 function drawWinterbellsReferences(b,{s,rand,info},kit){
- const profile='winterbells',extra={ratio:.50,stem:'#8b5964',leaf:s.leafColor,pitch:2.10,palette:['#c9a2ad','#d2b1b9','#bf98a5'],nectary:'#aebc87',bud:'#bc90a0'},h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),R=Math.min(.017,h*.075,w*.060),SR=Math.min(.0026,h*.008,w*.007,LH*.035),tag='-winterbells-ref',stem=extra.stem,leaf=s.leafColor,leafShape='gcWinterbellsBladeRef',sepalShape='gcWinterbellsSepalRef',surfaces=[];
+ const sahinii=info.appearance.shootProfile==='rhsSahinii',profile=sahinii?'rhsSahinii':'winterbells',extra={ratio:sahinii?.48:.50,stem:sahinii?'#6e8058':'#8b5964',leaf:s.leafColor,pitch:sahinii?1.20:2.10,palette:sahinii?['#b0c588','#a7be7c','#bdd095']:['#c9a2ad','#d2b1b9','#bf98a5'],nectary:sahinii?'#a9bd7c':'#aebc87',bud:sahinii?'#a9bd81':'#bc90a0'},h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),R=Math.min(.017,h*.075,w*.060),SR=Math.min(.0026,h*.008,w*.007,LH*.035),tag='-winterbells-ref',stem=extra.stem,leaf=s.leafColor,leafShape=sahinii?'gcRhsSahiniiBladeRef':'gcWinterbellsBladeRef',sepalShape=sahinii?'gcRhsSahiniiSepalRef':'gcWinterbellsSepalRef',surfaces=[];
  if(s.groundDormant)return;
  const stream=seed=>{let q=seed>>>0;return()=>{q=(q+0x6d2b79f5)>>>0;let x=Math.imul(q^(q>>>15),q|1);x^=x+Math.imul(x^(x>>>7),x|61);return((x^(x>>>14))>>>0)/4294967296;};},seed=Math.floor(rand()*4294967296),leafRand=stream(seed^0x51eaf123),flowerRand=stream(seed^0x7f10a937);
  const matrixFor=p=>{const m=new THREE.Matrix4().compose(new THREE.Vector3(...p.slice(3,6)),new THREE.Quaternion().setFromEuler(new THREE.Euler(...p.slice(9,12),'YXZ')),new THREE.Vector3(...p.slice(6,9)));m.elements=m.elements.map(Math.fround);return m;};
@@ -16509,7 +16509,7 @@ function drawWinterbellsReferences(b,{s,rand,info},kit){
  if(s.leafDensity>0)for(let i=0;i<6;i++){const az=.30+i*2.399963,root=[Math.sin(az)*w*.022,SR*1.5,Math.cos(az)*w*.022];fan(root,az,true,i);}
  let flowerIndex=0;
  const flower=(at,yaw)=>{const index=flowerIndex++,radius=R*(.86+.14*(index%3)/2),rot=new THREE.Quaternion().setFromEuler(new THREE.Euler(extra.pitch+(index%4)*.05,yaw,0,'YXZ')),to=q=>new THREE.Vector3(...q).applyQuaternion(rot).add(new THREE.Vector3(...at)),palette=extra.palette;
-  for(let k=0;k<5;k++){const q=rot.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,k*TAU/5,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),p=[sepalShape,'sepal'+tag+'-'+profile,kit.shade(flowerRand,palette[index%3],.012),...at,radius*1.15,radius,radius,e.x,e.y,e.z];b.add(...p);if(k===2&&surfaces.length<8){const row=20,cell=row*21+10,vertices=[cell,cell+21,cell+1],matrix=matrixFor(p),pts=vertices.map(v=>new THREE.Vector3(...winterbellsSamples[sepalShape][v]).applyMatrix4(matrix)),point=pts[0].clone().add(pts[1]).add(pts[2]).multiplyScalar(1/3),normal=pts[1].clone().sub(pts[0]).cross(pts[2].clone().sub(pts[0])).normalize();surfaces.push({point,normal,instanceId:index*5+k,vertices,faceIndex:(row*20+10)*2,radius:radius*2.5});}}
+  for(let k=0;k<5;k++){const q=rot.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,k*TAU/5,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),p=[sepalShape,'sepal'+tag+'-'+profile,kit.shade(flowerRand,palette[index%3],.012),...at,radius*1.15,radius,radius,e.x,e.y,e.z];b.add(...p);if(k===2&&surfaces.length<8){const row=20,cell=row*21+10,vertices=[cell,cell+21,cell+1],matrix=matrixFor(p),pts=vertices.map(v=>new THREE.Vector3(...winterbellsSamples[sepalShape][v]).applyMatrix4(matrix)),point=pts[0].clone().add(pts[1]).add(pts[2]).multiplyScalar(1/3),normal=pts[1].clone().sub(pts[0]).cross(pts[2].clone().sub(pts[0])).normalize();surfaces.push({point,normal,instanceId:index*5+k,vertices,faceIndex:(row*20+10)*2,radius:radius*2.5,camera:sahinii?new THREE.Vector3(0,1,0).applyQuaternion(rot):null});}}
   for(let k=0;k<32;k++){const az=k*2.399963,r=radius*(.13+.13*(k%4)/3),tip=[Math.sin(az)*r,radius*(.68+.10*(k%5)/4),Math.cos(az)*r],parts=[];line(parts,to([0,0,0]).toArray(),to(tip).toArray(),radius*.009,'filament','#e3dfb9');emit(parts);b.add('gcWinterbellsRoundRef','anther'+tag,'#e3dfac',...to(tip).toArray(),radius*.025,radius*.030,radius*.018);}
   for(let k=0;k<8;k++){const az=k*TAU/8,e=new THREE.Euler().setFromQuaternion(rot,'YXZ');b.add('gcWinterbellsNectaryRef','nectary'+tag,extra.nectary,...to([Math.sin(az)*radius*.32,radius*.48,Math.cos(az)*radius*.32]).toArray(),radius*.046,radius*.20,radius*.046,e.x,e.y,e.z);}
   for(let k=0;k<3;k++){const az=k*TAU/3,parts=[];line(parts,to([Math.sin(az)*radius*.06,0,Math.cos(az)*radius*.06]).toArray(),to([Math.sin(az)*radius*.09,radius*.30,Math.cos(az)*radius*.09]).toArray(),radius*.022,'carpel','#a2b77c');emit(parts);}
@@ -16522,7 +16522,7 @@ function drawWinterbellsReferences(b,{s,rand,info},kit){
   for(let k=0;k<3;k++){const angle=az+(k===2?0:(k?1:-1)*.64),at=[top[0]+Math.sin(angle)*w*.075,h*(.76+k*.06)*factor,top[2]+Math.cos(angle)*w*.075],branch=[];curve(branch,top,[at[0],at[1]+h*.02,at[2]],at,SR*.60,'pedicel');emit(branch);flower(at,angle);}
   const at=[top[0]+Math.sin(az)*w*.035,h*.79*factor,top[2]+Math.cos(az)*w*.035],branch=[];curve(branch,top,[at[0],at[1]+h*.02,at[2]],at,SR*.52,'pedicel');emit(branch);b.add('gcWinterbellsRoundRef','bud'+tag,extra.bud,...at,R*.30,R*.42,R*.30,.15,az,0);
  }
- for(const v of surfaces){const camera=v.normal.clone();camera.y=Math.max(.35,camera.y);camera.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),camera),'YXZ');b.flower?.(v.point.toArray(),v.radius,e.x,e.y,e.z,{component:'sepal'+tag+'-'+profile,instanceId:v.instanceId,vertices:v.vertices,faceIndex:v.faceIndex,cameraAxis:camera.toArray()});}
+ for(const v of surfaces){const camera=(v.camera||v.normal).clone();camera.y=Math.max(.35,camera.y);camera.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),camera),'YXZ');b.flower?.(v.point.toArray(),v.radius,e.x,e.y,e.z,{component:'sepal'+tag+'-'+profile,instanceId:v.instanceId,vertices:v.vertices,faceIndex:v.faceIndex,cameraAxis:camera.toArray()});}
 }
 
 
