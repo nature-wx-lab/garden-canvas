@@ -4138,7 +4138,81 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "6〜11月は根生2群に減らした夏越し後の参考です。群数・月境界・冬の残葉率・春の展葉量は実測していません。",
     "異なる写真や実生の色幅を同じ株の花齢・月別の変色へ変換していません。開花の晩冬〜春を2〜5月へ換算し、年や地域、露地と温室の違いは未校正です。"
   ]
-},"p-4457729533f6":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://item.rakuten.co.jp/ogis/101go/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":1,"phenologyRegion":1},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","phenologyRegion":"grower-cold","unconfirmed":[]},"p-f4cad868cb84":{
+},"p-4457729533f6":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/101go/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "monthlyLeafColors": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "goldHelleboreReferences",
+  "shootProfile": "goldNectary",
+  "leafShape": "goldHelleboreToothedReference",
+  "leafColor": "#9eac62",
+  "monthlyLeafColors": [
+    "#d0c568",
+    "#a8ac62",
+    "#9eac62",
+    "#97a764",
+    "#97a764",
+    "#8fa05b",
+    "#8fa05b",
+    "#8fa05b",
+    "#8fa05b",
+    "#d0c568",
+    "#d0c568",
+    "#d0c568"
+  ],
+  "leafPattern": "goldHelleboreSeasonalMottleReference",
+  "flowerShape": "goldNectaryPlainSingleReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#a29c62",
+  "phenologyRegion": "国内販売元の秋冬の黄葉と、夏に緑の根生葉2群を残す管理例です。この2系統には夏の黄色化の明記がなく、ピコティダブルの夏葉の黄色を転用していません。古葉を切らず保護した例で、月境界・葉量・再生・色の強さは未校正です。",
+  "sourceConflict": "国内の高さ25〜50cm・幅40〜80cmを採用。実生の販売系統で、同じ色・花形に固定したクローンではありません。商品名はシングルで、一重の掲載写真を選択。現行の販売案内は主にセミダブルで、この販売範囲を一重の3Dと区別します。",
+  "unconfirmed": [
+    "黄色〜クリームの丸い5萼と黄〜オレンジの筒状蜜腺を持つ一重写真を選びます。本文はセミダブルも含み、2026年2月23日の販売案内は主にセミダブルです。3Dは掲載の一重の参考で、今回販売中の花形の割合やセミダブルを再現していません。",
+    "同じ販売株を12か月追った実測、年次成長、株分け・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "根生6群を各7小葉、開花時の苞葉3群を各3小葉として接続する参考です。6〜9月は根生2群を残す管理例で、群数・固定分割数・残葉量は実測値ではありません。",
+    "成葉・黄葉写真はゴールド系の共用参考です。ネクタリーとネオンダブルの葉2写真は同じ画像で、ピコティダブルにも同様の葉写真が掲載されています。固有の同一クローンや年間記録の証拠にしません。",
+    "秋冬の黄葉、早春の古葉の黄褐色化と任意の切除、温室内の0〜10℃の苗管理は別条件です。自然な残葉率、露地の越冬や全国共通の夏の枯れ込みは未予測です。",
+    "一重の写真例に8本の黄〜オレンジの筒状蜜腺を置きます。花芯が弁化するセミダブルと混ぜず、個体差や出現割合は未再現です。",
+    "花軸3本に各3花と1蕾、32雄しべ・3心皮を置く参考です。数値の花径は未確認で、花径・花数・器官数・花床の寸法は実測値ではありません。",
+    "花後は上部の花軸と苞葉を整理し短い茎を残す管理例です。果実・種子・根や自然な枯れ込みは未再現です。晩冬〜春を2〜5月へ換算し、1〜3月の販売期間や鉢径を露地の花期・成熟寸法・計画開始年の予測にしていません。"
+  ]
+},"p-f4cad868cb84":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/101gf/",
@@ -4580,7 +4654,81 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "花軸3本に各3花と1蕾、32雄しべ・3心皮を置く参考です。数値の花径は未確認で、花径・花数・器官数・花床の寸法は実測値ではありません。",
     "花後は上部の花軸と苞葉を整理し短い茎を残す管理例です。果実・種子・根、自然な枯れ込みは未再現です。晩冬〜春を2〜5月へ換算し、温室苗を露地の開花月へ転用せず、苗齢を計画開始年の予測にしていません。"
   ]
-},"p-2841aaa53b10":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=2661","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/102nlw/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":2,"flowerLayers":2,"flowerPattern":1,"phenologyRegion":2,"seasonalColors":2},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","flowerLayers":3,"flowerPattern":"margin","phenologyRegion":"grower-cold","seasonalColors":{"winter":"#bab752"},"unconfirmed":[]},"p-5d965d48109c":{
+},"p-2841aaa53b10":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/102nlw/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "monthlyLeafColors": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "goldHelleboreReferences",
+  "shootProfile": "goldNeonDouble",
+  "leafShape": "goldHelleboreToothedReference",
+  "leafColor": "#9eac62",
+  "monthlyLeafColors": [
+    "#d0c568",
+    "#a8ac62",
+    "#9eac62",
+    "#97a764",
+    "#97a764",
+    "#8fa05b",
+    "#8fa05b",
+    "#8fa05b",
+    "#8fa05b",
+    "#d0c568",
+    "#d0c568",
+    "#d0c568"
+  ],
+  "leafPattern": "goldHelleboreSeasonalMottleReference",
+  "flowerShape": "goldNeonDoubleVeinedReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#a28a67",
+  "phenologyRegion": "国内販売元の秋冬の黄葉と、夏に緑の根生葉2群を残す管理例です。この2系統には夏の黄色化の明記がなく、ピコティダブルの夏葉の黄色を転用していません。古葉を切らず保護した例で、月境界・葉量・再生・色の強さは未校正です。",
+  "sourceConflict": "国内の高さ25〜50cm・幅40〜80cmを採用。実生の販売系統で、同じ色・花形に固定したクローンではありません。内側は蜜腺由来の花びら状部分として外側の5萼と区別します。ネオンダブルの商品本文は八重と脈を説明します。蜜腺由来という器官の解釈は属・ゴールド系の参考で、このページにその解説があるとは扱いません。",
+  "unconfirmed": [
+    "黄色〜クリーム地に紅紫の脈が入る八重の写真例を選びます。濃い紅紫や橙色に近い別々の実生株もあり、固定した同一クローンの色ではありません。花裏・蕾の紅紫と黄色い雄しべも参考にしています。",
+    "同じ販売株を12か月追った実測、年次成長、株分け・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "根生6群を各7小葉、開花時の苞葉3群を各3小葉として接続する参考です。6〜9月は根生2群を残す管理例で、群数・固定分割数・残葉量は実測値ではありません。",
+    "成葉・黄葉写真はゴールド系の共用参考です。ネクタリーとネオンダブルの葉2写真は同じ画像で、ピコティダブルにも同様の葉写真が掲載されています。固有の同一クローンや年間記録の証拠にしません。",
+    "秋冬の黄葉、早春の古葉の黄褐色化と任意の切除、温室内の0〜10℃の苗管理は別条件です。自然な残葉率、露地の越冬や全国共通の夏の枯れ込みは未予測です。",
+    "5枚の外側の萼に加え、内側に蜜腺由来の花びら状の部分を3列各5枚置く参考です。内側15枚を追加の萼と数えず、通常の筒状蜜腺は描きません。列数・枚数は近似で実測の固定値ではありません。",
+    "花軸3本に各3花と1蕾、32雄しべ・3心皮を置く参考です。数値の花径は未確認で、花径・花数・器官数・花床の寸法は実測値ではありません。",
+    "花後は上部の花軸と苞葉を整理し短い茎を残す管理例です。果実・種子・根や自然な枯れ込みは未再現です。晩冬〜春を2〜5月へ換算し、1〜3月の販売期間や鉢径を露地の花期・成熟寸法・計画開始年の予測にしていません。"
+  ]
+},"p-5d965d48109c":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/102glw/",
@@ -4654,7 +4802,81 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "花軸3本に各3花と1蕾、32雄しべ・3心皮を置く参考です。数値の花径は未確認で、花径・花数・器官数・花床の寸法は実測値ではありません。",
     "花後は上部の花軸と苞葉を整理し短い茎を残す管理例です。果実・種子・根、自然な枯れ込みは未再現です。晩冬〜春を2〜5月へ換算し、温室苗を露地の開花月へ転用せず、苗齢を計画開始年の予測にしていません。"
   ]
-},"p-cc0c87e65765":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=2663","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/102gwp/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":2,"flowerLayers":2,"flowerPattern":1,"phenologyRegion":2,"seasonalColors":2},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","flowerLayers":3,"flowerPattern":"margin","phenologyRegion":"grower-cold","seasonalColors":{"summer":"#bab752","winter":"#bab752"},"unconfirmed":[]},"p-20e7c262ad67":{
+},"p-cc0c87e65765":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/102gwp/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "monthlyLeafColors": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "goldHelleboreReferences",
+  "shootProfile": "goldPicoteeDouble",
+  "leafShape": "goldHelleboreToothedReference",
+  "leafColor": "#9eac62",
+  "monthlyLeafColors": [
+    "#d0c568",
+    "#a8ac62",
+    "#9eac62",
+    "#97a764",
+    "#97a764",
+    "#d0c568",
+    "#d0c568",
+    "#d0c568",
+    "#d0c568",
+    "#a8ac62",
+    "#a8ac62",
+    "#d0c568"
+  ],
+  "leafPattern": "goldHelleboreSummerWinterMottleReference",
+  "flowerShape": "goldPicoteeDoubleRimReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#a79b68",
+  "phenologyRegion": "この販売ページの写真説明に「冬と夏は鮮やかな黄色」とあります。夏・冬を黄色、秋を緑を帯びる葉とする参考で、同一株の連続観測や全国共通の月境界ではありません。古葉を切らず保護した例で、月境界・葉量・再生・色の強さは未校正です。",
+  "sourceConflict": "国内の高さ25〜50cm・幅40〜80cmを採用。実生の販売系統で、同じ色・花形に固定したクローンではありません。内側は蜜腺由来の花びら状部分として外側の5萼と区別します。本ページは蜜腺が花びら状になり通常の蜜腺部分がなく、黄色い雄しべは残ると説明しています。",
+  "unconfirmed": [
+    "黄色〜クリームの外側の萼と内側の花びら状部分に紅色の縁取りがある八重例です。ネオンダブルの強い脈や基部のブロッチを転用せず、細い覆輪を選ぶ静的な参考です。",
+    "同じ販売株を12か月追った実測、年次成長、株分け・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "根生6群を各7小葉、開花時の苞葉3群を各3小葉として接続する参考です。6〜9月は根生2群を残す管理例で、群数・固定分割数・残葉量は実測値ではありません。",
+    "成葉・黄葉写真はゴールド系の共用参考です。ネクタリーとネオンダブルの葉2写真は同じ画像で、ピコティダブルにも同様の葉写真が掲載されています。固有の同一クローンや年間記録の証拠にしません。",
+    "秋冬の黄葉、早春の古葉の黄褐色化と任意の切除、温室内の0〜10℃の苗管理は別条件です。自然な残葉率、露地の越冬や全国共通の夏の枯れ込みは未予測です。",
+    "5枚の外側の萼に加え、内側に蜜腺由来の花びら状の部分を3列各5枚置く参考です。内側15枚を追加の萼と数えず、通常の筒状蜜腺は描きません。列数・枚数は近似で実測の固定値ではありません。",
+    "花軸3本に各3花と1蕾、32雄しべ・3心皮を置く参考です。数値の花径は未確認で、花径・花数・器官数・花床の寸法は実測値ではありません。",
+    "花後は上部の花軸と苞葉を整理し短い茎を残す管理例です。果実・種子・根や自然な枯れ込みは未再現です。晩冬〜春を2〜5月へ換算し、1〜3月の販売期間や鉢径を露地の花期・成熟寸法・計画開始年の予測にしていません。"
+  ]
+},"p-20e7c262ad67":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/102gws/",

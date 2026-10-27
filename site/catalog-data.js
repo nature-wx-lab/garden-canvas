@@ -3297,7 +3297,54 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-4457729533f6":{"label":"クリスマスローズ ゴールドネクタリー","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#e6cc63","leafColor":"#557442","variegated":false,"colors":["yellow"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=288","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ゴールドネクタリー"],"selectionSource":null,"visual":"reference","popularity":[]},"p-f4cad868cb84":{
+},"p-4457729533f6":{
+  "label": "クリスマスローズ ゴールドネクタリー",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e7df9b",
+  "leafColor": "#9eac62",
+  "variegated": false,
+  "colors": [
+    "yellow"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "実生により花色・花形に幅があります。掲載写真から選ぶ一重または八重の静的な参考で、販売中の全株の予測ではありません。黄葉と古葉の黄褐色化・任意の切除は別条件です。苗の鉢径・販売期間を成熟寸法や露地の花期へ転用していません。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/101go/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ ゴールドネクタリー"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-f4cad868cb84":{
   "label": "クリスマスローズ ゴールドフラッシュ",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",
@@ -3593,7 +3640,57 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-2841aaa53b10":{"label":"クリスマスローズ ネオン ダブル","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2661","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ネオン ダブル"],"selectionSource":null,"visual":"reference","popularity":[]},"p-5d965d48109c":{
+},"p-2841aaa53b10":{
+  "label": "クリスマスローズ ネオン ダブル",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e5d99a",
+  "leafColor": "#9eac62",
+  "variegated": false,
+  "colors": [
+    "yellow",
+    "red",
+    "purple",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "実生により花色・花形に幅があります。掲載写真から選ぶ一重または八重の静的な参考で、販売中の全株の予測ではありません。黄葉と古葉の黄褐色化・任意の切除は別条件です。苗の鉢径・販売期間を成熟寸法や露地の花期へ転用していません。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/102nlw/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ ネオン ダブル"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-5d965d48109c":{
   "label": "クリスマスローズ ゴールド ダブル",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",
@@ -3642,7 +3739,56 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-cc0c87e65765":{"label":"クリスマスローズ ゴールドピコティダブル","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2663","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ゴールドピコティダブル"],"selectionSource":null,"visual":"reference","popularity":[]},"p-20e7c262ad67":{
+},"p-cc0c87e65765":{
+  "label": "クリスマスローズ ゴールドピコティダブル",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e7d99a",
+  "leafColor": "#9eac62",
+  "variegated": false,
+  "colors": [
+    "yellow",
+    "red",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "実生により花色・花形に幅があります。掲載写真から選ぶ一重または八重の静的な参考で、販売中の全株の予測ではありません。黄葉と古葉の黄褐色化・任意の切除は別条件です。苗の鉢径・販売期間を成熟寸法や露地の花期へ転用していません。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/102gwp/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ ゴールドピコティダブル"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-20e7c262ad67":{
   "label": "クリスマスローズ ゴールドスポットダブル",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",
