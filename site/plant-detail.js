@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.892';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.893';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.892';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.893';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16480,6 +16480,48 @@ function drawBallardiaeReferences(b,{s,rand,info},kit){
  for(const v of surfaces){const camera=v.normal.clone();if(h<.12&&camera.y<0)camera.y=-camera.y;else if(h>=.12&&camera.y<-.22)camera.y=-.22;camera.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),camera),'YXZ');b.flower?.(v.point.toArray(),v.radius,e.x,e.y,e.z,{component:'sepal'+tag+'-'+profile,instanceId:v.instanceId,vertices:v.vertices,faceIndex:v.faceIndex,cameraAxis:camera.toArray()});}
 }
 
+export function vesicariusReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));if(type==='gcVesicariusSepalRef'){const phi=-u*Math.PI/5*1.12,r=.63*Math.max(0,Math.sin(Math.PI*t*.86))**.55;return[Math.sin(phi)*r,t*(1-.04*u*u),Math.cos(phi)*r];}
+ const outline=[[0,0],[.12,.10],[.33,.27],[.46,.15],[.60,.46],[.69,.20],[.81,.42],[.90,.17],[1,0]];let j=1;while(j<outline.length-1&&t>outline[j][0])j++;const a=outline[j-1],b=outline[j],width=a[1]+(b[1]-a[1])*(t-a[0])/(b[0]-a[0]);return[u*width,.045*sn+.022*u*u*sn-.040*t*t,t];
+}
+export const vesicariusStemUnit=new THREE.CylinderGeometry(1,1,1,7,1);
+const vesicariusSamples=Object.fromEntries(['gcVesicariusBladeRef','gcVesicariusSepalRef'].map(type=>[type,Array.from({length:33*21},(_,j)=>vesicariusReferencePoint(type,Math.floor(j/21)/32,j%21/20*2-1).map(Math.fround))]));
+function drawVesicariusReferences(b,{s,rand,info},kit){
+ const profile='vesicarius',oct=s.month===10,extra={ratio:.85,stem:'#8ba369',leaf:s.leafColor,pitch:2.78,palette:['#9fb871','#a6bc79','#99b36d'],nectary:'#b9b965',bud:'#9ab567'},h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),R=Math.min(.022,h*.09,w*.07),SR=Math.min(.003,h*.009,w*.008,LH*.035),tag='-vesicarius-ref',stem=extra.stem,leaf=s.leafColor,leafShape='gcVesicariusBladeRef',sepalShape='gcVesicariusSepalRef',surfaces=[];
+ if(s.groundDormant)return;
+ const stream=seed=>{let q=seed>>>0;return()=>{q=(q+0x6d2b79f5)>>>0;let x=Math.imul(q^(q>>>15),q|1);x^=x+Math.imul(x^(x>>>7),x|61);return((x^(x>>>14))>>>0)/4294967296;};},seed=Math.floor(rand()*4294967296),leafRand=stream(seed^0x51eaf123),flowerRand=stream(seed^0x7f10a937);
+ const matrixFor=p=>{const m=new THREE.Matrix4().compose(new THREE.Vector3(...p.slice(3,6)),new THREE.Quaternion().setFromEuler(new THREE.Euler(...p.slice(9,12),'YXZ')),new THREE.Vector3(...p.slice(6,9)));m.elements=m.elements.map(Math.fround);return m;};
+ const line=(out,from,to,r,kind,color=stem)=>{const root=new THREE.Vector3(...from),d=new THREE.Vector3(...to).sub(root);if(d.lengthSq()<1e-22)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');out.push(['gcVesicariusStemRef',kind+tag,color,...root.addScaledVector(d,.5).toArray(),r,d.length(),r,e.x,e.y,e.z]);};
+ const emit=parts=>{for(const p of parts)b.add(...p);};
+ const curve=(out,from,bend,to,r,kind,color=stem)=>{let prev=from;for(let j=1;j<=10;j++){const t=j/10,next=from.map((v,k)=>(1-t)**2*v+2*(1-t)*t*bend[k]+t*t*to[k]);line(out,prev,next,r*(1-j/50),kind,color);prev=next;}};
+ const stemPoints=Array.from({length:vesicariusStemUnit.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(vesicariusStemUnit.attributes.position,i).toArray());
+ const fit=(parts,root)=>{let factor=1;for(const p of parts){const m=matrixFor(p),points=p[0]==='gcVesicariusStemRef'?stemPoints:vesicariusSamples[p[0]];for(const v of points){const q=new THREE.Vector3(...v).applyMatrix4(m).sub(new THREE.Vector3(...root));if(q.y>0)factor=Math.min(factor,(LH-root[1]-2e-9)/q.y);if(q.y<0)factor=Math.min(factor,(root[1]-2e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)factor=Math.min(factor,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(factor>0))throw Error('Vesicarius leaf assembly cannot fit');emit(parts.map(p=>{const v=[...p];for(let k=0;k<3;k++){v[3+k]=root[k]+(p[3+k]-root[k])*factor;v[6+k]=p[6+k]*factor;}return v;}));};
+ const fan=(root,az,basal,index)=>{const L=Math.min(.17,w*.32,LH*.82)*(basal?(.82+(index%3)*.09):.68)*(oct?.55:1),end=[root[0]+Math.sin(az)*w*(basal?.075:.012)*(oct?.55:1),root[1]+LH*(basal?(.40+(index%3)*.08):.035)*(oct?.55:1),root[2]+Math.cos(az)*w*(basal?.075:.012)*(oct?.55:1)],parts=[];curve(parts,root,[end[0],end[1]+LH*.015,end[2]],end,SR*(basal?.70:.45),'petiole');
+  const blade=(at,angle,len,phase)=>parts.push([leafShape,'leaf'+tag+'-'+profile+'-'+(basal?'basal':'cauline'),kit.shade(leafRand,basal?leaf:extra?.bractLeaf??leaf,.022),...at,len*(extra.ratio),len,len,(basal?.10:-.50)+leafRand()*.13,angle,(phase-1)*.015]);{blade(end,az,L,1);
+  for(const side of[-1,1]){const a=az+side*.78,branchEnd=[end[0]+Math.sin(a)*L*.17,end[1]+L*.025,end[2]+Math.cos(a)*L*.17];line(parts,end,branchEnd,SR*.40,'leaf-axis');for(let k=0;k<2;k++)blade(branchEnd,az+side*(.56+k*.35),L*(.93-k*.12),k);}
+  }fit(parts,root);
+ };
+ if(s.leafDensity>0)for(let i=0;i<(oct?2:3);i++){const az=.30+i*2.399963,root=[Math.sin(az)*w*.022,SR*1.5,Math.cos(az)*w*.022];fan(root,az,true,i);}
+ let flowerIndex=0;
+ const flower=(at,yaw)=>{const index=flowerIndex++,radius=R*(.86+.14*(index%3)/2),rot=new THREE.Quaternion().setFromEuler(new THREE.Euler(extra.pitch+(index%4)*.05,yaw,0,'YXZ')),to=q=>new THREE.Vector3(...q).applyQuaternion(rot).add(new THREE.Vector3(...at)),palette=extra.palette;
+  for(let k=0;k<5;k++){const q=rot.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,k*TAU/5,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),p=[sepalShape,'sepal'+tag+'-'+profile,kit.shade(flowerRand,palette[index%3],.012),...at,radius*1.15,radius,radius,e.x,e.y,e.z];b.add(...p);if(k===2&&surfaces.length<8){const row=20,cell=row*21+10,vertices=[cell,cell+21,cell+1],matrix=matrixFor(p),pts=vertices.map(v=>new THREE.Vector3(...vesicariusSamples[sepalShape][v]).applyMatrix4(matrix)),point=pts[0].clone().add(pts[1]).add(pts[2]).multiplyScalar(1/3),normal=pts[1].clone().sub(pts[0]).cross(pts[2].clone().sub(pts[0])).normalize();surfaces.push({point,normal,instanceId:index*5+k,vertices,faceIndex:(row*20+10)*2,radius:radius*2.5});}}
+  for(let k=0;k<32;k++){const az=k*2.399963,r=radius*(.13+.13*(k%4)/3),tip=[Math.sin(az)*r,radius*(.68+.10*(k%5)/4),Math.cos(az)*r],parts=[];line(parts,to([0,0,0]).toArray(),to(tip).toArray(),radius*.009,'filament','#e3dfb9');emit(parts);b.add('gcVesicariusRoundRef','anther'+tag,'#e3dfac',...to(tip).toArray(),radius*.025,radius*.030,radius*.018);}
+  for(let k=0;k<8;k++){const az=k*TAU/8,e=new THREE.Euler().setFromQuaternion(rot,'YXZ');b.add('gcVesicariusNectaryRef','nectary'+tag,extra.nectary,...to([Math.sin(az)*radius*.32,radius*.48,Math.cos(az)*radius*.32]).toArray(),radius*.046,radius*.20,radius*.046,e.x,e.y,e.z);}
+  for(let k=0;k<3;k++){const az=k*TAU/3,parts=[];line(parts,to([Math.sin(az)*radius*.06,0,Math.cos(az)*radius*.06]).toArray(),to([Math.sin(az)*radius*.09,radius*.30,Math.cos(az)*radius*.09]).toArray(),radius*.022,'carpel','#a2b77c');emit(parts);}
+ };
+ for(let i=0;i<3;i++){
+  const az=.55+i*2.399963,factor=[.90,1,.94][i],base=[Math.sin(az)*w*.035,SR*1.5,Math.cos(az)*w*.035],node=[base[0]+Math.sin(az)*w*.025,Math.min(LH*.45,h*.30),base[2]+Math.cos(az)*w*.025],upper=oct?node:[node[0]+Math.sin(az)*w*.025,Math.min(LH*.72,h*.48),node[2]+Math.cos(az)*w*.025],top=[upper[0]+Math.sin(az)*w*.025,h*.65*factor,upper[2]+Math.cos(az)*w*.025],parts=[];
+  line(parts,base,node,SR,'stem');if(!oct)line(parts,node,upper,SR*.88,'stem');if(s.bloom)line(parts,upper,top,SR*.72,'stem');emit(parts);
+  if(s.leafDensity>0){fan(node,az+.65,false,i);if(!oct)fan(upper,az-.65,false,i+3);}
+  if(!s.bloom)continue;
+  for(let k=0;k<2;k++){const angle=az+(k?1:-1)*.64,at=[top[0]+Math.sin(angle)*w*.075,h*(.76+k*.06)*factor,top[2]+Math.cos(angle)*w*.075],branch=[];curve(branch,top,[at[0],at[1]+h*.02,at[2]],at,SR*.60,'pedicel');emit(branch);flower(at,angle);}
+  const at=[top[0]+Math.sin(az)*w*.035,h*.79*factor,top[2]+Math.cos(az)*w*.035],branch=[];curve(branch,top,[at[0],at[1]+h*.02,at[2]],at,SR*.52,'pedicel');emit(branch);b.add('gcVesicariusRoundRef','bud'+tag,extra.bud,...at,R*.30,R*.42,R*.30,.15,az,0);
+ }
+ for(const v of surfaces){const camera=v.normal.clone();camera.y=Math.max(.35,camera.y);camera.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),camera),'YXZ');b.flower?.(v.point.toArray(),v.radius,e.x,e.y,e.z,{component:'sepal'+tag+'-'+profile,instanceId:v.instanceId,vertices:v.vertices,faceIndex:v.faceIndex,cameraAxis:camera.toArray()});}
+}
+
+
+
 export function goldHelleboreReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));if(type.includes('Sepal'))return[u*.5*sn**.44*(.93+.07*t),(type.includes('Neon')?.32:.20)*t*t+.022*sn*Math.sin(u*5+t*11)*Math.abs(u)**5,t*.98];
  const tooth=Math.max(0,1-Math.abs(((t*10+.035)%1)-.71)/.23);return[u*.5*sn**.55*(.90+.10*t)*(1+.14*tooth*Math.max(0,(t-.28)/.72)*Math.abs(u)**6),.035*sn+.018*u*u*sn-.050*t*t,t];
@@ -19397,6 +19439,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ogisMonardaColourReferences'){drawOgisMonardaColourReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='retailMonardaReferences'){drawRetailMonardaReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='ruelliaTropicstarReference'){drawRuelliaTropicstarReference(b,{info,s,month,rand},kit);return;}
+ if(info.appearance?.architecture==='vesicariusReferences'){drawVesicariusReferences(b,{s,rand,info},kit);return;}
  if(info.appearance?.architecture==='goldHelleboreReferences'){drawGoldHelleboreReferences(b,{s,rand,info},kit);return;}
  if(info.appearance?.architecture==='wildHelleboreReferences'){drawWildHelleboreReferences(b,{s,rand,info},kit);return;}
  if(info.appearance?.architecture==='glandorfensisReferences'){drawGlandorfensisReferences(b,{s,rand,info},kit);return;}
