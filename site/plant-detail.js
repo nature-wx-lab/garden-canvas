@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.849';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.850';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.849';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.850';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16414,7 +16414,7 @@ export function nigerCultivarReferencePoint(type,t,u){
 export const nigerCultivarStemUnit=new THREE.CylinderGeometry(1,1,1,7,1);
 const nigerCultivarSamples=Object.fromEntries(['gcNigerCultivarBladeRef','gcNigerCultivarOuterRef','gcNigerCultivarInnerRef'].map(type=>[type,Array.from({length:33*21},(_,j)=>nigerCultivarReferencePoint(type,Math.floor(j/21)/32,j%21/20*2-1).map(Math.fround))]));
 function drawNigerCultivarReferences(b,{info,s,rand},kit){
- const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),twin=a.shootProfile==='twinSpirits',tag='-niger-cultivar',stem='#768b64',SR=Math.min(.0025,h*.012,w*.012,LH*.05),profile=a.shootProfile;
+ const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),twin=a.shootProfile==='twinSpirits',single=a.shootProfile==='variegata',marble=a.shootProfile==='marble',seedDouble=a.shootProfile==='seedDouble',variegated=single||marble,tag='-niger-cultivar',stem=variegated?'#896454':'#768b64',SR=Math.min(.0025,h*.012,w*.012,LH*.05),profile=a.shootProfile;
  const matrixFor=p=>{const[shape,kind,color,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0]=p,m=new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz,'YXZ')),new THREE.Vector3(sx,sy,sz));m.elements=m.elements.map(Math.fround);return m;};
  const axisPart=(from,to,r,kind,color=stem)=>{const p=new THREE.Vector3(...from),d=new THREE.Vector3(...to).sub(p);if(d.lengthSq()<1e-22||r<=0)return null;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');return['gcNigerCultivarStemRef',kind+tag,color,...p.addScaledVector(d,.5).toArray(),r,d.length(),r,e.x,e.y,e.z];};
  const line=(out,from,to,r,kind,color)=>{const p=axisPart(from,to,r,kind,color);if(p)out.push(p);};
@@ -16433,25 +16433,25 @@ function drawNigerCultivarReferences(b,{info,s,rand},kit){
   const yaw=i*2.399963+(rand()-.5)*.20,root=[Math.sin(yaw)*w*.045,SR*1.4,Math.cos(yaw)*w*.045],end=[Math.sin(yaw)*w*(.08+rand()*.06),LH*(.30+rand()*.30),Math.cos(yaw)*w*(.10+rand()*.03)],L=Math.min(.09,w*.24,LH*1.5),parts=[];
   curve(parts,root,[end[0]*.55,LH*.40,end[2]*.55],end,SR*.55,'petiole');
   for(let k=0;k<7;k++){
-   const off=(k-3)/3,az=yaw+off*1.38,reach=L*.055*Math.abs(off),at=[end[0]+Math.sin(az)*reach,end[1],end[2]+Math.cos(az)*reach],len=L*(.78+.22*Math.cos(off*1.4)),W=len*.45;
+   const off=(k-3)/3,az=yaw+off*1.38,reach=L*.055*Math.abs(off),at=[end[0]+Math.sin(az)*reach,end[1],end[2]+Math.cos(az)*reach],len=L*(.78+.22*Math.cos(off*1.4)),W=len*(variegated?.60:.45);
    if(reach)line(parts,end,at,SR*.22,'leaf-axis');
-   parts.push(['gcNigerCultivarBladeRef','leaf'+tag,kit.shade(rand,s.leafColor,.025),...at,W,len,len,-.10-rand()*.22,az,(rand()-.5)*.10]);
+   parts.push(['gcNigerCultivarBladeRef',variegated?'leaf-niger-'+profile+'-ref-'+((i+k)%4):'leaf'+tag,kit.shade(rand,s.leafColor,.025),...at,W,len,len,-.10-rand()*.22,az,(rand()-.5)*.10]);
   }
   fitLeaves(parts,root);
  }
- if(!s.bloom)return;
- const R=Math.min(.035,h*.15,w*.085),surfaces=[];
+ if(!s.bloom||marble)return;
+ const R=Math.min(.035,h*.15,w*.085),surfaces=[];let innerInstance=0;
  const flower=(at,yaw,index)=>{
   const pitch=1.12+(index%3)*.17,rot=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),to=q=>new THREE.Vector3(...q).applyQuaternion(rot).add(new THREE.Vector3(...at));
   const organ=(shape,kind,color,origin,scale,az=0)=>{const q=rot.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),p=[shape,kind,color,...to(origin).toArray(),...scale,e.x,e.y,e.z];b.add(...p);return matrixFor(p);};
   const aged=twin&&index%3===2,base=aged?'#e1bf91':'#f0eee3',inner=aged?'#d6b784':'#eeeadd',kind='sepal'+tag+'-'+profile;
   for(let k=0;k<5;k++){
-   const az=k*TAU/5+(index%2)*.13;organ('gcNigerCultivarOuterRef',kind,kit.shade(rand,base,.012),[0,0,0],[R*1.36,R,R],az);
-   // Flower inspection uses the exposed inner petaloid surface below.
+   const az=k*TAU/5+(index%2)*.13,matrix=organ('gcNigerCultivarOuterRef',kind,kit.shade(rand,base,.012),[0,0,0],[R*1.36,R,R],az);
+   if(single&&index<3&&k<2){const vertices=[24*21+10,25*21+10,24*21+11],points=vertices.map(v=>new THREE.Vector3(...nigerCultivarSamples.gcNigerCultivarOuterRef[v]).applyMatrix4(matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,instanceId:index*5+k,vertices,faceIndex:(24*20+10)*2,component:kind,camera:new THREE.Vector3(0,1,0).applyQuaternion(rot).normalize()});}
   }
   // Counts and relative sizes are a drawing arrangement, not measured cultivar organ counts.
-  const n=twin?19:12;
-  for(let k=0;k<n;k++){const t=k/(n-1),az=k*2.399963+.15,L=R*(twin?.88:.59)*(1-t*.27),component='petaloid'+tag+'-'+profile,matrix=organ('gcNigerCultivarInnerRef',component,kit.shade(rand,inner,.018),[0,R*(.025+t*.10),0],[L*(twin?.82:.60),L,L],az);if(index<3&&k>=n-2){const vertices=[24*21+10,25*21+10,24*21+11],points=vertices.map(v=>new THREE.Vector3(...nigerCultivarSamples.gcNigerCultivarInnerRef[v]).applyMatrix4(matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,instanceId:index*n+k,vertices,faceIndex:(24*20+10)*2,component,camera:new THREE.Vector3(0,1,0).applyQuaternion(rot).normalize()});}}
+  const n=single?0:seedDouble?14+index%3*4:twin?19:12;
+  for(let k=0;k<n;k++){const t=k/(n-1),az=k*2.399963+.15,L=R*(twin?.88:seedDouble?.86:.59)*(1-t*.27),component='petaloid'+tag+'-'+profile,matrix=organ('gcNigerCultivarInnerRef',component,kit.shade(rand,inner,.018),[0,R*(.025+t*.10),0],[L*(twin?.82:seedDouble?.88:.60),L,L],az),instanceId=innerInstance++;if(index<3&&k>=n-2){const vertices=[24*21+10,25*21+10,24*21+11],points=vertices.map(v=>new THREE.Vector3(...nigerCultivarSamples.gcNigerCultivarInnerRef[v]).applyMatrix4(matrix)),point=points[0].clone().add(points[1]).add(points[2]).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,instanceId,vertices,faceIndex:(24*20+10)*2,component,camera:new THREE.Vector3(0,1,0).applyQuaternion(rot).normalize()});}}
   const f=flowerFrame({add:b.add,branch:(from,to,r,color,kind)=>{const p=axisPart(from,to,r,kind,color);if(p)b.add(...p);}},at,pitch,yaw);
   for(let k=0;k<36;k++){const az=k*2.399963,r=R*(.10+.11*(k%4)/3),tip=[Math.sin(az)*r,R*(.20+.10*(k%5)/4),Math.cos(az)*r];f.branch([0,R*.08,0],tip,R*.007,'#ded5b4','filament');f.add('gcNigerCultivarRoundRef','anther'+tag,'#d4b959',...tip,R*.020,R*.025,R*.014);}
   // Nectary identity, carpel number and fruit development are not resolved for these double flowers.
