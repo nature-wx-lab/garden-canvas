@@ -5074,7 +5074,59 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "英国の成熟サイズ・10年後の高さと計画年数を対応させず、花期を全国共通の開花月にしません。",
     "葉齢・花齢や異なる個体・写真の差を、同じ株の年間の色変化へ変換していません。"
   ]
-},"p-7fcba962f645":{"sources":[{"url":"https://www.ashwoodnurseries.com/product/helleborus-5/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/hellebore/growing-guide","scope":"genus"}],"basis":{"architecture":0,"flowerShape":0,"flowerRadius":0,"flowerPalette":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":1,"stemColor":0,"phenologyRegion":0},"status":"attributes","unconfirmed":[],"architecture":"helleboreProfile","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerPalette":{"tilt":2.16},"leafShape":"helleboreLeaf","leaflets":7,"leafLength":0.13,"leafColor":"#62784c","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerMonths":[12,1,2,3,4],"flowerTiming":"season","stemColor":"#71894d","phenologyRegion":"販売元・RHSの栽培地域における参考。開花・新葉・枯れ込みの時期は栽培地域と寒さで前後します。"},"p-c6eaaebd38ce":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"genus"},{"url":"https://www.botanischetuinen.nl/nl/plant/46534/helleborus-orientalis-subsp-guttatus","scope":"catalog-entry"}],"basis":{"architecture":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":1,"flowerShape":0,"flowerRadius":0,"flowerMonths":1,"flowerTiming":1,"stemColor":0,"flowerPalette":1,"flowerLayers":1},"status":"partial","unconfirmed":["全形と全月の実物照合","写真比率による葉・花の寸法"],"architecture":"helleboreProfile","leafShape":"helleboreLeaf","leaflets":7,"leafLength":0.13,"leafColor":"#58764c","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerMonths":[2,3],"flowerTiming":"months","stemColor":"#718457","flowerPalette":{"paint":"guttatus"},"flowerLayers":1},"p-423146713075":{
+},"p-7fcba962f645":{"sources":[{"url":"https://www.ashwoodnurseries.com/product/helleborus-5/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/hellebore/growing-guide","scope":"genus"}],"basis":{"architecture":0,"flowerShape":0,"flowerRadius":0,"flowerPalette":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":1,"stemColor":0,"phenologyRegion":0},"status":"attributes","unconfirmed":[],"architecture":"helleboreProfile","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerPalette":{"tilt":2.16},"leafShape":"helleboreLeaf","leaflets":7,"leafLength":0.13,"leafColor":"#62784c","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerMonths":[12,1,2,3,4],"flowerTiming":"season","stemColor":"#71894d","phenologyRegion":"販売元・RHSの栽培地域における参考。開花・新葉・枯れ込みの時期は栽培地域と寒さで前後します。"},"p-c6eaaebd38ce":{
+  "sources": [
+    {
+      "url": "https://www.botanischetuinen.nl/nl/plant/46534/helleborus-orientalis-subsp-guttatus",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 1,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 1,
+    "lifeForm": 1,
+    "persistence": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "wildHelleboreReferences",
+  "shootProfile": "nvbtGuttatus",
+  "leafShape": "nvbtGuttatusProvisionalDividedReference",
+  "leafColor": "#55714d",
+  "leafPattern": "plainLeatheryHelleboreReference",
+  "flowerShape": "nvbtGuttatusTextSpottedReference",
+  "flowerMonths": [
+    2,
+    3
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "europeEvergreenHelleboreReference",
+  "stemColor": "#829b67",
+  "phenologyRegion": "オランダ植物園連合の栽培植物データに基づく欧州の常緑・2〜3月の参考です。日本の月別残葉・開花・耐寒性は未校正で、掲載先に植物写真はありません。",
+  "sourceConflict": "オランダ植物園連合の栽培植物ページの高さ35cm・常緑・2〜3月・白地に赤い斑点や斑紋を参考にしています。日本の実測・開花月・耐寒性ではありません。現在のページに植物写真はなく、葉の分割数・形・全形や斑点配置は属の近似で、写真照合を済ませたものではありません。幅は未確認です。",
+  "unconfirmed": [
+    "植物園連合の文章にある白地に赤い斑点や斑紋を描く参考です。現行ページに植物写真がなく、斑点の大きさ・密度・位置、花の杯の深さと葉の分割・輪郭は写真で照合していません。",
+    "同一株の年間実物照合0。日本の月別開花・展葉・残葉・寒害、年次成長と剪定後の再生は未確認です。",
+    "根生6群に各7小葉と花軸3本に各3枚の苞葉を置く属の近似です。計51枚は実測値ではなく、この原亜種の固定数を証明しません。",
+    "花軸3本に各3花と1蕾を置く参考です。数値の花径は未確認で、花数・分枝・8蜜腺・32雄しべ・3心皮は実測の固定数ではありません。",
+    "花がない月は上部の花茎を描かず、健康な根生葉を残す管理参考です。自然な花茎消失日・実際の剪定日・新葉量・黄変・寒害は未予測です。",
+    "掲載写真の色の幅や欧州の花期を、日本全国での同じ株の年間の変化へ変換しません。計画年数と成熟・苗齢は対応付けず、果実・種子・根も未再現です。",
+    "葉丈・幅・花径・斑点や帯の密度・透け方は未校正です。資料の白・赤を採用し、根拠のない桃色検索を外しています。"
+  ]
+},"p-423146713075":{
   "sources": [
     {
       "url": "https://www.ashwoodnurseries.com/product/helleborus-occidentalis/",
@@ -5394,7 +5446,60 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "冬〜春の換算月や英国での花期を全国共通の開花月にしません。RHSの成熟2〜5年や英国の10年後サイズ、苗齢を計画年数による成長・開花へ変換していません。",
     "異なる写真・個体や花齢の差を同じ株の年間変化へ変換していません。本文と分類欄の花期の差、保護条件、斑やピンクの強さは未解決の幅として残しています。"
   ]
-},"p-da7cb23c3a1a":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"genus"},{"url":"https://www.rhs.org.uk/plants/335142/helleborus-%C3%97-nigercors-hgc-ice-breaker-fancy-%28-coseh-820-pbr%29/details","scope":"catalog-entry"}],"basis":{"architecture":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":1,"flowerShape":0,"flowerRadius":0,"flowerMonths":0,"flowerTiming":0,"stemColor":0,"flowerPalette":1,"flowerLayers":1},"status":"partial","unconfirmed":["全形と全月の実物照合","写真比率による葉・花の寸法"],"architecture":"helleboreProfile","leafShape":"helleboreLeaf","leaflets":3,"leafLength":0.11,"leafColor":"#58764c","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerMonths":[12,1,2,3,4],"flowerTiming":"season","stemColor":"#718457","flowerPalette":{"caulescent":true,"pinkBack":true,"tilt":1.55},"flowerLayers":1},"p-a71227f04232":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"genus"},{"url":"https://yokoyama-nursery.jp/en/helleborus/","scope":"catalog-entry"}],"basis":{"architecture":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":0,"flowerShape":0,"flowerRadius":0,"flowerMonths":0,"flowerTiming":0,"stemColor":0,"flowerPalette":1,"flowerLayers":1},"status":"partial","unconfirmed":["全形と全月の実物照合","写真比率による葉・花の寸法","草丈の個別資料"],"architecture":"helleboreProfile","leafShape":"helleboreLeaf","leaflets":3,"leafLength":0.1,"leafColor":"#58764c","habit":"clump","lifeForm":"herb","persistence":"semiEvergreen","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerMonths":[2,3,4],"flowerTiming":"season","stemColor":"#718457","flowerPalette":{"paint":"pinkBand","tilt":1.85},"flowerLayers":1},"p-564520aef9bf":{
+},"p-da7cb23c3a1a":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"genus"},{"url":"https://www.rhs.org.uk/plants/335142/helleborus-%C3%97-nigercors-hgc-ice-breaker-fancy-%28-coseh-820-pbr%29/details","scope":"catalog-entry"}],"basis":{"architecture":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":1,"flowerShape":0,"flowerRadius":0,"flowerMonths":0,"flowerTiming":0,"stemColor":0,"flowerPalette":1,"flowerLayers":1},"status":"partial","unconfirmed":["全形と全月の実物照合","写真比率による葉・花の寸法"],"architecture":"helleboreProfile","leafShape":"helleboreLeaf","leaflets":3,"leafLength":0.11,"leafColor":"#58764c","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerMonths":[12,1,2,3,4],"flowerTiming":"season","stemColor":"#718457","flowerPalette":{"caulescent":true,"pinkBack":true,"tilt":1.55},"flowerLayers":1},"p-a71227f04232":{
+  "sources": [
+    {
+      "url": "https://yokoyama-nursery.jp/en/helleborus/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 1,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 1,
+    "habit": 1,
+    "lifeForm": 1,
+    "persistence": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "ballardiaeReferences",
+  "shootProfile": "briarRoseAshwoodensis",
+  "leafShape": "briarRosePartialDividedReference",
+  "leafColor": "#527366",
+  "leafPattern": "plainLeatheryHelleboreReference",
+  "flowerShape": "briarRoseBandedSepalReference",
+  "flowerMonths": [
+    2,
+    3,
+    4
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "uncalibratedHelleboreLeafReference",
+  "stemColor": "#8f6267",
+  "phenologyRegion": "日本の維持・増殖元のBriar Roseの花と葉の接写例です。数値の月別記録がないため、毎月の葉量や2〜4月という仮区分を実測の年間変化にしていません。",
+  "sourceConflict": "横山園芸が日本で維持・増殖するBriar Roseの5接写を参考にします。交配群全体を同じ品種・クローンへ統合しません。掲載文に草丈・幅・数値の花期・月別残葉の記録はなく、2〜4月は花を表示するための未校正の属の仮区分です。異なる写真の花色・花齢の差を同じ株の月別変化にしていません。",
+  "unconfirmed": [
+    "Briar Roseの5接写から、緑の基部、白い縦筋、桃色の帯を持つ丸みのある5萼、黄色い葯、緑の蜜腺、赤褐色の軸と一部に写る緑〜灰緑の分裂葉を参考にします。各写真を同じ株の花齢・季節順へ並べ替えていません。",
+    "同一株の年間実物照合0。日本の月別開花・展葉・残葉・寒害、年次成長と剪定後の再生は未確認です。",
+    "根生6群と花軸3本の各1群に3小葉を接続する近似です。計27小葉・葉幅・葉丈は属の参考と写真の断片に基づく表示で、全形・根生群・固定の分割数は未確認です。",
+    "花軸3本に各3花と1蕾を置く参考です。数値の花径は未確認で、花数・分枝・8蜜腺・40雄しべ・3心皮は実測の固定数ではありません。",
+    "花がない月は上部の花茎を描かず、健康な根生葉を残す管理参考です。自然な花茎消失日・実際の剪定日・新葉量・黄変・寒害は未予測です。",
+    "掲載写真の色の幅や欧州の花期を、日本全国での同じ株の年間の変化へ変換しません。計画年数と成熟・苗齢は対応付けず、果実・種子・根も未再現です。",
+    "葉丈・幅・花径・斑点や帯の密度・透け方は未校正です。資料は不稔と説明しますが、生殖の成功・失敗はこの3Dで検証していません。"
+  ]
+},"p-564520aef9bf":{
   "sources": [
     {
       "url": "https://www.ashwoodnurseries.com/product/helleborus-x-belcheri-pink-ice/",

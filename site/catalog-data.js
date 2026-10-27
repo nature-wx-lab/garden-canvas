@@ -3988,7 +3988,49 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-7fcba962f645":{"label":"クリスマスローズ オリエンタリス・アブチャシクス","latin":"Helleborus orientalis subsp. abchasicus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.25,0.3],"spread":null,"bloom":[12,1,2,3,4],"bloomKnown":true,"flower":"#b587b0","leafColor":"#62784c","variegated":false,"colors":["purple","pink"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"有茎・無茎、葉の分かれ方、5枚の萼と蜜腺・雄しべ、種類別の越冬","care":"植物資料と掲載写真を照合した参考3Dです。草丈は資料値、葉や花の寸法のうち資料に数値がないものは写真の比率による表示値です。海外資料の花期は英国の栽培目安で、日本の全国共通の開花月ではありません。落葉・芽出しの月境界と花数は表示上の目安です。 根元から葉柄と花茎が出る無茎型。","bloomText":"資料：12月から早く咲く（春までの表示は属の季節目安）","bloomBasis":"開始月と属の季節資料","source":"https://www.ashwoodnurseries.com/product/helleborus-5/","publisher":"Ashwood Nurseries","sourceChecked":"2026-10-10","aliases":["クリスマスローズ オリエンタリス・アブチャシクス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-c6eaaebd38ce":{"label":"クリスマスローズ オリエンタリス・グッタータス","latin":"Helleborus orientalis subsp. guttatus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.35,0.35],"spread":null,"bloom":[2,3],"bloomKnown":true,"flower":"#e3dfce","leafColor":"#58764c","variegated":false,"colors":["pink","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類・花型別の小葉、蜜腺、萼の重なりと模様、年間の葉","care":"オランダ植物園連合の栽培植物記録の草丈35cm・常緑・2〜3月・白地に赤い斑点を参考表示。小葉の詳細比率は属の参考です。 花数と写真から求めた葉・花の比率は表示用の参考です。月境界は栽培地域で前後します。","bloomText":"参考：2・3月","bloomBasis":"種・属または代表株の季節資料","source":"https://www.botanischetuinen.nl/nl/plant/46534/helleborus-orientalis-subsp-guttatus","publisher":"一次資料（育種元・販売元・植物園・RHS）","sourceChecked":"2026-10-10","aliases":["クリスマスローズ オリエンタリス・グッタータス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-423146713075":{
+},"p-7fcba962f645":{"label":"クリスマスローズ オリエンタリス・アブチャシクス","latin":"Helleborus orientalis subsp. abchasicus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.25,0.3],"spread":null,"bloom":[12,1,2,3,4],"bloomKnown":true,"flower":"#b587b0","leafColor":"#62784c","variegated":false,"colors":["purple","pink"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"有茎・無茎、葉の分かれ方、5枚の萼と蜜腺・雄しべ、種類別の越冬","care":"植物資料と掲載写真を照合した参考3Dです。草丈は資料値、葉や花の寸法のうち資料に数値がないものは写真の比率による表示値です。海外資料の花期は英国の栽培目安で、日本の全国共通の開花月ではありません。落葉・芽出しの月境界と花数は表示上の目安です。 根元から葉柄と花茎が出る無茎型。","bloomText":"資料：12月から早く咲く（春までの表示は属の季節目安）","bloomBasis":"開始月と属の季節資料","source":"https://www.ashwoodnurseries.com/product/helleborus-5/","publisher":"Ashwood Nurseries","sourceChecked":"2026-10-10","aliases":["クリスマスローズ オリエンタリス・アブチャシクス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-c6eaaebd38ce":{
+  "label": "クリスマスローズ オリエンタリス・グッタータス",
+  "latin": "Helleborus orientalis subsp. guttatus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": [
+    0.35,
+    0.35
+  ],
+  "spread": null,
+  "bloom": [
+    2,
+    3
+  ],
+  "bloomKnown": false,
+  "flower": "#eee9da",
+  "leafColor": "#55714d",
+  "variegated": false,
+  "colors": [
+    "white",
+    "red",
+    "mixed"
+  ],
+  "sun": [],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "種類・花型別の小葉、蜜腺、萼の重なりと模様、年間の葉",
+  "care": "オランダ植物園連合の文章にある高さ35cm・常緑・白地に赤い斑点や斑紋を参考にします。植物写真・葉の詳細・株幅は未確認で、日本の月別葉量・開花月・越冬は予測しません。",
+  "bloomText": "オランダの栽培植物資料では2〜3月。日本の開花月は未確認です。",
+  "bloomBasis": "オランダの栽培植物資料の明示月を使う参考",
+  "source": "https://www.botanischetuinen.nl/nl/plant/46534/helleborus-orientalis-subsp-guttatus",
+  "publisher": "一次資料（育種元・販売元・植物園・RHS）",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ オリエンタリス・グッタータス"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-423146713075":{
   "label": "クリスマスローズ オキシデンタリス",
   "latin": "Helleborus occidentalis",
   "genre": "クリスマスローズ",
@@ -4264,7 +4306,47 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-da7cb23c3a1a":{"label":"クリスマスローズ ニゲルコルス","latin":"Helleborus × nigercors","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.3,0.3],"spread":null,"bloom":[12,1,2,3,4],"bloomKnown":true,"flower":"#dedec3","leafColor":"#58764c","variegated":false,"colors":["pink","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類・花型別の小葉、蜜腺、萼の重なりと模様、年間の葉","care":"交配種名の参考としてRHSに掲載されたHGC Ice Breaker Fancyの草丈30cm・常緑・外向きの乳白花を表示します。交配種全体の草丈や花色を保証する値ではありません。 花数と写真から求めた葉・花の比率は表示用の参考です。月境界は栽培地域で前後します。","bloomText":"参考：12・1・2・3・4月","bloomBasis":"種・属または代表株の季節資料","source":"https://www.rhs.org.uk/plants/335142/helleborus-%C3%97-nigercors-hgc-ice-breaker-fancy-%28-coseh-820-pbr%29/details","publisher":"一次資料（育種元・販売元・植物園・RHS）","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ニゲルコルス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-a71227f04232":{"label":"クリスマスローズ アシューデンシス","latin":"Helleborus × ashwoodensis","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"semi","height":null,"spread":null,"bloom":[2,3,4],"bloomKnown":true,"flower":"#e1d8c6","leafColor":"#58764c","variegated":false,"colors":["pink","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類・花型別の小葉、蜜腺、萼の重なりと模様、年間の葉","care":"横山園芸が栽培するBriar Roseの花の写真を交配種名の代表例として表示します。白い花の桃色の帯を区別します。代表株は不稔。交配種全体の寸法と固有の開花月は未確認です。 花数と写真から求めた葉・花の比率は表示用の参考です。月境界は栽培地域で前後します。","bloomText":"参考：2・3・4月","bloomBasis":"種・属または代表株の季節資料","source":"https://yokoyama-nursery.jp/en/helleborus/","publisher":"一次資料（育種元・販売元・植物園・RHS）","sourceChecked":"2026-10-10","aliases":["クリスマスローズ アシューデンシス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-564520aef9bf":{
+},"p-da7cb23c3a1a":{"label":"クリスマスローズ ニゲルコルス","latin":"Helleborus × nigercors","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.3,0.3],"spread":null,"bloom":[12,1,2,3,4],"bloomKnown":true,"flower":"#dedec3","leafColor":"#58764c","variegated":false,"colors":["pink","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類・花型別の小葉、蜜腺、萼の重なりと模様、年間の葉","care":"交配種名の参考としてRHSに掲載されたHGC Ice Breaker Fancyの草丈30cm・常緑・外向きの乳白花を表示します。交配種全体の草丈や花色を保証する値ではありません。 花数と写真から求めた葉・花の比率は表示用の参考です。月境界は栽培地域で前後します。","bloomText":"参考：12・1・2・3・4月","bloomBasis":"種・属または代表株の季節資料","source":"https://www.rhs.org.uk/plants/335142/helleborus-%C3%97-nigercors-hgc-ice-breaker-fancy-%28-coseh-820-pbr%29/details","publisher":"一次資料（育種元・販売元・植物園・RHS）","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ニゲルコルス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-a71227f04232":{
+  "label": "クリスマスローズ アシューデンシス",
+  "latin": "Helleborus × ashwoodensis",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "unknown",
+  "height": null,
+  "spread": null,
+  "bloom": [
+    2,
+    3,
+    4
+  ],
+  "bloomKnown": false,
+  "flower": "#efe8dc",
+  "leafColor": "#527366",
+  "variegated": false,
+  "colors": [
+    "white",
+    "pink",
+    "mixed"
+  ],
+  "sun": [],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "種類・花型別の小葉、蜜腺、萼の重なりと模様、年間の葉",
+  "care": "横山園芸のBriar Roseの5接写から、緑の基部、白い筋と桃色の帯を持つ5萼を参考にします。全形・数値寸法・固有の数値花期・年間残葉は未確認です。資料の不稔は果実や種子のシミュレーションではありません。",
+  "bloomText": "Briar Rose固有の数値月は未確認。2〜4月は描画用の未校正の仮区分です。",
+  "bloomBasis": "固有月不明のため属の参考から置く描画上の仮区分",
+  "source": "https://yokoyama-nursery.jp/en/helleborus/",
+  "publisher": "一次資料（育種元・販売元・植物園・RHS）",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ アシューデンシス"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-564520aef9bf":{
   "label": "クリスマスローズ ヴェルチェリ",
   "latin": "Helleborus × belcheri",
   "genre": "クリスマスローズ",
