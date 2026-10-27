@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.855';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.856';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -696,3 +696,5 @@ Object.assign(TRAIT_VALUES,{autumnNarrowLeaflet:'細い切れ込みのあるシ�
 Object.assign(TRAIT_VALUES,{hatsuneMottle:'黄緑の不規則な斑（写真による参考模様）'});
 
 Object.assign(TRAIT_VALUES,{anemoneCultivarReferences:'宿根アネモネの分枝・複葉と品種ごとの花形・表裏色を分けた参考3D'});
+
+Object.assign(TRAIT_VALUES,{sterniiThreeLeaflets:'茎上の3小葉・銀青灰〜白銀の表と細かな鋸歯',sterniiCuppedSepals:'うつむく緑白の5萼・桃紫を帯びる背面と疎らな房'});
