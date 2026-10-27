@@ -3152,7 +3152,105 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-4de433850eb8":{"label":"クリスマスローズ セルビクス(トルカータス)","latin":"Helleborus multifidus.ssp serbicus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"semi","height":[0.2,0.3],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=410","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ セルビクス(トルカータス)"],"selectionSource":null,"visual":"reference","popularity":[]},"p-189cf8a134f0":{"label":"クリスマスローズ ヴィリディス","latin":"Helleborus viridis","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"deciduous","height":[0.2,0.3],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=413","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ヴィリディス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-186c851652cb":{
+},"p-4de433850eb8":{
+  "label": "クリスマスローズ セルビクス(トルカータス)",
+  "latin": "Helleborus multifidus.ssp serbicus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.2,
+    0.3
+  ],
+  "spread": [
+    0.2,
+    0.3
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#adaf86",
+  "leafColor": "#63814f",
+  "variegated": false,
+  "colors": [
+    "green",
+    "purple",
+    "red",
+    "dark",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "寒冷地で管理した苗の冬の落葉と夏越し後の少葉を参考にしています。月境界・葉の割合・切戻し後の再生は未実測です。苗の年齢や開花までの年数を、計画開始からの年別成長・開花の予測へ変換していません。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/100gx/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ セルビクス(トルカータス)"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-189cf8a134f0":{
+  "label": "クリスマスローズ ヴィリディス",
+  "latin": "Helleborus viridis",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.2,
+    0.3
+  ],
+  "spread": [
+    0.2,
+    0.3
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#adc878",
+  "leafColor": "#5a7c4d",
+  "variegated": false,
+  "colors": [
+    "green"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "寒冷地で管理した苗の冬の落葉と夏越し後の少葉を参考にしています。月境界・葉の割合・切戻し後の再生は未実測です。苗の年齢や開花までの年数を、計画開始からの年別成長・開花の予測へ変換していません。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/100gv/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ ヴィリディス"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-186c851652cb":{
   "label": "クリスマスローズ アブルジクス",
   "latin": "Helleborus abruzzicus",
   "genre": "クリスマスローズ",

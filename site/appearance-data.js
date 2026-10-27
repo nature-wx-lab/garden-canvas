@@ -3979,7 +3979,113 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "6〜11月は根生2群に減らした夏越し後の参考です。群数・月境界・冬の残葉率・春の展葉量は実測していません。",
     "異なる写真や実生の色幅を同じ株の花齢・月別の変色へ変換していません。開花の晩冬〜春を2〜5月へ換算し、年や地域、露地と温室の違いは未校正です。"
   ]
-},"p-4de433850eb8":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"unconfirmed":["persistence"]},"p-189cf8a134f0":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"unconfirmed":["persistence"]},"p-186c851652cb":{
+},"p-4de433850eb8":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/100gx/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 1,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "wildHelleboreReferences",
+  "shootProfile": "serbicus",
+  "leafShape": "wildSerbicusNarrowReference",
+  "leafColor": "#63814f",
+  "leafPattern": "wildHelleborePlainReference",
+  "flowerShape": "wildSerbicusVeinedCupReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "coldLeaflessHelleboreReference",
+  "stemColor": "#8e8a74",
+  "phenologyRegion": "国内販売元の寒冷地管理を参考にしています。12・1月は冬に葉を整理した例、6〜11月は夏越し後の少葉を残す例です。月の境界と暖地の残葉率は未実測です。",
+  "sourceConflict": "国内の高さ20〜30cm・幅20〜30cmを採用。販売学名はHelleborus multifidus.ssp serbicusで、別名にトルカータス モンテネグロ等があります。別掲載のトルカータスと同一クローンと断定せず販売表記を保持します。常緑〜半常緑の見出しと冬落葉の本文を区別し、12・1月の葉無しと6〜11月の少葉を参考にしています。",
+  "unconfirmed": [
+    "国内の開花3写真から、緑を帯びる内側、紫〜赤紫の縁と細い脈、灰紫〜褐色を帯びる外側の丸い5萼を参考にしています。本文には緑から黒に近い個体までの色幅があります。初夏と切り戻した晩秋苗の2写真は複数株の例で、同じ株の時系列や成株の固定分割数ではありません。",
+    "同じ国内販売株を12か月追った実測、年次成長、株分け・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "根生6群を各7小葉、開花時の苞葉3群を各3小葉として接続する参考です。6〜11月は根生2群に減らす管理例で、群数・分割数・葉量は実測値ではありません。",
+    "花軸3本に各3花と1蕾、8蜜腺・32雄しべ・3心皮を置く参考です。国内に数値の花径はなく、花径・分枝・花数・器官数は種の固定値や計数実測ではありません。",
+    "花後は上部の花軸と苞葉を整理し、地際に短い管理後の茎を残す例です。冬の落葉を地上部全体の自然消失へ言い換えず、果実・種子・根と自然な枯れ込みは未再現です。",
+    "晩冬〜春を2〜5月へ換算した花期、冬の残葉月・夏秋の少葉の区分と春の展葉量は表示の近似です。送付苗の年齢・開花までの年数を計画開始年の開花条件に使わず、露地と温室の違いは未校正です。",
+    "異なる写真や実生の色幅を同じ株の花齢・月別の変色へ変換していません。黒に近いという本文の色幅を検索に登録していますが、3Dは掲載写真の緑の内側と紫の縁を選んだ静的な一例で、暗色個体や発色割合の再現ではありません。"
+  ]
+},"p-189cf8a134f0":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/100gv/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 1,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "wildHelleboreReferences",
+  "shootProfile": "viridis",
+  "leafShape": "wildViridisBasalProvisionalReference",
+  "leafColor": "#5a7c4d",
+  "leafPattern": "wildHelleborePlainReference",
+  "flowerShape": "wildViridisGreenCupReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "coldLeaflessHelleboreReference",
+  "stemColor": "#7e9e63",
+  "phenologyRegion": "国内販売元の寒冷地管理を参考にしています。12・1月は冬に葉を整理した例、6〜11月は夏越し後の少葉を残す例です。月の境界と暖地の残葉率は未実測です。",
+  "sourceConflict": "国内の高さ20〜30cm・幅20〜30cmを採用。見出しは常緑〜半常緑、本文は冬落葉・夏秋の少葉です。冬苗2写真は共用で種固有の冬姿の証拠ではありません。12・1月の葉無しと6〜11月の少葉は葉を整理した寒冷地管理の区分で、自然な完全落葉や全地域の月別残葉率を示しません。",
+  "unconfirmed": [
+    "国内の開花3写真から、明るい緑〜黄緑の丸い杯形5萼、細い緑の脈、緑の軸と苞葉・蕾を参考にしています。成株の根生葉の写真はなく属資料を使う仮の表現です。冬苗2写真は他種の掲載と共用され、写った苗の種や同じ株であることは未確認です。",
+    "同じ国内販売株を12か月追った実測、年次成長、株分け・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "根生6群を各7小葉、開花時の苞葉3群を各3小葉として接続する参考です。6〜11月は根生2群に減らす管理例で、群数・分割数・葉量は実測値ではありません。",
+    "花軸3本に各3花と1蕾、8蜜腺・32雄しべ・3心皮を置く参考です。国内に数値の花径はなく、花径・分枝・花数・器官数は種の固定値や計数実測ではありません。",
+    "花後は上部の花軸と苞葉を整理し、地際に短い管理後の茎を残す例です。冬の落葉を地上部全体の自然消失へ言い換えず、果実・種子・根と自然な枯れ込みは未再現です。",
+    "晩冬〜春を2〜5月へ換算した花期、冬の残葉月・夏秋の少葉の区分と春の展葉量は表示の近似です。送付苗の年齢・開花までの年数を計画開始年の開花条件に使わず、露地と温室の違いは未校正です。",
+    "異なる写真や実生の色幅を同じ株の花齢・月別の変色へ変換していません。緑の花を参考にし、葉や光の色味だけを白・黄などの花色へ転用していません。"
+  ]
+},"p-186c851652cb":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/100gz/",
