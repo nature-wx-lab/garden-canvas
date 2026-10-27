@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.850';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.851';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -10,6 +10,7 @@ Object.assign(TRAIT_VALUES,{pinnate:'小葉が羽状に並ぶ葉'});
 Object.assign(TRAIT_VALUES,{rugosaSourceCordateReference:'対生する鋸歯と心形の基部がある広い葉の参考',rugosaSourceTwoLipReference:'4本の雄しべ・2裂の上唇と3裂の下唇がある筒状小花の参考'});
 Object.assign(TRAIT_VALUES,{retailMonardaSerrateReference:'対生する鋸歯のある単葉の参考',retailMonardaTwoLipReference:'細い上唇と3裂の下唇をもつ筒状小花の参考'});
 Object.assign(TRAIT_VALUES,{ruelliaNarrowReference:'細長い対生葉の参考',ruelliaFunnelReference:'5裂の縁へ広がる漏斗花の参考',axillaryCyme:'葉腋の集散花序'});
+Object.assign(TRAIT_VALUES,{nigerSnowDriftReference:'細くやや尖る白い花弁状部分が重なる星形の八重花の参考',nigerSnowDriftLeafReference:'細めの鋸歯のある小葉へ分かれた根生葉の参考'});
 Object.assign(TRAIT_VALUES,{nigerSeedDoubleReference:'実生で形に幅がある白い八重花の写真例',nigerSingleCupReference:'白い5枚の花弁状の萼片と黄色の中心の一重花の参考',nigerBrushVariegation:'不規則な刷毛目・吹掛け状のクリーム色の斑',nigerVeinMarbling:'葉脈に沿って広がる白いマーブル模様'});
 Object.assign(TRAIT_VALUES,{nigerCultivarDividedReference:'長い葉柄と鋸歯のある掌状に分かれた根生葉の参考',nigerFantasyDoubleReference:'白い外側と小さな内側の花弁状部分が重なる八重花の参考',nigerTwinDoubleReference:'大きな内側の花弁状部分が重なる八重花と咲き進みの色の参考'});
 Object.assign(TRAIT_VALUES,{woodlandPhloxOppositeReference:'はう茎と立つ茎に対生する単葉の参考',woodlandPhloxFiveLobeReference:'細い筒と5裂する平らな花冠の参考'});
