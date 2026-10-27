@@ -4638,7 +4638,57 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-cb5e798d119c":{"label":"クリスマスローズ エレガンスピンクスポット","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["sun","part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=356","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ エレガンスピンクスポット"],"selectionSource":null,"visual":"reference","popularity":[]},"p-96e9d3d617d6":{"label":"クリスマスローズ エレガンスハニーワイン","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#a93b49","leafColor":"#557442","variegated":false,"colors":["red"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2553","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ エレガンスハニーワイン"],"selectionSource":null,"visual":"reference","popularity":[]},"p-aed7c62e5a40":{
+},"p-cb5e798d119c":{"label":"クリスマスローズ エレガンスピンクスポット","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["sun","part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=356","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ エレガンスピンクスポット"],"selectionSource":null,"visual":"reference","popularity":[]},"p-96e9d3d617d6":{
+  "label": "クリスマスローズ エレガンスハニーワイン",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e4d6af",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "yellow",
+    "red",
+    "purple",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "メリクロンによる増殖でも環境・株の状態による花形・花色の差を残します。9cm鉢の小苗と本格開花まで1〜2年という見込みは、手入力した成株寸法や計画上の年次成長とは別です。ハニーワインの花齢による緑化と残る赤い覆輪を、固定した月順の色変化へ変えていません。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/104eh/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ エレガンスハニーワイン"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-aed7c62e5a40":{
   "label": "クリスマスローズ エレガンスアイス",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",
@@ -4733,7 +4783,54 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-bb9ab5520efa":{"label":"クリスマスローズ エレガンスライムイエロー","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#e6cc63","leafColor":"#557442","variegated":false,"colors":["yellow"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2552","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ エレガンスライムイエロー"],"selectionSource":null,"visual":"reference","popularity":[]},"p-623f68108e60":{
+},"p-bb9ab5520efa":{
+  "label": "クリスマスローズ エレガンスライムイエロー",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e6df91",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "yellow"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "メリクロンによる増殖でも環境・株の状態による花形・花色の差を残します。9cm鉢の小苗と本格開花まで1〜2年という見込みは、手入力した成株寸法や計画上の年次成長とは別です。ライムイエローの丸い一番花を参考にします。二番花以降のやや剣弁になる説明は花の順序で、固定した月順の花形変化ではありません。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/104ey/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ エレガンスライムイエロー"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-623f68108e60":{
   "label": "クリスマスローズ エレガンスグレープ",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",
