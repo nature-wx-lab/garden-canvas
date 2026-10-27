@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.861';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.862';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -706,3 +706,5 @@ Object.assign(TRAIT_VALUES,{sterniiSpottedLeaflets:'茎上の3小葉・緑の地
 Object.assign(TRAIT_VALUES,{sterniiPinkWhiteLeaflets:'茎上の3小葉・細かな白斑と桃色の葉の写真例',sterniiAuroraLeaflets:'茎上の3小葉・白粉と緑・黄・桃の葉の写真例',sterniiMariageLeaflets:'茎上の3小葉・曙斑と白い吹掛け状の斑の写真例',sterniiGreenSepals:'緑系の5萼と黄色い中心・うつむく疎らな花房の写真例',sterniiPaleSepals:'淡い緑白色の5萼と黄色い中心・桃色を帯びる縁の写真例'});
 
 Object.assign(TRAIT_VALUES,{sterniiNeoKaleidoscopeLeaflets:'茎上の幅広い3小葉・白い面と緑の島状斑の写真例',sterniiIndigoLeaflets:'茎上の3小葉・青灰の銀葉と中程度の粗い鋸歯の写真例',sterniiOrangeLeaflets:'茎上の3小葉・黄白の地に緑の細斑の写真例',sterniiIndigoGeneralSepals:'交雑群の資料を参考にした5萼の房咲き（品種の開花写真は未照合）'});
+
+Object.assign(TRAIT_VALUES,{sterniiSeedLeaflets:'茎上の3小葉・緑〜銀緑と淡い脈の実生参考例',sterniiSeedSepals:'交雑群の5萼と疎らな花房・淡緑白と桃を帯びる実生参考例'});
