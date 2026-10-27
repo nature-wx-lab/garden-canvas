@@ -945,7 +945,163 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "葉柄と短い側軸を実際の株元・茎から接続し、独立した葉高へ収めます。微小株や極端に低い葉高で縮む器官は、実際の生育段階や未展開葉ではありません。",
     "花後は花器を除いて葉と茎を残す管理参考です。残った萼・成熟果実・種子・根、翌年の更新や同じ個体の年間の姿との一致は未再現です。同一株12か月実物照合0。"
   ]
-},"p-c33f2314c3eb":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=387","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/100cm/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"scientificName":1,"persistence":2,"phenologyRegion":2},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"scientificName":"Helleborus x ballardiae 'Camelot'","persistence":"semiEvergreen","phenologyRegion":"grower-cold","unconfirmed":[]},"p-4a9ec506925b":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"},{"url":"https://item.rakuten.co.jp/ogis/100ms/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"persistence":1,"phenologyRegion":1},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"persistence":"semiEvergreen","phenologyRegion":"grower-cold","unconfirmed":[]},"p-9122b4375886":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=388","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/100cn/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"scientificName":1,"persistence":2,"phenologyRegion":2},"status":"attributes","inflorescence":"solitary","flowerShape":"cup","habit":"clump","leafShape":"serrated","leafTexture":"glossy","petals":5,"scientificName":"Helleborus x ballardiae 'Cinnamon Snow'","persistence":"semiEvergreen","phenologyRegion":"grower-cold","unconfirmed":[]},"p-7e4f1132e25f":{
+},"p-c33f2314c3eb":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/100cm/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "persistence": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "ballardiaeReferences",
+  "shootProfile": "camelot",
+  "leafShape": "ballardiaeTrifoliateReference",
+  "leafColor": "#6c887b",
+  "flowerShape": "ballardiaeCamelotColourReference",
+  "flowerMonths": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    12
+  ],
+  "habit": "clump",
+  "persistence": "evergreen",
+  "phenologyRegion": "国内販売元の冬〜春を区分した参考表示です。寒冷地の温室苗と露地の条件を区別し、全国共通の月別観測にはしていません。",
+  "sourceConflict": "国内の高さ20〜30cm・幅30〜50cm、最大花径6cmを採用。ニゲルとリビダスの交配という販売表記を保ち、エリックスミシイ系の別品種へ統合しません。",
+  "unconfirmed": [
+    "キャメロットの本文と5写真から、クリームと桃が同じ花の中でも混じる丸い5萼、桃を帯びる蕾・背面、灰緑の葉を参考にしています。カメロットという別表記は同じ商品ページの案内として扱い、登録品種の同一性まで検証していません。",
+    "成株の高さ・幅と最大花径は国内販売元の目安です。最大値から下限や典型径を作らず、独立した葉高・葉長比や年次成長を実測値としていません。",
+    "写真の葉群を参考に、根元6群と茎上4群の各3小葉を接続する配置例を描きます。小葉の固定数や根生・茎葉の正確な分布は未照合です。属資料は深く分裂する鋸歯のある革質葉と5萼の補足で、品種の小葉数を証明するものではありません。",
+    "4花軸・各3花と1蕾・8蜜腺・40雄しべ・3心皮は花器を区別する参考配置です。品種の実測計数値、実株と同じ分枝や花密度の検証ではありません。",
+    "桃の蕾からクリームの開花、再び桃へ進むという本文を参考に、同じ開花月へ配色の混在例を置きます。花齢の追跡、各色の割合や固定月の変色は予測しません。",
+    "葉の灰緑と淡い脈は写真からの近似です。葉の厚み・反射や脈の正確な分布を再現せず、斑入り品種の固定した模様としていません。",
+    "冬〜春を12〜5月へ区分しています。温室苗は露地より早く咲く条件で、掲載時期や苗の規格を全国共通の開花月や成熟年へ変換していません。",
+    "国内の冬季常緑〜半常緑から、健康な葉を残す管理例を描きます。古葉の切除・新葉や花後の葉減りを固定月の葉量にせず、冬の完全落葉を作っていません。",
+    "葉柄と短い側軸を実際の株元・茎から接続し、独立した葉高へ収めます。微小株や極端に低い葉高で縮む器官は、実際の生育段階や未展開葉ではありません。",
+    "花後は花器を除いて葉と茎を残す管理参考です。残った萼・成熟果実・種子・根、翌年の更新や同じ個体の年間の姿との一致は未再現です。同一株12か月実物照合0。"
+  ]
+},"p-4a9ec506925b":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/100ms/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "persistence": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "ballardiaeReferences",
+  "shootProfile": "maestro",
+  "leafShape": "ballardiaeTrifoliateReference",
+  "leafColor": "#748d81",
+  "flowerShape": "ballardiaeMaestroMarbleReference",
+  "flowerMonths": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    12
+  ],
+  "habit": "clump",
+  "persistence": "evergreen",
+  "phenologyRegion": "国内販売元の冬〜春を区分した参考表示です。寒冷地の温室苗と露地の条件を区別し、全国共通の月別観測にはしていません。",
+  "sourceConflict": "国内の高さ20〜30cm・幅30〜50cm、最大花径6cmを採用。以前の高さ25〜40cmを今回の販売本文へ訂正。2026年10月26日の未開花苗の案内を、全国の同じ月の花期や同一個体の年間観測へ換算しません。",
+  "unconfirmed": [
+    "マエストロの本文と4写真から、一花の萼にクリーム〜小豆色が混じる先のある5萼と灰緑の葉を参考にしています。萼ごとの色分けと薄い色むらを模式化し、写真と同じマーブル模様や温度応答を再現したものではありません。",
+    "成株の高さ・幅と最大花径は国内販売元の目安です。最大値から下限や典型径を作らず、独立した葉高・葉長比や年次成長を実測値としていません。",
+    "写真の葉群を参考に、根元6群と茎上4群の各3小葉を接続する配置例を描きます。小葉の固定数や根生・茎葉の正確な分布は未照合です。属資料は深く分裂する鋸歯のある革質葉と5萼の補足で、品種の小葉数を証明するものではありません。",
+    "4花軸・各3花と1蕾・8蜜腺・40雄しべ・3心皮は花器を区別する参考配置です。品種の実測計数値、実株と同じ分枝や花密度の検証ではありません。",
+    "気温などで変わるクリーム〜小豆色を、同じ開花月へ置く配色例にします。一つの花の模様の範囲、色の発生率や固定月の変色を予測するものではありません。",
+    "葉の灰緑と淡い脈は写真からの近似です。葉の厚み・反射や脈の正確な分布を再現せず、斑入り品種の固定した模様としていません。",
+    "冬〜春を12〜5月へ区分しています。温室苗は露地より早く咲く条件で、掲載時期や苗の規格を全国共通の開花月や成熟年へ変換していません。",
+    "国内の冬季常緑〜半常緑から、健康な葉を残す管理例を描きます。古葉の切除・新葉や花後の葉減りを固定月の葉量にせず、冬の完全落葉を作っていません。",
+    "葉柄と短い側軸を実際の株元・茎から接続し、独立した葉高へ収めます。微小株や極端に低い葉高で縮む器官は、実際の生育段階や未展開葉ではありません。",
+    "花後は花器を除いて葉と茎を残す管理参考です。残った萼・成熟果実・種子・根、翌年の更新や同じ個体の年間の姿との一致は未再現です。同一株12か月実物照合0。"
+  ]
+},"p-9122b4375886":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/100cn/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "persistence": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "ballardiaeReferences",
+  "shootProfile": "cinnamonSnow",
+  "leafShape": "ballardiaeTrifoliateReference",
+  "leafColor": "#6d8274",
+  "flowerShape": "ballardiaeCinnamonBackReference",
+  "flowerMonths": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    12
+  ],
+  "habit": "clump",
+  "persistence": "evergreen",
+  "phenologyRegion": "国内販売元の冬〜春を区分した参考表示です。寒冷地の温室苗と露地の条件を区別し、全国共通の月別観測にはしていません。",
+  "sourceConflict": "国内の高さ20〜30cm・幅30〜50cm、最大花径7cmを採用。以前の高さ25〜40cmを今回の販売本文へ訂正。ニゲルとリビダスの交配表記を保ち、ベージュ〜緑への変化を月の固定配色にしていません。",
+  "unconfirmed": [
+    "シナモンスノーの本文と6写真から、クリームの表面、桃を帯びる蕾・背面、咲き進んだベージュ〜緑の5萼と灰緑の葉を参考にしています。薄いクリームの萼色を、雄しべの黄色から推定したものではありません。",
+    "成株の高さ・幅と最大花径は国内販売元の目安です。最大値から下限や典型径を作らず、独立した葉高・葉長比や年次成長を実測値としていません。",
+    "写真の葉群を参考に、根元6群と茎上4群の各3小葉を接続する配置例を描きます。小葉の固定数や根生・茎葉の正確な分布は未照合です。属資料は深く分裂する鋸歯のある革質葉と5萼の補足で、品種の小葉数を証明するものではありません。",
+    "4花軸・各3花と1蕾・8蜜腺・40雄しべ・3心皮は花器を区別する参考配置です。品種の実測計数値、実株と同じ分枝や花密度の検証ではありません。",
+    "クリーム〜ベージュ・緑の配色例を同じ開花月に置き、背面と蕾を桃色に寄せます。花齢の追跡、花後に残る萼の期間や固定月の変色は未照合です。",
+    "葉の灰緑と淡い脈は写真からの近似です。葉の厚み・反射や脈の正確な分布を再現せず、斑入り品種の固定した模様としていません。",
+    "冬〜春を12〜5月へ区分しています。温室苗は露地より早く咲く条件で、掲載時期や苗の規格を全国共通の開花月や成熟年へ変換していません。",
+    "国内の冬季常緑〜半常緑から、健康な葉を残す管理例を描きます。古葉の切除・新葉や花後の葉減りを固定月の葉量にせず、冬の完全落葉を作っていません。",
+    "葉柄と短い側軸を実際の株元・茎から接続し、独立した葉高へ収めます。微小株や極端に低い葉高で縮む器官は、実際の生育段階や未展開葉ではありません。",
+    "花後は花器を除いて葉と茎を残す管理参考です。残った萼・成熟果実・種子・根、翌年の更新や同じ個体の年間の姿との一致は未再現です。同一株12か月実物照合0。"
+  ]
+},"p-7e4f1132e25f":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/100e/",

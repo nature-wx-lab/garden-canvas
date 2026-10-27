@@ -347,7 +347,162 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-c33f2314c3eb":{"label":"クリスマスローズ キャメロット","latin":"Helleborus x ballardiae ‘Camelot’","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.2,0.3],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=387","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ キャメロット"],"selectionSource":null,"visual":"reference","popularity":[]},"p-4a9ec506925b":{"label":"クリスマスローズ マエストロ","latin":"Helleborus x ballardiae 'Maestro'","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.4],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2194","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ マエストロ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-9122b4375886":{"label":"クリスマスローズ シナモンスノー","latin":"Helleborus x ballardiae ‘Cinnamon Snow’","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.4],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=388","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ シナモンスノー"],"selectionSource":null,"visual":"reference","popularity":[]},"p-7e4f1132e25f":{
+},"p-c33f2314c3eb":{
+  "label": "クリスマスローズ キャメロット",
+  "latin": "Helleborus x ballardiae ‘Camelot’",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": [
+    0.2,
+    0.3
+  ],
+  "spread": [
+    0.3,
+    0.5
+  ],
+  "bloom": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    12
+  ],
+  "bloomKnown": false,
+  "flower": "#babdb3",
+  "leafColor": "#557442",
+  "variegated": false,
+  "colors": [
+    "white",
+    "pink",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "unknown",
+  "growth": "年次成長は未確認",
+  "season": "冬～春",
+  "care": "高温多湿を避け、地域差や育て方は販売元で確認してください。",
+  "bloomText": "国内販売元の冬〜春を12〜5月へ区分した参考です。温室苗や温度・花齢による配色差を、全国共通の固定月の姿へ換算していません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/100cm/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-27",
+  "aliases": [
+    "クリスマスローズ キャメロット"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-4a9ec506925b":{
+  "label": "クリスマスローズ マエストロ",
+  "latin": "Helleborus x ballardiae 'Maestro'",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": [
+    0.2,
+    0.3
+  ],
+  "spread": [
+    0.3,
+    0.5
+  ],
+  "bloom": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    12
+  ],
+  "bloomKnown": false,
+  "flower": "#babdb3",
+  "leafColor": "#557442",
+  "variegated": false,
+  "colors": [
+    "white",
+    "pink",
+    "red",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "unknown",
+  "growth": "年次成長は未確認",
+  "season": "冬～春",
+  "care": "高温多湿を避け、地域差や育て方は販売元で確認してください。",
+  "bloomText": "国内販売元の冬〜春を12〜5月へ区分した参考です。温室苗や温度・花齢による配色差を、全国共通の固定月の姿へ換算していません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/100ms/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-27",
+  "aliases": [
+    "クリスマスローズ マエストロ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-9122b4375886":{
+  "label": "クリスマスローズ シナモンスノー",
+  "latin": "Helleborus x ballardiae ‘Cinnamon Snow’",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": [
+    0.2,
+    0.3
+  ],
+  "spread": [
+    0.3,
+    0.5
+  ],
+  "bloom": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    12
+  ],
+  "bloomKnown": false,
+  "flower": "#babdb3",
+  "leafColor": "#557442",
+  "variegated": false,
+  "colors": [
+    "white",
+    "pink",
+    "green",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "unknown",
+  "growth": "年次成長は未確認",
+  "season": "冬～春",
+  "care": "高温多湿を避け、地域差や育て方は販売元で確認してください。",
+  "bloomText": "国内販売元の冬〜春を12〜5月へ区分した参考です。温室苗や温度・花齢による配色差を、全国共通の固定月の姿へ換算していません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/100cn/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-27",
+  "aliases": [
+    "クリスマスローズ シナモンスノー"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-7e4f1132e25f":{
   "label": "クリスマスローズ エリックスミシイ",
   "latin": "Helleborus x ericsmithii",
   "genre": "クリスマスローズ",
