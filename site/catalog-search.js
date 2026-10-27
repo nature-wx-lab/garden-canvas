@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.906';
+import {treeProfile} from './tree-profiles.js?v=0.9.907';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -343,6 +343,7 @@ export function seasonAt(info,month){
  if(a.architecture==='retailMonardaReferences'){scale=1;phase=[1,2,12].includes(month)?(a.shootProfile==='pink'?'冬に地上部が枯れる販売苗を参考にした落葉と残した茎（残存量・花殻・冬芽は未確認）':'冬姿未確認のため花のない暖期の葉姿を保持する未検証参考（常緑・越冬成功の断定なし）'):bloom?'国内販売元の明示花期・対生の鋸歯葉と苞に囲まれた二唇形小花の参考（属の形態、商品実測ではない）':'花のない茎葉の参考（伸長・花後の花殻・種子・月別葉量は未校正）';}
  if(a.architecture==='ruelliaTropicstarReference'){scale=1;phase=[1,2,12].includes(month)?'温度を保護した冬の残葉の参考（戸外の生存や全国一律の越冬は未予測）':bloom?'国内販売元の8～10月の5裂漏斗花と細い対生葉の参考（1日花の時間変化は未再現）':'細い対生葉と分岐茎の参考（月別の葉量・成長量は未校正）';}
  if(a.architecture==='vesicariusReferences'){density=[7,8,9].includes(month)?0:1;scale=month===10?.45:1;phase=density===0?'国内栽培説明を参考にした地上部を描かない夏眠の区分（地下部・休眠芽は未再現）':month===10?'10月頃の芽出しを群ごとに少なくした参考（実測成長曲線ではない）':bloom?'冬〜春の小さな鐘形花と深裂葉の参考（2〜4月は表示上の仮区分）':'冬に緑の根生葉と茎葉を残す参考（種さやと成熟過程は未再現）';}
+ if(a.architecture==='hybridHelleboreDoubleReferences'){scale=1;density=1;phase=bloom?'実生のアプリコット八重の写真例（花齢・環境による変色を月順に予測しない静的な参考）':'健康な緑の根生葉を残す保護参考（花後の減少量・再生時期は未校正）';}
  if(a.architecture==='goldHelleboreReferences'){scale=1;density=1;phase=[10,11,12,1].includes(month)?'秋冬の黄葉を古葉未剪定で残す保護参考（黄葉の強さ・月境界は未実測）':month>=6&&month<=9?'花後に根生葉の群を減らす管理参考（新葉量・再生時期は未校正）':'実生の一重の写真例と淡緑の葉の参考（花の個体差・花齢の変色は未再現）';}
  if(a.architecture==='goldHelleboreReferences'&&['goldDouble','goldSpotsDouble','goldNeonDouble','goldPicoteeDouble'].includes(a.shootProfile)&&bloom){phase='実生の八重花と淡緑の葉の参考（内側は蜜腺由来の花びら状部分、列数と月の区切りは近似）';}
  if(a.architecture==='goldHelleboreReferences'&&a.shootProfile==='goldPicoteeDouble'&&!bloom){phase=[6,7,8,9,12,1].includes(month)?'夏と冬の黄葉を残す参考（この販売ページの写真説明に基づく、月境界と再生は未校正）':'秋の緑を帯びる葉の参考（同一株の連続変化は未確認）';}
