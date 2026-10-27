@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.885';
+import {treeProfile} from './tree-profiles.js?v=0.9.886';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -335,6 +335,7 @@ export function seasonAt(info,month){
  if(a.architecture==='ogisMonardaColourReferences'){scale=1;phase=a.seedHeadMonths?.includes(month)?'長野の未剪定の成株で丸い花後の頭と茎を残す参考（冬の残葉量・月境界は未校正、切戻し苗は別条件）':bloom?'夏を6～8月へ換算した二唇形小花の写真例（花色別商品で品種未固定、明示月ではない）':'対生の鋸歯葉と春に花殻を整理した参考（月境界・成長量は未予測）';}
  if(a.architecture==='retailMonardaReferences'){scale=1;phase=[1,2,12].includes(month)?(a.shootProfile==='pink'?'冬に地上部が枯れる販売苗を参考にした落葉と残した茎（残存量・花殻・冬芽は未確認）':'冬姿未確認のため花のない暖期の葉姿を保持する未検証参考（常緑・越冬成功の断定なし）'):bloom?'国内販売元の明示花期・対生の鋸歯葉と苞に囲まれた二唇形小花の参考（属の形態、商品実測ではない）':'花のない茎葉の参考（伸長・花後の花殻・種子・月別葉量は未校正）';}
  if(a.architecture==='ruelliaTropicstarReference'){scale=1;phase=[1,2,12].includes(month)?'温度を保護した冬の残葉の参考（戸外の生存や全国一律の越冬は未予測）':bloom?'国内販売元の8～10月の5裂漏斗花と細い対生葉の参考（1日花の時間変化は未再現）':'細い対生葉と分岐茎の参考（月別の葉量・成長量は未校正）';}
+ if(a.architecture==='wildHelleboreReferences'&&['purpurascens','torquatus','cyclophyllus'].includes(a.shootProfile)){scale=1;phase=density===0?'寒冷地で冬に葉を整理し短い茎を残す管理例（暖地の残葉・自然落葉率は未予測）':month>=6&&month<=11?'夏越し後に根生葉の群を減らした少葉の参考（密度・月の区切りは実測ではない）':'根生葉と別の花軸の参考（春の展葉量・花数は未校正）';}
  if(a.architecture==='wildHelleboreReferences'&&a.shootProfile==='odorus'){scale=1;density=1;phase=bloom?'根生葉と別に伸びる花軸と黄緑の皿形花の参考（晩冬〜春を2〜5月へ換算）':'花後に上部の花軸を整理し、健康な根生葉を残す保護管理の参考（寒冷時の落葉率・新葉量は未予測）';}
  if(a.architecture==='argutifoliusReferences'){scale=1;density=1;phase=bloom?'国内販売元の晩冬〜春を2〜5月へ換算した、緑の杯状花の房咲きの参考（花数・連続開花は未予測）':[12,1,2].includes(month)?'葉付きの有茎と厚い3小葉を残す保護条件の冬姿の参考（低温苗の紅葉・寒害・残葉率は未予測）':'葉付きの有茎を残し上部の花房を花後に整理した管理例の参考（夏の葉減り・新葉量は未予測）';}
  if(a.architecture==='lividusReferences'){scale=1;density=1;phase=bloom?'国内販売元の晩冬〜春を2〜5月へ換算した、うつむく花の参考（銀葉型の花は基本種共通との本文に基づく）':[12,1,2].includes(month)?'葉付きの有茎と3小葉を残す保護条件の冬姿の参考（低温での紅葉・寒害と残葉率は未予測）':'葉付きの有茎を残し上部の花序を花後に整理した管理例の参考（夏の葉減り・新葉量は未予測）';}
