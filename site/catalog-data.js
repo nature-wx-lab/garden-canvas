@@ -3591,7 +3591,51 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-c7f6647f8fbc":{"label":"クリスマスローズ オリエンタリス・オリエンタリス","latin":"Helleborus orientalis subsp. orientalis","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.45,0.45],"spread":null,"bloom":[1,2,3,4],"bloomKnown":true,"flower":"#e2e0bf","leafColor":"#58764c","variegated":false,"colors":["pink","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類・花型別の小葉、蜜腺、萼の重なりと模様、年間の葉","care":"RHSの常緑・7〜9小葉・白〜クリーム色の下向きの杯状花に基づく参考。冬半ば〜春半ばを1〜4月として表示します。 花数と写真から求めた葉・花の比率は表示用の参考です。月境界は栽培地域で前後します。","bloomText":"参考：1・2・3・4月","bloomBasis":"種・属または代表株の季節資料","source":"https://www.rhs.org.uk/plants/74778/helleborus-orientalis-lam-subsp-orientalis/details","publisher":"一次資料（育種元・販売元・植物園・RHS）","sourceChecked":"2026-10-10","aliases":["クリスマスローズ オリエンタリス・オリエンタリス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-7fcba962f645":{"label":"クリスマスローズ オリエンタリス・アブチャシクス","latin":"Helleborus orientalis subsp. abchasicus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.25,0.3],"spread":null,"bloom":[12,1,2,3,4],"bloomKnown":true,"flower":"#b587b0","leafColor":"#62784c","variegated":false,"colors":["purple","pink"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"有茎・無茎、葉の分かれ方、5枚の萼と蜜腺・雄しべ、種類別の越冬","care":"植物資料と掲載写真を照合した参考3Dです。草丈は資料値、葉や花の寸法のうち資料に数値がないものは写真の比率による表示値です。海外資料の花期は英国の栽培目安で、日本の全国共通の開花月ではありません。落葉・芽出しの月境界と花数は表示上の目安です。 根元から葉柄と花茎が出る無茎型。","bloomText":"資料：12月から早く咲く（春までの表示は属の季節目安）","bloomBasis":"開始月と属の季節資料","source":"https://www.ashwoodnurseries.com/product/helleborus-5/","publisher":"Ashwood Nurseries","sourceChecked":"2026-10-10","aliases":["クリスマスローズ オリエンタリス・アブチャシクス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-c6eaaebd38ce":{"label":"クリスマスローズ オリエンタリス・グッタータス","latin":"Helleborus orientalis subsp. guttatus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.35,0.35],"spread":null,"bloom":[2,3],"bloomKnown":true,"flower":"#e3dfce","leafColor":"#58764c","variegated":false,"colors":["pink","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類・花型別の小葉、蜜腺、萼の重なりと模様、年間の葉","care":"オランダ植物園連合の栽培植物記録の草丈35cm・常緑・2〜3月・白地に赤い斑点を参考表示。小葉の詳細比率は属の参考です。 花数と写真から求めた葉・花の比率は表示用の参考です。月境界は栽培地域で前後します。","bloomText":"参考：2・3月","bloomBasis":"種・属または代表株の季節資料","source":"https://www.botanischetuinen.nl/nl/plant/46534/helleborus-orientalis-subsp-guttatus","publisher":"一次資料（育種元・販売元・植物園・RHS）","sourceChecked":"2026-10-10","aliases":["クリスマスローズ オリエンタリス・グッタータス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-423146713075":{"label":"クリスマスローズ オキシデンタリス","latin":"Helleborus occidentalis","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"herb","height":[0.2,0.4],"spread":null,"bloom":[1,2,3,4],"bloomKnown":true,"flower":"#789647","leafColor":"#62784c","variegated":false,"colors":["green"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"有茎・無茎、葉の分かれ方、5枚の萼と蜜腺・雄しべ、種類別の越冬","care":"植物資料と掲載写真を照合した参考3Dです。草丈は資料値、葉や花の寸法のうち資料に数値がないものは写真の比率による表示値です。海外資料の花期は英国の栽培目安で、日本の全国共通の開花月ではありません。落葉・芽出しの月境界と花数は表示上の目安です。 根元から葉柄と花茎が出る無茎型。","bloomText":"資料：1・2・3・4月","bloomBasis":"資料の月表記","source":"https://www.ashwoodnurseries.com/product/helleborus-occidentalis/","publisher":"Ashwood Nurseries","sourceChecked":"2026-10-10","aliases":["クリスマスローズ オキシデンタリス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-59c5e35710b4":{
+},"p-c7f6647f8fbc":{"label":"クリスマスローズ オリエンタリス・オリエンタリス","latin":"Helleborus orientalis subsp. orientalis","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.45,0.45],"spread":null,"bloom":[1,2,3,4],"bloomKnown":true,"flower":"#e2e0bf","leafColor":"#58764c","variegated":false,"colors":["pink","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類・花型別の小葉、蜜腺、萼の重なりと模様、年間の葉","care":"RHSの常緑・7〜9小葉・白〜クリーム色の下向きの杯状花に基づく参考。冬半ば〜春半ばを1〜4月として表示します。 花数と写真から求めた葉・花の比率は表示用の参考です。月境界は栽培地域で前後します。","bloomText":"参考：1・2・3・4月","bloomBasis":"種・属または代表株の季節資料","source":"https://www.rhs.org.uk/plants/74778/helleborus-orientalis-lam-subsp-orientalis/details","publisher":"一次資料（育種元・販売元・植物園・RHS）","sourceChecked":"2026-10-10","aliases":["クリスマスローズ オリエンタリス・オリエンタリス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-7fcba962f645":{"label":"クリスマスローズ オリエンタリス・アブチャシクス","latin":"Helleborus orientalis subsp. abchasicus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.25,0.3],"spread":null,"bloom":[12,1,2,3,4],"bloomKnown":true,"flower":"#b587b0","leafColor":"#62784c","variegated":false,"colors":["purple","pink"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"有茎・無茎、葉の分かれ方、5枚の萼と蜜腺・雄しべ、種類別の越冬","care":"植物資料と掲載写真を照合した参考3Dです。草丈は資料値、葉や花の寸法のうち資料に数値がないものは写真の比率による表示値です。海外資料の花期は英国の栽培目安で、日本の全国共通の開花月ではありません。落葉・芽出しの月境界と花数は表示上の目安です。 根元から葉柄と花茎が出る無茎型。","bloomText":"資料：12月から早く咲く（春までの表示は属の季節目安）","bloomBasis":"開始月と属の季節資料","source":"https://www.ashwoodnurseries.com/product/helleborus-5/","publisher":"Ashwood Nurseries","sourceChecked":"2026-10-10","aliases":["クリスマスローズ オリエンタリス・アブチャシクス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-c6eaaebd38ce":{"label":"クリスマスローズ オリエンタリス・グッタータス","latin":"Helleborus orientalis subsp. guttatus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.35,0.35],"spread":null,"bloom":[2,3],"bloomKnown":true,"flower":"#e3dfce","leafColor":"#58764c","variegated":false,"colors":["pink","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類・花型別の小葉、蜜腺、萼の重なりと模様、年間の葉","care":"オランダ植物園連合の栽培植物記録の草丈35cm・常緑・2〜3月・白地に赤い斑点を参考表示。小葉の詳細比率は属の参考です。 花数と写真から求めた葉・花の比率は表示用の参考です。月境界は栽培地域で前後します。","bloomText":"参考：2・3月","bloomBasis":"種・属または代表株の季節資料","source":"https://www.botanischetuinen.nl/nl/plant/46534/helleborus-orientalis-subsp-guttatus","publisher":"一次資料（育種元・販売元・植物園・RHS）","sourceChecked":"2026-10-10","aliases":["クリスマスローズ オリエンタリス・グッタータス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-423146713075":{
+  "label": "クリスマスローズ オキシデンタリス",
+  "latin": "Helleborus occidentalis",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "herb",
+  "height": [
+    0.2,
+    0.4
+  ],
+  "spread": null,
+  "bloom": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "bloomKnown": true,
+  "flower": "#85b45c",
+  "leafColor": "#537b4b",
+  "variegated": false,
+  "colors": [
+    "green"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "有茎・無茎、葉の分かれ方、5枚の萼と蜜腺・雄しべ、種類別の越冬",
+  "care": "英国資料の寸法・開花期を参考にしています。日本の月別の葉量・冬の残葉は未校正のため、健康な展葉株の参考を各月に残します。常緑性や夏冬の実際の葉量を保証する表示ではありません。年次成長、剪定後の回復、同一株の年間変化は未確認です。",
+  "bloomText": "英国販売元の1〜4月。日本全国の開花月ではなく、露地・温室と気候によって変わります。",
+  "bloomBasis": "英国販売元の月表記",
+  "source": "https://www.ashwoodnurseries.com/product/helleborus-occidentalis/",
+  "publisher": "Ashwood Nurseries",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ オキシデンタリス"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-59c5e35710b4":{
   "label": "クリスマスローズ シクロフィルス",
   "latin": "Helleborus cyclophyllus",
   "genre": "クリスマスローズ",
@@ -3638,7 +3682,98 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-8ca3ba776116":{"label":"クリスマスローズ ヘルツェゴビナス","latin":"Helleborus hercegovinus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"herb","height":[0.1,0.5],"spread":null,"bloom":[2,3,4],"bloomKnown":true,"flower":"#a7b466","leafColor":"#62784c","variegated":false,"colors":["green"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"有茎・無茎、葉の分かれ方、5枚の萼と蜜腺・雄しべ、種類別の越冬","care":"植物資料と掲載写真を照合した参考3Dです。草丈は資料値、葉や花の寸法のうち資料に数値がないものは写真の比率による表示値です。海外資料の花期は英国の栽培目安で、日本の全国共通の開花月ではありません。落葉・芽出しの月境界と花数は表示上の目安です。 根元から葉柄と花茎が出る無茎型。RHS本文は落葉性、同ページ分類欄は常緑〜半常緑と記載が異なります。本文の落葉型を参考表示し、越冬葉の有無は未確定として残しています。若葉はブロンズ色。","bloomText":"資料：晩冬〜春（表示上2〜4月）","bloomBasis":"資料の季節表記から表示上の月に換算","source":"https://www.rhs.org.uk/plants/298140/helleborus-hercegovinus/details","publisher":"RHS","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ヘルツェゴビナス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-30ee1c6dbf0c":{"label":"クリスマスローズ イストリアクス","latin":"Helleborus multifidus subsp. istriacus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"herb","height":[0.2,0.3],"spread":null,"bloom":[1,2,3,4],"bloomKnown":true,"flower":"#a8b76a","leafColor":"#62784c","variegated":false,"colors":["green"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"有茎・無茎、葉の分かれ方、5枚の萼と蜜腺・雄しべ、種類別の越冬","care":"植物資料と掲載写真を照合した参考3Dです。草丈は資料値、葉や花の寸法のうち資料に数値がないものは写真の比率による表示値です。海外資料の花期は英国の栽培目安で、日本の全国共通の開花月ではありません。落葉・芽出しの月境界と花数は表示上の目安です。 根元から葉柄と花茎が出る無茎型。","bloomText":"資料：1・2・3・4月","bloomBasis":"資料の月表記","source":"https://www.ashwoodnurseries.com/product/helleborus-2/","publisher":"Ashwood Nurseries","sourceChecked":"2026-10-10","aliases":["クリスマスローズ イストリアクス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-cbf2d7baa611":{
+},"p-8ca3ba776116":{
+  "label": "クリスマスローズ ヘルツェゴビナス",
+  "latin": "Helleborus hercegovinus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "herb",
+  "height": [
+    0.1,
+    0.5
+  ],
+  "spread": [
+    0.1,
+    0.5
+  ],
+  "bloom": [
+    2,
+    3,
+    4
+  ],
+  "bloomKnown": false,
+  "flower": "#a8bf77",
+  "leafColor": "#4f7850",
+  "variegated": false,
+  "colors": [
+    "green"
+  ],
+  "sun": [
+    "sun",
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "有茎・無茎、葉の分かれ方、5枚の萼と蜜腺・雄しべ、種類別の越冬",
+  "care": "英国資料の寸法・開花期を参考にしています。日本の月別の葉量・冬の残葉は未校正のため、健康な展葉株の参考を各月に残します。常緑性や夏冬の実際の葉量を保証する表示ではありません。年次成長、剪定後の回復、同一株の年間変化は未確認です。",
+  "bloomText": "英国RHSの晩冬〜春を表示上2〜4月へ仮換算。国内の数値月は未確認です。",
+  "bloomBasis": "英国の季節表記からの仮換算",
+  "source": "https://www.rhs.org.uk/plants/298140/helleborus-hercegovinus/details",
+  "publisher": "RHS",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ ヘルツェゴビナス"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-30ee1c6dbf0c":{
+  "label": "クリスマスローズ イストリアクス",
+  "latin": "Helleborus multifidus subsp. istriacus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "herb",
+  "height": [
+    0.2,
+    0.3
+  ],
+  "spread": null,
+  "bloom": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "bloomKnown": true,
+  "flower": "#9bbd66",
+  "leafColor": "#5b7a4e",
+  "variegated": false,
+  "colors": [
+    "green"
+  ],
+  "sun": [
+    "sun"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "有茎・無茎、葉の分かれ方、5枚の萼と蜜腺・雄しべ、種類別の越冬",
+  "care": "英国資料の寸法・開花期を参考にしています。日本の月別の葉量・冬の残葉は未校正のため、健康な展葉株の参考を各月に残します。常緑性や夏冬の実際の葉量を保証する表示ではありません。年次成長、剪定後の回復、同一株の年間変化は未確認です。",
+  "bloomText": "英国販売元の1〜4月。日本全国の開花月ではなく、露地・温室と気候によって変わります。",
+  "bloomBasis": "英国販売元の月表記",
+  "source": "https://www.ashwoodnurseries.com/product/helleborus-2/",
+  "publisher": "Ashwood Nurseries",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ イストリアクス"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-cbf2d7baa611":{
   "label": "クリスマスローズ チベタヌス",
   "latin": "Helleborus thibetanus",
   "genre": "クリスマスローズ",

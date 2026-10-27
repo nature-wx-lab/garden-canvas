@@ -4521,7 +4521,59 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "晩冬〜春を2〜5月に換算した花期、冬の落葉月、夏秋の少葉月・春の展葉量は表示の近似です。地域・露地と温室・無剪定株の違いを再現していません。",
     "写真ごとの灰紫・赤紫・白緑・緑の色幅は静的な個体差の例です。実生の色幅や異なる写真を同じ株の月別変色や一様な花色へ変換していません。"
   ]
-},"p-c7f6647f8fbc":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"genus"},{"url":"https://www.rhs.org.uk/plants/74778/helleborus-orientalis-lam-subsp-orientalis/details","scope":"catalog-entry"}],"basis":{"architecture":0,"leafShape":0,"leaflets":1,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":1,"flowerShape":0,"flowerRadius":0,"flowerMonths":0,"flowerTiming":0,"stemColor":0,"flowerPalette":1,"flowerLayers":1},"status":"partial","unconfirmed":["全形と全月の実物照合","写真比率による葉・花の寸法"],"architecture":"helleboreProfile","leafShape":"helleboreLeaf","leaflets":9,"leafLength":0.14,"leafColor":"#58764c","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerMonths":[1,2,3,4],"flowerTiming":"season","stemColor":"#718457","flowerPalette":{},"flowerLayers":1},"p-7fcba962f645":{"sources":[{"url":"https://www.ashwoodnurseries.com/product/helleborus-5/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/hellebore/growing-guide","scope":"genus"}],"basis":{"architecture":0,"flowerShape":0,"flowerRadius":0,"flowerPalette":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":1,"stemColor":0,"phenologyRegion":0},"status":"attributes","unconfirmed":[],"architecture":"helleboreProfile","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerPalette":{"tilt":2.16},"leafShape":"helleboreLeaf","leaflets":7,"leafLength":0.13,"leafColor":"#62784c","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerMonths":[12,1,2,3,4],"flowerTiming":"season","stemColor":"#71894d","phenologyRegion":"販売元・RHSの栽培地域における参考。開花・新葉・枯れ込みの時期は栽培地域と寒さで前後します。"},"p-c6eaaebd38ce":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"genus"},{"url":"https://www.botanischetuinen.nl/nl/plant/46534/helleborus-orientalis-subsp-guttatus","scope":"catalog-entry"}],"basis":{"architecture":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":1,"flowerShape":0,"flowerRadius":0,"flowerMonths":1,"flowerTiming":1,"stemColor":0,"flowerPalette":1,"flowerLayers":1},"status":"partial","unconfirmed":["全形と全月の実物照合","写真比率による葉・花の寸法"],"architecture":"helleboreProfile","leafShape":"helleboreLeaf","leaflets":7,"leafLength":0.13,"leafColor":"#58764c","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerMonths":[2,3],"flowerTiming":"months","stemColor":"#718457","flowerPalette":{"paint":"guttatus"},"flowerLayers":1},"p-423146713075":{"sources":[{"url":"https://www.ashwoodnurseries.com/product/helleborus-occidentalis/","scope":"catalog-entry"}],"basis":{"architecture":0,"flowerShape":0,"flowerRadius":0,"flowerPalette":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":0,"stemColor":0,"phenologyRegion":0,"leaflessBloom":0},"status":"attributes","unconfirmed":[],"architecture":"helleboreProfile","flowerShape":"helleboreCup","flowerRadius":0.0175,"flowerPalette":{"tilt":2.35},"leafShape":"helleboreLeaf","leaflets":7,"leafLength":0.09,"leafColor":"#62784c","habit":"clump","lifeForm":"herb","persistence":"deciduousHellebore","flowerMonths":[1,2,3,4],"flowerTiming":"months","stemColor":"#71894d","phenologyRegion":"販売元・RHSの栽培地域における参考。開花・新葉・枯れ込みの時期は栽培地域と寒さで前後します。","leaflessBloom":true},"p-59c5e35710b4":{
+},"p-c7f6647f8fbc":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"genus"},{"url":"https://www.rhs.org.uk/plants/74778/helleborus-orientalis-lam-subsp-orientalis/details","scope":"catalog-entry"}],"basis":{"architecture":0,"leafShape":0,"leaflets":1,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":1,"flowerShape":0,"flowerRadius":0,"flowerMonths":0,"flowerTiming":0,"stemColor":0,"flowerPalette":1,"flowerLayers":1},"status":"partial","unconfirmed":["全形と全月の実物照合","写真比率による葉・花の寸法"],"architecture":"helleboreProfile","leafShape":"helleboreLeaf","leaflets":9,"leafLength":0.14,"leafColor":"#58764c","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerMonths":[1,2,3,4],"flowerTiming":"season","stemColor":"#718457","flowerPalette":{},"flowerLayers":1},"p-7fcba962f645":{"sources":[{"url":"https://www.ashwoodnurseries.com/product/helleborus-5/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/hellebore/growing-guide","scope":"genus"}],"basis":{"architecture":0,"flowerShape":0,"flowerRadius":0,"flowerPalette":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":1,"stemColor":0,"phenologyRegion":0},"status":"attributes","unconfirmed":[],"architecture":"helleboreProfile","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerPalette":{"tilt":2.16},"leafShape":"helleboreLeaf","leaflets":7,"leafLength":0.13,"leafColor":"#62784c","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerMonths":[12,1,2,3,4],"flowerTiming":"season","stemColor":"#71894d","phenologyRegion":"販売元・RHSの栽培地域における参考。開花・新葉・枯れ込みの時期は栽培地域と寒さで前後します。"},"p-c6eaaebd38ce":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"genus"},{"url":"https://www.botanischetuinen.nl/nl/plant/46534/helleborus-orientalis-subsp-guttatus","scope":"catalog-entry"}],"basis":{"architecture":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":1,"flowerShape":0,"flowerRadius":0,"flowerMonths":1,"flowerTiming":1,"stemColor":0,"flowerPalette":1,"flowerLayers":1},"status":"partial","unconfirmed":["全形と全月の実物照合","写真比率による葉・花の寸法"],"architecture":"helleboreProfile","leafShape":"helleboreLeaf","leaflets":7,"leafLength":0.13,"leafColor":"#58764c","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerMonths":[2,3],"flowerTiming":"months","stemColor":"#718457","flowerPalette":{"paint":"guttatus"},"flowerLayers":1},"p-423146713075":{
+  "sources": [
+    {
+      "url": "https://www.ashwoodnurseries.com/product/helleborus-occidentalis/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 1,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 1,
+    "lifeForm": 1,
+    "persistence": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "wildHelleboreReferences",
+  "shootProfile": "occidentalis",
+  "leafShape": "wildOccidentalisTipSerratedReference",
+  "leafColor": "#537b4b",
+  "leafPattern": "wildHelleborePlainReference",
+  "flowerShape": "wildOccidentalisRoundGreenReference",
+  "flowerMonths": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "uncalibratedHelleboreLeafReference",
+  "stemColor": "#72995e",
+  "phenologyRegion": "英国のRHS・販売元の参考です。日本の月別の落葉・展葉・冬の残葉は未確認のため、健康な展葉株の葉を各月に残す未校正の表示です。常緑性や自然な年周変化の予測ではありません。",
+  "sourceConflict": "英国の高さ20〜40cmは販売元のHeight after 10 years欄で、国内の実測・計画10年後の予測ではありません。幅は未確認です。花径約3.5cm・1〜4月は英国販売元の値です。12月下旬の古葉除去は英国の管理助言で、日本でその月に自然落葉する証拠ではありません。",
+  "unconfirmed": [
+    "英国の花写真から、丸く重なる緑の5萼と細い脈、先端寄りの鋸歯が見える葉を参考にしています。花はややうつむく例とし、成株の根生葉全体の分割数・葉幅・配置は仮の表現です。",
+    "同一株の年間実物照合0。日本で同じ個体を追った月別の開花・落葉・展葉、露地と温室の違いは未校正です。",
+    "根生6群と開花時の苞葉3群を接続する参考です。各根生群7枚の末端裂片は属資料を使う仮の表現で、種の固定分裂数ではありません。",
+    "花軸3本に各3花と1蕾、8蜜腺・32雄しべ・3心皮を置く参考です。花径約3.5cmは英国販売元の値ですが、手入力した株寸法へ収めるときは花も縮みます。器官数・花数・密度は計数実測ではありません。",
+    "健康な展葉株の葉を各月に保つ参考で、落葉性を常緑性へ変更したものではありません。冬の葉無し・夏の少葉を資料なしに強制せず、自然な落葉月・芽出し月・枯れ茎・管理後の再生は未再現です。",
+    "花期外は花軸を省いた参考で、果実・種子・根は未再現です。RHSの成熟2〜5年や英国販売元の10年後サイズを計画年数による成長・開花条件へ変換していません。"
+  ]
+},"p-59c5e35710b4":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/100gy/",
@@ -4574,7 +4626,110 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "晩冬〜春を2〜5月に換算した花期、冬の落葉月、夏秋の少葉月・春の展葉量は表示の近似です。地域・露地と温室・無剪定株の違いを再現していません。",
     "写真ごとの灰紫・赤紫・白緑・緑の色幅は静的な個体差の例です。実生の色幅や異なる写真を同じ株の月別変色や一様な花色へ変換していません。"
   ]
-},"p-8ca3ba776116":{"sources":[{"url":"https://www.rhs.org.uk/plants/298140/helleborus-hercegovinus/details","scope":"catalog-entry"}],"basis":{"architecture":0,"flowerShape":0,"flowerRadius":0,"flowerPalette":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":0,"stemColor":0,"phenologyRegion":0,"leaflessBloom":0,"monthlyLeafColors":0},"status":"attributes","unconfirmed":["越冬葉の残存（同一資料内で記載差あり）"],"architecture":"helleboreProfile","flowerShape":"helleboreCup","flowerRadius":0.02,"flowerPalette":{"fine":true,"tilt":2.46},"leafShape":"helleboreFineLeaf","leaflets":31,"leafLength":0.14,"leafColor":"#62784c","habit":"clump","lifeForm":"herb","persistence":"deciduousHellebore","flowerMonths":[2,3,4],"flowerTiming":"season","stemColor":"#71894d","phenologyRegion":"販売元・RHSの栽培地域における参考。開花・新葉・枯れ込みの時期は栽培地域と寒さで前後します。","leaflessBloom":true,"monthlyLeafColors":["#62784c","#947564","#887858","#6b824e","#62784c","#62784c","#62784c","#62784c","#62784c","#62784c","#62784c","#62784c"]},"p-30ee1c6dbf0c":{"sources":[{"url":"https://www.ashwoodnurseries.com/product/helleborus-2/","scope":"catalog-entry"}],"basis":{"architecture":0,"flowerShape":0,"flowerRadius":0,"flowerPalette":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":0,"stemColor":0,"phenologyRegion":0,"leaflessBloom":0},"status":"attributes","unconfirmed":[],"architecture":"helleboreProfile","flowerShape":"helleboreCup","flowerRadius":0.025,"flowerPalette":{"tilt":2.45},"leafShape":"helleboreLeaf","leaflets":13,"leafLength":0.12,"leafColor":"#62784c","habit":"clump","lifeForm":"herb","persistence":"deciduousHellebore","flowerMonths":[1,2,3,4],"flowerTiming":"months","stemColor":"#71894d","phenologyRegion":"販売元・RHSの栽培地域における参考。開花・新葉・枯れ込みの時期は栽培地域と寒さで前後します。","leaflessBloom":true},"p-cbf2d7baa611":{
+},"p-8ca3ba776116":{
+  "sources": [
+    {
+      "url": "https://www.rhs.org.uk/plants/298140/helleborus-hercegovinus/details",
+      "scope": "species"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 1,
+    "lifeForm": 1,
+    "persistence": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "wildHelleboreReferences",
+  "shootProfile": "hercegovinus",
+  "leafShape": "wildHercegovinusFineReference",
+  "leafColor": "#4f7850",
+  "leafPattern": "wildHelleborePlainReference",
+  "flowerShape": "wildHercegovinusPointedGreenReference",
+  "flowerMonths": [
+    2,
+    3,
+    4
+  ],
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "uncalibratedHelleboreLeafReference",
+  "stemColor": "#759261",
+  "phenologyRegion": "英国のRHS・販売元の参考です。日本の月別の落葉・展葉・冬の残葉は未確認のため、健康な展葉株の葉を各月に残す未校正の表示です。常緑性や自然な年周変化の予測ではありません。",
+  "sourceConflict": "英国の高さ・幅0.1〜0.5mはRHSの成熟サイズ区分で、国内の実測ではありません。本文は落葉性、分類欄は常緑〜半常緑と記載が異なり、冬の葉の有無は未確定です。晩冬〜春を2〜4月へ仮換算しています。名称欄はSynonymですが、既存の名称・学名・IDを保持し、別種やクローンへ統合していません。",
+  "unconfirmed": [
+    "RHS写真の細長く多数に分かれる根生葉、尖った緑の5萼と葉を持つ花軸を参考にしています。若葉のブロンズから緑への説明は葉齢の差で、3Dの6群中2群の色は静的な見本です。月別の必然的な変色や発生率ではありません。",
+    "同一株の年間実物照合0。日本で同じ個体を追った月別の開花・落葉・展葉、露地と温室の違いは未校正です。",
+    "根生6群と開花時の苞葉3群を接続する参考です。各根生群は7主軸と各5末端裂片、計35枚の細い裂片を置く近似で、写真の固定分裂数を数えた値ではありません。",
+    "花軸3本に各3花と1蕾、8蜜腺・32雄しべ・3心皮を置く参考です。花径に数値の裏付けはなく、写真比率から置く表示寸法です。器官数・花数・密度は計数実測ではありません。",
+    "健康な展葉株の葉を各月に保つ参考で、落葉性を常緑性へ変更したものではありません。冬の葉無し・夏の少葉を資料なしに強制せず、自然な落葉月・芽出し月・枯れ茎・管理後の再生は未再現です。",
+    "花期外は花軸を省いた参考で、果実・種子・根は未再現です。RHSの成熟2〜5年や英国販売元の10年後サイズを計画年数による成長・開花条件へ変換していません。"
+  ]
+},"p-30ee1c6dbf0c":{
+  "sources": [
+    {
+      "url": "https://www.ashwoodnurseries.com/product/helleborus-2/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 1,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 1,
+    "lifeForm": 1,
+    "persistence": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "wildHelleboreReferences",
+  "shootProfile": "istriacus",
+  "leafShape": "wildIstriacusSegmentReference",
+  "leafColor": "#5b7a4e",
+  "leafPattern": "wildHelleborePlainReference",
+  "flowerShape": "wildIstriacusStarGreenReference",
+  "flowerMonths": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "uncalibratedHelleboreLeafReference",
+  "stemColor": "#6f945b",
+  "phenologyRegion": "英国のRHS・販売元の参考です。日本の月別の落葉・展葉・冬の残葉は未確認のため、健康な展葉株の葉を各月に残す未校正の表示です。常緑性や自然な年周変化の予測ではありません。",
+  "sourceConflict": "英国の高さ20〜30cmは販売元のHeight after 10 years欄で、国内の実測・計画10年後の予測ではありません。幅は未確認です。1〜4月は英国の販売元の開花月です。葉の10〜14分裂は選抜された掲載系統の説明で、種全体や同じクローンの固定値ではありません。",
+  "unconfirmed": [
+    "英国の花写真2枚は緑の尖った星形〜杯形5萼、緑の花軸・苞葉と淡い葯の例です。丸い花もあるという本文を区別し、3Dは掲載の星形の参考です。成株全体の根生葉写真はなく、葉の配置・寸法は仮の表現です。",
+    "同一株の年間実物照合0。日本で同じ個体を追った月別の開花・落葉・展葉、露地と温室の違いは未校正です。",
+    "根生6群と開花時の苞葉3群を接続する参考です。各根生群13枚の末端裂片は選抜系統10〜14分裂の範囲内の表示例で、種の固定値ではありません。",
+    "花軸3本に各3花と1蕾、8蜜腺・32雄しべ・3心皮を置く参考です。花径に数値の裏付けはなく、写真比率から置く表示寸法です。器官数・花数・密度は計数実測ではありません。",
+    "健康な展葉株の葉を各月に保つ参考で、落葉性を常緑性へ変更したものではありません。冬の葉無し・夏の少葉を資料なしに強制せず、自然な落葉月・芽出し月・枯れ茎・管理後の再生は未再現です。",
+    "花期外は花軸を省いた参考で、果実・種子・根は未再現です。RHSの成熟2〜5年や英国販売元の10年後サイズを計画年数による成長・開花条件へ変換していません。"
+  ]
+},"p-cbf2d7baa611":{
   "sources": [
     {
       "url": "https://www.rhs.org.uk/plants/24575/helleborus-thibetanus/details",
