@@ -4211,7 +4211,229 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "花後は上部の花軸と苞葉を整理し短い茎を残す管理例です。果実・種子・根、自然な枯れ込みは未再現です。",
     "晩冬〜春を2〜5月へ換算しています。販売時期と温室の開花苗を露地の開花月へ転用せず、苗齢や実生から開花までの年数を計画開始年の予測にしていません。"
   ]
-},"p-0a3c65edbe48":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":0},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"evergreen","unconfirmed":[]},"p-951f12b04685":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=292","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/101gm/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":2,"habit":0,"leafShape":2,"leafTexture":0,"compoundType":0,"leafColor":2,"petals":0,"persistence":2,"phenologyRegion":2,"architecture":2,"leafLength":2,"leaflets":2,"seasonalColors":2,"flowerRadius":2,"flowerLayers":2,"flowerPalette":2,"flowerMonths":2,"flowerTiming":2,"stemColor":2},"status":"partial","inflorescence":"cyme","flowerShape":"helleboreCup","habit":"clump","leafShape":"helleboreLeaf","leafTexture":"glossy","compoundType":"palmate","leafColor":"#a5b565","petals":5,"persistence":"evergreen","phenologyRegion":"grower-cold","unconfirmed":[],"architecture":"helleboreProfile","leafLength":0.13,"leaflets":7,"seasonalColors":{"spring":"#9bae67","summer":"#a8b971","autumn":"#c4bf5d","winter":"#d5c852"},"flowerRadius":0.035,"flowerLayers":1,"flowerPalette":{"nectary":"#d8b94e","paint":"goldSand"},"flowerMonths":[2,3,4],"flowerTiming":"season","stemColor":"#a0a763"},"p-f8e59da460c6":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=291","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/101gp/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":2,"habit":0,"leafShape":2,"leafTexture":0,"compoundType":0,"leafColor":2,"petals":0,"persistence":2,"phenologyRegion":2,"architecture":2,"leafLength":2,"leaflets":2,"seasonalColors":2,"flowerRadius":2,"flowerLayers":2,"flowerPalette":2,"flowerMonths":2,"flowerTiming":2,"stemColor":2},"status":"partial","inflorescence":"cyme","flowerShape":"helleboreCup","habit":"clump","leafShape":"helleboreLeaf","leafTexture":"glossy","compoundType":"palmate","leafColor":"#a5b565","petals":5,"persistence":"evergreen","phenologyRegion":"grower-cold","unconfirmed":[],"architecture":"helleboreProfile","leafLength":0.13,"leaflets":7,"seasonalColors":{"spring":"#9bae67","summer":"#a8b971","autumn":"#c4bf5d","winter":"#d5c852"},"flowerRadius":0.035,"flowerLayers":1,"flowerPalette":{"nectary":"#d8b94e","paint":"goldSpots"},"flowerMonths":[2,3,4],"flowerTiming":"season","stemColor":"#a0a763"},"p-daf462f19a50":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=289","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/101gb/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":2,"habit":0,"leafShape":2,"leafTexture":0,"compoundType":0,"leafColor":2,"petals":0,"persistence":2,"phenologyRegion":2,"architecture":2,"leafLength":2,"leaflets":2,"seasonalColors":2,"flowerRadius":2,"flowerLayers":2,"flowerPalette":2,"flowerMonths":2,"flowerTiming":2,"stemColor":2},"status":"partial","inflorescence":"cyme","flowerShape":"helleboreCup","habit":"clump","leafShape":"helleboreLeaf","leafTexture":"glossy","compoundType":"palmate","leafColor":"#a5b565","petals":5,"persistence":"evergreen","phenologyRegion":"grower-cold","unconfirmed":[],"architecture":"helleboreProfile","leafLength":0.13,"leaflets":7,"seasonalColors":{"spring":"#9bae67","summer":"#a8b971","autumn":"#c4bf5d","winter":"#d5c852"},"flowerRadius":0.035,"flowerLayers":1,"flowerPalette":{"nectary":"#d8b94e","paint":"goldBlotch"},"flowerMonths":[2,3,4],"flowerTiming":"season","stemColor":"#a0a763"},"p-d7c1a8e07e96":{
+},"p-0a3c65edbe48":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":0},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"evergreen","unconfirmed":[]},"p-951f12b04685":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/101gm/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "monthlyLeafColors": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "goldHelleboreReferences",
+  "shootProfile": "goldSand",
+  "leafShape": "goldHelleboreToothedReference",
+  "leafColor": "#9eac64",
+  "monthlyLeafColors": [
+    "#d2c66b",
+    "#a8ad68",
+    "#9eac64",
+    "#97a665",
+    "#97a665",
+    "#d2c66b",
+    "#d2c66b",
+    "#d2c66b",
+    "#d2c66b",
+    "#a8ad68",
+    "#a8ad68",
+    "#d2c66b"
+  ],
+  "leafPattern": "goldHelleboreSummerWinterMottleReference",
+  "flowerShape": "goldSandSingleReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#99846a",
+  "phenologyRegion": "国内販売元の寒冷地・温室の苗管理と、夏と冬の黄葉を参考にしています。6〜9月は花後に根生葉2群、冬は古葉を切らず6群残す保護例です。10・11月は秋の写真の緑を帯びる葉とし、色の強さ・月の境界・再生は未実測です。",
+  "sourceConflict": "国内の高さ25〜50cm・幅40〜80cmを採用。販売元は斑点が分散するスポット、集中するブロッチと区別し、砂目は特に細かい斑点の選抜です。実生の販売系統の区別であり、分類学的な別種や同一クローンの固定値ではありません。現在の販売ページを採用し、取得できなかった旧ギャラリーを現在の形態・寸法の確認元にしていません。",
+  "unconfirmed": [
+    "粉状の細かい赤い斑点が、黄〜クリームの丸い5萼の内側に入り、基部寄りに濃く外側へ散る6枚の花写真を参考にしています。斑点の細かさ・丸弁の幅には実生の個体差があります。",
+    "同じ販売株を12か月追った実測、年次成長、株分け・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "根生6群を各7小葉、開花時の苞葉3群を各3小葉として接続する参考です。6〜9月は根生2群に減らす管理例で、群数・固定分割数・葉量は実測値ではありません。",
+    "葉写真2枚は3ページで共用され、砂目とスポットの苗写真も共用です。ゴールド系の幅広い鋸歯葉・緑の散り・黄葉の参考に限り、3系統の同一クローンや同じ株の年間記録の証拠にしません。",
+    "販売元は冬と夏に黄色くなると記載しています。古葉の黄褐色化・任意の切除と自然な落葉は別条件で、冬に一律の葉無しを強制せず、色の強さ・緑へ戻る月・夏の再生は未予測です。",
+    "黄〜橙の蜜腺を選んだ写真例です。写真にある緑を帯びる蜜腺・葯の残存差を、同じ花の月別や花齢による変化へ変換していません。外面の模様・色は十分に見えず、淡黄の外面は仮の表現です。",
+    "花軸3本に各3花と1蕾、8蜜腺・32雄しべ・3心皮を置く参考です。数値の花径は未確認で、花径・花数・器官数は実測の固定値ではありません。",
+    "花後は上部の花軸と苞葉を整理し短い茎を残す管理例です。果実・種子・根、自然な枯れ込みは未再現です。晩冬〜春を2〜5月へ換算し、温室苗を露地の開花月へ転用せず、苗齢を計画開始年の予測にしていません。"
+  ]
+},"p-f8e59da460c6":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/101gp/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "monthlyLeafColors": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "goldHelleboreReferences",
+  "shootProfile": "goldSpots",
+  "leafShape": "goldHelleboreToothedReference",
+  "leafColor": "#9eac64",
+  "monthlyLeafColors": [
+    "#d2c66b",
+    "#a8ad68",
+    "#9eac64",
+    "#97a665",
+    "#97a665",
+    "#d2c66b",
+    "#d2c66b",
+    "#d2c66b",
+    "#d2c66b",
+    "#a8ad68",
+    "#a8ad68",
+    "#d2c66b"
+  ],
+  "leafPattern": "goldHelleboreSummerWinterMottleReference",
+  "flowerShape": "goldSpotsSingleReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#9c8068",
+  "phenologyRegion": "国内販売元の寒冷地・温室の苗管理と、夏と冬の黄葉を参考にしています。6〜9月は花後に根生葉2群、冬は古葉を切らず6群残す保護例です。10・11月は秋の写真の緑を帯びる葉とし、色の強さ・月の境界・再生は未実測です。",
+  "sourceConflict": "国内の高さ25〜50cm・幅40〜80cmを採用。販売元は斑点が分散するスポット、集中するブロッチと区別し、砂目は特に細かい斑点の選抜です。実生の販売系統の区別であり、分類学的な別種や同一クローンの固定値ではありません。現在の販売ページを採用し、取得できなかった旧ギャラリーを現在の形態・寸法の確認元にしていません。",
+  "unconfirmed": [
+    "赤い斑点が萼の内側へ分散する4枚の花写真を参考にしています。点は細長いもの・基部に密なもの・淡いものがあり、特定クローンの固定模様ではありません。",
+    "同じ販売株を12か月追った実測、年次成長、株分け・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "根生6群を各7小葉、開花時の苞葉3群を各3小葉として接続する参考です。6〜9月は根生2群に減らす管理例で、群数・固定分割数・葉量は実測値ではありません。",
+    "葉写真2枚は3ページで共用され、砂目とスポットの苗写真も共用です。ゴールド系の幅広い鋸歯葉・緑の散り・黄葉の参考に限り、3系統の同一クローンや同じ株の年間記録の証拠にしません。",
+    "販売元は冬と夏に黄色くなると記載しています。古葉の黄褐色化・任意の切除と自然な落葉は別条件で、冬に一律の葉無しを強制せず、色の強さ・緑へ戻る月・夏の再生は未予測です。",
+    "黄〜橙の蜜腺を選んだ写真例です。写真にある緑を帯びる蜜腺・葯の残存差を、同じ花の月別や花齢による変化へ変換していません。外面の模様・色は十分に見えず、淡黄の外面は仮の表現です。",
+    "花軸3本に各3花と1蕾、8蜜腺・32雄しべ・3心皮を置く参考です。数値の花径は未確認で、花径・花数・器官数は実測の固定値ではありません。",
+    "花後は上部の花軸と苞葉を整理し短い茎を残す管理例です。果実・種子・根、自然な枯れ込みは未再現です。晩冬〜春を2〜5月へ換算し、温室苗を露地の開花月へ転用せず、苗齢を計画開始年の予測にしていません。"
+  ]
+},"p-daf462f19a50":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/101gb/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "monthlyLeafColors": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "goldHelleboreReferences",
+  "shootProfile": "goldBlotch",
+  "leafShape": "goldHelleboreToothedReference",
+  "leafColor": "#9eac64",
+  "monthlyLeafColors": [
+    "#d2c66b",
+    "#a8ad68",
+    "#9eac64",
+    "#97a665",
+    "#97a665",
+    "#d2c66b",
+    "#d2c66b",
+    "#d2c66b",
+    "#d2c66b",
+    "#a8ad68",
+    "#a8ad68",
+    "#d2c66b"
+  ],
+  "leafPattern": "goldHelleboreSummerWinterMottleReference",
+  "flowerShape": "goldBlotchSingleReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#a17c64",
+  "phenologyRegion": "国内販売元の寒冷地・温室の苗管理と、夏と冬の黄葉を参考にしています。6〜9月は花後に根生葉2群、冬は古葉を切らず6群残す保護例です。10・11月は秋の写真の緑を帯びる葉とし、色の強さ・月の境界・再生は未実測です。",
+  "sourceConflict": "国内の高さ25〜50cm・幅40〜80cmを採用。販売元は斑点が分散するスポット、集中するブロッチと区別し、砂目は特に細かい斑点の選抜です。実生の販売系統の区別であり、分類学的な別種や同一クローンの固定値ではありません。現在の販売ページを採用し、取得できなかった旧ギャラリーを現在の形態・寸法の確認元にしていません。",
+  "unconfirmed": [
+    "赤い模様が萼の基部へ集中し、外側に斑点が切れながら広がる3枚の花写真を参考にしています。連続した赤い面と不規則な縁を描く近似で、模様の比率や同じ株の時系列ではありません。",
+    "同じ販売株を12か月追った実測、年次成長、株分け・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "根生6群を各7小葉、開花時の苞葉3群を各3小葉として接続する参考です。6〜9月は根生2群に減らす管理例で、群数・固定分割数・葉量は実測値ではありません。",
+    "葉写真2枚は3ページで共用され、砂目とスポットの苗写真も共用です。ゴールド系の幅広い鋸歯葉・緑の散り・黄葉の参考に限り、3系統の同一クローンや同じ株の年間記録の証拠にしません。",
+    "販売元は冬と夏に黄色くなると記載しています。古葉の黄褐色化・任意の切除と自然な落葉は別条件で、冬に一律の葉無しを強制せず、色の強さ・緑へ戻る月・夏の再生は未予測です。",
+    "黄〜橙の蜜腺を選んだ写真例です。写真にある緑を帯びる蜜腺・葯の残存差を、同じ花の月別や花齢による変化へ変換していません。外面の模様・色は十分に見えず、淡黄の外面は仮の表現です。",
+    "花軸3本に各3花と1蕾、8蜜腺・32雄しべ・3心皮を置く参考です。数値の花径は未確認で、花径・花数・器官数は実測の固定値ではありません。",
+    "花後は上部の花軸と苞葉を整理し短い茎を残す管理例です。果実・種子・根、自然な枯れ込みは未再現です。晩冬〜春を2〜5月へ換算し、温室苗を露地の開花月へ転用せず、苗齢を計画開始年の予測にしていません。"
+  ]
+},"p-d7c1a8e07e96":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/101gn/",

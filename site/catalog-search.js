@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.894';
+import {treeProfile} from './tree-profiles.js?v=0.9.895';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -339,6 +339,7 @@ export function seasonAt(info,month){
  if(a.architecture==='ruelliaTropicstarReference'){scale=1;phase=[1,2,12].includes(month)?'温度を保護した冬の残葉の参考（戸外の生存や全国一律の越冬は未予測）':bloom?'国内販売元の8～10月の5裂漏斗花と細い対生葉の参考（1日花の時間変化は未再現）':'細い対生葉と分岐茎の参考（月別の葉量・成長量は未校正）';}
  if(a.architecture==='vesicariusReferences'){density=[7,8,9].includes(month)?0:1;scale=month===10?.45:1;phase=density===0?'国内栽培説明を参考にした地上部を描かない夏眠の区分（地下部・休眠芽は未再現）':month===10?'10月頃の芽出しを群ごとに少なくした参考（実測成長曲線ではない）':bloom?'冬〜春の小さな鐘形花と深裂葉の参考（2〜4月は表示上の仮区分）':'冬に緑の根生葉と茎葉を残す参考（種さやと成熟過程は未再現）';}
  if(a.architecture==='goldHelleboreReferences'){scale=1;density=1;phase=[10,11,12,1].includes(month)?'秋冬の黄葉を古葉未剪定で残す保護参考（黄葉の強さ・月境界は未実測）':month>=6&&month<=9?'花後に根生葉の群を減らす管理参考（新葉量・再生時期は未校正）':'実生の一重の写真例と淡緑の葉の参考（花の個体差・花齢の変色は未再現）';}
+ if(a.architecture==='goldHelleboreReferences'&&['goldSand','goldSpots','goldBlotch'].includes(a.shootProfile)){phase=[6,7,8,9,12,1].includes(month)?'夏と冬の黄葉を残す参考（黄葉の強さ・月境界と再生は未校正）':month>=10?'秋の緑を帯びる葉の写真例（夏からの同一株の変化は未確認）':'実生の一重と淡緑の葉の参考（模様の個体差・花齢は未再現）';}
  if(a.architecture==='wildHelleboreReferences'&&['purpurascens','torquatus','cyclophyllus','abruzzicus','multifidus','croaticus','dumetorum','serbicus','viridis'].includes(a.shootProfile)){scale=1;phase=density===0?'寒冷地で冬に葉を整理し短い茎を残す管理例（暖地の残葉・自然落葉率は未予測）':month>=6&&month<=11?'夏越し後に根生葉の群を減らした少葉の参考（密度・月の区切りは実測ではない）':'根生葉と別の花軸の参考（春の展葉量・花数は未校正）';}
  if(a.architecture==='wildHelleboreReferences'&&a.shootProfile==='bocconei'){scale=1;density=1;phase=[12,1].includes(month)?'冬の古葉を切らず一部の葉を残す保護管理の参考（剪定した苗・残葉率は別条件）':month>=6&&month<=11?'夏越し後に根生葉の群を減らした少葉の参考（密度・境界月は未実測）':'根生葉と花径5〜6cmを参考にした花の参考（展葉量・花数は未校正）';}
  if(a.architecture==='wildHelleboreReferences'&&a.shootProfile==='liguricus'){scale=1;density=1;phase=[6,7,8,12,1].includes(month)?'夏冬の褪色を近似した常緑の残葉の保護例（未剪定・強さと境界月は未実測）':'健康な常緑の根生葉と花後に上部の花軸を整理した参考（新葉量・切戻し後の再生は未校正）';}

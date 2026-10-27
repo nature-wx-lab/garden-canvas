@@ -3346,7 +3346,154 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-0a3c65edbe48":{"label":"クリスマスローズ ゴールド ダークネクタリー","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#e6cc63","leafColor":"#557442","variegated":false,"colors":["yellow"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2903","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ゴールド ダークネクタリー"],"selectionSource":null,"visual":"reference","popularity":[]},"p-951f12b04685":{"label":"クリスマスローズ ゴールド 砂目スポット","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[2,3,4],"bloomKnown":true,"flower":"#d7c95b","leafColor":"#a5b565","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。 花の模様と葉の模様を区別し、葉の誤った斑点・縞を修正しました。実生系統のため花色・花型に個体差があります。","bloomText":"資料：晩冬〜春（表示上2〜4月）","bloomBasis":"資料の季節表記から表示上の月に換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=292","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ゴールド 砂目スポット"],"selectionSource":null,"visual":"reference","popularity":[]},"p-f8e59da460c6":{"label":"クリスマスローズ ゴールドスポット","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[2,3,4],"bloomKnown":true,"flower":"#d7c95b","leafColor":"#a5b565","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。 花の模様と葉の模様を区別し、葉の誤った斑点・縞を修正しました。実生系統のため花色・花型に個体差があります。","bloomText":"資料：晩冬〜春（表示上2〜4月）","bloomBasis":"資料の季節表記から表示上の月に換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=291","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ゴールドスポット"],"selectionSource":null,"visual":"reference","popularity":[]},"p-daf462f19a50":{"label":"クリスマスローズ ゴールドブロッチ","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[2,3,4],"bloomKnown":true,"flower":"#d7c95b","leafColor":"#a5b565","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。 花の模様と葉の模様を区別し、葉の誤った斑点・縞を修正しました。実生系統のため花色・花型に個体差があります。","bloomText":"資料：晩冬〜春（表示上2〜4月）","bloomBasis":"資料の季節表記から表示上の月に換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=289","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ゴールドブロッチ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-d7c1a8e07e96":{
+},"p-0a3c65edbe48":{"label":"クリスマスローズ ゴールド ダークネクタリー","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#e6cc63","leafColor":"#557442","variegated":false,"colors":["yellow"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2903","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ゴールド ダークネクタリー"],"selectionSource":null,"visual":"reference","popularity":[]},"p-951f12b04685":{
+  "label": "クリスマスローズ ゴールド 砂目スポット",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e9dfa1",
+  "leafColor": "#9eac64",
+  "variegated": false,
+  "colors": [
+    "yellow",
+    "red",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "実生の黄〜クリーム色の花と赤い模様を参考にしています。夏・冬の黄葉と秋の緑を帯びる葉は販売元の参考写真・記載による表示です。古葉の切除、黄葉の強さ、葉の再生と月の境界は未校正です。苗齢からの成長や開花年は予測しません。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "資料の季節表記から表示上の月に換算",
+  "source": "https://item.rakuten.co.jp/ogis/101gm/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ ゴールド 砂目スポット"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-f8e59da460c6":{
+  "label": "クリスマスローズ ゴールドスポット",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e4d79a",
+  "leafColor": "#9eac64",
+  "variegated": false,
+  "colors": [
+    "yellow",
+    "red",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "実生の黄〜クリーム色の花と赤い模様を参考にしています。夏・冬の黄葉と秋の緑を帯びる葉は販売元の参考写真・記載による表示です。古葉の切除、黄葉の強さ、葉の再生と月の境界は未校正です。苗齢からの成長や開花年は予測しません。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "資料の季節表記から表示上の月に換算",
+  "source": "https://item.rakuten.co.jp/ogis/101gp/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ ゴールドスポット"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-daf462f19a50":{
+  "label": "クリスマスローズ ゴールドブロッチ",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#dfd28c",
+  "leafColor": "#9eac64",
+  "variegated": false,
+  "colors": [
+    "yellow",
+    "red",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "実生の黄〜クリーム色の花と赤い模様を参考にしています。夏・冬の黄葉と秋の緑を帯びる葉は販売元の参考写真・記載による表示です。古葉の切除、黄葉の強さ、葉の再生と月の境界は未校正です。苗齢からの成長や開花年は予測しません。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "資料の季節表記から表示上の月に換算",
+  "source": "https://item.rakuten.co.jp/ogis/101gb/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ ゴールドブロッチ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-d7c1a8e07e96":{
   "label": "クリスマスローズ ゴールドピコティ(ネオン)",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",
