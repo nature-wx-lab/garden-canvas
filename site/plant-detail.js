@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.864';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.865';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.864';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.865';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16402,6 +16402,42 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
 }
 
+export function thibetanusReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='gcThibetanusSepalRef')return[u*.5*sn**.66*(.84+.16*t),.65*t*t-.03*u*u*sn,t*.96];
+ const tooth=Math.max(0,1-Math.abs(((t*12+.035)%1)-.71)/.22),teeth=1+.12*tooth*Math.max(0,(t-.44)/.56)*Math.abs(u)**6;
+ return[u*.5*sn**.64*(.76+.24*t)*teeth,.025*sn+.014*u*u*sn-.065*t*t,t];
+}
+export const thibetanusStemUnit=new THREE.CylinderGeometry(1,1,1,7,1);
+const thibetanusSamples=Object.fromEntries(['gcThibetanusBladeRef','gcThibetanusSepalRef'].map(type=>[type,Array.from({length:33*21},(_,j)=>thibetanusReferencePoint(type,Math.floor(j/21)/32,j%21/20*2-1).map(Math.fround))]));
+function drawThibetanusReferences(b,{s,rand},kit){
+ const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),R=Math.min(.03,h*.11,w*.13),SR=Math.min(.002,h*.007,w*.006,LH*.04),surfaces=[],tag='-thibetanus-ref',stem='#8e6f75',leaf='#769652';
+ const stream=seed=>{let q=seed>>>0;return()=>{q=(q+0x6d2b79f5)>>>0;let x=Math.imul(q^(q>>>15),q|1);x^=x+Math.imul(x^(x>>>7),x|61);return((x^(x>>>14))>>>0)/4294967296;};},seed=Math.floor(rand()*4294967296),leafRand=stream(seed^0x51eaf123),flowerRand=stream(seed^0x7f10a937);
+ const matrixFor=p=>{const m=new THREE.Matrix4().compose(new THREE.Vector3(...p.slice(3,6)),new THREE.Quaternion().setFromEuler(new THREE.Euler(...p.slice(9,12),'YXZ')),new THREE.Vector3(...p.slice(6,9)));m.elements=m.elements.map(Math.fround);return m;};
+ const line=(out,from,to,r,kind,color=stem)=>{const root=new THREE.Vector3(...from),d=new THREE.Vector3(...to).sub(root);if(d.lengthSq()<1e-22)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');out.push(['gcThibetanusStemRef',kind+tag,color,...root.addScaledVector(d,.5).toArray(),r,d.length(),r,e.x,e.y,e.z]);};
+ const emit=parts=>{for(const p of parts)b.add(...p);};
+ const curve=(out,from,bend,to,r,kind,color=stem)=>{let prev=from;for(let j=1;j<=10;j++){const t=j/10,next=from.map((v,k)=>(1-t)**2*v+2*(1-t)*t*bend[k]+t*t*to[k]);line(out,prev,next,r*(1-j/50),kind,color);prev=next;}};
+ const fit=(parts,root)=>{let factor=1;for(const p of parts){const m=matrixFor(p),points=p[0]==='gcThibetanusStemRef'?Array.from({length:thibetanusStemUnit.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(thibetanusStemUnit.attributes.position,i).toArray()):thibetanusSamples[p[0]];for(const v of points){const q=new THREE.Vector3(...v).applyMatrix4(m).sub(new THREE.Vector3(...root));if(q.y>0)factor=Math.min(factor,(LH-root[1]-2e-9)/q.y);if(q.y<0)factor=Math.min(factor,(root[1]-2e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)factor=Math.min(factor,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(factor>0))throw Error('Thibetanus leaf assembly cannot fit');emit(parts.map(p=>{const v=[...p];for(let k=0;k<3;k++){v[3+k]=root[k]+(p[3+k]-root[k])*factor;v[6+k]=p[6+k]*factor;}return v;}));};
+ const fan=(root,az,basal,index)=>{const L=Math.min(.16,w*.31,LH*.68)*(basal?1:.55)*s.leafScale,end=[root[0]+Math.sin(az)*w*(basal?.04:.008),root[1]+LH*(basal?.50:.015)*s.leafScale,root[2]+Math.cos(az)*w*(basal?.04:.008)],parts=[];curve(parts,root,[end[0],end[1]+LH*.02,end[2]],end,SR*(basal?.7:.45),'petiole');
+  const blade=(at,angle,len,phase)=>parts.push(['gcThibetanusBladeRef','leaf'+tag+'-'+(basal?'basal':'cauline'),kit.shade(leafRand,leaf,.025),...at,len*.32,len,len,(basal?.18:-.18)+leafRand()*.03,angle,(phase-1)*.015]);blade(end,az,L,1);
+  for(const side of[-1,1]){const a=az+side*.88,branchEnd=[end[0]+Math.sin(a)*L*.25,end[1]+L*.035,end[2]+Math.cos(a)*L*.25];line(parts,end,branchEnd,SR*.40,'leaf-axis');for(let k=0;k<3;k++)blade(branchEnd,az+side*(.70+k*.47),L*(.90-k*.13),k);}
+  fit(parts,root);
+ };
+ let flowerIndex=0;
+ const flower=(at,yaw)=>{const index=flowerIndex++,rot=new THREE.Quaternion().setFromEuler(new THREE.Euler(2.36+index*.055,yaw,0,'YXZ')),to=q=>new THREE.Vector3(...q).applyQuaternion(rot).add(new THREE.Vector3(...at)),col=['#ede7e2','#d6b8c2','#d2d9b7','#e4cad2'][index%4];
+  for(let k=0;k<5;k++){const q=rot.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,k*TAU/5,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),p=['gcThibetanusSepalRef','sepal'+tag,kit.shade(flowerRand,col,.014),...at,R*1.5,R,R,e.x,e.y,e.z];b.add(...p);if(k<2){const row=20,cell=row*21+10,vertices=[cell,cell+21,cell+1],m=matrixFor(p),pts=vertices.map(v=>new THREE.Vector3(...thibetanusSamples.gcThibetanusSepalRef[v]).applyMatrix4(m)),point=pts[0].clone().add(pts[1]).add(pts[2]).multiplyScalar(1/3),normal=pts[1].clone().sub(pts[0]).cross(pts[2].clone().sub(pts[0])).normalize();surfaces.push({point,normal,instanceId:index*5+k,vertices,faceIndex:(row*20+10)*2,radius:R*2.2});}}
+  for(let k=0;k<36;k++){const az=k*2.399963,r=R*(.13+.13*(k%4)/3),tip=[Math.sin(az)*r,R*(.24+.10*(k%5)/4),Math.cos(az)*r],parts=[];line(parts,to([0,0,0]).toArray(),to(tip).toArray(),R*.009,'filament','#d9d8b0');emit(parts);b.add('gcThibetanusRoundRef','anther'+tag,'#e1d778',...to(tip).toArray(),R*.025,R*.030,R*.018);}
+  for(let k=0;k<9;k++){const az=k*TAU/9,e=new THREE.Euler().setFromQuaternion(rot,'YXZ');b.add('gcThibetanusNectaryRef','nectary'+tag,'#b1bc7a',...to([Math.sin(az)*R*.32,R*.12,Math.cos(az)*R*.32]).toArray(),R*.047,R*.22,R*.047,e.x,e.y,e.z);}
+  for(let k=0;k<2;k++){const a=k*Math.PI,parts=[];line(parts,to([Math.sin(a)*R*.065,0,Math.cos(a)*R*.065]).toArray(),to([Math.sin(a)*R*.09,R*.33,Math.cos(a)*R*.09]).toArray(),R*.025,'carpel','#a5b77c');emit(parts);}
+ };
+ for(let i=0;i<2;i++){
+  const az=.55+i*2.55,factor=i?.98:.91,base=[Math.sin(az)*w*.03,SR*1.4,Math.cos(az)*w*.03],node=[base[0]+Math.sin(az)*w*.025,Math.min(LH*.73,h*.53),base[2]+Math.cos(az)*w*.025],top=[node[0]+Math.sin(az)*w*.025,h*.68*factor,node[2]+Math.cos(az)*w*.025],parts=[];
+  line(parts,base,node,SR,'stem');line(parts,node,top,SR*.85,'stem');emit(parts);if(s.leafDensity>0){fan(base,az-.6,true,i);fan(node,az+.6,false,i);}
+  if(s.bloom)for(let k=0;k<2;k++){const angle=az+(k?1:-1)*.7,at=[top[0]+Math.sin(angle)*w*.10,h*(k?.92:.84)*factor,top[2]+Math.cos(angle)*w*.10],p=[];curve(p,top,[at[0],at[1]+h*.025,at[2]],at,SR*.62,'pedicel');emit(p);flower(at,angle);}
+ }
+ for(const v of surfaces){const camera=v.normal.clone();if(h<.12&&camera.y<0)camera.negate();else if(h>=.12&&camera.y<-.25)camera.y=-.25;camera.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),camera),'YXZ');b.flower?.(v.point.toArray(),v.radius,e.x,e.y,e.z,{component:'sepal'+tag,instanceId:v.instanceId,vertices:v.vertices,faceIndex:v.faceIndex,cameraAxis:camera.toArray()});}
+}
+
 export function foetidusReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='gcFoetidusSepalRef'){
@@ -19029,6 +19065,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ogisMonardaColourReferences'){drawOgisMonardaColourReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='retailMonardaReferences'){drawRetailMonardaReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='ruelliaTropicstarReference'){drawRuelliaTropicstarReference(b,{info,s,month,rand},kit);return;}
+ if(info.appearance?.architecture==='thibetanusReferences'){drawThibetanusReferences(b,{s,rand},kit);return;}
  if(info.appearance?.architecture==='foetidusReferences'){drawFoetidusReferences(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='sterniiReferences'){drawSterniiReferences(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='argutifoliusReferences'){drawArgutifoliusReferences(b,{info,s,rand},kit);return;}
