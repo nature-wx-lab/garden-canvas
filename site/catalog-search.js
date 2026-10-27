@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.909';
+import {treeProfile} from './tree-profiles.js?v=0.9.910';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -346,6 +346,7 @@ export function seasonAt(info,month){
  if(a.architecture==='hybridHelleboreDoubleReferences'){scale=1;density=1;phase=bloom?'実生のアプリコット八重の写真例（花齢・環境による変色を月順に予測しない静的な参考）':'健康な緑の根生葉を残す保護参考（花後の減少量・再生時期は未校正）';}
  if(a.architecture==='hybridHelleboreDoubleReferences'&&['pinkDouble','whitePicoteeDouble','pinkSpotsDouble'].includes(a.shootProfile)){phase=bloom?'実生の桃・白の八重の写真例（模様の個体差・花齢による変色は未予測）':'健康な緑の根生葉を残す保護参考（花後の減少量・再生時期は未校正）';}
  if(a.architecture==='hybridHelleboreDoubleReferences'&&['bicolourDouble','reversibleSingle','reversibleDouble'].includes(a.shootProfile)){phase=bloom?(a.shootProfile==='reversibleSingle'?'実生の紅白リバーシブルの一重例（内外の色と個体差の静的な参考）':'実生の表裏の配色を分けた八重例（花齢の変色・個体差は未予測）'):'健康な緑の根生葉を残す保護参考（花後の減少量・再生時期は未校正）';}
+ if(a.architecture==='hybridHelleboreDoubleReferences'&&['veinDouble','yellowPicoteeDouble','creamThinPicoteeDouble'].includes(a.shootProfile)){phase=bloom?(a.shootProfile==='creamThinPicoteeDouble'?'クリームの糸覆輪の成株花の参考（販売小苗の開花まで1〜2年という見込みとは別）':'実生のベイン・黄の細覆輪の八重例（花齢の変色・個体差は未予測）'):'健康な緑の根生葉を残す保護参考（低温の銅色化・新葉量・夏の減少は未校正）';}
  if(a.architecture==='goldHelleboreReferences'){scale=1;density=1;phase=[10,11,12,1].includes(month)?'秋冬の黄葉を古葉未剪定で残す保護参考（黄葉の強さ・月境界は未実測）':month>=6&&month<=9?'花後に根生葉の群を減らす管理参考（新葉量・再生時期は未校正）':'実生の一重の写真例と淡緑の葉の参考（花の個体差・花齢の変色は未再現）';}
  if(a.architecture==='goldHelleboreReferences'&&['goldDouble','goldSpotsDouble','goldNeonDouble','goldPicoteeDouble'].includes(a.shootProfile)&&bloom){phase='実生の八重花と淡緑の葉の参考（内側は蜜腺由来の花びら状部分、列数と月の区切りは近似）';}
  if(a.architecture==='goldHelleboreReferences'&&a.shootProfile==='goldPicoteeDouble'&&!bloom){phase=[6,7,8,9,12,1].includes(month)?'夏と冬の黄葉を残す参考（この販売ページの写真説明に基づく、月境界と再生は未校正）':'秋の緑を帯びる葉の参考（同一株の連続変化は未確認）';}
