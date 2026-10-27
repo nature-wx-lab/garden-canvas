@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.865';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.866';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.865';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.866';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -16402,6 +16402,44 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
  }
 }
 
+export function lemonnieraeReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type.includes('Sepal')){const pointed=type.includes('Sifra'),broad=type.includes('Madam');return[u*.5*sn**(pointed?.72:broad?.40:.46)*(pointed?.85+.15*t:.93+.07*t),.33*t*t-.025*u*u*sn,t*.98];}
+ const tooth=Math.max(0,1-Math.abs(((t*11+.035)%1)-.71)/.22),teeth=1+.11*tooth*Math.max(0,(t-.30)/.70)*Math.abs(u)**6;
+ return[u*.5*sn**.60*(.85+.15*t)*teeth,.022*sn+.013*u*u*sn-.075*t*t,t];
+}
+export const lemonnieraeStemUnit=new THREE.CylinderGeometry(1,1,1,7,1);
+const lemonnieraeSamples=Object.fromEntries(['gcLemonnieraeBladeRef','gcLemonnieraeSensasSepalRef','gcLemonnieraeSifraSepalRef','gcLemonnieraeMadamSepalRef'].map(type=>[type,Array.from({length:33*21},(_,j)=>lemonnieraeReferencePoint(type,Math.floor(j/21)/32,j%21/20*2-1).map(Math.fround))]));
+function drawLemonnieraeReferences(b,{s,rand,info},kit){
+ const profile=info.appearance.shootProfile,madam=profile==='madam',sifra=profile==='sifra',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),R=Math.min(madam?.055:.035,h*.12,w*.13),SR=Math.min(.0022,h*.008,w*.007,LH*.035),surfaces=[],tag='-lemonnierae-ref',stem=sifra?'#947083':madam?'#849265':'#8e9a78',leaf=madam?'#365c43':sifra?'#3b5e49':'#4a6955',sepalShape=madam?'gcLemonnieraeMadamSepalRef':sifra?'gcLemonnieraeSifraSepalRef':'gcLemonnieraeSensasSepalRef';
+ const stream=seed=>{let q=seed>>>0;return()=>{q=(q+0x6d2b79f5)>>>0;let x=Math.imul(q^(q>>>15),q|1);x^=x+Math.imul(x^(x>>>7),x|61);return((x^(x>>>14))>>>0)/4294967296;};},seed=Math.floor(rand()*4294967296),leafRand=stream(seed^0x51eaf123),flowerRand=stream(seed^0x7f10a937);
+ const matrixFor=p=>{const m=new THREE.Matrix4().compose(new THREE.Vector3(...p.slice(3,6)),new THREE.Quaternion().setFromEuler(new THREE.Euler(...p.slice(9,12),'YXZ')),new THREE.Vector3(...p.slice(6,9)));m.elements=m.elements.map(Math.fround);return m;};
+ const line=(out,from,to,r,kind,color=stem)=>{const root=new THREE.Vector3(...from),d=new THREE.Vector3(...to).sub(root);if(d.lengthSq()<1e-22)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),d.clone().normalize()),'YXZ');out.push(['gcLemonnieraeStemRef',kind+tag,color,...root.addScaledVector(d,.5).toArray(),r,d.length(),r,e.x,e.y,e.z]);};
+ const emit=parts=>{for(const p of parts)b.add(...p);};
+ const curve=(out,from,bend,to,r,kind,color=stem)=>{let prev=from;for(let j=1;j<=10;j++){const t=j/10,next=from.map((v,k)=>(1-t)**2*v+2*(1-t)*t*bend[k]+t*t*to[k]);line(out,prev,next,r*(1-j/50),kind,color);prev=next;}};
+ const stemPoints=Array.from({length:lemonnieraeStemUnit.attributes.position.count},(_,i)=>new THREE.Vector3().fromBufferAttribute(lemonnieraeStemUnit.attributes.position,i).toArray());
+ const fit=(parts,root)=>{let factor=1;for(const p of parts){const m=matrixFor(p),points=p[0]==='gcLemonnieraeStemRef'?stemPoints:lemonnieraeSamples[p[0]];for(const v of points){const q=new THREE.Vector3(...v).applyMatrix4(m).sub(new THREE.Vector3(...root));if(q.y>0)factor=Math.min(factor,(LH-root[1]-2e-9)/q.y);if(q.y<0)factor=Math.min(factor,(root[1]-2e-9)/-q.y);const A=q.x*q.x+q.z*q.z,B=2*(root[0]*q.x+root[2]*q.z),C=root[0]**2+root[2]**2-(w*.5-2e-9)**2;if(A>0)factor=Math.min(factor,(-B+Math.sqrt(Math.max(0,B*B-4*A*C)))/(2*A));}}if(!(factor>0))throw Error('Lemonnierae leaf assembly cannot fit');emit(parts.map(p=>{const v=[...p];for(let k=0;k<3;k++){v[3+k]=root[k]+(p[3+k]-root[k])*factor;v[6+k]=p[6+k]*factor;}return v;}));};
+ const fan=(root,az,basal,index)=>{const L=Math.min(madam?.19:.145,w*.30,LH*.82)*(basal?(.82+(index%3)*.09):.42),end=[root[0]+Math.sin(az)*w*(basal?.075:.012),root[1]+LH*(basal?(.40+(index%3)*.08):.035),root[2]+Math.cos(az)*w*(basal?.075:.012)],parts=[];curve(parts,root,[end[0],end[1]+LH*.015,end[2]],end,SR*(basal?.70:.45),'petiole');
+  const blade=(at,angle,len,phase)=>parts.push(['gcLemonnieraeBladeRef','leaf'+tag+'-'+profile+'-'+(basal?'basal':'cauline'),kit.shade(leafRand,leaf,.022),...at,len*.40,len,len,(basal?.17:-.12)+leafRand()*.13,angle,(phase-1)*.015]);blade(end,az,L,1);
+  for(const side of[-1,1]){const a=az+side*.78,branchEnd=[end[0]+Math.sin(a)*L*.17,end[1]+L*.025,end[2]+Math.cos(a)*L*.17];line(parts,end,branchEnd,SR*.40,'leaf-axis');for(let k=0;k<(basal?3:1);k++)blade(branchEnd,az+side*(.66+k*.42),L*(.93-k*.13),k);}
+  fit(parts,root);
+ };
+ if(s.leafDensity>0)for(let i=0;i<6;i++){const az=.30+i*2.399963,root=[Math.sin(az)*w*.022,SR*1.5,Math.cos(az)*w*.022];fan(root,az,true,i);}
+ let flowerIndex=0;
+ const flower=(at,yaw)=>{const index=flowerIndex++,radius=R*(.84+.16*(index%3)/2),rot=new THREE.Quaternion().setFromEuler(new THREE.Euler(2.22+(index%4)*.075,yaw,0,'YXZ')),to=q=>new THREE.Vector3(...q).applyQuaternion(rot).add(new THREE.Vector3(...at)),palette=madam?['#cc7b9d','#df95b2','#d68aa9']:sifra?['#b24b78','#c4608c','#a74c70']:['#dfb0c4','#d79fb7','#e6bccd'],col=palette[index%3];
+  for(let k=0;k<5;k++){const q=rot.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,k*TAU/5,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),p=[sepalShape,'sepal'+tag+'-'+profile,kit.shade(flowerRand,col,.012),...at,radius*(madam?1.05:sifra?.95:1.00),radius,radius,e.x,e.y,e.z];b.add(...p);if(k<1){const row=20,cell=row*21+10,vertices=[cell,cell+21,cell+1],m=matrixFor(p),pts=vertices.map(v=>new THREE.Vector3(...lemonnieraeSamples[sepalShape][v]).applyMatrix4(m)),point=pts[0].clone().add(pts[1]).add(pts[2]).multiplyScalar(1/3),normal=pts[1].clone().sub(pts[0]).cross(pts[2].clone().sub(pts[0])).normalize();surfaces.push({point,normal,instanceId:index*5+k,vertices,faceIndex:(row*20+10)*2,radius:radius*2.5});}}
+  for(let k=0;k<40;k++){const az=k*2.399963,r=radius*(.13+.13*(k%4)/3),tip=[Math.sin(az)*r,radius*(.22+.10*(k%5)/4),Math.cos(az)*r],parts=[];line(parts,to([0,0,0]).toArray(),to(tip).toArray(),radius*.009,'filament','#e3dbb3');emit(parts);b.add('gcLemonnieraeRoundRef','anther'+tag,'#eadb87',...to(tip).toArray(),radius*.025,radius*.030,radius*.018);}
+  for(let k=0;k<8;k++){const az=k*TAU/8,e=new THREE.Euler().setFromQuaternion(rot,'YXZ');b.add('gcLemonnieraeNectaryRef','nectary'+tag,'#adc184',...to([Math.sin(az)*radius*.32,radius*.10,Math.cos(az)*radius*.32]).toArray(),radius*.046,radius*.20,radius*.046,e.x,e.y,e.z);}
+  for(let k=0;k<3;k++){const a=k*TAU/3,parts=[];line(parts,to([Math.sin(a)*radius*.06,0,Math.cos(a)*radius*.06]).toArray(),to([Math.sin(a)*radius*.09,radius*.30,Math.cos(a)*radius*.09]).toArray(),radius*.022,'carpel','#a5b77c');emit(parts);}
+ };
+ for(let i=0;i<4;i++){
+  const az=.55+i*2.399963,factor=[.88,1,.94,.84][i],base=[Math.sin(az)*w*.035,SR*1.5,Math.cos(az)*w*.035],node=[base[0]+Math.sin(az)*w*.035,Math.min(LH*.66,h*.45),base[2]+Math.cos(az)*w*.035],top=[node[0]+Math.sin(az)*w*.035,h*.65*factor,node[2]+Math.cos(az)*w*.035],parts=[];
+  line(parts,base,node,SR,'stem');line(parts,node,top,SR*.85,'stem');emit(parts);if(s.leafDensity>0)fan(node,az+.7,false,i);
+  if(s.bloom){for(let k=0;k<2;k++){const angle=az+(k?1:-1)*.76,at=[top[0]+Math.sin(angle)*w*.105,h*(k?.92:.83)*factor,top[2]+Math.cos(angle)*w*.105],p=[];curve(p,top,[at[0],at[1]+h*.025,at[2]],at,SR*.62,'pedicel');emit(p);flower(at,angle);}const at=[top[0]+Math.sin(az)*w*.045,h*.82*factor,top[2]+Math.cos(az)*w*.045],p=[];curve(p,top,[at[0],at[1]+h*.025,at[2]],at,SR*.55,'pedicel');emit(p);b.add('gcLemonnieraeRoundRef','bud'+tag+'-'+profile,sifra?'#b67b95':madam?'#c993aa':'#cfaebe',...at,R*.25,R*.40,R*.25,.18,az,0);}
+ }
+ for(const v of surfaces){const camera=v.normal.clone();if(h<.12&&camera.y<0)camera.y=-camera.y;else if(h>=.12&&camera.y<-.22)camera.y=-.22;camera.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),camera),'YXZ');b.flower?.(v.point.toArray(),v.radius,e.x,e.y,e.z,{component:'sepal'+tag+'-'+profile,instanceId:v.instanceId,vertices:v.vertices,faceIndex:v.faceIndex,cameraAxis:camera.toArray()});}
+}
+
 export function thibetanusReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
  if(type==='gcThibetanusSepalRef')return[u*.5*sn**.66*(.84+.16*t),.65*t*t-.03*u*u*sn,t*.96];
@@ -19065,6 +19103,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(info.appearance?.architecture==='ogisMonardaColourReferences'){drawOgisMonardaColourReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='retailMonardaReferences'){drawRetailMonardaReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='ruelliaTropicstarReference'){drawRuelliaTropicstarReference(b,{info,s,month,rand},kit);return;}
+ if(info.appearance?.architecture==='lemonnieraeReferences'){drawLemonnieraeReferences(b,{s,rand,info},kit);return;}
  if(info.appearance?.architecture==='thibetanusReferences'){drawThibetanusReferences(b,{s,rand},kit);return;}
  if(info.appearance?.architecture==='foetidusReferences'){drawFoetidusReferences(b,{info,s,rand},kit);return;}
  if(info.appearance?.architecture==='sterniiReferences'){drawSterniiReferences(b,{info,s,rand},kit);return;}
