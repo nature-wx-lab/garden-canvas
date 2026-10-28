@@ -10569,7 +10569,59 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "旧枝咲きの枝を冬も残し、夏咲き品種の強剪定や「旧枝から芽が出ない」という処理を流用しません。冬の枝量・生死・倒伏・春の枝の交代は未再現です。",
     "花の雌性器官・果実・種子頭・香り・根は未再現です。販売苗の短い切戻しや1年苗の少量の花を、成株の年周・開花到達年の証明にはしません。"
   ]
-},"p-4f2ffff9759a":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1672","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"flowerLayers":1,"scientificName":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","flowerLayers":3,"scientificName":"Clematis montana 'Green Eyes'","unconfirmed":["persistence"]},"p-0d5502895e13":{
+},"p-4f2ffff9759a":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/725ge/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.iplant.cn/foc/pdf/Clematis.pdf",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0,
+    "arrangement": 1,
+    "leafShape": 1,
+    "compoundType": 1
+  },
+  "status": "partial",
+  "architecture": "clematisMontanaReferences",
+  "shootProfile": "greeneyes",
+  "flowerShape": "greeneyesUnknownDoubleReference",
+  "flowerRadius": 0.025,
+  "leafShape": "montanaToothedTrifoliateReference",
+  "compoundType": "ternate",
+  "habit": "oldWoodTrainedReference",
+  "lifeForm": "vine",
+  "persistence": "coldLeaflessClematisReference",
+  "arrangement": "opposite",
+  "flowerMonths": [
+    4,
+    5
+  ],
+  "flowerTiming": "months",
+  "phenologyRegion": "寒冷地の低温管理の落葉を12〜2月の表示目安にして、葉と花を外し木質の旧枝を残す未剪定の参考です。翌春の花を支える旧枝と短く切り戻した出荷苗を分けます。落葉日・枯枝量・芽吹き・翌年の開花は未校正です。",
+  "sourceConflict": "国内725GEの花期4〜5月・花径4〜6cm・つるの伸びる目安3〜5mを採用し、株幅は未確認です。本文の約6cmは花径で、3〜5mを垂直高さの実測値へ置き換えません。白い八重と淡緑の花芯を写真から近似しますが、内側の花被片が萼か花弁状の雄しべか、細かな緑の中心がどの器官かは未同定です。通常の雄しべ・葯や花弁状の雄しべの種類を確定しません。花後に葉が芽吹く管理文に対し、写真には花と葉が共存するため、葉を残す写真参考とし正確な展葉月・葉量は未確認です。コンパクトさや2002年作出という記述を成長率・樹齢ごとの開花へ変換しません。花後の強めの剪定説明と、冬の旧枝を残す弱剪定を区別し、自動剪定・一律枯死や年次の伸長は計算しません。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合・年次成長・地下部・剪定後の回復は未確認です。同一株の年間実物照合0。",
+    "7本の木質のつる・14節・126花は未実測の配置です。旧枝の節から複数の花柄を出す模式で、下部の開花の参考を含みます。支柱・パーゴラ、自力で絡む動きや樹齢による太り方は生成しません。",
+    "外側4枚と内側8枚の白〜淡緑の花被片を置く八重の描画例です。花被片の枚数・大きさ・八重率は実測値ではなく、内側と緑の花芯の器官の起源は未同定です。中心の小片24個も未同定の模式で、通常の雄しべ・葯・花弁状雄しべとは確定しません。",
+    "対生する3小葉の卵形〜菱状の葉とまばらな鋸歯を種の形態・写真から近似します。小葉柄をつなぎ、全葉の毛・鋸歯数や葉齢の違いは未照合です。",
+    "白い花被片の淡緑の基部と中心、波打ち・とがった先、緑葉は静止した写真参考です。RGB値・花齢や温度による色の変化・展葉日は月や年で校正していません。",
+    "旧枝咲きの枝を冬も残し、夏咲き品種の冬の強剪定や旧枝が一律に枯れる処理を流用しません。冬の枝量・生死・倒伏・春の交代、果実・種子頭・香り・根は未再現です。"
+  ]
+},"p-0d5502895e13":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/721/",

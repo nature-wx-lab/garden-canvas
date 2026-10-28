@@ -8492,7 +8492,51 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-4f2ffff9759a":{"label":"クレマチス モンタナ グリーン アイズ","latin":"Clematis montana ’Green Eyes’","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#a1b875","leafColor":"#557442","variegated":false,"colors":["green"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1672","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ グリーン アイズ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-0d5502895e13":{
+},"p-4f2ffff9759a":{
+  "label": "クレマチス モンタナ グリーン アイズ",
+  "latin": "Clematis montana ’Green Eyes’",
+  "genre": "クレマチス",
+  "form": "botanical",
+  "group": "つる性",
+  "leaf": "deciduous",
+  "height": [
+    3,
+    5
+  ],
+  "spread": null,
+  "bloom": [
+    4,
+    5
+  ],
+  "bloomKnown": true,
+  "flower": "#f1f2e7",
+  "leafColor": "#597045",
+  "variegated": false,
+  "colors": [
+    "white",
+    "green"
+  ],
+  "sun": [
+    "sun",
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "寒冷地の落葉・木質の旧枝を残すつるの参考",
+  "care": "白い八重の花と淡い緑の中心を写真に寄せた参考です。資料の3〜5mはつるの伸びる目安で、3Dの垂直高さは誘引した配置例です。自然な成株の高さ・幅とは区別します。旧枝咲き・弱剪定の枝を残し、花後の切り戻し説明から自動の冬の強剪定や年次成長を作りません。1年苗7.5〜10.5cmポットは販売規格で、計画開始年の開花や本格開花の年数を保証しません。",
+  "bloomText": "資料：4〜5月（地域・管理で変わる開花の範囲）",
+  "bloomBasis": "国内の当該販売ページの花期見出しと旧枝の開花説明。海外の暦や写真の葉齢とは分けます",
+  "source": "https://item.rakuten.co.jp/ogis/725ge/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-29",
+  "aliases": [
+    "クレマチス モンタナ グリーン アイズ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-0d5502895e13":{
   "label": "クレマチス モンタナ エリザベス",
   "latin": "Clematis montana ‘Elizabeth’",
   "genre": "クレマチス",
