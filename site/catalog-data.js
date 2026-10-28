@@ -4638,7 +4638,57 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-cb5e798d119c":{"label":"クリスマスローズ エレガンスピンクスポット","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["sun","part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=356","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ エレガンスピンクスポット"],"selectionSource":null,"visual":"reference","popularity":[]},"p-96e9d3d617d6":{
+},"p-cb5e798d119c":{
+  "label": "クリスマスローズ エレガンスピンクスポット",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#ead9e3",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "pink",
+    "white",
+    "purple",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "淡桃〜白桃色の萼と内側の花びら状部分に、赤紫の粉状の点を重ねる八重の掲載写真の参考です。メリクロン9cm鉢の小苗と本格開花まで1〜2年という販売見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/101es/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ エレガンスピンクスポット"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-96e9d3d617d6":{
   "label": "クリスマスローズ エレガンスハニーワイン",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",
@@ -6350,7 +6400,57 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-0bfc38cc41ab":{"label":"クリスマスローズ アプリコットジェラート","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#df9c68","leafColor":"#557442","variegated":false,"colors":["orange"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2790","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ アプリコットジェラート"],"selectionSource":null,"visual":"reference","popularity":[]},"p-2d93d5c72815":{
+},"p-0bfc38cc41ab":{
+  "label": "クリスマスローズ アプリコットジェラート",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e5c58f",
+  "leafColor": "#9eac62",
+  "variegated": false,
+  "colors": [
+    "orange",
+    "yellow",
+    "pink",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "淡い杏〜黄色の萼と内側の花びら状部分に珊瑚色の縁と細い脈を重ね、ライム葉と秋冬の黄葉を分ける八重の参考です。メリクロン9cm鉢の小苗と本格開花まで1〜2年という販売見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/104aj/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ アプリコットジェラート"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-2d93d5c72815":{
   "label": "クリスマスローズ マジョリカ",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",
@@ -6399,7 +6499,56 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-b7c13481439e":{"label":"クリスマスローズ ブラックスワン","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#694c58","leafColor":"#557442","variegated":false,"colors":["dark"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2555","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ブラックスワン"],"selectionSource":null,"visual":"reference","popularity":[]},"p-19fd64361b72":{
+},"p-b7c13481439e":{
+  "label": "クリスマスローズ ブラックスワン",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#533d5c",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "dark",
+    "purple",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "黒〜紺紫の萼と、やや尖って反る内側の花びら状部分を分ける大輪八重の静的な参考です。メリクロン9cm鉢の小苗と本格開花まで1〜2年という販売見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/104bs/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ ブラックスワン"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-19fd64361b72":{
   "label": "クリスマスローズ プラムミスト",
   "latin": "Helleborus hybridus",
   "genre": "クリスマスローズ",
