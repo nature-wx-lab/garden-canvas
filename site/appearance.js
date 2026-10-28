@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.938';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.939';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -140,6 +140,7 @@ Object.assign(TRAIT_VALUES,{ruppelRetailBarEight:'桃色〜淡い紫の萼と濃
 Object.assign(TRAIT_VALUES,{fairyBlueRetailPetaloid:'青紫の萼と白〜淡紫の細い花弁化した花芯・花後の花芯の例',misayoRetailBlueMargin:'白い萼と青紫の幅広い縁・暗い花芯の一重花の参考'});
 Object.assign(TRAIT_VALUES,{littleMermaidRetailSingle:'桃色と淡いアプリコットピンクの花齢の異なる花の参考',pinkyRetailPinkBar:'白い縁と鮮やかな桃色の中央筋・暗い花芯の一重花',haruhimeRetailDouble:'淡い桜色から白を帯びる複数層の八重花と淡い花芯'});
 Object.assign(TRAIT_VALUES,{wokingRetailDouble:'淡い桃色とラベンダー色の多層の八重花、淡い黄色の花芯',shirayukiRetailVariableSingle:'白い幅広い6枚と細めの8枚の花弁状の萼をもつ一重花の参考',multiBlueRetailPetaloid:'青紫の外側の萼と細い花弁状の花芯の参考'});
+Object.assign(TRAIT_VALUES,{dancingQueenRetailDouble:'淡い桃色から白を帯びるハスのような多層の八重花',midoriRetailDouble:'緑を帯びるクリーム色の多層の花芯と赤みのある外側の八重花'});
 export function appearanceSummary(info){
  const a=info.appearance||{};
  return ['leafShape','leafPattern','persistence','flowerShape','habit','barkPattern'].filter(k=>a[k]).map(k=>`${TRAIT_LABELS[k]}：${TRAIT_VALUES[a[k]]||a[k]}`).join(' ／ ');
