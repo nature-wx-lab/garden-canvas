@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.950';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.951';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.950';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.951';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17198,6 +17198,42 @@ function drawHelleboreProfiles(b,{info,s,detail,rand},kit){
  }
 }
 
+// Florida Bicolor cultivated flower reference; no automatic sport or pruning.
+export function clematisFloridaReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='leaf')return[u*.5*sn**.75*(1-.18*t),t,.030*sn+.018*u*u*sn-.022*t*t];
+ if(type==='staminode')return[u*.5*sn**.80,.28*t+.50*t*t+.025*Math.sin(t*17)*Math.abs(u)**4*sn,t];
+ return[u*.5*sn**.56*(1-.08*t),.025*sn+.035*t*t+.012*u*u*sn,t];
+}
+export function clematisFloridaReferenceGeometry(type){
+ const p=[],uv=[],ix=[];for(let j=0;j<=32;j++)for(let i=0;i<=20;i++){p.push(...clematisFloridaReferencePoint(type,j/32,i/20*2-1));uv.push(i/20,j/32);}
+ for(let j=0;j<32;j++)for(let i=0;i<20;i++){const a=j*21+i;ix.push(a,a+21,a+1,a+1,a+21,a+22);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
+}
+function drawClematisFloridaReferences(b,{info,s},kit){
+ const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),R=Math.min(info.appearance.flowerRadius,h*.055,w*.065),sr=Math.min(.00085,h*.0015,w*.002),green=s.leafColor,dry=s.leafDensity===0,unitY=new THREE.Vector3(0,1,0),surfaces=[];let sepalSerial=0;
+ const line=(from,to,r,color,kind)=>{const a=new THREE.Vector3(...from),z=new THREE.Vector3(...to),d=z.clone().sub(a),len=d.length();if(len<1e-10)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(unitY,d.normalize()),'YXZ'),radius=Math.min(r,Math.min(from[1],to[1])*.45);b.add(clematisRetailStemUnit,kind,color,...a.add(z).multiplyScalar(.5).toArray(),radius,len,radius,e.x,e.y,e.z);};
+ const leafLength=()=>Math.min(.055,LH*.16,h*.05,w*.10);
+ const foliage=(at,yaw)=>{
+  const L=leafLength(),end=[at[0]+Math.sin(yaw)*L*.28,at[1]+L*.04,at[2]+Math.cos(yaw)*L*.28];line(at,end,sr*.35,green,'petiole-clematis-florida-ref');
+  for(const group of[-1,0,1]){const gaz=yaw+group*.80,base=[end[0]+Math.sin(gaz)*L*.28,end[1]+L*.03,end[2]+Math.cos(gaz)*L*.28];line(end,base,sr*.25,green,'petiolule-clematis-florida-ref');
+   for(const side of[-1,0,1]){const az=gaz+side*.75,root=[base[0]+Math.sin(az)*L*(side?.12:.22),base[1]+L*.02,base[2]+Math.cos(az)*L*(side?.12:.22)],length=L*(side?.48:.60);line(base,root,sr*.20,green,'petiolule-clematis-florida-ref');b.add('gcClematisFloridaLeaf','leaf-clematis-florida-ref',green,...root,length*.48,length,length,.70,az,0);}
+  }
+ };
+ const flower=(at,yaw,pitch)=>{
+  const f=flowerFrame(b,at,pitch,yaw),width=.78,kind='sepal-clematis-florida-ref-bicolor';
+  for(let k=0;k<6;k++){const az=k*TAU/6+.05,instance=sepalSerial++;f.add('gcClematisFloridaSepal',kind,'#f0f0df',0,0,0,R*width,R,R,0,az,0);if(k===0){const vertices=[24*21+10,25*21+10,24*21+11],scale=new THREE.Vector3(R*width,R,R),q=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ')),fq=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),points=vertices.map(v=>new THREE.Vector3(...clematisFloridaReferencePoint('sepal',Math.floor(v/21)/32,v%21/20*2-1).map(Math.fround)).multiply(scale).applyQuaternion(q).applyQuaternion(fq).add(new THREE.Vector3(...at))),point=points.reduce((a,v)=>a.add(v),new THREE.Vector3()).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,vertices,instanceId:instance,faceIndex:(24*20+10)*2});}}
+  for(let layer=0;layer<3;layer++){const count=layer?20:24,len=[.32,.24,.16][layer];for(let k=0;k<count;k++){const az=k*TAU/count+layer*.32+.045*Math.sin(k*1.7),size=1+.10*Math.sin(k*2.399+layer*1.73),color=layer===1?(k%3?'#743a79':'#592e62'):(k%3?'#45244f':'#603469');f.add('gcClematisFloridaStaminode','staminode-clematis-florida-ref-bicolor',color,0,R*(.020+layer*.09+.012*Math.sin(k*2.399)),0,R*(layer?.045:.052),R*len*size,R*len*size,-.18+.15*Math.sin(k*2.2),az,0);}}
+  f.add(kit.bud,'flower-base-clematis-florida-ref-bicolor','#91a273',0,-R*.025,0,R*.085,R*.065,R*.085);
+ };
+ for(let shoot=0;shoot<7;shoot++){let prev=[Math.sin(shoot*2.399)*w*.018,Math.min(h*.004,LH*.02),Math.cos(shoot*2.399)*w*.018];for(let j=1;j<=14;j++){const t=j/14,az=shoot*2.399+.48*Math.sin(t*2.4+shoot*.7),reach=w*(.025+.28*t**1.1),y=j===1?Math.min(h*.025,LH*.10):j===2?Math.min(h*.06,LH*.30):h*(.08+.76*(j-2)/12)*(1-shoot*.025),at=[Math.sin(az)*reach,y,Math.cos(az)*reach];line(prev,at,sr*(1-t*.35),'#89776b','retained-stem-clematis-florida-ref');prev=at;
+   if(!dry&&y+leafLength()*1.5<LH)for(const side of[-1,1])foliage(at,az+side*Math.PI/2);
+   if(s.bloom&&[4,6,8,10,12,14].includes(j)){const bend=[at[0]+Math.sin(az)*w*.025,at[1]+Math.min(h*.012,R*.12),at[2]+Math.cos(az)*w*.025],tip=[at[0]+Math.sin(az)*w*.05,at[1]+Math.min(h*.022,R*.23),at[2]+Math.cos(az)*w*.05],end=[tip[0]+Math.sin(az)*w*.02,tip[1]+R*.12,tip[2]+Math.cos(az)*w*.02];line(at,bend,sr*.70,'#7a8b5c','new-shoot-clematis-florida-ref');line(bend,tip,sr*.60,'#7a8b5c','new-shoot-clematis-florida-ref');line(tip,end,sr*.45,'#82935f','pedicel-clematis-florida-ref');flower(end,az*.18,.80+(shoot%3)*.04);}
+  }}
+ for(const v of surfaces){const axis=v.normal.clone();if(axis.y<.12)axis.y=.12;axis.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(unitY,axis),'YXZ');b.flower?.(v.point.toArray(),R*1.8,e.x,e.y,e.z,{component:'sepal-clematis-florida-ref-bicolor',instanceId:v.instanceId,vertices:v.vertices,faceIndex:v.faceIndex,cameraAxis:axis.toArray()});}
+}
+
+
 // Old-wood nodding Atragene references; counts and proportions are illustrative.
 export function clematisAtrageneReferencePoint(type,t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t));
@@ -20264,6 +20300,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['orientalLily','trumpetLily','nativeLily','martagonLily'].includes(a.architecture)){drawLilies(b,{info,s,detail,rand},kit);return;}
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{p,info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='clematisFloridaReferences'){drawClematisFloridaReferences(b,{info,s,p},kit);return;}
  if(a.architecture==='clematisAtrageneReferences'){drawClematisAtrageneReferences(b,{info,s,p},kit);return;}
  if(a.architecture==='clematisMontanaReferences'){drawClematisMontanaReferences(b,{info,s,p},kit);return;}
  if(a.architecture==='clematisViticellaReferences'){drawClematisViticellaReferences(b,{info,s,p},kit);return;}
