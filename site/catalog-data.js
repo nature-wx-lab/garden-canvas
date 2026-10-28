@@ -6005,7 +6005,155 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-1b72580c8206":{"label":"クリスマスローズ フローレンスピコティ","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=361","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ フローレンスピコティ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-d8892e20ea95":{"label":"クリスマスローズ フローレンスピーチ","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=359","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ フローレンスピーチ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-9491acc09c1a":{"label":"クリスマスローズ フローレンスローズリップル","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=360","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ フローレンスローズリップル"],"selectionSource":null,"visual":"reference","popularity":[]},"p-318481533176":{
+},"p-1b72580c8206":{
+  "label": "クリスマスローズ フローレンスピコティ",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e9e7d9",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "white",
+    "purple",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "小さめの白〜クリーム色の萼と内側の花びら状部分に、ごく細い紫色の覆輪と緑の中心を分ける八重の参考です。メリクロン9cm鉢の小苗と本格開花まで1〜2年という販売見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/104fc/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ フローレンスピコティ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-d8892e20ea95":{
+  "label": "クリスマスローズ フローレンスピーチ",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e6d1dc",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "pink",
+    "white",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "淡桃〜白桃色の丸い萼と、広めの桃色の縁・細い脈・重なる内側の花びら状部分を分ける八重の参考です。メリクロン9cm鉢の小苗と本格開花まで1〜2年という販売見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/104fp/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ フローレンスピーチ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-9491acc09c1a":{
+  "label": "クリスマスローズ フローレンスローズリップル",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#dfc8d9",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "pink",
+    "purple",
+    "white",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "明るい桃色の萼と内側に暗赤紫の縁・細い脈を重ね、中心が淡い咲き始めを選ぶ八重の静的な参考です。メリクロン9cm鉢の小苗と本格開花まで1〜2年という販売見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/104fr/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ フローレンスローズリップル"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-318481533176":{
   "label": "クリスマスローズ サクラピンク",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",
