@@ -8536,7 +8536,94 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-7a5a246a52f2":{"label":"クレマチス モンタナ スターライト","latin":"Clematis montana 'Starlight'","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#ece8d8","leafColor":"#557442","variegated":false,"colors":["white"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1680","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ スターライト"],"selectionSource":null,"visual":"reference","popularity":[]},"p-442becbe3fbf":{"label":"クレマチス モンタナ スノーフレーク","latin":"Clematis montana ‘Snowflake’","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#ece8d8","leafColor":"#557442","variegated":false,"colors":["white"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1669","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ スノーフレーク"],"selectionSource":null,"visual":"reference","popularity":[]},"p-2294ce5ef510":{
+},"p-7a5a246a52f2":{
+  "label": "クレマチス モンタナ スターライト",
+  "latin": "Clematis montana 'Starlight'",
+  "genre": "クレマチス",
+  "form": "botanical",
+  "group": "つる性",
+  "leaf": "deciduous",
+  "height": [
+    4,
+    8
+  ],
+  "spread": null,
+  "bloom": [
+    4,
+    5
+  ],
+  "bloomKnown": true,
+  "flower": "#f1f0e8",
+  "leafColor": "#69705b",
+  "variegated": false,
+  "colors": [
+    "white",
+    "pink"
+  ],
+  "sun": [
+    "sun",
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "寒冷地の落葉・旧枝を残す木質のつるの参考",
+  "care": "白い八重の花被片と、一重が混じる花形の参考です。資料の4〜8mはつるの伸びる目安で、3Dの垂直高さは誘引した配置例です。自然な成株の高さ・幅とは区別します。旧枝咲き・弱剪定の枝を残し、強剪定や年ごとの成長を自動計算しません。1年苗7.5〜10.5cmポットは販売規格で、本格開花の年数や計画開始年の開花を保証しません。",
+  "bloomText": "資料：4〜5月（地域・管理で変わる開花の範囲）",
+  "bloomBasis": "国内の当該販売ページの花期見出し。海外の月や花齢による色変化とは分けます",
+  "source": "https://item.rakuten.co.jp/ogis/725sl/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-29",
+  "aliases": [
+    "クレマチス モンタナ スターライト"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-442becbe3fbf":{
+  "label": "クレマチス モンタナ スノーフレーク",
+  "latin": "Clematis montana ‘Snowflake’",
+  "genre": "クレマチス",
+  "form": "botanical",
+  "group": "つる性",
+  "leaf": "deciduous",
+  "height": [
+    6,
+    8
+  ],
+  "spread": null,
+  "bloom": [
+    4,
+    5
+  ],
+  "bloomKnown": true,
+  "flower": "#f1f0e8",
+  "leafColor": "#69705b",
+  "variegated": false,
+  "colors": [
+    "white"
+  ],
+  "sun": [
+    "sun",
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "寒冷地の落葉・旧枝を残す木質のつるの参考",
+  "care": "純白の一重の花の参考です。資料の6〜8mはつるの伸びる目安で、3Dの垂直高さは誘引した配置例です。自然な成株の高さ・幅とは区別します。旧枝咲き・弱剪定の枝を残し、強剪定や年ごとの成長を自動計算しません。1年苗7.5〜10.5cmポットは販売規格で、本格開花の年数や計画開始年の開花を保証しません。",
+  "bloomText": "資料：4〜5月（地域・管理で変わる開花の範囲）",
+  "bloomBasis": "国内の当該販売ページの花期見出し。海外の月や花齢による色変化とは分けます",
+  "source": "https://item.rakuten.co.jp/ogis/723/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-29",
+  "aliases": [
+    "クレマチス モンタナ スノーフレーク"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-2294ce5ef510":{
   "label": "クレマチス モンタナ メイリーン",
   "latin": "Clematis montana 'Mayleen'",
   "genre": "クレマチス",
@@ -8579,7 +8666,50 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-ed7090312db4":{"label":"クレマチス モンタナ フレッダ","latin":"Clematis montana ‘Freda’","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#d99aaa","leafColor":"#557442","variegated":false,"colors":["pink"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1674","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ フレッダ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-c9a740b5e914":{
+},"p-ed7090312db4":{
+  "label": "クレマチス モンタナ フレッダ",
+  "latin": "Clematis montana ‘Freda’",
+  "genre": "クレマチス",
+  "form": "botanical",
+  "group": "つる性",
+  "leaf": "deciduous",
+  "height": [
+    4,
+    6
+  ],
+  "spread": null,
+  "bloom": [
+    4,
+    5
+  ],
+  "bloomKnown": true,
+  "flower": "#c75c9a",
+  "leafColor": "#67434d",
+  "variegated": false,
+  "colors": [
+    "pink"
+  ],
+  "sun": [
+    "sun",
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "寒冷地の落葉・旧枝を残す木質のつるの参考",
+  "care": "濃いピンクの縁と淡い中央の筋、銅葉を帯びた葉の参考です。資料の4〜6mはつるの伸びる目安で、3Dの垂直高さは誘引した配置例です。自然な成株の高さ・幅とは区別します。旧枝咲き・弱剪定の枝を残し、強剪定や年ごとの成長を自動計算しません。1年苗7.5〜10.5cmポットは販売規格で、本格開花の年数や計画開始年の開花を保証しません。",
+  "bloomText": "資料：4〜5月（地域・管理で変わる開花の範囲）",
+  "bloomBasis": "国内の当該販売ページの花期見出し。海外の月や花齢による色変化とは分けます",
+  "source": "https://item.rakuten.co.jp/ogis/725r/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-29",
+  "aliases": [
+    "クレマチス モンタナ フレッダ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-c9a740b5e914":{
   "label": "クレマチス プリンス チャールズ",
   "latin": "Clematis 'Prince Charles'",
   "genre": "クレマチス",

@@ -10629,7 +10629,111 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "旧枝咲きの枝を冬も残し、夏咲き品種の強剪定や「旧枝から芽が出ない」という処理を流用しません。冬の枝量・生死・倒伏・春の枝の交代は未再現です。",
     "花の雌性器官・果実・種子頭・香り・根は未再現です。販売苗の短い切戻しや1年苗の少量の花を、成株の年周・開花到達年の証明にはしません。"
   ]
-},"p-7a5a246a52f2":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1680","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"flowerLayers":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","flowerLayers":3,"unconfirmed":["persistence"]},"p-442becbe3fbf":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1669","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"scientificName":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","scientificName":"Clematis montana 'Snowflake'","unconfirmed":["persistence"]},"p-2294ce5ef510":{
+},"p-7a5a246a52f2":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/725sl/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.iplant.cn/foc/pdf/Clematis.pdf",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0,
+    "arrangement": 1,
+    "leafShape": 1,
+    "compoundType": 1
+  },
+  "status": "partial",
+  "architecture": "clematisMontanaReferences",
+  "shootProfile": "starlight",
+  "flowerShape": "starlightUnknownDoubleReference",
+  "flowerRadius": 0.025,
+  "leafShape": "montanaToothedTrifoliateReference",
+  "compoundType": "ternate",
+  "habit": "oldWoodTrainedReference",
+  "lifeForm": "vine",
+  "persistence": "coldLeaflessClematisReference",
+  "arrangement": "opposite",
+  "flowerMonths": [
+    4,
+    5
+  ],
+  "flowerTiming": "months",
+  "phenologyRegion": "寒冷地の落葉を12〜2月の表示目安とし、葉と花を外して木質の旧枝を残す未剪定の参考です。枝を全て枯茎とせず、翌春の花を支える旧枝と、短く切られた出荷苗を区別します。落葉日・枯枝量・芽吹き・翌年の開花は未校正です。",
+  "sourceConflict": "国内725SLは4〜5月・花径4〜6cm・伸びる目安4〜8mです。「コンパクト」「生育ゆっくり」という定性的な説明を年次成長の数値へ変換しません。白い八重に一重が混じる説明を参考にし、八重率・花齢による淡いピンク・条件による赤茶の筋の頻度は未実測です。内側の白い器官が萼か花弁状の雄しべかは未同定で、通常の葯は割り当てません。別系統の同名StarlightやYellow Starlightの形態・枚数を流用しません。管理文の花後の展葉に対し、写真には葉と花が共存します。写真に合わせ葉を残す参考表示とし、正確な展葉月・葉量、株幅は未確認です。弱剪定の程度や寿命から自動の枯死・強剪定・年次成長を作りません。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合・年次成長・地下部・剪定後の回復は未確認です。同一株の年間実物照合0。",
+    "7本の木質のつる・14節・126花の配置は未実測です。旧枝の節から複数の花柄を出す模式で、支柱・パーゴラや自力で絡む動き、樹齢ごとの太り方は生成しません。",
+    "スターライトは4枚の外側の花被片と、八重の例に内側12枚を置き、一重14花・八重112花を混在させた描画例です。枚数・混在比は実測値ではなく、内側の器官の起源と緑の花芯の器官は未同定です。通常の雄しべ・葯を確定せず描画を留保します。",
+    "3小葉の卵形〜菱状の葉とまばらな鋸歯を種の形態・写真から近似します。小葉柄をつなぎ、全ての葉の形・毛・鋸歯数、節や葉齢の違いは未照合です。",
+    "萼の幅・丸い先・色の濃淡、若葉の銅色や花齢による淡いピンクは静止例です。RGB値・銅葉の比率・展葉日・花齢の色を月や年で校正したものではありません。温度による赤茶の筋は未再現です。",
+    "旧枝咲きの枝を冬も残し、夏咲き品種の強剪定や旧枝が一律に枯れる処理を流用しません。冬の枝量・生死・倒伏・春の枝の交代、果実・種子頭・香り・根は未再現です。"
+  ]
+},"p-442becbe3fbf":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/723/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.iplant.cn/foc/pdf/Clematis.pdf",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0,
+    "arrangement": 1,
+    "leafShape": 1,
+    "compoundType": 1
+  },
+  "status": "partial",
+  "architecture": "clematisMontanaReferences",
+  "shootProfile": "snowflake",
+  "flowerShape": "snowflakeWhiteReference",
+  "flowerRadius": 0.025,
+  "leafShape": "montanaToothedTrifoliateReference",
+  "compoundType": "ternate",
+  "habit": "oldWoodTrainedReference",
+  "lifeForm": "vine",
+  "persistence": "coldLeaflessClematisReference",
+  "arrangement": "opposite",
+  "flowerMonths": [
+    4,
+    5
+  ],
+  "flowerTiming": "months",
+  "phenologyRegion": "寒冷地の落葉を12〜2月の表示目安とし、葉と花を外して木質の旧枝を残す未剪定の参考です。枝を全て枯茎とせず、翌春の花を支える旧枝と、短く切られた出荷苗を区別します。落葉日・枯枝量・芽吹き・翌年の開花は未校正です。",
+  "sourceConflict": "国内723は4〜5月・花径4〜6cm・伸びる目安6〜8mです。スプーネリと似てやや早咲きという比較は、別品種と同一という意味ではなく、相手の形態や月を取り込みません。純白の写真を参考にし、ピンクのモンタナ用の筋模様を付けません。管理文の花後の展葉に対し、写真には葉と花が共存します。写真に合わせ葉を残す参考表示とし、正確な展葉月・葉量、株幅は未確認です。弱剪定の程度や寿命から自動の枯死・強剪定・年次成長を作りません。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合・年次成長・地下部・剪定後の回復は未確認です。同一株の年間実物照合0。",
+    "7本の木質のつる・14節・126花の配置は未実測です。旧枝の節から複数の花柄を出す模式で、支柱・パーゴラや自力で絡む動き、樹齢ごとの太り方は生成しません。",
+    "萼4枚と雄しべ各48本は写真と種の形態を参考にした未実測の配置例です。花の器官の数や正確な寸法比は品種の実測ではありません。",
+    "3小葉の卵形〜菱状の葉とまばらな鋸歯を種の形態・写真から近似します。小葉柄をつなぎ、全ての葉の形・毛・鋸歯数、節や葉齢の違いは未照合です。",
+    "萼の幅・丸い先・色の濃淡、若葉の銅色や花齢による淡いピンクは静止例です。RGB値・銅葉の比率・展葉日・花齢の色を月や年で校正したものではありません。",
+    "旧枝咲きの枝を冬も残し、夏咲き品種の強剪定や旧枝が一律に枯れる処理を流用しません。冬の枝量・生死・倒伏・春の枝の交代、果実・種子頭・香り・根は未再現です。"
+  ]
+},"p-2294ce5ef510":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/725m/",
@@ -10685,7 +10789,63 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "旧枝咲きの枝を冬も残し、夏咲き品種の強剪定や「旧枝から芽が出ない」という処理を流用しません。冬の枝量・生死・倒伏・春の枝の交代は未再現です。",
     "花の雌性器官・果実・種子頭・香り・根は未再現です。販売苗の短い切戻しや1年苗の少量の花を、成株の年周・開花到達年の証明にはしません。"
   ]
-},"p-ed7090312db4":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1674","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"scientificName":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","scientificName":"Clematis montana 'Freda'","unconfirmed":["persistence"]},"p-c9a740b5e914":{
+},"p-ed7090312db4":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/725r/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.iplant.cn/foc/pdf/Clematis.pdf",
+      "scope": "species"
+    },
+    {
+      "url": "https://www.rhs.org.uk/plants/210261/clematis-freda-m/details",
+      "scope": "catalog-entry"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0,
+    "arrangement": 1,
+    "leafShape": 1,
+    "compoundType": 1
+  },
+  "status": "partial",
+  "architecture": "clematisMontanaReferences",
+  "shootProfile": "freda",
+  "flowerShape": "fredaPinkMarginReference",
+  "flowerRadius": 0.0225,
+  "leafShape": "montanaToothedTrifoliateReference",
+  "compoundType": "ternate",
+  "habit": "oldWoodTrainedReference",
+  "lifeForm": "vine",
+  "persistence": "coldLeaflessClematisReference",
+  "arrangement": "opposite",
+  "flowerMonths": [
+    4,
+    5
+  ],
+  "flowerTiming": "months",
+  "phenologyRegion": "寒冷地の落葉を12〜2月の表示目安とし、葉と花を外して木質の旧枝を残す未剪定の参考です。枝を全て枯茎とせず、翌春の花を支える旧枝と、短く切られた出荷苗を区別します。落葉日・枯枝量・芽吹き・翌年の開花は未校正です。",
+  "sourceConflict": "国内725Rは4〜5月・花径4〜5cm・伸びる目安4〜6m、RHSは英国で最大7mなど別条件です。国内の寸法を採用し、濃い縁と淡い中央の筋、若葉の銅色を補足します。銅葉と緑葉が共存する写真を参考に、葉齢の色幅を静止例にし、固定月に全葉が銅色・黒になるとはしません。管理文の花後の展葉に対し、写真には葉と花が共存します。写真に合わせ葉を残す参考表示とし、正確な展葉月・葉量、株幅は未確認です。弱剪定の程度や寿命から自動の枯死・強剪定・年次成長を作りません。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合・年次成長・地下部・剪定後の回復は未確認です。同一株の年間実物照合0。",
+    "7本の木質のつる・14節・126花の配置は未実測です。旧枝の節から複数の花柄を出す模式で、支柱・パーゴラや自力で絡む動き、樹齢ごとの太り方は生成しません。",
+    "萼4枚と雄しべ各48本は写真と種の形態を参考にした未実測の配置例です。花の器官の数や正確な寸法比は品種の実測ではありません。",
+    "3小葉の卵形〜菱状の葉とまばらな鋸歯を種の形態・写真から近似します。小葉柄をつなぎ、全ての葉の形・毛・鋸歯数、節や葉齢の違いは未照合です。",
+    "萼の幅・丸い先・色の濃淡、若葉の銅色や花齢による淡いピンクは静止例です。RGB値・銅葉の比率・展葉日・花齢の色を月や年で校正したものではありません。",
+    "旧枝咲きの枝を冬も残し、夏咲き品種の強剪定や旧枝が一律に枯れる処理を流用しません。冬の枝量・生死・倒伏・春の枝の交代、果実・種子頭・香り・根は未再現です。"
+  ]
+},"p-c9a740b5e914":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/779pl/",
