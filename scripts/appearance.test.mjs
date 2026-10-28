@@ -17575,3 +17575,43 @@ test('Apricot Spot single ordinary organs and selected surface pigment remain di
   finally{dispose(g);}
  }}assert.equal(floweringModels,4);
 });
+test('Three retail clematis sources distinguish extension length, unknown spread, conditional foliage and cultivar flowers',()=>{
+ for(const[id,profile,sku,months,colors]of[['p-3d010a357a5c','shiromane','737l',[5,6,7,8,9,10],['white','green']],['p-4735663c60ed','fond','736fl',[6,7,8,9],['white','pink','purple','mixed']],['p-d1eb5c4e5b0d','romantika','761rl',[6,7,8,9],['purple','dark']]]){
+  const c=CATALOG[id],a=c.appearance;assert.deepEqual(c.height,[2,3]);assert.equal(c.spread,null);assert.deepEqual(c.bloom,months);assert.equal(c.bloomKnown,true);assert.equal(c.source,'https://item.rakuten.co.jp/ogis/'+sku+'/');assert.equal(c.sourceChecked,'2026-10-28');assert.equal(a.architecture,'clematisRetailReferences');assert.equal(a.shootProfile,profile);assert.equal(a.status,'partial');assert.match(c.care,/つるの伸びる範囲.*成株の自然な高さ・幅とは区別/);assert.match(c.care,/2年苗12〜13.5cmポット.*年次成長の保証ではありません/);assert.equal(a.arrangement,'opposite');assert.equal(a.leaflets,3);assert.equal(a.monthlyLeafColors,undefined);assert.equal(a.monthlyFlowerColors,undefined);assert.ok(a.unconfirmed.some(n=>n.includes('年間実物照合0')));assert.ok(a.unconfirmed.some(n=>n.includes('剪定後の再生')));assert.ok(a.unconfirmed.every(n=>!/Float32|RNG|HTTP|行列/.test(n)));
+  for(let month=1;month<=12;month++){const s=seasonAt(c,month);assert.equal(s.bloom,months.includes(month));assert.equal(s.leafDensity,[12,1,2].includes(month)?0:1);assert.equal(s.shootScale,1);assert.equal(s.groundDormant,false);assert.match(s.phase,/参考|管理例/);}
+  for(const color of['white','pink','red','yellow','orange','dark','green','purple','mixed','blue','unknown'])assert.equal(searchCatalog(CATALOG,{query:c.label,color}).some(([key])=>key===id),colors.includes(color));
+ }
+ assert.match(CATALOG['p-3d010a357a5c'].appearance.sourceConflict,/5〜10月.*5〜11月を更新/);assert.match(CATALOG['p-3d010a357a5c'].appearance.phenologyRegion,/暖地で冬葉や花/);assert.match(CATALOG['p-d1eb5c4e5b0d'].appearance.sourceConflict,/新旧両枝咲き・中〜強剪定/);
+});
+
+test('Three retail clematis actual vertices stay inside independent dimensions and every leaflet joins a real petiolule',()=>{
+ let models=0,joins=0;const mat=new Matrix4(),v=new Vector3(),dist=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i]));
+ for(const[id,profile,pid]of[['p-3d010a357a5c','shiromane',93110],['p-4735663c60ed','fond',93111],['p-d1eb5c4e5b0d','romantika',93112]]){
+  let summerStems;
+  for(const{dims,month,reference}of[...[[2.5,1,1.8],[.08,.16,.05],[2.5,1,.005],[.005,.08,.005],[2.5,.005,.005]].flatMap(dims=>[6,3,11,1].map(month=>({dims,month,reference:false}))),{dims:[2.5,1,1.8],month:6,reference:true}]){
+   const p={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},copy=structuredClone(p),view={year:1,month,reference},s=stateAt(p,view),g=plantModel(p,view);models++;
+   try{g.updateMatrixWorld(true);const roots=[],ends=[],counts={};let lo=Infinity,hi=-Infinity,width=0,leafTop=0;const skeleton=[];
+    for(const mesh of g.children){const kind=mesh.userData.component,pos=mesh.geometry.attributes.position;counts[kind]=(counts[kind]||0)+mesh.count;assert.ok(pos.array.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite)&&mesh.instanceMatrix.array.every(Number.isFinite));if(['stem-clematis-retail-ref','support-clematis-retail-ref'].includes(kind))skeleton.push({kind,matrix:[...mesh.instanceMatrix.array],count:mesh.count});
+     for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,mat);mat.premultiply(mesh.matrixWorld);if(kind==='leaf-clematis-retail-ref')roots.push(new Vector3(0,0,0).applyMatrix4(mat).toArray());if(kind==='petiolule-clematis-retail-ref')ends.push(new Vector3(0,.5,0).applyMatrix4(mat).toArray());for(let j=0;j<pos.count;j++){v.fromBufferAttribute(pos,j).applyMatrix4(mat);lo=Math.min(lo,v.y);hi=Math.max(hi,v.y);width=Math.max(width,Math.hypot(v.x,v.z)*2);if(/^(leaf|petiole|petiolule)-/.test(kind))leafTop=Math.max(leafTop,v.y);}}
+    }
+    assert.ok(lo>=-1e-7&&hi<=s.height+1e-7,id+' height '+dims+' '+month+' '+lo+' '+hi);assert.ok(width<=s.spread+1e-7,id+' width '+dims+' '+width);assert.ok(leafTop<=Math.min(s.height,s.leafHeight)+1e-7,id+' leaf height '+dims+' '+leafTop);assert.equal(counts['support-clematis-retail-ref'],7);assert.equal(counts['stem-clematis-retail-ref'],90);assert.equal(roots.length,ends.length);assert.equal(roots.length>0,s.leafDensity>0);for(const root of roots){assert.ok(ends.some(e=>dist(root,e)<1e-7),id+' unsupported leaf');joins++;}
+    assert.equal(counts['sepal-clematis-retail-ref-'+profile]||0,s.bloom?90:0);assert.equal(counts['petaloid-clematis-retail-ref']||0,s.bloom&&profile==='shiromane'?720:0);assert.equal(counts['anther-clematis-retail-ref-'+profile]||0,s.bloom&&profile!=='shiromane'?720:0);assert.equal(!!g.userData.flowerTargets?.length,s.bloom);assert.ok(!g.children.some(m=>/^(fruit|seed|root)-/.test(m.userData.component)));assert.deepEqual(p,copy);
+    if(dims[0]===2.5&&dims[1]===1&&dims[2]===1.8&&!reference){if(month===6)summerStems=skeleton;else assert.deepEqual(skeleton,summerStems,'month cannot silently prune or regrow the reference skeleton');}
+   }finally{dispose(g);}
+  }
+ }
+ assert.equal(models,63);assert.ok(joins>3000);console.log('CLEMATIS_RETAIL_BOUNDARIES '+JSON.stringify({models,joins}));
+});
+
+test('Three retail clematis flower cameras hit the indexed visible sepal and saved dimensions migrate without mutation',()=>{
+ for(const[id,profile,pid]of[['p-3d010a357a5c','shiromane',93110],['p-4735663c60ed','fond',93111],['p-d1eb5c4e5b0d','romantika',93112]])for(const dims of[[2.5,1,1.8],[.08,.16,.05],[2.5,1,.005]]){
+  const p={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},g=plantModel(p,{year:1,month:6,reference:false});
+  try{assert.equal(g.userData.architecture,'clematisRetailReferences');assert.ok(g.userData.surfaceSelection?.matched,id+' '+dims);assert.ok(g.userData.flowerTargets.length<=8);const surface=g.userData.flowerTargets[0].surface;assert.equal(surface.component,'sepal-clematis-retail-ref-'+profile);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);for(const aspect of[.8,1.65]){const pose=flowerInspectionView(g,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(g,true).find(h=>{const z=-h.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.equal(hit?.object.userData.component,surface.component);assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);}}finally{dispose(g);}
+  const d=emptyDocument(10,6);d.plans.A.plants=[p];d.view={year:1,month:6,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};const old={...structuredClone(d),catalogVersion:'2026-10-28.44'},copy=structuredClone(old);assert.deepEqual(validateDocument(old),d);assert.deepEqual(old,copy);
+ }
+});
+
+test('Three retail clematis keep static photo colours and Fond pink reverse material separate from its dark centre',()=>{
+ const compile=m=>{const shader={uniforms:{},vertexShader:'#include <common>\n#include <begin_vertex>',fragmentShader:'#include <common>\n#include <emissivemap_fragment>'};m.onBeforeCompile(shader,{});return shader.fragmentShader;};
+ for(const[id,profile]of[['p-3d010a357a5c','shiromane'],['p-4735663c60ed','fond'],['p-d1eb5c4e5b0d','romantika']]){const p={...makePlant(id,93110,3,3),height:2.5,spread:1,leafHeight:1.8},g=plantModel(p,{year:1,month:6,reference:false});try{const sep=g.children.find(m=>m.userData.component==='sepal-clematis-retail-ref-'+profile),shader=compile(sep.material);assert.equal(shader.includes('gcFondMargin'),profile==='fond');if(profile==='fond'){assert.match(shader,/gl_FrontFacing/);assert.ok(shader.includes(new Color('#c082b6').toArray().map(v=>v.toFixed(6)).join(',')));const centre=g.children.find(m=>m.userData.component==='anther-clematis-retail-ref-fond');assert.equal(compile(centre.material).includes('gcFondMargin'),false);}assert.equal(g.children.some(m=>m.userData.component==='sepal-clematis-green'),false);}finally{dispose(g);}}
+});

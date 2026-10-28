@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.930';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.931';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.930';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.931';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17198,6 +17198,58 @@ function drawHelleboreProfiles(b,{info,s,detail,rand},kit){
  }
 }
 
+// Cultivar photographs are represented by a trained, unpruned reference skeleton.
+export function clematisRetailReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='leaf')return[u*.5*sn**.62*(1.12-.25*t),t,.030*sn+.045*u*u*sn-.045*t*t];
+ const fond=type==='fond',white=type==='shiromane',inner=type==='inner';
+ return[u*.5*sn**(inner?.76:fond?.61:.55)*(1.03-.10*t),(.04+.055*u*u)*sn+(inner?.38:white?.12:fond?.045:.065)*t*t+.012*Math.sin(t*18+u*7)*sn*Math.abs(u)**4,t];
+}
+export function clematisRetailReferenceGeometry(type){
+ const p=[],uv=[],ix=[],rows=32,cols=20;
+ for(let j=0;j<=rows;j++)for(let i=0;i<=cols;i++){p.push(...clematisRetailReferencePoint(type,j/rows,i/cols*2-1));uv.push(i/cols,j/rows);}
+ for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){const a=j*(cols+1)+i;ix.push(a,a+cols+1,a+1,a+1,a+cols+1,a+cols+2);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
+}
+export const clematisRetailStemUnit=new THREE.CylinderGeometry(1,1,1,7,1);
+function drawClematisRetailReferences(b,{info,s,p},kit){
+ const a=info.appearance,profile=a.shootProfile,white=profile==='shiromane',fond=profile==='fond',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),R=Math.min(a.flowerRadius,h*.052,w*.075),sr=Math.min(.0016,h*.0025,w*.0025),green=s.leafColor,stem='#788457',wood='#83745e',origin=new THREE.Vector3(),unitY=new THREE.Vector3(0,1,0),surfaces=[],counts={sepal:0};
+ const line=(from,to,r,color,kind)=>{const aa=new THREE.Vector3(...from),bb=new THREE.Vector3(...to),d=bb.clone().sub(aa),len=d.length();if(len<1e-10)return;const q=new THREE.Quaternion().setFromUnitVectors(unitY,d.normalize()),e=new THREE.Euler().setFromQuaternion(q,'YXZ');const radius=Math.min(r,Math.max(1e-10,Math.min(from[1],to[1])*.45));b.add(clematisRetailStemUnit,kind,color,...aa.add(bb).multiplyScalar(.5).toArray(),radius,len,radius,e.x,e.y,e.z);};
+ const foliage=(at,yaw,phase)=>{
+  const L=Math.min(.085,LH*.22,w*.10,h*.05),pet=Math.min(w*.055,L*.58),end=[at[0]+Math.sin(yaw)*pet,at[1]+L*.08,at[2]+Math.cos(yaw)*pet];line(at,end,sr*.38,green,'petiole-clematis-retail-ref');
+  for(let k=-1;k<=1;k++){
+   const az=yaw+k*.93,offset=k===0?L*.27:L*.18,base=[end[0]+Math.sin(az)*offset,end[1]+L*(k===0?.14:.02),end[2]+Math.cos(az)*offset],len=L*(k===0?1:.78);line(end,base,sr*.25,green,'petiolule-clematis-retail-ref');
+   b.add('gcClematisRetailLeaf','leaf-clematis-retail-ref',green,...base,len*.66,len,len,.64,az,(phase%3-1)*.13);
+  }
+ };
+ const flower=(at,yaw,pitch)=>{
+  const f=flowerFrame(b,at,pitch,yaw),col=white?'#e6e5c8':fond?'#e9dfeb':'#382242',component='sepal-clematis-retail-ref-'+profile,outer=6,sz=R;
+  for(let k=0;k<outer;k++){
+   const az=k*TAU/outer+.05,geometry='gcClematisRetail-'+profile,instance=counts.sepal++;f.add(geometry,component,col,0,0,0,sz*(white?.70:fond?.73:.78),sz,sz,0,az,0);
+   if(k===0){const verts=[24*21+10,25*21+10,24*21+11],scale=new THREE.Vector3(sz*(white?.70:fond?.73:.78),sz,sz),outerQ=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ')),frameQ=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),points=verts.map(v=>new THREE.Vector3(...clematisRetailReferencePoint(profile,Math.floor(v/21)/32,v%21/20*2-1).map(Math.fround)).multiply(scale).applyQuaternion(outerQ).applyQuaternion(frameQ).add(new THREE.Vector3(...at))),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,vertices:verts,instanceId:instance,faceIndex:(24*20+10)*2,radius:R*1.8});}
+  }
+  if(white){
+   // Petaloid central organs, not a second six-sepal corolla or a seed head.
+   for(let k=0;k<48;k++){const t=(k+.5)/48,az=k*2.399963,rr=R*.29*Math.sqrt(t),len=R*(.29+.30*t);f.add('gcClematisRetailInner','petaloid-clematis-retail-ref',k%3?'#cdd6a0':'#dde0b6',Math.sin(az)*rr,R*(.025+.18*(1-t)),Math.cos(az)*rr,len*.39,len,len,.12+t*.60,az,0);}
+  }else{
+   const center=fond?'#4c2447':'#c5c79a';
+   for(let k=0;k<48;k++){const t=(k+.5)/48,az=k*2.399963,rr=R*(.035+.20*Math.sqrt(t)),tip=[Math.sin(az)*rr,R*(.16+.13*t),Math.cos(az)*rr],base=[Math.sin(az)*R*.04,0,Math.cos(az)*R*.04];f.branch(base,tip,Math.min(sr*.18,R*.008),fond?'#6d375f':'#b6baa0','filament-clematis-retail-ref');f.add(kit.bud,'anther-clematis-retail-ref-'+profile,center,...tip,R*.018,R*.052,R*.018,.25,az,0);}
+  }
+ };
+ // Support dimensions describe the chosen training frame; no mature spread is inferred.
+ for(const x of[-w*.30,w*.30])line([x,h*.006,0],[x,h*.98,0],Math.min(w*.004,h*.0035,.006),'#a6a18a','support-clematis-retail-ref');
+ for(let j=1;j<=5;j++)line([-w*.30,h*j*.15,0],[w*.30,h*j*.15,0],Math.min(w*.002,h*.002,.003),'#a6a18a','support-clematis-retail-ref');
+ for(let shoot=0;shoot<5;shoot++){
+  let prev=[(shoot-2)*w*.022,Math.min(h*.006,LH*.04),w*.015];
+  for(let j=1;j<=18;j++){
+   const t=j/18,aa=shoot*1.47+t*7.4,y=j===1?Math.min(h*.038,LH*.12):j===2?Math.min(h*.080,LH*.30):h*(.09+.80*(j-2)/16)*(1-shoot*.018),at=[Math.sin(aa)*w*.245,y,w*(.035+.025*Math.cos(aa))];line(prev,at,sr*(1-t*.30),j<4?wood:stem,'stem-clematis-retail-ref');prev=at;
+   if(s.leafDensity>0&&y+Math.min(.085,LH*.22,w*.10,h*.05)*1.5<LH)for(const side of[-1,1])foliage(at,aa+side*Math.PI/2,shoot+j);
+   if(s.bloom&&j>=7&&j%4===3){const tip=[at[0]+w*.022*Math.sin(aa),at[1]+Math.min(h*.018,R*.35),at[2]+w*.12];line(at,tip,sr*.55,stem,'pedicel-clematis-retail-ref');flower(tip,aa*.12,1.16+(shoot%3)*.10);}
+  }
+ }
+ for(const v of surfaces){const camera=v.normal.clone();if(camera.y<.12)camera.y=.12;camera.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(unitY,camera),'YXZ');b.flower?.(v.point.toArray(),v.radius,e.x,e.y,e.z,{component:'sepal-clematis-retail-ref-'+profile,instanceId:v.instanceId,vertices:v.vertices,faceIndex:v.faceIndex,cameraAxis:camera.toArray()});}
+}
+
 function drawTessen(b,{info,s,detail,rand},kit){
  const h=s.height,w=s.spread,a=info.appearance,green=s.leafColor;
  for(const x of [-w*.35,w*.35])b.branch([x,0,0],[x,h,0],.006,'#aeaa8d','support');
@@ -19848,6 +19900,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['orientalLily','trumpetLily','nativeLily','martagonLily'].includes(a.architecture)){drawLilies(b,{info,s,detail,rand},kit);return;}
  if(['speciesTulip','earlyCrocus'].includes(a.architecture)){drawSmallSpringBulbs(b,{p,info,s,detail,rand},kit);return;}
  if(a.architecture==='helleboreProfile'){drawHelleboreProfiles(b,{info,s,detail,rand},kit);return;}
+ if(a.architecture==='clematisRetailReferences'){drawClematisRetailReferences(b,{info,s,p},kit);return;}
  if(a.architecture==='tessen'){drawTessen(b,{info,s,detail,rand},kit);return;}
  if(a.architecture==='nonRepensTrifolium'){drawMeadowTrifolium(b,{info,s,detail,rand,month},kit);return;}
  if(a.architecture==='bronzeArmeria'){drawBronzeArmeria(b,{info,s,detail,rand},kit);return;}

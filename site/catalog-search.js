@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.930';
+import {treeProfile} from './tree-profiles.js?v=0.9.931';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -33,6 +33,7 @@ export function seasonAt(info,month){
   density=1;scale=1;phase='健康な展葉株の参考（日本の月別残葉・落葉と開花の前後は未校正）';
  }else if(a.persistence==='coldLeaflessHelleboreReference'){
   density=[12,1].includes(month)?0:1;scale=1;phase=density===0?'低温管理の落葉参考（暖地では残葉する場合）':'葉のある管理参考（春夏秋の葉量は未校正）';
+ }else if(a.persistence==='coldLeaflessClematisReference'){density=[12,1,2].includes(month)?0:1;scale=1;phase=density?'支持体に誘引した展葉株の参考（葉量・芽吹き・剪定後の再生は未校正）':'寒冷地の落葉した管理例（未剪定のつるを残す・暖地の冬葉は別条件）';
  }else if(a.persistence==='autumnHellebore'){
   density=[1,1,1,1,1,.50,0,0,0,.25,.70,1][m];scale=month===10?.35:month===11?.75:1;
   phase=density===0?'夏休眠・地上部のない時期':month===10?'10月からの秋の葉出し':month===6?'6〜7月の枯れ込み':'秋〜春の葉';
