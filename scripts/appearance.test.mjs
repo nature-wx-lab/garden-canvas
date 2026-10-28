@@ -18095,3 +18095,46 @@ test('Two small-flowered evergreen clematis keep leafy summer rest separate from
   }finally{dispose(g);}}
  }
 });
+
+test('Two winter bell clematis retain domestic flowering and distinct summer management',()=>{
+ for(const[id,profile,sku,months,colors,persistence]of[['p-477ce06f4fc3','jingleBells','718g',[1,2,3,11,12],['white','yellow'],'cirrhosaRestReference'],['p-1c2350cb9f39','whiteAngel','787',[1,2,3],['white'],'urophyllaLeafyReference']]){
+ const c=CATALOG[id],a=c.appearance;assert.deepEqual(c.height,[4,5]);assert.equal(c.spread,null);assert.deepEqual(c.bloom,months);assert.equal(c.source,'https://item.rakuten.co.jp/ogis/'+sku+'/');assert.equal(c.sourceChecked,'2026-10-29');assert.equal(a.architecture,'clematisWinterBellReferences');assert.equal(a.shootProfile,profile);assert.equal(a.persistence,persistence);assert.equal(a.status,'partial');assert.equal(a.leaflets,3);assert.equal(a.arrangement,'opposite');assert.ok(c.care.includes('1年苗7.5〜10.5cmポット'));assert.equal(a.monthlyFlowerColors,undefined);assert.equal(a.monthlyLeafColors,undefined);assert.ok(a.unconfirmed.some(n=>n.includes('年間実物照合0')));
+ for(let month=1;month<=12;month++){const s=seasonAt(c,month);assert.equal(s.bloom,months.includes(month));assert.equal(s.leafDensity,1);assert.equal(s.leafScale,1);assert.equal(s.shootScale,1);assert.equal(s.groundDormant,false);assert.equal(s.autumn,false);}
+ for(const color of['white','pink','red','yellow','orange','dark','green','purple','mixed','blue','unknown'])assert.equal(searchCatalog(CATALOG,{query:c.label,color}).some(([key])=>key===id),colors.includes(color));
+ }
+ const j=CATALOG['p-477ce06f4fc3'],w=CATALOG['p-1c2350cb9f39'];assert.match(j.appearance.sourceConflict,/実生.*見出しは選抜種.*花粉親不明/);assert.match(j.appearance.phenologyRegion,/残葉量と落葉月は未確認/);assert.match(w.appearance.phenologyRegion,/夏もよく茂る/);assert.match(seasonAt(j,7).phase,/春夏の休眠.*模式葉を保持/);assert.match(seasonAt(w,7).phase,/夏も葉が茂る/);assert.equal(seasonAt(j,11).bloom,true);assert.equal(seasonAt(w,11).bloom,false);assert.equal(w.appearance.sources[w.appearance.basis.flowerShape].scope,'species');
+});
+
+test('Two winter bell clematis actual vertices stay inside independent dimensions and every leaflet joins a real petiolule',()=>{
+ // Leaf and cylinder endpoint matrices are independently stored as Float32;0.2micrometre is below two ULP at a one-metre coordinate.
+ let models=0,joins=0;const mat=new Matrix4(),v=new Vector3(),dist=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i]));
+ for(const[id,profile,pid,normal]of[['p-477ce06f4fc3','jingleBells',94210,[1.8,.9,1.4]],['p-1c2350cb9f39','whiteAngel',94211,[2,1,1.6]]]){
+  let summerStems;
+  for(const{dims,month,reference}of[...[normal,[.08,.16,.05],[normal[0],normal[1],.005],[.005,.08,.005],[normal[0],.005,.005]].flatMap(dims=>[1,10,4,7].map(month=>({dims,month,reference:false}))),{dims:normal,month:1,reference:true}]){
+   const p={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},copy=structuredClone(p),view={year:1,month,reference},s=stateAt(p,view),g=plantModel(p,view);models++;
+   try{g.updateMatrixWorld(true);const roots=[],ends=[],counts={};let lo=Infinity,hi=-Infinity,width=0,leafTop=0;const skeleton=[];
+    for(const mesh of g.children){const kind=mesh.userData.component,pos=mesh.geometry.attributes.position;counts[kind]=(counts[kind]||0)+mesh.count;assert.ok(pos.array.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite)&&mesh.instanceMatrix.array.every(Number.isFinite));if(['stem-clematis-winter-bell-ref','support-clematis-winter-bell-ref'].includes(kind))skeleton.push({kind,matrix:[...mesh.instanceMatrix.array],count:mesh.count});
+     for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,mat);mat.premultiply(mesh.matrixWorld);if(kind==='leaf-clematis-winter-bell-ref')roots.push(new Vector3(0,0,0).applyMatrix4(mat).toArray());if(kind==='petiolule-clematis-winter-bell-ref')ends.push(new Vector3(0,.5,0).applyMatrix4(mat).toArray());for(let j=0;j<pos.count;j++){v.fromBufferAttribute(pos,j).applyMatrix4(mat);lo=Math.min(lo,v.y);hi=Math.max(hi,v.y);width=Math.max(width,Math.hypot(v.x,v.z)*2);if(/^(leaf|petiole|petiolule)-/.test(kind))leafTop=Math.max(leafTop,v.y);}}
+    }
+    assert.ok(lo>=-1e-7&&hi<=s.height+1e-7,id+' height '+dims+' '+month+' '+lo+' '+hi);assert.ok(width<=s.spread+1e-7,id+' width '+dims+' '+width);assert.ok(leafTop<=Math.min(s.height,s.leafHeight)+1e-7,id+' leaf height '+dims+' '+leafTop);assert.equal(counts['support-clematis-winter-bell-ref']||0,0);assert.equal(counts['stem-clematis-winter-bell-ref'],80);assert.equal(roots.length,ends.length);assert.equal(roots.length>0,s.leafDensity>0);for(const root of roots){const joinTolerance=Math.max(2e-7,Math.hypot(...root.map(v=>2**(Math.floor(Math.log2(Math.max(1e-30,Math.abs(v))))-23))));assert.ok(ends.some(e=>dist(root,e)<joinTolerance),id+' unsupported leaf '+dims+' month'+month+' reference'+reference);joins++;}
+    assert.equal(counts['sepal-clematis-winter-bell-ref-'+profile]||0,s.bloom?160:0);assert.equal(counts['pedicel-clematis-winter-bell-ref']||0,s.bloom?40:0);assert.equal(counts['receptacle-clematis-winter-bell-ref-'+profile]||0,s.bloom?40:0);assert.equal(counts['anther-clematis-winter-bell-ref-'+profile]||0,s.bloom?(profile==='jingleBells'?1600:1200):0);assert.equal(s.leafDensity,1);assert.equal(s.groundDormant,false);assert.ok(!g.children.some(m=>/^(carpel|staminode|fruit|seed)-/.test(m.userData.component)));assert.equal(!!g.userData.flowerTargets?.length,s.bloom);assert.ok(!g.children.some(m=>/^(fruit|seed|root)-/.test(m.userData.component)));assert.deepEqual(p,copy);
+    if(dims[0]===normal[0]&&dims[1]===normal[1]&&dims[2]===normal[2]&&!reference){if(month===1)summerStems=skeleton;else assert.deepEqual(skeleton,summerStems,'month cannot silently prune or regrow the reference skeleton');}
+   }finally{dispose(g);}
+  }
+ }
+ assert.equal(models,42);assert.ok(joins>5000);console.log('WINTER_BELL_CLEMATIS_BOUNDARIES '+JSON.stringify({models,joins}));
+});
+
+
+test('Two winter bell clematis cameras hit actual indexed sepals with lower flowering and preserve saved input dimensions',()=>{
+ for(const[id,profile,pid,normal]of[['p-477ce06f4fc3','jingleBells',94210,[1.8,.9,1.4]],['p-1c2350cb9f39','whiteAngel',94211,[2,1,1.6]]])for(const dims of[normal,[.08,.16,.05],[normal[0],normal[1],.005]]){
+  const p={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},g=plantModel(p,{year:1,month:1,reference:false});
+  try{assert.equal(g.userData.architecture,'clematisWinterBellReferences');assert.ok(g.userData.surfaceSelection?.matched,id+' '+dims);assert.ok(g.userData.flowerTargets.length<=8);const surface=g.userData.flowerTargets[0].surface;assert.equal(surface.component,'sepal-clematis-winter-bell-ref-'+profile);g.position.set(-2,.012,-1);g.updateMatrixWorld(true);for(const aspect of[.8,1.65]){const pose=flowerInspectionView(g,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(g,true).find(h=>{const z=-h.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.equal(hit?.object.userData.component,surface.component);assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);}}finally{dispose(g);}
+  const d=emptyDocument(10,6);d.plans.A.plants=[p];d.view={year:1,month:1,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};const old={...structuredClone(d),catalogVersion:'2026-10-29.8'},copy=structuredClone(old);assert.deepEqual(validateDocument(old),d);assert.deepEqual(old,copy);
+ }
+});
+
+
+test('Two winter bell clematis preserve real leafy stems through summer rest without invented fruit',()=>{
+ for(const[id,profile,dims]of[['p-477ce06f4fc3','jingleBells',[1.8,.9,1.4]],['p-1c2350cb9f39','whiteAngel',[2,1,1.6]]]){let leafy,flowers;for(const month of[1,11,7,10]){const p={...makePlant(id,94210,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},g=plantModel(p,{year:1,month,reference:false});try{const signature=m=>({kind:m.userData.component,count:m.count,colors:[...m.instanceColor.array],matrices:[...m.instanceMatrix.array]}),leaf=g.children.filter(m=>/^(leaf|petiole|petiolule|stem)-clematis-winter-bell-ref/.test(m.userData.component)).map(signature);if(leafy)assert.deepEqual(leaf,leafy);else leafy=leaf;assert.ok(leaf.length);assert.equal(g.children.some(m=>/^(carpel|staminode|fruit|seed|root)-/.test(m.userData.component)),false);const bloom=CATALOG[id].bloom.includes(month);assert.equal(!!g.userData.flowerTargets?.length,bloom);if(bloom){const now=g.children.map(signature);if(flowers)assert.deepEqual(now,flowers);else flowers=now;assert.equal(g.children.find(m=>m.userData.component==='sepal-clematis-winter-bell-ref-'+profile).count,160);assert.equal(g.children.find(m=>m.userData.component==='anther-clematis-winter-bell-ref-'+profile).count,profile==='jingleBells'?1600:1200);}else assert.equal(g.children.some(m=>m.userData.component.startsWith('sepal')),false);}finally{dispose(g);}}}
+});

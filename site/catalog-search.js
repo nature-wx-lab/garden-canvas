@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.941';
+import {treeProfile} from './tree-profiles.js?v=0.9.942';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -33,6 +33,8 @@ export function seasonAt(info,month){
   density=1;scale=1;phase='健康な展葉株の参考（日本の月別残葉・落葉と開花の前後は未校正）';
  }else if(a.persistence==='coldLeaflessHelleboreReference'){
   density=[12,1].includes(month)?0:1;scale=1;phase=density===0?'低温管理の落葉参考（暖地では残葉する場合）':'葉のある管理参考（春夏秋の葉量は未校正）';
+ }else if(a.persistence==='cirrhosaRestReference'){density=1;scale=1;phase=month>=4&&month<=8?'春夏の休眠の参考（残葉量未確認のため模式葉を保持・境界月は目安）':'秋冬の生育期の参考（全国の開花・越冬保証ではありません）';
+ }else if(a.persistence==='urophyllaLeafyReference'){density=1;scale=1;phase=month>=6&&month<=9?'夏も葉が茂る管理例（高温時の葉焼け・落葉は未予測）':'葉を残す保護条件の常緑〜半常緑参考（低温管理の苗は別条件）';
  }else if(a.persistence==='mildEvergreenClematisReference'){density=1;scale=1;phase='葉を残す保護条件の常緑参考（寒さ・夏の高温多湿による落葉や成長停止は未予測）';
  }else if(a.persistence==='coldLeaflessClematisReference'){density=[12,1,2].includes(month)?0:1;scale=1;phase=density?'支持体に誘引した展葉株の参考（葉量・芽吹き・剪定後の再生は未校正）':'寒冷地の落葉した管理例（未剪定のつるを残す・暖地の冬葉は別条件）';
  }else if(a.persistence==='autumnHellebore'){
