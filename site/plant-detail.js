@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.951';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.952';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.951';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.952';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17247,22 +17247,23 @@ export function clematisAtrageneReferenceGeometry(type){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
 }
 function drawClematisAtrageneReferences(b,{info,s},kit){
- const profile=info.appearance.shootProfile,pink=profile==='markhamsPink',wessel=profile==='wesselton',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),R=Math.min(info.appearance.flowerRadius,h*.055,w*.065),sr=Math.min(.0014,h*.002,w*.0025),green=s.leafColor,dry=s.leafDensity===0,unitY=new THREE.Vector3(0,1,0),surfaces=[];let serial=0,sepalSerial=0;
+ const profile=info.appearance.shootProfile,pink=profile==='markhamsPink',wessel=profile==='wesselton',flamingo=profile==='pinkFlamingo',bride=profile==='broughtonBride',camp=profile==='campanulinaPlena',ternate=flamingo||bride||camp,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),R=Math.min(info.appearance.flowerRadius,h*.055,w*.065),sr=Math.min(.0014,h*.002,w*.0025),green=s.leafColor,dry=s.leafDensity===0,unitY=new THREE.Vector3(0,1,0),surfaces=[];let serial=0,sepalSerial=0;
  const line=(from,to,r,color,kind)=>{const a=new THREE.Vector3(...from),z=new THREE.Vector3(...to),d=z.clone().sub(a),len=d.length();if(len<1e-10)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(unitY,d.normalize()),'YXZ'),radius=Math.min(r,Math.min(from[1],to[1])*.45);b.add(clematisRetailStemUnit,kind,color,...a.add(z).multiplyScalar(.5).toArray(),radius,len,radius,e.x,e.y,e.z);};
  const leafLength=()=>Math.min(.060,LH*.16,h*.05,w*.10);
  const foliage=(at,yaw)=>{
   const L=leafLength(),end=[at[0]+Math.sin(yaw)*L*.28,at[1]+L*.04,at[2]+Math.cos(yaw)*L*.28];line(at,end,sr*.35,green,'petiole-clematis-atragene-ref');
+  if(ternate){for(const side of[-1,0,1]){const az=yaw+side*.80,root=[end[0]+Math.sin(az)*L*(side?.20:.36),end[1]+L*.03,end[2]+Math.cos(az)*L*(side?.20:.36)],length=L*(side?.70:.88);line(end,root,sr*.25,green,'petiolule-clematis-atragene-ref');b.add('gcClematisAtrageneLeaf','leaf-clematis-atragene-ref',green,...root,length*.52,length,length,.70,az,0);}return;}
   // Three secondary stalks each carry a terminal leaflet and two lateral leaflets.
   for(const group of[-1,0,1]){const gaz=yaw+group*.80,base=[end[0]+Math.sin(gaz)*L*.28,end[1]+L*.03,end[2]+Math.cos(gaz)*L*.28];line(end,base,sr*.25,green,'petiolule-clematis-atragene-ref');
    for(const side of[-1,0,1]){const az=gaz+side*.75,root=[base[0]+Math.sin(az)*L*(side?.12:.22),base[1]+L*.02,base[2]+Math.cos(az)*L*(side?.12:.22)],length=L*(side?.48:.60);line(base,root,sr*.20,green,'petiolule-clematis-atragene-ref');b.add('gcClematisAtrageneLeaf','leaf-clematis-atragene-ref',green,...root,length*.52,length,length,.70,az,0);}
   }
  };
  const flower=(at,yaw,pitch)=>{
-  const f=flowerFrame(b,at,pitch,yaw),col=pink?'#d9a2c5':wessel?(serial%4===0?'#7175c3':'#969ddc'):'#8581ce',innerColor=pink?'#efd1e2':wessel?'#c7c9e7':'#b4b0df',width=pink?.72:.68,shape='gcClematisAtrageneSepal',kind='sepal-clematis-atragene-ref-'+profile;
+  const f=flowerFrame(b,at,pitch,yaw),col=flamingo?'#e9c8e0':bride?'#eeeede':camp?'#65519b':pink?'#d9a2c5':wessel?(serial%4===0?'#7175c3':'#969ddc'):'#8581ce',innerColor=flamingo?'#f0dae7':bride?'#f5f2df':camp?'#8b76b4':pink?'#efd1e2':wessel?'#c7c9e7':'#b4b0df',width=flamingo?.58:bride?.42:camp?.70:pink?.72:.68,shape='gcClematisAtrageneSepal',kind='sepal-clematis-atragene-ref-'+profile;
   for(let k=0;k<4;k++){const az=k*TAU/4+.05,instance=sepalSerial++;f.add(shape,kind,col,0,0,0,R*width,R,R,0,az,0);if(k===0){const vertices=[24*21+10,25*21+10,24*21+11],scale=new THREE.Vector3(R*width,R,R),q=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ')),fq=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),points=vertices.map(v=>new THREE.Vector3(...clematisAtrageneReferencePoint('sepal',Math.floor(v/21)/32,v%21/20*2-1).map(Math.fround)).multiply(scale).applyQuaternion(q).applyQuaternion(fq).add(new THREE.Vector3(...at))),point=points.reduce((a,v)=>a.add(v),new THREE.Vector3()).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,vertices,instanceId:instance,faceIndex:(24*20+10)*2});}}
-  const outer=wessel?16:12,inner=wessel?24:12;
-  for(let k=0;k<outer;k++){const az=k*TAU/outer+.25;f.add('gcClematisAtrageneStaminode','staminode-outer-clematis-atragene-ref-'+profile,innerColor,0,-R*.025,0,R*(pink?.18:.16),R*1.35,R*1.35,0,az,0);}
-  for(let k=0;k<inner;k++){const az=k*2.399963+.45;f.add('gcClematisAtrageneInner','staminode-inner-clematis-atragene-ref-'+profile,pink?'#f2e1e7':'#dedee9',0,-R*.04,0,R*.11,R*.80,R*.80,0,az,0);}
+  const outer=flamingo?8:bride?(serial%3===0?0:8):wessel?16:12,inner=flamingo?4:bride?(serial%3===2?12:0):camp?8:wessel?24:12;
+  for(let k=0;k<outer;k++){const az=k*TAU/outer+.25;f.add('gcClematisAtrageneStaminode','staminode-outer-clematis-atragene-ref-'+profile,innerColor,0,-R*.025,0,R*(flamingo?.24:bride?.12:camp?.23:pink?.18:.16),R*(flamingo?1.10:bride?1.50:camp?1.20:1.35),R*(flamingo?1.10:bride?1.50:camp?1.20:1.35),0,az,0);}
+  for(let k=0;k<inner;k++){const az=k*2.399963+.45;f.add('gcClematisAtrageneInner','staminode-inner-clematis-atragene-ref-'+profile,flamingo?'#f3eddb':bride?'#f1edda':camp?'#b0a4cc':pink?'#f2e1e7':'#dedee9',0,-R*.04,0,R*.11,R*.80,R*.80,0,az,0);}
   f.add(kit.bud,'receptacle-clematis-atragene-ref-'+profile,'#a1a98b',0,0,0,R*.08,R*.11,R*.08);
   for(let k=0;k<24;k++){const t=(k+.5)/24,az=k*2.399963,rr=R*(.025+.10*Math.sqrt(t)),from=new THREE.Vector3(Math.sin(az)*R*.02,0,Math.cos(az)*R*.02),to=new THREE.Vector3(Math.sin(az)*rr,-R*(.25+.13*t),Math.cos(az)*rr),axis=to.clone().sub(from),len=axis.length(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(unitY,axis.normalize()),'YXZ'),mid=from.clone().add(to).multiplyScalar(.5),r=Math.min(sr*.15,R*.008);f.add(clematisRetailStemUnit,'filament-clematis-atragene-ref-'+profile,'#e1ddc6',...mid.toArray(),r,len,r,e.x,e.y,e.z);f.add(kit.bud,'anther-clematis-atragene-ref-'+profile,'#dfd7ad',...to.toArray(),R*.018,R*.055,R*.018,.12,az,0);}
   serial++;
