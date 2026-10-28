@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.933';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.934';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.933';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.934';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17208,6 +17208,9 @@ export function clematisRetailReferencePoint(type,t,u){
  if(type==='viola')return[u*.5*sn**.53*(1.04-.08*t),.065*t*t+.015*sn*Math.sin(u*7+t*10)*Math.abs(u)**5,t];
  if(type==='giselle')return[u*.5*sn**.70*(1.10-.18*t),.045*t*t+.024*sn*Math.sin(u*7+t*18)*Math.abs(u)**5,t];
  if(type==='samaritanJo')return[u*.5*sn**.72*(1.04-.10*t),.075*t*t+.018*sn*Math.sin(u*8+t*17)*Math.abs(u)**5,t];
+ if(type==='duchess')return[u*.5*sn**.61*(1.05-.10*t),.09*t*t+.018*sn*Math.sin(u*8+t*16)*Math.abs(u)**5,t];
+ if(type==='denny')return[u*.5*sn**.59*(1.06-.11*t),.10*t*t+.032*sn*Math.sin(u*8+t*19)*Math.abs(u)**5,t];
+ if(type==='redStar')return[u*.5*sn**.70*(1.10-.16*t),.10*t*t+.045*sn*Math.sin(u*8+t*18)*Math.abs(u)**5,t];
  const fond=type==='fond',white=type==='shiromane',inner=type==='inner';
  return[u*.5*sn**(inner?.76:fond?.61:.55)*(1.03-.10*t),(.04+.055*u*u)*sn+(inner?.38:white?.12:fond?.045:.065)*t*t+.012*Math.sin(t*18+u*7)*sn*Math.abs(u)**4,t];
 }
@@ -17230,16 +17233,29 @@ function drawClematisRetailReferences(b,{info,s,p},kit){
  };
  const flower=(at,yaw,pitch)=>{
   const summer=profile==='caroline'&&[7,8].includes(s.month),serial=counts.flower||0;counts.flower=serial+1;
-  const f=flowerFrame(b,at,pitch,yaw),col=white?'#e6e5c8':fond?'#e9dfeb':profile==='yukikomachi'?'#e3dfeb':profile==='pinkFantasy'?'#e8b5d1':profile==='caroline'?(summer?'#eee4e6':s.month===9?'#dfc3db':'#e5b7ce'):profile==='viola'?'#65438f':profile==='giselle'?((serial*7+3)%5===0?'#e7dce8':'#d694c0'):profile==='samaritanJo'?'#e9e6e1':'#382242',component='sepal-clematis-retail-ref-'+profile,outer=profile==='caroline'?(summer?[4,4,4,5,6]:[6,6,6,5,4])[serial%5]:6,sz=R;
+  const f=flowerFrame(b,at,pitch,yaw),col=white?'#e6e5c8':fond?'#e9dfeb':profile==='yukikomachi'?'#e3dfeb':profile==='pinkFantasy'?'#e8b5d1':profile==='caroline'?(summer?'#eee4e6':s.month===9?'#dfc3db':'#e5b7ce'):profile==='viola'?'#65438f':profile==='giselle'?((serial*7+3)%5===0?'#e7dce8':'#d694c0'):profile==='samaritanJo'?'#e9e6e1':profile==='duchess'?'#eeeede':profile==='denny'?'#b6a8d8':profile==='redStar'?'#bc3d77':'#382242',component='sepal-clematis-retail-ref-'+profile,outer=profile==='caroline'?(summer?[4,4,4,5,6]:[6,6,6,5,4])[serial%5]:6,sz=R;
   for(let k=0;k<outer;k++){
-   const az=k*TAU/outer+.05,geometry='gcClematisRetail-'+profile,instance=counts.sepal++;f.add(geometry,component,col,0,0,0,sz*(white?.70:fond?.73:profile==='yukikomachi'?.68:profile==='pinkFantasy'?.68:profile==='viola'?.68:profile==='giselle'?.62:profile==='samaritanJo'?.50:.78),sz,sz,0,az,0);
-   if(k===0){const verts=[24*21+10,25*21+10,24*21+11],scale=new THREE.Vector3(sz*(white?.70:fond?.73:profile==='yukikomachi'?.68:profile==='pinkFantasy'?.68:profile==='viola'?.68:profile==='giselle'?.62:profile==='samaritanJo'?.50:.78),sz,sz),outerQ=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ')),frameQ=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),points=verts.map(v=>new THREE.Vector3(...clematisRetailReferencePoint(profile,Math.floor(v/21)/32,v%21/20*2-1).map(Math.fround)).multiply(scale).applyQuaternion(outerQ).applyQuaternion(frameQ).add(new THREE.Vector3(...at))),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,vertices:verts,instanceId:instance,faceIndex:(24*20+10)*2,radius:R*(profile==='samaritanJo'?1.6:1.8)});}
+   const az=k*TAU/outer+.05,geometry='gcClematisRetail-'+profile,instance=counts.sepal++;f.add(geometry,component,col,0,0,0,sz*(white?.70:fond?.73:profile==='yukikomachi'?.68:profile==='pinkFantasy'?.68:profile==='viola'?.68:profile==='giselle'?.62:profile==='samaritanJo'?.50:profile==='duchess'?.68:profile==='denny'?.70:profile==='redStar'?.63:.78),sz,sz,0,az,0);
+   if(k===0){const row=['duchess','denny','redStar'].includes(profile)?30:24,verts=[row*21+10,(row+1)*21+10,row*21+11],scale=new THREE.Vector3(sz*(white?.70:fond?.73:profile==='yukikomachi'?.68:profile==='pinkFantasy'?.68:profile==='viola'?.68:profile==='giselle'?.62:profile==='samaritanJo'?.50:profile==='duchess'?.68:profile==='denny'?.70:profile==='redStar'?.63:.78),sz,sz),outerQ=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ')),frameQ=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),points=verts.map(v=>new THREE.Vector3(...clematisRetailReferencePoint(profile,Math.floor(v/21)/32,v%21/20*2-1).map(Math.fround)).multiply(scale).applyQuaternion(outerQ).applyQuaternion(frameQ).add(new THREE.Vector3(...at))),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,vertices:verts,instanceId:instance,faceIndex:(row*20+10)*2,radius:R*(profile==='samaritanJo'?1.6:1.8)});}
+  }
+  const layered=['duchess','denny','redStar'].includes(profile),openDuchess=profile==='duchess'&&serial%5>=3;
+  if(layered){
+   const layers=profile==='denny'?4:profile==='redStar'?2:openDuchess?1:3;
+   f.add(kit.bud,'receptacle-clematis-retail-double-'+profile,'#a7ad7e',0,R*.065,0,R*.09,R*.13,R*.09);
+   for(let layer=0;layer<layers;layer++)for(let k=0;k<8+layer*2;k++){
+    const count=8+layer*2,az=k*TAU/count+layer*.37,len=R*(.88-layer*.16),innerCol=profile==='duchess'&&!openDuchess&&layer>=1?(k%3?'#c5d49d':'#dce3bd'):col;
+    f.add('gcClematisRetail-'+profile,'petaloid-clematis-retail-double-'+profile,innerCol,0,R*(.025+.055*layer),0,len*(profile==='denny'?.63:profile==='redStar'?.49:.58),len,len,-.10-layer*.14,az,0);
+   }
+   if(profile==='denny'||profile==='duchess'&&!openDuchess)for(let k=0;k<18;k++){
+    const t=(k+.5)/18,az=k*2.399963,rr=R*.09*Math.sqrt(t),len=R*(.18+.20*t);
+    f.add('gcClematisRetailInner','petaloid-centre-clematis-retail-double-'+profile,profile==='duchess'?(k%3?'#bfce8c':'#d5dfb6'):'#c7b9e1',Math.sin(az)*rr,R*.075,Math.cos(az)*rr,len*.30,len,len,-.65+t*.24,az,0);
+   }
   }
   if(white){
    // Petaloid central organs, not a second six-sepal corolla or a seed head.
    for(let k=0;k<48;k++){const t=(k+.5)/48,az=k*2.399963,rr=R*.29*Math.sqrt(t),len=R*(.29+.30*t);f.add('gcClematisRetailInner','petaloid-clematis-retail-ref',k%3?'#cdd6a0':'#dde0b6',Math.sin(az)*rr,R*(.025+.18*(1-t)),Math.cos(az)*rr,len*.39,len,len,.12+t*.60,az,0);}
-  }else{
-   const pink=profile==='pinkFantasy',caroline=profile==='caroline',giselle=profile==='giselle',sam=profile==='samaritanJo',center=fond?'#4c2447':pink?'#713f50':caroline?'#d7c26b':giselle?'#5d254a':sam?'#dcca59':profile==='yukikomachi'?'#b7bd84':'#c5c79a';
+  }else if(!layered||openDuchess||profile==='redStar'){
+   const pink=profile==='pinkFantasy',caroline=profile==='caroline',giselle=profile==='giselle',sam=profile==='samaritanJo',center=fond?'#4c2447':pink?'#713f50':caroline?'#d7c26b':giselle?'#5d254a':sam?'#dcca59':profile==='duchess'?'#dedbb2':profile==='redStar'?'#e5d8a8':profile==='yukikomachi'?'#b7bd84':'#c5c79a';
    for(let k=0;k<48;k++){const t=(k+.5)/48,az=k*2.399963,rr=R*(.035+.20*Math.sqrt(t)),tip=[Math.sin(az)*rr,R*(caroline?.22+.16*t:sam?.24+.14*t:giselle?.23+.12*t:.16+.13*t),Math.cos(az)*rr],base=[Math.sin(az)*R*.04,0,Math.cos(az)*R*.04];f.branch(base,tip,Math.min(sr*.18,R*.008),fond?'#6d375f':pink?'#8a4863':giselle?'#722947':sam?'#877270':'#b6baa0','filament-clematis-retail-ref');f.add(kit.bud,'anther-clematis-retail-ref-'+profile,center,...tip,R*.018,R*(caroline?.082:sam?.090:giselle?.070:.052),R*.018,.25,az,0);}
   }
  };
