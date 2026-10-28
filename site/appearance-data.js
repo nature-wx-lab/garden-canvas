@@ -9126,7 +9126,179 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "arrangement": 1,
     "leaflets": 1
   }
-},"p-a7f7864686e7":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1719","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"petals":0,"flowerMonths":1,"flowerTiming":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"cross","habit":"spreading","leafShape":"compound","leafTexture":"glossy","compoundType":"pinnate","petals":5,"flowerMonths":[5,6,7,8,9,10],"flowerTiming":"months","unconfirmed":["persistence"]},"p-dc6dfada5908":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1720","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"petals":0,"flowerMonths":1,"flowerTiming":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"cross","habit":"spreading","leafShape":"compound","leafTexture":"glossy","compoundType":"pinnate","petals":5,"flowerMonths":[5,6,7,8,9,10],"flowerTiming":"months","unconfirmed":["persistence"]},"p-5caf9ad1ca6a":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=2932","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/731ha/","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"petals":0,"flowerMonths":2,"flowerTiming":2,"flowerLayers":2,"persistence":2,"phenologyRegion":2},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"cross","habit":"spreading","leafShape":"compound","leafTexture":"glossy","compoundType":"pinnate","petals":5,"flowerMonths":[5,6,7,8,9,10],"flowerTiming":"months","flowerLayers":3,"persistence":"deciduous","phenologyRegion":"grower-cold","unconfirmed":[]},"p-bb514cddee99":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1694","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"petals":0,"flowerMonths":1,"flowerTiming":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"cross","habit":"spreading","leafShape":"compound","leafTexture":"glossy","compoundType":"pinnate","petals":5,"flowerMonths":[5,6,7,8,9],"flowerTiming":"months","unconfirmed":["persistence"]},"p-9963a4670142":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis/","scope":"genus"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"petals":0},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"cross","habit":"spreading","leafShape":"compound","leafTexture":"glossy","compoundType":"pinnate","petals":5,"unconfirmed":["persistence"]},"p-23be4f65b4e1":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1727","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"petals":0,"flowerMonths":1,"flowerTiming":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"cross","habit":"spreading","leafShape":"compound","leafTexture":"glossy","compoundType":"pinnate","petals":5,"flowerMonths":[5,6,7,8,9,10,11],"flowerTiming":"months","unconfirmed":["persistence"]},"p-649392bb7281":{
+},"p-a7f7864686e7":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/732ml/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://item.rakuten.co.jp/ogis/732m/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/clematis/",
+      "scope": "genus"
+    }
+  ],
+  "status": "partial",
+  "architecture": "clematisRetailReferences",
+  "shootProfile": "littleMermaid",
+  "flowerShape": "littleMermaidRetailSingle",
+  "flowerRadius": 0.05,
+  "leafShape": "clematisRetailCompound",
+  "habit": "clematisTrainedReference",
+  "lifeForm": "vine",
+  "persistence": "coldLeaflessClematisReference",
+  "arrangement": "opposite",
+  "leaflets": 3,
+  "flowerMonths": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "flowerTiming": "months",
+  "phenologyRegion": "国内販売元の寒冷地・低温管理の落葉株を参考に、12〜2月は葉を外し、支持体に未剪定のつるを残します。芽吹き・葉量・古枝の生死・月境界は未校正です。晩秋の葉色は今回の写真に対応づけられず、固定月のブロンズ色へ変換していません。",
+  "sourceConflict": "732MLの2年苗本文で5〜10月・花径8〜12cm・伸びる目安2〜3mを確認。花写真は同じ品種の1年苗732Mに掲載された200pxの2枚を参考にし、大きな写真を確認したことにはしません。細かな器官数・裏面は未照合です。咲き始めの桃色からオレンジを帯びた淡いアプリコットピンクへの説明は花齢の変化で、固定月や計画年の変色へ置き換えません。幅は未確認です。旧枝咲き・弱剪定と花後2〜3節での切戻しは管理の説明です。再開花は剪定や生育条件に依存し、自動剪定・連続満開や再生を予測していません。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合・年次成長・根・結実・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "支柱の高さと幅・5本のつる・18節・15花は配置と誘引の近似例です。つる長を自然な垂直高さや成株の直径へ換算しません。",
+    "対生・3小葉は掲載写真と属の複葉を参考にした近似です。属資料には互生と対生があり、この品種の全節の小葉数を測定したものではありません。",
+    "外側8枚の花弁状の萼と48雄しべは写真と属を参考にした近似例で、固定の器官数や測定値ではありません。通常の花弁と萼を区別します。",
+    "200pxの花写真は全体の花色と花型を確認するための参考で、細かな花器・裏面の照合には不足します。15花のうち5花を淡いアプリコットピンク、10花を桃色にする比率は未実測の静的な例で、月・年・花齢の進行予測ではありません。",
+    "共通の苗の見本は同じ品種・同じ株の年間記録ではありません。苗の鉢径・齢・出荷時の切詰めを成株寸法・年次成長・全てのつるの自然消失へ読み替えません。"
+  ],
+  "basis": {
+    "architecture": 1,
+    "shootProfile": 1,
+    "flowerShape": 1,
+    "flowerRadius": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0,
+    "leafShape": 2,
+    "arrangement": 2,
+    "leaflets": 2
+  }
+},"p-dc6dfada5908":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/732pk/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/clematis/",
+      "scope": "genus"
+    }
+  ],
+  "status": "partial",
+  "architecture": "clematisRetailReferences",
+  "shootProfile": "pinky",
+  "flowerShape": "pinkyRetailPinkBar",
+  "flowerRadius": 0.0675,
+  "leafShape": "clematisRetailCompound",
+  "habit": "clematisTrainedReference",
+  "lifeForm": "vine",
+  "persistence": "coldLeaflessClematisReference",
+  "arrangement": "opposite",
+  "leaflets": 3,
+  "flowerMonths": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "flowerTiming": "months",
+  "phenologyRegion": "国内販売元の寒冷地・低温管理の落葉株を参考に、12〜2月は葉を外し、支持体に未剪定のつるを残します。芽吹き・葉量・古枝の生死・月境界は未校正です。晩秋の葉色は今回の写真に対応づけられず、固定月のブロンズ色へ変換していません。",
+  "sourceConflict": "732PKは5〜10月・花径12〜15cm・伸びる目安2〜3m。白地に鮮やかな桃色が重なる写真と暗い花芯を参考にします。販売元はパテンス系としつつ、交配親など不明とも記載しており、系譜は推定していません。幅は未確認です。旧枝咲き・弱剪定と花後2〜3節での切戻しは管理の説明です。再開花は剪定や生育条件に依存し、自動剪定・連続満開や再生を予測していません。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合・年次成長・根・結実・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "支柱の高さと幅・5本のつる・18節・15花は配置と誘引の近似例です。つる長を自然な垂直高さや成株の直径へ換算しません。",
+    "対生・3小葉は掲載写真と属の複葉を参考にした近似です。属資料には互生と対生があり、この品種の全節の小葉数を測定したものではありません。",
+    "外側8枚の花弁状の萼と48雄しべは写真と属を参考にした近似例で、固定の器官数や測定値ではありません。通常の花弁と萼を区別します。",
+    "白い縁・桃色の筋の幅・花被のうねり・裏面は未実測です。萼を二段にずらした重なりも近似で、花齢や気温による変化を固定の月別変色へ置き換えません。",
+    "共通の苗の見本は同じ品種・同じ株の年間記録ではありません。苗の鉢径・齢・出荷時の切詰めを成株寸法・年次成長・全てのつるの自然消失へ読み替えません。"
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0,
+    "leafShape": 1,
+    "arrangement": 1,
+    "leaflets": 1
+  }
+},"p-5caf9ad1ca6a":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/731ha/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/clematis/",
+      "scope": "genus"
+    }
+  ],
+  "status": "partial",
+  "architecture": "clematisRetailReferences",
+  "shootProfile": "haruhime",
+  "flowerShape": "haruhimeRetailDouble",
+  "flowerRadius": 0.05,
+  "leafShape": "clematisRetailCompound",
+  "habit": "clematisTrainedReference",
+  "lifeForm": "vine",
+  "persistence": "coldLeaflessClematisReference",
+  "arrangement": "opposite",
+  "leaflets": 3,
+  "flowerMonths": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "flowerTiming": "months",
+  "phenologyRegion": "国内販売元の寒冷地・低温管理の落葉株を参考に、12〜2月は葉を外し、支持体に未剪定のつるを残します。芽吹き・葉量・古枝の生死・月境界は未校正です。晩秋の葉色は今回の写真に対応づけられず、固定月のブロンズ色へ変換していません。",
+  "sourceConflict": "731HAは5〜10月・花径8〜12cm・伸びる目安1.5〜2.5m。淡い桜色の複数層と淡い花芯を参考にします。びっしり咲く品種ではないという本文から花数を控えた配置例にしていますが、実測した花数・密度ではありません。日照や咲き進みで色が変わる説明を固定月の変色へ置き換えません。幅は未確認です。旧枝咲き・弱剪定と花後2〜3節での切戻しは管理の説明です。再開花は剪定や生育条件に依存し、自動剪定・連続満開や再生を予測していません。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合・年次成長・根・結実・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "支柱の高さと幅・5本のつる・18節・10花は配置と誘引の近似例です。つる長を自然な垂直高さや成株の直径へ換算しません。",
+    "対生・3小葉は掲載写真と属の複葉を参考にした近似です。属資料には互生と対生があり、この品種の全節の小葉数を測定したものではありません。",
+    "外側6枚の花弁状の萼と内側3層の計30枚の花被、48雄しべは写真を参考にした未実測の近似です。八重の器官の由来は未同定で、全ての花の枚数を示しません。",
+    "10花という数や桜色と白を帯びる花の比率は未実測です。花床・層の位置・裏面は近似で、日照・花齢や月別の変化を自動再現していません。",
+    "共通の苗の見本は同じ品種・同じ株の年間記録ではありません。苗の鉢径・齢・出荷時の切詰めを成株寸法・年次成長・全てのつるの自然消失へ読み替えません。"
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0,
+    "leafShape": 1,
+    "arrangement": 1,
+    "leaflets": 1
+  }
+},"p-bb514cddee99":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1694","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"petals":0,"flowerMonths":1,"flowerTiming":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"cross","habit":"spreading","leafShape":"compound","leafTexture":"glossy","compoundType":"pinnate","petals":5,"flowerMonths":[5,6,7,8,9],"flowerTiming":"months","unconfirmed":["persistence"]},"p-9963a4670142":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis/","scope":"genus"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"petals":0},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"cross","habit":"spreading","leafShape":"compound","leafTexture":"glossy","compoundType":"pinnate","petals":5,"unconfirmed":["persistence"]},"p-23be4f65b4e1":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1727","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"petals":0,"flowerMonths":1,"flowerTiming":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"cross","habit":"spreading","leafShape":"compound","leafTexture":"glossy","compoundType":"pinnate","petals":5,"flowerMonths":[5,6,7,8,9,10,11],"flowerTiming":"months","unconfirmed":["persistence"]},"p-649392bb7281":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/731fl/",

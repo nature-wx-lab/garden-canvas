@@ -7313,7 +7313,154 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-a7f7864686e7":{"label":"クレマチス リトルマーメイド","latin":"Clematis 'Little mermaid'","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":[2,3],"spread":null,"bloom":[5,6,7,8,9,10],"bloomKnown":true,"flower":"#d99aaa","leafColor":"#557442","variegated":false,"colors":["pink"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"5～10月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：5～10月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1719","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス リトルマーメイド"],"selectionSource":null,"visual":"reference","popularity":[]},"p-dc6dfada5908":{"label":"クレマチス ピンキー","latin":"Clematis 'Pinky'","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[5,6,7,8,9,10],"bloomKnown":true,"flower":"#d99aaa","leafColor":"#557442","variegated":false,"colors":["pink"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"5～10月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：5～10月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1720","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス ピンキー"],"selectionSource":null,"visual":"reference","popularity":[]},"p-5caf9ad1ca6a":{"label":"クレマチス 春姫(はるひめ)","latin":"Clematis 'Haruhime'","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":[1.5,2.5],"spread":null,"bloom":[5,6,7,8,9,10],"bloomKnown":true,"flower":"#d99aaa","leafColor":"#557442","variegated":false,"colors":["pink"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"5～10月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：5～10月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=2932","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス 春姫(はるひめ)"],"selectionSource":null,"visual":"reference","popularity":[]},"p-bb514cddee99":{"label":"クレマチス ダンシング・クイーン","latin":"Clematis 'Dancing Queen'","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[5,6,7,8,9],"bloomKnown":true,"flower":"#d99aaa","leafColor":"#557442","variegated":false,"colors":["pink"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"5～9月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：5～9月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1694","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス ダンシング・クイーン"],"selectionSource":null,"visual":"reference","popularity":[]},"p-9963a4670142":{"label":"クレマチス ベルオブウォーキング","latin":"","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"deciduous","height":[2,3],"spread":null,"bloom":[5,6,7,8,9,10],"bloomKnown":true,"flower":"#d99aaa","leafColor":"#557442","variegated":false,"colors":["pink","purple","mixed"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"5～10月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：5～10月。月の記載。","bloomBasis":"月の記載","source":"https://www.engei.net/products/detail?id=22437","publisher":"園芸ネット","sourceChecked":"2026-10-10","aliases":["クレマチス ベルオブウォーキング"],"selectionSource":"https://www.engei.net/products?category=020&order=p&page=1","visual":"reference","popularity":[]},"p-23be4f65b4e1":{"label":"クレマチス 白雪姫","latin":"Clematis 'Shirayukihime'","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[5,6,7,8,9,10,11],"bloomKnown":true,"flower":"#ece8d8","leafColor":"#557442","variegated":false,"colors":["white"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"5～11月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：5～11月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1727","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス 白雪姫"],"selectionSource":null,"visual":"reference","popularity":[]},"p-649392bb7281":{
+},"p-a7f7864686e7":{
+  "label": "クレマチス リトルマーメイド",
+  "latin": "Clematis 'Little mermaid'",
+  "genre": "クレマチス",
+  "form": "botanical",
+  "group": "つる性",
+  "leaf": "deciduous",
+  "height": [
+    2,
+    3
+  ],
+  "spread": null,
+  "bloom": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "bloomKnown": true,
+  "flower": "#d99bb5",
+  "leafColor": "#507448",
+  "variegated": false,
+  "colors": [
+    "pink",
+    "orange",
+    "mixed"
+  ],
+  "sun": [
+    "sun",
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "支持体へ誘引したつる・対生する複葉・桃色系の花の参考",
+  "care": "桃色と淡いアプリコットピンクの花齢の異なる花の参考を掲載写真と本文に寄せた参考です。資料の2〜3mは剪定で調整できるつるの伸びる目安で、3Dの垂直高さは誘引した配置例です。自然な成株の高さ・幅とは区別します。2年苗12〜13.5cmポットは販売規格で、計画開始年の開花や年次成長の保証ではありません。",
+  "bloomText": "資料：5〜10月（剪定・管理・地域で変わる開花の範囲）",
+  "bloomBasis": "国内販売元の月表記。期間中の連続満開を示しません",
+  "source": "https://item.rakuten.co.jp/ogis/732ml/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-29",
+  "aliases": [
+    "クレマチス リトルマーメイド"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-dc6dfada5908":{
+  "label": "クレマチス ピンキー",
+  "latin": "Clematis 'Pinky'",
+  "genre": "クレマチス",
+  "form": "botanical",
+  "group": "つる性",
+  "leaf": "deciduous",
+  "height": [
+    2,
+    3
+  ],
+  "spread": null,
+  "bloom": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "bloomKnown": true,
+  "flower": "#ebbed5",
+  "leafColor": "#507448",
+  "variegated": false,
+  "colors": [
+    "pink",
+    "white",
+    "mixed"
+  ],
+  "sun": [
+    "sun",
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "支持体へ誘引したつる・対生する複葉・桃色系の花の参考",
+  "care": "白い縁と鮮やかな桃色の中央筋・暗い花芯の一重花を掲載写真と本文に寄せた参考です。資料の2〜3mは剪定で調整できるつるの伸びる目安で、3Dの垂直高さは誘引した配置例です。自然な成株の高さ・幅とは区別します。1年苗7.5〜10.5cmポットは販売規格で、計画開始年の開花や年次成長の保証ではありません。",
+  "bloomText": "資料：5〜10月（剪定・管理・地域で変わる開花の範囲）",
+  "bloomBasis": "国内販売元の月表記。期間中の連続満開を示しません",
+  "source": "https://item.rakuten.co.jp/ogis/732pk/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-29",
+  "aliases": [
+    "クレマチス ピンキー"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-5caf9ad1ca6a":{
+  "label": "クレマチス 春姫(はるひめ)",
+  "latin": "Clematis 'Haruhime'",
+  "genre": "クレマチス",
+  "form": "botanical",
+  "group": "つる性",
+  "leaf": "deciduous",
+  "height": [
+    1.5,
+    2.5
+  ],
+  "spread": null,
+  "bloom": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "bloomKnown": true,
+  "flower": "#f1e6e9",
+  "leafColor": "#507448",
+  "variegated": false,
+  "colors": [
+    "pink",
+    "white",
+    "mixed"
+  ],
+  "sun": [
+    "sun",
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "支持体へ誘引したつる・対生する複葉・桃色系の花の参考",
+  "care": "淡い桜色から白を帯びる複数層の八重花と淡い花芯を掲載写真と本文に寄せた参考です。資料の1.5〜2.5mは剪定で調整できるつるの伸びる目安で、3Dの垂直高さは誘引した配置例です。自然な成株の高さ・幅とは区別します。2年苗12〜13.5cmポットは販売規格で、計画開始年の開花や年次成長の保証ではありません。",
+  "bloomText": "資料：5〜10月（剪定・管理・地域で変わる開花の範囲）",
+  "bloomBasis": "国内販売元の月表記。期間中の連続満開を示しません",
+  "source": "https://item.rakuten.co.jp/ogis/731ha/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-29",
+  "aliases": [
+    "クレマチス 春姫(はるひめ)"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-bb514cddee99":{"label":"クレマチス ダンシング・クイーン","latin":"Clematis 'Dancing Queen'","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[5,6,7,8,9],"bloomKnown":true,"flower":"#d99aaa","leafColor":"#557442","variegated":false,"colors":["pink"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"5～9月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：5～9月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1694","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス ダンシング・クイーン"],"selectionSource":null,"visual":"reference","popularity":[]},"p-9963a4670142":{"label":"クレマチス ベルオブウォーキング","latin":"","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"deciduous","height":[2,3],"spread":null,"bloom":[5,6,7,8,9,10],"bloomKnown":true,"flower":"#d99aaa","leafColor":"#557442","variegated":false,"colors":["pink","purple","mixed"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"5～10月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：5～10月。月の記載。","bloomBasis":"月の記載","source":"https://www.engei.net/products/detail?id=22437","publisher":"園芸ネット","sourceChecked":"2026-10-10","aliases":["クレマチス ベルオブウォーキング"],"selectionSource":"https://www.engei.net/products?category=020&order=p&page=1","visual":"reference","popularity":[]},"p-23be4f65b4e1":{"label":"クレマチス 白雪姫","latin":"Clematis 'Shirayukihime'","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[5,6,7,8,9,10,11],"bloomKnown":true,"flower":"#ece8d8","leafColor":"#557442","variegated":false,"colors":["white"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"5～11月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：5～11月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1727","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス 白雪姫"],"selectionSource":null,"visual":"reference","popularity":[]},"p-649392bb7281":{
   "label": "クレマチス フェアリー ブルー",
   "latin": "Clematis 'Fairy Blue'",
   "genre": "クレマチス",
