@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.927';
+import {treeProfile} from './tree-profiles.js?v=0.9.928';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -351,6 +351,7 @@ export function seasonAt(info,month){
  if(a.architecture==='hybridHelleboreDoubleReferences'&&['eleganceWhiteDouble','eleganceCidreDouble'].includes(a.shootProfile)){phase=bloom?(a.shootProfile==='eleganceWhiteDouble'?'エレガンスホワイトの八重・褐色スポットの写真例（国内販売店の2〜3月記載）':'シードル本文掲載の八重・かすり・光沢の写真例（画像の別名と低温の色差は未解決）'):'健康な緑の根生葉を残す保護参考（苗の季節変化・剪定後の再生は未校正）';}
  if(a.architecture==='hybridHelleboreDoubleReferences'&&['eleganceIceDouble','eleganceFlarePinkDouble','eleganceGrapeDouble'].includes(a.shootProfile)){phase=bloom?({eleganceIceDouble:'白い八重の写真例（条件による桃縁を月順で予測しない）',eleganceFlarePinkDouble:'先端の小さな切れ込みと桃縁の八重例（国内1〜4月記載・花齢の縁色は別）',eleganceGrapeDouble:'表が桃〜藤色・裏がルビーレッドの八重参考（同じ花の表裏の実測は未確認）'}[a.shootProfile]):'健康な緑の根生葉を残す保護参考（苗の季節変化・剪定後の再生は未校正）';}
  if(a.architecture==='hybridHelleboreDoubleReferences'&&['eleganceHoneyWineDouble','eleganceLimeYellowDouble'].includes(a.shootProfile)){phase=bloom?(a.shootProfile==='eleganceHoneyWineDouble'?'クリーム地ににじむ紅紫の覆輪の八重例（花齢の緑化・覆輪の残り方は月順で未予測）':'淡黄の丸い一番花の八重例（二番花以降の剣弁を月順で未予測）'):'健康な緑の根生葉を残す保護参考（苗の季節変化・剪定後の再生は未校正）';}
+ if(a.architecture==='hybridHelleboreDoubleReferences'&&['redSeedlingSingle','applePinkSeedlingDouble','superYellowSeedlingSemiDouble'].includes(a.shootProfile)){phase=bloom?'実生の掲載花の参考（花型・色の個体差、開花月は未校正）':'健康な緑の根生葉を残す保護参考（実生の葉量・自然な更新は未校正）';}
  if(a.architecture==='hybridHelleboreDoubleReferences'&&['blackSwanDouble','elegancePinkSpotDouble'].includes(a.shootProfile)){phase=bloom?(a.shootProfile==='blackSwanDouble'?'黒〜紺紫の大輪八重の静的な参考（低温の黒さ・光沢は未校正）':'淡桃〜白桃の八重と赤紫の粉状斑の参考'):'健康な緑の根生葉を残す保護参考（減葉・再生は未校正）';}
  if(a.architecture==='hybridHelleboreDoubleReferences'&&['angelierIvoryDouble','majoricaBlackDouble','butterYellowSpotDouble'].includes(a.shootProfile)){phase=bloom?({angelierIvoryDouble:'象牙〜緑を帯びる白い八重の静的な参考（花色の変化は月順に予測しない）',majoricaBlackDouble:'黒紫の八重とさらに濃い縁の参考（黒さ・反射は近似）',butterYellowSpotDouble:'淡いクリーム色の小輪八重と中心へ集まる褐紫斑の参考'}[a.shootProfile]):'健康な緑の根生葉を残す保護参考（減葉・夏の傷み・再生は未校正）';}
  if(a.architecture==='hybridHelleboreDoubleReferences'&&['florencePeachDouble','florenceRoseRippleDouble','florencePicoteeDouble'].includes(a.shootProfile)){phase=bloom?({florencePeachDouble:'淡桃の丸弁と広めの桃縁が重なる大輪八重の参考',florenceRoseRippleDouble:'咲き始めの淡い中心と暗赤紫の縁・脈の八重参考（花齢変色は月順に予測しない）',florencePicoteeDouble:'小輪の白い八重と紫の糸覆輪の参考'}[a.shootProfile]):'健康な緑の根生葉を残す保護参考（減葉・再生は未校正）';}

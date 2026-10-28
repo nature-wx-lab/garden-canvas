@@ -9834,7 +9834,65 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "葉を残す健康な保護株の参考です。月別の残葉率・寒害・剪定日・新葉量・夏越しの確率と、花後の自然な花茎消失日は未予測です。",
     "元資料の高さ15〜25cmは再確認できず、現行販売ページに生育後寸法はありません。種の寸法・実生3年生の苗規格を成株寸法や計画年次の成長曲線へ置き換えません。"
   ]
-},"p-47384cda62a5":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/100snd/","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/100sns/","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-niger/","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"flowerShape":0,"leafShape":0,"habit":2,"compoundType":2,"leafTexture":2,"leafColor":0,"persistence":0,"phenologyRegion":0,"flowerMonths":0,"flowerTiming":0,"scientificName":0},"status":"partial","architecture":"nigerCultivarReferences","shootProfile":"snowDrift","flowerShape":"nigerSnowDriftReference","leafShape":"nigerSnowDriftLeafReference","habit":"clump","compoundType":"palmate","leafTexture":"glossy","leafColor":"#415b3b","persistence":"semiEvergreen","phenologyRegion":"grower-cold","flowerMonths":[1,2,3,4,5,12],"flowerTiming":"season-reference","scientificName":"Helleborus niger 'Snow Drift'","sourceConflict":"大苗ページの実際に開花した15cm鉢苗と接写の細弁八重花を主参考としています。小苗写真の印刷ラベルは一重・桃色に見えますが、小苗そのものの開花写真ではないため形態根拠には採りません。未開花の小苗全ての花形や、別登録のニゲル ダブルと同じクローンであることは確認していません。","unconfirmed":["細い花弁状部分と小葉の寸法・枚数・重なりは写真を参考にした近似で、固定した3層や品種の実測器官数ではありません。","大苗本文の栄養繁殖という記載はこの資料の条件です。小さい入力寸法から苗齢や実際の花形を推定しません。","冬は低温ハウスの大苗写真で葉が残る保護条件を表示します。寒冷地の古葉落葉・露地の越冬・残葉率と月境界は未校正です。","冬〜春を12〜5月へ換算しています。花後は花茎を整理した管理例で、自然な花茎消失日・果実・種子・年次成長は未予測です。","小葉7枚と花数は描画例です。春の新葉の量・夏の減葉・出蕾の月別変化と、花の内側の器官同定は未検証です。","2024年から販売という記載は販売元の導入年で、登録年や同じ株の年間観測ではありません。"]},"p-860543030bc6":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=250","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/101rs/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":2,"flowerPattern":1,"phenologyRegion":2},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","flowerPattern":"spots","phenologyRegion":"grower-cold","unconfirmed":[]},"p-5215ff6cfa7c":{
+},"p-47384cda62a5":{"sources":[{"url":"https://item.rakuten.co.jp/ogis/100snd/","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/100sns/","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/helleborus-niger/","scope":"species"}],"basis":{"architecture":0,"shootProfile":0,"flowerShape":0,"leafShape":0,"habit":2,"compoundType":2,"leafTexture":2,"leafColor":0,"persistence":0,"phenologyRegion":0,"flowerMonths":0,"flowerTiming":0,"scientificName":0},"status":"partial","architecture":"nigerCultivarReferences","shootProfile":"snowDrift","flowerShape":"nigerSnowDriftReference","leafShape":"nigerSnowDriftLeafReference","habit":"clump","compoundType":"palmate","leafTexture":"glossy","leafColor":"#415b3b","persistence":"semiEvergreen","phenologyRegion":"grower-cold","flowerMonths":[1,2,3,4,5,12],"flowerTiming":"season-reference","scientificName":"Helleborus niger 'Snow Drift'","sourceConflict":"大苗ページの実際に開花した15cm鉢苗と接写の細弁八重花を主参考としています。小苗写真の印刷ラベルは一重・桃色に見えますが、小苗そのものの開花写真ではないため形態根拠には採りません。未開花の小苗全ての花形や、別登録のニゲル ダブルと同じクローンであることは確認していません。","unconfirmed":["細い花弁状部分と小葉の寸法・枚数・重なりは写真を参考にした近似で、固定した3層や品種の実測器官数ではありません。","大苗本文の栄養繁殖という記載はこの資料の条件です。小さい入力寸法から苗齢や実際の花形を推定しません。","冬は低温ハウスの大苗写真で葉が残る保護条件を表示します。寒冷地の古葉落葉・露地の越冬・残葉率と月境界は未校正です。","冬〜春を12〜5月へ換算しています。花後は花茎を整理した管理例で、自然な花茎消失日・果実・種子・年次成長は未予測です。","小葉7枚と花数は描画例です。春の新葉の量・夏の減葉・出蕾の月別変化と、花の内側の器官同定は未検証です。","2024年から販売という記載は販売元の導入年で、登録年や同じ株の年間観測ではありません。"]},"p-860543030bc6":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/101rs/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "hybridHelleboreDoubleReferences",
+  "shootProfile": "redSeedlingSingle",
+  "leafShape": "hybridHelleboreDividedReference",
+  "leafColor": "#386344",
+  "leafPattern": "plainLeatheryHelleboreReference",
+  "flowerShape": "redSeedlingSpeckledReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#886b73",
+  "phenologyRegion": "古葉を切らず健康な緑の根生葉を残す保護参考です。販売元の苗の説明や常緑性を参照しますが、低温時の色・夏の葉量・春の新葉・剪定後の再生は品種別に月別校正していません。",
+  "sourceConflict": "国内販売元の商品101rsの生育後の高さ25〜50cm（花丈を含む）・幅40〜80cmを採用。実生苗であり、同じクローンの固定形ではありません。7.5〜9cm鉢と開花まで1〜2年という見込みを成株寸法や年次成長へ読み替えません。旧galleryは今回再確認せず、直接読めた商品本文・写真を主出典にします。本文のピンク〜赤、斑が入る場合もあるという幅を残し、3Dは赤紫の斑入りの掲載例を静的に選びます。苗写真は別の生育段階の参考で、同じ株の連続記録とはしていません。",
+  "unconfirmed": [
+    "赤紫の一重の萼と細かな濃色斑を参考にします。実生のためピンク〜赤と斑の有無に幅があります。",
+    "同じ株の12か月の実物照合・年次成長・根・結実・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "実生の掲載例であり、メリクロンや特定クローンの固定した花形・模様としては扱いません。小苗の写真は同じ株の成長前後や成株の葉数の証拠ではありません。",
+    "根生6群各7小葉を全年残す保護例です。開花時の花軸の苞葉は各3小葉、葉幅・葉量・自然な更新は未実測です。ゴールド系の黄葉や固定月の減葉を転用していません。",
+    "外側5枚の萼と短い8個の通常の筒状蜜腺を分ける一重の近似です。濃色斑の粒数や分布、器官の数・寸法は未実測です。",
+    "花軸3本に各3花と1蕾、48雄しべ・3心皮を置く近似です。花径・角度・裏面は未確認です。果実・種子・根・自然な茎の消失は描かず、花後の上部整理は管理例です。",
+    "晩冬〜春は表示用に2〜5月へ換算しています。実生苗の開花見込みを、全国の露地の開花月や成長曲線へ転用していません。"
+  ]
+},"p-5215ff6cfa7c":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/100gm/",
@@ -10138,7 +10196,65 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "花後は上部の花房を除いた管理参考とし、茎と葉は残します。RHSの茎が二年性という記載を株全体の自動寿命にしません。更新・剪定後の再開花や年次成長は未再現。",
     "葉色・斑の面積・色の組み合わせと萼の色は写真の参考です。複数株や複数時点の写真を、同じ株の花・葉の年間変化や固定率の検証とはしません。同一株12か月実物照合0。"
   ]
-},"p-8a2345e6eb78":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=3111","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/102sys/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":2,"flowerLayers":1,"phenologyRegion":2},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","flowerLayers":2,"phenologyRegion":"grower-cold","unconfirmed":[]},"p-1e9f3e814b96":{
+},"p-8a2345e6eb78":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/102sys/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "hybridHelleboreDoubleReferences",
+  "shootProfile": "superYellowSeedlingSemiDouble",
+  "leafShape": "hybridHelleboreDividedReference",
+  "leafColor": "#386344",
+  "leafPattern": "plainLeatheryHelleboreReference",
+  "flowerShape": "superYellowSeedlingAnemoneReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#8b956a",
+  "phenologyRegion": "古葉を切らず健康な緑の根生葉を残す保護参考です。販売元の苗の説明や常緑性を参照しますが、低温時の色・夏の葉量・春の新葉・剪定後の再生は品種別に月別校正していません。",
+  "sourceConflict": "国内販売元の商品102sysの生育後の高さ25〜50cm（花丈を含む）・幅40〜80cmを採用。実生苗であり、同じクローンの固定形ではありません。7.5〜9cm鉢と開花まで1〜2年という見込みを成株寸法や年次成長へ読み替えません。旧galleryは今回再確認せず、直接読めた商品本文・写真を主出典にします。本文の黄色系セミダブルと大きな蜜腺という説明を採用します。普通の八重花の内側の大きな花びらとは分け、黄色の花からゴールド系の黄葉を推定していません。",
+  "unconfirmed": [
+    "黄色の外側の萼と黄緑色の短い花びら状蜜腺を分ける半八重の写真例です。選抜実生の花型・色には幅があります。",
+    "同じ株の12か月の実物照合・年次成長・根・結実・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "実生の掲載例であり、メリクロンや特定クローンの固定した花形・模様としては扱いません。別の実生の色・花型をこの写真だけから予測しません。",
+    "根生6群各7小葉を全年残す保護例です。開花時の花軸の苞葉は各3小葉、葉幅・葉量・自然な更新は未実測です。ゴールド系の黄葉や固定月の減葉を転用していません。",
+    "外側5枚の萼と内側12個の短く折れた花びら状蜜腺を分けるアネモネ咲きの近似です。12という固定数、蜜腺の幅・長さ・黄色の強さは未実測です。",
+    "花軸3本に各3花と1蕾、48雄しべ・3心皮を置く近似です。花径・角度・裏面は未確認です。果実・種子・根・自然な茎の消失は描かず、花後の上部整理は管理例です。",
+    "晩冬〜春は表示用に2〜5月へ換算しています。実生苗の開花見込みを、全国の露地の開花月や成長曲線へ転用していません。"
+  ]
+},"p-1e9f3e814b96":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/105gm/",
@@ -10378,7 +10494,65 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "葉色・斑の面積・色の組み合わせと萼の色は写真の参考です。複数株や複数時点の写真を、同じ株の花・葉の年間変化や固定率の検証とはしません。同一株12か月実物照合0。"
   ],
   "leafPattern": "spots"
-},"p-9c8172f4aa19":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=3114","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/102dws/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":2,"flowerLayers":2,"flowerPattern":1,"phenologyRegion":2},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","flowerLayers":3,"flowerPattern":"margin","phenologyRegion":"grower-cold","unconfirmed":[]},"p-d90776168c4f":{
+},"p-9c8172f4aa19":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/102dws/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "hybridHelleboreDoubleReferences",
+  "shootProfile": "applePinkSeedlingDouble",
+  "leafShape": "hybridHelleboreDividedReference",
+  "leafColor": "#386344",
+  "leafPattern": "plainLeatheryHelleboreReference",
+  "flowerShape": "applePinkSeedlingFlashDoubleReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#8d6d77",
+  "phenologyRegion": "古葉を切らず健康な緑の根生葉を残す保護参考です。販売元の苗の説明や常緑性を参照しますが、低温時の色・夏の葉量・春の新葉・剪定後の再生は品種別に月別校正していません。",
+  "sourceConflict": "国内販売元の商品102dwsの生育後の高さ25〜50cm（花丈を含む）・幅40〜80cmを採用。実生苗であり、同じクローンの固定形ではありません。7.5〜9cm鉢と開花まで1〜2年という見込みを成株寸法や年次成長へ読み替えません。旧galleryは今回再確認せず、直接読めた商品本文・写真を主出典にします。本文の明るいピンクと、ピコティ・中心フラッシュが出る場合があるという幅を残し、3Dは両方が見える掲載例を選びます。すべての実生が同じ模様になる予測ではありません。",
+  "unconfirmed": [
+    "淡いピンクの萼と内側の花びら状部分、濃桃色の縁・脈と中心の褐紫色のフラッシュがある八重の写真例です。選抜実生の花型・色には幅があります。",
+    "同じ株の12か月の実物照合・年次成長・根・結実・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "実生の掲載例であり、メリクロンや特定クローンの固定した花形・模様としては扱いません。別の実生の色・花型をこの写真だけから予測しません。",
+    "根生6群各7小葉を全年残す保護例です。開花時の花軸の苞葉は各3小葉、葉幅・葉量・自然な更新は未実測です。ゴールド系の黄葉や固定月の減葉を転用していません。",
+    "外側5枚の萼と内側2列各5枚の花びら状部分を分ける八重の近似です。固定の列数・枚数や器官の由来、覆輪・脈・中心斑の分布は未実測です。",
+    "花軸3本に各3花と1蕾、48雄しべ・3心皮を置く近似です。花径・角度・裏面は未確認です。果実・種子・根・自然な茎の消失は描かず、花後の上部整理は管理例です。",
+    "晩冬〜春は表示用に2〜5月へ換算しています。実生苗の開花見込みを、全国の露地の開花月や成長曲線へ転用していません。"
+  ]
+},"p-d90776168c4f":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/100rs/",

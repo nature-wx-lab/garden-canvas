@@ -7818,7 +7818,55 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-47384cda62a5":{"label":"クリスマスローズ(原種系)ニゲル スノー ドリフト","latin":"Helleborus niger  'Snow Drift'","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.2,0.3],"spread":[0.3,0.4],"bloom":[1,2,3,4,5,12],"bloomKnown":false,"flower":"#f0eee3","leafColor":"#577d42","variegated":false,"colors":["white"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"15cm大苗の写真を参考にした細弁の八重花と細めの小葉。冬は保護条件の残葉。","care":"草丈20〜30cm・株張り30〜40cm前後は生育後の目安です。15cm大苗の実物写真を主参考とし、小苗のラベル写真は花形の根拠に使っていません。低温ハウス苗と露地は別条件で、寒冷地では古葉が落ちます。","bloomText":"国内販売元の冬〜春を12〜5月へ整理した参考（明示月ではない）","bloomBasis":"国内の季節表現を参考換算。温室の早咲き・同じ個体の開花記録ではありません。","source":"https://item.rakuten.co.jp/ogis/100snd/","publisher":"おぎはら植物園（楽天市場店・大苗資料）","sourceChecked":"2026-10-27","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-860543030bc6":{"label":"クリスマスローズ(実生) 赤系","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"evergreen","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#cbc2b7","leafColor":"#577d42","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：晩冬～春","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=250","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-5215ff6cfa7c":{
+},"p-47384cda62a5":{"label":"クリスマスローズ(原種系)ニゲル スノー ドリフト","latin":"Helleborus niger  'Snow Drift'","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.2,0.3],"spread":[0.3,0.4],"bloom":[1,2,3,4,5,12],"bloomKnown":false,"flower":"#f0eee3","leafColor":"#577d42","variegated":false,"colors":["white"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"15cm大苗の写真を参考にした細弁の八重花と細めの小葉。冬は保護条件の残葉。","care":"草丈20〜30cm・株張り30〜40cm前後は生育後の目安です。15cm大苗の実物写真を主参考とし、小苗のラベル写真は花形の根拠に使っていません。低温ハウス苗と露地は別条件で、寒冷地では古葉が落ちます。","bloomText":"国内販売元の冬〜春を12〜5月へ整理した参考（明示月ではない）","bloomBasis":"国内の季節表現を参考換算。温室の早咲き・同じ個体の開花記録ではありません。","source":"https://item.rakuten.co.jp/ogis/100snd/","publisher":"おぎはら植物園（楽天市場店・大苗資料）","sourceChecked":"2026-10-27","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-860543030bc6":{
+  "label": "クリスマスローズ(実生) 赤系",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#b65083",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "pink",
+    "red",
+    "purple",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年ごとの成長量は未確認",
+  "season": "月別の草姿・葉・花の参考",
+  "care": "赤紫の一重の萼と細かな濃色斑を参考にします。実生のためピンク〜赤と斑の有無に幅があります。7.5〜9cm鉢の実生苗で開花まで1〜2年という販売見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "資料の季節表現を月へ整理した参考表示",
+  "source": "https://item.rakuten.co.jp/ogis/101rs/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-5215ff6cfa7c":{
   "label": "ムルチフィダス",
   "latin": "Helleborus multifidus",
   "genre": "クリスマスローズ",
@@ -8051,7 +8099,54 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-8a2345e6eb78":{"label":"クリスマスローズ スーパーイエロー セミダブル系 (実生)","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"evergreen","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#e6c354","leafColor":"#577d42","variegated":false,"colors":["yellow"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：晩冬～春","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=3111","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-1e9f3e814b96":{
+},"p-8a2345e6eb78":{
+  "label": "クリスマスローズ スーパーイエロー セミダブル系 (実生)",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e6df83",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "yellow",
+    "green",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年ごとの成長量は未確認",
+  "season": "月別の草姿・葉・花の参考",
+  "care": "黄色の外側の萼と黄緑色の短い花びら状蜜腺を分ける半八重の写真例です。選抜実生の花型・色には幅があります。7.5〜9cm鉢の実生苗で開花まで1〜2年という販売見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "資料の季節表現を月へ整理した参考表示",
+  "source": "https://item.rakuten.co.jp/ogis/102sys/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-1e9f3e814b96":{
   "label": "クリスマスローズ(原種系) フォエチダス ミニオン ルージュ",
   "latin": "Helleborus foetidus 'Minion Rouge'",
   "genre": "クリスマスローズ",
@@ -8235,7 +8330,55 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-9c8172f4aa19":{"label":"クリスマスローズ アップルピンク ダブル系 (実生)","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"evergreen","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#d695b3","leafColor":"#577d42","variegated":false,"colors":["pink"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：晩冬～春","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=3114","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-d90776168c4f":{
+},"p-9c8172f4aa19":{
+  "label": "クリスマスローズ アップルピンク ダブル系 (実生)",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e1b4cd",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "pink",
+    "white",
+    "purple",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年ごとの成長量は未確認",
+  "season": "月別の草姿・葉・花の参考",
+  "care": "淡いピンクの萼と内側の花びら状部分、濃桃色の縁・脈と中心の褐紫色のフラッシュがある八重の写真例です。選抜実生の花型・色には幅があります。7.5〜9cm鉢の実生苗で開花まで1〜2年という販売見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "資料の季節表現を月へ整理した参考表示",
+  "source": "https://item.rakuten.co.jp/ogis/102dws/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-d90776168c4f":{
   "label": "クリスマスローズ(原種系) フォエチダス レッド スター",
   "latin": "Helleborus foetidus 'Red Star'",
   "genre": "クリスマスローズ",
