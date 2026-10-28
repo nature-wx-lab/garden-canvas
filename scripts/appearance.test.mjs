@@ -18460,3 +18460,206 @@ test('Engei Julia Petriei Joe clematis do not merge retailer records or convert 
  assert.deepEqual(CATALOG['p-a75da20e46ed'].height,[1.5,2]);assert.deepEqual(CATALOG['p-a75da20e46ed'].bloom,[4,5]);assert.equal(CATALOG['p-a75da20e46ed'].appearance.shootProfile,'petriei');assert.deepEqual(CATALOG['p-68bde3fabf7b'].height,[1.5,2]);assert.equal(CATALOG['p-68bde3fabf7b'].appearance.shootProfile,'joe');assert.equal(CATALOG['p-fffbc4692b65'].appearance.shootProfile,'gloriousDay');
  for(const[id,pid,height,months]of[['p-a19ec024e7a6',95510,1.5,[5,7,10]],['p-8a564d25549f',95511,.18,[3,4]],['p-f0e531d0758f',95512,.7,[4,5]]]){const p={...makePlant(id,pid,3,3),height,spread:.6,leafHeight:.12},copy=structuredClone(p);let first;for(const month of months){const s=stateAt(p,{year:1,month,reference:false});assert.equal(s.height,height);assert.equal(s.bloom,true);if(first)assert.equal(s.flowerColor,first.flowerColor);else first=s;for(const year of[0,1,8])assert.equal(stateAt(p,{year,month,reference:false}).height,height);}assert.deepEqual(p,copy);assert.match(CATALOG[id].care,/ポット.*販売規格/);assert.equal(CATALOG[id].appearance.monthlyFlowerColors,undefined);assert.ok(CATALOG[id].appearance.sources.every(s=>['catalog-entry','species'].includes(s.scope)));}
 });
+
+
+// Draft only. Append to scripts/appearance.test.mjs after the 956 implementation is authorized.
+// This file deliberately uses that test module's existing imports and dispose helper.
+// Organ totals below test component consistency; photograph counts are not cultivar measurements.
+
+test('Engei Rosalyn Maria Rouge Songs clematis retain domestic seller values and qualified flower and pruning sources',()=>{
+ const rows=[
+  ['p-92f9594f3521','rosalyn','255883',[2,3]],
+  ['p-2625fd05d158','mariaRouge','161555',[1.5,2.5]],
+  ['p-9fe1cb9ae13c','songs','173942',[2,3]],
+ ];
+ for(const[id,profile,sku,height]of rows){
+  const c=CATALOG[id],a=c.appearance;
+  assert.equal(c.latin,'');assert.deepEqual(c.height,height);assert.equal(c.spread,null);
+  assert.deepEqual(c.bloom,[5,6,7,8,9,10]);assert.equal(c.bloomKnown,true);
+  assert.equal(c.source,'https://www.engei.net/products/detail?id='+sku);
+  assert.equal(c.sourceChecked,'2026-10-29');assert.equal(a.status,'partial');
+  assert.equal(a.architecture,'clematisViticellaReferences');assert.equal(a.shootProfile,profile);
+  assert.equal(a.arrangement,'opposite');assert.equal(a.monthlyFlowerColors,undefined);
+  assert.equal(a.monthlyLeafColors,undefined);
+  assert.ok(a.unconfirmed.some(note=>note.includes('年間実物照合0')));
+  assert.ok(a.unconfirmed.some(note=>/実測|未確認|近似/.test(note)));
+  for(const key of['leafShape','flowerShape','persistence']){
+   assert.ok(TRAIT_VALUES[a[key]],id+' Japanese trait missing '+key+' '+a[key]);
+   assert.notEqual(TRAIT_VALUES[a[key]],a[key]);assert.match(TRAIT_VALUES[a[key]],/[ぁ-んァ-ン一-龠]/);
+   assert.ok(!appearanceSummary(c).includes(a[key]),id+' internal trait leaked '+a[key]);
+  }
+  for(const[field,index]of Object.entries(a.basis)){
+   assert.ok(Number.isInteger(index)&&index>=0&&index<a.sources.length,id+' invalid basis '+field);
+   assert.ok(['catalog-entry','species','genus','tribe','family'].includes(a.sources[index].scope));
+  }
+  assert.ok(c.colors.includes('red'));assert.ok(!c.colors.includes('blue'));assert.ok(!c.colors.includes('unknown'));
+  for(const color of['white','pink','red','yellow','orange','dark','green','purple','mixed','blue','unknown'])
+   assert.equal(searchCatalog(CATALOG,{query:c.label,color}).some(([key])=>key===id),c.colors.includes(color));
+  for(let month=1;month<=12;month++){
+   const s=seasonAt(c,month);assert.equal(s.bloom,month>=5&&month<=10);
+   assert.equal(s.leafDensity,[12,1,2].includes(month)?0:1);
+   assert.equal(s.leafScale,1);assert.equal(s.shootScale,1);assert.equal(s.groundDormant,false);
+  }
+ }
+ assert.match(CATALOG['p-92f9594f3521'].appearance.sourceConflict,/内側|花弁状|器官/);
+ assert.match(CATALOG['p-92f9594f3521'].appearance.sourceConflict,/英国|RHS/);
+ assert.match(CATALOG['p-2625fd05d158'].appearance.sourceConflict,/新旧|新枝/);
+ assert.match(CATALOG['p-2625fd05d158'].appearance.sourceConflict,/白|カップ/);
+ assert.match(CATALOG['p-9fe1cb9ae13c'].appearance.sourceConflict,/剪定/);
+ assert.match(CATALOG['p-9fe1cb9ae13c'].appearance.sourceConflict,/追肥|環境/);
+});
+
+test('Engei Rosalyn Maria Rouge Songs clematis independent vertices and real leaf joins fit sixty three selected dimension models',()=>{
+ const rows=[
+  ['p-92f9594f3521','rosalyn',95610,[1.5,1,1.2]],
+  ['p-2625fd05d158','mariaRouge',95611,[1.5,.85,1.2]],
+  ['p-9fe1cb9ae13c','songs',95612,[1.8,1,1.4]],
+ ];
+ const matrix=new Matrix4(),vertex=new Vector3(),distance=(a,b)=>Math.hypot(...a.map((v,i)=>v-b[i]));
+ let models=0,joins=0,floweringModels=0;const threadFailures=[];
+ for(const[id,profile,pid,normal]of rows){
+  let summerSkeleton;
+  const cases=[
+   ...[normal,[.08,.16,.05],[normal[0],normal[1],.005],[.005,.08,.005],[normal[0],.005,.005]]
+    .flatMap(dims=>[7,3,11,1].map(month=>({dims,month,reference:false}))),
+   {dims:normal,month:7,reference:true},
+  ];
+  for(const{dims,month,reference}of cases){
+   const input={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input);
+   const view={year:1,month,reference},state=stateAt(input,view),group=plantModel(input,view);models++;
+   try{
+    group.updateMatrixWorld(true);const roots=[],ends=[],counts={},skeleton=[];
+    let lo=Infinity,hi=-Infinity,width=0,leafTop=0;
+    for(const mesh of group.children){
+     const kind=mesh.userData.component,pos=mesh.geometry.attributes.position;
+     counts[kind]=(counts[kind]||0)+mesh.count;
+     assert.ok(pos.array.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite));
+     assert.ok(mesh.instanceMatrix.array.every(Number.isFinite));
+     if(mesh.instanceColor)assert.ok(mesh.instanceColor.array.every(Number.isFinite));
+     if(mesh.geometry.index)assert.ok(mesh.geometry.index.array.every(index=>Number.isInteger(index)&&index>=0&&index<pos.count));
+     if(/^(bare-stem|stem)-clematis-viticella-ref$/.test(kind))skeleton.push([...mesh.instanceMatrix.array]);
+     for(let i=0;i<mesh.count;i++){
+      mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);
+      if(kind==='leaf-clematis-viticella-ref')roots.push(new Vector3(0,0,0).applyMatrix4(matrix).toArray());
+      if(['petiole-clematis-viticella-ref','petiolule-clematis-viticella-ref'].includes(kind))
+       ends.push(new Vector3(0,.5,0).applyMatrix4(matrix).toArray());
+      for(let j=0;j<pos.count;j++){
+       vertex.fromBufferAttribute(pos,j).applyMatrix4(matrix);lo=Math.min(lo,vertex.y);hi=Math.max(hi,vertex.y);
+       width=Math.max(width,Math.hypot(vertex.x,vertex.z)*2);
+       if(/^(leaf|petiole|petiolule)-/.test(kind))leafTop=Math.max(leafTop,vertex.y);
+      }
+     }
+    }
+    assert.ok(lo>=-1e-7&&hi<=state.height+1e-7,id+' height '+dims+' '+month+' '+lo+' '+hi);
+    assert.ok(width<=state.spread+1e-7,id+' width '+dims+' '+width);
+    assert.ok(leafTop<=Math.min(state.height,state.leafHeight)+1e-7,id+' leaf cap '+dims+' '+leafTop);
+    assert.equal((counts['stem-clematis-viticella-ref']||0)+(counts['bare-stem-clematis-viticella-ref']||0),98);
+    assert.equal(roots.length>0,state.leafDensity>0);
+    for(const root of roots){
+     const tolerance=Math.max(2e-7,Math.hypot(...root.map(v=>2**(Math.floor(Math.log2(Math.max(1e-30,Math.abs(v))))-23))));
+     assert.ok(ends.some(end=>distance(root,end)<tolerance),id+' unsupported leaf '+dims+' '+month);joins++;
+    }
+    const sepals=counts['sepal-clematis-viticella-ref-'+profile]||0;
+    const inner=counts['petaloid-inner-clematis-viticella-ref-'+profile]||0;
+    const anthers=counts['anther-clematis-viticella-ref-'+profile]||0;
+    const threads=counts['filament-clematis-viticella-ref-'+profile]||0;
+    assert.equal(sepals>0,state.bloom);assert.equal(anthers>0,state.bloom);
+    assert.equal(inner>0,state.bloom&&profile==='rosalyn');
+    assert.equal(counts['receptacle-clematis-viticella-ref-'+profile]||0,state.bloom?84:0);
+    if(threads!==anthers)threadFailures.push({id,dims,month,threads,anthers});
+    assert.equal(!!group.userData.flowerTargets?.length,state.bloom);
+    assert.equal(state.groundDormant,false);assert.deepEqual(input,saved);
+    assert.ok(!group.children.some(mesh=>/^(support|fruit|seed|root|carpel|staminode)-/.test(mesh.userData.component)));
+    if(dims.every((value,index)=>value===normal[index])&&!reference){
+     if(month===7)summerSkeleton=skeleton;else assert.deepEqual(skeleton,summerSkeleton,'no automatic pruning or seasonal support loss');
+    }
+    if(state.bloom){
+     floweringModels++;
+     if(dims.every((value,index)=>value===normal[index])&&!reference){
+      const mesh=group.children.find(item=>item.userData.component==='sepal-clematis-viticella-ref-'+profile);
+      const shader={uniforms:{},vertexShader:'',fragmentShader:'#include <emissivemap_fragment>'};
+      mesh.material.onBeforeCompile(shader,{});
+      assert.equal(shader.fragmentShader.includes('gcMariaBase'),profile==='mariaRouge');
+      assert.equal(shader.fragmentShader.includes('gcSongsBase'),profile==='songs');
+      for(const token of['gcJuliaVein','gcViticellaVein','gcFlamingoBase','gcCampanulinaVein','gcAtrageneVein','gcGreeneyesBase','gcFredaMargin','gcFloridaGreenBar'])
+       assert.ok(!shader.fragmentShader.includes(token),id+' unrelated shader '+token);
+     }
+    }
+   }finally{dispose(group);}
+  }
+ }
+ assert.equal(models,63);assert.equal(floweringModels,18);assert.ok(joins>1000);
+ assert.equal(threadFailures.length,0,JSON.stringify(threadFailures));
+ console.log('ENGEIRMS_BOUNDARIES '+JSON.stringify({models,joins,floweringModels}));
+});
+
+test('Engei Rosalyn Maria Rouge Songs clematis cameras intersect nine actual indexed flowers at eighteen visible rays and preserve previous saves',()=>{
+ const rows=[
+  ['p-92f9594f3521','rosalyn',95610,[1.5,1,1.2]],
+  ['p-2625fd05d158','mariaRouge',95611,[1.5,.85,1.2]],
+  ['p-9fe1cb9ae13c','songs',95612,[1.8,1,1.4]],
+ ];
+ let models=0,rays=0;
+ for(const[id,profile,pid,normal]of rows)for(const dims of[normal,[.08,.16,.05],[normal[0],normal[1],.005]]){
+  const input={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input);
+  const group=plantModel(input,{year:1,month:7,reference:false});models++;
+  try{
+   assert.equal(group.userData.architecture,'clematisViticellaReferences');
+   assert.ok(group.userData.surfaceSelection?.matched,id+' '+dims);
+   assert.ok(group.userData.flowerTargets.length>0&&group.userData.flowerTargets.length<=8);
+   const surface=group.userData.flowerTargets[0].surface;
+   const allowed=['sepal-clematis-viticella-ref-'+profile];
+   if(profile==='rosalyn')allowed.push('petaloid-inner-clematis-viticella-ref-rosalyn');
+   assert.ok(allowed.includes(surface.component),id+' incorrect flower surface '+surface.component);
+   group.position.set(-2,.012,-1);group.updateMatrixWorld(true);
+   for(const aspect of[.8,1.65]){
+    const pose=flowerInspectionView(group,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);
+    camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);
+    const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);
+    const hit=ray.intersectObject(group,true).find(item=>{
+     const z=-item.point.clone().applyMatrix4(camera.matrixWorldInverse).z;
+     return z>=camera.near&&z<=camera.far;
+    });
+    assert.equal(hit?.object.userData.component,surface.component);
+    assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);
+    assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);rays++;
+   }
+  }finally{dispose(group);}
+  const document=emptyDocument(10,6);document.plans.A.plants=[input];
+  document.view={year:1,month:7,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
+  const previous={...structuredClone(document),catalogVersion:'2026-10-29.22'},copy=structuredClone(previous);
+  assert.equal(CATALOG_VERSION,'2026-10-29.23');assert.deepEqual(validateDocument(previous),document);
+  assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
+ }
+ assert.equal(models,9);assert.equal(rays,18);console.log('ENGEIRMS_CAMERAS '+JSON.stringify({models,rays}));
+});
+
+test('Engei Rosalyn Maria Rouge Songs clematis isolate irregular double cup and star flowers without automatic summer rest or calendar colour shifts',()=>{
+ const profiles=[
+  ['p-92f9594f3521','rosalyn',95610,[1.5,1,1.2]],
+  ['p-2625fd05d158','mariaRouge',95611,[1.5,.85,1.2]],
+  ['p-9fe1cb9ae13c','songs',95612,[1.8,1,1.4]],
+ ];
+ const shapes=profiles.map(([id])=>CATALOG[id].appearance.flowerShape);
+ assert.equal(new Set(shapes).size,3,'irregular double, rounded cup and spaced star remain distinct');
+ for(const[id,profile,pid,dims]of profiles){
+  const info=CATALOG[id],appearance=info.appearance;
+  const input={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},copy=structuredClone(input);
+  let firstFlower;
+  for(let month=1;month<=12;month++){
+   const state=stateAt(input,{year:1,month,reference:false});
+   assert.equal(state.height,dims[0]);assert.equal(state.shootScale,1);assert.equal(state.groundDormant,false);
+   if(month>=5&&month<=10){
+    assert.equal(state.bloom,true);assert.equal(state.leafDensity,1);
+    if(firstFlower)assert.equal(state.flowerColor,firstFlower.flowerColor);else firstFlower=state;
+    for(const year of[0,1,8])assert.equal(stateAt(input,{year,month,reference:false}).height,dims[0]);
+   }
+  }
+  assert.equal(appearance.monthlyFlowerColors,undefined);assert.equal(appearance.monthlyLeafColors,undefined);
+  assert.ok(!['summerDormant','winterDormant'].includes(appearance.persistence));
+  assert.deepEqual(input,copy);
+ }
+ // Raw geometry/material preservation for these three profiles is checked by the frozen 39 CPU comparison.
+ for(const[id,profile]of[['p-a19ec024e7a6','madameJulia'],['p-fffbc4692b65','gloriousDay'],['p-c9a740b5e914','princeCharles']])
+  assert.equal(CATALOG[id].appearance.shootProfile,profile);
+});
