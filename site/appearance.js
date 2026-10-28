@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.932';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.933';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -134,6 +134,7 @@ Object.assign(TRAIT_VALUES,{lavenderLinear:'細い線状の葉',lavenderSandLeaf
 Object.assign(TRAIT_VALUES,{cosmosPinnatifid:'単葉と切れ込みのある葉の参考',cosmosHead:'舌状花と中心の筒状花が集まる頭花',silverDropLeaf:'対生する丸〜楕円の銀青色の幼葉',momoiroLeaf:'切れ込みと鋸歯のある細めの葉',whiteAnemoneLeaf:'切れ込みと鋸歯のある幅広い葉',melinisBlade:'株元から弓なりに伸びる細い葉',hairyPanicle:'毛のある小穂が枝分かれして広がる穂',anemoneSaucer:'花弁状の萼片と多数のおしべをもつ浅い花'});
 Object.assign(TRAIT_VALUES,{clematisRetailCompound:'対生する複葉と柄でつながる3小葉の参考',clematisTrainedReference:'支持体へ誘引したつる（配置例）',coldLeaflessClematisReference:'寒冷地の低温管理の落葉参考（暖地・剪定で変わる）',shiromaneRetailDouble:'白クリームの外側の萼と緑がかった八重の中心',fondRetailPicotee:'白い萼の桃色の覆輪・桃色の裏面と暗い花芯',romantikaRetailSingle:'黒っぽい濃紫の一重の萼と淡い葯'});
 Object.assign(TRAIT_VALUES,{yukikomachiRetailRound:'白に藤色がさす丸みのある萼と淡緑の中心',pinkFantasyRetailBar:'桃色の萼の濃い中央帯と暗い雄しべ',carolineRetailVariable:'淡い桃色と夏の白っぽい萼・4〜6枚の写真例'});
+Object.assign(TRAIT_VALUES,{violaRetailSix:'深いスミレ色〜青紫の一重の萼と淡い雄しべ',giselleRetailPointed:'先が尖る桃色〜淡色の萼と暗い花芯の写真例',samaritanRetailFineEdgeSingle:'白い萼の細い紫縁と黄色い雄しべ・掲載された一重花'});
 export function appearanceSummary(info){
  const a=info.appearance||{};
  return ['leafShape','leafPattern','persistence','flowerShape','habit','barkPattern'].filter(k=>a[k]).map(k=>`${TRAIT_LABELS[k]}：${TRAIT_VALUES[a[k]]||a[k]}`).join(' ／ ');
