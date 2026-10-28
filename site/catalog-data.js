@@ -6946,7 +6946,55 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-7fcba962f645":{"label":"クリスマスローズ オリエンタリス・アブチャシクス","latin":"Helleborus orientalis subsp. abchasicus","genre":"クリスマスローズ","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.25,0.3],"spread":null,"bloom":[12,1,2,3,4],"bloomKnown":true,"flower":"#b587b0","leafColor":"#62784c","variegated":false,"colors":["purple","pink"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"有茎・無茎、葉の分かれ方、5枚の萼と蜜腺・雄しべ、種類別の越冬","care":"植物資料と掲載写真を照合した参考3Dです。草丈は資料値、葉や花の寸法のうち資料に数値がないものは写真の比率による表示値です。海外資料の花期は英国の栽培目安で、日本の全国共通の開花月ではありません。落葉・芽出しの月境界と花数は表示上の目安です。 根元から葉柄と花茎が出る無茎型。","bloomText":"資料：12月から早く咲く（春までの表示は属の季節目安）","bloomBasis":"開始月と属の季節資料","source":"https://www.ashwoodnurseries.com/product/helleborus-5/","publisher":"Ashwood Nurseries","sourceChecked":"2026-10-10","aliases":["クリスマスローズ オリエンタリス・アブチャシクス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-c6eaaebd38ce":{
+},"p-7fcba962f645":{
+  "label": "クリスマスローズ オリエンタリス・アブチャシクス",
+  "latin": "Helleborus orientalis subsp. abchasicus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": [
+    0.25,
+    0.3
+  ],
+  "spread": null,
+  "bloom": [
+    12,
+    1,
+    2,
+    3,
+    4
+  ],
+  "bloomKnown": false,
+  "flower": "#e4c9dd",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "pink",
+    "purple",
+    "white",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "有茎・無茎、葉の分かれ方、5枚の萼と蜜腺・雄しべ、種類別の越冬",
+  "care": "淡い桃〜クリームの萼と紫桃色の中心斑を持つ一重の掲載例です。商品名は原種の学名ですが、本文は交配種と説明しており、同定は未解決です。高さ25〜30cmは販売元の10年後の高さという欄の値です。年次成長曲線・株幅は未確認です。花径6.5〜7.5cmの掲載値を参考にします。",
+  "bloomText": "英国販売元は早ければ12月に咲き始めると記載しています。終期は未確認です。表示用の12〜4月には従来の属の季節目安を含み、当商品の確定した連続開花期間や日本全国の花期ではありません。",
+  "bloomBasis": "英国商品の12月開始と従来の属の季節目安を分けた参考表示",
+  "source": "https://www.ashwoodnurseries.com/product/helleborus-5/",
+  "publisher": "Ashwood Nurseries",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ オリエンタリス・アブチャシクス"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-c6eaaebd38ce":{
   "label": "クリスマスローズ オリエンタリス・グッタータス",
   "latin": "Helleborus orientalis subsp. guttatus",
   "genre": "クリスマスローズ",
@@ -8195,7 +8243,54 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-ceba11ad781e":{"label":"クリスマスローズ(実生) アネモネイエロー","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"evergreen","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#cbc2b7","leafColor":"#577d42","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：晩冬～春","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=2170","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-7167f8cc2f69":{
+},"p-ceba11ad781e":{
+  "label": "クリスマスローズ(実生) アネモネイエロー",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e4df9c",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "yellow",
+    "green",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年ごとの成長量は未確認",
+  "season": "月別の草姿・葉・花の参考",
+  "care": "明るいレモン色の萼と、短く広がった黄緑の蜜腺を分ける半八重の実生写真例です。7.5〜9cm鉢の実生苗で開花まで1〜2年という見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "資料の季節表現を月へ整理した参考表示",
+  "source": "https://item.rakuten.co.jp/ogis/102ay/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-7167f8cc2f69":{
   "label": "クリスマスローズ(メリクロン) アシュードピーチドロップ",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",
@@ -8425,7 +8520,55 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-2f88a2c4e48e":{"label":"クリスマスローズ(実生) アネモネイエローバイカラー","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"evergreen","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#cbc2b7","leafColor":"#577d42","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：晩冬～春","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=2168","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-351d6b8491c9":{
+},"p-2f88a2c4e48e":{
+  "label": "クリスマスローズ(実生) アネモネイエローバイカラー",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#dfe1b5",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "yellow",
+    "green",
+    "purple",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年ごとの成長量は未確認",
+  "season": "月別の草姿・葉・花の参考",
+  "care": "黄緑〜クリームの萼に紫の細い縁・脈と、暗紫の大きな蜜腺を持つ半八重の実生写真例です。7.5〜9cm鉢の実生苗で開花まで1〜2年という見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "資料の季節表現を月へ整理した参考表示",
+  "source": "https://item.rakuten.co.jp/ogis/102ac/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-351d6b8491c9":{
   "label": "クリスマスローズ(メリクロン) アシュードプラムピンク",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",

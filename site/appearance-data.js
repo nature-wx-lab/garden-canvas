@@ -8708,7 +8708,62 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "英国の成熟サイズ・10年後の高さと計画年数を対応させず、花期を全国共通の開花月にしません。",
     "葉齢・花齢や異なる個体・写真の差を、同じ株の年間の色変化へ変換していません。"
   ]
-},"p-7fcba962f645":{"sources":[{"url":"https://www.ashwoodnurseries.com/product/helleborus-5/","scope":"catalog-entry"},{"url":"https://www.rhs.org.uk/plants/hellebore/growing-guide","scope":"genus"}],"basis":{"architecture":0,"flowerShape":0,"flowerRadius":0,"flowerPalette":0,"leafShape":0,"leaflets":0,"leafLength":0,"leafColor":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":1,"stemColor":0,"phenologyRegion":0},"status":"attributes","unconfirmed":[],"architecture":"helleboreProfile","flowerShape":"helleboreCup","flowerRadius":0.035,"flowerPalette":{"tilt":2.16},"leafShape":"helleboreLeaf","leaflets":7,"leafLength":0.13,"leafColor":"#62784c","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerMonths":[12,1,2,3,4],"flowerTiming":"season","stemColor":"#71894d","phenologyRegion":"販売元・RHSの栽培地域における参考。開花・新葉・枯れ込みの時期は栽培地域と寒さで前後します。"},"p-c6eaaebd38ce":{
+},"p-7fcba962f645":{
+  "sources": [
+    {
+      "url": "https://www.ashwoodnurseries.com/product/helleborus-5/",
+      "scope": "catalog-entry"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 0,
+    "leafTexture": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "hybridHelleboreDoubleReferences",
+  "shootProfile": "abchasicusRetailSingle",
+  "leafShape": "hybridHelleboreDividedReference",
+  "leafColor": "#386344",
+  "leafPattern": "plainLeatheryHelleboreReference",
+  "flowerShape": "abchasicusQualifiedRetailReference",
+  "flowerMonths": [
+    12,
+    1,
+    2,
+    3,
+    4
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "evergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#8a7a6a",
+  "phenologyRegion": "英国販売元は常緑とし、12月下旬の古葉整理と花後の花茎整理を勧めています。3Dは健康な根生葉を未剪定で残す保護例です。英国の管理日程を日本の自然な落葉月へ転用していません。",
+  "sourceConflict": "商品名は Helleborus orientalis subsp. abchasicus ですが、本文は garden hybrid と説明しています。この不一致を未解決のまま残し、野生原種や特定クローンと断定しません。既存の表示名・学名を統合改名せず、この商品の掲載例を参考にします。高さ25〜30cmは10年後という販売欄の値で、苗の1L鉢や毎年の成長量とは別です。株幅は未確認です。主写真と別の花写真・群植写真を同じ株の月別変色や年間記録へ読み替えません。",
+  "unconfirmed": [
+    "淡い桃〜クリームの萼と紫桃色の中心斑を持つ一重の掲載例です。商品名は原種の学名ですが、本文は交配種と説明しており、同定は未解決です。",
+    "同じ株の12か月の実物照合・年次成長・根・結実・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "商品名と交配種という本文の食い違いは未解決です。写真の主例と2枚の小さな副画像は、同一株の連続変化や同じ原種の同定証拠にはしていません。",
+    "根生6群各7小葉を全年残す保護例です。開花時の花軸の苞葉は各3小葉、葉幅・葉量・自然な更新は未実測です。ゴールド系の黄葉を転用していません。",
+    "外側5枚の萼と短い8個の通常の筒状蜜腺を分ける一重の近似です。花径6.5〜7.5cmは掲載値を参照し、表示上の半径3.5cmはその範囲内の参考です。器官数・蜜腺寸法・中心斑の分布は未実測です。",
+    "花軸3本に各3花と1蕾、48雄しべ・3心皮を置く近似です。花の向き・花数・裏面は未確認です。果実・種子・根・自然な茎の消失は描かず、花後の上部整理は管理例です。",
+    "早ければ12月という英国の説明から、日本の全国共通の開花期は決めていません。終期は未確認で、12〜4月の表示は従来の属の目安を含む参考です。高さの10年後という見出しから成長曲線を作っていません。"
+  ]
+},"p-c6eaaebd38ce":{
   "sources": [
     {
       "url": "https://www.botanischetuinen.nl/nl/plant/46534/helleborus-orientalis-subsp-guttatus",
@@ -10314,7 +10369,61 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "花後は花房を除いて有茎と葉を残す管理参考です。販売苗の開花まで1〜2年や種資料の寿命4〜5年から、入力年による自動開花・消失を作っていません。",
     "根・成熟果実・種子・更新後の花房・年次成長と同じ株の12か月の姿は未再現です。同一株12か月実物照合0。"
   ]
-},"p-ceba11ad781e":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://item.rakuten.co.jp/ogis/102ay/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":1,"phenologyRegion":1},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","phenologyRegion":"grower-cold","unconfirmed":[]},"p-7167f8cc2f69":{
+},"p-ceba11ad781e":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/102ay/",
+      "scope": "catalog-entry"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 0,
+    "leafTexture": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "hybridHelleboreDoubleReferences",
+  "shootProfile": "anemoneYellowSeedlingSemiDouble",
+  "leafShape": "hybridHelleboreDividedReference",
+  "leafColor": "#386344",
+  "leafPattern": "plainLeatheryHelleboreReference",
+  "flowerShape": "anemoneLemonSeedlingReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#8b926c",
+  "phenologyRegion": "販売元の管理説明を参考に、健康な古葉を切らず緑の根生葉を残す保護例です。夏の減葉・春の新葉や任意の古葉整理を固定月の消失へ変えず、月別の残葉量と再生は未校正です。",
+  "sourceConflict": "国内販売元の商品102ayの生育後の高さ25〜50cm（花丈を含む）・幅40〜80cmを採用。選抜実生の半八重であり、3Dは掲載花の静的な参考です。7.5〜9cm鉢と開花まで1〜2年を成株寸法や年次成長へ読み替えません。クイーンシリーズ全般の「100％八重」・早咲きという販売説明を、この半八重の実測八重率、個体の保証、全国の開花月へ広げません。旧galleryは今回再確認せず、直接読めた本文・写真を主出典にします。",
+  "unconfirmed": [
+    "明るいレモン色の萼と、短く広がった黄緑の蜜腺を分ける半八重の実生写真例です。",
+    "同じ株の12か月の実物照合・年次成長・根・結実・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "選抜実生の写真例で、特定クローンの固定した花色・形としては扱いません。シリーズ全般の宣伝文と当商品の半八重を分けます。",
+    "根生6群各7小葉を全年残す保護例です。開花時の花軸の苞葉は各3小葉、葉幅・葉量・自然な更新は未実測です。ゴールド系の黄葉を転用していません。",
+    "外側5枚の萼と内側12個の短い開いた筒状〜花びら状蜜腺を分ける半八重の近似です。12という固定数・巻き・蜜腺の寸法は未実測です。大きな花びらが何列も重なる八重とは分けます。",
+    "花軸3本に各3花と1蕾、48雄しべ・3心皮を置く近似です。花の向き・花数・裏面は未確認です。果実・種子・根・自然な茎の消失は描かず、花後の上部整理は管理例です。",
+    "晩冬〜春は表示用に2〜5月へ換算しています。販売苗の開花見込み、一般的な早咲きの説明を計画開始からの開花制約へ変えていません。"
+  ]
+},"p-7167f8cc2f69":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/103ad/",
@@ -10612,7 +10721,61 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "花後は花房を除いて有茎と葉を残す管理参考です。販売苗の開花まで1〜2年や種資料の寿命4〜5年から、入力年による自動開花・消失を作っていません。",
     "根・成熟果実・種子・更新後の花房・年次成長と同じ株の12か月の姿は未再現です。同一株12か月実物照合0。"
   ]
-},"p-2f88a2c4e48e":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://item.rakuten.co.jp/ogis/102ac/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":1,"phenologyRegion":1,"flowerLayers":1},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","phenologyRegion":"grower-cold","flowerLayers":3,"unconfirmed":[]},"p-351d6b8491c9":{
+},"p-2f88a2c4e48e":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/102ac/",
+      "scope": "catalog-entry"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 0,
+    "leafTexture": 0,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "hybridHelleboreDoubleReferences",
+  "shootProfile": "anemoneBicolorSeedlingSemiDouble",
+  "leafShape": "hybridHelleboreDividedReference",
+  "leafColor": "#386344",
+  "leafPattern": "plainLeatheryHelleboreReference",
+  "flowerShape": "anemoneBicolorSeedlingReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#877368",
+  "phenologyRegion": "販売元の管理説明を参考に、健康な古葉を切らず緑の根生葉を残す保護例です。夏の減葉・春の新葉や任意の古葉整理を固定月の消失へ変えず、月別の残葉量と再生は未校正です。",
+  "sourceConflict": "国内販売元の商品102acの生育後の高さ25〜50cm（花丈を含む）・幅40〜80cmを採用。選抜実生の半八重であり、3Dは掲載花の静的な参考です。7.5〜9cm鉢と開花まで1〜2年を成株寸法や年次成長へ読み替えません。クイーンシリーズ全般の「100％八重」・早咲きという販売説明を、この半八重の実測八重率、個体の保証、全国の開花月へ広げません。旧galleryは今回再確認せず、直接読めた本文・写真を主出典にします。",
+  "unconfirmed": [
+    "黄緑〜クリームの萼に紫の細い縁・脈と、暗紫の大きな蜜腺を持つ半八重の実生写真例です。",
+    "同じ株の12か月の実物照合・年次成長・根・結実・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "選抜実生の写真例で、特定クローンの固定した花色・形としては扱いません。シリーズ全般の宣伝文と当商品の半八重を分けます。",
+    "根生6群各7小葉を全年残す保護例です。開花時の花軸の苞葉は各3小葉、葉幅・葉量・自然な更新は未実測です。ゴールド系の黄葉を転用していません。",
+    "外側5枚の萼と内側12個の短い開いた筒状〜花びら状蜜腺を分ける半八重の近似です。12という固定数・巻き・蜜腺の寸法は未実測です。大きな花びらが何列も重なる八重とは分けます。",
+    "花軸3本に各3花と1蕾、48雄しべ・3心皮を置く近似です。花の向き・花数・裏面は未確認です。果実・種子・根・自然な茎の消失は描かず、花後の上部整理は管理例です。",
+    "晩冬〜春は表示用に2〜5月へ換算しています。販売苗の開花見込み、一般的な早咲きの説明を計画開始からの開花制約へ変えていません。"
+  ]
+},"p-351d6b8491c9":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/103au/",
