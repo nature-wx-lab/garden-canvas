@@ -10513,7 +10513,179 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "冬に残す枯茎量・倒伏・分解や春の新旧の枝の交代は再現していません。生きた旧枝が残る保証や自動の強剪定ではありません。",
     "花の雌性器官・果実・種子頭・萼や葉の毛・根は未再現です。晩秋の紅葉時期や残葉率、剪定後の返り咲きは自動計算しません。"
   ]
-},"p-d29c71ac8662":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1685","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","unconfirmed":["persistence"]},"p-4f2ffff9759a":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1672","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"flowerLayers":1,"scientificName":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","flowerLayers":3,"scientificName":"Clematis montana 'Green Eyes'","unconfirmed":["persistence"]},"p-0d5502895e13":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1667","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"scientificName":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","scientificName":"Clematis montana 'Elizabeth'","unconfirmed":["persistence"]},"p-7a5a246a52f2":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1680","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"flowerLayers":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","flowerLayers":3,"unconfirmed":["persistence"]},"p-442becbe3fbf":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1669","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"scientificName":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","scientificName":"Clematis montana 'Snowflake'","unconfirmed":["persistence"]},"p-2294ce5ef510":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1673","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[5,6],"flowerTiming":"months","unconfirmed":["persistence"]},"p-ed7090312db4":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1674","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"scientificName":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","scientificName":"Clematis montana 'Freda'","unconfirmed":["persistence"]},"p-c9a740b5e914":{
+},"p-d29c71ac8662":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/726/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.iplant.cn/foc/pdf/Clematis.pdf",
+      "scope": "species"
+    },
+    {
+      "url": "https://item.rakuten.co.jp/ogis/c/0000000118/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0,
+    "arrangement": 1,
+    "leafShape": 1,
+    "compoundType": 1
+  },
+  "status": "partial",
+  "architecture": "clematisMontanaReferences",
+  "shootProfile": "rubens",
+  "flowerShape": "rubensPinkFourReference",
+  "flowerRadius": 0.025,
+  "leafShape": "montanaToothedTrifoliateReference",
+  "compoundType": "ternate",
+  "habit": "oldWoodTrainedReference",
+  "lifeForm": "vine",
+  "persistence": "coldLeaflessClematisReference",
+  "arrangement": "opposite",
+  "flowerMonths": [
+    4,
+    5
+  ],
+  "flowerTiming": "months",
+  "phenologyRegion": "寒冷地の落葉を12〜2月の表示目安とし、葉と花を外して木質の旧枝を残す未剪定の参考です。枝を全て枯茎とせず、翌春の花を支える旧枝と、短く切られた出荷苗を区別します。落葉日・枯枝量・芽吹き・翌年の開花は未校正です。",
+  "sourceConflict": "国内726は4〜5月・花径4〜6cm・伸びる目安6〜8mです。原種・変種の形態資料は補足とし、販売株を同一クローンや別のモンタナ品種へ統合しません。管理文の「花が終わると葉が芽吹く」に対し、掲載写真には葉と花が共存します。写真に合わせ葉を残す参考表示とし、正確な展葉月・葉量は未確認です。株幅も未確認です。弱剪定の程度や寿命の記載から自動の枯死・強剪定・年次成長を作りません。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合・年次成長・地下部・剪定後の回復は未確認です。同一株の年間実物照合0。",
+    "7本の木質のつる・14節・126花、萼4枚・雄しべ各48本は未実測の配置例です。旧枝の節から複数の花柄を出す模式で、支柱・パーゴラや自力で絡む動き、樹齢ごとの太り方は生成しません。",
+    "3小葉の卵形〜菱状の葉とまばらな鋸歯を種の形態・掲載写真から近似します。小葉柄をつなぎ、品種固有の全ての葉の形・毛・鋸歯数、節や葉齢の違いは未照合です。",
+    "萼の幅・丸い先・色の濃淡と、緑葉・若い銅葉の混在は写真に寄せた静止例です。銅葉の比率・RGB値・展葉日を月や計画年で校正したものではありません。",
+    "旧枝咲きの枝を冬も残し、夏咲き品種の強剪定や「旧枝から芽が出ない」という処理を流用しません。冬の枝量・生死・倒伏・春の枝の交代は未再現です。",
+    "花の雌性器官・果実・種子頭・香り・根は未再現です。販売苗の短い切戻しや1年苗の少量の花を、成株の年周・開花到達年の証明にはしません。"
+  ]
+},"p-4f2ffff9759a":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1672","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"flowerLayers":1,"scientificName":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","flowerLayers":3,"scientificName":"Clematis montana 'Green Eyes'","unconfirmed":["persistence"]},"p-0d5502895e13":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/721/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.iplant.cn/foc/pdf/Clematis.pdf",
+      "scope": "species"
+    },
+    {
+      "url": "https://item.rakuten.co.jp/ogis/c/0000000118/",
+      "scope": "genus"
+    },
+    {
+      "url": "https://www.rhs.org.uk/plants/210260/clematis-elizabeth-m/details?returnurl=/plants/search-results?form-mode%3Dfalse%26query%3Dclematis%2Bmontana%26aliaspath%3D%252fplants%252fsearch-results",
+      "scope": "catalog-entry"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0,
+    "arrangement": 1,
+    "leafShape": 1,
+    "compoundType": 1
+  },
+  "status": "partial",
+  "architecture": "clematisMontanaReferences",
+  "shootProfile": "elizabeth",
+  "flowerShape": "elizabethPalePinkReference",
+  "flowerRadius": 0.035,
+  "leafShape": "montanaToothedTrifoliateReference",
+  "compoundType": "ternate",
+  "habit": "oldWoodTrainedReference",
+  "lifeForm": "vine",
+  "persistence": "coldLeaflessClematisReference",
+  "arrangement": "opposite",
+  "flowerMonths": [
+    4,
+    5
+  ],
+  "flowerTiming": "months",
+  "phenologyRegion": "寒冷地の落葉を12〜2月の表示目安とし、葉と花を外して木質の旧枝を残す未剪定の参考です。枝を全て枯茎とせず、翌春の花を支える旧枝と、短く切られた出荷苗を区別します。落葉日・枯枝量・芽吹き・翌年の開花は未校正です。",
+  "sourceConflict": "国内721は4〜5月・花径6〜8cm・伸びる目安6〜8mです。RHSは英国で花幅最大6cm・高さ8〜12m・幅2.5〜4mと記載し、国内欄へ統合しません。RHSの若葉が銅色で後に緑になる記載は葉齢の参考で、英国の時期・時折の再開花を国内の固定月へ転用しません。管理文の「花が終わると葉が芽吹く」に対し、掲載写真には葉と花が共存します。写真に合わせ葉を残す参考表示とし、正確な展葉月・葉量は未確認です。株幅も未確認です。弱剪定の程度や寿命の記載から自動の枯死・強剪定・年次成長を作りません。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合・年次成長・地下部・剪定後の回復は未確認です。同一株の年間実物照合0。",
+    "7本の木質のつる・14節・126花、萼4枚・雄しべ各48本は未実測の配置例です。旧枝の節から複数の花柄を出す模式で、支柱・パーゴラや自力で絡む動き、樹齢ごとの太り方は生成しません。",
+    "3小葉の卵形〜菱状の葉とまばらな鋸歯を種の形態・掲載写真から近似します。小葉柄をつなぎ、品種固有の全ての葉の形・毛・鋸歯数、節や葉齢の違いは未照合です。",
+    "萼の幅・丸い先・色の濃淡と、緑葉・若い銅葉の混在は写真に寄せた静止例です。銅葉の比率・RGB値・展葉日を月や計画年で校正したものではありません。",
+    "旧枝咲きの枝を冬も残し、夏咲き品種の強剪定や「旧枝から芽が出ない」という処理を流用しません。冬の枝量・生死・倒伏・春の枝の交代は未再現です。",
+    "花の雌性器官・果実・種子頭・香り・根は未再現です。販売苗の短い切戻しや1年苗の少量の花を、成株の年周・開花到達年の証明にはしません。"
+  ]
+},"p-7a5a246a52f2":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1680","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"flowerLayers":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","flowerLayers":3,"unconfirmed":["persistence"]},"p-442becbe3fbf":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1669","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"scientificName":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","scientificName":"Clematis montana 'Snowflake'","unconfirmed":["persistence"]},"p-2294ce5ef510":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/725m/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.iplant.cn/foc/pdf/Clematis.pdf",
+      "scope": "species"
+    },
+    {
+      "url": "https://item.rakuten.co.jp/ogis/c/0000000118/",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0,
+    "arrangement": 1,
+    "leafShape": 1,
+    "compoundType": 1
+  },
+  "status": "partial",
+  "architecture": "clematisMontanaReferences",
+  "shootProfile": "mayleen",
+  "flowerShape": "mayleenBroadPinkReference",
+  "flowerRadius": 0.035,
+  "leafShape": "montanaToothedTrifoliateReference",
+  "compoundType": "ternate",
+  "habit": "oldWoodTrainedReference",
+  "lifeForm": "vine",
+  "persistence": "coldLeaflessClematisReference",
+  "arrangement": "opposite",
+  "flowerMonths": [
+    5,
+    6
+  ],
+  "flowerTiming": "months",
+  "phenologyRegion": "寒冷地の落葉を12〜2月の表示目安とし、葉と花を外して木質の旧枝を残す未剪定の参考です。枝を全て枯茎とせず、翌春の花を支える旧枝と、短く切られた出荷苗を区別します。落葉日・枯枝量・芽吹き・翌年の開花は未校正です。",
+  "sourceConflict": "725Mの花期見出しは5〜6月・やや遅咲きですが、共通の管理文は4〜5月と記載します。表示は見出しの5〜6月を採用し、4月を自動追加しません。花径6〜8cm・伸びる目安6〜8mです。銅葉の色幅は若葉や葉齢の参考で、固定の月に全葉が銅色になるとは扱いません。管理文の「花が終わると葉が芽吹く」に対し、掲載写真には葉と花が共存します。写真に合わせ葉を残す参考表示とし、正確な展葉月・葉量は未確認です。株幅も未確認です。弱剪定の程度や寿命の記載から自動の枯死・強剪定・年次成長を作りません。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合・年次成長・地下部・剪定後の回復は未確認です。同一株の年間実物照合0。",
+    "7本の木質のつる・14節・126花、萼4枚・雄しべ各48本は未実測の配置例です。旧枝の節から複数の花柄を出す模式で、支柱・パーゴラや自力で絡む動き、樹齢ごとの太り方は生成しません。",
+    "3小葉の卵形〜菱状の葉とまばらな鋸歯を種の形態・掲載写真から近似します。小葉柄をつなぎ、品種固有の全ての葉の形・毛・鋸歯数、節や葉齢の違いは未照合です。",
+    "萼の幅・丸い先・色の濃淡と、緑葉・若い銅葉の混在は写真に寄せた静止例です。銅葉の比率・RGB値・展葉日を月や計画年で校正したものではありません。",
+    "旧枝咲きの枝を冬も残し、夏咲き品種の強剪定や「旧枝から芽が出ない」という処理を流用しません。冬の枝量・生死・倒伏・春の枝の交代は未再現です。",
+    "花の雌性器官・果実・種子頭・香り・根は未再現です。販売苗の短い切戻しや1年苗の少量の花を、成株の年周・開花到達年の証明にはしません。"
+  ]
+},"p-ed7090312db4":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis-montana/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1674","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"stemColor":0,"leafColor":0,"petals":0,"flowerMonths":1,"flowerTiming":1,"scientificName":1},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"flat","habit":"spreading","leafShape":"compound","stemColor":"#557847","leafColor":"#557847","petals":5,"flowerMonths":[4,5],"flowerTiming":"months","scientificName":"Clematis montana 'Freda'","unconfirmed":["persistence"]},"p-c9a740b5e914":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/779pl/",

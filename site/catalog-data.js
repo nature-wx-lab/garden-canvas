@@ -8449,7 +8449,137 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-d29c71ac8662":{"label":"クレマチス モンタナ ルーベンス","latin":"Clematis montana var.rubens","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#d99aaa","leafColor":"#557442","variegated":false,"colors":["pink"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1685","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ ルーベンス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-4f2ffff9759a":{"label":"クレマチス モンタナ グリーン アイズ","latin":"Clematis montana ’Green Eyes’","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#a1b875","leafColor":"#557442","variegated":false,"colors":["green"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1672","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ グリーン アイズ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-0d5502895e13":{"label":"クレマチス モンタナ エリザベス","latin":"Clematis montana ‘Elizabeth’","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1667","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ エリザベス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-7a5a246a52f2":{"label":"クレマチス モンタナ スターライト","latin":"Clematis montana 'Starlight'","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#ece8d8","leafColor":"#557442","variegated":false,"colors":["white"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1680","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ スターライト"],"selectionSource":null,"visual":"reference","popularity":[]},"p-442becbe3fbf":{"label":"クレマチス モンタナ スノーフレーク","latin":"Clematis montana ‘Snowflake’","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#ece8d8","leafColor":"#557442","variegated":false,"colors":["white"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1669","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ スノーフレーク"],"selectionSource":null,"visual":"reference","popularity":[]},"p-2294ce5ef510":{"label":"クレマチス モンタナ メイリーン","latin":"Clematis montana 'Mayleen'","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[5,6],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"5～6月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：5～6月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1673","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ メイリーン"],"selectionSource":null,"visual":"reference","popularity":[]},"p-ed7090312db4":{"label":"クレマチス モンタナ フレッダ","latin":"Clematis montana ‘Freda’","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#d99aaa","leafColor":"#557442","variegated":false,"colors":["pink"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1674","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ フレッダ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-c9a740b5e914":{
+},"p-d29c71ac8662":{
+  "label": "クレマチス モンタナ ルーベンス",
+  "latin": "Clematis montana var.rubens",
+  "genre": "クレマチス",
+  "form": "botanical",
+  "group": "つる性",
+  "leaf": "deciduous",
+  "height": [
+    6,
+    8
+  ],
+  "spread": null,
+  "bloom": [
+    4,
+    5
+  ],
+  "bloomKnown": true,
+  "flower": "#e9b8ce",
+  "leafColor": "#69705b",
+  "variegated": false,
+  "colors": [
+    "pink"
+  ],
+  "sun": [
+    "sun",
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "寒冷地の落葉・旧枝を残す木質のつるの参考",
+  "care": "整った4枚のピンクの萼と淡い縁の参考です。資料の6〜8mはつるの伸びる目安で、3Dの垂直高さは誘引した配置例です。自然な成株の高さ・幅とは区別します。旧枝咲き・弱剪定の記載を参考に枝を残し、強剪定や年ごとの成長を自動計算しません。1年苗7.5〜10.5cmポットは販売規格で、本格開花までの年数・計画開始年の開花を保証しません。",
+  "bloomText": "資料：4〜5月（地域・管理で変わる開花の範囲）",
+  "bloomBasis": "国内の当該販売ページの花期見出し。共通の管理文と海外の月とは分けます",
+  "source": "https://item.rakuten.co.jp/ogis/726/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-29",
+  "aliases": [
+    "クレマチス モンタナ ルーベンス"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-4f2ffff9759a":{"label":"クレマチス モンタナ グリーン アイズ","latin":"Clematis montana ’Green Eyes’","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#a1b875","leafColor":"#557442","variegated":false,"colors":["green"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1672","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ グリーン アイズ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-0d5502895e13":{
+  "label": "クレマチス モンタナ エリザベス",
+  "latin": "Clematis montana ‘Elizabeth’",
+  "genre": "クレマチス",
+  "form": "botanical",
+  "group": "つる性",
+  "leaf": "deciduous",
+  "height": [
+    6,
+    8
+  ],
+  "spread": null,
+  "bloom": [
+    4,
+    5
+  ],
+  "bloomKnown": true,
+  "flower": "#f0dce6",
+  "leafColor": "#69705b",
+  "variegated": false,
+  "colors": [
+    "pink",
+    "white"
+  ],
+  "sun": [
+    "sun",
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "寒冷地の落葉・旧枝を残す木質のつるの参考",
+  "care": "大きく淡いピンク〜ほぼ白の萼と若葉の銅色の参考です。資料の6〜8mはつるの伸びる目安で、3Dの垂直高さは誘引した配置例です。自然な成株の高さ・幅とは区別します。旧枝咲き・弱剪定の記載を参考に枝を残し、強剪定や年ごとの成長を自動計算しません。1年苗7.5〜10.5cmポットは販売規格で、本格開花までの年数・計画開始年の開花を保証しません。",
+  "bloomText": "資料：4〜5月（地域・管理で変わる開花の範囲）",
+  "bloomBasis": "国内の当該販売ページの花期見出し。共通の管理文と海外の月とは分けます",
+  "source": "https://item.rakuten.co.jp/ogis/721/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-29",
+  "aliases": [
+    "クレマチス モンタナ エリザベス"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-7a5a246a52f2":{"label":"クレマチス モンタナ スターライト","latin":"Clematis montana 'Starlight'","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#ece8d8","leafColor":"#557442","variegated":false,"colors":["white"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1680","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ スターライト"],"selectionSource":null,"visual":"reference","popularity":[]},"p-442becbe3fbf":{"label":"クレマチス モンタナ スノーフレーク","latin":"Clematis montana ‘Snowflake’","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#ece8d8","leafColor":"#557442","variegated":false,"colors":["white"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1669","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ スノーフレーク"],"selectionSource":null,"visual":"reference","popularity":[]},"p-2294ce5ef510":{
+  "label": "クレマチス モンタナ メイリーン",
+  "latin": "Clematis montana 'Mayleen'",
+  "genre": "クレマチス",
+  "form": "botanical",
+  "group": "つる性",
+  "leaf": "deciduous",
+  "height": [
+    6,
+    8
+  ],
+  "spread": null,
+  "bloom": [
+    5,
+    6
+  ],
+  "bloomKnown": true,
+  "flower": "#e1abc5",
+  "leafColor": "#69705b",
+  "variegated": false,
+  "colors": [
+    "pink"
+  ],
+  "sun": [
+    "sun",
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "寒冷地の落葉・旧枝を残す木質のつるの参考",
+  "care": "幅のある丸いピンクの萼と銅葉の色幅の参考です。資料の6〜8mはつるの伸びる目安で、3Dの垂直高さは誘引した配置例です。自然な成株の高さ・幅とは区別します。旧枝咲き・弱剪定の記載を参考に枝を残し、強剪定や年ごとの成長を自動計算しません。1年苗7.5〜10.5cmポットは販売規格で、本格開花までの年数・計画開始年の開花を保証しません。",
+  "bloomText": "資料：5〜6月（地域・管理で変わる開花の範囲）",
+  "bloomBasis": "国内の当該販売ページの花期見出し。共通の管理文と海外の月とは分けます",
+  "source": "https://item.rakuten.co.jp/ogis/725m/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-29",
+  "aliases": [
+    "クレマチス モンタナ メイリーン"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-ed7090312db4":{"label":"クレマチス モンタナ フレッダ","latin":"Clematis montana ‘Freda’","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"unknown","height":null,"spread":null,"bloom":[4,5],"bloomKnown":true,"flower":"#d99aaa","leafColor":"#557442","variegated":false,"colors":["pink"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"4～5月","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：4～5月。月の記載。","bloomBasis":"月の記載","source":"https://www.ogis.co.jp/gallery/page01.php?id=1674","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クレマチス モンタナ フレッダ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-c9a740b5e914":{
   "label": "クレマチス プリンス チャールズ",
   "latin": "Clematis 'Prince Charles'",
   "genre": "クレマチス",
