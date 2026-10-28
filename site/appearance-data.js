@@ -6722,7 +6722,66 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "小桜は花軸4本に各3花と1蕾、他2品種は花軸3本に各3花と1蕾、各花に48雄しべ・3心皮を置く参考です。数値の花径は未確認で、花径・花数・器官数は実測値ではありません。同じ花の裏面の接写は未確認で、裏色は描画上の近似です。",
     "花後は上部の花軸と苞葉を整理する管理例です。果実・種子・根は未再現です。晩冬〜春を2〜5月へ換算し、販売予定・温室・低温の管理状態を全国の露地の開花月へ転用していません。"
   ]
-},"p-1a7e17551a51":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=369","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":0,"flowerLayers":1},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"evergreen","flowerLayers":3,"unconfirmed":[]},"p-43297d60bbd0":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":0},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"evergreen","unconfirmed":[]},"p-eda8c753b793":{
+},"p-1a7e17551a51":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=369","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":0,"flowerLayers":1},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"evergreen","flowerLayers":3,"unconfirmed":[]},"p-43297d60bbd0":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/104pb/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "hybridHelleboreDoubleReferences",
+  "shootProfile": "butterYellowSpotDouble",
+  "leafShape": "hybridHelleboreDividedReference",
+  "leafColor": "#386344",
+  "leafPattern": "plainLeatheryHelleboreReference",
+  "flowerShape": "butterCreamClusterSpotReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#8b896a",
+  "phenologyRegion": "古葉を切らず健康な緑の根生葉を残す保護参考です。販売元の苗の説明や常緑性を参照しますが、低温時の色・夏の葉量・春の新葉・剪定後の再生は品種別に月別校正していません。",
+  "sourceConflict": "国内販売元の商品104pbの生育後の高さ25〜50cm（花丈を含む）・幅40〜80cmを採用。9cm鉢や本格開花まで1〜2年を成株寸法・年次成長へ読み替えません。今回直接読めた商品本文・写真が主出典で、旧galleryを今回再確認したとは扱いません。本文の「柔らかい色のスポット」と、掲載写真の濃く集まる斑の印象を分けて残します。黄色系の名称を鮮黄色の花やゴールド系の黄葉へ読み替えず、淡いクリーム色の写真例を選びます。",
+  "unconfirmed": [
+    "白に近い淡いクリーム色の萼と内側の花びら状部分に、中心へ集まる褐紫の点を重ねる小輪八重の参考です。",
+    "同じ株の12か月の実物照合・年次成長・根・結実・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "苗棚と4鉢の写真は共通画像です。品種固有の葉数や同じクローンの年間記録にはしていません。",
+    "健康な根生6群各7小葉を全年残す保護例です。開花時の花軸の苞葉は各3小葉、葉幅・葉量・自然な更新は未実測で、ゴールド系の黄葉を転用していません。",
+    "外側5枚の萼と内側2列各5枚の花びら状部分を分ける八重の近似です。内側10枚は追加の萼や通常の筒状蜜腺と数えません。器官の由来・固定の列数・枚数は未実測です。",
+    "小輪多花性と小さな葉・コンパクトな株というシリーズの説明を参考にしますが、花径や葉の縮尺は未実測です。夏の高温で傷みやすい説明を、固定月に葉が消える表示へ転用していません。",
+    "花軸4本に各3花と1蕾、48雄しべ・3心皮を置く近似です。果実・種子・根・自然な茎の消失は描かず、花後の上部整理は管理例です。",
+    "晩冬〜春は表示用に2〜5月へ換算しています。販売予定・鉢径・苗の開花見込みを、全国の露地の開花月や年次成長曲線へ転用していません。"
+  ]
+},"p-eda8c753b793":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/103af/",
@@ -7149,7 +7208,66 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "花後の上部の花軸と苞葉の整理は管理例です。果実・種子・根・自然な茎の消失は描いていません。",
     "晩冬〜春は表示用に2〜5月へ換算しています。販売予定・鉢径・苗の開花見込みを、全国の露地の開花月や年次成長曲線へ転用していません。"
   ]
-},"p-8076a72b3096":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":0},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"evergreen","unconfirmed":[]},"p-e97d157618ab":{
+},"p-8076a72b3096":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/104an/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "hybridHelleboreDoubleReferences",
+  "shootProfile": "angelierIvoryDouble",
+  "leafShape": "hybridHelleboreDividedReference",
+  "leafColor": "#386344",
+  "leafPattern": "plainLeatheryHelleboreReference",
+  "flowerShape": "angelierIvoryGreenReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#879368",
+  "phenologyRegion": "古葉を切らず健康な緑の根生葉を残す保護参考です。販売元の苗の説明や常緑性を参照しますが、低温時の色・夏の葉量・春の新葉・剪定後の再生は品種別に月別校正していません。",
+  "sourceConflict": "国内販売元の商品104anの生育後の高さ25〜50cm（花丈を含む）・幅40〜80cmを採用。9cm鉢や本格開花まで1〜2年を成株寸法・年次成長へ読み替えません。今回直接読めた商品本文・写真が主出典で、旧galleryを今回再確認したとは扱いません。本文は象牙色から緑を帯びた白へ変わると説明し、3枚の写真にも色調の差があります。固定月や同じ株の条件が分からないため、3Dは象牙色の掲載例を静的に選びます。",
+  "unconfirmed": [
+    "象牙〜緑を帯びる白い丸い萼と内側の花びら状部分、緑の中心と淡い赤褐色の小斑を分ける八重の静的な参考です。",
+    "同じ株の12か月の実物照合・年次成長・根・結実・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "苗棚と4鉢の写真は共通画像です。品種固有の葉数や同じクローンの年間記録にはしていません。",
+    "健康な根生6群各7小葉を全年残す保護例です。開花時の花軸の苞葉は各3小葉、葉幅・葉量・自然な更新は未実測で、ゴールド系の黄葉を転用していません。",
+    "外側5枚の萼と内側2列各5枚の花びら状部分を分ける八重の近似です。内側10枚は追加の萼や通常の筒状蜜腺と数えません。器官の由来・固定の列数・枚数は未実測です。",
+    "象牙色・緑白色・黄緑を帯びる写真を、同じ株の暦月だけによる変色にしていません。淡い中心斑、緑の広さ、萼の厚みや縁の波は近似です。",
+    "花軸3本に各3花と1蕾、48雄しべ・3心皮を置く近似です。果実・種子・根・自然な茎の消失は描かず、花後の上部整理は管理例です。",
+    "晩冬〜春は表示用に2〜5月へ換算しています。販売予定・鉢径・苗の開花見込みを、全国の露地の開花月や年次成長曲線へ転用していません。"
+  ]
+},"p-e97d157618ab":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/104wd/",
@@ -7855,7 +7973,66 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "花軸3本に各3花と1蕾を置きます。花径・花数・分枝・角度は未実測で、花後の上部整理は管理例です。果実・種子・根は描いていません。",
     "晩冬〜春は表示用に2〜5月へ換算しています。販売予定・鉢径・苗の開花見込みを、全国の露地の開花月や年次成長曲線へ転用していません。"
   ]
-},"p-0bfc38cc41ab":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=2790","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/104aj/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":2,"flowerLayers":1,"phenologyRegion":2,"seasonalColors":2},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","flowerLayers":3,"phenologyRegion":"grower-cold","seasonalColors":{"winter":"#bab752"},"unconfirmed":[]},"p-2d93d5c72815":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=363","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":0,"flowerLayers":1},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"evergreen","flowerLayers":3,"unconfirmed":[]},"p-b7c13481439e":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=2555","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/104bs/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":2,"flowerLayers":1,"phenologyRegion":2},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","flowerLayers":3,"phenologyRegion":"grower-cold","unconfirmed":[]},"p-19fd64361b72":{
+},"p-0bfc38cc41ab":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=2790","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/104aj/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":2,"flowerLayers":1,"phenologyRegion":2,"seasonalColors":2},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","flowerLayers":3,"phenologyRegion":"grower-cold","seasonalColors":{"winter":"#bab752"},"unconfirmed":[]},"p-2d93d5c72815":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/104mj/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "leafColor": 0,
+    "leafPattern": 0,
+    "flowerShape": 0,
+    "flowerMonths": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "compoundType": 1,
+    "leafTexture": 1,
+    "stemColor": 0,
+    "phenologyRegion": 0
+  },
+  "status": "partial",
+  "architecture": "hybridHelleboreDoubleReferences",
+  "shootProfile": "majoricaBlackDouble",
+  "leafShape": "hybridHelleboreDividedReference",
+  "leafColor": "#386344",
+  "leafPattern": "plainLeatheryHelleboreReference",
+  "flowerShape": "majoricaPurpleBlackEdgeReference",
+  "flowerMonths": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "flowerTiming": "season-reference",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "semiEvergreen",
+  "compoundType": "palmate",
+  "leafTexture": "leathery",
+  "stemColor": "#79616d",
+  "phenologyRegion": "古葉を切らず健康な緑の根生葉を残す保護参考です。販売元の苗の説明や常緑性を参照しますが、低温時の色・夏の葉量・春の新葉・剪定後の再生は品種別に月別校正していません。",
+  "sourceConflict": "国内販売元の商品104mjの生育後の高さ25〜50cm（花丈を含む）・幅40〜80cmを採用。9cm鉢や本格開花まで1〜2年を成株寸法・年次成長へ読み替えません。今回直接読めた商品本文・写真が主出典で、旧galleryを今回再確認したとは扱いません。本文の紫を帯びる黒系の八重と、さらに濃い黒のエッジを参考にします。黒い花の反射・照明・写真の色調まで一致したとは扱いません。",
+  "unconfirmed": [
+    "黒紫色の萼と内側の花びら状部分に、さらに濃い縁と控えめな脈を重ねる八重の参考です。",
+    "同じ株の12か月の実物照合・年次成長・根・結実・剪定後の再生は未確認です。同一株の年間実物照合0。",
+    "苗棚と4鉢の写真は共通画像です。品種固有の葉数や同じクローンの年間記録にはしていません。",
+    "健康な根生6群各7小葉を全年残す保護例です。開花時の花軸の苞葉は各3小葉、葉幅・葉量・自然な更新は未実測で、ゴールド系の黄葉を転用していません。",
+    "外側5枚の萼と内側2列各5枚の花びら状部分を分ける八重の近似です。内側10枚は追加の萼や通常の筒状蜜腺と数えません。器官の由来・固定の列数・枚数は未実測です。",
+    "黒紫色の反射と濃い縁、やや尖って反る内側の部分を近似します。黒さ・照明・裏面の色・反りの角度や厚みは未実測です。",
+    "花軸3本に各3花と1蕾、48雄しべ・3心皮を置く近似です。果実・種子・根・自然な茎の消失は描かず、花後の上部整理は管理例です。",
+    "晩冬〜春は表示用に2〜5月へ換算しています。販売予定・鉢径・苗の開花見込みを、全国の露地の開花月や年次成長曲線へ転用していません。"
+  ]
+},"p-b7c13481439e":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/helleborus-x-hybridus/","scope":"species"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=2555","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/104bs/","scope":"catalog-entry"}],"basis":{"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"leafColor":0,"petals":0,"persistence":2,"flowerLayers":1,"phenologyRegion":2},"status":"attributes","inflorescence":"cyme","flowerShape":"cup","habit":"clump","leafShape":"compound","leafTexture":"glossy","compoundType":"palmate","leafColor":"#557847","petals":5,"persistence":"semiEvergreen","flowerLayers":3,"phenologyRegion":"grower-cold","unconfirmed":[]},"p-19fd64361b72":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/103pm/",

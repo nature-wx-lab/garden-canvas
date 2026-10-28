@@ -5323,7 +5323,57 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-1a7e17551a51":{"label":"クリスマスローズ ライムイエロー","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=369","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ライムイエロー"],"selectionSource":null,"visual":"reference","popularity":[]},"p-43297d60bbd0":{"label":"クリスマスローズ バターイエロースポット","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=364","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ バターイエロースポット"],"selectionSource":null,"visual":"reference","popularity":[]},"p-eda8c753b793":{
+},"p-1a7e17551a51":{"label":"クリスマスローズ ライムイエロー","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=369","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ライムイエロー"],"selectionSource":null,"visual":"reference","popularity":[]},"p-43297d60bbd0":{
+  "label": "クリスマスローズ バターイエロースポット",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e5dfba",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "white",
+    "yellow",
+    "purple",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "白に近い淡いクリーム色の萼と内側の花びら状部分に、中心へ集まる褐紫の点を重ねる小輪八重の参考です。メリクロン9cm鉢の小苗と本格開花まで1〜2年という販売見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/104pb/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ バターイエロースポット"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-eda8c753b793":{
   "label": "クリスマスローズ アシュードホワイトフィズ",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",
@@ -5668,7 +5718,56 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-8076a72b3096":{"label":"クリスマスローズ アンジェリエ","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=362","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ アンジェリエ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-e97d157618ab":{
+},"p-8076a72b3096":{
+  "label": "クリスマスローズ アンジェリエ",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#e6e2c8",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "white",
+    "green",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "象牙〜緑を帯びる白い丸い萼と内側の花びら状部分、緑の中心と淡い赤褐色の小斑を分ける八重の静的な参考です。メリクロン9cm鉢の小苗と本格開花まで1〜2年という販売見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/104an/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ アンジェリエ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-e97d157618ab":{
   "label": "クリスマスローズ ホワイト プリマドレス",
   "latin": "Helleborus × hybridus",
   "genre": "クリスマスローズ",
@@ -6251,7 +6350,56 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-0bfc38cc41ab":{"label":"クリスマスローズ アプリコットジェラート","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#df9c68","leafColor":"#557442","variegated":false,"colors":["orange"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2790","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ アプリコットジェラート"],"selectionSource":null,"visual":"reference","popularity":[]},"p-2d93d5c72815":{"label":"クリスマスローズ マジョリカ","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#babdb3","leafColor":"#557442","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=363","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ マジョリカ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-b7c13481439e":{"label":"クリスマスローズ ブラックスワン","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#694c58","leafColor":"#557442","variegated":false,"colors":["dark"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2555","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ブラックスワン"],"selectionSource":null,"visual":"reference","popularity":[]},"p-19fd64361b72":{
+},"p-0bfc38cc41ab":{"label":"クリスマスローズ アプリコットジェラート","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#df9c68","leafColor":"#557442","variegated":false,"colors":["orange"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2790","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ アプリコットジェラート"],"selectionSource":null,"visual":"reference","popularity":[]},"p-2d93d5c72815":{
+  "label": "クリスマスローズ マジョリカ",
+  "latin": "Helleborus × hybridus",
+  "genre": "クリスマスローズ",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "semi",
+  "height": [
+    0.25,
+    0.5
+  ],
+  "spread": [
+    0.4,
+    0.8
+  ],
+  "bloom": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "bloomKnown": false,
+  "flower": "#603c5f",
+  "leafColor": "#386344",
+  "variegated": false,
+  "colors": [
+    "dark",
+    "purple",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "晩冬～春",
+  "care": "黒紫色の萼と内側の花びら状部分に、さらに濃い縁と控えめな脈を重ねる八重の参考です。メリクロン9cm鉢の小苗と本格開花まで1〜2年という販売見込みは、生育後の寸法や年次成長とは別です。",
+  "bloomText": "国内販売元の晩冬〜春を表示上2〜5月へ換算した参考です。数字で明記された開花月や全国共通の開花期間ではありません。",
+  "bloomBasis": "季節表記を月へ換算",
+  "source": "https://item.rakuten.co.jp/ogis/104mj/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-28",
+  "aliases": [
+    "クリスマスローズ マジョリカ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-b7c13481439e":{"label":"クリスマスローズ ブラックスワン","latin":"Helleborus × hybridus","genre":"クリスマスローズ","form":"hellebore","group":"宿根草","leaf":"unknown","height":[0.25,0.5],"spread":null,"bloom":[1,2,3,4,5,12],"bloomKnown":true,"flower":"#694c58","leafColor":"#557442","variegated":false,"colors":["dark"],"sun":["part"],"moisture":[],"life":"unknown","growth":"年次成長は未確認","season":"晩冬～春","care":"育て方と地域差は出典で確認してください。","bloomText":"資料の花期：晩冬～春。季節表記を月へ換算。","bloomBasis":"季節表記を月へ換算","source":"https://www.ogis.co.jp/gallery/page01.php?id=2555","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":["クリスマスローズ ブラックスワン"],"selectionSource":null,"visual":"reference","popularity":[]},"p-19fd64361b72":{
   "label": "クリスマスローズ プラムミスト",
   "latin": "Helleborus hybridus",
   "genre": "クリスマスローズ",
