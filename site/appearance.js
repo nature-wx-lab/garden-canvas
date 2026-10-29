@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.960';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.961';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -146,6 +146,7 @@ Object.assign(TRAIT_VALUES,{engeiClematisTernatePhotoReference:'葉柄・小葉�
 Object.assign(TRAIT_VALUES,{compactClematisTernateReference:'柄でつながる3小葉の写真参照例',manyoOvateLeafReference:'幅広い卵形葉の写真参照例',compactTrainedClematisReference:'コンパクトなつるの配置例',manyoErectClematisReference:'つるにならない木立株の参考',coldErectClematisReference:'低温期の落葉・枯茎の参考',hanakawaDensePetaloidReference:'白緑の細い花被と由来未同定の密な中心',kitahamaBroadVariableReference:'白緑の幅広い花被・販売元は8〜12枚と記載',manyoRibbedBellReference:'縦の稜と反り返る先端を持つ赤い釣鐘形花'});
 Object.assign(TRAIT_VALUES,{storiesDenseUnknownPetaloidReference:'暗紫の巻いた花被と由来未同定の密な中心',blueAngelWavyReference:'淡青の4〜6枚の波状の萼と淡黄色の中心',kirisameFineVeinedReference:'白い丸い萼の青紫の細い縁・脈と暗い花芯'});
 Object.assign(TRAIT_VALUES,{jizelaBroadDarkReference:'濃赤紫の幅広い波状の萼と淡黄色の中心',socialisPaleUrnReference:'淡い外面・紫の内面と反り返る4つの先端の壺形花',whiteArabellaOpenReference:'白い基本6枚の萼と淡い中心の参考',socialisNarrowSpeciesReference:'種資料を参考にした細い対生葉',unconfirmedHerbLeafReference:'葉形未確認の模式的な単葉',socialisLowErectReference:'低く直立〜傾く株の種資料参照',whiteArabellaNonTwiningReference:'自力では絡まない茎の配置参考'});
+Object.assign(TRAIT_VALUES,{senninsouClusterReference:'数輪に分かれる小さな白い4萼の花と細い白い雄しべ',huldinePearlReverseReference:'パール白の受け咲き・桃紫の裏筋は英国本文の補足',shizukuBlueWhiteUrnReference:'青紫の外面と白い内面・反る4つの先端の壺形花',senninsouPinnateReference:'対生する羽状複葉の参考（小葉数未校正）',senninsouWoodyReference:'冬も木質の基部を残すつるの種資料参照',shizukuLeafReference:'幅広い模式単葉の写真参照例',shizukuCompactVineReference:'小型のつるの配置参考（成長未校正）'});
 export function appearanceSummary(info){
  const a=info.appearance||{};
  return ['leafShape','leafPattern','persistence','flowerShape','habit','barkPattern'].filter(k=>a[k]).map(k=>`${TRAIT_LABELS[k]}：${TRAIT_VALUES[a[k]]||a[k]}`).join(' ／ ');
