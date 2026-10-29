@@ -18628,7 +18628,7 @@ test('Engei Rosalyn Maria Rouge Songs clematis cameras intersect nine actual ind
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month:7,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.22'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.28');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.29');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);console.log('ENGEIRMS_CAMERAS '+JSON.stringify({models,rays}));
@@ -18880,7 +18880,7 @@ test('Engei Smile Monalisa Minamo clematis cameras intersect nine indexed flower
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.23'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.28');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.29');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,54);assert.equal(visibleCoreRays,12);
@@ -19148,7 +19148,7 @@ test('Engei Hanakawa Manyo Kitahama clematis cameras intersect nine actual index
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month:6,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.24'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.28');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.29');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
@@ -19401,7 +19401,7 @@ test('Engei Stories Blue Angel Kirisame clematis cameras intersect nine actual i
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.25'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.28');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.29');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
@@ -19575,7 +19575,7 @@ test('Engei Jizela Socialis White Arabella clematis cameras intersect nine actua
   }finally{dispose(group);}
   const document=emptyDocument(10,6);document.plans.A.plants=[input];document.view={year:1,month:6,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.26'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.28');assert.deepEqual(validateDocument(previous),document);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
+  assert.equal(CATALOG_VERSION,'2026-10-29.29');assert.deepEqual(validateDocument(previous),document);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);console.log('ENGEIJIZSOCWHITE_CAMERAS '+JSON.stringify({models,rays}));
 });
@@ -19682,7 +19682,7 @@ test('Engei Senninsou Huldine Shizuku clematis cameras intersect nine actual ind
    group.position.set(-2,.012,-1);group.updateMatrixWorld(true);
    for(const aspect of[.8,1.65]){const pose=flowerInspectionView(group,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(group,true).find(item=>{const depth=-item.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return depth>=camera.near&&depth<=camera.far;});assert.equal(hit?.object.userData.component,surface.component);assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);rays++;}
   }finally{dispose(group);}
-  const document=emptyDocument(10,6);document.plans.A.plants=[input];document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};const previous={...structuredClone(document),catalogVersion:'2026-10-29.27'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.28');assert.deepEqual(validateDocument(previous),document);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
+  const document=emptyDocument(10,6);document.plans.A.plants=[input];document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};const previous={...structuredClone(document),catalogVersion:'2026-10-29.27'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.29');assert.deepEqual(validateDocument(previous),document);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);console.log('ENGEISENHULSHIZ_CAMERAS '+JSON.stringify({models,rays}));
 });
@@ -19694,4 +19694,215 @@ test('Engei Senninsou Huldine Shizuku clematis distinguish clustered four sepal 
   for(let month=1;month<=12;month++){const state=stateAt(input,{year:1,month,reference:false});assert.equal(state.height,dims[0]);assert.equal(state.shootScale,1);assert.equal(state.groundDormant,false);assert.equal(state.leafDensity,profile==='senninsou'?1:[12,1,2].includes(month)?0:1);if(state.bloom){if(flowerColor)assert.equal(state.flowerColor,flowerColor);else flowerColor=state.flowerColor;}for(const year of[0,1,8])assert.equal(stateAt(input,{year,month,reference:false}).height,dims[0]);}assert.deepEqual(input,saved);
  }
  const sen=CATALOG['p-47508171da58'],hul=CATALOG['p-f3f808733c8c'],shi=CATALOG['p-54ac1e24cff5'],text=info=>info.appearance.sourceConflict+' '+info.appearance.unconfirmed.join(' ');assert.equal(sen.leaf,'unknown');assert.equal(sen.appearance.persistence,undefined);assert.equal(seasonAt(sen,7).bloom,false);assert.equal(seasonAt(hul,5).bloom,false);assert.match(text(hul),/原因.*未確定/);assert.match(text(shi),/花径.*未確認/);assert.match(text(shi),/固定月.*高さ|高さ.*年次成長/);
+});
+
+// Private962 draft only. No JavaScript, tests or models executed.
+test('Engei Fascination Hogelby White Magic Fountain clematis retain domestic single values and scoped genus winter and pruning sources',()=>{
+ const rows=[
+  ['p-1ebcfd173d9b','fascination','clematisCompactReferences','202132',[1.5,1.5],[6,7,8],.02,'purple'],
+  ['p-ec4e11d535e6','hogelbyWhite','clematisViticellaReferences','217983',[2,4],[5,6,7,8,9,10],.025,'white'],
+  ['p-cb062c995928','magicFountain','clematisViticellaReferences','234151',[1,2],[4,5,6,7,8,9,10],.065,'purple'],
+ ];
+ for(const[id,profile,architecture,sku,height,months,radius,positive]of rows){
+  const info=CATALOG[id],a=info.appearance;
+  assert.equal(info.latin,'');assert.equal(info.spread,null);assert.deepEqual(info.height,height);
+  assert.deepEqual(info.bloom,months);assert.equal(info.bloomKnown,true);assert.equal(info.sourceChecked,'2026-10-29');
+  assert.equal(info.source,'https://www.engei.net/products/detail?id='+sku);assert.equal(a.status,'partial');
+  assert.equal(a.architecture,architecture);assert.equal(a.shootProfile,profile);assert.equal(a.flowerRadius,radius);
+  assert.equal(a.sources[a.basis.flowerMonths].url,info.source);assert.equal(a.sources[a.basis.flowerTiming].url,info.source);
+  for(const[field,index]of Object.entries(a.basis)){assert.ok(Object.hasOwn(a,field));assert.ok(Number.isInteger(index)&&index>=0&&index<a.sources.length);}
+  const text=a.sourceConflict+' '+a.unconfirmed.join(' ');
+  assert.match(text,/年間実物照合0/);assert.match(text,/未確認|未同定/);assert.match(text,/描画例|模式|未実測/);
+  assert.match(text,/固定|枚数|小葉|器官/);assert.ok(info.colors.includes(positive));assert.ok(!info.colors.includes('unknown'));
+  for(const color of['red','pink','white','yellow','purple','blue','green','dark','mixed','unknown'])
+   assert.equal(searchCatalog(CATALOG,{query:info.label,color}).some(([key])=>key===id),info.colors.includes(color));
+  for(let month=1;month<=12;month++){
+   const state=seasonAt(info,month);assert.equal(state.bloom,months.includes(month));assert.equal(state.groundDormant,false);
+   assert.equal(state.leafScale,1);assert.equal(state.shootScale,1);assert.equal(state.leafDensity,[12,1,2].includes(month)?0:1);
+  }
+ }
+ const fasc=CATALOG['p-1ebcfd173d9b'],hg=CATALOG['p-ec4e11d535e6'].appearance,magic=CATALOG['p-cb062c995928'].appearance,
+  text=a=>a.sourceConflict+' '+a.unconfirmed.join(' ');
+ assert.equal(fasc.leaf,'herb');assert.equal(fasc.appearance.persistence,'coldErectClematisReference');
+ assert.equal(fasc.appearance.standingWinter,true,'qualified unpruned dead-stem reference prevents automatic disappearance');
+ assert.match(text(fasc.appearance),/6.{0,5}8/);assert.match(text(fasc.appearance),/5.{0,5}10/);assert.match(text(fasc.appearance),/単値|単一|単独/);
+ assert.match(text(fasc.appearance),/冬|未剪定/);assert.match(text(fasc.appearance),/配送|発送|苗/);
+ assert.equal(seasonAt(fasc,5).bloom,false);assert.equal(seasonAt(fasc,9).bloom,false);
+ assert.match(text(hg),/剪定/);assert.match(text(hg),/未確認|明示|補完/);
+ assert.match(text(magic),/新旧|新・旧|新.{0,4}旧/);assert.match(text(magic),/未同定|由来|器官/);
+});
+
+test('Engei Fascination Hogelby White Magic Fountain clematis independent vertices and real leaf joins fit sixty three selected dimension models',()=>{
+ const rows=[
+  ['p-1ebcfd173d9b','fascination',96210,[1.1,.75,.8],'compact',7,40,5,4,0,0],
+  ['p-ec4e11d535e6','hogelbyWhite',96211,[2.5,1.3,1.8],'viticella',6,98,84,4,0,0],
+  ['p-cb062c995928','magicFountain',96212,[1.3,.85,.9],'viticella',5,98,84,8,48,20],
+ ];
+ const matrix=new Matrix4(),vertex=new Vector3(),distance=(a,b)=>Math.hypot(...a.map((value,index)=>value-b[index]));
+ let models=0,joins=0,floweringModels=0;
+ for(const[id,profile,pid,normal,family,inspectMonth,stems,flowers,outer,inner,core]of rows){
+  let normalSkeleton;
+  const cases=[...[normal,[.08,.16,.05],[normal[0],normal[1],.005],[.005,.08,.005],[normal[0],.005,.005]]
+   .flatMap(dims=>[inspectMonth,3,11,1].map(month=>({dims,month,reference:false}))),{dims:normal,month:inspectMonth,reference:true}];
+  for(const{dims,month,reference}of cases){
+   const input={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input),view={year:1,month,reference},state=stateAt(input,view),group=plantModel(input,view);models++;
+   try{
+    group.updateMatrixWorld(true);const counts={},roots=[],ends=[],skeleton=[];let low=Infinity,high=-Infinity,width=0,leafTop=0;
+    for(const mesh of group.children){
+     const kind=mesh.userData.component,positions=mesh.geometry.attributes.position;counts[kind]=(counts[kind]||0)+mesh.count;
+     assert.ok(positions.array.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite));
+     assert.ok(mesh.instanceMatrix.array.every(Number.isFinite));if(mesh.instanceColor)assert.ok(mesh.instanceColor.array.every(Number.isFinite));
+     if(mesh.geometry.index)assert.ok(mesh.geometry.index.array.every(index=>Number.isInteger(index)&&index>=0&&index<positions.count));
+     if(/^(stem|bare-stem|dry-stem)-clematis-/.test(kind))skeleton.push([...mesh.instanceMatrix.array]);
+     for(let instance=0;instance<mesh.count;instance++){
+      mesh.getMatrixAt(instance,matrix);matrix.premultiply(mesh.matrixWorld);
+      if(kind==='leaf-clematis-'+family+'-ref')roots.push(new Vector3().applyMatrix4(matrix).toArray());
+      if(['petiole-clematis-'+family+'-ref','petiolule-clematis-'+family+'-ref'].includes(kind))ends.push(new Vector3(0,.5,0).applyMatrix4(matrix).toArray());
+      for(let index=0;index<positions.count;index++){
+       vertex.fromBufferAttribute(positions,index).applyMatrix4(matrix);low=Math.min(low,vertex.y);high=Math.max(high,vertex.y);width=Math.max(width,Math.hypot(vertex.x,vertex.z)*2);
+       if(/^(leaf|petiole|petiolule)-/.test(kind))leafTop=Math.max(leafTop,vertex.y);
+      }
+     }
+    }
+    assert.ok(low>=-1e-7&&high<=state.height+1e-7,id+' height '+dims+' '+month+' '+low+'/'+high);
+    assert.ok(width<=state.spread+1e-7,id+' independent width '+dims+' '+width);
+    assert.ok(leafTop<=Math.min(state.height,state.leafHeight)+1e-7,id+' leaf cap '+dims);
+    const base='-clematis-'+family+'-ref';assert.equal((counts['stem'+base]||0)+(counts['bare-stem'+base]||0)+(counts['dry-stem'+base]||0),stems);
+    const petioles=counts['petiole'+base]||0,petiolules=counts['petiolule'+base]||0,leaves=counts['leaf'+base]||0;
+    assert.equal(roots.length>0,state.leafDensity>0);
+    if(profile==='fascination'){assert.equal(leaves,petioles);assert.equal(petiolules,0);}
+    else{assert.equal(leaves,petioles*3);assert.equal(petiolules,petioles*3);}
+    for(const root of roots){
+     const tolerance=Math.max(2e-7,Math.hypot(...root.map(value=>2**(Math.floor(Math.log2(Math.max(1e-30,Math.abs(value))))-23))));
+     assert.ok(ends.some(end=>distance(root,end)<tolerance),id+' unjoined actual leaf '+dims+' '+month);joins++;
+    }
+    const bloomFlowers=state.bloom?flowers:0;
+    assert.equal(counts['petaloid-outer'+base+'-'+profile]||0,bloomFlowers*outer);
+    assert.equal(counts['petaloid-inner'+base+'-'+profile]||0,bloomFlowers*inner);
+    assert.equal(counts['core-unknown'+base+'-'+profile]||0,bloomFlowers*core);
+    assert.equal(counts['receptacle'+base+'-'+profile]||0,profile==='magicFountain'?bloomFlowers:0);
+    assert.equal(!!group.userData.flowerTargets?.length,state.bloom);
+    assert.ok(!group.children.some(mesh=>/^(support|fruit|seed|root|carpel|staminode|sepal|filament|anther)-/.test(mesh.userData.component)),
+     'unknown visible-organ origins do not justify ordinary sepals or hidden fertile organs');
+    assert.equal(state.groundDormant,false);
+    if(dims.every((value,index)=>value===normal[index])&&!reference){
+     if(month===inspectMonth)normalSkeleton=skeleton;else assert.deepEqual(skeleton,normalSkeleton,'no automatic pruning or whole-stem winter disappearance');
+    }
+    if(state.bloom){
+     floweringModels++;
+     if(dims.every((value,index)=>value===normal[index])&&!reference)for(const mesh of group.children){
+      const shader={uniforms:{},vertexShader:'',fragmentShader:'#include <emissivemap_fragment>'};mesh.material.onBeforeCompile(shader,{});
+      assert.equal(shader.fragmentShader.includes('gcFascinationRim'),mesh.userData.component==='petaloid-outer-clematis-compact-ref-fascination');
+      assert.equal(shader.fragmentShader.includes('gcHogelbyFold'),mesh.userData.component==='petaloid-outer-clematis-viticella-ref-hogelbyWhite');
+      for(const token of['gcStoriesTip','gcStoriesInnerTip','gcKirisameVein','gcBlueAngelVein','gcManyoRib','gcMariaBase','gcSongsBase','gcJizelaVein','gcSocialisInner'])
+       assert.ok(!shader.fragmentShader.includes(token),id+' foreign material '+token);
+     }
+    }
+    assert.deepEqual(input,saved);
+   }finally{dispose(group);}
+  }
+ }
+ assert.equal(models,63);assert.equal(floweringModels,18);assert.ok(joins>1000);
+ console.log('ENGEIFASCHGMAG_BOUNDARIES '+JSON.stringify({models,joins,floweringModels}));
+});
+
+
+test('Engei Fascination Hogelby White Magic Fountain clematis cameras intersect nine actual indexed flowers at eighteen visible rays and preserve previous saves',()=>{
+ const rows=[
+  ['p-1ebcfd173d9b','fascination',96210,[1.1,.75,.8],7,'compact'],
+  ['p-ec4e11d535e6','hogelbyWhite',96211,[2.5,1.3,1.8],6,'viticella'],
+  ['p-cb062c995928','magicFountain',96212,[1.3,.85,.9],5,'viticella'],
+ ];
+ let models=0,rays=0,closedCoreRays=0,visibleCoreRays=0;
+ for(const[id,profile,pid,normal,month,family]of rows)for(const dims of[normal,[.08,.16,.05],[normal[0],normal[1],.005]]){
+  const input={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input);
+  const group=plantModel(input,{year:1,month,reference:false});models++;
+  try{
+   assert.equal(group.userData.architecture,family==='compact'?'clematisCompactReferences':'clematisViticellaReferences');
+   assert.ok(group.userData.surfaceSelection?.matched,id+' '+dims);assert.ok(group.userData.flowerTargets.length<=8);
+   const surface=group.userData.flowerTargets[0].surface;
+   assert.equal(surface.component,'petaloid-outer-clematis-'+family+'-ref-'+profile);
+   group.position.set(-2,.012,-1);group.updateMatrixWorld(true);
+   let coreCentre,firstCore;
+   if(profile==='magicFountain'){
+    const core=group.children.find(mesh=>mesh.userData.component==='core-unknown-clematis-viticella-ref-'+profile),
+     receptacle=group.children.find(mesh=>mesh.userData.component==='receptacle-clematis-viticella-ref-'+profile),
+     count=20,matrix=new Matrix4(),origin=new Vector3(),rotation=new Quaternion(),scale=new Vector3();
+    receptacle.getMatrixAt(0,matrix);matrix.premultiply(receptacle.matrixWorld);matrix.decompose(origin,rotation,scale);
+    const radius=scale.y/.10,axis=new Vector3(0,1,0).applyQuaternion(rotation);
+    coreCentre=new Vector3(0,radius*.37,0).applyQuaternion(rotation).add(origin);
+    firstCore=new InstancedMesh(core.geometry,core.material,count);
+    for(let index=0;index<count;index++){core.getMatrixAt(index,matrix);matrix.premultiply(core.matrixWorld);firstCore.setMatrixAt(index,matrix);}
+    firstCore.updateMatrixWorld(true);
+    // Actual indexed sectors must cover the centre from above, including the
+    // axial ray; separate upright strips can pass overall plant bounds and fail this.
+    for(const x of[-.08,0,.08])for(const z of[-.08,0,.08]){
+     const target=new Vector3(x*radius,0,z*radius).applyQuaternion(rotation).add(coreCentre),
+      ray=new Raycaster(target.clone().addScaledVector(axis,radius*2),axis.clone().negate());
+     const hit=ray.intersectObject(firstCore)[0];assert.ok(hit,id+' '+dims+' open centre '+x+'/'+z);
+     assert.ok(hit.distance>radius*1.65&&hit.distance<radius*2,id+' closed rounded core surface');closedCoreRays++;
+    }
+   }
+   for(const aspect of[.8,1.65]){
+    const pose=flowerInspectionView(group,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);
+    camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);
+    const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);
+    const hit=ray.intersectObject(group,true).find(item=>{
+     const z=-item.point.clone().applyMatrix4(camera.matrixWorldInverse).z;
+     return z>=camera.near&&z<=camera.far;
+    });
+    assert.equal(hit?.object.userData.component,surface.component);
+    assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);
+    assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);rays++;
+    if(firstCore){
+     const core=group.children.find(mesh=>mesh.userData.component==='core-unknown-clematis-viticella-ref-'+profile),
+      matrix=new Matrix4(),positions=firstCore.geometry.attributes.position;
+     let near=Infinity,far=-Infinity;
+     for(let index=0;index<firstCore.count;index++){firstCore.getMatrixAt(index,matrix);for(let vertex=0;vertex<positions.count;vertex++){
+      const depth=-new Vector3().fromBufferAttribute(positions,vertex).applyMatrix4(matrix).applyMatrix4(camera.matrixWorldInverse).z;
+      near=Math.min(near,depth);far=Math.max(far,depth);
+     }}
+     assert.ok(near>=camera.near&&far<=camera.far,id+' '+dims+' core clipped '+near+'/'+far);
+     const coreRay=new Raycaster(camera.position,coreCentre.clone().sub(camera.position).normalize()),
+      visible=coreRay.intersectObject(group,true).find(item=>{
+       const depth=-item.point.clone().applyMatrix4(camera.matrixWorldInverse).z;
+       return depth>=camera.near&&depth<=camera.far;
+      });
+     assert.equal(visible?.object,core,id+' '+dims+' core centre hidden in macro view');
+     assert.ok(visible.instanceId<firstCore.count);visibleCoreRays++;
+    }
+   }
+  }finally{dispose(group);}
+  const document=emptyDocument(10,6);document.plans.A.plants=[input];
+  document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
+  const previous={...structuredClone(document),catalogVersion:'2026-10-29.28'},copy=structuredClone(previous);
+  assert.equal(CATALOG_VERSION,'2026-10-29.29');assert.deepEqual(validateDocument(previous),document);
+  assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
+ }
+ assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
+ console.log('ENGEIFASCHGMAG_CAMERAS '+JSON.stringify({models,rays,closedCoreRays,visibleCoreRays}));
+});
+
+
+test('Engei Fascination Hogelby White Magic Fountain clematis distinguish thick purple bells thin white pendants and layered purple references without ordinary stamens or invented flower age',()=>{
+ const rows=[['p-1ebcfd173d9b','fascination',96210,[1.1,.75,.8]],['p-ec4e11d535e6','hogelbyWhite',96211,[2.5,1.3,1.8]],['p-cb062c995928','magicFountain',96212,[1.3,.85,.9]]];
+ assert.equal(new Set(rows.map(([id])=>CATALOG[id].appearance.flowerShape)).size,3);
+ for(const[id,profile,pid,dims]of rows){
+  const info=CATALOG[id],a=info.appearance;
+  for(const field of['leafShape','leafPattern','persistence','flowerShape','habit'])if(a[field])assert.ok(TRAIT_VALUES[a[field]],id+' untranslated '+field);
+  assert.match(appearanceSummary(info),/[ぁ-ゖァ-ヶ一-龯]/);assert.doesNotMatch(appearanceSummary(info),/fascination|hogelbyWhite|magicFountain|Reference|clematis[A-Z]/);
+  for(const field of['monthlyFlowerColors','monthlyLeafColors','monthlyLeafDensity','minFloweringYearsAfterPlanting'])assert.equal(a[field],undefined);
+  const input={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input);let colour;
+  for(let month=1;month<=12;month++){
+   const state=stateAt(input,{year:1,month,reference:false});assert.equal(state.height,dims[0]);assert.equal(state.shootScale,1);assert.equal(state.groundDormant,false);
+   assert.equal(state.leafDensity,[12,1,2].includes(month)?0:1);
+   if(state.bloom){if(colour)assert.equal(state.flowerColor,colour);else colour=state.flowerColor;}
+   for(const year of[0,1,8])assert.equal(stateAt(input,{year,month,reference:false}).height,dims[0]);
+  }
+  assert.deepEqual(input,saved);
+ }
+ const fasc=CATALOG['p-1ebcfd173d9b'],magic=CATALOG['p-cb062c995928'].appearance,text=a=>a.sourceConflict+' '+a.unconfirmed.join(' ');
+ assert.equal(fasc.leaf,'herb');assert.equal(fasc.appearance.standingWinter,true);assert.equal(seasonAt(fasc,1).groundDormant,false);
+ assert.deepEqual(fasc.bloom,[6,7,8]);assert.match(text(fasc.appearance),/配送|発送|苗/);
+ assert.match(text(magic),/花齢|同一花|連続写真|撮影/);assert.match(text(magic),/未同定|由来|器官/);
 });
