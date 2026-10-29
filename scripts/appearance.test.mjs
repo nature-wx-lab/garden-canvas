@@ -7323,7 +7323,7 @@ test('every catalog entry has an explicit evidence record and no unsupported com
   if(a.budColor!==undefined)assert.match(a.budColor,/^#[0-9a-f]{6}$/i,id+':budColor');
   if(a.sourceConflict!==undefined){assert.equal(typeof a.sourceConflict,'string',id);assert.ok(a.sourceConflict.trim(),id);}
   assert.ok(Object.keys(a).every(k=>allowed.has(k)),id);assert.ok(['attributes','unconfirmed','partial'].includes(a.status));
-  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['plantariumgroendirekt.nl','internationalclematissociety.org','ofg-web-shop.com','www.kagoen.co','panglobalplants.com','www.bestagapanthus.com.au','www.les-vivaces-de-sandrine-et-thierry.fr','www.bluestoneperennials.com','store.provenwinners.jp','www.jelitto.com','www.lfl.bayern.de','www.perennials.com','collections.rhs.org.uk','rangeplants.tamu.edu','www.eeob.iastate.edu','ecgrowers.com','www.nativeson.com','www.cpbr.gov.au','www.aucklandbotanicgardens.co.nz','mpdb.nibn.go.jp','sys01.lib.hkbu.edu.hk','www.iplant.cn','www.uaex.uada.edu','plants.sc.egov.usda.gov','iwgs.org','www.dunedin.govt.nz','research.fs.usda.gov','www.rhsplants.co.uk','www.promessedefleurs.ie','www.americanmeadows.com','bianchericreazioni.it','daylilies.org','hortflora.rbg.vic.gov.au','www.worldfloraonline.org','www.hartsnursery.co.uk','flora.org.il','rhs.crocdn.co.uk','www.avonbulbs.co.uk','www.rosecottageplants.co.uk','www.kew.org','www.cyclamen.org','morelflowers.com','ahsgardening.org','www.kobepharma-u.ac.jp','biodiversityadvisor.sanbi.org','www.hilverdaflorist.com','www.sunshapers.nl','www.syngentaflowers.com','www.fumakilla.co.jp','pmc.ncbi.nlm.nih.gov','chrisghyselen.be','www.benary.com','itp.lucidcentral.org','www.panamseed.com','hort.extension.wisc.edu','keys.lucidcentral.org','www.botanic.cam.ac.uk','www.ipaustralia.gov.au','www.i-flora.com','www.bgflora.eu','nathistoc.bio.uci.edu','conceptplants.com','www.danzigeronline.com','ballaustralia.com','shop.hanano-yamato.co.jp','www.plantarium.ru','doi.org','www.nzpcn.org.nz','tbg.kahaku.go.jp','kna.forest.go.kr','www.georgiabiodiversity.com','herbarivirtual.uib.es','www.pref.ehime.jp','linnet.geog.ubc.ca','www.worldfloraonline.org','www.burgenlandflora.at','flora.uniud.it','www.pref.gifu.lg.jp','pdfs.semanticscholar.org','www.chicagobotanic.org','www.botanic.cam.ac.uk','besjournals.onlinelibrary.wiley.com','apps.cals.arizona.edu','research.fs.usda.gov','www.kiwiflora.com','patents.justia.com','britishandirishbotany.org','perennialplantoftheyear.com','terranovanurseries.com','swbiodiversity.org','flora-burren.linnaeus.naturalis.nl','plantdatabase.kpu.ca','ikilog.biodic.go.jp','tajima-garden.jp','www.waltersgardens.com','www.floraweb.de','hanahana-shop.com','ec.keiseirose.co.jp','www.keihan-engei-gardeners.com','soeasy.tacoflower.jp','www.driftroses.com','toshiryokka.jp','cheztaku.blog.fc2.com','www.kanagawaparks.com','www.kawamotorosegarden.com','www.delbard-japon.com','www.rosen.de','keihan-engei.com','www.kobe-park.or.jp','nagakubokouen.jp','www.e878.net','jcra.ncsu.edu','www.botanybrisbane.com','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.makino.or.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg','www.sapho.fr','www.kahaku.go.jp','www.mnc.toho-u.ac.jp','www.missouribotanicalgarden.org','americanpeonysociety.org','www.yuushien.com','www.pref.ishikawa.lg.jp','www.pref.kyoto.jp','www.tokyo-aff.or.jp','springmeadownursery.com','online.flippingbook.com','fermanagh.bsbi.org','growwild.kew.org','patents.google.com','iidukaflowerplants.com','www.maddingleybotanical.com.au','www.proteaflora.com.au','www.nda.gov.za','anpsa.org.au','florabase.dpaw.wa.gov.au','yamashita-plants.com','www.murakami-seed.com','apps.lucidcentral.org','www.jp-akatsuka.co.jp','www.bgtym.org','mpdb.nibn.go.jp','www.pharm.or.jp','www.kankyo.pref.hyogo.lg.jp','jabg.or.jp','www.jstage.jst.go.jp','www.satotsubakien.com','si.gardenexplorer.org','www.pref.kagawa.lg.jp','www.nippon-olive.co.jp','turukame-olive.com','www.city.mishima.shizuoka.jp','www.pma.com.au','hort.extension.wisc.edu','ryokka-c.jp','www.tokyo-shoyaku.com','www.itanse.shop','www.hanahiroba.com','plantnetwork.gardenplant.org','olddairynursery.com','www.phoenixperennials.com','ryokka-c.jp','www.tokyo-shoyaku.com','www.itanse.shop','www.hanahiroba.com','plantnetwork.gardenplant.org','genchan8783.ocnk.net','www.keisen.ac.jp','shop.little-antique.com','delphinium.co.nz','www.terranovanurseries.com','www.danzigeronline.com','www.syngentaflowers.com','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg','www.iplant.cn','www.e878.net','esveld.nl','nwipb.cas.cn','growwild.kew.org','frais.ocnk.net','anbg.gov.au','www.fws.gov','store.provenwinners.jp','www.kincho-engei.co.jp','x7772506.xaas3.jp','www.tanakanursery.com','www.anbg.gov.au','www.dcceew.gov.au','smoketree-miyabi.com','www.pepinieres-minier.fr','www.tokyo-aff.or.jp','woodyplants.cals.cornell.edu','www.missouribotanicalgarden.org','himenobaraen.jp','www.flowerpark.or.jp','starrosesandplants.com','fermanagh.bsbi.org','growwild.kew.org','patents.google.com','patents.justia.com','britishandirishbotany.org','perennialplantoftheyear.com','www.davidaustinroses.co.uk','www.davidaustinrosesaustralia.com','shinomiya-rose.com','ec.keiseirose.co.jp','www.keiseirose.co.jp','www.baranoie.com','www.jacksonandperkins.com','www.komatsugarden-online.com','www.mdpi.com','www.ema.europa.eu','www.biolveg.uma.es','academic.oup.com','sys01.lib.hkbu.edu.hk','plantdatabase.kpu.ca','botsoc.scot','www.infoflora.ch','darcyeverest.co.uk','resources.austplants.com.au','www.logan.qld.gov.au','plant-directory.ifas.ufl.edu','link.springer.com','onlinelibrary.wiley.com','www.naro.go.jp','tojaku.co.jp','japr.or.jp','www.tokyo-shoyaku.com','www.fp-k.org','www.town.taketoyo.lg.jp','www.akb.jp','ecgrowers.com','www.barrault-plantes-jardins.com','world-plants.com','naegibu.com','sakisansou.ocnk.net','harvest.cals.ncsu.edu','iwasaki.shop-pro.jp','efloras.org','www.pref.gifu.lg.jp','www.crug-farm.co.uk','nikko-bg.jp','mortonarb.org','fumakilla.jp','www.sakataseed.co.jp','www.lsuagcenter.com','keybase.rbg.vic.gov.au','extension.oregonstate.edu','linnet.geog.ubc.ca','www.suntory.co.jp','hakusan1.co.jp','www.knollgardens.co.uk','www.awaji.ac.jp','plantnet.rbgsyd.nsw.gov.au','www.nzplants.auckland.ac.nz','mastergardener.extension.wisc.edu','www.lullfitz.com.au','www.grahamrice.com','www.wakaizumi-farm.com', 'kanekyu.net', 'mag.nhk-book.co.jp', 'www.botanischetuinen.nl', 'yokoyama-nursery.jp','www.ashwoodnurseries.com','www.helleborus.de','gobotany.nativeplanttrust.org','store.shopping.yahoo.co.jp','www.ugui-vc.jp','www.tba.or.jp','wiki.irises.org','www.dwarfirissociety.org','www.zahradnictvi-spomysl.cz','www.agsfan.com','sakata-netshop.com','satsukibonsai-4s.jp','www.kkr.mlit.go.jp','tbg.kahaku.go.jp','sernecportal.org','www.efloras.org','www.royalvanzanten.com','www.panamseed.com','www.fleuroselect.com','wt.ballhort.com','jf-selections.net','na.dummenorange.com','hakusan1.co.jp','plantsofhawaii.org','www.takii.co.jp','shop.takii.co.jp','bibliotecadelbotanico.org','w3.biosci.utexas.edu','www.gardentrials.com','pmc.ncbi.nlm.nih.gov','pza.sanbi.org','floraseries.landcareresearch.co.nz','biotanz.landcareresearch.co.nz','staff.fukuoka-edu.ac.jp','flora.uniud.it','www3.gobiernodecanarias.org','www.nzflora.info','agrobiodiversity.uniag.sk','www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','extension.usu.edu','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','www.ballyrobertgardens.com','musthaveperennials.com','floranorthamerica.org','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au','www.mapress.com','alpinegardensociety.net','plants.sdsu.edu','www.nparks.gov.sg','provenwinners.jp','www.beekenkampornamentals.nl','kankyojoho.pref.aichi.jp','fieldguide.mt.gov','www.nibr.go.kr','pacificbulbsociety.org','keys.landcareresearch.co.nz','plantipp.eu','www.wairere.nz','hosho.ees.hokudai.ac.jp','www.hokudai.ac.jp','www.lab.toho-u.ac.jp','eprints.lib.hokudai.ac.jp','www.town.karuizawa.lg.jp','library.dbca.wa.gov.au','www.hinshu2.maff.go.jp','matsunaga-kadan.com','oniduka.base.shop','www.nipponbeer.jp','fermanagh.bsbi.org','www.npshistory.com','ozaki-flowerpark.co.jp','www.nzflora.info','nzflora.info','www.journals.uchicago.edu','www.floraiberica.es','efloras.org','extension.psu.edu','makinomigoro.jp','iucngisd.org','nature.ca','www.hinshu2.maff.go.jp','www.nies.go.jp','www.water.go.jp','www.akb.jp','tropica.com','rva.jp','idtools.org','www.adana.co.jp','www.h2-l.jp','www.aqua-breath.com','greenhobby-sale.com','florabase.dbca.wa.gov.au','www.pref.fukushima.lg.jp','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg'].includes(u.hostname),id+':unrecognized source host '+u.hostname);assert.ok(['catalog-entry','species','genus','tribe','family'].includes(source.scope));}
+  for(const source of a.sources){const u=new URL(source.url);assert.equal(u.protocol,'https:');assert.ok(['georgiabiodiversity.org','plantariumgroendirekt.nl','internationalclematissociety.org','ofg-web-shop.com','www.kagoen.co','panglobalplants.com','www.bestagapanthus.com.au','www.les-vivaces-de-sandrine-et-thierry.fr','www.bluestoneperennials.com','store.provenwinners.jp','www.jelitto.com','www.lfl.bayern.de','www.perennials.com','collections.rhs.org.uk','rangeplants.tamu.edu','www.eeob.iastate.edu','ecgrowers.com','www.nativeson.com','www.cpbr.gov.au','www.aucklandbotanicgardens.co.nz','mpdb.nibn.go.jp','sys01.lib.hkbu.edu.hk','www.iplant.cn','www.uaex.uada.edu','plants.sc.egov.usda.gov','iwgs.org','www.dunedin.govt.nz','research.fs.usda.gov','www.rhsplants.co.uk','www.promessedefleurs.ie','www.americanmeadows.com','bianchericreazioni.it','daylilies.org','hortflora.rbg.vic.gov.au','www.worldfloraonline.org','www.hartsnursery.co.uk','flora.org.il','rhs.crocdn.co.uk','www.avonbulbs.co.uk','www.rosecottageplants.co.uk','www.kew.org','www.cyclamen.org','morelflowers.com','ahsgardening.org','www.kobepharma-u.ac.jp','biodiversityadvisor.sanbi.org','www.hilverdaflorist.com','www.sunshapers.nl','www.syngentaflowers.com','www.fumakilla.co.jp','pmc.ncbi.nlm.nih.gov','chrisghyselen.be','www.benary.com','itp.lucidcentral.org','www.panamseed.com','hort.extension.wisc.edu','keys.lucidcentral.org','www.botanic.cam.ac.uk','www.ipaustralia.gov.au','www.i-flora.com','www.bgflora.eu','nathistoc.bio.uci.edu','conceptplants.com','www.danzigeronline.com','ballaustralia.com','shop.hanano-yamato.co.jp','www.plantarium.ru','doi.org','www.nzpcn.org.nz','tbg.kahaku.go.jp','kna.forest.go.kr','www.georgiabiodiversity.com','herbarivirtual.uib.es','www.pref.ehime.jp','linnet.geog.ubc.ca','www.worldfloraonline.org','www.burgenlandflora.at','flora.uniud.it','www.pref.gifu.lg.jp','pdfs.semanticscholar.org','www.chicagobotanic.org','www.botanic.cam.ac.uk','besjournals.onlinelibrary.wiley.com','apps.cals.arizona.edu','research.fs.usda.gov','www.kiwiflora.com','patents.justia.com','britishandirishbotany.org','perennialplantoftheyear.com','terranovanurseries.com','swbiodiversity.org','flora-burren.linnaeus.naturalis.nl','plantdatabase.kpu.ca','ikilog.biodic.go.jp','tajima-garden.jp','www.waltersgardens.com','www.floraweb.de','hanahana-shop.com','ec.keiseirose.co.jp','www.keihan-engei-gardeners.com','soeasy.tacoflower.jp','www.driftroses.com','toshiryokka.jp','cheztaku.blog.fc2.com','www.kanagawaparks.com','www.kawamotorosegarden.com','www.delbard-japon.com','www.rosen.de','keihan-engei.com','www.kobe-park.or.jp','nagakubokouen.jp','www.e878.net','jcra.ncsu.edu','www.botanybrisbane.com','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.makino.or.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg','www.sapho.fr','www.kahaku.go.jp','www.mnc.toho-u.ac.jp','www.missouribotanicalgarden.org','americanpeonysociety.org','www.yuushien.com','www.pref.ishikawa.lg.jp','www.pref.kyoto.jp','www.tokyo-aff.or.jp','springmeadownursery.com','online.flippingbook.com','fermanagh.bsbi.org','growwild.kew.org','patents.google.com','iidukaflowerplants.com','www.maddingleybotanical.com.au','www.proteaflora.com.au','www.nda.gov.za','anpsa.org.au','florabase.dpaw.wa.gov.au','yamashita-plants.com','www.murakami-seed.com','apps.lucidcentral.org','www.jp-akatsuka.co.jp','www.bgtym.org','mpdb.nibn.go.jp','www.pharm.or.jp','www.kankyo.pref.hyogo.lg.jp','jabg.or.jp','www.jstage.jst.go.jp','www.satotsubakien.com','si.gardenexplorer.org','www.pref.kagawa.lg.jp','www.nippon-olive.co.jp','turukame-olive.com','www.city.mishima.shizuoka.jp','www.pma.com.au','hort.extension.wisc.edu','ryokka-c.jp','www.tokyo-shoyaku.com','www.itanse.shop','www.hanahiroba.com','plantnetwork.gardenplant.org','olddairynursery.com','www.phoenixperennials.com','ryokka-c.jp','www.tokyo-shoyaku.com','www.itanse.shop','www.hanahiroba.com','plantnetwork.gardenplant.org','genchan8783.ocnk.net','www.keisen.ac.jp','shop.little-antique.com','delphinium.co.nz','www.terranovanurseries.com','www.danzigeronline.com','www.syngentaflowers.com','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg','www.iplant.cn','www.e878.net','esveld.nl','nwipb.cas.cn','growwild.kew.org','frais.ocnk.net','anbg.gov.au','www.fws.gov','store.provenwinners.jp','www.kincho-engei.co.jp','x7772506.xaas3.jp','www.tanakanursery.com','www.anbg.gov.au','www.dcceew.gov.au','smoketree-miyabi.com','www.pepinieres-minier.fr','www.tokyo-aff.or.jp','woodyplants.cals.cornell.edu','www.missouribotanicalgarden.org','himenobaraen.jp','www.flowerpark.or.jp','starrosesandplants.com','fermanagh.bsbi.org','growwild.kew.org','patents.google.com','patents.justia.com','britishandirishbotany.org','perennialplantoftheyear.com','www.davidaustinroses.co.uk','www.davidaustinrosesaustralia.com','shinomiya-rose.com','ec.keiseirose.co.jp','www.keiseirose.co.jp','www.baranoie.com','www.jacksonandperkins.com','www.komatsugarden-online.com','www.mdpi.com','www.ema.europa.eu','www.biolveg.uma.es','academic.oup.com','sys01.lib.hkbu.edu.hk','plantdatabase.kpu.ca','botsoc.scot','www.infoflora.ch','darcyeverest.co.uk','resources.austplants.com.au','www.logan.qld.gov.au','plant-directory.ifas.ufl.edu','link.springer.com','onlinelibrary.wiley.com','www.naro.go.jp','tojaku.co.jp','japr.or.jp','www.tokyo-shoyaku.com','www.fp-k.org','www.town.taketoyo.lg.jp','www.akb.jp','ecgrowers.com','www.barrault-plantes-jardins.com','world-plants.com','naegibu.com','sakisansou.ocnk.net','harvest.cals.ncsu.edu','iwasaki.shop-pro.jp','efloras.org','www.pref.gifu.lg.jp','www.crug-farm.co.uk','nikko-bg.jp','mortonarb.org','fumakilla.jp','www.sakataseed.co.jp','www.lsuagcenter.com','keybase.rbg.vic.gov.au','extension.oregonstate.edu','linnet.geog.ubc.ca','www.suntory.co.jp','hakusan1.co.jp','www.knollgardens.co.uk','www.awaji.ac.jp','plantnet.rbgsyd.nsw.gov.au','www.nzplants.auckland.ac.nz','mastergardener.extension.wisc.edu','www.lullfitz.com.au','www.grahamrice.com','www.wakaizumi-farm.com', 'kanekyu.net', 'mag.nhk-book.co.jp', 'www.botanischetuinen.nl', 'yokoyama-nursery.jp','www.ashwoodnurseries.com','www.helleborus.de','gobotany.nativeplanttrust.org','store.shopping.yahoo.co.jp','www.ugui-vc.jp','www.tba.or.jp','wiki.irises.org','www.dwarfirissociety.org','www.zahradnictvi-spomysl.cz','www.agsfan.com','sakata-netshop.com','satsukibonsai-4s.jp','www.kkr.mlit.go.jp','tbg.kahaku.go.jp','sernecportal.org','www.efloras.org','www.royalvanzanten.com','www.panamseed.com','www.fleuroselect.com','wt.ballhort.com','jf-selections.net','na.dummenorange.com','hakusan1.co.jp','plantsofhawaii.org','www.takii.co.jp','shop.takii.co.jp','bibliotecadelbotanico.org','w3.biosci.utexas.edu','www.gardentrials.com','pmc.ncbi.nlm.nih.gov','pza.sanbi.org','floraseries.landcareresearch.co.nz','biotanz.landcareresearch.co.nz','staff.fukuoka-edu.ac.jp','flora.uniud.it','www3.gobiernodecanarias.org','www.nzflora.info','agrobiodiversity.uniag.sk','www.ogis.co.jp','www.engei.net','plants.ces.ncsu.edu','plantfinder.mobot.org','www.rhs.org.uk','extension.usu.edu','item.rakuten.co.jp','www.nzpcn.org.nz','www.kernock.co.uk','www.rhsplants.co.uk','plantnet.rbgsyd.nsw.gov.au','active.inspection.gc.ca','www.darwinperennials.com','catalog.darwinperennials.com','info.ballseed.com','www.plantdelights.com','www.ballyrobertgardens.com','musthaveperennials.com','floranorthamerica.org','hortflora.rbg.vic.gov.au','www.thompson-morgan.com','www.nmns.edu.tw','plants.usda.gov','fitzgerald-nurseries.com','www.ffpri.go.jp','www.hro.or.jp','www.pharm.kumamoto-u.ac.jp','www.rinya.maff.go.jp','www.higashiyama.city.nagoya.jp','www.treesandshrubsonline.org','www1.ous.ac.jp','web.tuat.ac.jp','www.tokyo-park.or.jp','www.cgr.mlit.go.jp','www.aglandscape.co.jp','www.town.kumano.lg.jp','www.env.go.jp','www.forest-akita.jp','powo.science.kew.org','arboretum.harvard.edu','landscapeplants.oregonstate.edu','www.hanahiroba.com','www.paradisegarden-nishiyama.com','www.provenwinners.com','www.botanic.jp','botany.cz','vicflora.rbg.vic.gov.au','www.mapress.com','alpinegardensociety.net','plants.sdsu.edu','www.nparks.gov.sg','provenwinners.jp','www.beekenkampornamentals.nl','kankyojoho.pref.aichi.jp','fieldguide.mt.gov','www.nibr.go.kr','pacificbulbsociety.org','keys.landcareresearch.co.nz','plantipp.eu','www.wairere.nz','hosho.ees.hokudai.ac.jp','www.hokudai.ac.jp','www.lab.toho-u.ac.jp','eprints.lib.hokudai.ac.jp','www.town.karuizawa.lg.jp','library.dbca.wa.gov.au','www.hinshu2.maff.go.jp','matsunaga-kadan.com','oniduka.base.shop','www.nipponbeer.jp','fermanagh.bsbi.org','www.npshistory.com','ozaki-flowerpark.co.jp','www.nzflora.info','nzflora.info','www.journals.uchicago.edu','www.floraiberica.es','efloras.org','extension.psu.edu','makinomigoro.jp','iucngisd.org','nature.ca','www.hinshu2.maff.go.jp','www.nies.go.jp','www.water.go.jp','www.akb.jp','tropica.com','rva.jp','idtools.org','www.adana.co.jp','www.h2-l.jp','www.aqua-breath.com','greenhobby-sale.com','florabase.dbca.wa.gov.au','www.pref.fukushima.lg.jp','www.maff.go.jp','monster-house.stores.jp','www.aitomatsuda-farm.com','www.sapporo-park.or.jp','seedstock.jp','plant-brothers.jp','www.trigger.world','store.shopping.yahoo.co.jp','www.tanikutoha.jp','www.jsjardin.co.jp','robin.gr.jp','iwasaki.shop-pro.jp','www.bokunomidori.jp','www.hyponex.co.jp','mountaincrestgardens.com','blog.livedoor.jp','lari-go.shop-pro.jp','surrealsucculents.co.uk','s-kiemon.hatenablog.com','www.rhipsalis.com','www.crassulaceae.ch','www.city.hachimantai.lg.jp','www.shigei.or.jp','shop.teftef.biz','www.creema.jp','www.ffpri.go.jp','www.u-shizuoka-ken.ac.jp','www.jstage.jst.go.jp','pza.sanbi.org','naegibu.com','www.nparks.gov.sg'].includes(u.hostname),id+':unrecognized source host '+u.hostname);assert.ok(['catalog-entry','species','genus','tribe','family'].includes(source.scope));}
   for(const [field,index] of Object.entries(a.basis)){assert.ok(Object.hasOwn(a,field));assert.ok(Number.isInteger(index)&&index>=0&&index<a.sources.length,id+':'+field);}
   for(const field of ['calyxMonths','flowerMonths','emergenceMonths','dormantMonths','greenFruitMonths'])if(a[field])assert.ok(a[field].length>0&&a[field].every(m=>Number.isInteger(m)&&m>=1&&m<=12),id);
   for(let m=1;m<=12;m++){const s=seasonAt(CATALOG[id],m);assert.ok(s.leafDensity>=0&&s.leafDensity<=1);assert.ok(s.leafScale>=0&&s.leafScale<=1);if(s.groundDormant)assert.equal(s.bloom,false);}
@@ -18628,7 +18628,7 @@ test('Engei Rosalyn Maria Rouge Songs clematis cameras intersect nine actual ind
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month:7,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.22'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.26');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.27');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);console.log('ENGEIRMS_CAMERAS '+JSON.stringify({models,rays}));
@@ -18880,7 +18880,7 @@ test('Engei Smile Monalisa Minamo clematis cameras intersect nine indexed flower
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.23'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.26');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.27');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,54);assert.equal(visibleCoreRays,12);
@@ -19148,7 +19148,7 @@ test('Engei Hanakawa Manyo Kitahama clematis cameras intersect nine actual index
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month:6,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.24'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.26');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.27');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
@@ -19401,7 +19401,7 @@ test('Engei Stories Blue Angel Kirisame clematis cameras intersect nine actual i
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.25'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.26');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.27');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
@@ -19444,4 +19444,159 @@ test('Engei Stories Blue Angel Kirisame clematis distinguish dense unidentified 
  assert.match(text(kirisame),/育種元|芽/);
  // Three protected full records and support raw bytes are compared by the
  // owner's frozen39 workflow; no old record generation belongs in these tests.
+});
+
+// Private draft only. Not executed; append only after the parent's later go.
+test('Engei Jizela Socialis White Arabella clematis retain domestic values with scoped wild species and conflicting pruning sources',()=>{
+ const rows=[
+  ['p-f73bdb582579','jizela','clematisViticellaReferences','94944',[2,3],[5,6,7,8,9,10],'purple'],
+  ['p-3c95aec62920','socialis','clematisCompactReferences','217458',[.3,.5],[5,6,7,8,9,10],'purple'],
+  ['p-28d7e3857181','whiteArabella','clematisHerbaceousReferences','175109',[1.5,2],[5,6,7,8,9],'white'],
+ ];
+ for(const[id,profile,architecture,sku,height,months,color]of rows){
+  const info=CATALOG[id],a=info.appearance;
+  assert.equal(info.latin,'');assert.equal(info.spread,null);assert.deepEqual(info.height,height);
+  assert.deepEqual(info.bloom,months);assert.equal(info.bloomKnown,true);assert.equal(info.sourceChecked,'2026-10-29');
+  assert.equal(info.source,'https://www.engei.net/products/detail?id='+sku);assert.equal(a.status,'partial');
+  assert.equal(a.architecture,architecture);assert.equal(a.shootProfile,profile);
+  assert.equal(a.sources[a.basis.flowerMonths].url,info.source);assert.equal(a.sources[a.basis.flowerTiming].url,info.source);
+  for(const[field,index]of Object.entries(a.basis)){
+   assert.ok(Object.hasOwn(a,field));assert.ok(Number.isInteger(index)&&index>=0&&index<a.sources.length);
+  }
+  assert.ok(a.unconfirmed.some(note=>/年間実物照合0/.test(note)));assert.ok(info.colors.includes(color));
+  for(const color of['red','pink','white','yellow','purple','blue','green','dark','mixed','unknown'])
+   assert.equal(searchCatalog(CATALOG,{query:info.label,color}).some(([key])=>key===id),info.colors.includes(color));
+  for(let month=1;month<=12;month++){
+   const state=seasonAt(info,month);assert.equal(state.bloom,months.includes(month));assert.equal(state.groundDormant,false);
+   assert.equal(state.leafScale,1);assert.equal(state.shootScale,1);
+   assert.equal(state.leafDensity,profile==='socialis'?1:[12,1,2].includes(month)?0:1);
+  }
+ }
+ const socialis=CATALOG['p-3c95aec62920'],s=socialis.appearance,text=a=>a.sourceConflict+' '+a.unconfirmed.join(' ');
+ assert.equal(socialis.leaf,'unknown');assert.equal(s.persistence,undefined);
+ assert.match(text(s),/冬葉.*未確認|冬.*未確認/);assert.match(text(s),/花径/);assert.match(text(s),/花長/);
+ assert.match(text(s),/旧枝/);assert.match(text(s),/弱剪定/);assert.match(text(s),/新枝/);assert.match(text(s),/野生種/);
+ const wild=s.sources.find(source=>source.url.startsWith('https://georgiabiodiversity.org/'));
+ assert.ok(wild);assert.equal(wild.scope,'species');assert.notEqual(s.basis.leafShape,s.basis.flowerMonths);
+ const jizela=CATALOG['p-f73bdb582579'].appearance,white=CATALOG['p-28d7e3857181'].appearance;
+ assert.match(text(jizela),/共通.*苗|系統共通/);assert.match(text(jizela),/強剪定/);
+ assert.match(text(white),/5〜9/);assert.match(text(white),/5〜10/);assert.match(text(white),/半八重/);
+ assert.equal(seasonAt(CATALOG['p-28d7e3857181'],10).bloom,false);
+});
+
+test('Engei Jizela Socialis White Arabella clematis independent vertices and real leaf joins fit sixty three selected dimension models',()=>{
+ const rows=[
+  ['p-f73bdb582579','jizela',96010,[2,1.1,1.5],'viticella',98,84,6,48],
+  ['p-3c95aec62920','socialis',96011,[.4,.5,.3],'compact',40,5,4,0],
+  ['p-28d7e3857181','whiteArabella',96012,[1.5,.9,1.1],'herbaceous',98,56,6,40],
+ ];
+ const matrix=new Matrix4(),vertex=new Vector3(),distance=(a,b)=>Math.hypot(...a.map((value,index)=>value-b[index]));
+ let models=0,joins=0,floweringModels=0;
+ for(const[id,profile,pid,normal,family,stems,flowers,sepals,stamens]of rows){
+  let normalSkeleton;
+  const cases=[...[normal,[.08,.16,.05],[normal[0],normal[1],.005],[.005,.08,.005],[normal[0],.005,.005]]
+   .flatMap(dims=>[6,3,11,1].map(month=>({dims,month,reference:false}))),{dims:normal,month:6,reference:true}];
+  for(const{dims,month,reference}of cases){
+   const input={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input),view={year:1,month,reference},state=stateAt(input,view),group=plantModel(input,view);models++;
+   try{
+    group.updateMatrixWorld(true);const counts={},roots=[],ends=[],skeleton=[];let low=Infinity,high=-Infinity,width=0,leafTop=0;
+    for(const mesh of group.children){
+     const kind=mesh.userData.component,positions=mesh.geometry.attributes.position;counts[kind]=(counts[kind]||0)+mesh.count;
+     assert.ok(positions.array.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite));
+     assert.ok(mesh.instanceMatrix.array.every(Number.isFinite));if(mesh.instanceColor)assert.ok(mesh.instanceColor.array.every(Number.isFinite));
+     if(mesh.geometry.index)assert.ok(mesh.geometry.index.array.every(index=>Number.isInteger(index)&&index>=0&&index<positions.count));
+     if(/^(stem|bare-stem|dry-stem)-clematis-/.test(kind))skeleton.push([...mesh.instanceMatrix.array]);
+     for(let instance=0;instance<mesh.count;instance++){
+      mesh.getMatrixAt(instance,matrix);matrix.premultiply(mesh.matrixWorld);
+      if(kind==='leaf-clematis-'+family+'-ref')roots.push(new Vector3().applyMatrix4(matrix).toArray());
+      if(['petiole-clematis-'+family+'-ref','petiolule-clematis-'+family+'-ref'].includes(kind))ends.push(new Vector3(0,.5,0).applyMatrix4(matrix).toArray());
+      for(let index=0;index<positions.count;index++){
+       vertex.fromBufferAttribute(positions,index).applyMatrix4(matrix);low=Math.min(low,vertex.y);high=Math.max(high,vertex.y);width=Math.max(width,Math.hypot(vertex.x,vertex.z)*2);
+       if(/^(leaf|petiole|petiolule)-/.test(kind))leafTop=Math.max(leafTop,vertex.y);
+      }
+     }
+    }
+    assert.ok(low>=-1e-7&&high<=state.height+1e-7,id+' height '+dims+' '+month+' '+low+'/'+high);
+    assert.ok(width<=state.spread+1e-7,id+' independent width '+dims+' '+width);
+    assert.ok(leafTop<=Math.min(state.height,state.leafHeight)+1e-7,id+' leaf cap '+dims);
+    const base='-clematis-'+family+'-ref';assert.equal((counts['stem'+base]||0)+(counts['bare-stem'+base]||0)+(counts['dry-stem'+base]||0),stems);
+    const petioles=counts['petiole'+base]||0,petiolules=counts['petiolule'+base]||0,leaves=counts['leaf'+base]||0;
+    assert.equal(roots.length>0,state.leafDensity>0);
+    if(profile==='jizela'){assert.equal(leaves,petioles*3);assert.equal(petiolules,petioles*3);}
+    else if(profile==='whiteArabella'){assert.equal(leaves,petioles);assert.equal(petiolules,0);}
+    else{assert.ok(leaves>=petioles&&leaves<=petioles*3);assert.equal(petiolules*2,(leaves-petioles)*3);}
+    for(const root of roots){
+     const tolerance=Math.max(2e-7,Math.hypot(...root.map(value=>2**(Math.floor(Math.log2(Math.max(1e-30,Math.abs(value))))-23))));
+     assert.ok(ends.some(end=>distance(root,end)<tolerance),id+' unjoined actual leaf '+dims+' '+month);joins++;
+    }
+    const bloomFlowers=state.bloom?flowers:0;
+    assert.equal(counts['sepal'+base+'-'+profile]||0,bloomFlowers*sepals);
+    assert.equal(counts['filament'+base+'-'+profile]||0,bloomFlowers*stamens);
+    assert.equal(counts['anther'+base+'-'+profile]||0,bloomFlowers*stamens);
+    assert.equal(counts['receptacle'+base+'-'+profile]||0,profile==='socialis'?0:bloomFlowers);
+    assert.equal(!!group.userData.flowerTargets?.length,state.bloom);
+    assert.ok(!group.children.some(mesh=>/^(support|fruit|seed|root|carpel|staminode|petaloid-inner)-/.test(mesh.userData.component)));
+    if(dims.every((value,index)=>value===normal[index])&&!reference){
+     if(month===6)normalSkeleton=skeleton;else assert.deepEqual(skeleton,normalSkeleton,'no automatic pruning or whole-stem winter disappearance');
+    }
+    if(state.bloom){
+     floweringModels++;
+     if(dims.every((value,index)=>value===normal[index])&&!reference)for(const mesh of group.children){
+      const shader={uniforms:{},vertexShader:'',fragmentShader:'#include <emissivemap_fragment>'};mesh.material.onBeforeCompile(shader,{});
+      assert.equal(shader.fragmentShader.includes('gcJizelaVein'),mesh.userData.component==='sepal-clematis-viticella-ref-jizela');
+      assert.equal(shader.fragmentShader.includes('gcSocialisInner'),mesh.userData.component==='sepal-clematis-compact-ref-socialis');
+      for(const token of['gcStoriesTip','gcStoriesInnerTip','gcKirisameVein','gcBlueAngelVein','gcManyoRib','gcMariaBase','gcSongsBase'])assert.ok(!shader.fragmentShader.includes(token),id+' foreign material '+token);
+     }
+    }
+    assert.deepEqual(input,saved);
+   }finally{dispose(group);}
+  }
+ }
+ assert.equal(models,63);assert.equal(floweringModels,18);assert.ok(joins>1000);
+ console.log('ENGEIJIZSOCWHITE_BOUNDARIES '+JSON.stringify({models,joins,floweringModels}));
+});
+
+test('Engei Jizela Socialis White Arabella clematis cameras intersect nine actual indexed flowers at eighteen visible rays and preserve previous saves',()=>{
+ const rows=[['p-f73bdb582579','jizela',96010,[2,1.1,1.5],'viticella'],['p-3c95aec62920','socialis',96011,[.4,.5,.3],'compact'],['p-28d7e3857181','whiteArabella',96012,[1.5,.9,1.1],'herbaceous']];
+ let models=0,rays=0;
+ for(const[id,profile,pid,normal,family]of rows)for(const dims of[normal,[.08,.16,.05],[normal[0],normal[1],.005]]){
+  const input={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input),group=plantModel(input,{year:1,month:6,reference:false});models++;
+  try{
+   assert.ok(group.userData.surfaceSelection?.matched,id+' '+dims);assert.ok(group.userData.flowerTargets.length<=8);
+   const surface=group.userData.flowerTargets[0].surface;assert.equal(surface.component,'sepal-clematis-'+family+'-ref-'+profile);
+   group.position.set(-2,.012,-1);group.updateMatrixWorld(true);
+   for(const aspect of[.8,1.65]){
+    const pose=flowerInspectionView(group,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);
+    const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);
+    const hit=ray.intersectObject(group,true).find(item=>{const depth=-item.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return depth>=camera.near&&depth<=camera.far;});
+    assert.equal(hit?.object.userData.component,surface.component);assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);
+    assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);rays++;
+   }
+  }finally{dispose(group);}
+  const document=emptyDocument(10,6);document.plans.A.plants=[input];document.view={year:1,month:6,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
+  const previous={...structuredClone(document),catalogVersion:'2026-10-29.26'},copy=structuredClone(previous);
+  assert.equal(CATALOG_VERSION,'2026-10-29.27');assert.deepEqual(validateDocument(previous),document);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
+ }
+ assert.equal(models,9);assert.equal(rays,18);console.log('ENGEIJIZSOCWHITE_CAMERAS '+JSON.stringify({models,rays}));
+});
+
+test('Engei Jizela Socialis White Arabella clematis distinguish dark broad white open and pale outer violet inner urn references without invented flower age or automatic growth',()=>{
+ const rows=[['p-f73bdb582579','jizela',96010,[2,1.1,1.5]],['p-3c95aec62920','socialis',96011,[.4,.5,.3]],['p-28d7e3857181','whiteArabella',96012,[1.5,.9,1.1]]];
+ assert.equal(new Set(rows.map(([id])=>CATALOG[id].appearance.flowerShape)).size,3);
+ for(const[id,profile,pid,dims]of rows){
+  const info=CATALOG[id],a=info.appearance;for(const field of['leafShape','persistence','flowerShape','habit'])if(a[field])assert.ok(TRAIT_VALUES[a[field]],id+' untranslated '+field);
+  assert.match(appearanceSummary(info),/[ぁ-ゖァ-ヶ一-龯]/);assert.doesNotMatch(appearanceSummary(info),/jizela|socialis|whiteArabella|Reference|clematis[A-Z]/);
+  for(const field of['monthlyFlowerColors','monthlyLeafColors','monthlyLeafDensity','minFloweringYearsAfterPlanting'])assert.equal(a[field],undefined);
+  const input={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input);let flowerColor;
+  for(let month=1;month<=12;month++){
+   const state=stateAt(input,{year:1,month,reference:false});assert.equal(state.height,dims[0]);assert.equal(state.shootScale,1);assert.equal(state.groundDormant,false);
+   assert.equal(state.leafDensity,profile==='socialis'?1:[12,1,2].includes(month)?0:1);
+   if(state.bloom){if(flowerColor)assert.equal(state.flowerColor,flowerColor);else flowerColor=state.flowerColor;}
+   for(const year of[0,1,8])assert.equal(stateAt(input,{year,month,reference:false}).height,dims[0]);
+  }
+  assert.deepEqual(input,saved);
+ }
+ const white=CATALOG['p-28d7e3857181'],text=white.appearance.sourceConflict+' '+white.appearance.unconfirmed.join(' ');
+ assert.match(text,/基本6|6枚/);assert.match(text,/半八重/);assert.match(text,/未確認/);assert.equal(seasonAt(white,10).bloom,false);
+ const socialis=CATALOG['p-3c95aec62920'];assert.equal(socialis.leaf,'unknown');assert.equal(socialis.appearance.persistence,undefined);
 });
