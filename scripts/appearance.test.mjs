@@ -22181,3 +22181,9 @@ test('Cabomba visible model focus frames six summer and winter models above the 
  }
  assert.equal(cabombaVisibleFocus997({userData:{architecture:'submergedShoots'}}),null);assert.equal(models,6);assert.equal(poses,12);console.log('CABOMBA997_VISIBLE_FOCUS '+JSON.stringify({models,poses,otherProfilesReturnNull:true}));
 });
+
+test('Glossostigma domestic source keeps verified low height and Japanese flowering separate from pot size stock width and NSW season',()=>{
+ const info=CATALOG['p-03b938c53e6f'],a=info.appearance;
+ assert.equal(info.label,'グロッソスティグマ');assert.equal(info.latin,'Glossostigma elatinoides');assert.deepEqual(info.height,[.02,.05]);assert.equal(info.spread,null);assert.deepEqual(info.bloom,[5,6,7,8,9]);assert.equal(info.bloomKnown,true);assert.deepEqual(info.colors,['white']);assert.equal(info.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'glosso');assert.equal(a.status,'partial');
+ assert.match(info.care,/直径9cm/);assert.match(info.care,/葉身/);assert.match(info.care,/株幅ではありません/);assert.match(a.sourceConflict,/青い花冠/);assert.match(a.sourceConflict,/白く見える花/);assert.match(a.sourceConflict,/NSW/);assert.match(a.phenologyRegion,/5〜9月/);assert.match(a.phenologyRegion,/12〜5月/);assert.doesNotMatch(a.phenologyRegion,/マツモ|カボンバ/);assert.match(a.phenologyRegion,/未校正/);assert.ok(a.unconfirmed.some(s=>s.includes('水中葉モデルには花を描きません')));assert.ok(a.unconfirmed.some(s=>s.includes('クローン')));
+});
