@@ -4773,7 +4773,7 @@ test('Margin flowers separate floating leaves, summer-resting calla spathes and 
   const p=makePlant(id,12400+i,2,2);p.height=[.12,.7,1.2,.3][i];p.spread=[.5,.65,.8,.3][i];
   const s=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component?.startsWith(k));
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
-  if(s.groundDormant)assert.equal(g.children.length,0);else assert.ok(has('leaf-margin-'),id+':'+month);
+  if(s.groundDormant)assert.equal(g.children.length,0);else assert.ok(has(i===0?'leaf-helvola-photo-reference-underside-82494e':'leaf-margin-'),id+':'+month);
   if(i===1){assert.equal(has('spathe-calla'),[4,5,6].includes(month));assert.equal(has('spadix-calla'),has('spathe-calla'));assert.equal(has('petal'),false);}
   else assert.equal(has('petal'),CATALOG[id].bloom.includes(month));
   if(i===0&&[11,12,1,2,3].includes(month))assert.equal(g.children.length,0);
@@ -7881,10 +7881,10 @@ test('floating aquatics separate female flowers, sepals, fringes and underwater 
   if(month===1)assert.equal(g.children.length,0,id);
   if(month===7){
    const has=name=>g.children.some(m=>m.userData.component===name);
-   assert.ok(has('leaf-glossy'));
+   assert.ok(has(id===ids[2]?'leaf-asaza-photo-reference':'leaf-glossy'));
    if(id===ids[0]){assert.ok(has('carpelHead'));assert.ok(!has('anther'));}
    if(id===ids[1]){assert.ok(has('petaloidSepal'));assert.ok(has('stigmaticDisc'));assert.ok(has('petal'));}
-   if(id===ids[2])assert.ok(has('corollaFringe'));
+   if(id===ids[2])assert.ok(has('corolla-fringe-asaza-ref'));
    if(id===ids[3]){assert.ok(has('throat'));assert.ok(!has('corollaFringe'));}
   }
   dispose(g);
