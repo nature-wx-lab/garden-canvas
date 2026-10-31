@@ -21926,3 +21926,51 @@ test('Helvola cream cup and blotched floating leaves stay isolated without autom
   const shader={uniforms:{},vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader};leaf.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,/gcHelvolaPhotoBlotch/);assert.match(shader.fragmentShader,/roughnessFactor=\.43/);assert.ok(!shader.fragmentShader.includes('hlCell'));
  }finally{dispose(g);dispose(later);}
 });
+
+test('Asaza photo reference preserves source uncertainty and Japanese bloom without width inference',()=>{
+ const i=CATALOG['p-a9c345dcea4e'];assert.equal(i.label,'アサザ');assert.equal(i.latin,'Nymphoides peltata');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.sourceChecked,'2026-11-01');assert.deepEqual(i.bloom,[5,6,7,8,9]);assert.equal(i.bloomKnown,true);assert.equal(i.appearance.architecture,'floatingHeart');assert.equal(i.appearance.shootProfile,'asazaPhotoReference');assert.equal(i.appearance.leafLength,undefined);assert.equal(i.appearance.flowerRadius,undefined);assert.match(i.appearance.sourceConflict,/全幅〜5cm/);assert.ok(i.appearance.unconfirmed.some(x=>x.includes('描画例')&&x.includes('6枚')));
+ for(const month of[5,9])assert.equal(seasonAt(i,month).bloom,true);assert.equal(seasonAt(i,4).bloom,false);assert.equal(seasonAt(i,1).groundDormant,true);
+});
+test('Asaza photo reference fits twenty one independent dimensions with connected floating supports',()=>{
+ const dimensions=[[.12,.40,.020],[.04,.10,.010],[.12,.40,.005],[.01,.03,.005],[.7,.15,.3],[.1,1,.05],[2,3,1.5]];let models=0,joins=0,flowering=0,winterModels=0;
+ for(const dims of dimensions)for(const month of[7,4,1]){
+  const p={...makePlant('p-a9c345dcea4e',98610,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(p),g=plantModel(p,{year:1,month,reference:false},1);models++;
+  try{
+   g.updateMatrixWorld(true);assert.deepEqual(p,saved);
+   if(month===1){assert.equal(g.children.length,0);assert.equal(g.userData.groundDormant,true);winterModels++;continue;}
+   const leaves=g.children.find(m=>m.userData.component==='leaf-asaza-photo-reference'),stems=g.children.find(m=>m.userData.component==='petiole-asaza-ref');assert.equal(leaves?.count,6);assert.equal(stems?.count,6);assert.equal(leaves.geometry.userData.asazaPhotoReference,true);
+   const box=new Box3(),vertex=new Vector3(),world=new Matrix4();for(const mesh of g.children){if(!mesh.isInstancedMesh)continue;const positions=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,world);world.premultiply(mesh.matrixWorld);for(let j=0;j<positions.count;j++)box.expandByPoint(vertex.fromBufferAttribute(positions,j).applyMatrix4(world));}}assert.ok(box.min.y>=-2e-6);assert.ok(box.max.y<=dims[0]+2e-6);assert.ok(box.max.x-box.min.x<=dims[1]+2e-6);assert.ok(box.max.z-box.min.z<=dims[1]+2e-6);
+   for(const m of g.children){assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...m.instanceMatrix.array].every(Number.isFinite));}
+   for(let k=0;k<6;k++){
+    const lm=new Matrix4(),sm=new Matrix4();leaves.getMatrixAt(k,lm);stems.getMatrixAt(k,sm);const leaf=new Vector3(0,0,0).applyMatrix4(lm).applyMatrix4(leaves.matrixWorld),stem=new Vector3(0,.5,0).applyMatrix4(sm).applyMatrix4(stems.matrixWorld);assert.ok(leaf.distanceTo(stem)<2e-6);joins++;
+   }
+   const corolla=g.children.find(m=>m.userData.component==='corolla-asaza-photo-reference');
+   if(month===7){assert.equal(corolla?.count,2);const peduncle=g.children.find(m=>m.userData.component==='peduncle-asaza-ref'),pm=new Matrix4(),fm=new Matrix4();assert.equal(peduncle.count,2);for(let j=0;j<2;j++){peduncle.getMatrixAt(j,pm);corolla.getMatrixAt(j,fm);const end=new Vector3(0,.5,0).applyMatrix4(pm).applyMatrix4(peduncle.matrixWorld),base=new Vector3(0,0,0).applyMatrix4(fm).applyMatrix4(corolla.matrixWorld);assert.ok(end.distanceTo(base)<2e-6);}flowering++;}
+   else{assert.equal(corolla,undefined);assert.ok(!g.userData.flowerTargets?.length);}
+  }finally{dispose(g);}
+ }
+ assert.equal(models,21);assert.equal(joins,84);assert.equal(flowering,7);assert.equal(winterModels,7);console.log('ASAZA986_BOUNDARIES '+JSON.stringify({models,joins,flowering,winterModels}));
+});
+test('Asaza camera rays meet three indexed corolla models while old documents preserve inputs',()=>{
+ let models=0,rays=0;
+ for(const dims of[[.12,.40,.020],[.04,.10,.010],[.12,.40,.005]]){
+  const input={...makePlant('p-a9c345dcea4e',98610,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input),g=plantModel(input,{year:1,month:7,reference:false},1);models++;
+  try{
+   assert.ok(g.userData.surfaceSelection?.matched);const surface=g.userData.flowerTargets[0].surface;assert.equal(surface.component,'corolla-asaza-photo-reference');g.position.set(-2,.012,-1);g.updateMatrixWorld(true);
+   for(const aspect of[.8,1.65]){const pose=flowerInspectionView(g,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(g,true).find(x=>{const z=-x.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.equal(hit?.object.userData.component,surface.component);assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);rays++;}
+  }finally{dispose(g);}
+  const doc=emptyDocument(10,6);doc.plans.A.plants=[input];const old={...structuredClone(doc),catalogVersion:'2026-10-29.51'},copy=structuredClone(old);assert.equal(doc.catalogVersion,CATALOG_VERSION);assert.deepEqual(validateDocument(old),doc);assert.deepEqual(old,copy);assert.deepEqual(input,saved);const state=stateAt(input,{year:1,month:7,reference:true});assert.equal(state.height,dims[0]);assert.equal(state.spread,dims[1]);
+ }
+ assert.equal(models,3);assert.equal(rays,6);console.log('ASAZA986_CAMERAS '+JSON.stringify({models,rays}));
+});
+test('Asaza fringes meet actual five lobed corolla edges without automatic stock multiplication',()=>{
+ const input={...makePlant('p-a9c345dcea4e',98610,3,3),height:.12,spread:.40,leafHeight:.020},g=plantModel(input,{year:1,month:7,reference:false},1),later=plantModel(input,{year:5,month:7,reference:false},1);let joins=0;
+ try{
+  g.updateMatrixWorld(true);later.updateMatrixWorld(true);const component=(group,k)=>group.children.find(m=>m.userData.component===k),leaf=component(g,'leaf-asaza-photo-reference'),laterLeaf=component(later,'leaf-asaza-photo-reference');assert.equal(leaf.count,6);assert.deepEqual([...leaf.instanceMatrix.array],[...laterLeaf.instanceMatrix.array]);assert.ok(!g.children.some(m=>/seed|fruit|offspring/.test(m.userData.component)));
+  const normal=leaf.geometry.attributes.normal;for(let i=0;i<normal.count;i++)if(normal.getY(i)!==0)assert.ok(normal.getY(i)>0);
+  const corolla=component(g,'corolla-asaza-photo-reference'),fringe=component(g,'corolla-fringe-asaza-ref');assert.equal(corolla.count,2);assert.equal(fringe.count,360);assert.equal(corolla.geometry.userData.part,'corolla');assert.equal(corolla.geometry.attributes.position.count,33*181);
+  const cm=new Matrix4(),fm=new Matrix4(),pos=corolla.geometry.attributes.position;for(let flower=0;flower<2;flower++){corolla.getMatrixAt(flower,cm);cm.premultiply(corolla.matrixWorld);for(let k=0;k<180;k++){fringe.getMatrixAt(flower*180+k,fm);fm.premultiply(fringe.matrixWorld);const edge=new Vector3().fromBufferAttribute(pos,32*181+k).applyMatrix4(cm),base=new Vector3(0,-.5,0).applyMatrix4(fm);assert.ok(edge.distanceTo(base)<2e-6);joins++;}}
+  assert.equal(component(g,'anther-asaza-ref').count,10);assert.equal(component(g,'stigma-asaza-ref').count,2);
+ }finally{dispose(g);dispose(later);}
+ assert.equal(joins,360);console.log('ASAZA986_FRINGE_JOINS '+JSON.stringify({joins,flowers:2}));
+});

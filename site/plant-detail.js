@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.985';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.986';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.985';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.986';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26018,7 +26018,55 @@ function drawFreeFloaters(b,{info,s,detail,rand},kit){
  }
 }
 
+// Isolated Asaza photo reference; positions and counts are an illustrative specimen.
+export function asazaPhotoReferencePoint(type,t,u){
+ const ph=u*TAU;
+ if(type==='leaf'){
+  const notch=1-.985*Math.exp(-(((ph-Math.PI)/.19)**2)),r=t*notch,edge=1+.008*Math.sin(ph*23);
+  return [.5*r*Math.sin(ph)*edge,.012*r*r*(.40+.60*Math.abs(Math.sin(ph))),.5*r*Math.cos(ph)*edge];
+ }
+ const lobe=Math.pow(.5+.5*Math.cos(ph*5),.38),edge=.28+.72*lobe,r=t*edge;
+ return [Math.sin(ph)*r,.15*t*t+.075*t*Math.pow(lobe,6),Math.cos(ph)*r];
+}
+export function asazaPhotoReferenceGeometry(type){
+ const leaf=type==='leaf',N=leaf?24:32,C=leaf?96:180,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=j/C,point=asazaPhotoReferencePoint(type,t,u);p.push(...point);uv.push(u,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={asazaPhotoReference:true,part:type,illustrativeGeometry:true};return g;
+}
+function drawAsazaPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),surface=Math.min(LH*.50,h*.20),crown=[0,Math.min(LH*.15,h*.02),0];
+ for(let j=0;j<6;j++){
+  const az=j*2.399+.4,R=w*.26*Math.sqrt((j+.8)/6),at=[Math.sin(az)*R,surface,Math.cos(az)*R],D=Math.min(.11,w*.35,LH*22,h*2)*(1-j*.025),radius=Math.min(.0009,D*.007,LH*.10);
+  b.branch(crown,at,radius,'#6d8651','petiole-asaza-ref');
+  b.add('asaza-photo-reference-leaf','leaf-asaza-photo-reference',kit.shade(rand,s.leafColor,.025),...at,D,D,D,0,az,0);
+ }
+ if(!s.bloom)return;
+ const L=Math.min(.025,w*.09,h*.22,LH*2.8),flowerY=Math.min(h*.52,surface+L*.45);
+ for(let flower=0;flower<2;flower++){
+  const az=flower*2.399+.65,at=[Math.sin(az)*w*.11,flowerY,Math.cos(az)*w*.11],yaw=az+.15,f=flowerFrame(b,at,0,yaw);
+  b.branch(crown,at,Math.min(.0009,L*.025,LH*.10),'#75884e','peduncle-asaza-ref');
+  f.add('asaza-photo-reference-corolla','corolla-asaza-photo-reference',kit.shade(rand,s.flowerColor,.015),0,0,0,L,L,L);
+  // Fringe starts exactly at vertices on the indexed corolla edge, not an unrelated blade equation.
+  for(let k=0;k<180;k++){
+   const u=k/180,ph=u*TAU,point=asazaPhotoReferencePoint('corolla',1,u).map(Math.fround).map(v=>v*L),fringe=L*(.060+.040*(.5+.5*Math.sin(k*7.31))),tip=[point[0]+Math.sin(ph)*fringe,point[1]+fringe*.36,point[2]+Math.cos(ph)*fringe];
+   f.branch(point,tip,L*.0035,'#edd45f','corolla-fringe-asaza-ref');
+  }
+  for(let k=0;k<5;k++){
+   const az=k*TAU/5,base=[Math.sin(az)*L*.07,L*.015,Math.cos(az)*L*.07],tip=[Math.sin(az)*L*.11,L*.13,Math.cos(az)*L*.11];f.branch(base,tip,L*.008,'#a9a742','filament-asaza-ref');f.add(kit.bud,'anther-asaza-ref','#c4b942',...tip,L*.025,L*.035,L*.018);
+  }
+  f.add(kit.bud,'stigma-asaza-ref','#b6bd75',0,L*.15,0,L*.035,L*.020,L*.035);
+  const row=20,col=3,C=180,N=32,vertices=[row*(C+1)+col,(row+1)*(C+1)+col,row*(C+1)+col+1],matrix=new THREE.Matrix4().compose(new THREE.Vector3(...at),new THREE.Quaternion().setFromEuler(new THREE.Euler(0,yaw,0,'YXZ')),new THREE.Vector3(L,L,L));matrix.fromArray(new Float32Array(matrix.elements));
+  const points=vertices.map(v=>new THREE.Vector3(...asazaPhotoReferencePoint('corolla',Math.floor(v/(C+1))/N,v%(C+1)/C).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),axis=new THREE.Vector3(Math.sin(yaw)*.22,1,Math.cos(yaw)*.22).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),'YXZ');
+  b.flower?.(point.toArray(),L*1.55,e.x,e.y,e.z,{component:'corolla-asaza-photo-reference',instanceId:flower,vertices,faceIndex:(row*C+col)*2,cameraAxis:axis.toArray()});
+ }
+}
+
 function drawFloatingAquatics(b,{info,s,detail,rand},kit){
+ if(info.appearance?.shootProfile==='asazaPhotoReference'){drawAsazaPhotoReference(b,{s,rand},kit);return;}
  if(s.groundDormant)return;
  const a=info.appearance,arch=a.architecture,arrow=arch==='waterArrowhead',nuphar=arch==='nupharEmergent',poppy=arch==='waterPoppy',floating=!arrow&&!nuphar,h=s.height,w=s.spread,green=s.leafColor,stem=a.stemColor;
  const leaves=Math.max(5,Math.round((floating?38:arrow?24:14)*detail*s.leafDensity)),size=Math.min(a.leafLength,w*(floating?.23:.39),floating?a.leafLength:h*(arrow?.55:.76));
