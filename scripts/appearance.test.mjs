@@ -21974,3 +21974,8 @@ test('Asaza fringes meet actual five lobed corolla edges without automatic stock
  }finally{dispose(g);dispose(later);}
  assert.equal(joins,360);console.log('ASAZA986_FRINGE_JOINS '+JSON.stringify({joins,flowers:2}));
 });
+
+ test('Waterpoppy organ dimensions and winter water threshold stay separate from whole plant size',()=>{
+ const i=CATALOG['p-f2e4c7935581'];assert.equal(i.label,'ウォーターポピー');assert.equal(i.latin,'Hydrocleys nymphoides');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.sourceChecked,'2026-11-01');assert.deepEqual(i.bloom,[7,8,9,10]);assert.equal(i.bloomKnown,true);assert.deepEqual(i.colors,['yellow']);assert.match(i.care,/長さ4〜8cm・幅3〜6cm/);assert.match(i.care,/最低水温5℃以上/);assert.match(i.appearance.sourceConflict,/花柄7〜10cm/);assert.match(i.appearance.sourceConflict,/草丈や株幅には読み替えません/);assert.equal(i.appearance.architecture,'waterPoppy');assert.equal(i.appearance.persistence,'protectedWinter');assert.deepEqual(i.appearance.foliageMonths,[5,6,7,8,9,10]);assert.equal(i.appearance.leafLength,.065);assert.equal(i.appearance.flowerRadius,.025);assert.ok(i.appearance.unconfirmed.some(x=>x.includes('描画例')));
+ const p={...makePlant('p-f2e4c7935581',98810,3,3),height:.12,spread:.40,leafHeight:.02},saved=structuredClone(p),d=emptyDocument(10,6);d.plans.A.plants=[p];d.catalogVersion='2026-10-29.52';const copy=structuredClone(d);assert.deepEqual(validateDocument(d).plans,copy.plans);assert.deepEqual(d,copy);assert.deepEqual(p,saved);assert.deepEqual(stateAt(p,{...view(7),reference:true}),stateAt(p,view(7)));
+ });
