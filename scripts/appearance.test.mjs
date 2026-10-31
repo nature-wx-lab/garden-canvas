@@ -21864,3 +21864,13 @@ test('Krakow pointed green leaves and purple tips stay isolated without invented
  for(let month=1;month<=12;month++){const s=stateAt(p,{year:1,month,reference:false});assert.equal(s.height,.10);assert.equal(s.spread,.20);assert.equal(s.leafDensity,1);assert.equal(s.shootScale,1);assert.equal(s.bloom,false);assert.match(s.phase,/未確認/);if(color)assert.equal(s.leafColor,color);else color=s.leafColor;for(const year of[0,1,8])assert.equal(stateAt(p,{year,month,reference:false}).height,.10);}
  const g=plantModel(p,{year:1,month:7,reference:false});try{for(const mesh of g.children){const kind=mesh.userData.component,shader={uniforms:{},vertexShader:'',fragmentShader:'#include <emissivemap_fragment>'};mesh.material.onBeforeCompile(shader,{});assert.equal(shader.fragmentShader.includes('gcKrakowPurpleTipEdge'),kind==='leaf-sempervivum-ref-krakow');assert.ok(!shader.fragmentShader.includes('gcSempervivumWhiteFibre')&&!shader.fragmentShader.includes('gcSempervivumRedTip'));if(kind==='leaf-sempervivum-ref-krakow')assert.equal(mesh.geometry.userData.sempervivumReference,'krakow');}}finally{dispose(g);}
 });
+
+
+test('Agave upper only supplier dimensions remain textual maxima without invented ranges or reference resizing',()=>{
+ for(const[id,width,pid]of [['p-16f65ee29faf',.65,98210],['p-e3c0c03bd370',.75,98211]]){
+  const info=CATALOG[id];assert.equal(info.height,null);assert.equal(info.spread,null);assert.equal(info.sourceChecked,'2026-11-01');assert.equal(info.gardenUse.checked,'2026-11-01');assert.equal(info.bloomKnown,false);assert.deepEqual(info.bloom,[]);assert.deepEqual(info.colors,['unknown']);assert.match(info.care,/最大草丈90cm/);assert.match(info.appearance.sourceConflict,/上限のみ/);
+  const p=makePlant(id,pid,3,3);Object.assign(p,{height:.45,spread:width,leafHeight:.35});const normal=stateAt(p,view(7)),reference=stateAt(p,{...view(7),reference:true});assert.deepEqual(reference,normal);assert.equal(reference.height,.45);assert.equal(reference.spread,width);assert.equal(reference.leafHeight,.35);
+  const doc=emptyDocument(10,6);doc.catalogVersion='2026-10-29.48';doc.plans.A.plants=[p];const saved=JSON.parse(JSON.stringify(doc));const opened=validateDocument(doc);assert.deepEqual(opened.plans,saved.plans);assert.deepEqual(doc,saved);
+ }
+ assert.deepEqual(CATALOG['p-3e78134c154d'].height,[.3,.3]);assert.deepEqual(CATALOG['p-3e78134c154d'].spread,[.6,.6]);assert.equal(CATALOG['p-3e78134c154d'].sourceChecked,'2026-10-11');
+});
