@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1001';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1002';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1001';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1002';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1194,7 +1194,42 @@ function drawGlossostigmaPhotoReference(b,{info,s,rand},kit){
  // One connected illustrative graph:32primary+448lateral nodes,960petioles/blades;no flowers.
 }
 
+// Closed ovate blade and node-connected reference; thickness and organ counts are illustrative.
+export function ovalisPhotoReferenceGeometry(){
+ const N=28,C=12,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,angle=j/C*TAU,sn=Math.sin(Math.PI*t),width=.5*Math.pow(sn,.64)*(1.13-.30*t),camber=.065*sn+.025*t*t;
+  p.push(Math.cos(angle)*width,t,camber+Math.sin(angle)*.015*sn);uv.push(j/C,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={ovalisPhotoReference:true,rootVertex:0,closedBlade:true,illustrativeCrossSection:true};return g;
+}
+function drawOvalisPhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),radius=Math.min(.0006,h*.008,w*.002,LH*.02),P=Math.min(.004,w*.015,LH*.07),L=Math.min(.024,w*.065),W=L*.80,stem=info.appearance.stemColor,leafKind='leaf-submerged-ovalis-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ function leaf(at,turn,root){
+  const tip=[at[0]+Math.sin(turn)*P*.82,at[1]+P*.45,at[2]+Math.cos(turn)*P*.82];
+  b.branch(at,tip,Math.min(.00025,radius*.55),stem,'petiole-ovalis-photo-reference');
+  b.add('ovalis-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.045),...tip,W,L,Math.min(L,LH*.55),Math.acos(Math.min(.62,LH*.10/L)),turn,0);
+  if(root)b.branch(at,[at[0],base*.3,at[2]],Math.min(.00018,radius*.4),'#b6ad8d','root-submerged-ovalis-photo-reference');
+ }
+ for(let runner=0;runner<6;runner++){
+  const az=runner*TAU/6+.18,origin=[0,base,0],path=t=>[Math.sin(az)*w*.26*t,base+LH*(.045+.10*Math.sin(Math.PI*t)),Math.cos(az)*w*.26*t];let previous=origin;
+  for(let j=1;j<=10;j++){
+   const at=path(j/10);b.branch(previous,at,radius,stem,'stem-creeping-ovalis-photo-reference');previous=at;leaf(at,az+j*Math.PI,true);
+   if(j===4||j===7){const turn=az+(j===4?-.8:.8),top=LH*(.64+.07*((runner+j)%3)),reach=w*.075;let prev=at;
+    for(let k=1;k<=6;k++){
+     const u=k/6,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];
+     b.branch(prev,tip,radius*.75,stem,'stem-ascending-ovalis-photo-reference');prev=tip;leaf(tip,turn+k*Math.PI,false);
+    }
+   }
+  }
+ }
+ //6connected basal runners and12ascending side shoots:132single alternate leaves;60basal roots.No water-surface flowers.
+}
+
 function drawSubmergedShoots(b,{info,s,p,detail,rand},kit){
+ if(info.appearance.shootProfile==='ovalis'){drawOvalisPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance.shootProfile==='glosso'){drawGlossostigmaPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance.shootProfile==='ceratophyllum'){drawMatsumoReference(b,{s,rand},kit);return;}
  if(info.appearance.shootProfile==='egeria'){drawEgeriaPhotoReference(b,{s,rand},kit);return;}
