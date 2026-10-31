@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.978';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.979';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.978';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.979';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20481,7 +20481,41 @@ function drawDahlias(b,{info,s,detail,rand},kit){
  }
 }
 
+// Scoped drawing reference; counts and stage boundaries are conventions.
+function drawBorderSedumReferences(b,{info,s},kit){
+ const profile=info.appearance.shootProfile,turk=profile==='turkishDelight',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),dry=!turk&&[12,1,2].includes(s.month),N=turk?13:9,J=turk?8:6,Rstem=Math.min(.004,h*.009,w*.01),HR=Math.min(turk?.036:.075,h*.22,w*.16),FR=Math.min(turk?.003:.0045,h*.015,w*.018,HR*.12),Y=new THREE.Vector3(0,1,0),surfaces=[];let petalSerial=0;
+ const line=(from,to,r,kind,color)=>{r=Math.min(r,Math.min(from[1],to[1])*.8);if(r<=0)return;const v=new THREE.Vector3(...to).sub(new THREE.Vector3(...from)),L=v.length();if(!L)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y,v.clone().normalize()),'YXZ'),mid=new THREE.Vector3(...from).add(new THREE.Vector3(...to)).multiplyScalar(.5);b.add(clematisRetailStemUnit,kind,color,...mid.toArray(),r,L,r,e.x,e.y,e.z);};
+ const flower=(at,yaw,stage)=>{
+  const f=flowerFrame(b,at,0,yaw),petal=turk?(stage===2?'#8d244e':'#b63562'):stage===2?'#edc2d5':'#f5dde8',centre=turk?'#7f2847':'#adc39a';
+  for(let k=0;k<5;k++){
+   const az=Math.PI/2+.05+k*TAU/5,instance=petalSerial++,scale=new THREE.Vector3(FR*.44,FR*.95,FR*.95),base=[Math.sin(az)*FR*.1,0,Math.cos(az)*FR*.1];f.add('gcSedumGroundcoverPetal','petal-border-sedum-ref-'+profile,petal,...base,...scale.toArray(),0,az,0);
+   if(s.bloom&&k===0){const row=24,vertices=[row*21+10,(row+1)*21+10,row*21+11],q=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ')),fq=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,yaw,0,'YXZ')),points=vertices.map(v=>new THREE.Vector3(...sedumGroundcoverReferencePoint('petal',Math.floor(v/21)/32,v%21/20*2-1).map(Math.fround)).multiply(scale).applyQuaternion(q).add(new THREE.Vector3(...base)).applyQuaternion(fq).add(new THREE.Vector3(...at))),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,vertices,instanceId:instance,faceIndex:(row*20+10)*2,radius:FR});}
+   const ca=k*TAU/5;f.add('gcHylotelephiumCarpel','carpel-border-sedum-ref-'+profile,centre,Math.sin(ca)*FR*.16,0,Math.cos(ca)*FR*.16,FR*.22,FR*.67,FR*.22,.20,ca,0);
+  }
+  for(let k=0;k<10;k++){
+   const az=k*TAU/10,tip=[Math.sin(az)*FR*.32,FR*.50,Math.cos(az)*FR*.32],axis=new THREE.Vector3(...tip),len=axis.length(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y,axis.normalize()),'YXZ');
+   f.add(clematisRetailStemUnit,'filament-border-sedum-ref-'+profile,turk?'#aa4566':'#eedfe8',tip[0]/2,tip[1]/2,tip[2]/2,FR*.012,len,FR*.012,e.x,e.y,e.z);f.add(kit.bud,'anther-border-sedum-ref-'+profile,turk?'#762641':'#ac6e89',...tip,FR*.045,FR*.03,FR*.045);
+  }
+ };
+ for(let shoot=0;shoot<N;shoot++){
+  const az=shoot*2.399963,reach=w*(turk?.28:.22)*Math.sqrt((shoot+.5)/N),base=[Math.sin(az)*reach*.50,LH*.06,Math.cos(az)*reach*.50],tip=[Math.sin(az)*reach,Math.min(LH*.90,h*.74),Math.cos(az)*reach];let prev=[base[0],LH*.03,base[2]];
+  for(let j=1;j<=J;j++){
+   const t=j/J,at=base.map((v,k)=>v+(tip[k]-v)*t);line(prev,at,Rstem*(1-t*.3),'stem-border-sedum-ref',dry?'#8e7863':turk?'#68444e':'#8fa37b');prev=at;
+   if(s.leafDensity>0){const L=Math.min(turk?.030:.080,h*(turk?.16:.20),w*.19,(LH-at[1])*.85);for(const side of[-1,1])b.add(turk?'gcSedumGroundcoverSpurium':'gcHylotelephiumLeaf','leaf-border-sedum-ref-'+profile,turk?['#482d3c','#583548','#3b303b'][(j+shoot)%3]:'#708d75',...at,L*(turk?.96:.75),L,L*(turk?.48:1),.95,az+j*Math.PI/2+side*Math.PI/2,0);}
+  }
+  if(!s.bloom&&!dry)continue;
+  const head=[tip[0],h*(.78+.025*(shoot%4))-HR*.10,tip[2]];line(tip,head,Rstem*.60,'head-stalk-border-sedum-ref',dry?'#8e7863':turk?'#8b6878':'#8caa78');
+  for(let branch=0;branch<7;branch++){
+   const an=branch*2.399963+az,r=HR*.45*Math.sqrt((branch+.5)/7),end=[head[0]+Math.sin(an)*r,head[1]+HR*(turk?.42:.22)*(1-(r/HR)**2),head[2]+Math.cos(an)*r];line(head,end,Rstem*.24,'cyme-branch-border-sedum-ref',dry?'#99836a':turk?'#9b7186':'#93ad7c');
+   for(let j=0;j<11;j++){const aa=j*2.399963+an,rr=HR*.35*Math.sqrt((j+.5)/11),at=[end[0]+Math.sin(aa)*rr,end[1]+HR*.15*(1-(rr/(HR*.35))**2),end[2]+Math.cos(aa)*rr];line(end,at,Rstem*.08,'pedicel-border-sedum-ref',dry?'#99836a':turk?'#9e748a':'#a2b98a');if(dry){const f=flowerFrame(b,at,0,aa);for(let k=0;k<5;k++){const ca=k*TAU/5;f.add('gcHylotelephiumCarpel','dry-carpel-border-sedum-ref','#9f8768',Math.sin(ca)*FR*.18,0,Math.cos(ca)*FR*.18,FR*.24,FR*.82,FR*.24,.22,ca,0);}}else if(turk&&j%3===0){b.add(kit.bud,'bud-border-sedum-ref','#822740',...at,FR*.70,FR*.82,FR*.70);}else flower(at,aa,shoot%3);}
+  }
+ }
+ for(const surface of surfaces){const axis=surface.normal.clone();if(axis.y<.12)axis.y=.12;axis.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y,axis),'YXZ');b.flower?.(surface.point.toArray(),surface.radius*1.5,e.x,e.y,e.z,{component:'petal-border-sedum-ref-'+profile,instanceId:surface.instanceId,vertices:surface.vertices,faceIndex:surface.faceIndex,cameraAxis:axis.toArray()});}
+}
+
+
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='hylotelephiumBorderReferences'){drawBorderSedumReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='sedumSeedReferences'){drawSedumSeedReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='sedumLowMatReferences'){drawSedumLowMatReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='hylotelephiumCultivarReferences'){drawHylotelephiumCultivarReferences(b,{info,s},kit);return;}
