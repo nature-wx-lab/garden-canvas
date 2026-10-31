@@ -11847,7 +11847,77 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
       "低い葉の高さでは葉を横に倒して指定範囲に収めます。同じ株の全月の実物照合、年次成長と地域別の屋外越冬は未検証です。"
     ],
     "sourceConflict": "葉を含む幅2〜3cmは1本の茎の幅です。表の15〜30+cmは水槽に植えて2か月後の平均高さの目安です。株全体の高さの閉じた上限・株幅は未確認です。葉の赤や緑は葉色で、今回のメーカー資料で確認できない花色として扱いません。"
-  },"p-81746a493156":{"sources":[{"url":"https://www.akb.jp/c/suisei/gd3357","scope":"catalog-entry"},{"url":"https://rva.jp/plants/rotala_nanje_torpica6841-.htm","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"nanjenshan","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"nanjenshanWhorl","leafLength":0.022,"leafWidth":0.001,"leafColor":"#8daa60","leafTexture":"smooth","leafUnderside":"#a7bc80","stemColor":"#94a178","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","流通名ナンセアン／Nanjenshanの水中葉を参照し、淡緑色の非常に細い葉を4枚ずつ輪生させます。販売者の観察記録にある3〜5枚輪生の範囲を使っています。","水上の低く這う株と水中で伸びる株は姿が違います。今回は水中形を対象とし、水上の花、国内の開花月、結氷地域の越冬、流通株の分類学的同一性は未確認です。"]},"p-4136736f36e6":{"sources":[{"url":"https://www.engei.net/products/detail?id=12415","scope":"catalog-entry"},{"url":"https://www.pharm.kumamoto-u.ac.jp/yakusodb/detail/006807.php","scope":"species"},{"url":"https://www.nzflora.info/factsheet/Taxon/Equisetum-hyemale.html","scope":"species"},{"url":"https://www.nparks.gov.sg/florafaunaweb/flora/1/5/1550","scope":"species"}],"basis":{"architecture":0,"persistence":0,"leafShape":2,"leafColor":0,"stemColor":0,"arrangement":3,"habit":0,"petals":1,"lifeForm":3},"status":"partial","architecture":"evergreenHorsetail","leafShape":"horsetailSheath","leafColor":"#577b56","stemColor":"#5b815a","arrangement":"whorled","habit":"upright","lifeForm":"herb","persistence":"evergreen","petals":0,"phenologyRegion":"常緑の茎を参考表示。販売元には秋〜春の茎の傷みも記載されており、冬の状態・刈込み後の姿は栽培条件で変わります。胞子嚢穂の出現月は未確認です。","unconfirmed":["茎の本数・間隔・節数・太さ・24本の稜は資料範囲内の一例で、販売株の実測ではありません。","枝の少ない普通の茎を参考表示します。傷んだ茎やまれな側枝、地下茎による拡大・胞子嚢穂は再現していません。","古い節で鞘の歯が落ちる姿を近似しています。微細な表面の突起と同じ株の12か月の姿は未確認です。","葉は茎の節を包む鞘で、独立した葉身の高さではありません。葉丈入力は保存しますが鞘の位置を変えず、小さい株では茎・鞘・歯の太さと長さを一緒に縮める描画上の近似です。"]},"p-553aaea797a9":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/002-0063","scope":"catalog-entry"},{"url":"https://gobotany.nativeplanttrust.org/species/equisetum/fluviatile/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerTiming":0,"winterClimateSensitive":0},"status":"partial","unconfirmed":["全形・全月の実物照合","地域別の萌芽と枯れ込みの月境界","茎葉と花序の密度・寸法比の実測","胞子嚢穂の出現月と胞子成熟期"],"architecture":"waterHorsetail","leafShape":"horsetailSheath","leafColor":"#66865b","stemColor":"#71936a","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"winterDormant","flowerTiming":"months","winterClimateSensitive":true},"p-ba247cf299e6":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/387","scope":"catalog-entry"},{"url":"https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Bacopa~caroliniana&page=nswfl","scope":"species"},{"url":"https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=gn&name=Bacopa&page=nswfl","scope":"genus"}],"basis":{"habit":0,"persistence":0,"leafColor":0,"leafShape":1,"flowerShape":2,"architecture":1,"arrangement":1,"flowerMonths":0,"flowerTiming":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水深と気温による水上形・水中形の切り替え","地域別の芽出し・枯れ込み月","水中の茎・根の立体表示"],"architecture":"bacopaCaroliniana","leafShape":"bacopaOvate","flowerShape":"bacopaCorolla","leafColor":"#658642","stemColor":"#729057","arrangement":"opposite","habit":"creeping","lifeForm":"herb","persistence":"managedSubmerged","leafTexture":"glossy","leafLength":0.012,"flowerRadius":0.0055,"foliageMonths":[4,5,6,7,8,9,10,11],"flowerMonths":[5,6,7,8,9],"flowerTiming":"months"},"p-d5909b1c35c5":{"sources":[{"url":"https://www.akb.jp/c/gaiteki/384","scope":"catalog-entry"},{"url":"https://resources.austplants.com.au/plant/marsilea-mutica/","scope":"species"},{"url":"https://www.akb.jp/c/yoseue/ar-143","scope":"catalog-entry"}],"basis":{"habit":0,"persistence":2,"leafColor":0,"leafShape":1,"flowerShape":1,"architecture":1,"arrangement":1},"status":"partial","unconfirmed":["全形・全月の実物照合","水深と気温による水上形・水中形の切り替え","地域別の芽出し・枯れ込み月","水中の茎・根の立体表示"],"architecture":"marsileaMutica","leafShape":"marsileaWedge","flowerShape":"none","leafColor":"#658642","stemColor":"#729057","arrangement":"fourLeaflets","habit":"creeping","lifeForm":"herb","persistence":"winterDormant","leafTexture":"glossy","leafLength":0.025,"flowerRadius":0,"leafPattern":"marsileaBand","patternColor":"#747d45"},"p-8d877dd373db":{"sources":[{"url":"https://www.town.taketoyo.lg.jp/chousei/1001538/1001551/1002276/1002273/1002280/1002310.html","scope":"catalog-entry"},{"url":"https://tojaku.co.jp/aquatic-plant/1/","scope":"species"},{"url":"https://japr.or.jp/wp-content/uploads/shokucho-shi/52/shokucho_52-04.pdf","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":0,"leafTexture":0,"leafLength":0,"flowerRadius":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水深による草姿の変化","地域ごとの水上葉の出現と消失月","水中の葉と根茎の立体表示","流通株ごとの分類同定","15〜70cmは自治体の花茎の参考範囲です。葉長7〜30cmは生産者の同名案内にある別の部位の値で、株幅や利用者の個体の実測へ読み替えません。","花径約1.5cmと約1cmは出典ごとの値です。中間の値や1〜1.5cmという新しい統合範囲は作っていません。","生産者の学名表記と収録学名に違いがあります。流通名を科学的な同種の証明とせず、株ごとの分類同定は未確認のままです。","国内で雌株のみ帰化とされる型の参考表示です。描画の雄しべ・果実なしを、別の条件の個体の結実能力や年間観察の結果へ読み替えません。"],"architecture":"waterArrowhead","leafShape":"sagittariaLong","flowerShape":"sagittariaFemale","leafColor":"#517a3d","stemColor":"#688650","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"winterSubmerged","flowerMonths":[4,5,6,7,8,9],"flowerTiming":"months","leafTexture":"glossy","leafLength":0.25,"flowerRadius":0.0075,"sourceConflict":"参考高さ15〜70cmは自治体の花茎の値です。花径は自治体が約1.5cm、生産者が約1cmと記載しているため統合しません。生産者のSagittaria graminea表記と収録学名Sagittaria weatherbianaは区別し、流通株の同定が未確認のまま同一分類とは断定しません。","phenologyRegion":"自治体が示す4〜9月は、その地域と種類に関する参考の花期です。生産者の春〜秋という表現を数値の月へ変換したものではありません。冬の沈水管理の説明と、地域別の水上葉消失月・越冬成功・翌年の回復は区別し、水中の葉や根茎は未表示です。"},"p-f2e4c7935581":{
+  },"p-81746a493156":{"sources":[{"url":"https://www.akb.jp/c/suisei/gd3357","scope":"catalog-entry"},{"url":"https://rva.jp/plants/rotala_nanje_torpica6841-.htm","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"nanjenshan","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"nanjenshanWhorl","leafLength":0.022,"leafWidth":0.001,"leafColor":"#8daa60","leafTexture":"smooth","leafUnderside":"#a7bc80","stemColor":"#94a178","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","流通名ナンセアン／Nanjenshanの水中葉を参照し、淡緑色の非常に細い葉を4枚ずつ輪生させます。販売者の観察記録にある3〜5枚輪生の範囲を使っています。","水上の低く這う株と水中で伸びる株は姿が違います。今回は水中形を対象とし、水上の花、国内の開花月、結氷地域の越冬、流通株の分類学的同一性は未確認です。"]},"p-4136736f36e6":{"sources":[{"url":"https://www.engei.net/products/detail?id=12415","scope":"catalog-entry"},{"url":"https://www.pharm.kumamoto-u.ac.jp/yakusodb/detail/006807.php","scope":"species"},{"url":"https://www.nzflora.info/factsheet/Taxon/Equisetum-hyemale.html","scope":"species"},{"url":"https://www.nparks.gov.sg/florafaunaweb/flora/1/5/1550","scope":"species"}],"basis":{"architecture":0,"persistence":0,"leafShape":2,"leafColor":0,"stemColor":0,"arrangement":3,"habit":0,"petals":1,"lifeForm":3},"status":"partial","architecture":"evergreenHorsetail","leafShape":"horsetailSheath","leafColor":"#577b56","stemColor":"#5b815a","arrangement":"whorled","habit":"upright","lifeForm":"herb","persistence":"evergreen","petals":0,"phenologyRegion":"常緑の茎を参考表示。販売元には秋〜春の茎の傷みも記載されており、冬の状態・刈込み後の姿は栽培条件で変わります。胞子嚢穂の出現月は未確認です。","unconfirmed":["茎の本数・間隔・節数・太さ・24本の稜は資料範囲内の一例で、販売株の実測ではありません。","枝の少ない普通の茎を参考表示します。傷んだ茎やまれな側枝、地下茎による拡大・胞子嚢穂は再現していません。","古い節で鞘の歯が落ちる姿を近似しています。微細な表面の突起と同じ株の12か月の姿は未確認です。","葉は茎の節を包む鞘で、独立した葉身の高さではありません。葉丈入力は保存しますが鞘の位置を変えず、小さい株では茎・鞘・歯の太さと長さを一緒に縮める描画上の近似です。"]},"p-553aaea797a9":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/002-0063","scope":"catalog-entry"},{"url":"https://gobotany.nativeplanttrust.org/species/equisetum/fluviatile/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerTiming":0,"winterClimateSensitive":0},"status":"partial","unconfirmed":["全形・全月の実物照合","地域別の萌芽と枯れ込みの月境界","茎葉と花序の密度・寸法比の実測","胞子嚢穂の出現月と胞子成熟期"],"architecture":"waterHorsetail","leafShape":"horsetailSheath","leafColor":"#66865b","stemColor":"#71936a","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"winterDormant","flowerTiming":"months","winterClimateSensitive":true},"p-ba247cf299e6":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/387","scope":"catalog-entry"},{"url":"https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Bacopa~caroliniana&page=nswfl","scope":"species"},{"url":"https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=gn&name=Bacopa&page=nswfl","scope":"genus"}],"basis":{"habit":0,"persistence":0,"leafColor":0,"leafShape":1,"flowerShape":2,"architecture":1,"arrangement":1,"flowerMonths":0,"flowerTiming":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水深と気温による水上形・水中形の切り替え","地域別の芽出し・枯れ込み月","水中の茎・根の立体表示"],"architecture":"bacopaCaroliniana","leafShape":"bacopaOvate","flowerShape":"bacopaCorolla","leafColor":"#658642","stemColor":"#729057","arrangement":"opposite","habit":"creeping","lifeForm":"herb","persistence":"managedSubmerged","leafTexture":"glossy","leafLength":0.012,"flowerRadius":0.0055,"foliageMonths":[4,5,6,7,8,9,10,11],"flowerMonths":[5,6,7,8,9],"flowerTiming":"months"},"p-d5909b1c35c5":{"sources":[{"url":"https://www.akb.jp/c/gaiteki/384","scope":"catalog-entry"},{"url":"https://resources.austplants.com.au/plant/marsilea-mutica/","scope":"species"},{"url":"https://www.akb.jp/c/yoseue/ar-143","scope":"catalog-entry"}],"basis":{"habit":0,"persistence":2,"leafColor":0,"leafShape":1,"flowerShape":1,"architecture":1,"arrangement":1},"status":"partial","unconfirmed":["全形・全月の実物照合","水深と気温による水上形・水中形の切り替え","地域別の芽出し・枯れ込み月","水中の茎・根の立体表示"],"architecture":"marsileaMutica","leafShape":"marsileaWedge","flowerShape":"none","leafColor":"#658642","stemColor":"#729057","arrangement":"fourLeaflets","habit":"creeping","lifeForm":"herb","persistence":"winterDormant","leafTexture":"glossy","leafLength":0.025,"flowerRadius":0,"leafPattern":"marsileaBand","patternColor":"#747d45"},"p-8d877dd373db":{
+  "sources": [
+    {
+      "url": "https://www.town.taketoyo.lg.jp/chousei/1001538/1001551/1002276/1002273/1002280/1002310.html",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://tojaku.co.jp/aquatic-plant/1/",
+      "scope": "species"
+    },
+    {
+      "url": "https://japr.or.jp/wp-content/uploads/shokucho-shi/52/shokucho_52-04.pdf",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 1,
+    "leafShape": 1,
+    "flowerShape": 0,
+    "leafColor": 0,
+    "stemColor": 0,
+    "arrangement": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "leafTexture": 0,
+    "leafLength": 0,
+    "flowerRadius": 0
+  },
+  "status": "partial",
+  "unconfirmed": [
+    "全形・全月の実物照合",
+    "水深による草姿の変化",
+    "地域ごとの水上葉の出現と消失月",
+    "水中の葉と根茎の立体表示",
+    "流通株ごとの分類同定",
+    "15〜70cmは自治体の花茎の参考範囲です。葉長7〜30cmは生産者の同名案内にある別の部位の値で、株幅や利用者の個体の実測へ読み替えません。",
+    "花径約1.5cmと約1cmは出典ごとの値です。中間の値や1〜1.5cmという新しい統合範囲は作っていません。",
+    "生産者の学名表記と収録学名に違いがあります。流通名を科学的な同種の証明とせず、株ごとの分類同定は未確認のままです。",
+    "国内で雌株のみ帰化とされる型の参考表示です。描画の雄しべ・果実なしを、別の条件の個体の結実能力や年間観察の結果へ読み替えません。",
+    "掲載写真は花の近接写真で、背景の葉はぼけています。葉の細部や水中の根まで写真照合したものではありません。",
+    "白い花弁と緑色の雌花の中心は参考表現です。写真の色は校正しておらず、緑の花心の凹凸は簡略化し、雌しべの本数を計測したものではありません。",
+    "葉・花・茎の数と配置は説明用の描画例で、同じ株の年次増殖や年間変化を再現したものではありません。葉丈は入力寸法に収め、花茎の参考高さと葉長を区別します。"
+  ],
+  "architecture": "waterArrowhead",
+  "leafShape": "sagittariaLong",
+  "flowerShape": "sagittariaFemale",
+  "leafColor": "#517a3d",
+  "stemColor": "#688650",
+  "arrangement": "basal",
+  "habit": "clump",
+  "lifeForm": "herb",
+  "persistence": "winterSubmerged",
+  "flowerMonths": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "flowerTiming": "months",
+  "leafTexture": "glossy",
+  "leafLength": 0.25,
+  "flowerRadius": 0.0075,
+  "sourceConflict": "参考高さ15〜70cmは自治体の花茎の値です。花径は自治体が約1.5cm、生産者が約1cmと記載しているため統合しません。生産者のSagittaria graminea表記と収録学名Sagittaria weatherbianaは区別し、流通株の同定が未確認のまま同一分類とは断定しません。",
+  "phenologyRegion": "自治体が示す4〜9月は、その地域と種類に関する参考の花期です。生産者の春〜秋という表現を数値の月へ変換したものではありません。冬の沈水管理の説明と、地域別の水上葉消失月・越冬成功・翌年の回復は区別し、水中の葉や根茎は未表示です。",
+  "shootProfile": "sagittariaFemalePhotoReference"
+},"p-f2e4c7935581":{
   "sources": [
     {
       "url": "https://www.fp-k.org/hanazukan/3431/",

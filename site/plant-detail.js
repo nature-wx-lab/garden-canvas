@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1006';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1007';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1006';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1007';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26449,7 +26449,41 @@ function drawWaterpoppyPhotoReference(b,{s,rand},kit){
  f.add(kit.bud,'throat-waterpoppy-ref','#765339',0,r*.06,0,r*.25,r*.08,r*.25);f.add(kit.bud,'central-body-waterpoppy-ref','#b9b087',0,r*.13,0,r*.09,r*.12,r*.09);
 }
 
+// Female flower photo reference; blurred background leaves are not a new leaf reference.
+export function sagittariaFemalePhotoPoint(t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t)),width=.78*sn**.48*(.34+.66*t);
+ return [u*width,.06*t*t+.025*u*u*sn+.004*Math.sin(t*31+u*5)*Math.abs(u)**3*sn,t];
+}
+export function sagittariaFemalePhotoGeometry(type){
+ if(type==='head'){
+  const g=new THREE.SphereGeometry(1,40,24),p=g.attributes.position,v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);const an=Math.atan2(v.x,v.z),lat=Math.acos(Math.max(-1,Math.min(1,v.y))),grain=1+.025*Math.sin(an*17)*Math.sin(lat*13);p.setXYZ(i,v.x*grain,v.y*grain,v.z*grain);}p.needsUpdate=true;g.computeVertexNormals();g.userData={sagittariaFemalePhotoReference:true,part:'femaleHead',illustrativeSurface:true};return g;
+ }
+ const N=32,C=24,p=[],uv=[],ix=[],stride=(N+1)*(C+1);for(let side=0;side<2;side++)for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=j/C*2-1,point=sagittariaFemalePhotoPoint(t,u);if(side)point[1]-=.005*(1-t);p.push(...point);uv.push(j/C,t);if(i<N&&j<C){const k=side*stride+i*(C+1)+j;if(side)ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);else ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}for(let j=0;j<C;j++){const a=N*(C+1)+j,z=a+1;ix.push(a,a+stride,z,z,a+stride,z+stride);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={sagittariaFemalePhotoReference:true,part:'petal',illustrativeGeometry:true,closedSurface:true};return g;
+}
+function drawSagittariaFemalePhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.85),radius=Math.min(.0012,h*.006,w*.004,LH*.04),stemRadius=Math.min(.0012,h*.006,w*.04),rootY=stemRadius*1.2+Math.min(.00002,h*.002),crown=[0,rootY,0];
+ for(let j=0;j<8;j++){const az=j*2.399+.4,R=w*.10*Math.sqrt((j+.7)/8),at=[Math.sin(az)*R,LH*.25,Math.cos(az)*R],L=Math.min(.25,w*.36)*(.89+j*.012),relief=Math.min(L,LH*.20/.13),pitch=Math.acos(Math.min(.98,LH*.70/L));b.branch(crown,at,radius,'#688650','petiole-sagittaria-female-ref');b.add('sagittariaLong','leaf-glossy',kit.shade(rand,s.leafColor,.025),...at,L,L,relief,pitch,az,0);}
+ if(!s.bloom)return;
+ const nodes=[];let previous=crown;for(let j=0;j<4;j++){const t=[.40,.62,.84,.965][j],at=[Math.sin(j*.8)*w*.018,h*t,Math.cos(j*.8)*w*.018];nodes.push(at);b.branch(previous,at,stemRadius,'#688650','scape-sagittaria-female-ref');previous=at;}
+ const r=Math.min(.0075,w*.08,h*.08);for(let level=0;level<2;level++)for(let k=0;k<3;k++){
+  const az=k*TAU/3+level*.35,node=nodes[level],reach=Math.min(w*.075,h*.085),at=[node[0]+Math.sin(az)*reach,node[1]+h*.035,node[2]+Math.cos(az)*reach],yaw=az+.16,f=flowerFrame(b,at,.10,yaw);b.branch(node,at,stemRadius*.50,'#688650','pedicel-sagittaria-female-ref');
+  for(let petal=0;petal<3;petal++){
+   const a=petal*TAU/3,pitch=.10;f.add('sagittaria-female-photo-petal','petal-sagittaria-female-photo-reference',kit.shade(rand,s.flowerColor,.012),0,0,0,r,r,r,0,a,0);
+   const row=26,col=12,C=24,N=32,vertices=[row*(C+1)+col,(row+1)*(C+1)+col,row*(C+1)+col+1],frame=new THREE.Matrix4().compose(new THREE.Vector3(...at),new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),new THREE.Vector3(1,1,1)),local=new THREE.Matrix4().compose(new THREE.Vector3(),new THREE.Quaternion().setFromEuler(new THREE.Euler(0,a,0,'YXZ')),new THREE.Vector3(r,r,r)),matrix=frame.multiply(local);matrix.fromArray(new Float32Array(matrix.elements));
+   const points=vertices.map(v=>new THREE.Vector3(...sagittariaFemalePhotoPoint(Math.floor(v/(C+1))/N,v%(C+1)/C*2-1).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),axis=new THREE.Vector3(Math.sin(yaw+a)*.8,1,Math.cos(yaw+a)*.8).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),'YXZ');b.flower?.(point.toArray(),r*1.7,e.x,e.y,e.z,{component:'petal-sagittaria-female-photo-reference',instanceId:level*9+k*3+petal,vertices,faceIndex:(row*C+col)*2,cameraAxis:axis.toArray()});
+  }
+  f.add('sagittaria-female-photo-head','female-head-sagittaria-photo-reference','#8ba53d',0,r*.12,0,r*.24,r*.24,r*.24);
+ }
+ for(let k=0;k<3;k++){const az=k*TAU/3+.3,node=nodes[2],reach=Math.min(w*.04,h*.035),at=[node[0]+Math.sin(az)*reach,node[1]+h*.065,node[2]+Math.cos(az)*reach],R=Math.min(.003,w*.02,h*.015);b.branch(node,at,stemRadius*.42,'#688650','bud-pedicel-sagittaria-female-ref');b.add(kit.bud,'bud-sagittaria-female-photo-reference','#829f48',...at,R,R*1.3,R);}
+}
+
 function drawFloatingAquatics(b,{info,s,detail,rand},kit){
+ if(info.appearance?.shootProfile==='sagittariaFemalePhotoReference'){drawSagittariaFemalePhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='waterpoppyPhotoReference'){drawWaterpoppyPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='nupharPhotoReference'){drawNupharPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='asazaPhotoReference'){drawAsazaPhotoReference(b,{s,rand},kit);return;}
