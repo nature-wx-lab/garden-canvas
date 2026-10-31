@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.977';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.978';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.977';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.978';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20482,6 +20482,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='sedumSeedReferences'){drawSedumSeedReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='sedumLowMatReferences'){drawSedumLowMatReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='hylotelephiumCultivarReferences'){drawHylotelephiumCultivarReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='sempervivumRosetteReferences'){drawSempervivumRosetteReferences(b,{info,s});return;}
@@ -28892,4 +28893,45 @@ function drawSedumLowMatReferences(b,{info,s},kit){
   }
  }
  for(const surface of surfaces){const axis=surface.normal.clone();if(axis.y<.12)axis.y=.12;axis.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y,axis),'YXZ');b.flower?.(surface.point.toArray(),surface.radius*1.5,e.x,e.y,e.z,{component:'petal-sedum-lowmat-ref-'+profile,instanceId:surface.instanceId,vertices:surface.vertices,faceIndex:surface.faceIndex,cameraAxis:axis.toArray()});}
+}
+
+// Named foreign photo/specimen references. Plant counts and spacing are illustration choices.
+export function seastarNeedleReferenceGeometry(){
+ const p=[],uv=[],ix=[],rows=40,cols=16;
+ for(let j=0;j<=rows;j++)for(let i=0;i<=cols;i++){const t=j/rows,a=i/cols*TAU,r=.055*Math.sin(Math.PI*t)**.6;p.push(Math.cos(a)*r,t,.20*t*t+Math.sin(a)*r);uv.push(i/cols,t);}
+ for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){const a=j*(cols+1)+i;ix.push(a,a+cols+1,a+1,a+1,a+cols+1,a+cols+2);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.seedSedumNeedleReference=true;return g;
+}
+function drawSedumSeedReferences(b,{info,s},kit){
+ const sea=info.appearance.shootProfile==='seastar',profile=sea?'seastar':'voodoo',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),N=sea?12:16,J=sea?14:12,K=sea?1:2,PC=sea?4:5,SC=sea?8:10,FR=Math.min(sea?.003:.0035,h*.035,w*.020),SR=Math.min(.0011,h*.012,w*.003,LH*.020),Y=new THREE.Vector3(0,1,0),surfaces=[];let serial=0;
+ const line=(from,to,r,kind,color)=>{r=Math.min(r,Math.min(from[1],to[1])*.70);if(r<=0)return;const a=new THREE.Vector3(...from),z=new THREE.Vector3(...to),v=z.clone().sub(a),L=v.length();if(!L)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y,v.normalize()),'YXZ'),mid=a.add(z).multiplyScalar(.5);b.add(clematisRetailStemUnit,kind,color,...mid.toArray(),r,L,r,e.x,e.y,e.z);};
+ const flower=(at,yaw,shade)=>{
+  const f=flowerFrame(b,at,0,yaw);
+  for(let k=0;k<PC;k++){
+   const az=Math.PI/2+.05+k*TAU/PC,instance=serial++,scale=new THREE.Vector3(FR*.44,FR*.95,FR*.95),base=[Math.sin(az)*FR*.1,0,Math.cos(az)*FR*.1];f.add('gcSedumGroundcoverPetal','petal-sedum-seed-ref-'+profile,sea?(shade?'#d6a1c2':'#e4bfd3'):'#cb3f79',...base,...scale.toArray(),0,az,0);
+   if(k===0){const row=24,vertices=[row*21+10,(row+1)*21+10,row*21+11],q=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ')),fq=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,yaw,0,'YXZ')),points=vertices.map(v=>new THREE.Vector3(...sedumGroundcoverReferencePoint('petal',Math.floor(v/21)/32,v%21/20*2-1).map(Math.fround)).multiply(scale).applyQuaternion(q).add(new THREE.Vector3(...base)).applyQuaternion(fq).add(new THREE.Vector3(...at))),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,vertices,instanceId:instance,faceIndex:(row*20+10)*2,radius:FR});}
+   if(sea){const ca=k*TAU/4;f.add('gcSedumGroundcoverPetal','sepal-seastar-ref','#8eac59',Math.sin(ca)*FR*.12,-FR*.08,Math.cos(ca)*FR*.12,FR*.28,FR*.70,FR*.70,0,ca,0);f.add(kit.bud,'carpel-seastar-ref','#b9ca88',Math.sin(ca)*FR*.18,FR*.03,Math.cos(ca)*FR*.18,FR*.13,FR*.18,FR*.13);}
+  }
+  f.add(kit.bud,'flower-base-sedum-seed-ref-'+profile,sea?'#a1ba6c':'#975779',0,-FR*.05,0,FR*.18,FR*.06,FR*.18);
+  for(let k=0;k<SC;k++){const az=k*TAU/SC,tip=[Math.sin(az)*FR*.30,FR*.24,Math.cos(az)*FR*.30],axis=new THREE.Vector3(...tip),L=axis.length(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y,axis.normalize()),'YXZ');f.add(clematisRetailStemUnit,'filament-sedum-seed-ref-'+profile,sea?'#eed5df':'#e7a8c2',tip[0]/2,tip[1]/2,tip[2]/2,FR*.013,L,FR*.013,e.x,e.y,e.z);f.add(kit.bud,'anther-sedum-seed-ref-'+profile,sea?'#c73e66':'#8e3e62',...tip,FR*.04,FR*.03,FR*.04);}
+ };
+ for(let shoot=0;shoot<N;shoot++){
+  const az=shoot*2.399963,reach=w*(sea?.22:.32)*Math.sqrt((shoot+.5)/N),base=[Math.sin(az)*reach*.16,LH*.035,Math.cos(az)*reach*.16];let prev=base,last;
+  for(let j=1;j<=J;j++){
+   const t=j/J,at=[Math.sin(az+.09*Math.sin(j))*reach*t,LH*(.10+(sea?.57:.62)*t),Math.cos(az+.09*Math.sin(j))*reach*t];line(prev,at,SR*(1-t*.25),'stem-sedum-seed-ref',sea?'#91af63':'#9a5a6a');prev=at;last=at;
+   if(s.leafDensity>0){const L=Math.min(sea?.018:.018,h*.23,w*.11,(LH-at[1])*.82);for(let k=0;k<K;k++){const la=az+j*2.399963+k*Math.PI,pitch=sea?.90+.10*Math.sin(j+shoot):1.01+.08*Math.sin(j+shoot);b.add(sea?'gcSeastarNeedleRef':'gcSedumGroundcoverSpurium','leaf-sedum-seed-ref-'+profile,sea?['#87a64d','#97b457','#789c43'][(j+shoot)%3]:['#97616b','#a35969','#7d7950'][(j+k+shoot)%3],...at,sea?L:L*.95,L,sea?L:L*.48,pitch,la,0);}}
+  }
+  if(!s.bloom)continue;
+  const head=[last[0],h*(.76+.02*(shoot%3)),last[2]];line(last,head,SR*.6,'peduncle-sedum-seed-ref',sea?'#a0b66b':'#a36a88');
+  if(sea){
+   const AR=Math.min(.034,w*.13,h*.32);
+   for(let arm=0;arm<5;arm++){
+    const aa=az+arm*TAU/5,end=[head[0]+Math.sin(aa)*AR,head[1]+AR*.03,head[2]+Math.cos(aa)*AR];line(head,end,SR*.35,'cyme-branch-seastar-ref','#a0b96c');
+    for(let j=0;j<7;j++){const t=(7-j)/7,side=(j%2?1:-1)*FR*.65,from=[head[0]+Math.sin(aa)*AR*t,head[1]+AR*.03*t,head[2]+Math.cos(aa)*AR*t],at=[from[0]+Math.cos(aa)*side,from[1]+FR*.05,from[2]-Math.sin(aa)*side];line(from,at,SR*.16,'pedicel-sedum-seed-ref','#acc079');flower(at,aa,shoot%2);}
+   }
+  }else{
+   const HR=FR*3.6;for(let j=0;j<19;j++){const aa=az+j*2.399963,r=HR*Math.sqrt((j+.5)/19),at=[head[0]+Math.sin(aa)*r,head[1]+HR*.36*(1-(r/HR)**2),head[2]+Math.cos(aa)*r];line(head,at,SR*.20,'pedicel-sedum-seed-ref','#a46a87');flower(at,aa,false);}
+  }
+ }
+ for(const surface of surfaces){const axis=surface.normal.clone();if(axis.y<.12)axis.y=.12;axis.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y,axis),'YXZ');b.flower?.(surface.point.toArray(),surface.radius*1.5,e.x,e.y,e.z,{component:'petal-sedum-seed-ref-'+profile,instanceId:surface.instanceId,vertices:surface.vertices,faceIndex:surface.faceIndex,cameraAxis:axis.toArray()});}
 }
