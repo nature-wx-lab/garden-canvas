@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.980';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.981';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.980';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.981';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -28854,8 +28854,8 @@ export function sempervivumReferenceGeometry(type){
  const p=[],uv=[],ix=[],N=40,C=24,tube=type==='oddity';
  const point=(t,u,inner=false)=>{
   if(tube){const a=u*Math.PI*2,r=.22*Math.sin(t*Math.PI/2)**.5*(inner?.72:1);return[Math.sin(a)*r,t,Math.cos(a)*r];}
-  const sn=Math.max(0,Math.sin(Math.PI*t)),v=u*2-1,web=type==='clairchin';
-  return[v*.5*sn**(web?.55:.65)*(web?.90:1),t,(web?.19:.065)*sn*(1-v*v)+(web?.24:.04)*t*t];
+  const sn=Math.max(0,Math.sin(Math.PI*t)),v=u*2-1,web=type==='clairchin',krakow=type==='krakow';
+  return[v*.5*sn**(web?.55:krakow?.58:.65)*(web?.90:krakow?1.08:1),t,(web?.19:krakow?.12:.065)*sn*(1-v*v)+(web?.24:krakow?.10:.04)*t*t];
  };
  for(let side=0;side<(tube?2:1);side++){
   const off=p.length/3;
@@ -28866,14 +28866,14 @@ export function sempervivumReferenceGeometry(type){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData.sempervivumReference=type;return g;
 }
 function drawSempervivumRosetteReferences(b,{info,s}){
- const a=info.appearance,profile=a.shootProfile,odd=profile==='oddity',web=profile==='clairchin',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),D=Math.min(a.rosetteDiameter,w*.38,LH*2.4,h*1.8),Y=new THREE.Vector3(0,1,0),n=odd?40:web?72:60;
+ const a=info.appearance,profile=a.shootProfile,odd=profile==='oddity',web=profile==='clairchin',krakow=profile==='krakow',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),D=krakow?Math.min(w*.92,LH*2.4,h*1.8):Math.min(a.rosetteDiameter,w*.38,LH*2.4,h*1.8),Y=new THREE.Vector3(0,1,0),n=odd?40:web?72:krakow?48:60;
  const line=(from,to,r,kind,color)=>{const v=new THREE.Vector3(...to).sub(new THREE.Vector3(...from)),L=v.length();if(!L)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y,v.clone().normalize()),'YXZ'),mid=new THREE.Vector3(...from).add(new THREE.Vector3(...to)).multiplyScalar(.5);b.add(clematisRetailStemUnit,kind,color,...mid.toArray(),r,L,r,e.x,e.y,e.z);};
- for(let rosette=0;rosette<7;rosette++){
+ for(let rosette=0;rosette<(krakow?1:7);rosette++){
   const az0=(rosette-1)*TAU/6,reach=rosette?w*.29:0,at=[Math.sin(az0)*reach,LH*.12,Math.cos(az0)*reach],d=D*(rosette?.64:1),tips=[];
   line([at[0],0,at[2]],at,Math.min(d*.055,LH*.08),'rosette-base-sempervivum-ref','#81966b');
   for(let j=0;j<n;j++){
-   const t=j/(n-1),az=j*2.399963+rosette*.43,L=Math.min(d*(odd?.49:.52)*(1-t*(web?.50:.60)),LH*.72),pitch=(odd?.96:web?1.10:1.30)*(1-t)+(web?.05:.16),width=odd?.64:web?.90:.73,depth=odd?.64:1;
-   b.add('gcSempervivum-'+profile,'leaf-sempervivum-ref-'+profile,odd?'#83a84f':web?'#648c6a':'#93a874',...at,L*width,L,L*depth,pitch,az,0);
+   const t=j/(n-1),az=j*2.399963+rosette*.43,L=Math.min(d*(odd?.49:.52)*(1-t*(web?.50:.60)),LH*.72),pitch=(odd?.96:web?1.10:krakow?1.20:1.30)*(1-t)+(web?.05:.16),width=odd?.64:web?.90:krakow?.85:.73,depth=odd?.64:1;
+   b.add('gcSempervivum-'+profile,'leaf-sempervivum-ref-'+profile,odd?'#83a84f':web?'#648c6a':krakow?'#68a02c':'#93a874',...at,L*width,L,L*depth,pitch,az,0);
    if(web){const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,az,0,'YXZ'));tips.push(new THREE.Vector3(0,L,L*.24).applyQuaternion(q).add(new THREE.Vector3(...at)).toArray());}
   }
   if(web)for(let j=24;j<n;j++)for(const step of[5,13])line(tips[j],tips[24+(j-24+step)%(n-24)],Math.min(.000045,d*.0012),'hair-web-sempervivum-ref','#e0e3d8');
