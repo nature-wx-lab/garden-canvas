@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.973';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.974';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.973';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.974';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -28720,6 +28720,7 @@ export function sedumGroundcoverReferencePoint(type,t,u){
   const radius=t===0||t===1?0:.5*sn**.55,angle=u*Math.PI;
   return[Math.sin(angle)*radius,t,Math.cos(angle)*radius];
  }
+ if(type==='spurium'){const teeth=t>.30&&t<.93?1+.045*(1+Math.cos((t-.30)/.63*Math.PI*12)):1;return[u*.5*sn**.45*(.55+.60*t)*teeth,t,.075*sn*(1-u*u)+.04*u*u*sn];}
  if(type==='broad'){
   const teeth=t>.30&&t<.73?1+.065*Math.sin((t-.30)/.43*Math.PI*10):1;
   return[u*.5*sn**.62*(.36+.85*t)*teeth,t,.10*sn*(1-u*u)+.055*u*u*sn];
@@ -28727,13 +28728,13 @@ export function sedumGroundcoverReferencePoint(type,t,u){
  return[u*.5*sn**.62*(.92-.45*t),.035*sn+.03*t*t,t];
 }
 export function sedumGroundcoverReferenceGeometry(type){
- const points=[],uv=[],index=[];
- for(let j=0;j<=32;j++)for(let i=0;i<=20;i++){points.push(...sedumGroundcoverReferencePoint(type,j/32,i/20*2-1));uv.push(i/20,j/32);}
- for(let j=0;j<32;j++)for(let i=0;i<20;i++){const a=j*21+i;index.push(a,a+21,a+1,a+1,a+21,a+22);}
+ const points=[],uv=[],index=[],rows=type==='spurium'?96:32;
+ for(let j=0;j<=rows;j++)for(let i=0;i<=20;i++){points.push(...sedumGroundcoverReferencePoint(type,j/rows,i/20*2-1));uv.push(i/20,j/rows);}
+ for(let j=0;j<rows;j++)for(let i=0;i<20;i++){const a=j*21+i;index.push(a,a+21,a+1,a+1,a+21,a+22);}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(points,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(index);g.computeVertexNormals();return g;
 }
 function drawSedumGroundcoverReferences(b,{info,s},kit){
- const profile=info.appearance.shootProfile,broad=profile==='atlantis',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),sr=Math.min(.001,h*.013,w*.003,LH*.018),unitY=new THREE.Vector3(0,1,0),surfaces=[];
+ const profile=info.appearance.shootProfile,tricolor=profile==='tricolor',dragon=profile==='dragonsBlood',chocolate=profile==='chocolateBall',spurium=tricolor||dragon,broad=profile==='atlantis'||spurium,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),sr=Math.min(.001,h*.013,w*.003,LH*.018),unitY=new THREE.Vector3(0,1,0),surfaces=[];
  let petalSerial=0;
  const line=(from,to,r,color,kind)=>{
   const a=new THREE.Vector3(...from),z=new THREE.Vector3(...to),axis=z.clone().sub(a),length=axis.length();if(!length)return;
@@ -28744,7 +28745,7 @@ function drawSedumGroundcoverReferences(b,{info,s},kit){
   const frame=flowerFrame(b,at,pitch,yaw);
   for(let k=0;k<5;k++){
    const az=Math.PI/2+.05+k*TAU/5,instance=petalSerial++,scale=new THREE.Vector3(R*.44,R*.95,R*.95),base=[Math.sin(az)*R*.10,0,Math.cos(az)*R*.10];
-   frame.add('gcSedumGroundcoverPetal','petal-sedum-groundcover-ref-'+profile,'#f7df23',...base,...scale.toArray(),0,az,0);
+   frame.add('gcSedumGroundcoverPetal','petal-sedum-groundcover-ref-'+profile,tricolor?'#e7a2b5':dragon?'#d72c74':'#f7df23',...base,...scale.toArray(),0,az,0);
    if(k===0){
     const row=24,vertices=[row*21+10,(row+1)*21+10,row*21+11],q=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ')),fq=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ'));
     const points=vertices.map(v=>new THREE.Vector3(...sedumGroundcoverReferencePoint('petal',Math.floor(v/21)/32,v%21/20*2-1).map(Math.fround)).multiply(scale).applyQuaternion(q).add(new THREE.Vector3(...base)).applyQuaternion(fq).add(new THREE.Vector3(...at))),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();
@@ -28755,21 +28756,21 @@ function drawSedumGroundcoverReferences(b,{info,s},kit){
   for(let k=0;k<10;k++){
    const az=k*TAU/10,rr=R*.22,tip=[Math.sin(az)*rr,R*(.17+.025*(k%2)),Math.cos(az)*rr],from=new THREE.Vector3(0,0,0),to=new THREE.Vector3(...tip),axis=to.clone().sub(from),length=axis.length(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(unitY,axis.normalize()),'YXZ'),mid=from.add(to).multiplyScalar(.5),r=Math.min(sr*.25,R*.018);
    frame.add(clematisRetailStemUnit,'centre-thread-sedum-groundcover-ref-'+profile,'#f4e577',...mid.toArray(),r,length,r,e.x,e.y,e.z);
-   frame.add(kit.bud,'centre-tip-sedum-groundcover-ref-'+profile,broad?'#a74837':'#dfb63d',...tip,R*.042,R*.034,R*.042);
+   frame.add(kit.bud,'centre-tip-sedum-groundcover-ref-'+profile,profile==='atlantis'?'#a74837':'#dfb63d',...tip,R*.042,R*.034,R*.042);
   }
  };
- for(let shoot=0;shoot<10;shoot++){
+ for(let shoot=0;shoot<(tricolor?28:10);shoot++){
   let previous=[0,LH*.025,0],last;
-  const reach=w*(.16+.017*shoot),baseAz=shoot*2.399963;
-  for(let j=1;j<=6;j++){
-   const t=j/6,az=baseAz+.14*Math.sin(t*4+shoot),at=[Math.sin(az)*reach*t,LH*(.12+.38*t),Math.cos(az)*reach*t];
-   line(previous,at,sr*(1-t*.25),broad?'#889872':'#a8ac58','stem-sedum-groundcover-ref');previous=at;last=at;
+  const reach=w*(.16+(tricolor?.153*shoot/27:.017*shoot)),baseAz=shoot*2.399963;
+  for(let j=1;j<=(tricolor?18:6);j++){
+   const t=j/(tricolor?18:6),az=baseAz+.14*Math.sin(t*4+shoot),at=[Math.sin(az)*reach*t,LH*(.12+.38*t),Math.cos(az)*reach*t];
+   line(previous,at,sr*(1-t*.25),tricolor?'#ba8b9c':dragon?'#96565d':chocolate?'#8a5b44':broad?'#889872':'#a8ac58','stem-sedum-groundcover-ref');previous=at;last=at;
    if(s.leafDensity>0){
-    const L=Math.min(broad?.035:.026,h*.18,w*.10,LH*.22),count=broad?3:6;
-    for(let k=0;k<count;k++){const leafAz=az+j*.72+k*TAU/count,tilt=(broad?.78:.65)+.10*Math.sin(shoot+j+k);b.add(broad?'gcSedumGroundcoverBroad':'gcSedumGroundcoverNeedle','leaf-sedum-groundcover-ref-'+profile,broad?'#4f7951':'#b4c743',...at,L*(broad?.78:.15),L,L*(broad?.15:.15),tilt,leafAz,0);}
+    const L=Math.min(tricolor?.005:dragon?.018:chocolate?.010:broad?.035:.026,h*.18,w*.10,LH*.22),count=spurium?2:chocolate?8:broad?3:6;
+    for(let k=0;k<count;k++){const leafAz=az+j*.72+k*TAU/count,tilt=(broad?.78:.65)+.10*Math.sin(shoot+j+k);b.add(spurium?'gcSedumGroundcoverSpurium':broad?'gcSedumGroundcoverBroad':'gcSedumGroundcoverNeedle','leaf-sedum-groundcover-ref-'+profile,tricolor?'#7c9572':dragon?'#6f3d45':chocolate?'#7a4d34':broad?'#4f7951':'#b4c743',...at,L*(spurium?.90:chocolate?.24:broad?.78:.15),L,L*(chocolate?.24:.15),tilt,leafAz,0);}
    }
   }
-  if(s.bloom){
+  if(s.bloom&&(!tricolor||shoot<10)){
    const head=[last[0],h*(.72+.03*(shoot%3)),last[2]],R=Math.min(.005,h*.028,w*.018),clusterRadius=R*2.7;
    line(last,head,sr*.6,broad?'#9baf6a':'#c8c266','cluster-stem-sedum-groundcover-ref');
    for(let k=0;k<6;k++){const az=k*TAU/6+baseAz,at=[head[0]+Math.sin(az)*clusterRadius,head[1]+R*(.12+.10*(k%3)),head[2]+Math.cos(az)*clusterRadius];line(head,at,sr*.35,'#b7bd63','pedicel-sedum-groundcover-ref');flower(at,R,.12+.04*(k%3),az);}
