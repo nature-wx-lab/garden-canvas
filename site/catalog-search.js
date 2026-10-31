@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.963';
+import {treeProfile} from './tree-profiles.js?v=0.9.964';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -39,6 +39,7 @@ export function seasonAt(info,month){
  }else if(a.persistence==='urophyllaLeafyReference'){density=1;scale=1;phase=month>=6&&month<=9?'夏も葉が茂る管理例（高温時の葉焼け・落葉は未予測）':'葉を残す保護条件の常緑〜半常緑参考（低温管理の苗は別条件）';
  }else if(a.persistence==='mildEvergreenClematisReference'){density=1;scale=1;phase='葉を残す保護条件の常緑参考（寒さ・夏の高温多湿による落葉や成長停止は未予測）';
  }else if(a.persistence==='coldErectClematisReference'){density=[12,1,2].includes(month)?0:1;scale=1;phase=density?'つるにならない木立株の参考（芽丈・葉量・再生は未校正）':'低温期の落葉と枯茎を残す参考（残る茎の長さ・同株の冬姿は未確認）';
+ }else if(a.persistence==='unconfirmedClematisLeafReference'){density=1;scale=1;phase='冬葉・落葉時期未確認：展葉株の形を固定表示（常緑の判定ではありません）';
  }else if(a.persistence==='coldLeaflessClematisReference'){density=[12,1,2].includes(month)?0:1;scale=1;phase=density?'支持体に誘引した展葉株の参考（葉量・芽吹き・剪定後の再生は未校正）':'寒冷地の落葉した管理例（未剪定のつるを残す・暖地の冬葉は別条件）';
  }else if(a.persistence==='autumnHellebore'){
   density=[1,1,1,1,1,.50,0,0,0,.25,.70,1][m];scale=month===10?.35:month===11?.75:1;
