@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1003';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1004';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1003';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1004';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1261,7 +1261,38 @@ function drawSuperRedPhotoReference(b,{info,s,rand},kit){
  //12rooted main shoots plus24connected side shoots;288nodes/576pairedblades,36basal roots.No flowers or growth simulation.
 }
 
+// Narrow water-leaf reference; photo counts, section and coloration are illustrative.
+export function rotalaPhotoReferenceGeometry(){
+ const N=28,C=8,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,angle=j/C*TAU,sn=Math.sin(Math.PI*t),width=.5*Math.pow(sn,.70)*(1.02-.08*t),camber=.040*sn+.018*t*t;
+  p.push(Math.cos(angle)*width,t,camber+Math.sin(angle)*.010*sn);uv.push(j/C,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={rotalaPhotoReference:true,rootVertex:0,closedBlade:true,illustrativeCrossSection:true};return g;
+}
+function drawRotalaPhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),radius=Math.min(.00055,h*.006,w*.0018,LH*.02),L=Math.min(.020,w*.065),W=L*.20,stem=info.appearance.stemColor,leafKind='leaf-submerged-rotala-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ function pair(at,turn,t){for(let side=0;side<2;side++)b.add('rotala-photo-reference-leaf',leafKind,kit.shade(rand,t>.70?'#b98972':s.leafColor,.035),...at,W,L,Math.min(L,LH*.45),Math.acos(Math.min(.65,LH*.10/L)),turn+side*Math.PI,0);}
+ for(let shoot=0;shoot<16;shoot++){
+  const az=shoot*2.399+.2,rad=w*.25*Math.sqrt((shoot+.5)/16),origin=[Math.sin(az)*rad,base,Math.cos(az)*rad],peak=LH*(.68+.04*(shoot%4)),bend=w*.025,path=t=>[origin[0]+Math.sin(az+1)*bend*Math.sin(t*Math.PI*.6),base+(peak-base)*t,origin[2]+Math.cos(az+1)*bend*Math.sin(t*Math.PI*.6)];
+  for(let r=0;r<3;r++){const turn=az+r*TAU/3;b.branch(origin,[origin[0]+Math.sin(turn)*w*.011,base*.45,origin[2]+Math.cos(turn)*w*.011],Math.min(.00016,radius*.35),'#bab49d','root-submerged-rotala-photo-reference');}
+  let previous=origin;
+  for(let j=1;j<=14;j++){
+   const t=j/14,at=path(t);b.branch(previous,at,radius,stem,'stem-rotala-photo-reference');previous=at;pair(at,az+j*Math.PI/2,t);
+   if(j===5||j===9){const turn=az+(j===5?-.90:1.0),top=LH*(j===5?.67:.77),reach=w*.065;let prev=at;
+    for(let k=1;k<=7;k++){
+     const u=k/7,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];b.branch(prev,tip,radius*.7,stem,'side-shoot-rotala-photo-reference');prev=tip;pair(tip,turn+k*Math.PI/2,u*.85);
+    }
+   }
+  }
+ }
+ //16rooted main shoots,32connected side shoots:448nodes/896opposite blades.No emergent flowers or seasonal color prediction.
+}
+
 function drawSubmergedShoots(b,{info,s,p,detail,rand},kit){
+ if(info.appearance.shootProfile==='rotundifolia'){drawRotalaPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance.shootProfile==='superRed'){drawSuperRedPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance.shootProfile==='ovalis'){drawOvalisPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance.shootProfile==='glosso'){drawGlossostigmaPhotoReference(b,{info,s,rand},kit);return;}
