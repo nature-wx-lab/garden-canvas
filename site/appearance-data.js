@@ -13818,7 +13818,69 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "Walters Gardensの米国条件の高さ4〜6インチ・幅10〜12インチ・盛夏〜晩夏と国内値は別です。米国の栽培処理・肥料・日長による開花誘導を自動計算しません。赤い葯は農水省の記録参考で、花の中心の本数・発達段階は未実測です。"
   ],
   "leafPattern": "margin"
-},"p-e985b52526c7":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/sedum/","scope":"genus"},{"url":"https://item.rakuten.co.jp/ogis/400ch/","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"persistence":1,"phenologyRegion":1},"status":"attributes","arrangement":"alternate","inflorescence":"cyme","flowerShape":"star","habit":"upright","leafShape":"blade","leafTexture":"matte","petals":5,"persistence":"winterDormant","phenologyRegion":"grower-cold","unconfirmed":["leafPattern"]},"p-a04b147a4799":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/sedum/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1079","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/400b/","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"leafColor":2,"persistence":2,"phenologyRegion":2},"status":"attributes","arrangement":"alternate","inflorescence":"cyme","flowerShape":"star","habit":"upright","leafShape":"blade","leafTexture":"matte","petals":5,"leafColor":"#654756","persistence":"semiDormant","phenologyRegion":"grower-cold","unconfirmed":[]},"p-e505e49a052d":{
+},"p-e985b52526c7":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/400ch/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.nzflora.info/factsheet/Taxon/Hylotelephium-spectabile.html",
+      "scope": "species"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/sedum/",
+      "scope": "genus"
+    }
+  ],
+  "status": "partial",
+  "architecture": "hylotelephiumCultivarReferences",
+  "shootProfile": "autumnCharm",
+  "leafShape": "hylotelephiumBroadDentateReference",
+  "habit": "hylotelephiumUprightClumpReference",
+  "lifeForm": "herb",
+  "persistence": "coldHylotelephiumReference",
+  "standingWinter": true,
+  "flowerShape": "hylotelephiumCreamMarginPinkHeadsReference",
+  "flowerRadius": 0.0035,
+  "flowerMonths": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "flowerTiming": "season",
+  "phenologyRegion": "国内の夏〜秋を6〜11月の開花参考へ整理。12〜2月は低温時に葉がなく枯れ茎を未剪定で残した姿の例です。冬芽・萌芽日・年次回復量と月境界は未校正で、剪定を自動適用しません。",
+  "sourceConflict": "国内の草丈30〜40cm・幅20〜40cmを優先します。花丈と葉高・苗のポット規格を分け、夏〜秋を明示月と扱いません。花齢・低温による色と、寒冷地の剪定後の苗は条件を伴う資料です。未剪定成株の冬の茎・花房の残存率や暖地の残葉は未確認です。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合は0件です。年次成長・苗齢・地下部と翌春の回復量は未確認です。",
+    "国内資料の夏〜秋を6〜11月の表示参考へ整理しています。数字の明示月・実測した境界日ではなく、期間内の連続開花を保証しません。花齢の違う色を同時に置く写真参考で、固定月で一斉に色替えしません。",
+    "冬季落葉と株元の冬芽という販売元の記載を参考にします。12〜2月を低温時の葉なし・未剪定の枯れ茎と花房の表示例とし、月境界や暖地の残葉、茎の残存量は未校正です。剪定を自動で行わず、冬芽・地下部の形や芽吹く日も補いません。",
+    "7本の茎・各6節の対になる葉84枚、7花房・各77小花で計539花、各5枚の星状部分・10本の細い部分・5個の中心は描画例です。花房径・葉長・本数・密度と配置は販売株を実測した品種定数ではありません。",
+    "高さは花丈を含む成株の範囲で、葉だけの高さや苗齢ではありません。9〜10.5cmポットと剪定後の苗写真を成株の幅や年次成長へ換算しません。",
+    "小さい独立寸法では葉や花も入力範囲へ縮めます。切り戻し後の再生・倒伏・増殖・結実や冬越しの成功は予測しません。",
+    "クリーム色の縁と緑の中央がある肉厚葉、丸い淡桃色の花房と咲き進みのレンガ色を写真参考にします。オータムジョイ由来という販売元の説明を保持し、別の収録株へ置き換えません。",
+    "Hylotelephium spectabileの種資料は対生する広い葉・浅い歯・5花弁を補足します。ニュージーランドの2〜4月の花期や葉9×7cmを国内品種の値へ移しません。"
+  ],
+  "leafPattern": "margin",
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "standingWinter": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0,
+    "leafPattern": 0
+  }
+},"p-a04b147a4799":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/sedum/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1079","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/400b/","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"leafColor":2,"persistence":2,"phenologyRegion":2},"status":"attributes","arrangement":"alternate","inflorescence":"cyme","flowerShape":"star","habit":"upright","leafShape":"blade","leafTexture":"matte","petals":5,"leafColor":"#654756","persistence":"semiDormant","phenologyRegion":"grower-cold","unconfirmed":[]},"p-e505e49a052d":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/404dt/",
@@ -14852,7 +14914,72 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "丸い縁の多肉葉と銅赤色、鮮やかな桃色の星状花を個別写真参考にします。夏の緑色・秋冬の赤色や若い株の伸び方は条件を伴う説明で、固定月の色替え・年次の密生へ変換しません。",
     "既存の学名Sedum spuriumを保持し、今回の販売元のSedum(Phedimus)表記と区別します。同じ品種名であることを別の収録IDとの統合や現株の同一性の保証へ広げません。夏という見出しと初夏の開花写真説明も別の季節観察です。"
   ]
-},"p-bb5d14ff906a":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/sedum/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=2745","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/400th/","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":2,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"persistence":2,"phenologyRegion":2},"status":"attributes","arrangement":"alternate","inflorescence":"cyme","flowerShape":"star","habit":"upright","leafShape":"blade","leafTexture":"matte","petals":5,"persistence":"winterDormant","phenologyRegion":"grower-cold","unconfirmed":[]},"p-ae4296aaee42":{
+},"p-bb5d14ff906a":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/400th/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.terranovanurseries.com/product/sedum-thunderhead/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://patents.google.com/patent/US20140109279P1/en",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/sedum/",
+      "scope": "genus"
+    }
+  ],
+  "status": "partial",
+  "architecture": "hylotelephiumCultivarReferences",
+  "shootProfile": "thunderHead",
+  "leafShape": "hylotelephiumBroadDentateReference",
+  "habit": "hylotelephiumUprightClumpReference",
+  "lifeForm": "herb",
+  "persistence": "coldHylotelephiumReference",
+  "standingWinter": true,
+  "flowerShape": "hylotelephiumDeepRoseCloudReference",
+  "flowerRadius": 0.005,
+  "flowerMonths": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "flowerTiming": "season",
+  "phenologyRegion": "国内の夏〜秋を6〜11月の開花参考へ整理。12〜2月は低温時に葉がなく枯れ茎を未剪定で残した姿の例です。冬芽・萌芽日・年次回復量と月境界は未校正で、剪定を自動適用しません。",
+  "sourceConflict": "国内の草丈50〜70cm・幅30〜50cmを優先します。花丈と葉高・苗のポット規格を分け、夏〜秋を明示月と扱いません。育成元の米国の幅24inchと8〜9月、出願試験株の花径10mm・器官数は別条件の参考です。未剪定成株の冬の茎・花房の残存率や暖地の残葉は未確認です。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合は0件です。年次成長・苗齢・地下部と翌春の回復量は未確認です。",
+    "国内資料の夏〜秋を6〜11月の表示参考へ整理しています。数字の明示月・実測した境界日ではなく、期間内の連続開花を保証しません。花齢の違う色を同時に置く写真参考で、固定月で一斉に色替えしません。",
+    "冬季落葉と株元の冬芽という販売元の記載を参考にします。12〜2月を低温時の葉なし・未剪定の枯れ茎と花房の表示例とし、月境界や暖地の残葉、茎の残存量は未校正です。剪定を自動で行わず、冬芽・地下部の形や芽吹く日も補いません。",
+    "7本の茎・各6節の対になる葉84枚、7花房・各77小花で計539花、各5枚の星状部分・10本の細い部分・5個の中心は描画例です。花房径・葉長・本数・密度と配置は販売株を実測した品種定数ではありません。",
+    "高さは花丈を含む成株の範囲で、葉だけの高さや苗齢ではありません。9〜10.5cmポットと剪定後の苗写真を成株の幅や年次成長へ換算しません。",
+    "小さい独立寸法では葉や花も入力範囲へ縮めます。切り戻し後の再生・倒伏・増殖・結実や冬越しの成功は予測しません。",
+    "青灰色〜紫を帯びる葉と、頑丈な直立茎、大きく盛り上がる紫紅色の花房を写真参考にします。低温時のブロンズ色・ワイン色は条件差として残します。",
+    "育成元は交雑種と記載し、米国の8〜9月・葉高27inch／幅24inch／花高30inchを示します。国内の花丈込み50〜70cm・幅30〜50cmとは地域と尺度を分け、既存学名や苗齢を推定し直しません。",
+    "米国出願資料の試験株は花径10mm・5花弁・10雄しべ・5つの目立つ心皮です。この品種の細部の参考に留め、1茎1000花超・年齢に伴う増花、他2品種の器官数や国内の花期へ広げません。"
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "standingWinter": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0
+  }
+},"p-ae4296aaee42":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/404gm/",
@@ -15466,7 +15593,63 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "短く細い多肉葉の密なまとまりと銅褐色、伸びすぎない花茎の黄色い星状花を個別写真参考にします。アンジェリーナの黄色い葉や他の茶葉品種へ置き換えません。葉幅・輪状の本数と葉数は未実測です。",
     "暖かい時期の褐色、寒い時期の赤茶色と低温管理苗の少ない葉は条件のある説明です。今回の表示は展葉した褐色葉の参考で、固定の紅葉月・残葉率や落ちた葉からの再生は計算しません。"
   ]
-},"p-f44d061a9859":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/sedum/","scope":"genus"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0},"status":"attributes","arrangement":"alternate","inflorescence":"cyme","flowerShape":"star","habit":"upright","leafShape":"blade","leafTexture":"matte","petals":5,"unconfirmed":["persistence"]},"p-c347e6f4954f":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/sedum/","scope":"genus"},{"url":"https://www.ogis.co.jp/gallery/page01.php?id=1087","scope":"catalog-entry"},{"url":"https://item.rakuten.co.jp/ogis/400sc/","scope":"catalog-entry"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":1,"habit":0,"leafShape":0,"leafTexture":0,"petals":0,"persistence":2,"phenologyRegion":2},"status":"attributes","arrangement":"alternate","inflorescence":"cyme","flowerShape":"pompon","habit":"upright","leafShape":"blade","leafTexture":"matte","petals":5,"persistence":"winterDormant","phenologyRegion":"grower-cold","unconfirmed":[]},"p-c27d499fa713":{
+},"p-f44d061a9859":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/sedum/","scope":"genus"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"petals":0},"status":"attributes","arrangement":"alternate","inflorescence":"cyme","flowerShape":"star","habit":"upright","leafShape":"blade","leafTexture":"matte","petals":5,"unconfirmed":["persistence"]},"p-c347e6f4954f":{
+  "sources": [
+    {
+      "url": "https://item.rakuten.co.jp/ogis/400sc/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/sedum/",
+      "scope": "genus"
+    }
+  ],
+  "status": "partial",
+  "architecture": "hylotelephiumCultivarReferences",
+  "shootProfile": "strawberryCream",
+  "leafShape": "hylotelephiumBroadDentateReference",
+  "habit": "hylotelephiumUprightClumpReference",
+  "lifeForm": "herb",
+  "persistence": "coldHylotelephiumReference",
+  "standingWinter": true,
+  "flowerShape": "hylotelephiumStrawberryCreamBallReference",
+  "flowerRadius": 0.0035,
+  "flowerMonths": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "flowerTiming": "season",
+  "phenologyRegion": "国内の夏〜秋を6〜11月の開花参考へ整理。12〜2月は低温時に葉がなく枯れ茎を未剪定で残した姿の例です。冬芽・萌芽日・年次回復量と月境界は未校正で、剪定を自動適用しません。",
+  "sourceConflict": "国内の草丈40〜60cm・幅30〜40cmを優先します。花丈と葉高・苗のポット規格を分け、夏〜秋を明示月と扱いません。花齢・低温による色と、寒冷地の剪定後の苗は条件を伴う資料です。未剪定成株の冬の茎・花房の残存率や暖地の残葉は未確認です。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合は0件です。年次成長・苗齢・地下部と翌春の回復量は未確認です。",
+    "国内資料の夏〜秋を6〜11月の表示参考へ整理しています。数字の明示月・実測した境界日ではなく、期間内の連続開花を保証しません。花齢の違う色を同時に置く写真参考で、固定月で一斉に色替えしません。",
+    "冬季落葉と株元の冬芽という販売元の記載を参考にします。12〜2月を低温時の葉なし・未剪定の枯れ茎と花房の表示例とし、月境界や暖地の残葉、茎の残存量は未校正です。剪定を自動で行わず、冬芽・地下部の形や芽吹く日も補いません。",
+    "7本の茎・各6節の対になる葉84枚、7花房・各77小花で計539花、各5枚の星状部分・10本の細い部分・5個の中心は描画例です。花房径・葉長・本数・密度と配置は販売株を実測した品種定数ではありません。",
+    "高さは花丈を含む成株の範囲で、葉だけの高さや苗齢ではありません。9〜10.5cmポットと剪定後の苗写真を成株の幅や年次成長へ換算しません。",
+    "小さい独立寸法では葉や花も入力範囲へ縮めます。切り戻し後の再生・倒伏・増殖・結実や冬越しの成功は予測しません。",
+    "丸くまとまる花房のクリーム色の小さな星状部分と桃色の中心、ブロンズを帯びる暗灰色の葉を写真参考にします。白い縁取り葉へ置き換えません。",
+    "採用写真に見える色の違いだけから全器官を同定しません。5枚・10本・5個は属資料と外観による描画例で、サンダーヘッドの特許試験株の器官数・寸法をこの品種の確定値へ移しません。"
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "leafShape": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "standingWinter": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "phenologyRegion": 0
+  }
+},"p-c27d499fa713":{
   "sources": [
     {
       "url": "https://item.rakuten.co.jp/ogis/404cc/",

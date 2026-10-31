@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.975';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.976';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -767,3 +767,5 @@ Object.assign(TRAIT_VALUES,{sedumBroadScallopedReference:'丸い鋸歯のある�
 Object.assign(TRAIT_VALUES,{sedumTricolorScallopReference:'小さい丸い多肉葉と白桃色の縁を節へつなぐ写真参考',sedumDragonScallopReference:'丸い縁の銅赤色の多肉葉を節へつなぐ写真参考',sedumChocolateNeedleReference:'短く細い銅褐色の多肉葉を密に置く写真参考',sedumPinkStarClusterReference:'桃色の小さな星状花が枝先にまとまる参考'});
 
 Object.assign(TRAIT_VALUES,{sempervivumHollowTubeReference:'先が開いた筒状の多肉葉と赤い縁の写真参考',sempervivumRedPointReference:'幅広く先の尖る多肉葉と赤い葉先の写真参考',sempervivumWhiteWebReference:'丸く重なる小さい葉と白い糸状毛の写真参考',sempervivumRosetteGroupReference:'複数の根生ロゼットの配置参考（更新周期は未確認）'});
+
+Object.assign(TRAIT_VALUES,{hylotelephiumBroadDentateReference:'茎の節につく広い肉厚葉と浅い歯の写真参考',hylotelephiumUprightClumpReference:'直立する茎と枝先の花房の配置参考',coldHylotelephiumReference:'低温時の落葉と未剪定の枯れ茎を残す参考（月境界・回復量は未確認）',hylotelephiumCreamMarginPinkHeadsReference:'淡桃色の丸い花房と花齢によるレンガ色の参考',hylotelephiumDeepRoseCloudReference:'盛り上がる大きな紫紅色の花房の参考',hylotelephiumStrawberryCreamBallReference:'クリーム色の星状部分と桃色の中心が集まる丸い花房の参考'});

@@ -11183,7 +11183,61 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
     "source": "https://www.ogis.co.jp/gallery/page01.php?id=2746",
     "checked": "2026-10-11"
   }
-},"p-e985b52526c7":{"label":"セダム(ベンケイソウ) オータムチャーム","latin":"Sedum(Hylotelephium) spectabile 'Autumn Charm'","genre":"多肉","form":"rosette","group":"宿根草","leaf":"evergreen","height":[0.4,0.4],"spread":null,"bloom":[6,7,8,9,10,11],"bloomKnown":true,"flower":"#d695b3","leafColor":"#577d42","variegated":true,"colors":["pink"],"sun":["sun"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：夏～秋","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=1080","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[],"gardenUse":{"climate":"frost-lowland","basis":"おぎはら植物園の記載：耐寒性 強。","conditions":"日なたと水はけのよい場所。低温への強さだけで判断せず、滞水を避けて植えます。","source":"https://www.ogis.co.jp/gallery/page01.php?id=1080","checked":"2026-10-11"}},"p-a04b147a4799":{"label":"セダム(ミセバヤ) バートラムアンダーソン","latin":"Sedum(Hylotelephium) 'Bertram Anderson'","genre":"多肉","form":"rosette","group":"宿根草","leaf":"evergreen","height":[0.15,0.15],"spread":null,"bloom":[6,7,8,9,10,11],"bloomKnown":true,"flower":"#be4150","leafColor":"#577d42","variegated":false,"colors":["red"],"sun":["sun"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：夏～秋","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=1079","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[],"gardenUse":{"climate":"frost-lowland","basis":"おぎはら植物園の記載：耐寒性 強。","conditions":"日なたと水はけのよい場所。低温への強さだけで判断せず、滞水を避けて植えます。","source":"https://www.ogis.co.jp/gallery/page01.php?id=1079","checked":"2026-10-11"}},"p-e505e49a052d":{
+},"p-e985b52526c7":{
+  "label": "セダム(ベンケイソウ) オータムチャーム",
+  "latin": "Sedum(Hylotelephium) spectabile 'Autumn Charm'",
+  "genre": "多肉",
+  "form": "rosette",
+  "group": "宿根草",
+  "leaf": "herb",
+  "height": [
+    0.3,
+    0.4
+  ],
+  "spread": [
+    0.2,
+    0.4
+  ],
+  "bloom": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "bloomKnown": false,
+  "flower": "#edc3d2",
+  "leafColor": "#718c70",
+  "variegated": true,
+  "colors": [
+    "pink"
+  ],
+  "sun": [
+    "sun"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年ごとの成長量は未確認",
+  "season": "月別の草姿・葉・花の参考",
+  "care": "日当たりと排水を確保し、過湿を避けます。冬芽を残して古茎を整理するのは管理作業です。剪定・翌春の再生・増花・越冬成功を自動予測しません。",
+  "bloomText": "国内資料の花期は夏〜秋です。6〜11月は季節から整理した参考区分で、数字の明示月ではありません。",
+  "bloomBasis": "夏〜秋という季節を6〜11月の表示上の参考へ整理。明示月・実測境界ではありません。",
+  "source": "https://item.rakuten.co.jp/ogis/400ch/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-31",
+  "aliases": [],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": [],
+  "gardenUse": {
+    "climate": "frost-lowland",
+    "basis": "おぎはら植物園の記載：耐寒性 強。",
+    "conditions": "日なたと水はけのよい場所。低温への強さだけで判断せず、滞水を避けて植えます。",
+    "source": "https://www.ogis.co.jp/gallery/page01.php?id=1080",
+    "checked": "2026-10-11"
+  }
+},"p-a04b147a4799":{"label":"セダム(ミセバヤ) バートラムアンダーソン","latin":"Sedum(Hylotelephium) 'Bertram Anderson'","genre":"多肉","form":"rosette","group":"宿根草","leaf":"evergreen","height":[0.15,0.15],"spread":null,"bloom":[6,7,8,9,10,11],"bloomKnown":true,"flower":"#be4150","leafColor":"#577d42","variegated":false,"colors":["red"],"sun":["sun"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：夏～秋","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=1079","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[],"gardenUse":{"climate":"frost-lowland","basis":"おぎはら植物園の記載：耐寒性 強。","conditions":"日なたと水はけのよい場所。低温への強さだけで判断せず、滞水を避けて植えます。","source":"https://www.ogis.co.jp/gallery/page01.php?id=1079","checked":"2026-10-11"}},"p-e505e49a052d":{
   "label": "センペルビブム オデッティー",
   "latin": "Sempervivum tectorum 'Oddity'",
   "genre": "多肉",
@@ -12014,7 +12068,62 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
     "source": "https://www.ogis.co.jp/gallery/page01.php?id=1092",
     "checked": "2026-10-11"
   }
-},"p-bb5d14ff906a":{"label":"セダム(ベンケイソウ) サンダー ヘッド","latin":"Sedum telephium(Hylotelephium pallescens) 'Thunder Head'","genre":"多肉","form":"rosette","group":"宿根草","leaf":"evergreen","height":[0.7,0.7],"spread":null,"bloom":[6,7,8,9,10,11],"bloomKnown":true,"flower":"#be4150","leafColor":"#577d42","variegated":false,"colors":["red"],"sun":["sun"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：夏～秋","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=2745","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[],"gardenUse":{"climate":"frost-lowland","basis":"おぎはら植物園の記載：耐寒性 強。","conditions":"日なたと水はけのよい場所。低温への強さだけで判断せず、滞水を避けて植えます。","source":"https://www.ogis.co.jp/gallery/page01.php?id=2745","checked":"2026-10-11"}},"p-ae4296aaee42":{
+},"p-bb5d14ff906a":{
+  "label": "セダム(ベンケイソウ) サンダー ヘッド",
+  "latin": "Sedum telephium(Hylotelephium pallescens) 'Thunder Head'",
+  "genre": "多肉",
+  "form": "rosette",
+  "group": "宿根草",
+  "leaf": "herb",
+  "height": [
+    0.5,
+    0.7
+  ],
+  "spread": [
+    0.3,
+    0.5
+  ],
+  "bloom": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "bloomKnown": false,
+  "flower": "#b52f70",
+  "leafColor": "#596f70",
+  "variegated": false,
+  "colors": [
+    "pink",
+    "purple"
+  ],
+  "sun": [
+    "sun"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年ごとの成長量は未確認",
+  "season": "月別の草姿・葉・花の参考",
+  "care": "日当たりと排水を確保し、過湿を避けます。冬芽を残して古茎を整理するのは管理作業です。剪定・翌春の再生・増花・越冬成功を自動予測しません。",
+  "bloomText": "国内資料の花期は夏〜秋です。6〜11月は季節から整理した参考区分で、数字の明示月ではありません。",
+  "bloomBasis": "夏〜秋という季節を6〜11月の表示上の参考へ整理。明示月・実測境界ではありません。",
+  "source": "https://item.rakuten.co.jp/ogis/400th/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-31",
+  "aliases": [],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": [],
+  "gardenUse": {
+    "climate": "frost-lowland",
+    "basis": "おぎはら植物園の記載：耐寒性 強。",
+    "conditions": "日なたと水はけのよい場所。低温への強さだけで判断せず、滞水を避けて植えます。",
+    "source": "https://www.ogis.co.jp/gallery/page01.php?id=2745",
+    "checked": "2026-10-11"
+  }
+},"p-ae4296aaee42":{
   "label": "センペルビブム ギョーム",
   "latin": "Sempervivum calcareum 'Guillaume'",
   "genre": "多肉",
@@ -12527,7 +12636,63 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
     "source": "https://www.ogis.co.jp/gallery/page01.php?id=2880",
     "checked": "2026-10-11"
   }
-},"p-f44d061a9859":{"label":"セダム(コーカサスキリンソウ) ヴードゥー","latin":"Sedum(Phedimus) spurium 'Voodoo'","genre":"多肉","form":"rosette","group":"宿根草","leaf":"evergreen","height":[0.1,0.1],"spread":null,"bloom":[6,7,8],"bloomKnown":true,"flower":"#d695b3","leafColor":"#577d42","variegated":false,"colors":["pink"],"sun":["sun"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：夏","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=1093","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[],"gardenUse":{"climate":"frost-lowland","basis":"おぎはら植物園の記載：耐寒性 強。","conditions":"日なたと水はけのよい場所。低温への強さだけで判断せず、滞水を避けて植えます。","source":"https://www.ogis.co.jp/gallery/page01.php?id=1093","checked":"2026-10-11"}},"p-c347e6f4954f":{"label":"セダム(ベンケイソウ) ストロベリー&クリーム","latin":"Sedum telephium(Hylotelephium pallescens)  'Strawberry and Cream'","genre":"多肉","form":"rosette","group":"宿根草","leaf":"evergreen","height":[0.6,0.6],"spread":null,"bloom":[6,7,8,9,10,11],"bloomKnown":true,"flower":"#d695b3","leafColor":"#577d42","variegated":false,"colors":["pink"],"sun":["sun"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：夏～秋","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=1087","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[],"gardenUse":{"climate":"frost-lowland","basis":"おぎはら植物園の記載：耐寒性 強。","conditions":"日なたと水はけのよい場所。低温への強さだけで判断せず、滞水を避けて植えます。","source":"https://www.ogis.co.jp/gallery/page01.php?id=1087","checked":"2026-10-11"}},"p-c27d499fa713":{
+},"p-f44d061a9859":{"label":"セダム(コーカサスキリンソウ) ヴードゥー","latin":"Sedum(Phedimus) spurium 'Voodoo'","genre":"多肉","form":"rosette","group":"宿根草","leaf":"evergreen","height":[0.1,0.1],"spread":null,"bloom":[6,7,8],"bloomKnown":true,"flower":"#d695b3","leafColor":"#577d42","variegated":false,"colors":["pink"],"sun":["sun"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"掲載資料：夏","bloomBasis":"資料の季節表現を月へ整理した参考表示","source":"https://www.ogis.co.jp/gallery/page01.php?id=1093","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[],"gardenUse":{"climate":"frost-lowland","basis":"おぎはら植物園の記載：耐寒性 強。","conditions":"日なたと水はけのよい場所。低温への強さだけで判断せず、滞水を避けて植えます。","source":"https://www.ogis.co.jp/gallery/page01.php?id=1093","checked":"2026-10-11"}},"p-c347e6f4954f":{
+  "label": "セダム(ベンケイソウ) ストロベリー&クリーム",
+  "latin": "Sedum telephium(Hylotelephium pallescens)  'Strawberry and Cream'",
+  "genre": "多肉",
+  "form": "rosette",
+  "group": "宿根草",
+  "leaf": "herb",
+  "height": [
+    0.4,
+    0.6
+  ],
+  "spread": [
+    0.3,
+    0.4
+  ],
+  "bloom": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "bloomKnown": false,
+  "flower": "#d4617d",
+  "leafColor": "#594c5a",
+  "variegated": false,
+  "colors": [
+    "pink",
+    "white",
+    "mixed"
+  ],
+  "sun": [
+    "sun"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年ごとの成長量は未確認",
+  "season": "月別の草姿・葉・花の参考",
+  "care": "日当たりと排水を確保し、過湿を避けます。冬芽を残して古茎を整理するのは管理作業です。剪定・翌春の再生・増花・越冬成功を自動予測しません。",
+  "bloomText": "国内資料の花期は夏〜秋です。6〜11月は季節から整理した参考区分で、数字の明示月ではありません。",
+  "bloomBasis": "夏〜秋という季節を6〜11月の表示上の参考へ整理。明示月・実測境界ではありません。",
+  "source": "https://item.rakuten.co.jp/ogis/400sc/",
+  "publisher": "おぎはら植物園",
+  "sourceChecked": "2026-10-31",
+  "aliases": [],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": [],
+  "gardenUse": {
+    "climate": "frost-lowland",
+    "basis": "おぎはら植物園の記載：耐寒性 強。",
+    "conditions": "日なたと水はけのよい場所。低温への強さだけで判断せず、滞水を避けて植えます。",
+    "source": "https://www.ogis.co.jp/gallery/page01.php?id=1087",
+    "checked": "2026-10-11"
+  }
+},"p-c27d499fa713":{
   "label": "センペルビブム クレアチン",
   "latin": "Sempervivum arachnoideum 'Clairchin'",
   "genre": "多肉",
