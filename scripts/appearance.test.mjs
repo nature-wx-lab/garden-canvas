@@ -22082,3 +22082,56 @@ test('Egeria illustrative three shoots retain four or five leaves at connected n
  let pondModels=0;for(const height of[.45,.04]){const p={...input,height,leafHeight:height},pond=plantModel(p,{year:1,month:7,reference:false,waterDepth:.3},1);try{pond.updateMatrixWorld(true);const flowers=pond.children.find(m=>m.userData.component==='petal-submerged-egeria-photo-reference');assert.equal(!!flowers,height>.3);const leaves=pond.children.find(m=>m.userData.component==='leaf-submerged-egeria-photo-reference-underside-8bac65'),v=new Vector3(),matrix=new Matrix4();let top=-Infinity;for(let k=0;k<leaves.count;k++){leaves.getMatrixAt(k,matrix);matrix.premultiply(leaves.matrixWorld);for(let j=0;j<leaves.geometry.attributes.position.count;j++){v.fromBufferAttribute(leaves.geometry.attributes.position,j).applyMatrix4(matrix);top=Math.max(top,v.y);}}assert.ok(top<.3);if(flowers){flowers.getMatrixAt(0,matrix);assert.ok(new Vector3(0,0,0).applyMatrix4(matrix).y>.3);}pondModels++;}finally{dispose(pond);}}
  assert.equal(pondModels,2);console.log('EGERIA995_YEAR_AND_WATER '+JSON.stringify({yearModels:2,pondModels}));
 });
+
+test('Ceratophyllum reference fits twenty four independent dimensions with connected dichotomous whorled leaves',()=>{
+ const dimsList=[[.45,.35,.45],[.04,.10,.020],[.45,.35,.005],[.005,.03,.005],[.02,.05,.02],[.7,.15,.3],[.1,1,.05],[2,3,1.5]];let models=0,leafJoins=0,winterModels=0,vertices=0;
+ for(const dims of dimsList)for(const month of[7,4,1]){
+  const p={...makePlant('p-74f20c38e156',99610,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},copy=structuredClone(p),g=plantModel(p,{year:1,month,reference:false},1);models++;
+  try{
+   g.updateMatrixWorld(true);const winter=month===1,leaf=g.children.find(m=>m.userData.component==='leaf-submerged-ceratophyllum-reference'),axis=g.children.find(m=>m.userData.component===(winter?'turion-axis-ceratophyllum-reference':'stem-submerged-ceratophyllum-reference'));assert.equal(leaf?.count,winter?112:196);assert.equal(axis?.count,winter?16:28);assert.equal(leaf.geometry.userData.matsumoReference,true);assert.ok(!g.children.some(m=>m.userData.component.startsWith('root')||m.userData.component.startsWith('petal')));assert.equal(flowerInspectionView(g,.8,40),null);
+   const v=new Vector3(),matrix=new Matrix4();let lo=Infinity,hi=-Infinity,rad=0,leafTop=-Infinity;
+   for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);matrix.premultiply(mesh.matrixWorld);for(let j=0;j<mesh.geometry.attributes.position.count;j++){v.fromBufferAttribute(mesh.geometry.attributes.position,j).applyMatrix4(matrix);lo=Math.min(lo,v.y);hi=Math.max(hi,v.y);rad=Math.max(rad,Math.hypot(v.x,v.z));if(mesh===leaf)leafTop=Math.max(leafTop,v.y);vertices++;}}}
+   assert.ok(lo>=-2e-6,JSON.stringify({dims,month,lo}));assert.ok(hi<=dims[0]+2e-6,JSON.stringify({dims,month,hi}));assert.ok(rad*2<=dims[1]+2e-6,JSON.stringify({dims,month,rad}));assert.ok(leafTop<=Math.min(dims[0],dims[2])+2e-6,JSON.stringify({dims,month,leafTop}));
+   const point=(mesh,k,q)=>{const m=new Matrix4();mesh.getMatrixAt(k,m);return q.applyMatrix4(m).applyMatrix4(mesh.matrixWorld);},ends=Array.from({length:axis.count},(_,k)=>point(axis,k,new Vector3(0,.5,0))),whorls=ends.map(()=>0);
+   for(let k=0;k<leaf.count;k++){const root=point(leaf,k,new Vector3().fromBufferAttribute(leaf.geometry.attributes.position,leaf.geometry.userData.rootVertex)),distances=ends.map(end=>end.distanceTo(root)),nearest=distances.indexOf(Math.min(...distances));assert.ok(distances[nearest]<2e-6);whorls[nearest]++;leafJoins++;}assert.ok(whorls.every(n=>n===7));
+   let bases=0;for(let k=0;k<axis.count;k++){const start=point(axis,k,new Vector3(0,-.5,0));if(!ends.some(end=>end.distanceTo(start)<2e-6))bases++;}assert.equal(bases,1);assert.deepEqual(p,copy);if(winter)winterModels++;
+  }finally{dispose(g);}
+ }
+ assert.equal(models,24);assert.equal(leafJoins,4032);assert.equal(winterModels,8);console.log('MATSUMO996_BOUNDARIES '+JSON.stringify({models,leafJoins,winterModels,vertices}));
+});
+test('Ceratophyllum actual tubular leaf forks meet at matching ring centres with stable illustrative whorls',()=>{
+ const input={...makePlant('p-74f20c38e156',99610,3,3),height:.45,spread:.35,leafHeight:.45},g=plantModel(input,{year:1,month:7,reference:false},1);let forkJoins=0;
+ try{
+  const leaf=g.children.find(m=>m.userData.component==='leaf-submerged-ceratophyllum-reference'),geometry=leaf.geometry,positions=geometry.attributes.position,sections=geometry.userData.sections;assert.equal(sections.length,7);assert.equal(leaf.count,196);assert.ok([...geometry.attributes.normal.array].every(Number.isFinite));assert.ok([...geometry.index.array].every(i=>i>=0&&i<positions.count));
+  const centre=(first,n)=>{const c=new Vector3();for(let i=0;i<n;i++)c.add(new Vector3().fromBufferAttribute(positions,first+i));return c.multiplyScalar(1/n);};
+  for(let i=1;i<sections.length;i++){const part=sections[i],parent=sections.find(p=>p.toNode===part.fromNode);assert.ok(parent);assert.ok(centre(part.firstRing,part.ringVertices).distanceTo(centre(parent.lastRing,parent.ringVertices))<1e-7);forkJoins++;}
+  const root=new Vector3().fromBufferAttribute(positions,geometry.userData.rootVertex);assert.ok(root.length()<1e-10);assert.ok(centre(sections[0].firstRing,sections[0].ringVertices).distanceTo(root)<1e-7);assert.equal(new Set(sections.map(p=>p.toNode).filter(n=>!sections.some(p=>p.fromNode===n))).size,4);const a=CATALOG[input.kind].appearance;assert.equal(a.shootProfile,'ceratophyllum');assert.equal(a.flowerShape,'none');assert.equal(a.status,'partial');assert.ok(a.unconfirmed.some(s=>s.includes('196枚')&&s.includes('112枚')));
+ }finally{dispose(g);}
+ assert.equal(forkJoins,6);console.log('MATSUMO996_FORKS '+JSON.stringify({geometryModels:1,forkJoins,terminalTips:4}));
+});
+test('Ceratophyllum floating shoots and winter buds retain rootless display without automatic stock multiplication',()=>{
+ const input={...makePlant('p-74f20c38e156',99610,3,3),height:.45,spread:.35,leafHeight:.45};let yearModels=0,pondModels=0;
+ for(const month of[7,1]){
+  const g=plantModel(input,{year:1,month,reference:false},1),later=plantModel(input,{year:5,month,reference:false},1);yearModels+=2;
+  try{const leaf=group=>group.children.find(m=>m.userData.component==='leaf-submerged-ceratophyllum-reference');assert.deepEqual([...leaf(g).instanceMatrix.array],[...leaf(later).instanceMatrix.array]);assert.ok(!g.children.some(m=>/root|fruit|offspring/.test(m.userData.component)));assert.equal(flowerInspectionView(g,1.65,40),null);}finally{dispose(g);dispose(later);}
+  const pond=plantModel(input,{year:1,month,reference:false,waterDepth:.3},1);pondModels++;
+  try{pond.updateMatrixWorld(true);const leaf=pond.children.find(m=>m.userData.component==='leaf-submerged-ceratophyllum-reference'),v=new Vector3(),matrix=new Matrix4();let top=-Infinity;for(let k=0;k<leaf.count;k++){leaf.getMatrixAt(k,matrix);matrix.premultiply(leaf.matrixWorld);for(let j=0;j<leaf.geometry.attributes.position.count;j++){v.fromBufferAttribute(leaf.geometry.attributes.position,j).applyMatrix4(matrix);top=Math.max(top,v.y);}}assert.ok(top<.3);assert.equal(flowerInspectionView(pond,.8,40),null);}finally{dispose(pond);}
+ }
+ assert.equal(yearModels,4);assert.equal(pondModels,2);console.log('MATSUMO996_YEAR_AND_WATER '+JSON.stringify({yearModels,pondModels}));
+});
+
+import{matsumoFoliageInspectionView as matsumoVisibleFocus996}from'../site/scene.js';
+test('Ceratophyllum visible model focus frames six summer and winter models above the camera floor',()=>{
+ let models=0,poses=0;const point=new Vector3(),matrix=new Matrix4();
+ for(const dims of[[.45,.35,.45],[.04,.10,.020],[.45,.35,.005]])for(const month of[7,1]){
+  const input={...makePlant('p-74f20c38e156',99610,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},g=plantModel(input,{year:1,month,reference:false},1);models++;
+  try{
+   g.position.set(-2,.012,-1);g.updateMatrixWorld(true);
+   for(const aspect of[.8,1.65]){
+    const pose=matsumoVisibleFocus996(g,aspect,40);assert.ok(pose);assert.equal(pose.fit,'matsumo-visible-model');assert.ok(pose.position[1]>=.1);const camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);
+    for(const mesh of g.children)for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);matrix.premultiply(mesh.matrixWorld);for(let j=0;j<mesh.geometry.attributes.position.count;j++){point.fromBufferAttribute(mesh.geometry.attributes.position,j).applyMatrix4(matrix).project(camera);assert.ok(Math.abs(point.x)<=1+2e-6&&Math.abs(point.y)<=1+2e-6&&point.z>=-1&&point.z<=1);}}poses++;
+   }
+  }finally{dispose(g);}
+ }
+ assert.equal(matsumoVisibleFocus996({userData:{architecture:'submergedShoots'}}),null);assert.equal(models,6);assert.equal(poses,12);console.log('MATSUMO996_VISIBLE_FOCUS '+JSON.stringify({models,poses,otherProfilesReturnNull:true}));
+});

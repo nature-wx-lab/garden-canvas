@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.995';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.996';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.995';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.996';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1091,7 +1091,55 @@ function drawEgeriaPhotoReference(b,{s,rand},kit){
  for(let k=0;k<9;k++){const angle=k*TAU/9,base=[Math.sin(angle)*R*.08,0,Math.cos(angle)*R*.08],tip=[Math.sin(angle)*R*.17,R*.18,Math.cos(angle)*R*.17];f.branch(base,tip,R*.008,'#ded9b5','filament-egeria-photo-reference');f.add(kit.bud,'anther-egeria-photo-reference','#d9b944',...tip,R*.035,R*.045,R*.025);}
 }
 
+// Ceratophyllum leaf forks follow the domestic description; mesh radii and counts are examples.
+export function matsumoReferenceGeometry(){
+ const nodes=[[0,0,0],[0,.26,.02],[-.18,.59,.04],[.18,.59,-.02],[-.36,1,.08],[-.07,.96,.015],[.07,.96,-.035],[.36,1,.045]],edges=[[0,1],[1,2],[1,3],[2,4],[2,5],[3,6],[3,7]],N=8,C=8,p=[],uv=[],ix=[],sections=[];
+ for(let part=0;part<edges.length;part++){
+  const [a,z]=edges[part],start=new THREE.Vector3(...nodes[a]),end=new THREE.Vector3(...nodes[z]),direction=end.clone().sub(start).normalize(),u=new THREE.Vector3().crossVectors(direction,new THREE.Vector3(0,0,1)).normalize(),v=new THREE.Vector3().crossVectors(direction,u).normalize(),offset=p.length/3;
+  for(let i=0;i<=N;i++){
+   const t=i/N,centre=start.clone().lerp(end,t),tip=z>=4,radius=.020*(part? .80:1)*(tip?1-t:1-.12*t);
+   for(let j=0;j<=C;j++){
+    const angle=j/C*TAU,point=centre.clone().addScaledVector(u,Math.cos(angle)*radius).addScaledVector(v,Math.sin(angle)*radius);p.push(...point.toArray());uv.push(j/C,t);
+    if(i<N&&j<C){const k=offset+i*(C+1)+j;ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);}
+   }
+  }
+  sections.push({fromNode:a,toNode:z,firstRing:offset,lastRing:offset+N*(C+1),ringVertices:C,sourceSupportedDichotomy:true});
+ }
+ const root=p.length/3;p.push(0,0,0);uv.push(.5,0);for(let j=0;j<C;j++)ix.push(root,j+1,j);
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={matsumoReference:true,illustrativeCrossSection:true,part:'dichotomousLeaf',sections,rootVertex:root};return g;
+}
+function drawMatsumoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,water=s.waterDepth>0,LH=Math.min(s.leafHeight,h*.92,water?Math.max(.003,s.waterDepth-.012):Infinity),winter=[12,1,2].includes(s.month),leafKind='leaf-submerged-ceratophyllum-reference';
+ if(winter){
+  const length=Math.min(.04,h*.80,LH*.80,w*.50),base=[0,Math.min(.001,h*.04,LH*.04),0],radius=Math.min(.0009,length*.018,w*.01);let prev=base;
+  for(let j=1;j<=16;j++){
+   const t=j/16,at=[0,base[1]+length*.68*t,0];b.branch(prev,at,radius,'#75815a','turion-axis-ceratophyllum-reference');prev=at;
+   const L=Math.min(.006,length*.22,w*.15)*( .76+.24*Math.sin(t*Math.PI*.82));
+   for(let k=0;k<7;k++)b.add('matsumo-forked-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.025),...at,L,L,L,.10,j*1.7+k*TAU/7,0);
+  }
+  return;
+ }
+ const radius=Math.min(.0008,h*.005,w*.004,LH*.018),base=[0,Math.min(h*.04,LH*.05,w*.03,.015),0],az=.35;
+ const main=t=>[Math.sin(az)*w*.055*Math.sin(t*Math.PI*.85),base[1]+LH*.72*(1-Math.pow(1-t,1.18)),Math.cos(az)*w*.030*t];
+ function shoot(path,n,turn){
+  let prev=path(0);
+  for(let j=1;j<=n;j++){
+   const t=j/n,at=path(t);b.branch(prev,at,radius,'#75815a','stem-submerged-ceratophyllum-reference');prev=at;
+   const L=Math.min(.020*(.88+.12*Math.sin(t*Math.PI*.8)),w*.16,LH*.60,Math.max(.00002,(LH-at[1])*.82));
+   for(let k=0;k<7;k++)b.add('matsumo-forked-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.025),...at,L,L,L,.72+(j%3)*.08,turn+j*.91+k*TAU/7,0);
+  }
+ }
+ shoot(main,14,.3);
+ for(let side=0;side<2;side++){
+  const at=main((side?8:4)/14),turn=side?2.7:-1.05,top=base[1]+LH*(side?.66:.62),reach=w*(side?.18:.21);
+  shoot(t=>[at[0]+Math.sin(turn)*reach*t,at[1]+(top-at[1])*(1-Math.pow(1-t,1.20)),at[2]+Math.cos(turn)*reach*t],7,turn);
+ }
+ // No invented roots or flower anchors: exceptional attachment and rare flowers remain unrepresented.
+}
+
 function drawSubmergedShoots(b,{info,s,p,detail,rand},kit){
+ if(info.appearance.shootProfile==='ceratophyllum'){drawMatsumoReference(b,{s,rand},kit);return;}
  if(info.appearance.shootProfile==='egeria'){drawEgeriaPhotoReference(b,{s,rand},kit);return;}
  if(['mossSouth','mossWillow','myrioGreen','myrioOrange','goldJenny','indica','rotalaFlower','najas'].includes(info.appearance.shootProfile)){drawWaterBranches(b,{info,s,p,detail,rand},kit);return;}
  if(['shortHair','hair','greenRotala','nanjenshan','pearl','largePearl','newPearl','cobra'].includes(info.appearance.shootProfile)){drawWaterMeadow(b,{info,s,p,detail,rand},kit);return;}
