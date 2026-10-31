@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.996';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.997';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.996';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.997';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1029,6 +1029,27 @@ export function submergedLeafPoint(type,t,u){
  if(egeria)width*=.95+.05*Math.sin(t*TAU*25);
  return[u*.5*width,t,.025*sn+.07*u*u*sn+(egeria?.12:.05)*t*t];
 }
+// Cabomba fan segments follow six basal divisions and two further binary forks; radii are illustrative.
+export function cabombaReferenceGeometry(){
+ const nodes=[[0,0,0]],edges=[],N=4,C=6,p=[],uv=[],ix=[],sections=[];
+ function fork(at,angle,length,depth){
+  const a=nodes.length;nodes.push([at[0]+Math.sin(angle)*length,at[1]+Math.cos(angle)*length,at[2]+.014*length]);edges.push([nodes.indexOf(at),a]);
+  if(depth)for(const side of[-1,1])fork(nodes[a],angle+side*.23,length*.53,depth-1);
+ }
+ for(let k=0;k<6;k++)fork(nodes[0],(k-2.5)*.47,.55,2);
+ for(let part=0;part<edges.length;part++){
+  const[a,z]=edges[part],start=new THREE.Vector3(...nodes[a]),end=new THREE.Vector3(...nodes[z]),direction=end.clone().sub(start).normalize(),u=new THREE.Vector3().crossVectors(direction,new THREE.Vector3(0,0,1)).normalize(),v=new THREE.Vector3().crossVectors(direction,u).normalize(),offset=p.length/3,terminal=!edges.some(e=>e[0]===z);
+  for(let i=0;i<=N;i++){
+   const t=i/N,centre=start.clone().lerp(end,t),radius=.020*(terminal?1-t:1-.12*t);
+   for(let j=0;j<=C;j++){const angle=j/C*TAU,point=centre.clone().addScaledVector(u,Math.cos(angle)*radius).addScaledVector(v,Math.sin(angle)*radius);p.push(...point.toArray());uv.push(j/C,t);if(i<N&&j<C){const k=offset+i*(C+1)+j;ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);}}
+  }
+  sections.push({fromNode:a,toNode:z,firstRing:offset,lastRing:offset+N*(C+1),ringVertices:C,terminal});
+ }
+ const root=p.length/3;p.push(0,0,0);uv.push(.5,0);
+ for(const section of sections.filter(e=>e.fromNode===0))for(let j=0;j<C;j++)ix.push(root,section.firstRing+j+1,section.firstRing+j);
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={cabombaReference:true,illustrativeCrossSection:true,rootVertex:root,nodes,sections,basalDivisions:6,forkRounds:2,terminalTips:24};return g;
+}
+
 export function submergedFineGeometry(type){
  const pos=[],uv=[],ix=[];
  function strip(a,b,r){const off=pos.length/3,dx=b[0]-a[0],dy=b[1]-a[1],ln=Math.hypot(dx,dy)||1,n=[-dy/ln*r,dx/ln*r,0];for(const [p,side] of [[a,-1],[a,1],[b,-1],[b,1]]){pos.push(p[0]+n[0]*side,p[1]+n[1]*side,p[2]);uv.push(side*.5+.5,p[1]);}ix.push(off,off+1,off+2,off+2,off+1,off+3);}
@@ -1143,31 +1164,31 @@ function drawSubmergedShoots(b,{info,s,p,detail,rand},kit){
  if(info.appearance.shootProfile==='egeria'){drawEgeriaPhotoReference(b,{s,rand},kit);return;}
  if(['mossSouth','mossWillow','myrioGreen','myrioOrange','goldJenny','indica','rotalaFlower','najas'].includes(info.appearance.shootProfile)){drawWaterBranches(b,{info,s,p,detail,rand},kit);return;}
  if(['shortHair','hair','greenRotala','nanjenshan','pearl','largePearl','newPearl','cobra'].includes(info.appearance.shootProfile)){drawWaterMeadow(b,{info,s,p,detail,rand},kit);return;}
- const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,depth=s.waterDepth,water=depth>0,winter=[12,1,2].includes(s.month),fine=['cabomba','ceratophyllum'].includes(type),mat=type==='glosso',turion=winter&&fine;
+ const a=info.appearance,type=a.shootProfile,h=type==='cabomba'?Math.min(s.height,s.leafHeight):s.height,w=s.spread,depth=s.waterDepth,water=depth>0,winter=[12,1,2].includes(s.month),fine=['cabomba','ceratophyllum'].includes(type),mat=type==='glosso',turion=winter&&fine;
  const green=s.leafColor,stem=a.stemColor,kind='leaf-submerged-'+type+'-underside-'+a.leafUnderside.slice(1),frame=(at,pitch,az)=>flowerFrame(b,at,pitch,az);
- function leaf(at,az,L,scale=1,pitch=1.0,color=green){const len=L*scale,f=frame(at,pitch,az),shape=fine?'water-fine-'+type:'water-'+type;f.add(shape,kind,kit.shade(rand,color,.025),0,0,0,fine?len:len*a.leafWidth/a.leafLength,len,len);}
+ function leaf(at,az,L,scale=1,pitch=1.0,color=green){const len=type==='cabomba'?Math.min(L*scale,h*.20,w*.08):L*scale,f=frame(at,pitch,az),shape=fine?'water-fine-'+type:'water-'+type;f.add(shape,kind,kit.shade(rand,color,.025),0,0,0,fine?len:len*a.leafWidth/a.leafLength,len,len);}
  if(turion){
-  const n=Math.round((type==='cabomba'?9:11)*detail);
-  for(let k=0;k<n;k++){const az=k*2.399,rad=w*.28*Math.sqrt((k+.5)/n),len=type==='cabomba'?.07:.045,base=[Math.sin(az)*rad,.003,Math.cos(az)*rad];b.branch(base,[base[0],len,base[2]],.001,stem,'turion-axis-'+type);
+  const n=type==='cabomba'?1:Math.round(11*detail);
+  for(let k=0;k<n;k++){const az=k*2.399,rad=w*.28*Math.sqrt((k+.5)/n),len=type==='cabomba'?Math.min(.055,h*.65,w*.45):.045,base=[Math.sin(az)*rad,type==='cabomba'?Math.min(.001,h*.04):.003,Math.cos(az)*rad];b.branch(base,[base[0],len,base[2]],type==='cabomba'?Math.min(.001,h*.015,w*.008):.001,stem,'turion-axis-'+type);
    for(let j=0;j<15;j++)for(let q=0;q<(type==='cabomba'?2:7);q++)leaf([base[0],len*(j+1)/16,base[2]],az+q*TAU/(type==='cabomba'?2:7)+j*.7,a.leafLength,.26+.19*Math.sin(Math.PI*j/15),.40);
   }
   return;
  }
- const n=Math.round((mat?150:type==='cabomba'?17:type==='ceratophyllum'?13:type==='egeria'?19:20)*detail),limit=water?Math.max(.025,depth-.035):h;
+ const n=Math.round((mat?150:type==='cabomba'?7:type==='ceratophyllum'?13:type==='egeria'?19:20)*detail),limit=type==='cabomba'?Math.min(h*.72,water?Math.max(.001,depth-.035):Infinity):water?Math.max(.025,depth-.035):h;
  for(let k=0;k<n;k++){
-  const az=k*2.399+rand()*.35,runAz=mat?rand()*TAU:az,rad=w*(mat?.40:.29)*Math.sqrt((k+.5)/n),base=[Math.sin(az)*rad,mat?.003:type==='ceratophyllum'&&water?limit*(.26+rand()*.22):.003,Math.cos(az)*rad];
+  const az=k*2.399+rand()*.35,runAz=mat?rand()*TAU:az,rad=w*(mat?.40:.29)*Math.sqrt((k+.5)/n),base=[Math.sin(az)*rad,mat?.003:type==='ceratophyllum'&&water?limit*(.26+rand()*.22):type==='cabomba'?Math.min(.001,h*.04):.003,Math.cos(az)*rad];
   const len=h*(.64+rand()*.34),visible=mat?Math.min(.02,h*.3):Math.min(len,limit-base[1]),bend=Math.min(w*.19,Math.max(.005,len-visible)*.6),nodes=mat?10:Math.min(28,Math.max(7,Math.ceil(len/.018)));
   const floating=type==='ceratophyllum',reach=floating?Math.min(len*.72,w*.50):mat?w*.12:bend;
-  const path=t=>[base[0]+Math.sin(runAz)*reach*t,base[1]+(mat?.004*Math.sin(Math.PI*t):floating?visible*(.25*t+.40*Math.sin(t*Math.PI*.65)):visible*(1-Math.pow(1-t,1.7))),base[2]+Math.cos(runAz)*reach*t+.006*Math.sin(t*6+az)];
-  let prev=base;for(let j=1;j<=nodes;j++){const t=j/nodes,at=path(t);b.branch(prev,at,type==='egeria'?.0012:fine?.0007:.0009,stem,'stem-submerged-'+type);prev=at;
+  const path=t=>[base[0]+Math.sin(runAz)*reach*t,base[1]+(mat?.004*Math.sin(Math.PI*t):floating?visible*(.25*t+.40*Math.sin(t*Math.PI*.65)):visible*(1-Math.pow(1-t,1.7))),base[2]+Math.cos(runAz)*reach*t+(type==='cabomba'?Math.min(.006,w*.02):.006)*Math.sin(t*6+az)];
+  let prev=base;for(let j=1;j<=nodes;j++){const t=j/nodes,at=path(t);b.branch(prev,at,type==='cabomba'?Math.min(.0007,h*.015,w*.008):type==='egeria'?.0012:fine?.0007:.0009,stem,'stem-submerged-'+type);prev=at;
    const whorl=type==='cabomba'?2:type==='ceratophyllum'?7:type==='egeria'?4+(j%2):type==='ovalis'?1:2,rotation=j*(type==='ovalis'?2.399:1.5708);
    for(let q=0;q<whorl;q++){const aa=az+rotation+q*TAU/whorl,L=a.leafLength*(.72+.28*Math.sin(Math.PI*t*.8));leaf(at,aa,L,1,mat?1.03:fine?.91:type==='egeria'?.72:1.02,type==='rotundifolia'&&t>.73?'#b37c64':green);}
-   if(type!=='ceratophyllum'&&j%5===1){for(let q=0;q<3;q++){const aa=az+q*2.2,root=[at[0]+Math.sin(aa)*.01,Math.max(.001,at[1]-.03),at[2]+Math.cos(aa)*.01];b.branch(at,root,.0002,'#c9c8ac','root-submerged-'+type);}}
-   if(!fine&&!mat&&type!=='egeria'&&j===Math.floor(nodes*.5)){
-    const tip=[at[0]+Math.sin(az+1)*w*.12,Math.min(limit,at[1]+.065),at[2]+Math.cos(az+1)*w*.12];b.branch(at,tip,.0006,stem,'side-shoot-'+type);for(let q=1;q<=3;q++){const loc=at.map((v,i)=>v+(tip[i]-v)*q/3);for(let side=0;side<(type==='ovalis'?1:2);side++)leaf(loc,az+side*Math.PI+q*1.6,a.leafLength*.7,1,1.02);}}
+   if(type!=='ceratophyllum'&&j%5===1){for(let q=0;q<3;q++){const aa=az+q*2.2,root=[at[0]+Math.sin(aa)*(type==='cabomba'?Math.min(.01,w*.03):.01),Math.max(type==='cabomba'?Math.min(.001,h*.04):.001,at[1]-.03),at[2]+Math.cos(aa)*(type==='cabomba'?Math.min(.01,w*.03):.01)];b.branch(at,root,type==='cabomba'?Math.min(.0002,h*.005,w*.003):.0002,'#c9c8ac','root-submerged-'+type);}}
+   if((!fine||type==='cabomba')&&!mat&&type!=='egeria'&&j===Math.floor(nodes*.5)){
+    const tip=[at[0]+Math.sin(az+1)*w*(type==='cabomba'?.06:.12),Math.min(limit,at[1]+.065),at[2]+Math.cos(az+1)*w*(type==='cabomba'?.06:.12)];b.branch(at,tip,.0006,stem,'side-shoot-'+type);for(let q=1;q<=3;q++){const loc=at.map((v,i)=>v+(tip[i]-v)*q/3);for(let side=0;side<(type==='ovalis'?1:2);side++)leaf(loc,az+side*Math.PI+q*1.6,a.leafLength*.7,1,1.02);}}
   }
-  if(s.bloom&&['cabomba','egeria'].includes(type)&&len>=limit-.025&&k%4===0){
-   const at=path(.92),top=[at[0]+.01,water?depth+.009:h+.025,at[2]],f=frame(top,.04,az),R=type==='cabomba'?.008:.01;
+  if(s.bloom&&['cabomba','egeria'].includes(type)&&(type==='cabomba'?s.height>=.06&&s.height>=(water?depth:h)-.025:len>=limit-.025)&&k%4===0){
+   const at=path(.92),top=[at[0]+.01,water?depth+.009:type==='cabomba'?s.height*.95:h+.025,at[2]],f=frame(top,.04,az),R=type==='cabomba'?Math.min(.008,s.height*.035,w*.05):.01;
    b.branch(at,top,.00055,'#97a365','pedicel-submerged-'+type);
    for(let j=0;j<3;j++){const aa=j*TAU/3;f.add('forest-coptisSepal',type==='cabomba'?'petaloid-sepal-cabomba':'sepal-egeria',type==='cabomba'?'#eee9df':'#7a985d',0,-.001,0,R*.7,R*.55,R*.85,0,aa+Math.PI/3,0);f.add('forest-coptisSepal','petal-submerged-'+type,'#f5f2e8',0,0,0,R,R,R,0,aa,0);f.add(kit.bud,'nectary-submerged-'+type,'#d4b845',Math.sin(aa)*.002,.0004,Math.cos(aa)*.002,.0012,.0004,.0012);}
    for(let j=0;j<(type==='cabomba'?6:9);j++){const aa=j*2.399,loc=[Math.sin(aa)*.0018,.0028,Math.cos(aa)*.0018];f.branch([0,0,0],loc,.00010,'#e2ddb0','stamen-submerged');f.add(kit.bud,'anther-submerged','#ddb446',...loc,.00035,.00045,.00035);}

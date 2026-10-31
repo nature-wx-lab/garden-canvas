@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.996';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.996';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.997';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.997';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -38,6 +38,12 @@ export function matsumoFoliageInspectionView(group,aspect=1,fov=40){
  group.updateWorldMatrix(true,false);const box=new THREE.Box3().setFromObject(group);if(box.isEmpty())return null;
  const target=box.getCenter(new THREE.Vector3()),radius=box.getSize(new THREE.Vector3()).length()/2,direction=new THREE.Vector3(1,.9,1).normalize(),ratio=Number.isFinite(aspect)&&aspect>0?Math.min(1,aspect):1,angle=Math.atan(Math.tan((Number.isFinite(fov)&&fov>5&&fov<100?fov:40)*Math.PI/360)*ratio),distance=Math.max(.12,radius*1.12/Math.sin(angle),(CAMERA_FLOOR+1e-7-target.y)/direction.y),position=target.clone().addScaledVector(direction,distance);
  return{position:position.toArray(),target:target.toArray(),radius,fit:'matsumo-visible-model'};
+}
+export function cabombaFoliageInspectionView(group,aspect=1,fov=40){
+ if(group?.userData?.cabombaReference!==true)return null;
+ group.updateWorldMatrix(true,false);const box=new THREE.Box3().setFromObject(group);if(box.isEmpty())return null;
+ const target=box.getCenter(new THREE.Vector3()),radius=box.getSize(new THREE.Vector3()).length()/2,direction=new THREE.Vector3(1,.9,1).normalize(),ratio=Number.isFinite(aspect)&&aspect>0?Math.min(1,aspect):1,angle=Math.atan(Math.tan((Number.isFinite(fov)&&fov>5&&fov<100?fov:40)*Math.PI/360)*ratio),distance=Math.max(.12,radius*1.12/Math.sin(angle),(CAMERA_FLOOR+1e-7-target.y)/direction.y),position=target.clone().addScaledVector(direction,distance);
+ return{position:position.toArray(),target:target.toArray(),radius,fit:'cabomba-visible-model'};
 }
 export function inspectionSeasonActive(p,view){
  if(!p)return false;const s=stateAt(p,view);return s.present&&!s.groundDormant&&(s.bloom||(plantInfo(p.kind).appearance?.shootProfile==='purpleMajesty'&&s.seedHeads));
@@ -203,7 +209,7 @@ export function createScene(container,onPick){
   function setLight(value){const evening=value==='evening';sunDirection.set(...(evening?[-11,6,5]:[-7,12,8])).normalize();sun.color.set(evening?'#ffd7a0':'#fff0d2');sun.intensity=evening?2.3:2.8;hemisphere.intensity=evening?.72:.95;sky.material.uniforms.top.value.set(evening?'#bac3ce':'#adc5d0');sky.material.uniforms.bottom.value.set(evening?'#e7cdb0':'#e3e0ce');fitShadow();dirty=true;}
   function setView(type){
     if(!plan)return;
-    const foliagePose=type==='focus'&&selection?(pennisetumFoliageInspectionView(plants?.children.find(g=>g.userData.plantId===selection),camera.aspect)||planumRosetteInspectionView(plants?.children.find(g=>g.userData.plantId===selection),camera.aspect)||matsumoFoliageInspectionView(plants?.children.find(g=>g.userData.plantId===selection),camera.aspect,camera.fov)):null;
+    const foliagePose=type==='focus'&&selection?(pennisetumFoliageInspectionView(plants?.children.find(g=>g.userData.plantId===selection),camera.aspect)||planumRosetteInspectionView(plants?.children.find(g=>g.userData.plantId===selection),camera.aspect)||matsumoFoliageInspectionView(plants?.children.find(g=>g.userData.plantId===selection),camera.aspect,camera.fov)||cabombaFoliageInspectionView(plants?.children.find(g=>g.userData.plantId===selection),camera.aspect,camera.fov)):null;
     if(type==='flower'){
       const p=plan.plants.find(p=>p.id===selection),group=plants?.children.find(g=>g.userData.plantId===selection),pose=inspectionSeasonActive(p,view)?flowerInspectionView(group,camera.aspect,camera.fov):null;if(!pose)return false;controls.minDistance=Math.min(.12,flowerInspectionDistanceFloor(group));controls.target.fromArray(pose.target);camera.position.fromArray(pose.position);
     }else if(foliagePose){controls.minDistance=.12;controls.target.fromArray(foliagePose.target);camera.position.fromArray(foliagePose.position);

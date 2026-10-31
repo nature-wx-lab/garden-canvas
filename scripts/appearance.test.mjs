@@ -22135,3 +22135,49 @@ test('Ceratophyllum visible model focus frames six summer and winter models abov
  }
  assert.equal(matsumoVisibleFocus996({userData:{architecture:'submergedShoots'}}),null);assert.equal(models,6);assert.equal(poses,12);console.log('MATSUMO996_VISIBLE_FOCUS '+JSON.stringify({models,poses,otherProfilesReturnNull:true}));
 });
+
+import{cabombaFoliageInspectionView as cabombaVisibleFocus997}from'../site/scene.js';
+test('Cabomba reference fits twenty four independent dimensions with connected opposite fan leaves',()=>{
+ const dimsList=[[.45,.35,.45],[.04,.10,.020],[.45,.35,.005],[.005,.03,.005],[.02,.05,.02],[.7,.15,.3],[.1,1,.05],[2,3,1.5]];let models=0,leafJoins=0,winterModels=0,vertices=0;
+ for(const dims of dimsList)for(const month of[7,4,1]){
+  const p={...makePlant('p-097775090353',99710,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},copy=structuredClone(p),g=plantModel(p,{year:1,month,reference:false},1);models++;
+  try{
+   g.updateMatrixWorld(true);const winter=month===1,leaf=g.children.find(m=>m.userData.component.startsWith('leaf-submerged-cabomba-')),axes=g.children.filter(m=>m.userData.component===(winter?'turion-axis-cabomba':'stem-submerged-cabomba')||m.userData.component==='side-shoot-cabomba');assert.ok(leaf?.count>0&&leaf.count%2===0);assert.equal(leaf.geometry.userData.cabombaReference,true);assert.ok(axes.length>0);if(winter){assert.equal(leaf.count,30);assert.equal(axes[0].count,1);}
+   const v=new Vector3(),matrix=new Matrix4();let lo=Infinity,hi=-Infinity,rad=0,leafTop=-Infinity;
+   for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);matrix.premultiply(mesh.matrixWorld);for(let j=0;j<mesh.geometry.attributes.position.count;j++){v.fromBufferAttribute(mesh.geometry.attributes.position,j).applyMatrix4(matrix);lo=Math.min(lo,v.y);hi=Math.max(hi,v.y);rad=Math.max(rad,Math.hypot(v.x,v.z));if(mesh===leaf)leafTop=Math.max(leafTop,v.y);vertices++;}}}
+   assert.ok(lo>=-2e-6,JSON.stringify({dims,month,lo}));assert.ok(hi<=dims[0]+2e-6,JSON.stringify({dims,month,hi}));assert.ok(rad*2<=dims[1]+2e-6,JSON.stringify({dims,month,rad}));assert.ok(leafTop<=Math.min(dims[0],dims[2])+2e-6,JSON.stringify({dims,month,leafTop}));
+   const point=(mesh,k,q)=>{const m=new Matrix4();mesh.getMatrixAt(k,m);return q.applyMatrix4(m).applyMatrix4(mesh.matrixWorld);},segments=axes.flatMap(mesh=>Array.from({length:mesh.count},(_,k)=>[point(mesh,k,new Vector3(0,-.5,0)),point(mesh,k,new Vector3(0,.5,0))]));
+   const distance=(q,[a,z])=>{const d=z.clone().sub(a),t=Math.max(0,Math.min(1,q.clone().sub(a).dot(d)/d.lengthSq()));return q.distanceTo(a.clone().addScaledVector(d,t));},pairs=new Map();
+   for(let k=0;k<leaf.count;k++){const root=point(leaf,k,new Vector3().fromBufferAttribute(leaf.geometry.attributes.position,leaf.geometry.userData.rootVertex));assert.ok(Math.min(...segments.map(s=>distance(root,s)))<2e-6);const key=root.toArray().map(v=>v.toFixed(7)).join(',');pairs.set(key,(pairs.get(key)||0)+1);leafJoins++;}assert.ok([...pairs.values()].every(n=>n===2));assert.deepEqual(p,copy);if(winter)winterModels++;
+  }finally{dispose(g);}
+ }
+ assert.equal(models,24);assert.equal(winterModels,8);console.log('CABOMBA997_BOUNDARIES '+JSON.stringify({models,leafJoins,winterModels,vertices}));
+});
+test('Cabomba six basal rays and two dichotomies retain twenty four connected terminal segments',()=>{
+ const p={...makePlant('p-097775090353',99710,3,3),height:.45,spread:.35,leafHeight:.45},g=plantModel(p,{year:1,month:7,reference:false},1);let forkJoins=0;
+ try{
+  const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-submerged-cabomba-')),geometry=leaf.geometry,pos=geometry.attributes.position,meta=geometry.userData,sections=meta.sections;assert.equal(sections.length,42);assert.equal(meta.basalDivisions,6);assert.equal(meta.forkRounds,2);assert.equal(sections.filter(s=>s.terminal).length,24);assert.ok([...geometry.attributes.normal.array].every(Number.isFinite));assert.ok([...geometry.index.array].every(i=>i>=0&&i<pos.count));
+  const centre=(first,n)=>{const c=new Vector3();for(let i=0;i<n;i++)c.add(new Vector3().fromBufferAttribute(pos,first+i));return c.multiplyScalar(1/n);},root=new Vector3().fromBufferAttribute(pos,meta.rootVertex);
+  for(const section of sections){if(section.fromNode===0){assert.ok(centre(section.firstRing,section.ringVertices).distanceTo(root)<1e-7);continue;}const parent=sections.find(s=>s.toNode===section.fromNode);assert.ok(parent);assert.ok(centre(section.firstRing,section.ringVertices).distanceTo(centre(parent.lastRing,parent.ringVertices))<1e-7);forkJoins++;}
+  assert.equal(CATALOG[p.kind].appearance.shootProfile,'cabomba');assert.equal(CATALOG[p.kind].appearance.arrangement,'opposite');assert.equal(CATALOG[p.kind].appearance.status,'partial');assert.ok(CATALOG[p.kind].appearance.unconfirmed.some(s=>s.includes('6本')&&s.includes('2回')));
+ }finally{dispose(g);}
+ assert.equal(forkJoins,36);console.log('CABOMBA997_FORKS '+JSON.stringify({geometryModels:1,forkJoins,terminalTips:24}));
+});
+test('Cabomba branched shoots and compact winter tip retain illustrative counts across years and water',()=>{
+ const input={...makePlant('p-097775090353',99710,3,3),height:.45,spread:.35,leafHeight:.45};let yearModels=0,pondModels=0;
+ for(const month of[7,1]){
+  const g=plantModel(input,{year:1,month,reference:false},1),later=plantModel(input,{year:5,month,reference:false},1);yearModels+=2;
+  try{const leaf=group=>group.children.find(m=>m.userData.component.startsWith('leaf-submerged-cabomba-'));assert.deepEqual([...leaf(g).instanceMatrix.array],[...leaf(later).instanceMatrix.array]);if(month===7)assert.ok(g.children.some(m=>m.userData.component==='side-shoot-cabomba'));else assert.equal(leaf(g).count,30);}finally{dispose(g);dispose(later);}
+  const pond=plantModel(input,{year:1,month,reference:false,waterDepth:.3},1);pondModels++;
+  try{pond.updateMatrixWorld(true);const leaf=pond.children.find(m=>m.userData.component.startsWith('leaf-submerged-cabomba-')),v=new Vector3(),matrix=new Matrix4();let top=-Infinity;for(let k=0;k<leaf.count;k++){leaf.getMatrixAt(k,matrix);matrix.premultiply(leaf.matrixWorld);for(let j=0;j<leaf.geometry.attributes.position.count;j++){v.fromBufferAttribute(leaf.geometry.attributes.position,j).applyMatrix4(matrix);top=Math.max(top,v.y);}}assert.ok(top<.3);}finally{dispose(pond);}
+ }
+ assert.equal(yearModels,4);assert.equal(pondModels,2);console.log('CABOMBA997_YEAR_AND_WATER '+JSON.stringify({yearModels,pondModels}));
+});
+test('Cabomba visible model focus frames six summer and winter models above the camera floor',()=>{
+ let models=0,poses=0;const point=new Vector3(),matrix=new Matrix4();
+ for(const dims of[[.45,.35,.45],[.04,.10,.020],[.45,.35,.005]])for(const month of[7,1]){
+  const input={...makePlant('p-097775090353',99710,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},g=plantModel(input,{year:1,month,reference:false},1);models++;
+  try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);for(const aspect of[.8,1.65]){const pose=cabombaVisibleFocus997(g,aspect,40);assert.ok(pose);assert.equal(pose.fit,'cabomba-visible-model');assert.ok(pose.position[1]>=.1);const camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);for(const mesh of g.children)for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);matrix.premultiply(mesh.matrixWorld);for(let j=0;j<mesh.geometry.attributes.position.count;j++){point.fromBufferAttribute(mesh.geometry.attributes.position,j).applyMatrix4(matrix).project(camera);assert.ok(Math.abs(point.x)<=1+2e-6&&Math.abs(point.y)<=1+2e-6&&point.z>=-1&&point.z<=1);}}poses++;}}finally{dispose(g);}
+ }
+ assert.equal(cabombaVisibleFocus997({userData:{architecture:'submergedShoots'}}),null);assert.equal(models,6);assert.equal(poses,12);console.log('CABOMBA997_VISIBLE_FOCUS '+JSON.stringify({models,poses,otherProfilesReturnNull:true}));
+});
