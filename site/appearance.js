@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.971';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.972';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -759,3 +759,5 @@ Object.assign(TRAIT_VALUES,{lemonBellsPhotoReference:'黄色〜黄緑のベル�
 Object.assign(TRAIT_VALUES,{montanaWhiteWavyReference:'しわのある白い広い外側と緑黄の細い中心の参考',montanaPinkScallopedReference:'波打つピンクの外側と淡黄緑の中心の参考',montanaPalePinkReflexedReference:'先のある淡桃の外側と外向きの反り・淡黄緑中心の参考'});
 
 Object.assign(TRAIT_VALUES,{gekkyudenPaleCreamOpenReference:'白から淡緑黄・クリーム色の広い外側と淡黄色の細い中心の参考'});
+
+Object.assign(TRAIT_VALUES,{lidoLongFleshyBladePhotoReference:'細長く丸みのある多肉葉を節へ直接つなぐ写真参考',lidoStoutFleshyBladePhotoReference:'短めで丸みのある多肉葉を節へ直接つなぐ写真参考',compactTrailingSucculentReference:'低く分枝し横へ広がるコンパクトな多肉株の参考',uncalibratedSucculentLeafReference:'健康な展葉株の写真参考（冬葉・休眠境界は未確認）',lidoMagentaWhiteEyeReference:'マゼンタの細い外側・白い基部と黄色い中心の参考',lidoCreamWhiteReference:'クリーム白の細い花弁状部分と黄色い中心の参考'});

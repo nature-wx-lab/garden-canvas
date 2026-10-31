@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.971';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.972';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.971';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.972';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20482,6 +20482,7 @@ function drawDahlias(b,{info,s,detail,rand},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='delospermaLidoReferences'){drawDelospermaLidoReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='rugosaSourceReferences'){drawRugosaSourceReferences(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='bergamoAnnualReference'){drawBergamoAnnualReference(b,{info,s,month,rand},kit);return;}
  if(info.appearance?.architecture==='ogisMonardaColourReferences'){drawOgisMonardaColourReferences(b,{info,s,month,rand},kit);return;}
@@ -28652,4 +28653,61 @@ function drawRugosaSourceReferences(b,{info,s,month,rand},kit){
   for(let k=1;k<=4;k++){const f=Math.max(0,limit-start[1])/Math.max(1e-12,end[1]-start[1])*k/4,node=start.map((v,j)=>v+(end[j]-v)*f);if(k/4<=s.leafDensity)for(const side of[0,1])leaf(node,yaw+.9+k*Math.PI/2+side*Math.PI,.75);}
   spike(end,i*2+1,HL*.75);
  }
+}
+
+// Bounded source-photo references. Dimensions/counts are drawing conventions.
+export function delospermaLidoReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type.startsWith('leaf')){
+  const r=t===0||t===1?0:.5*sn**.62*(.90+.10*t),angle=u*Math.PI;
+  return[Math.sin(angle)*r,t,Math.cos(angle)*r];
+ }
+ return[u*.5*sn**.42*(.52+.48*t),.04*sn+.035*t*t+.008*Math.sin(t*20+u*6)*Math.abs(u)**4*sn,t-.012*t**4];
+}
+export function delospermaLidoReferenceGeometry(type){
+ const points=[],uv=[],index=[];
+ for(let j=0;j<=32;j++)for(let i=0;i<=20;i++){points.push(...delospermaLidoReferencePoint(type,j/32,i/20*2-1));uv.push(i/20,j/32);}
+ for(let j=0;j<32;j++)for(let i=0;i<20;i++){const a=j*21+i;index.push(a,a+21,a+1,a+1,a+21,a+22);}
+ const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(points,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setIndex(index);geometry.computeVertexNormals();return geometry;
+}
+function drawDelospermaLidoReferences(b,{info,s},kit){
+ const profile=info.appearance.shootProfile,white=profile==='lidoWhite',h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),sr=Math.min(.001,h*.02,w*.0035,LH*.025),green=white?'#548552':'#427f4e',unitY=new THREE.Vector3(0,1,0),surfaces=[];
+ let outerSerial=0;
+ const line=(from,to,r,colour,kind)=>{
+  const a=new THREE.Vector3(...from),z=new THREE.Vector3(...to),axis=z.clone().sub(a),length=axis.length();if(length===0)return;
+  const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(unitY,axis.normalize()),'YXZ'),mid=a.add(z).multiplyScalar(.5);
+  b.add(clematisRetailStemUnit,kind,colour,...mid.toArray(),r,length,r,e.x,e.y,e.z);
+ };
+ const flower=(at,pitch,yaw)=>{
+  const R=Math.min(.014,h*.11,w*.08,Math.max(0,w*.5-Math.hypot(at[0],at[2]))/1.10*.999999),frame=flowerFrame(b,at,pitch,yaw),width=white?.18:.11;
+  for(let k=0;k<28;k++){
+   const az=Math.PI/2+.05+k*TAU/28,instance=outerSerial++,scale=new THREE.Vector3(R*width,R*.91,R*.91),base=[Math.sin(az)*R*.09,0,Math.cos(az)*R*.09];
+   frame.add('gcDelospermaLidoPetaloid','petaloid-outer-delosperma-lido-ref-'+profile,white?'#faf5e6':'#dc079d',...base,...scale.toArray(),0,az,0);
+   if(k===0){
+    const row=24,vertices=[row*21+10,(row+1)*21+10,row*21+11],q=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ')),fq=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ'));
+    const points=vertices.map(v=>new THREE.Vector3(...delospermaLidoReferencePoint('petaloid',Math.floor(v/21)/32,v%21/20*2-1).map(Math.fround)).multiply(scale).applyQuaternion(q).add(new THREE.Vector3(...base)).applyQuaternion(fq).add(new THREE.Vector3(...at))),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();
+    surfaces.push({point,normal,vertices,instanceId:instance,faceIndex:(row*20+10)*2,radius:R});
+   }
+  }
+  for(let k=0;k<16;k++){const az=k*TAU/16+.16;frame.add('gcDelospermaLidoPetaloid','petaloid-inner-delosperma-lido-ref-'+profile,'#fff6df',Math.sin(az)*R*.05,R*.025,Math.cos(az)*R*.05,R*(white?.14:.10),R*.58,R*.58,-.08,az,0);}
+  frame.add(kit.bud,'flower-base-delosperma-lido-ref','#6d8a50',0,-R*.055,0,R*.14,R*.08,R*.14);
+  for(let k=0;k<32;k++){
+   const part=(k+.5)/32,az=k*2.399963,rr=R*(.025+.12*Math.sqrt(part)),tip=[Math.sin(az)*rr,R*(.13+.06*part),Math.cos(az)*rr],from=new THREE.Vector3(Math.sin(az)*R*.025,0,Math.cos(az)*R*.025),to=new THREE.Vector3(...tip),axis=to.clone().sub(from),length=axis.length(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(unitY,axis.normalize()),'YXZ'),mid=from.add(to).multiplyScalar(.5),r=Math.min(sr*.35,R*.011);
+   frame.add(clematisRetailStemUnit,'centre-thread-delosperma-lido-ref-'+profile,'#eee6b0',...mid.toArray(),r,length,r,e.x,e.y,e.z);
+   frame.add(kit.bud,'centre-tip-delosperma-lido-ref-'+profile,'#dfc341',...tip,R*.024,R*.030,R*.024);
+  }
+ };
+ for(let shoot=0;shoot<9;shoot++){
+  let previous=[0,LH*.05,0];
+  for(let j=1;j<=6;j++){
+   const t=j/6,az=shoot*2.399963+.18*Math.sin(t*3+shoot),reach=w*.32*t**1.08,at=[Math.sin(az)*reach,Math.min(h*.20,LH*.22)+LH*.30*t*(1-shoot*.015),Math.cos(az)*reach];
+   line(previous,at,sr*(1-t*.25),'#79905d','stem-delosperma-lido-ref');previous=at;
+   if(s.leafDensity>0){const L=Math.min(.028,h*.20,w*.10,LH*.28),width=white?.32:.20;for(const side of[-1,1])b.add('gcDelospermaLidoLeaf','leaf-delosperma-lido-ref-'+profile,green,...at,L*width,L,L*width,.90,az+side*Math.PI/2,0);}
+   if(s.bloom&&j>=3){
+    const end=[at[0]+Math.sin(az)*w*.025,h*(.58+.08*(j-3)+(shoot%3)*.02),at[2]+Math.cos(az)*w*.025];
+    line(at,end,sr*.55,'#7a9463','pedicel-delosperma-lido-ref');flower(end,.20+.04*(shoot%3),az);
+   }
+  }
+ }
+ for(const surface of surfaces){const axis=surface.normal.clone();if(axis.y<.12)axis.y=.12;axis.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(unitY,axis),'YXZ');b.flower?.(surface.point.toArray(),surface.radius*1.5,e.x,e.y,e.z,{component:'petaloid-outer-delosperma-lido-ref-'+profile,instanceId:surface.instanceId,vertices:surface.vertices,faceIndex:surface.faceIndex,cameraAxis:axis.toArray()});}
 }
