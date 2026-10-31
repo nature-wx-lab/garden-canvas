@@ -22031,3 +22031,7 @@ test('Nuphar five sepal cup and illustrative inner organs stay connected without
  }finally{dispose(g);dispose(later);}
  assert.equal(attached,144);console.log('NUPHAR991_INNER_ATTACHMENTS '+JSON.stringify({attached,illustrativeInnerPetals:16,illustrativeStamens:32,illustrativeRays:12}));
 });
+
+test('Egeria domestic source distinguishes reach height and reproduction period from confirmed stock dimensions and flower months',()=>{
+ const i=CATALOG['p-790697efed42'],a=i.appearance;assert.equal(i.label,'アナカリス');assert.equal(i.latin,'Egeria densa');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.bloomKnown,false);assert.deepEqual(i.colors,['white']);assert.ok(i.aliases.includes('オオカナダモ'));assert.equal(i.sourceChecked,'2026-11-01');assert.match(i.bloomText,/開花月は未確認/);assert.match(i.bloomBasis,/繁殖期/);assert.match(a.sourceConflict,/30〜100cm/);assert.match(a.sourceConflict,/株幅15〜40cm/);assert.match(a.sourceConflict,/葉長1.5〜3cm/);assert.match(a.sourceConflict,/販売単位の7〜10本/);assert.equal(a.basis.flowerMonths,undefined);assert.equal(a.basis.flowerTiming,undefined);assert.equal(a.architecture,'submergedShoots');assert.equal(a.shootProfile,'egeria');assert.equal(a.persistence,'submergedPersistent');assert.deepEqual(a.flowerMonths,[5,6,7,8,9,10]);assert.ok(a.unconfirmed.some(x=>x.includes('従来の仮の月')));assert.equal(seasonAt(i,1).groundDormant,false);assert.equal(seasonAt(i,7).bloom,true);
+});
