@@ -7542,7 +7542,7 @@ test('source context does not confuse winter dieback, summer growth rest and ret
  for(const name of ['イベリス ゴールデンキャンディ','ラベンダー シルバーサンド'])assert.equal(seasonAt(named(name),1).groundDormant,false);
  assert.equal(seasonAt(named('センペルビウム・クラクフ'),7).groundDormant,false);
  const ephem=named('クリスマスローズ チベタヌス');assert.equal(seasonAt(ephem,4).bloom,true);for(const m of [1,7,10])assert.equal(seasonAt(ephem,m).groundDormant,true);
- const variable=named('マツバギク おひさま花火 リド マゼンタホワイトアイ');assert.equal(variable.appearance.winterClimateSensitive,true);assert.equal(seasonAt(variable,1).groundDormant,false);
+ const variable=named('マツバギク おひさま花火 リド マゼンタホワイトアイ');assert.equal(variable.appearance.persistence,'uncalibratedSucculentLeafReference');assert.equal(Object.hasOwn(variable.appearance,'winterClimateSensitive'),false);assert.match(variable.appearance.sourceConflict,/現在株の冬葉と生存は未確認/);const winterReference=seasonAt(variable,1);assert.equal(winterReference.groundDormant,false);assert.match(winterReference.phase,/冬の残葉・休眠境界は未確認/);
  const summerTree={form:'shrub',leaf:'deciduous',bloom:[],appearance:{persistence:'summerDormant'}};
  assert.equal(seasonAt(summerTree,7).dormant,true);assert.equal(seasonAt(summerTree,7).groundDormant,false);assert.equal(seasonAt(summerTree,1).dormant,false);
 });
