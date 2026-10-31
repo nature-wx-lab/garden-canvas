@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.964';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.965';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -745,3 +745,5 @@ Object.assign(TRAIT_VALUES,{erectHerbClematisReference:'絡むつるを作らな
 Object.assign(TRAIT_VALUES,{romantikaDarkCupReference:'濃紫の広い受け咲き花被と黄色い花芯の参考',aiFukushimaPinkWhiteTulipReference:'桃色中央と広い白縁・先が開くチューリップ形（花芯未確認）',cassisDenseNetReference:'淡い網状の外側と丸い紫の内側・密な未同定の中心'});
 
 Object.assign(TRAIT_VALUES,{hfYoungBlueStarReference:'広い青紫の星形花被と淡黄色の中心の参考',yellFukushimaWhiteInnerTulipReference:'白い内側と赤桃の外側・先が開くチューリップ形（花芯未確認）',josephineLayeredClosedReference:'桃紫の帯をもつ多層と灰緑の閉じた中心（器官未同定）',unconfirmedClematisLeafReference:'冬葉・落葉時期未確認の展葉株の固定参考（常緑の判定ではありません）'});
+
+Object.assign(TRAIT_VALUES,{diamantinaLayeredPointedReference:'尖った紫の多数層と淡紫白の閉じた中心（器官未同定）',torchlightReflexedTulipReference:'細長く外へ反る赤桃のチューリップ形と黄橙の中心束',hudsonRiverOpenPurpleReference:'広い紫の開いた花被と淡黄色の中心の参考',compactSemiClimbingReference:'低い半つる性・弱い絡みと側枝開花の参考形'});
