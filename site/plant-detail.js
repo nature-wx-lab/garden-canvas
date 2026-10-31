@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.994';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.995';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.994';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.995';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1036,7 +1036,63 @@ export function submergedFineGeometry(type){
  if(type==='cabomba')for(let k=0;k<7;k++)fork([0,0,0],(k-3)*.43,.53,2);else fork([0,0,0],0,.5,2);
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
 }
+// One source-referenced Egeria example. Shoot/node/leaf counts and posture are illustrative.
+export function egeriaPhotoReferencePoint(type,t,u){
+ const sn=Math.sin(Math.PI*t);
+ if(type==='leaf'){
+  const tooth=t>.45?1+.014*(1-2*Math.abs((t*17)%1-.5)):1;
+  return [u*.5*sn**.62*(.72+.28*t)*tooth,t,.10*t*t+.04*u*u*sn+.055*u*Math.sin(t*TAU)];
+ }
+ return [u*.5*sn**.60*(.65+.35*t),.08*t*t+.035*u*u*sn,t];
+}
+export function egeriaPhotoReferenceGeometry(type){
+ const N=28,C=16,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  p.push(...egeriaPhotoReferencePoint(type,i/N,j/C*2-1));uv.push(j/C,i/N);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={egeriaPhotoReference:true,part:type,illustrativeGeometry:true};return g;
+}
+function drawEgeriaPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,water=s.waterDepth>0,LH=Math.min(s.leafHeight,h*.96,water?Math.max(.003,s.waterDepth-.012):Infinity),radius=Math.min(.0012,h*.006,w*.006,LH*.02),crown=[0,radius*1.4+Math.min(.00002,h*.002),0],az=.35;
+ const main=t=>[Math.sin(az)*w*.060*Math.sin(t*Math.PI*.9),crown[1]+LH*.90*(1-Math.pow(1-t,1.20)),Math.cos(az)*w*.025*t];
+ const nodeEnds=[];
+ function shoot(path,n,turn){
+  let prev=path(0);
+  for(let j=1;j<=n;j++){
+   const t=j/n,at=path(t);b.branch(prev,at,radius,'#789357','stem-submerged-egeria-photo-reference');prev=at;nodeEnds.push(at);
+   const count=4+j%2,rotation=turn+j*1.5708,L=Math.min(.025*(.84+.16*Math.sin(t*Math.PI*.8)),w*.17,LH*.75,Math.max(.00002,(LH-at[1])*.94));
+   for(let k=0;k<count;k++)b.add('egeria-photo-reference-leaf','leaf-submerged-egeria-photo-reference-underside-8bac65',kit.shade(rand,s.leafColor,.035),...at,L*.18,L,L,.52+(j%3)*.11,rotation+k*TAU/count,0);
+  }
+ }
+ shoot(main,14,.3);
+ for(let side=0;side<2;side++){
+  const at=main((side?8:4)/14),turn=side?2.7:-1.05,tipY=crown[1]+LH*(side?.83:.78),reach=w*(side?.20:.22);
+  shoot(t=>[at[0]+Math.sin(turn)*reach*t,at[1]+(tipY-at[1])*(1-Math.pow(1-t,1.25)),at[2]+Math.cos(turn)*reach*t+.008*Math.min(1,w/.1)*Math.sin(t*Math.PI)],7,turn);
+ }
+ const rootAt=main(1/14),rootRadius=Math.min(.00018,h*.004,w*.002,LH*.015);
+ for(let k=0;k<3;k++){const angle=k*2.399+.2;b.branch(rootAt,[rootAt[0]+Math.sin(angle)*w*.04,rootRadius*1.5,rootAt[2]+Math.cos(angle)*w*.04],rootRadius,'#d3d5b8','root-submerged-egeria-photo-reference');}
+ if(!s.bloom)return;
+ const R=Math.min(.010,w*.12,h*.17),flowerY=water?s.waterDepth+.004:h*.93;
+ // A source-described surface flower cannot fit below a deeper water surface.
+ if(flowerY+R*.25>h)return;
+ const end=main(1),at=[end[0],flowerY,end[2]],yaw=.25,f=flowerFrame(b,at,0,yaw);
+ b.branch(end,at,Math.min(.00055,R*.055),'#98a768','pedicel-submerged-egeria-photo-reference');
+ f.add(kit.bud,'receptacle-egeria-photo-reference','#b5c474',0,0,0,R*.14,R*.10,R*.14);
+ for(let k=0;k<3;k++){
+  const turn=k*TAU/3;f.add('egeria-photo-reference-petal','sepal-egeria-photo-reference','#7a985d',0,-R*.03,0,R*.50,R*.18,R*.55,0,turn+Math.PI/3,0);
+  f.add('egeria-photo-reference-petal','petal-submerged-egeria-photo-reference','#f5f2e8',0,0,0,R*.88,R,R,0,turn,0);
+  f.add(kit.bud,'nectary-egeria-photo-reference','#dfc35e',Math.sin(turn)*R*.12,R*.025,Math.cos(turn)*R*.12,R*.075,R*.025,R*.075);
+  const row=18,col=8,C=16,N=28,vertices=[row*(C+1)+col,(row+1)*(C+1)+col,row*(C+1)+col+1],totalYaw=yaw+turn,matrix=new THREE.Matrix4().compose(new THREE.Vector3(...at),new THREE.Quaternion().setFromEuler(new THREE.Euler(0,totalYaw,0,'YXZ')),new THREE.Vector3(R*.88,R,R));matrix.fromArray(new Float32Array(matrix.elements));
+  const points=vertices.map(v=>new THREE.Vector3(...egeriaPhotoReferencePoint('petal',Math.floor(v/(C+1))/N,v%(C+1)/C*2-1).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),axis=new THREE.Vector3(Math.sin(totalYaw)*.25,1,Math.cos(totalYaw)*.25).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),'YXZ');
+  b.flower?.(point.toArray(),R*1.7,e.x,e.y,e.z,{component:'petal-submerged-egeria-photo-reference',instanceId:k,vertices,faceIndex:(row*C+col)*2,cameraAxis:axis.toArray()});
+ }
+ for(let k=0;k<9;k++){const angle=k*TAU/9,base=[Math.sin(angle)*R*.08,0,Math.cos(angle)*R*.08],tip=[Math.sin(angle)*R*.17,R*.18,Math.cos(angle)*R*.17];f.branch(base,tip,R*.008,'#ded9b5','filament-egeria-photo-reference');f.add(kit.bud,'anther-egeria-photo-reference','#d9b944',...tip,R*.035,R*.045,R*.025);}
+}
+
 function drawSubmergedShoots(b,{info,s,p,detail,rand},kit){
+ if(info.appearance.shootProfile==='egeria'){drawEgeriaPhotoReference(b,{s,rand},kit);return;}
  if(['mossSouth','mossWillow','myrioGreen','myrioOrange','goldJenny','indica','rotalaFlower','najas'].includes(info.appearance.shootProfile)){drawWaterBranches(b,{info,s,p,detail,rand},kit);return;}
  if(['shortHair','hair','greenRotala','nanjenshan','pearl','largePearl','newPearl','cobra'].includes(info.appearance.shootProfile)){drawWaterMeadow(b,{info,s,p,detail,rand},kit);return;}
  const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,depth=s.waterDepth,water=depth>0,winter=[12,1,2].includes(s.month),fine=['cabomba','ceratophyllum'].includes(type),mat=type==='glosso',turion=winter&&fine;
