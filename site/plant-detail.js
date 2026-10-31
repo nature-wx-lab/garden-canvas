@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.984';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.985';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.984';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.985';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -852,22 +852,63 @@ export function callaSpatheGeometry(){
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
 }
+// Insert into plant-detail.js; globals THREE, TAU and flowerFrame already exist there.
+export function helvolaPhotoReferencePoint(type,t,u){
+ if(type==='leaf'){
+  const phi=u*TAU,notch=1-.994*Math.exp(-(((phi-Math.PI)/.18)**2)),r=t*notch;
+  return [.5*r*Math.cos(phi),.018*r**4*(.42+.58*Math.abs(Math.sin(phi))),.5*r*Math.sin(phi)];
+ }
+ const across=u*2-1,sn=Math.max(0,Math.sin(Math.PI*t));
+ return [across*.25*sn**.65,.40*t**1.9+.06*sn+.035*across*across*sn,t];
+}
+export function helvolaPhotoReferenceGeometry(type){
+ const leaf=type==='leaf',N=leaf?28:32,C=leaf?64:16,positions=[],uv=[],index=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=j/C;
+  const point=helvolaPhotoReferencePoint(type,t,u);positions.push(...point);uv.push(...(leaf?[point[0]+.5,point[2]+.5]:[u,t]));
+  if(i<N&&j<C){const a=i*(C+1)+j;if(leaf)index.push(a,a+1,a+C+1,a+1,a+C+2,a+C+1);else index.push(a,a+C+1,a+1,a+1,a+C+1,a+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(index);g.computeVertexNormals();g.userData={helvolaPhotoReference:true,part:type,illustrativeGeometry:true};return g;
+}
+function drawHelvolaPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),surface=Math.min(LH*.50,h*.20),crown=[0,Math.min(LH*.15,h*.02),0],leafCount=6;
+ for(let j=0;j<leafCount;j++){
+  const az=j*2.399+.3,R=w*.26*Math.sqrt((j+.8)/leafCount),at=[Math.sin(az)*R,surface,Math.cos(az)*R],D=Math.min(.14,w*.34,LH*24)*(1-j*.035),radius=Math.min(.001,D*.007,LH*.10);
+  b.branch(crown,at,radius,'#71845b','petiole-helvola-ref');
+  b.add('helvola-photo-reference-leaf','leaf-helvola-photo-reference-underside-82494e',kit.shade(rand,s.leafColor,.025),...at,D,D,D,0,az-Math.PI/2,0);
+ }
+ if(!s.bloom)return;
+ // One displayed flower and fixed organ counts are a drawing example, not stock measurements.
+ const L=Math.min(.06,w*.18,h*.65),at=[-w*.04,Math.min(h*.32,LH*.75+L*.10),w*.03],f=flowerFrame(b,at,0,.20),surfaces=[];
+ b.branch(crown,at,Math.min(.0015,L*.030,LH*.16),'#827951','peduncle-helvola-ref');
+ for(let k=0;k<4;k++)f.add('helvola-photo-reference-petal','outer-perianth-helvola-ref','#b3b99c',0,-L*.015,0,L*.94,L*.94,L*.94,.17,k*TAU/4+.25,0);
+ for(let row=0;row<3;row++){
+  const count=[8,6,4][row],size=L*(1-row*.15);
+  for(let k=0;k<count;k++){
+   const yaw=k*TAU/count+row*.36,pitch=-row*.22;
+   f.add('helvola-photo-reference-petal','petal-helvola-ref-'+row,kit.shade(rand,'#f0efcb',.012),0,row*L*.025,0,size,size,size,pitch,yaw,0);
+   if(row===0){
+    const column=8,sampleRow=22,vertices=[sampleRow*17+column,(sampleRow+1)*17+column,sampleRow*17+column+1],q=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,.20,0,'YXZ')).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),matrix=new THREE.Matrix4().compose(new THREE.Vector3(at[0],at[1]+row*L*.025,at[2]),new THREE.Quaternion().setFromEuler(e),new THREE.Vector3(size,size,size));
+    matrix.fromArray(new Float32Array(matrix.elements));const points=vertices.map(v=>new THREE.Vector3(...helvolaPhotoReferencePoint('petal',Math.floor(v/17)/32,v%17/16).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),axis=new THREE.Vector3(Math.sin(yaw+.20)*.6,1,Math.cos(yaw+.20)*.6).normalize();
+    surfaces.push({point,axis,vertices,instanceId:k,faceIndex:(sampleRow*16+column)*2});
+   }
+  }
+ }
+ for(let k=0;k<24;k++){
+  const az=k*2.399,R=L*(.045+.105*Math.sqrt((k+.5)/24)),base=[Math.sin(az)*R,L*.04,Math.cos(az)*R],tip=[Math.sin(az)*R*1.13,L*(.28+.14*(1-k/24)),Math.cos(az)*R*1.13];
+  f.branch(base,tip,L*.008,'#e4ba27','filament-helvola-ref');f.add(kit.bud,'anther-helvola-ref','#f2ca32',...tip,L*.020,L*.060,L*.020,.13,az,0);
+ }
+ for(const surface of surfaces){const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),surface.axis),'YXZ');b.flower?.(surface.point.toArray(),L*1.15,e.x,e.y,e.z,{component:'petal-helvola-ref-0',instanceId:surface.instanceId,vertices:surface.vertices,faceIndex:surface.faceIndex,cameraAxis:surface.axis.toArray()});}
+}
+
 function drawMarginGarden(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,green=s.leafColor;
  if(s.groundDormant)return;
  const blade=(at,az,L,pitch=.8)=>{const f=flowerFrame(b,at,pitch,az);f.add('margin-leaf-'+type,'leaf-margin-'+type+'-underside-'+a.leafUnderside.slice(1),kit.shade(rand,green,.06),0,0,0,type==='hibbertia'?L*.065:L,L,L);
   if(type==='calla'){f.branch([0,.08*L,-.001],[0,.95*L,-.001],.00045,'#83a16b','vein-calla');for(let k=1;k<=6;k++)for(const sign of [-1,1]){const t=.15+k*.1;f.branch([0,t*L,-.001],[sign*L*.23*(1-t),L*(t+.12),-.008*L],.00017,'#88a771','vein-calla');}}
  };
- if(type==='helvola'){
-  const n=Math.max(3,Math.round(27*detail*s.leafDensity));
-  for(let j=0;j<n;j++){const az=j*2.399,r=Math.sqrt((j+.4)/n)*w*.35,L=Math.min(.09,w*.24)*(.7+rand()*.35)*s.leafScale,at=[Math.sin(az)*r,.010+rand()*.003,Math.cos(az)*r];blade(at,rand()*TAU,L,Math.PI/2);}
-  if(s.bloom)for(let j=0;j<Math.max(1,Math.round(3*detail*s.flowerDensity));j++){
-   const az=j*2.399+.5,r=w*.23,at=[Math.sin(az)*r,.022,Math.cos(az)*r],f=flowerFrame(b,at,.02+rand()*.08,az),L=.023;
-   for(let k=0;k<4;k++)f.add('margin-petal-helvola','sepal-helvola','#75854d',0,-.004,0,L*.85,L*.85,L*.85,0,k*TAU/4,0);
-   for(let row=0;row<3;row++)for(let k=0;k<7-row;k++){const size=L*(1-row*.12);f.add('margin-petal-helvola','petal-helvola','#f0e8a0',0,row*.002,0,size,size,size,-row*.19,k*TAU/(7-row)+row*.38,0);}
-   for(let k=0;k<32;k++){const aa=k*2.399,rr=.003+.004*Math.sqrt((k+.5)/32),q=[Math.sin(aa)*rr,.008+rand()*.007,Math.cos(aa)*rr];f.branch([0,0,0],q,.00022,'#dec745','stamen-helvola');f.add(kit.bud,'anther-helvola','#dcbf36',...q,.0006,.0018,.0006);}
-  }return;
- }
+ if(type==='helvola'){drawHelvolaPhotoReference(b,{s,rand},kit);return;}
  if(type==='calla'){
   const n=Math.max(2,Math.round(15*detail*s.leafDensity)),sc=s.leafScale;
   for(let j=0;j<n;j++){const az=j*2.399,L=Math.min(.30,w*.50,h*.48)*(.7+rand()*.3)*sc,root=[Math.sin(az)*w*.12,0,Math.cos(az)*w*.12],top=[root[0]+Math.sin(az)*w*.14,h*(.36+rand()*.25)*sc,root[2]+Math.cos(az)*w*.14];b.branch(root,top,.004*sc,green,'petiole-calla');blade(top,az,L,.48+rand()*.45);}
