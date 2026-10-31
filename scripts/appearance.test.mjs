@@ -22298,3 +22298,53 @@ test('Ludwigia ovalis visible model focus frames six summer and winter inputs ab
  }
  assert.equal(ovalisVisibleFocus1002({userData:{architecture:'submergedShoots'}}),null);assert.equal(models,6);assert.equal(poses,12);console.log('OVALIS1002_FOCUS '+JSON.stringify({models,poses}));
 });
+
+import{superRedFoliageInspectionView as superRedVisibleFocus1003}from '../site/scene.js';
+test('Super Red manufacturer photos preserve unknown whole stock bounds and unconfirmed clone and flowering conditions',()=>{
+ const i=CATALOG['p-d1be39347dd5'],a=i.appearance;assert.equal(i.label,'ルドウィジアsp.スーパーレッド');assert.equal(i.latin,"Ludwigia palustris 'Super Red'");assert.equal(i.height,null);assert.equal(i.spread,null);assert.deepEqual(i.colors,['unknown']);assert.deepEqual(i.bloom,[]);assert.equal(i.bloomKnown,false);assert.equal(i.sourceChecked,'2026-11-01');assert.match(i.care,/2〜4cm/);assert.match(i.care,/10〜30\+cm/);assert.match(a.sourceConflict,/1本の茎/);assert.match(a.sourceConflict,/株幅/);assert.equal(a.arrangement,'opposite');assert.equal(a.status,'partial');assert.ok(a.unconfirmed.some(s=>s.includes('葉・節・主茎・側枝・根の数')&&s.includes('写真の計測値ではありません')));assert.ok(a.unconfirmed.some(s=>s.includes('同一クローン')));assert.ok(a.unconfirmed.some(s=>s.includes('写真2枚')));
+});
+test('Super Red photo reference fits twenty four independent dimensions with closed paired petiolate blades',()=>{
+ const dimsList=[[.25,.35,.20],[.01,.10,.005],[.25,.35,.005],[.01,.10,.01],[.02,.15,.02],[.07,.20,.03],[.1,1,.05],[.5,2,.30]];let models=0,vertices=0;
+ for(const dims of dimsList)for(const month of[7,4,1]){
+  const p={...makePlant('p-d1be39347dd5',100310,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},copy=structuredClone(p),g=plantModel(p,{year:1,month,reference:false},1);models++;
+  try{
+   g.updateMatrixWorld(true);const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-submerged-super-red-photo-reference-')),petiole=g.children.find(m=>m.userData.component==='petiole-super-red-photo-reference'),creeping=g.children.find(m=>m.userData.component==='stem-super-red-photo-reference'),ascending=g.children.find(m=>m.userData.component==='side-shoot-super-red-photo-reference'),roots=g.children.find(m=>m.userData.component==='root-submerged-super-red-photo-reference');assert.equal(leaf?.count,576);assert.equal(petiole?.count,576);assert.equal(creeping?.count,144);assert.equal(ascending?.count,144);assert.equal(roots?.count,36);assert.equal(leaf.geometry.userData.closedBlade,true);assert.ok(!g.children.some(m=>/petal|flower|fruit|offspring|turion/.test(m.userData.component)));
+   const point=new Vector3(),matrix=new Matrix4();let lo=Infinity,hi=-Infinity,rad=0,leafTop=-Infinity;
+   for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);matrix.premultiply(mesh.matrixWorld);for(let j=0;j<mesh.geometry.attributes.position.count;j++){point.fromBufferAttribute(mesh.geometry.attributes.position,j).applyMatrix4(matrix);lo=Math.min(lo,point.y);hi=Math.max(hi,point.y);rad=Math.max(rad,Math.hypot(point.x,point.z));if(mesh===leaf)leafTop=Math.max(leafTop,point.y);vertices++;}}}
+   assert.ok(lo>=-2e-6,JSON.stringify({dims,month,lo}));assert.ok(hi<=dims[0]+2e-6,JSON.stringify({dims,month,hi}));assert.ok(rad*2<=dims[1]+2e-6,JSON.stringify({dims,month,rad}));assert.ok(leafTop<=Math.min(dims[0],dims[2])+2e-6,JSON.stringify({dims,month,leafTop}));if(dims[0]===.25&&dims[2]===.005){leaf.getMatrixAt(0,matrix);const root=new Vector3(0,0,0).applyMatrix4(matrix),tip=new Vector3(0,1,0).applyMatrix4(matrix);assert.ok(Math.hypot(tip.x-root.x,tip.z-root.z)>.018,'Low foliage retains broad leaf length by inclination');}assert.deepEqual(p,copy);
+  }finally{dispose(g);}
+ }
+ assert.equal(models,24);console.log('SUPERRED1003_BOUNDARIES '+JSON.stringify({models,vertices,leafBladesPerModel:576}));
+});
+test('Super Red opposite leaf pairs and petioles meet connected main and side shoots',()=>{
+ const p={...makePlant('p-d1be39347dd5',100310,3,3),height:.25,spread:.35,leafHeight:.20},g=plantModel(p,{year:1,month:7,reference:false},1);let leafJoins=0,petioleJoins=0,stemJoins=0,rootJoins=0;
+ try{
+  g.updateMatrixWorld(true);const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-submerged-super-red-photo-reference-')),petiole=g.children.find(m=>m.userData.component==='petiole-super-red-photo-reference'),main=g.children.find(m=>m.userData.component==='stem-super-red-photo-reference'),side=g.children.find(m=>m.userData.component==='side-shoot-super-red-photo-reference'),roots=g.children.find(m=>m.userData.component==='root-submerged-super-red-photo-reference'),geometry=leaf.geometry;
+  const point=(mesh,k,v)=>{const m=new Matrix4();mesh.getMatrixAt(k,m);return v.applyMatrix4(m).applyMatrix4(mesh.matrixWorld);},ends=(mesh,y)=>Array.from({length:mesh.count},(_,k)=>point(mesh,k,new Vector3(0,y,0))),stemEnds=[...ends(main,.5),...ends(side,.5)],petioleEnds=ends(petiole,.5),pairs=Array(288).fill(0),tips=Array(576).fill(0);
+  const nearest=(v,points)=>{let index=-1,d=Infinity;for(let i=0;i<points.length;i++){const distance=points[i].distanceTo(v);if(distance<d){d=distance;index=i;}}assert.ok(d<2e-6);return index;};
+  for(let k=0;k<leaf.count;k++){const root=point(leaf,k,new Vector3().fromBufferAttribute(geometry.attributes.position,geometry.userData.rootVertex));tips[nearest(root,petioleEnds)]++;leafJoins++;}
+  const petioleRoots=ends(petiole,-.5);for(const root of petioleRoots){pairs[nearest(root,stemEnds)]++;petioleJoins++;}assert.ok(tips.every(n=>n===1));assert.ok(pairs.every(n=>n===2));
+  for(let k=0;k<petiole.count;k+=2){const a=petioleEnds[k].clone().sub(petioleRoots[k]),b=petioleEnds[k+1].clone().sub(petioleRoots[k+1]);assert.ok(petioleRoots[k].distanceTo(petioleRoots[k+1])<2e-6);assert.ok(Math.abs(a.x+b.x)<2e-6&&Math.abs(a.z+b.z)<2e-6,'opposite pair has opposing horizontal petiole directions');}
+  const bases=[];for(const mesh of[main,side])for(let k=0;k<mesh.count;k++){const root=point(mesh,k,new Vector3(0,-.5,0));if(stemEnds.some(v=>v.distanceTo(root)<2e-6))stemJoins++;else bases.push(root);}assert.equal(bases.length,12);const rootCounts=Array(12).fill(0);for(let k=0;k<roots.count;k++){rootCounts[nearest(point(roots,k,new Vector3(0,-.5,0)),bases)]++;rootJoins++;}assert.ok(rootCounts.every(n=>n===3));
+  assert.ok([...geometry.attributes.normal.array].every(Number.isFinite));assert.ok([...geometry.index.array].every(i=>i>=0&&i<geometry.attributes.position.count));geometry.computeBoundingBox();assert.ok(geometry.boundingBox.max.z-geometry.boundingBox.min.z>.02);assert.equal(Object.values(CATALOG).filter(i=>i.appearance?.shootProfile==='superRed').length,1);
+ }finally{dispose(g);}
+ assert.equal(leafJoins,576);assert.equal(petioleJoins,576);assert.equal(stemJoins,276);assert.equal(rootJoins,36);console.log('SUPERRED1003_GRAPH '+JSON.stringify({geometryModels:1,leafJoins,petioleJoins,stemJoins,rootJoins,rootedMainBases:12}));
+});
+test('Super Red illustrative leaf pairs remain stable across years and protected winter water conditions',()=>{
+ const p={...makePlant('p-d1be39347dd5',100310,3,3),height:.25,spread:.35,leafHeight:.20};let yearModels=0,pondModels=0;
+ for(const month of[7,1]){
+  const g=plantModel(p,{year:1,month,reference:false},1),later=plantModel(p,{year:5,month,reference:false},1);yearModels+=2;
+  try{const leaf=group=>group.children.find(m=>m.userData.component.startsWith('leaf-submerged-super-red-photo-reference-'));assert.deepEqual([...leaf(g).instanceMatrix.array],[...leaf(later).instanceMatrix.array]);assert.equal(leaf(g).count,576);assert.ok(!g.children.some(m=>/petal|fruit|offspring|turion/.test(m.userData.component)));}finally{dispose(g);dispose(later);}
+  const pond=plantModel(p,{year:1,month,reference:false,waterDepth:.08},1);pondModels++;
+  try{pond.updateMatrixWorld(true);const leaf=pond.children.find(m=>m.userData.component.startsWith('leaf-submerged-super-red-photo-reference-')),v=new Vector3(),matrix=new Matrix4();let top=-Infinity;for(let k=0;k<leaf.count;k++){leaf.getMatrixAt(k,matrix);matrix.premultiply(leaf.matrixWorld);for(let j=0;j<leaf.geometry.attributes.position.count;j++){v.fromBufferAttribute(leaf.geometry.attributes.position,j).applyMatrix4(matrix);top=Math.max(top,v.y);}}assert.ok(top<.08);assert.ok(!pond.children.some(m=>/petal/.test(m.userData.component)));}finally{dispose(pond);}
+ }
+ assert.equal(yearModels,4);assert.equal(pondModels,2);console.log('SUPERRED1003_YEAR_AND_WATER '+JSON.stringify({yearModels,pondModels,annualRealismVerified:0}));
+});
+test('Super Red visible model focus frames six summer and winter inputs above the camera floor',()=>{
+ let models=0,poses=0;const v=new Vector3(),matrix=new Matrix4();
+ for(const dims of[[.25,.35,.20],[.01,.10,.005],[.25,.35,.005]])for(const month of[7,1]){
+  const p={...makePlant('p-d1be39347dd5',100310,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},g=plantModel(p,{year:1,month,reference:false},1);models++;
+  try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);for(const aspect of[.8,1.65]){const pose=superRedVisibleFocus1003(g,aspect,40);assert.ok(pose);assert.equal(pose.fit,'super-red-visible-model');assert.ok(pose.position[1]>=.1);const camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);for(const mesh of g.children)for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);matrix.premultiply(mesh.matrixWorld);for(let j=0;j<mesh.geometry.attributes.position.count;j++){v.fromBufferAttribute(mesh.geometry.attributes.position,j).applyMatrix4(matrix).project(camera);assert.ok(Math.abs(v.x)<=1+2e-6&&Math.abs(v.y)<=1+2e-6&&v.z>=-1&&v.z<=1);}}poses++;}}finally{dispose(g);}
+ }
+ assert.equal(superRedVisibleFocus1003({userData:{architecture:'submergedShoots'}}),null);assert.equal(models,6);assert.equal(poses,12);console.log('SUPERRED1003_FOCUS '+JSON.stringify({models,poses}));
+});
