@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.962';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.963';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -741,3 +741,5 @@ Object.assign(TRAIT_VALUES,{vesicariusLobedFanReference:'三つの主な裂片�
 Object.assign(TRAIT_VALUES,{rosalynIrregularPetaloidReference:'細く裂け・ねじれる起源未同定の花弁状器官が重なる八重花の参考',mariaRougeWhiteBaseCupReference:'白い基部から赤い丸弁へ広がるカップ状花と暗い花芯の参考',songsNarrowStarReference:'間隔のある細い赤い剣弁・淡い基部と黄色い花芯の参考',smallClematisTernatePhotoReference:'小さな3小葉を葉柄と小葉柄でつないだ写真の参考配置（全葉の固定数は未確認）'});
 
 Object.assign(TRAIT_VALUES,{erectHerbClematisReference:'絡むつるを作らない木立株の参考',fascinationThickBellReference:'厚い紫のベル形・淡い縁が大きく反る花被の参考',hogelbyWhitePendantReference:'薄い白い花被が開いて下を向く参考（器官と枚数は未確認）',magicFountainLayeredReference:'尖った紫の多層花被と淡緑の閉じた未同定の中心',fascinationLeafReference:'幅広い模式単葉の写真参照例'});
+
+Object.assign(TRAIT_VALUES,{romantikaDarkCupReference:'濃紫の広い受け咲き花被と黄色い花芯の参考',aiFukushimaPinkWhiteTulipReference:'桃色中央と広い白縁・先が開くチューリップ形（花芯未確認）',cassisDenseNetReference:'淡い網状の外側と丸い紫の内側・密な未同定の中心'});
