@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.990';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.991';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.990';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.991';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26065,7 +26065,55 @@ function drawAsazaPhotoReference(b,{s,rand},kit){
  }
 }
 
+// One illustrated Nuphar specimen, informed by the named grower's photograph.
+// Five outer sepals are source-supported; organ counts and posture are examples.
+export function nupharPhotoReferencePoint(type,t,u){
+ if(type==='leaf'){
+  const ph=u*TAU,x=Math.sin(ph)*.34*(1+.10*Math.max(0,-Math.cos(ph))),y=.43+.57*Math.cos(ph)+.14*Math.exp(-(((ph-Math.PI)/.16)**2));
+  return [t*x,.43+t*(y-.43),.08*t*t*Math.sin(ph)**2+.04*t**3*(1+Math.cos(ph))+.025*t*t*Math.abs(Math.sin(ph))**4];
+ }
+ if(type==='sepal')return [u*.65*Math.sin(Math.PI*t)**.5,.90*t**1.3+.12*u*u*Math.sin(Math.PI*t),.34*Math.sin(Math.PI*t)+.78*t];
+ return [u*.38*(.3+.7*Math.sin(Math.PI*t)**.4),t,.20*Math.sin(Math.PI*t)];
+}
+export function nupharPhotoReferenceGeometry(type){
+ const leaf=type==='leaf',N=leaf?24:32,C=leaf?96:16,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const point=nupharPhotoReferencePoint(type,i/N,leaf?j/C:j/C*2-1);p.push(...point);uv.push(leaf?point[0]/.8+.5:j/C,leaf?point[1]:i/N);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={nupharPhotoReference:true,part:type,illustrativeGeometry:true};return g;
+}
+const nupharReferenceLeafPositions=(()=>{const a=[];for(let i=0;i<=24;i++)for(let j=0;j<=96;j++)a.push(...nupharPhotoReferencePoint('leaf',i/24,j/96));return new Float32Array(a);})();
+function drawNupharPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),leafRadius=Math.min(.0012,h*.006,w*.005,LH*.012),crown=[0,leafRadius*1.2+Math.min(.00002,h*.002),0];
+ for(let j=0;j<6;j++){
+  const az=j*2.399+.4,R=w*.045*Math.sqrt((j+.8)/6),L=.25*(.88+j*.024),relief=Math.min(L,LH*.10/.145),pitch=Math.acos(Math.min(.85,LH*.52/(1.10*L)));
+  const tilt=new THREE.Matrix4().makeRotationX(pitch),v=new THREE.Vector3();let high=-Infinity,rad=0;
+  for(let k=0;k<nupharReferenceLeafPositions.length;k+=3){v.fromArray(nupharReferenceLeafPositions,k).multiply(new THREE.Vector3(L,L,relief)).applyMatrix4(tilt);high=Math.max(high,v.y);rad=Math.max(rad,Math.hypot(v.x,v.z));}
+  const fit=Math.min(1,Math.max(.001,(w*.49-R)/rad)),at=[Math.sin(az)*R,LH*.96-high*fit,Math.cos(az)*R];
+  b.branch(crown,at,leafRadius,'#688650','petiole-nuphar-ref');
+  b.add('nuphar-photo-reference-leaf','leaf-nuphar-photo-reference',kit.shade(rand,s.leafColor,.025),...at,L*fit,L*fit,relief*fit,pitch,az,0);
+ }
+ if(!s.bloom)return;
+ const r=Math.min(.0225,w*.22,h*.65),at=[0,h*.93-r*.90,0],yaw=.3,f=flowerFrame(b,at,0,yaw);
+ b.branch(crown,at,Math.min(.0027,h*.012,w*.01),'#688650','peduncle-nuphar-ref');
+ for(let j=0;j<5;j++){
+  const az=j*TAU/5,pitch=[0,0,0,.50,.65][j];f.add('nuphar-photo-reference-sepal','sepal-nuphar-photo-reference',kit.shade(rand,s.flowerColor,.018),0,0,0,r,r,r,pitch,az,0);
+  const row=28,col=8,C=16,N=32,vertices=[row*(C+1)+col,(row+1)*(C+1)+col,row*(C+1)+col+1],totalYaw=yaw+az,matrix=new THREE.Matrix4().compose(new THREE.Vector3(...at),new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,totalYaw,0,'YXZ')),new THREE.Vector3(r,r,r));matrix.fromArray(new Float32Array(matrix.elements));
+  const points=vertices.map(v=>new THREE.Vector3(...nupharPhotoReferencePoint('sepal',Math.floor(v/(C+1))/N,v%(C+1)/C*2-1).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),axis=new THREE.Vector3(Math.sin(totalYaw)*1.2,.65,Math.cos(totalYaw)*1.2).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),'YXZ');
+  b.flower?.(point.toArray(),r*1.7,e.x,e.y,e.z,{component:'sepal-nuphar-photo-reference',instanceId:j,vertices,faceIndex:(row*C+col)*2,cameraAxis:axis.toArray()});
+ }
+ // Short inner petals and stamens attach within an overlapping central body.
+ f.add('nuphar-photo-reference-body','central-body-nuphar-ref','#d8b735',0,r*.20,0,r*.40,r*.45,r*.40);
+ for(let k=0;k<16;k++){const az=k*TAU/16;f.add('nuphar-photo-reference-inner','petal-nuphar-ref-inner','#d4ad25',Math.sin(az)*r*.38,r*.32,Math.cos(az)*r*.38,r*.22,r*.34,r*.22,.55,az,0);}
+ for(let k=0;k<32;k++){const az=k*TAU/32+.1;f.add('nuphar-photo-reference-inner','stamen-nuphar-ref','#e6bd2a',Math.sin(az)*r*.35,r*.33,Math.cos(az)*r*.35,r*.07,r*.28,r*.12,.10,az,0);}
+ f.add('nuphar-photo-reference-body','stigmatic-disc-nuphar-ref','#d6b437',0,r*.43,0,r*.34,r*.04,r*.34);
+ for(let k=0;k<12;k++){const az=k*TAU/12;f.branch([0,r*.452,0],[Math.sin(az)*r*.30,r*.452,Math.cos(az)*r*.30],r*.004,'#a99028','stigmatic-ray-nuphar-ref');}
+}
+
 function drawFloatingAquatics(b,{info,s,detail,rand},kit){
+ if(info.appearance?.shootProfile==='nupharPhotoReference'){drawNupharPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='asazaPhotoReference'){drawAsazaPhotoReference(b,{s,rand},kit);return;}
  if(s.groundDormant)return;
  const a=info.appearance,arch=a.architecture,arrow=arch==='waterArrowhead',nuphar=arch==='nupharEmergent',poppy=arch==='waterPoppy',floating=!arrow&&!nuphar,h=s.height,w=s.spread,green=s.leafColor,stem=a.stemColor;

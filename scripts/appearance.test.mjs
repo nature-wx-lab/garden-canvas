@@ -7881,9 +7881,9 @@ test('floating aquatics separate female flowers, sepals, fringes and underwater 
   if(month===1)assert.equal(g.children.length,0,id);
   if(month===7){
    const has=name=>g.children.some(m=>m.userData.component===name);
-   assert.ok(has(id===ids[2]?'leaf-asaza-photo-reference':'leaf-glossy'));
+   assert.ok(has(id===ids[1]?'leaf-nuphar-photo-reference':id===ids[2]?'leaf-asaza-photo-reference':'leaf-glossy'));
    if(id===ids[0]){assert.ok(has('carpelHead'));assert.ok(!has('anther'));}
-   if(id===ids[1]){assert.ok(has('petaloidSepal'));assert.ok(has('stigmaticDisc'));assert.ok(has('petal'));}
+   if(id===ids[1]){assert.ok(has('sepal-nuphar-photo-reference'));assert.ok(has('stigmatic-disc-nuphar-ref'));assert.ok(has('petal-nuphar-ref-inner'));}
    if(id===ids[2])assert.ok(has('corolla-fringe-asaza-ref'));
    if(id===ids[3]){assert.ok(has('throat'));assert.ok(!has('corollaFringe'));}
   }
@@ -21988,4 +21988,46 @@ test('Nuphar source conflicts retain five outer sepals and qualified domestic he
 test('Sagittaria reference height retains flowerstem basis without merging names or source sizes',()=>{
  const i=CATALOG['p-8d877dd373db'];assert.equal(i.label,'ナガバオモダカ');assert.equal(i.latin,'Sagittaria weatherbiana');assert.deepEqual(i.height,[.15,.7]);assert.equal(i.spread,null);assert.equal(i.sourceChecked,'2026-11-01');assert.deepEqual(i.bloom,[4,5,6,7,8,9]);assert.equal(i.bloomKnown,true);assert.match(i.care,/花茎の範囲/);assert.match(i.care,/葉長7〜30cm/);assert.match(i.appearance.sourceConflict,/約1.5cm/);assert.match(i.appearance.sourceConflict,/約1cm/);assert.match(i.appearance.sourceConflict,/Sagittaria graminea/);assert.match(i.appearance.sourceConflict,/Sagittaria weatherbiana/);assert.ok(i.appearance.unconfirmed.some(x=>x.includes('分類同定')));assert.equal(i.appearance.architecture,'waterArrowhead');assert.equal(i.appearance.persistence,'winterSubmerged');assert.equal(i.appearance.leafLength,.25);assert.equal(i.appearance.flowerRadius,.0075);assert.match(seasonAt(i,1).phase,/水中葉/);
  const p={...makePlant('p-8d877dd373db',99010,3,3),height:.4,spread:.50,leafHeight:.30},d=emptyDocument(10,6);d.plans.A.plants=[p];d.catalogVersion='2026-10-29.54';const saved=structuredClone(d);assert.deepEqual(validateDocument(d).plans,saved.plans);assert.deepEqual(d,saved);assert.equal(stateAt(p,view(7)).height,.4);assert.equal(stateAt(p,{...view(7),reference:true}).height,.7);
+});
+
+test('Nuphar photo reference fits twenty four independent dimension models with connected leaves and flower stalk',()=>{
+ const dimensions=[[.35,.65,.25],[.04,.10,.010],[.35,.65,.005],[.01,.03,.005],[.02,.05,.02],[.7,.15,.3],[.1,1,.05],[2,3,1.5]];let models=0,joins=0,flowering=0,winterModels=0,vertices=0;
+ for(const dims of dimensions)for(const month of[7,4,1]){
+  const p={...makePlant('p-b038c25453b8',99110,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(p),g=plantModel(p,{year:1,month,reference:false},1);models++;
+  try{
+   g.updateMatrixWorld(true);assert.deepEqual(p,saved);
+   if(month===1){assert.equal(g.children.length,0);assert.equal(g.userData.groundDormant,true);winterModels++;continue;}
+   const component=k=>g.children.find(m=>m.userData.component===k),leaves=component('leaf-nuphar-photo-reference'),stems=component('petiole-nuphar-ref');assert.equal(leaves?.count,6);assert.equal(stems?.count,6);assert.equal(leaves.geometry.userData.nupharPhotoReference,true);
+   let lo=Infinity,hi=-Infinity,rad=0,leafHi=-Infinity;const v=new Vector3(),world=new Matrix4();
+   for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,world);world.premultiply(mesh.matrixWorld);for(let j=0;j<pos.count;j++){v.fromBufferAttribute(pos,j).applyMatrix4(world);lo=Math.min(lo,v.y);hi=Math.max(hi,v.y);rad=Math.max(rad,Math.hypot(v.x,v.z));if(mesh===leaves)leafHi=Math.max(leafHi,v.y);vertices++;}}}
+   assert.ok(lo>=-2e-6,JSON.stringify({dims,month,lo}));assert.ok(hi<=dims[0]+2e-6,JSON.stringify({dims,month,hi}));assert.ok(rad*2<=dims[1]+2e-6,JSON.stringify({dims,month,rad}));assert.ok(leafHi<=Math.min(dims[0],dims[2])+2e-6,JSON.stringify({dims,month,leafHi}));
+   const point=(mesh,k,v)=>{const m=new Matrix4();mesh.getMatrixAt(k,m);return v.applyMatrix4(m).applyMatrix4(mesh.matrixWorld);};
+   for(let k=0;k<6;k++){const base=point(leaves,k,new Vector3().fromBufferAttribute(leaves.geometry.attributes.position,24*97+48)),end=point(stems,k,new Vector3(0,.5,0));assert.ok(base.distanceTo(end)<2e-6);joins++;}
+   const sepals=component('sepal-nuphar-photo-reference'),peduncle=component('peduncle-nuphar-ref');assert.equal(sepals.count,5);assert.equal(peduncle.count,1);const end=point(peduncle,0,new Vector3(0,.5,0));for(let k=0;k<5;k++)assert.ok(end.distanceTo(point(sepals,k,new Vector3().fromBufferAttribute(sepals.geometry.attributes.position,8)))<2e-6);assert.equal(stateAt(p,{year:1,month,reference:false}).bloom,true);flowering++;
+  }finally{dispose(g);}
+ }
+ assert.equal(models,24);assert.equal(joins,96);assert.equal(flowering,16);assert.equal(winterModels,8);console.log('NUPHAR991_BOUNDARIES '+JSON.stringify({models,joins,flowering,winterModels,vertices}));
+});
+test('Nuphar camera rays meet three indexed sepal models while old gardens preserve inputs',()=>{
+ let models=0,rays=0;
+ for(const dims of[[.35,.65,.25],[.04,.10,.010],[.35,.65,.005]]){
+  const input={...makePlant('p-b038c25453b8',99110,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input),g=plantModel(input,{year:1,month:7,reference:false},1);models++;
+  try{
+   assert.ok(g.userData.surfaceSelection?.matched);const surface=g.userData.flowerTargets[0].surface;assert.equal(surface.component,'sepal-nuphar-photo-reference');const mesh=g.children.find(m=>m.userData.component===surface.component);assert.deepEqual(surface.vertices,[0,1,2].map(i=>mesh.geometry.index.getX(surface.faceIndex*3+i)));g.position.set(-2,.012,-1);g.updateMatrixWorld(true);
+   for(const aspect of[.8,1.65]){const pose=flowerInspectionView(g,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(g,true).find(x=>{const z=-x.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.equal(hit?.object.userData.component,surface.component);assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);rays++;}
+  }finally{dispose(g);}
+  const doc=emptyDocument(10,6);doc.plans.A.plants=[input];const old={...structuredClone(doc),catalogVersion:'2026-10-29.55'},copy=structuredClone(old);assert.equal(doc.catalogVersion,CATALOG_VERSION);assert.deepEqual(validateDocument(old),doc);assert.deepEqual(old,copy);assert.deepEqual(input,saved);const state=stateAt(input,{year:1,month:7,reference:true});assert.equal(state.height,.4);assert.equal(state.spread,dims[1]);assert.equal(state.leafHeight,dims[2]*.4/dims[0]);
+ }
+ assert.equal(models,3);assert.equal(rays,6);console.log('NUPHAR991_CAMERAS '+JSON.stringify({models,rays}));
+});
+test('Nuphar five sepal cup and illustrative inner organs stay connected without automatic stock multiplication',()=>{
+ const input={...makePlant('p-b038c25453b8',99110,3,3),height:.35,spread:.65,leafHeight:.25},g=plantModel(input,{year:1,month:7,reference:false},1),later=plantModel(input,{year:5,month:7,reference:false},1);let attached=0;
+ try{
+  g.updateMatrixWorld(true);later.updateMatrixWorld(true);const component=(group,k)=>group.children.find(m=>m.userData.component===k),leaf=component(g,'leaf-nuphar-photo-reference'),laterLeaf=component(later,'leaf-nuphar-photo-reference');assert.equal(leaf.count,6);assert.deepEqual([...leaf.instanceMatrix.array],[...laterLeaf.instanceMatrix.array]);assert.ok(!g.children.some(m=>/seed|fruit|offspring/.test(m.userData.component)));
+  const sepal=component(g,'sepal-nuphar-photo-reference'),inner=component(g,'petal-nuphar-ref-inner'),stamens=component(g,'stamen-nuphar-ref'),body=component(g,'central-body-nuphar-ref'),disc=component(g,'stigmatic-disc-nuphar-ref'),rays=component(g,'stigmatic-ray-nuphar-ref');assert.equal(sepal.count,5);assert.equal(inner.count,16);assert.equal(stamens.count,32);assert.equal(body.count,1);assert.equal(disc.count,1);assert.equal(rays.count,12);assert.equal(sepal.geometry.userData.part,'sepal');assert.equal(sepal.geometry.attributes.position.count,33*17);
+  const bm=new Matrix4();body.getMatrixAt(0,bm);bm.premultiply(body.matrixWorld).invert();for(const part of[inner,stamens])for(let k=0;k<part.count;k++){const pm=new Matrix4();part.getMatrixAt(k,pm);pm.premultiply(part.matrixWorld);for(const j of[0,8,16]){const v=new Vector3().fromBufferAttribute(part.geometry.attributes.position,j).applyMatrix4(pm).applyMatrix4(bm);assert.ok(Math.hypot(v.x,v.z)<=1+2e-6);assert.ok(Math.abs(v.y)<=.5+2e-6);attached++;}}
+  for(const part of[leaf,sepal]){const shader={uniforms:{},vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader};part.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,/roughnessFactor=\.42/);}
+  const a=CATALOG['p-b038c25453b8'].appearance;assert.equal(a.shootProfile,'nupharPhotoReference');assert.equal(a.status,'partial');assert.equal(a.sources[a.basis.leafColor].url,CATALOG['p-b038c25453b8'].source);assert.equal(a.sources[a.basis.leafColor].scope,'catalog-entry');assert.ok(a.unconfirmed.some(s=>s.includes('描画例')&&s.includes('葉6枚')));assert.ok(a.unconfirmed.some(s=>s.includes('年次増殖')));
+ }finally{dispose(g);dispose(later);}
+ assert.equal(attached,144);console.log('NUPHAR991_INNER_ATTACHMENTS '+JSON.stringify({attached,illustrativeInnerPetals:16,illustrativeStamens:32,illustrativeRays:12}));
 });
