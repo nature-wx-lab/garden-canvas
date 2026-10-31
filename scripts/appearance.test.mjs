@@ -22187,3 +22187,50 @@ test('Glossostigma domestic source keeps verified low height and Japanese flower
  assert.equal(info.label,'グロッソスティグマ');assert.equal(info.latin,'Glossostigma elatinoides');assert.deepEqual(info.height,[.02,.05]);assert.equal(info.spread,null);assert.deepEqual(info.bloom,[5,6,7,8,9]);assert.equal(info.bloomKnown,true);assert.deepEqual(info.colors,['white']);assert.equal(info.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'glosso');assert.equal(a.status,'partial');
  assert.match(info.care,/直径9cm/);assert.match(info.care,/葉身/);assert.match(info.care,/株幅ではありません/);assert.match(a.sourceConflict,/青い花冠/);assert.match(a.sourceConflict,/白く見える花/);assert.match(a.sourceConflict,/NSW/);assert.match(a.phenologyRegion,/5〜9月/);assert.match(a.phenologyRegion,/12〜5月/);assert.doesNotMatch(a.phenologyRegion,/マツモ|カボンバ/);assert.match(a.phenologyRegion,/未校正/);assert.ok(a.unconfirmed.some(s=>s.includes('水中葉モデルには花を描きません')));assert.ok(a.unconfirmed.some(s=>s.includes('クローン')));
 });
+
+import{glossostigmaFoliageInspectionView as glossostigmaVisibleFocus1000}from'../site/scene.js';
+test('Glossostigma photo reference fits twenty four independent dimensions with connected petiolate spoon leaves',()=>{
+ const dimsList=[[.04,.30,.03],[.01,.10,.005],[.04,.30,.005],[.01,.10,.01],[.02,.15,.02],[.07,.20,.03],[.1,1,.05],[.5,2,.30]];let models=0,vertices=0;
+ for(const dims of dimsList)for(const month of[7,4,1]){
+  const p={...makePlant('p-03b938c53e6f',100010,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},copy=structuredClone(p),g=plantModel(p,{year:1,month,reference:false},1);models++;
+  try{
+   g.updateMatrixWorld(true);const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-submerged-glosso-photo-reference-')),petiole=g.children.find(m=>m.userData.component==='petiole-glossostigma-photo-reference'),stem=g.children.find(m=>m.userData.component==='stem-creeping-glossostigma-photo-reference'),roots=g.children.find(m=>m.userData.component==='root-submerged-glosso-photo-reference');assert.equal(leaf?.count,960);assert.equal(petiole?.count,960);assert.equal(stem?.count,480);assert.equal(roots?.count,480);assert.equal(leaf.geometry.userData.closedBlade,true);assert.ok(!g.children.some(m=>/petal|flower|fruit|offspring/.test(m.userData.component)));
+   const point=new Vector3(),matrix=new Matrix4();let lo=Infinity,hi=-Infinity,rad=0,leafTop=-Infinity;
+   for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);matrix.premultiply(mesh.matrixWorld);for(let j=0;j<mesh.geometry.attributes.position.count;j++){point.fromBufferAttribute(mesh.geometry.attributes.position,j).applyMatrix4(matrix);lo=Math.min(lo,point.y);hi=Math.max(hi,point.y);rad=Math.max(rad,Math.hypot(point.x,point.z));if(mesh===leaf)leafTop=Math.max(leafTop,point.y);vertices++;}}}
+   assert.ok(lo>=-2e-6,JSON.stringify({dims,month,lo}));assert.ok(hi<=dims[0]+2e-6,JSON.stringify({dims,month,hi}));assert.ok(rad*2<=dims[1]+2e-6,JSON.stringify({dims,month,rad}));assert.ok(leafTop<=Math.min(dims[0],dims[2])+2e-6,JSON.stringify({dims,month,leafTop}));assert.deepEqual(p,copy);
+  }finally{dispose(g);}
+ }
+ assert.equal(models,24);console.log('GLOSSOSTIGMA1000_BOUNDARIES '+JSON.stringify({models,vertices,leafBladesPerModel:960,stemNodesPerModel:480}));
+});
+test('Glossostigma leaf roots meet petiole tips and paired petioles meet the creeping stem graph',()=>{
+ const p={...makePlant('p-03b938c53e6f',100010,3,3),height:.04,spread:.30,leafHeight:.03},g=plantModel(p,{year:1,month:7,reference:false},1);let leafJoins=0,petioleJoins=0,stemJoins=0;
+ try{
+  g.updateMatrixWorld(true);const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-submerged-glosso-photo-reference-')),petiole=g.children.find(m=>m.userData.component==='petiole-glossostigma-photo-reference'),stem=g.children.find(m=>m.userData.component==='stem-creeping-glossostigma-photo-reference'),geometry=leaf.geometry;
+  const point=(mesh,k,v)=>{const m=new Matrix4();mesh.getMatrixAt(k,m);return v.applyMatrix4(m).applyMatrix4(mesh.matrixWorld);},ends=(mesh,y)=>Array.from({length:mesh.count},(_,k)=>point(mesh,k,new Vector3(0,y,0))),stemEnds=ends(stem,.5),petioleEnds=ends(petiole,.5),pairs=Array(stem.count).fill(0),tips=Array(petiole.count).fill(0);
+  const nearest=(v,points)=>{let index=-1,d=Infinity;for(let i=0;i<points.length;i++){const distance=points[i].distanceTo(v);if(distance<d){d=distance;index=i;}}assert.ok(d<2e-6);return index;};
+  for(let k=0;k<leaf.count;k++){const root=point(leaf,k,new Vector3().fromBufferAttribute(geometry.attributes.position,geometry.userData.rootVertex));tips[nearest(root,petioleEnds)]++;leafJoins++;}
+  for(let k=0;k<petiole.count;k++){const root=point(petiole,k,new Vector3(0,-.5,0));pairs[nearest(root,stemEnds)]++;petioleJoins++;}
+  assert.ok(tips.every(n=>n===1));assert.ok(pairs.every(n=>n===2));let bases=0;
+  for(let k=0;k<stem.count;k++){const root=point(stem,k,new Vector3(0,-.5,0));if(stemEnds.some(v=>v.distanceTo(root)<2e-6))stemJoins++;else bases++;}assert.equal(bases,1);
+  assert.ok([...geometry.attributes.normal.array].every(Number.isFinite));assert.ok([...geometry.index.array].every(i=>i>=0&&i<geometry.attributes.position.count));geometry.computeBoundingBox();assert.ok(geometry.boundingBox.max.z-geometry.boundingBox.min.z>.01);assert.equal(Object.values(CATALOG).filter(i=>i.appearance?.shootProfile==='glosso').length,1);assert.equal(CATALOG[p.kind].appearance.status,'partial');assert.ok(CATALOG[p.kind].appearance.unconfirmed.some(s=>s.includes('480節')&&s.includes('960枚')));
+ }finally{dispose(g);}
+ assert.equal(leafJoins,960);assert.equal(petioleJoins,960);assert.equal(stemJoins,479);console.log('GLOSSOSTIGMA1000_GRAPH '+JSON.stringify({geometryModels:1,leafJoins,petioleJoins,stemJoins,bases:1}));
+});
+test('Glossostigma creeping reference keeps illustrative counts across years and submerged winter conditions',()=>{
+ const p={...makePlant('p-03b938c53e6f',100010,3,3),height:.04,spread:.30,leafHeight:.03};let yearModels=0,pondModels=0;
+ for(const month of[7,1]){
+  const g=plantModel(p,{year:1,month,reference:false},1),later=plantModel(p,{year:5,month,reference:false},1);yearModels+=2;
+  try{const leaf=group=>group.children.find(m=>m.userData.component.startsWith('leaf-submerged-glosso-photo-reference-'));assert.deepEqual([...leaf(g).instanceMatrix.array],[...leaf(later).instanceMatrix.array]);assert.equal(leaf(g).count,960);assert.ok(!g.children.some(m=>/petal|fruit|offspring/.test(m.userData.component)));}finally{dispose(g);dispose(later);}
+  const pond=plantModel(p,{year:1,month,reference:false,waterDepth:.03},1);pondModels++;
+  try{pond.updateMatrixWorld(true);const leaf=pond.children.find(m=>m.userData.component.startsWith('leaf-submerged-glosso-photo-reference-')),v=new Vector3(),matrix=new Matrix4();let top=-Infinity;for(let k=0;k<leaf.count;k++){leaf.getMatrixAt(k,matrix);matrix.premultiply(leaf.matrixWorld);for(let j=0;j<leaf.geometry.attributes.position.count;j++){v.fromBufferAttribute(leaf.geometry.attributes.position,j).applyMatrix4(matrix);top=Math.max(top,v.y);}}assert.ok(top<.03);assert.ok(!pond.children.some(m=>/petal/.test(m.userData.component)));}finally{dispose(pond);}
+ }
+ assert.equal(yearModels,4);assert.equal(pondModels,2);console.log('GLOSSOSTIGMA1000_YEAR_AND_WATER '+JSON.stringify({yearModels,pondModels,annualRealismVerified:0}));
+});
+test('Glossostigma visible model focus frames six summer and winter models above the camera floor',()=>{
+ let models=0,poses=0;const v=new Vector3(),matrix=new Matrix4();
+ for(const dims of[[.04,.30,.03],[.01,.10,.005],[.04,.30,.005]])for(const month of[7,1]){
+  const p={...makePlant('p-03b938c53e6f',100010,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},g=plantModel(p,{year:1,month,reference:false},1);models++;
+  try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);for(const aspect of[.8,1.65]){const pose=glossostigmaVisibleFocus1000(g,aspect,40);assert.ok(pose);assert.equal(pose.fit,'glossostigma-visible-model');assert.ok(pose.position[1]>=.1);const camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);for(const mesh of g.children)for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);matrix.premultiply(mesh.matrixWorld);for(let j=0;j<mesh.geometry.attributes.position.count;j++){v.fromBufferAttribute(mesh.geometry.attributes.position,j).applyMatrix4(matrix).project(camera);assert.ok(Math.abs(v.x)<=1+2e-6&&Math.abs(v.y)<=1+2e-6&&v.z>=-1&&v.z<=1);}}poses++;}}finally{dispose(g);}
+ }
+ assert.equal(glossostigmaVisibleFocus1000({userData:{architecture:'submergedShoots'}}),null);assert.equal(models,6);assert.equal(poses,12);console.log('GLOSSOSTIGMA1000_FOCUS '+JSON.stringify({models,poses}));
+});

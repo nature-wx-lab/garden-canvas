@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.999';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1000';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.999';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1000';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1159,7 +1159,43 @@ function drawMatsumoReference(b,{s,rand},kit){
  // No invented roots or flower anchors: exceptional attachment and rare flowers remain unrepresented.
 }
 
+// Closed spoon-shaped blade from the grower photo; thickness and curvature are illustrative.
+export function glossostigmaPhotoReferenceGeometry(){
+ const N=24,C=12,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,angle=j/C*TAU,sn=Math.sin(Math.PI*t),width=.5*Math.pow(sn,.52)*(.62+.55*t),thickness=.012*sn,camber=.06*t*t;
+  p.push(Math.cos(angle)*width,t,camber+Math.sin(angle)*thickness);uv.push(j/C,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={glossostigmaPhotoReference:true,rootVertex:0,closedBlade:true,illustrativeCrossSection:true};return g;
+}
+function drawGlossostigmaPhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0004,LH*.02),r=Math.min(.0003,h*.01,w*.001,LH*.025),P=Math.min(.006,w*.02,LH*.20),L=Math.min(.006,w*.025,LH*.50),W=Math.min(.003,w*.01,LH*.20),leafKind='leaf-submerged-glosso-photo-reference-underside-'+info.appearance.leafUnderside.slice(1),stem='stem-creeping-glossostigma-photo-reference';
+ function node(at,turn){
+  const root=[at[0],Math.min(base*.15,at[1]*.15),at[2]];b.branch(at,root,Math.min(.00008,r*.45),'#b5ac8b','root-submerged-glosso-photo-reference');
+  for(let side=0;side<2;side++){
+   const az=turn+side*Math.PI,top=[at[0]+Math.sin(az)*P*.75,at[1]+P*.65,at[2]+Math.cos(az)*P*.75];
+   b.branch(at,top,Math.min(.0002,h*.004,w*.0007,LH*.018),'#9da96c','petiole-glossostigma-photo-reference');
+   b.add('glossostigma-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.025),...top,W,L,L,1.15+.14*Math.sin(turn),az,0);
+  }
+ }
+ const primary=t=>{const radius=w*.24*Math.sqrt(t),angle=t*32*2.399;return[Math.sin(angle)*radius,base+LH*(.04+.12*(.5+.5*Math.sin(t*TAU*2+.2))),Math.cos(angle)*radius];};let previous=primary(0);
+ for(let j=1;j<=32;j++){
+  const t=j/32,at=primary(t),turn=j*2.399;b.branch(previous,at,r,'#9da96c',stem);previous=at;node(at,turn);
+  for(const side of[-1,1]){
+   const az=turn+side*Math.PI/2,reach=w*.065;let prev=at;
+   for(let k=1;k<=7;k++){
+    const u=k/7,tip=[at[0]+Math.sin(az)*reach*u,at[1]+LH*.02*Math.sin(u*Math.PI),at[2]+Math.cos(az)*reach*u];
+    b.branch(prev,tip,r,'#9da96c',stem);prev=tip;node(tip,turn+k*.77);
+   }
+  }
+ }
+ // One connected illustrative graph:32primary+448lateral nodes,960petioles/blades;no flowers.
+}
+
 function drawSubmergedShoots(b,{info,s,p,detail,rand},kit){
+ if(info.appearance.shootProfile==='glosso'){drawGlossostigmaPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance.shootProfile==='ceratophyllum'){drawMatsumoReference(b,{s,rand},kit);return;}
  if(info.appearance.shootProfile==='egeria'){drawEgeriaPhotoReference(b,{s,rand},kit);return;}
  if(['mossSouth','mossWillow','myrioGreen','myrioOrange','goldJenny','indica','rotalaFlower','najas'].includes(info.appearance.shootProfile)){drawWaterBranches(b,{info,s,p,detail,rand},kit);return;}
