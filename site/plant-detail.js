@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.969';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.970';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.969';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.970';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -17346,6 +17346,10 @@ export function clematisViticellaReferencePoint(type,t,u){
 
 
  if(type==='etoileViolette')return[u*.5*sn**.75*(1-.16*t),.07*sn+.08*t*t-.22*t**6+.040*Math.sin(t*19+u*7)*Math.abs(u)**5*sn+.09*u*sn,t-.03*t**4];
+
+ if(type==='montanaGrandiflora')return[u*.5*sn**.43*(1-.10*t),.055*sn+.08*t*t+.055*Math.sin(t*23+u*8)*Math.abs(u)**4*sn,t-.025*t**4];
+ if(type==='montanaFragrantSpring')return[u*.5*sn**.65*(1-.16*t)*(1+.035*Math.sin(t*26)*Math.abs(u)**5),.055*sn+.08*t*t+.060*Math.sin(t*20+u*7)*Math.abs(u)**4*sn,t-.025*t**4];
+ if(type==='montanaVera')return[u*.5*sn**.68*(1-.18*t),.06*sn+.10*t*t-.19*t**6+.045*Math.sin(t*20+u*6)*Math.abs(u)**4*sn,t-.025*t**4];
  if(type==='engeiElizabeth')return[u*.5*sn**.52*(1-.12*t),.065*sn+.09*t*t+.065*Math.sin(t*20+u*6)*Math.abs(u)**4*sn,t-.025*t**4];
  if(type==='ladyJ'){const width=t===0||t===1?0:(1-Math.exp(-9*t))*(.30+.70*t)*(1-.06*t)*Math.sqrt(Math.max(0,1-Math.max(0,(t-.78)/.22)**2));return[u*.5*width,-1.05*t+.24*t**6+.038*Math.sin(t*22+u*7)*Math.abs(u)**4*sn,.10+.84*t];}
  if(type==='dutchSky')return[u*.5*sn**.48*(1-.12*t),.065*sn+.10*t*t+.070*Math.sin(t*19+u*7)*Math.abs(u)**4*sn+.055*u*sn,t-.03*t**4];
@@ -17416,13 +17420,13 @@ export function clematisViticellaReferenceGeometry(type){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g;
 }
 function drawClematisViticellaReferences(b,{info,s},kit){
- const profile=info.appearance.shootProfile,pc=profile==='princeCharles',em=profile==='emilia',mi=profile==='mikelite',gd=profile==='gloriousDay',jc=profile==='madameJulia',ro=profile==='rosalyn',mr=profile==='mariaRouge',so=profile==='songs',sm=profile==='engeiSmile',mo=profile==='engeiMonalisa',mn=profile==='engeiMinamo',ed=sm||mo||mn,st=profile==='stories',ba=profile==='blueAngel',ki=profile==='kirisame',jz=profile==='jizela',ss=profile==='senninsou',hd=profile==='huldine',hg=profile==='hogelbyWhite',mf=profile==='magicFountain',rm=profile==='romantika',cs=profile==='cassis',hy=profile==='hfYoung',jo=profile==='josephine',dm=profile==='diamantina',hr=profile==='hudsonRiver',lj=profile==='ladyJ',ab=profile==='afroBoy',ds=profile==='dutchSky',ev=profile==='etoileViolette',el=profile==='engeiElizabeth',hn=profile==='hanazonoLeafReference',kj=profile==='konjiki',ag=profile==='avantGarde',nd=st||ba||ki||jz||ss||hd||hg||mf||rm||cs||hy||jo||dm||hr||lj||ab||ds||ev||el||hn||kj||ag,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),R=Math.min(info.appearance.flowerRadius,h*.055,w*.08),sr=Math.min(.0015,h*.002,w*.0025),leafMax=.060,green=s.leafColor,dry=s.leafDensity===0,unitY=new THREE.Vector3(0,1,0),surfaces=[];let serial=0,sepalSerial=0;
+ const profile=info.appearance.shootProfile,pc=profile==='princeCharles',em=profile==='emilia',mi=profile==='mikelite',gd=profile==='gloriousDay',jc=profile==='madameJulia',ro=profile==='rosalyn',mr=profile==='mariaRouge',so=profile==='songs',sm=profile==='engeiSmile',mo=profile==='engeiMonalisa',mn=profile==='engeiMinamo',ed=sm||mo||mn,st=profile==='stories',ba=profile==='blueAngel',ki=profile==='kirisame',jz=profile==='jizela',ss=profile==='senninsou',hd=profile==='huldine',hg=profile==='hogelbyWhite',mf=profile==='magicFountain',rm=profile==='romantika',cs=profile==='cassis',hy=profile==='hfYoung',jo=profile==='josephine',dm=profile==='diamantina',hr=profile==='hudsonRiver',lj=profile==='ladyJ',ab=profile==='afroBoy',ds=profile==='dutchSky',ev=profile==='etoileViolette',el=profile==='engeiElizabeth',hn=profile==='hanazonoLeafReference',kj=profile==='konjiki',ag=profile==='avantGarde',mg=profile==='montanaGrandiflora',fs=profile==='montanaFragrantSpring',ve=profile==='montanaVera',mm=mg||fs||ve,nd=st||ba||ki||jz||ss||hd||hg||mf||rm||cs||hy||jo||dm||hr||lj||ab||ds||ev||el||hn||kj||ag||mm,h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),R=Math.min(info.appearance.flowerRadius,h*.055,w*.08),sr=Math.min(.0015,h*.002,w*.0025),leafMax=.060,green=s.leafColor,dry=s.leafDensity===0,unitY=new THREE.Vector3(0,1,0),surfaces=[];let serial=0,sepalSerial=0;
  // For the new profiles, reserve the complete radial extent from the emitted
  // Float32 outer vertices, plus the lifted inner organs, before fitting a flower
  // near the edge of a very narrow input. Mature flowers that already fit retain R.
  const newFlowerReach=ro||mr||so?(()=>{let extent=.40;const width=ro?.47:mr?1.02:.56;for(let j=0;j<=32;j++)for(let i=0;i<=20;i++){const v=clematisViticellaReferencePoint(profile,j/32,i/20*2-1).map(Math.fround);extent=Math.max(extent,Math.hypot(v[0]*width,v[1],v[2]));if(ro){const inner=clematisViticellaReferencePoint('rosalynInner',j/32,i/20*2-1).map(Math.fround);extent=Math.max(extent,.17+.88*Math.hypot(inner[0]*.41,inner[1],inner[2]));}}return extent;})():1;
  const engeiFlowerReach=ed?(()=>{let extent=1.15;const width=sm?.72:mo?.62:.68,innerWidth=sm?.58:mo?.47:.21,innerLength=sm?.86:mo?.84:.80;for(let j=0;j<=32;j++)for(let i=0;i<=20;i++){const outer=clematisViticellaReferencePoint(profile,j/32,i/20*2-1).map(Math.fround),inner=clematisViticellaReferencePoint(profile+'Inner',j/32,i/20*2-1).map(Math.fround);extent=Math.max(extent,Math.hypot(outer[0]*width,outer[1],outer[2]),.18+innerLength*Math.hypot(inner[0]*innerWidth,inner[1],inner[2]));}return extent;})():1;
- const lateFlowerReach=nd?(()=>{let extent=1.18;const width=kj?.98:ag?.88:ev?.85:el?1:lj?.80:ab?.86:ds?1.02:dm?.72:hr?1.1:hy?.88:jo?.76:st?.62:jz?.90:hd?.64:hg?.70:mf?.78:cs?.88:ba?1:.95;for(let j=0;j<=32;j++)for(let i=0;i<=20;i++){
+ const lateFlowerReach=nd?(()=>{let extent=1.18;const width=mg?1.10:fs?.88:ve?.96:kj?.98:ag?.88:ev?.85:el?1:lj?.80:ab?.86:ds?1.02:dm?.72:hr?1.1:hy?.88:jo?.76:st?.62:jz?.90:hd?.64:hg?.70:mf?.78:cs?.88:ba?1:.95;for(let j=0;j<=32;j++)for(let i=0;i<=20;i++){
   const p=clematisViticellaReferencePoint(profile,j/32,i/20*2-1).map(Math.fround);extent=Math.max(extent,Math.hypot(p[0]*width,p[1],p[2]));
   if(ag){const q=clematisViticellaReferencePoint('avantGardeInner',j/32,i/20*2-1).map(Math.fround);extent=Math.max(extent,.17+.63*Math.hypot(q[0]*.34,q[1],q[2]));}
   if(ab){const q=clematisViticellaReferencePoint('afroBoyInner',j/32,i/20*2-1).map(Math.fround);extent=Math.max(extent,.20+.47*Math.hypot(q[0]*.16,q[1],q[2]));}
@@ -17459,8 +17463,8 @@ function drawClematisViticellaReferences(b,{info,s},kit){
    else for(let k=0;k<48;k++){const part=(k+.5)/48,turn=k*2.399963,rr=R*(.025+.14*Math.sqrt(part)),tip=[Math.sin(turn)*rr,R*(.22+.13*part),Math.cos(turn)*rr],from=new THREE.Vector3(Math.sin(turn)*R*.025,0,Math.cos(turn)*R*.025),to=new THREE.Vector3(...tip),axis=to.clone().sub(from),len=axis.length(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(unitY,axis.normalize()),'YXZ'),mid=from.add(to).multiplyScalar(.5),radius=Math.min(sr*.15,R*.008);f.add(clematisRetailStemUnit,'filament-clematis-viticella-ref-konjiki','#e7e2b5',...mid.toArray(),radius,len,radius,e.x,e.y,e.z);f.add(kit.bud,'anther-clematis-viticella-ref-konjiki','#dcd59b',...tip,R*.018,R*.055,R*.018,.15,turn,0);}
    serial++;return;
   }
-  if(ev||el){
-   const R=Math.min(info.appearance.flowerRadius,h*.055,w*.08,Math.max(0,w*.5-Math.hypot(at[0],at[2]))/lateFlowerReach*.999999),f=flowerFrame(b,at,pitch,yaw),width=ev?.85:1,n=ev?6:4,col=ev?'#66306f':'#dec3d8';
+  if(ev||el||mm){
+   const R=Math.min(info.appearance.flowerRadius,h*.055,w*.08,Math.max(0,w*.5-Math.hypot(at[0],at[2]))/lateFlowerReach*.999999),f=flowerFrame(b,at,pitch,yaw),width=mg?1.10:fs?.88:ve?.96:ev?.85:1,n=ev?6:4,col=mg?'#e9e7de':fs?'#d4a6c6':ve?'#ddbdd7':ev?'#66306f':'#dec3d8';
    for(let k=0;k<n;k++){const az=k*TAU/n+.05,instance=sepalSerial++;f.add('gcClematisViticellaSepal-'+profile,'petaloid-outer-clematis-viticella-ref-'+profile,col,0,0,0,R*width,R,R,0,az,0);
     if(k===0){const row=29,vertices=[row*21+10,(row+1)*21+10,row*21+11],scale=new THREE.Vector3(R*width,R,R),q=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ')),fq=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),points=vertices.map(v=>new THREE.Vector3(...clematisViticellaReferencePoint(profile,Math.floor(v/21)/32,v%21/20*2-1).map(Math.fround)).multiply(scale).applyQuaternion(q).applyQuaternion(fq).add(new THREE.Vector3(...at))),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,vertices,instanceId:instance,faceIndex:(row*20+10)*2});}
    }
@@ -17653,9 +17657,9 @@ function drawClematisViticellaReferences(b,{info,s},kit){
  };
  for(let shoot=0;shoot<7;shoot++){let prev=[Math.sin(shoot*2.399)*w*.018,Math.min(h*.004,LH*.02),Math.cos(shoot*2.399)*w*.018];for(let j=1;j<=14;j++){const t=j/14,az=shoot*2.399+.65*Math.sin(t*2.4+shoot*.7),reach=w*(.025+.33*t**1.1),y=j===1?Math.min(h*.025,LH*.10):j===2?Math.min(h*.06,LH*.30):h*(.08+.76*(j-2)/12)*(1-shoot*.025),at=[Math.sin(az)*reach,y,Math.cos(az)*reach];line(prev,at,sr*(1-t*.35),dry?'#958777':j<4?'#8a8066':'#72885b',dry?'bare-stem-clematis-viticella-ref':'stem-clematis-viticella-ref');prev=at;
    if(!dry&&y+Math.min(leafMax,LH*.16,h*.05,w*.12)*1.5<LH)for(const side of[-1,1])foliage(at,az+side*Math.PI/2,j);
-   if(s.bloom&&[4,6,8,10,12,14].includes(j))for(const side of[-1,1]){const end=[at[0]+side*w*.065,at[1]+Math.min(h*.035,R*.45),at[2]+w*.055];line(at,end,sr*.50,'#80905f','pedicel-clematis-viticella-ref');flower(end,az*.18+side*.12,(kj?1.20:ag?1.15:ev?1.15:el?1.20:lj?.18:ab?1.18:ds?1.20:dm?1.10:hr?1.20:hy?1.20:jo?1.10:rm?1.10:cs?1.05:hg?.12:mf?.95:hd?1.12:st?1.35:ba?1.42:ki?1.48:ro?1.62:mr?1.12:so?1.18:pc?1.05:em?1.25:1.35)+(shoot%3)*.05);}
+   if(s.bloom&&[4,6,8,10,12,14].includes(j))for(const side of[-1,1]){const end=[at[0]+side*w*.065,at[1]+Math.min(h*.035,R*.45),at[2]+w*.055];line(at,end,sr*.50,'#80905f','pedicel-clematis-viticella-ref');flower(end,az*.18+side*.12,(mm?1.20:kj?1.20:ag?1.15:ev?1.15:el?1.20:lj?.18:ab?1.18:ds?1.20:dm?1.10:hr?1.20:hy?1.20:jo?1.10:rm?1.10:cs?1.05:hg?.12:mf?.95:hd?1.12:st?1.35:ba?1.42:ki?1.48:ro?1.62:mr?1.12:so?1.18:pc?1.05:em?1.25:1.35)+(shoot%3)*.05);}
   }}
- for(const v of surfaces){const axis=v.normal.clone();if(axis.y<.12)axis.y=.12;axis.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(unitY,axis),'YXZ');b.flower?.(v.point.toArray(),R*1.8,e.x,e.y,e.z,{component:(hg||mf||rm||cs||hy||jo||dm||hr||lj||ab||ds||ev||el||kj||ag?'petaloid-outer-':'sepal-')+'clematis-viticella-ref-'+profile,instanceId:v.instanceId,vertices:v.vertices,faceIndex:v.faceIndex,cameraAxis:axis.toArray()});}
+ for(const v of surfaces){const axis=v.normal.clone();if(axis.y<.12)axis.y=.12;axis.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(unitY,axis),'YXZ');b.flower?.(v.point.toArray(),R*1.8,e.x,e.y,e.z,{component:(hg||mf||rm||cs||hy||jo||dm||hr||lj||ab||ds||ev||el||kj||ag||mm?'petaloid-outer-':'sepal-')+'clematis-viticella-ref-'+profile,instanceId:v.instanceId,vertices:v.vertices,faceIndex:v.faceIndex,cameraAxis:axis.toArray()});}
 }
 
 // Three compact retail references. The erect Manyo drawing has no climbing

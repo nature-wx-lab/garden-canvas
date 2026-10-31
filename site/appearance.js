@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.969';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.970';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -755,3 +755,5 @@ Object.assign(TRAIT_VALUES,{etoileVioletteReflexedPurpleReference:'紫の開い�
 Object.assign(TRAIT_VALUES,{konjikiPaleOpenReference:'白淡桃の広い花被と淡黄色の中心の参考',avantGardeRedPinkLayeredReference:'赤い広い外側と密な桃色の内側・小さい黄緑の中心（器官未同定）',kodaiMurasakiPurpleWhiteUrnReference:'紫の下向きの壺・白い内面と強く反る先端（花芯未確認）',konjikiYoungTernatePhotoReference:'黄色い若葉・鋸歯の写真を参考にした3小葉の模式配置（全葉の小葉数未確認）',upperSimpleClematisPhotoReference:'上部の対に見える単葉状の葉の写真配置例（全葉の分類・葉数未確認）',coldGoldenYoungClematisReference:'黄色い若葉の固定参考と低温期の落葉参考（成熟葉色・月別葉量は未校正）'});
 
 Object.assign(TRAIT_VALUES,{lemonBellsPhotoReference:'黄色〜黄緑のベル形と外側の赤み・淡色の内側（器官由来未確認）',blueBirdPhotoReference:'細い青〜藤青の花被と淡色の内側（器官由来・花齢変化は未校正）',lemonBellsSerratePhotoReference:'厚めの鋸歯葉を3小葉としてつなぐ写真参照例（全葉の分類・数は未確認）',blueBirdSerratePhotoReference:'鋸歯のある葉を3小葉としてつなぐ写真参照例（全葉の分類・数は未確認）'});
+
+Object.assign(TRAIT_VALUES,{montanaWhiteWavyReference:'しわのある白い広い外側と緑黄の細い中心の参考',montanaPinkScallopedReference:'波打つピンクの外側と淡黄緑の中心の参考',montanaPalePinkReflexedReference:'先のある淡桃の外側と外向きの反り・淡黄緑中心の参考'});
