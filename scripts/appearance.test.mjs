@@ -18628,7 +18628,7 @@ test('Engei Rosalyn Maria Rouge Songs clematis cameras intersect nine actual ind
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month:7,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.22'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);console.log('ENGEIRMS_CAMERAS '+JSON.stringify({models,rays}));
@@ -18880,7 +18880,7 @@ test('Engei Smile Monalisa Minamo clematis cameras intersect nine indexed flower
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.23'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,54);assert.equal(visibleCoreRays,12);
@@ -19148,7 +19148,7 @@ test('Engei Hanakawa Manyo Kitahama clematis cameras intersect nine actual index
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month:6,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.24'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
@@ -19401,7 +19401,7 @@ test('Engei Stories Blue Angel Kirisame clematis cameras intersect nine actual i
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.25'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
@@ -19575,7 +19575,7 @@ test('Engei Jizela Socialis White Arabella clematis cameras intersect nine actua
   }finally{dispose(group);}
   const document=emptyDocument(10,6);document.plans.A.plants=[input];document.view={year:1,month:6,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.26'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
+  assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);console.log('ENGEIJIZSOCWHITE_CAMERAS '+JSON.stringify({models,rays}));
 });
@@ -19682,7 +19682,7 @@ test('Engei Senninsou Huldine Shizuku clematis cameras intersect nine actual ind
    group.position.set(-2,.012,-1);group.updateMatrixWorld(true);
    for(const aspect of[.8,1.65]){const pose=flowerInspectionView(group,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(group,true).find(item=>{const depth=-item.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return depth>=camera.near&&depth<=camera.far;});assert.equal(hit?.object.userData.component,surface.component);assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);rays++;}
   }finally{dispose(group);}
-  const document=emptyDocument(10,6);document.plans.A.plants=[input];document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};const previous={...structuredClone(document),catalogVersion:'2026-10-29.27'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
+  const document=emptyDocument(10,6);document.plans.A.plants=[input];document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};const previous={...structuredClone(document),catalogVersion:'2026-10-29.27'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);console.log('ENGEISENHULSHIZ_CAMERAS '+JSON.stringify({models,rays}));
 });
@@ -19876,7 +19876,7 @@ test('Engei Fascination Hogelby White Magic Fountain clematis cameras intersect 
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.28'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
@@ -20096,7 +20096,7 @@ test('Engei Romantika Ai Fukushima Cassis clematis cameras intersect nine actual
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.29'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
@@ -20308,7 +20308,7 @@ test('Engei H F Young Yell Fukushima Josephine clematis cameras intersect nine a
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.30'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
@@ -20529,7 +20529,7 @@ test('Engei Diamantina Torchlight Hudson River clematis cameras intersect nine a
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.31'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
@@ -20738,7 +20738,7 @@ test('Engei Lady J Afro Boy Dutch Sky clematis cameras intersect nine actual ind
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.32'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
@@ -20873,7 +20873,7 @@ test('Engei Etoile Violette and Elizabeth clematis cameras intersect six actual 
     for(const aspect of[.8,1.65]){const pose=flowerInspectionView(group,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(group,true).find(item=>{const z=-item.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.equal(hit?.object.userData.component,surface.component);assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);rays++;}
    }
   }finally{dispose(group);}
-  const document=emptyDocument(10,6);document.plans.A.plants=[input];document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};const previous={...structuredClone(document),catalogVersion:'2026-10-29.33'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
+  const document=emptyDocument(10,6);document.plans.A.plants=[input];document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};const previous={...structuredClone(document),catalogVersion:'2026-10-29.33'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,6);assert.equal(rays,12);assert.equal(unknownModels,3);console.log('ENGEIETOILEELIZABETHHANAZONO_CAMERAS '+JSON.stringify({models,rays,unknownModels}));
 });
@@ -21063,7 +21063,7 @@ test('Engei Konjiki Avant Garde Kodai Murasaki clematis cameras intersect nine a
   const document=emptyDocument(10,6);document.plans.A.plants=[input];
   document.view={year:1,month,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
   const previous={...structuredClone(document),catalogVersion:'2026-10-29.34'},copy=structuredClone(previous);
-  assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),document);
+  assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),document);
   assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);assert.equal(closedCoreRays,27);assert.equal(visibleCoreRays,6);
@@ -21228,7 +21228,7 @@ test('Montana Grandiflora Fragrant Spring Vera clematis cameras intersect nine a
    }
   }finally{dispose(group);}
   const doc=emptyDocument(10,6);doc.plans.A.plants=[input];doc.view={year:1,month:5,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
-  const previous={...structuredClone(doc),catalogVersion:'2026-10-29.36'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),doc);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
+  const previous={...structuredClone(doc),catalogVersion:'2026-10-29.36'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),doc);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,9);assert.equal(rays,18);console.log('MONTANA970_CAMERAS '+JSON.stringify({models,rays}));
 });
@@ -21345,7 +21345,7 @@ test('Gekkyuden clematis cameras intersect three actual indexed flowers at six v
    }
   }finally{dispose(group);}
   const doc=emptyDocument(10,6);doc.plans.A.plants=[input];doc.view={year:1,month:6,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};
-  const previous={...structuredClone(doc),catalogVersion:'2026-10-29.37'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),doc);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
+  const previous={...structuredClone(doc),catalogVersion:'2026-10-29.37'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),doc);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,3);assert.equal(rays,6);console.log('GEKKYUDEN971_CAMERAS '+JSON.stringify({models,rays}));
 });
@@ -21424,7 +21424,7 @@ test('Lido delosperma cameras intersect six actual indexed petaloid surfaces at 
    group.position.set(-2,.012,-1);group.updateMatrixWorld(true);
    for(const aspect of[.8,1.65]){const pose=flowerInspectionView(group,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(group,true).find(item=>{const z=-item.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.equal(hit?.object.userData.component,surface.component,id+' '+dims);assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);rays++;}
   }finally{dispose(group);}
-  const doc=emptyDocument(10,6);doc.plans.A.plants=[input];doc.view={year:1,month:7,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};const previous={...structuredClone(doc),catalogVersion:'2026-10-29.38'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.39');assert.deepEqual(validateDocument(previous),doc);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
+  const doc=emptyDocument(10,6);doc.plans.A.plants=[input];doc.view={year:1,month:7,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};const previous={...structuredClone(doc),catalogVersion:'2026-10-29.38'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),doc);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
  }
  assert.equal(models,6);assert.equal(rays,12);console.log('LIDO972_CAMERAS '+JSON.stringify({models,rays}));
 });
@@ -21435,5 +21435,70 @@ test('Lido delosperma isolate magenta white eye and white flowers without compos
   const input={...makePlant(id,pid,3,3),height:.1,spread:.35,leafHeight:.075},saved=structuredClone(input);let colour;
   for(let month=1;month<=12;month++){const state=stateAt(input,{year:1,month,reference:false});assert.equal(state.height,.1);assert.equal(state.shootScale,1);assert.equal(state.groundDormant,false);assert.equal(state.leafDensity,1);assert.match(state.phase,/未確認/);if(state.bloom){if(colour)assert.equal(state.flowerColor,colour);else colour=state.flowerColor;}for(const year of[0,1,8])assert.equal(stateAt(input,{year,month,reference:false}).height,.1);}
   assert.deepEqual(input,saved);
+ }
+});
+
+test('Angelina and Atlantis exact source identities preserve domestic ranges earlysummer convention and winter disagreements',()=>{
+ const rows=[['p-4fc54ee743b3','angelina','403ag',[.15,.20]],['p-30ba9cfb8824','atlantis','403at',[.10,.15]]];
+ for(const[id,profile,sku,height]of rows){
+  const info=CATALOG[id],a=info.appearance,text=a.sourceConflict+' '+a.unconfirmed.join(' '),url='https://item.rakuten.co.jp/ogis/'+sku+'/';
+  assert.equal(info.source,url);assert.equal(info.sourceChecked,'2026-10-31');assert.deepEqual(info.height,height);assert.deepEqual(info.spread,[.2,.3]);assert.deepEqual(info.bloom,[6,7]);assert.equal(info.bloomKnown,false);assert.match(info.bloomText,/初夏.*参考区分.*明示月ではありません/);assert.equal(info.life,'perennial');
+  assert.equal(a.architecture,'sedumGroundcoverReferences');assert.equal(a.shootProfile,profile);assert.equal(a.status,'partial');assert.equal(a.flowerTiming,'season');assert.deepEqual(a.flowerMonths,[6,7]);assert.equal(a.persistence,'uncalibratedSucculentLeafReference');assert.equal(a.sources[a.basis.flowerMonths].url,url);
+  for(const[field,index]of Object.entries(a.basis)){assert.ok(Object.hasOwn(a,field));assert.ok(Number.isInteger(index)&&index>=0&&index<a.sources.length);}
+  for(const field of['inflorescence','arrangement','petals','compoundType','leafTexture','leafLength','leafWidth','monthlyFlowerColors','monthlyLeafColors','monthlyLeafDensity','minFloweringYearsAfterPlanting'])assert.equal(a[field],undefined,id+' unsupportedfixed attribute '+field);
+  for(const pattern of[/年間実物照合0/,/ポット径/,/6〜7月.*参考区分/,/冬.*葉量/,/10本.*6節/,/360枚.*180枚/,/60花.*5枚.*10本/,/花径.*未確認/])assert.match(text,pattern);
+  assert.deepEqual(info.colors,['yellow']);for(const color of['red','pink','white','yellow','orange','purple','blue','green','dark','mixed','unknown'])assert.equal(searchCatalog(CATALOG,{query:info.label,color}).some(([key])=>key===id),color==='yellow');
+  for(let month=1;month<=12;month++){const state=seasonAt(info,month);assert.equal(state.bloom,[6,7].includes(month));assert.equal(state.groundDormant,false);assert.equal(state.leafDensity,1);assert.equal(state.leafScale,1);assert.equal(state.shootScale,1);assert.match(state.phase,/未確認/);}
+  if(profile==='angelina'){assert.equal(info.latin,"Sedum rupestre 'Angelina'");assert.equal(a.leafPattern,undefined);assert.match(text,/橙色.*固定月/);}else{assert.equal(info.latin,"Sedum(Phedimus) takesimense 'Atlantis' ('Nonsitnal')");assert.equal(a.leafPattern,'margin');assert.match(a.sources[a.basis.leafShape].url,/www\.maff\.go\.jp/);assert.match(text,/越冬芽なし/);assert.match(text,/極晩.*開花月/);assert.match(text,/アントシアニン無又は極弱/);}
+ }
+});
+
+test('Angelina and Atlantis independent needle and scalloped leaf vertices join sixty shoot nodes across forty two dimension models',()=>{
+ const rows=[['p-4fc54ee743b3','angelina',97310,[.175,.25,.10]],['p-30ba9cfb8824','atlantis',97311,[.125,.25,.09]]],matrix=new Matrix4(),vertex=new Vector3(),distance=(a,b)=>Math.hypot(...a.map((value,index)=>value-b[index]));let models=0,joins=0,floweringModels=0;
+ for(const[id,profile,pid,normal]of rows){let skeleton;
+  const cases=[...[normal,[.08,.16,.05],[normal[0],normal[1],.005],[.005,.08,.005],[.1,.005,.005]].flatMap(dims=>[6,3,11,1].map(month=>({dims,month,reference:false}))),{dims:normal,month:6,reference:true}];
+  for(const{dims,month,reference}of cases){
+   const input={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input),view={year:1,month,reference},state=stateAt(input,view),group=plantModel(input,view);models++;
+   try{
+    group.updateMatrixWorld(true);assert.deepEqual(group.scale.toArray(),[1,1,1],'Fit independentdimensioninputs without normalization');const counts={},roots=[],ends=[],stems=[];let low=Infinity,top=-Infinity,width=0,leafTop=0;
+    for(const mesh of group.children){
+     assert.ok(mesh.isInstancedMesh);const kind=mesh.userData.component,positions=mesh.geometry.attributes.position;counts[kind]=(counts[kind]||0)+mesh.count;
+     assert.ok(positions.array.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite)&&mesh.instanceMatrix.array.every(Number.isFinite));if(mesh.instanceColor)assert.ok(mesh.instanceColor.array.every(Number.isFinite));if(mesh.geometry.index)assert.ok(mesh.geometry.index.array.every(index=>Number.isInteger(index)&&index>=0&&index<positions.count));
+     if(kind==='stem-sedum-groundcover-ref')stems.push([...mesh.instanceMatrix.array]);
+     for(let instance=0;instance<mesh.count;instance++){
+      mesh.getMatrixAt(instance,matrix);matrix.premultiply(mesh.matrixWorld);
+      if(kind==='leaf-sedum-groundcover-ref-'+profile)roots.push(new Vector3().applyMatrix4(matrix).toArray());if(kind==='stem-sedum-groundcover-ref')ends.push(new Vector3(0,.5,0).applyMatrix4(matrix).toArray());
+      for(let index=0;index<positions.count;index++){vertex.fromBufferAttribute(positions,index).applyMatrix4(matrix);low=Math.min(low,vertex.y);top=Math.max(top,vertex.y);width=Math.max(width,Math.hypot(vertex.x,vertex.z)*2);if(kind.startsWith('leaf-'))leafTop=Math.max(leafTop,vertex.y);}
+     }
+    }
+    assert.ok(low>=-1e-7&&top<=state.height+1e-7,id+' height '+dims+' '+month+' '+low+'/'+top);assert.ok(width<=state.spread+1e-7,id+' independentwidth '+dims+' '+width);assert.ok(leafTop<=Math.min(state.height,state.leafHeight)+1e-7,id+' leafcap '+dims);
+    assert.equal(counts['stem-sedum-groundcover-ref'],60);assert.equal(roots.length,profile==='angelina'?360:180);
+    for(const root of roots){const tolerance=Math.max(2e-7,Math.hypot(...root.map(value=>2**(Math.floor(Math.log2(Math.max(1e-30,Math.abs(value))))-23))));assert.ok(ends.some(end=>distance(root,end)<tolerance),id+' unjoinedleaf '+dims);joins++;}
+    const flowers=state.bloom?60:0;assert.equal(counts['pedicel-sedum-groundcover-ref']||0,flowers);assert.equal(counts['cluster-stem-sedum-groundcover-ref']||0,state.bloom?10:0);assert.equal(counts['flower-base-sedum-groundcover-ref']||0,flowers);assert.equal(counts['petal-sedum-groundcover-ref-'+profile]||0,flowers*5);for(const kind of['centre-thread','centre-tip'])assert.equal(counts[kind+'-sedum-groundcover-ref-'+profile]||0,flowers*10);
+    assert.equal(!!group.userData.flowerTargets?.length,state.bloom);assert.ok(!group.children.some(mesh=>/^(root|fruit|seed|sepal|carpel|petiole)-/.test(mesh.userData.component)));
+    if(dims.every((value,index)=>value===normal[index])&&!reference){if(month===6)skeleton=stems;else assert.deepEqual(stems,skeleton,'No automaticwinterstemloss');}if(state.bloom)floweringModels++;assert.deepEqual(input,saved);
+   }finally{dispose(group);}
+  }
+ }assert.equal(models,42);assert.equal(joins,11340);assert.equal(floweringModels,12);console.log('SEDUM973_BOUNDARIES '+JSON.stringify({models,joins,floweringModels}));
+});
+
+test('Angelina and Atlantis cameras hit six actual indexed starpetal surfaces at twelve rays with saved input migration',()=>{
+ const rows=[['p-4fc54ee743b3','angelina',97310,[.175,.25,.10]],['p-30ba9cfb8824','atlantis',97311,[.125,.25,.09]]];let models=0,rays=0;
+ for(const[id,profile,pid,normal]of rows)for(const dims of[normal,[.08,.16,.05],[normal[0],normal[1],.005]]){
+  const input={...makePlant(id,pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input),group=plantModel(input,{year:1,month:6,reference:false});models++;
+  try{
+   assert.equal(group.userData.architecture,'sedumGroundcoverReferences');assert.ok(group.userData.surfaceSelection?.matched,id+' '+dims);assert.ok(group.userData.flowerTargets.length<=8);const surface=group.userData.flowerTargets[0].surface;assert.equal(surface.component,'petal-sedum-groundcover-ref-'+profile);group.position.set(-2,.012,-1);group.updateMatrixWorld(true);
+   for(const aspect of[.8,1.65]){const pose=flowerInspectionView(group,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(group,true).find(item=>{const z=-item.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.equal(hit?.object.userData.component,surface.component,id+' '+dims);assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);rays++;}
+  }finally{dispose(group);}
+  const doc=emptyDocument(10,6);doc.plans.A.plants=[input];doc.view={year:1,month:6,reference:false,footprints:false,camera:{position:[-1.5,.8,-.5],target:[-3,.3,-1]}};const previous={...structuredClone(doc),catalogVersion:'2026-10-29.39'},copy=structuredClone(previous);assert.equal(CATALOG_VERSION,'2026-10-29.40');assert.deepEqual(validateDocument(previous),doc);assert.deepEqual(previous,copy);assert.deepEqual(input,saved);
+ }assert.equal(models,6);assert.equal(rays,12);console.log('SEDUM973_CAMERAS '+JSON.stringify({models,rays}));
+});
+
+test('Angelina and Atlantis isolate cream leaf margins and fixed photo references without automatic winter colour or annual growth',()=>{
+ const rows=[['p-4fc54ee743b3',97310],['p-30ba9cfb8824',97311]];assert.equal(new Set(rows.map(([id])=>CATALOG[id].appearance.leafShape)).size,2);
+ for(const[id,pid]of rows){const info=CATALOG[id],a=info.appearance;for(const field of['leafShape','persistence','flowerShape','habit'])assert.ok(TRAIT_VALUES[a[field]],id+' untranslated '+field);assert.match(appearanceSummary(info),/[ぁ-ゖァ-ヶ一-龯]/);assert.doesNotMatch(appearanceSummary(info),/sedum[A-Z]|Reference/);
+  const input={...makePlant(id,pid,3,3),height:.15,spread:.25,leafHeight:.09},saved=structuredClone(input);let colour;
+  for(let month=1;month<=12;month++){const state=stateAt(input,{year:1,month,reference:false});assert.equal(state.height,.15);assert.equal(state.shootScale,1);assert.equal(state.groundDormant,false);assert.equal(state.leafDensity,1);assert.match(state.phase,/未確認/);if(state.bloom){if(colour)assert.equal(state.flowerColor,colour);else colour=state.flowerColor;}for(const year of[0,1,8])assert.equal(stateAt(input,{year,month,reference:false}).height,.15);}
+  const group=plantModel(input,{year:1,month:6,reference:false});try{for(const mesh of group.children){const shader={uniforms:{},vertexShader:'',fragmentShader:'#include <emissivemap_fragment>'};mesh.material.onBeforeCompile(shader,{});assert.equal(shader.fragmentShader.includes('gcAtlantisOuterMargin'),mesh.userData.component==='leaf-sedum-groundcover-ref-atlantis');assert.ok(!shader.fragmentShader.includes('gcLidoWhiteEye')&&!shader.fragmentShader.includes('gcLidoLeafCells'));}}finally{dispose(group);}assert.deepEqual(input,saved);
  }
 });
