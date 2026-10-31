@@ -22234,3 +22234,17 @@ test('Glossostigma visible model focus frames six summer and winter models above
  }
  assert.equal(glossostigmaVisibleFocus1000({userData:{architecture:'submergedShoots'}}),null);assert.equal(models,6);assert.equal(poses,12);console.log('GLOSSOSTIGMA1000_FOCUS '+JSON.stringify({models,poses}));
 });
+
+function checkTropicaStockContext1001(id,label,latin,average){
+ const i=CATALOG[id],a=i.appearance;assert.equal(i.label,label);assert.equal(i.latin,latin);assert.equal(i.height,null);assert.equal(i.spread,null);assert.deepEqual(i.colors,['unknown']);assert.deepEqual(i.bloom,[]);assert.equal(i.bloomKnown,false);assert.equal(i.sourceChecked,'2026-11-01');assert.equal(a.status,'partial');assert.match(i.care,/花色/);assert.ok(i.care.includes(average));assert.match(a.sourceConflict,/2か月後/);assert.match(a.sourceConflict,/株幅/);assert.match(a.sourceConflict,/葉色/);assert.match(a.phenologyRegion,/水槽/);assert.match(a.phenologyRegion,/未校正/);assert.doesNotMatch(a.phenologyRegion,/マツモ|カボンバ/);assert.ok(a.unconfirmed.some(s=>s.includes('同じクローン')));assert.ok(a.unconfirmed.some(s=>s.includes('水中葉モデルには花を描きません')));
+ return i;
+}
+test('Tropica Super Red source separates stalk width and two month height from whole stock and flower color',()=>{
+ const i=checkTropicaStockContext1001('p-d1be39347dd5','ルドウィジアsp.スーパーレッド',"Ludwigia palustris 'Super Red'",'10〜30+cm');assert.match(i.care,/幅2〜4cm/);assert.match(i.care,/1本の茎/);assert.match(i.care,/赤くなるのは葉/);assert.equal(i.appearance.shootProfile,'superRed');
+});
+test('Tropica Rotala mini pot source separates narrow stalk width packaging and emergent leaves from mature stock',()=>{
+ const i=checkTropicaStockContext1001('p-bfcbe3f72e36','ロタラロトンジフォリア','Rotala rotundifolia','15〜30+cm');assert.match(i.care,/幅2〜3cm/);assert.match(i.care,/033MP/);assert.match(i.care,/包装規格/);assert.match(i.care,/水中葉は細長い/);assert.equal(i.appearance.shootProfile,'rotundifolia');
+});
+test('Tropica Hygrophila source preserves differing stem and two month height statements without merging bounds',()=>{
+ const i=checkTropicaStockContext1001('p-d36c1b56c209','ハイグロフィラ ポリスペルマ','Hygrophila polysperma','20〜30+cm');assert.match(i.care,/25〜40cm/);assert.match(i.care,/幅4〜8cm/);assert.match(i.care,/20〜40cmという成株の範囲へまとめません/);assert.equal(i.appearance.shootProfile,'hygrophila');
+});
