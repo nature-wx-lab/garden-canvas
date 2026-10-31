@@ -11372,7 +11372,54 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-da8fffae49a9":{"label":"クレマチス月宮殿","latin":"Clematis patens 'Gekkyuden'","genre":"クレマチス","form":"clematis","group":"宿根草","leaf":"deciduous","height":null,"spread":null,"bloom":[],"bloomKnown":false,"flower":"#cbc2b7","leafColor":"#577d42","variegated":false,"colors":["unknown"],"sun":["part"],"moisture":[],"life":"perennial","growth":"年ごとの成長量は未確認","season":"月別の草姿・葉・花の参考","care":"耐寒性・植え場所・手入れは掲載元の栽培案内で確認してください。","bloomText":"花期は未確認です。","bloomBasis":"未確認","source":"https://www.ogis.co.jp/gallery/page01.php?id=1665","publisher":"おぎはら植物園","sourceChecked":"2026-10-10","aliases":[],"selectionSource":null,"visual":"reference","popularity":[]},"p-9204eb38de18":{
+},"p-da8fffae49a9":{
+  "label": "クレマチス月宮殿",
+  "latin": "Clematis patens 'Gekkyuden'",
+  "genre": "クレマチス",
+  "form": "clematis",
+  "group": "宿根草",
+  "leaf": "deciduous",
+  "height": [
+    1,
+    2
+  ],
+  "spread": null,
+  "bloom": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "bloomKnown": true,
+  "flower": "#eeeccf",
+  "leafColor": "#577d42",
+  "variegated": false,
+  "colors": [
+    "white",
+    "yellow",
+    "green",
+    "mixed"
+  ],
+  "sun": [
+    "part"
+  ],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年ごとの成長量は未確認",
+  "season": "月別の草姿・葉・花の参考",
+  "care": "育苗元資料は旧枝咲きです。別販売元の弱剪定の管理例を自動剪定や必ず咲く二番花へ変換しません。",
+  "bloomText": "国内育苗元カタログの5〜10月。別販売元の4〜7月・一季咲きとは区別し、毎月の連続開花を保証しません。",
+  "bloomBasis": "国内育苗元の品種カタログが5〜10月と明示。発行日と同一販売株は未確認。",
+  "source": "https://www.clematis.co.jp/files/pdf/clematis_kind.pdf",
+  "publisher": "クレマコーポレーション（品種カタログ）",
+  "sourceChecked": "2026-10-31",
+  "aliases": [],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-9204eb38de18":{
   "label": "モンタナ グランデフロラ",
   "latin": "Clematis montana var grandiflora",
   "genre": "クレマチス",

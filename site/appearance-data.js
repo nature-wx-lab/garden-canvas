@@ -14138,7 +14138,68 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "国内2〜3m・花径8〜10cm・5〜7月と、主な初花5〜6月を保持します。花後の切り戻しや夏の間引きを条件とする秋の花は自動では追加しません。",
     "黄色〜黄緑の厚めのベル形、外側の赤み、淡い細長い内側は写真の参考です。花色・花形の個体差や光・花齢を同株の固定月変化にしません。冬写真の18cm鉢・前年開花株と、販売規格の3年苗12〜15cmポットを分けます。"
   ]
-},"p-da8fffae49a9":{"sources":[{"url":"https://plants.ces.ncsu.edu/plants/clematis/","scope":"genus"}],"basis":{"arrangement":0,"inflorescence":0,"flowerShape":0,"habit":0,"leafShape":0,"leafTexture":0,"compoundType":0,"petals":0},"status":"attributes","arrangement":"alternate","inflorescence":"head","flowerShape":"cross","habit":"spreading","leafShape":"compound","leafTexture":"glossy","compoundType":"pinnate","petals":5,"unconfirmed":["persistence"]},"p-9204eb38de18":{
+},"p-da8fffae49a9":{
+  "sources": [
+    {
+      "url": "https://www.clematis.co.jp/files/pdf/clematis_kind.pdf",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://item.rakuten.co.jp/kadanya/10018725/",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.kazesanpo.com/view/item/000000001841?category_page_id=ct144",
+      "scope": "catalog-entry"
+    }
+  ],
+  "basis": {
+    "architecture": 0,
+    "shootProfile": 0,
+    "flowerShape": 0,
+    "flowerRadius": 0,
+    "leafShape": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 1,
+    "flowerTiming": 0,
+    "flowerMonths": 0,
+    "phenologyRegion": 0,
+    "standingWinter": 0
+  },
+  "status": "partial",
+  "architecture": "clematisViticellaReferences",
+  "shootProfile": "gekkyuden",
+  "flowerShape": "gekkyudenPaleCreamOpenReference",
+  "flowerRadius": 0.07,
+  "leafShape": "smallClematisTernatePhotoReference",
+  "habit": "trainedClimbingReference",
+  "lifeForm": "vine",
+  "persistence": "coldLeaflessClematisReference",
+  "standingWinter": true,
+  "flowerTiming": "months",
+  "flowerMonths": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "phenologyRegion": "国内育苗元カタログの5〜10月を参考表示します。低温期12〜2月の落葉と残す旧枝は未校正の参考で、月ごとの連続開花や剪定後の再開花・同株の冬姿を予測しません。",
+  "sourceConflict": "国内育苗元カタログの高さ1〜2m・花径12〜16cm・5〜10月・旧枝咲きを採用します。別販売元本文の0.8〜1.65m・4〜7月・一季咲きと、同ページ冒頭の淡青紫・四季咲きという食い違いは別記します。PDF発行日と以前の販売株との同一性は未確認で、連続開花・再開花は予測しません。",
+  "unconfirmed": [
+    "同じ株の12か月の実物照合・年次成長・地下部・剪定後の回復は未確認です。同一株の年間実物照合0。",
+    "既存のID・名称・学名を保持します。国内育苗元カタログの月宮殿の欄を参考にし、おぎはら植物園の以前の販売株と同じクローンかは未確認です。小沢月宮殿という別の販売名へ置換・統合しません。",
+    "国内育苗元の高さ1〜2m・花径12〜16cm・5〜10月・旧枝咲きを採用します。PDFの発行日は未確認で、2026-10-31は資料を確認した日です。現在の在庫・最新の苗規格や毎月連続して咲くことは示しません。",
+    "別販売元の個別本文は高さ0.8〜1.65m・花径12〜15cm・4〜7月・一季咲きです。同ページ冒頭には淡青紫・白い花芯・四季咲きと食い違う説明もあり、未解決のまま区別します。平均や都合のよい部分の統合へ使いません。",
+    "風散歩の個別説明は緑がかる淡いクリーム色・黄色い花芯・花径約12〜16cm・春〜初夏です。具体月と草丈は記載せず、季節語から新たな開花月を補いません。3寸9cmの販売鉢は成株の寸法ではありません。",
+    "カタログ写真の白〜淡緑黄・クリーム色の広い外側と淡黄色の細い中心は参考です。外側8枚・中心48本・84花、7本の茎と14節は未実測の描画例で、全花の固定数・器官由来を確定しません。花の開き具合や別販売元の花齢による色変化を固定月へ変換しません。",
+    "葉柄・小葉柄でつなぐ3小葉は写真に寄せた模式例です。全葉の固定小葉数・葉序・成熟寸法・葉裏は未照合です。属や系統の一般値を品種の確定形質にせず、地下部・種子・果実も補いません。",
+    "株幅と年ごとの成長量は未確認です。入力した表示幅・葉高、鉢規格・苗齢・支柱から成株の株幅や年次成長を計算しません。",
+    "旧枝を残し、低温期12〜2月の落葉は参考区分です。国内同株の自然冬姿・残枝量・芽出しや落葉日は未校正です。別販売元の弱剪定の管理例を自動剪定・全枝の除去・必ず咲く二番花へ変換しません。未確認の切戻し苗写真から冬姿を作りません。"
+  ]
+},"p-9204eb38de18":{
   "sources": [
     {
       "url": "https://www.engei.net/products/detail?id=14706",
