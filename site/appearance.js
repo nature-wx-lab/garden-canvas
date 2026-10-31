@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.979';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.980';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -775,3 +775,5 @@ Object.assign(TRAIT_VALUES,{sedumSilverSpoonReference:'銀白色の厚いへら�
 Object.assign(TRAIT_VALUES,{seastarCurvedNeedleReference:'曲がる細い円筒形の緑の葉の海外写真参考',voodooRoundedCrenateReference:'暗赤色が重なる丸い浅鋸歯の肉厚葉の海外写真参考',seastarHorizontalArmsReference:'横に分かれた腕に小花を並べる花序の参考',sedumVoodooLowMatReference:'低く横に広がる茎と肉厚葉の配置参考',seastarFourPartCymeReference:'4枚の花弁をもつ小花が枝に並ぶ海外標本の参考',sedumVoodooStarReference:'短い茎の先に集まる赤桃色の星状花の写真参考'});
 
 Object.assign(TRAIT_VALUES,{borderSedumDarkRoundedReference:'暗いバーガンディ色の丸い肉厚葉の写真参考',borderSedumCompactHeadsReference:'低い暗色の株と枝先に集まる花房の配置参考',borderSedumCarmineHeadReference:'小さなカーマイン色の花と丸いつぼみの参考',borderSedumPalePinkStarsReference:'淡桃色と濃桃色を含む星状の小花が集まる広い花房の写真参考'});
+
+Object.assign(TRAIT_VALUES,{misebayaRoundFleshyReference:'三枚ずつ輪生する丸い肉厚葉と中斑の写真参考',misebayaArchingWhorlReference:'三輪生の葉をつけて弓状に伸びる茎の参考',misebayaWinterBudReference:'枯れ枝を除いた冬芽の管理例（月境界・残葉率・回復量は未確認）',misebayaPinkStarReference:'種一般の桃色の星状花を参考にした枝先の小花とつぼみの描画例'});

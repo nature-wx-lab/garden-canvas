@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.979';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.980';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.979';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.980';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20514,7 +20514,39 @@ function drawBorderSedumReferences(b,{info,s},kit){
 }
 
 
+// Centre-variegated Misebaya reference, with counts and management boundaries explicitly uncalibrated.
+function drawMisebayaCultivarReferences(b,{info,s},kit){
+ const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight),winter=[12,1,2].includes(s.month),FR=Math.min(.0035,h*.045,w*.018),Y=new THREE.Vector3(0,1,0),surfaces=[];let petalSerial=0;
+ const line=(from,to,r,kind,color)=>{r=Math.min(r,Math.min(from[1],to[1])*.7);if(r<=0)return;const a=new THREE.Vector3(...from),z=new THREE.Vector3(...to),axis=z.clone().sub(a),L=axis.length();if(!L)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y,axis.normalize()),'YXZ'),mid=a.add(z).multiplyScalar(.5);b.add(clematisRetailStemUnit,kind,color,...mid.toArray(),r,L,r,e.x,e.y,e.z);};
+ const leaf=(at,az,pitch,L,plain)=>b.add('soft-misebaya',plain?'leaf-misebaya-green-reference':'leaf-soft-misebaya',plain?'#87a090':'#8fa99b',...at,L*1.05,L,L,pitch,az,0);
+ if(winter){
+  for(let j=0;j<9;j++){const an=j*2.399963,rr=Math.min(w*.15,.040)*Math.sqrt((j+.5)/9),at=[Math.sin(an)*rr,Math.min(.001,LH*.05),Math.cos(an)*rr];line([at[0],at[1]*.35,at[2]],at,Math.min(.0006,h*.02,w*.01),'winter-bud-base-misebaya-reference','#8d9c7f');for(let k=0;k<9;k++)leaf(at,an+k*2.399963,.85-k*.065,Math.min(.008,LH*.60,w*.03,h*.50)*(1-k*.065),j===1||j===6);}
+  return;
+ }
+ const flower=(at,yaw,stage)=>{
+  const f=flowerFrame(b,at,0,yaw),petal=stage===2?'#d77d9f':'#e5adc2',centre='#b499a0';
+  for(let k=0;k<5;k++){
+   const az=Math.PI/2+.05+k*TAU/5,instance=petalSerial++,scale=new THREE.Vector3(FR*.44,FR*.95,FR*.95),base=[Math.sin(az)*FR*.1,0,Math.cos(az)*FR*.1];f.add('gcSedumGroundcoverPetal','petal-misebaya-reference',petal,...base,...scale.toArray(),0,az,0);
+   if(s.bloom&&k===0){const row=24,vertices=[row*21+10,(row+1)*21+10,row*21+11],q=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ')),fq=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,yaw,0,'YXZ')),points=vertices.map(v=>new THREE.Vector3(...sedumGroundcoverReferencePoint('petal',Math.floor(v/21)/32,v%21/20*2-1).map(Math.fround)).multiply(scale).applyQuaternion(q).add(new THREE.Vector3(...base)).applyQuaternion(fq).add(new THREE.Vector3(...at))),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),normal=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();surfaces.push({point,normal,vertices,instanceId:instance,faceIndex:(row*20+10)*2,radius:FR});}
+   const ca=k*TAU/5;f.add('gcHylotelephiumCarpel','carpel-misebaya-reference',centre,Math.sin(ca)*FR*.16,0,Math.cos(ca)*FR*.16,FR*.22,FR*.67,FR*.22,.20,ca,0);
+  }
+  for(let k=0;k<10;k++){
+   const az=k*TAU/10,tip=[Math.sin(az)*FR*.32,FR*.50,Math.cos(az)*FR*.32],axis=new THREE.Vector3(...tip),len=axis.length(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y,axis.normalize()),'YXZ');
+   f.add(clematisRetailStemUnit,'filament-misebaya-reference','#e2b4c6',tip[0]/2,tip[1]/2,tip[2]/2,FR*.012,len,FR*.012,e.x,e.y,e.z);f.add(kit.bud,'anther-misebaya-reference','#a75d83',...tip,FR*.045,FR*.03,FR*.045);
+  }
+ };
+ for(let shoot=0;shoot<9;shoot++){
+  const az=shoot*2.399963,reach=w*.34*(.77+.20*Math.sin(shoot*1.2)**2),peak=Math.min(LH*.78,h*.72);let prev=[0,LH*.04,0],last;
+  for(let j=1;j<=9;j++){const t=j/9,at=[Math.sin(az)*reach*t,LH*.04+peak*Math.sin(t*Math.PI*.82),Math.cos(az)*reach*t];line(prev,at,Math.min(.002,h*.012,w*.006),'stem-misebaya','#b56c7b');prev=at;last=at;const L=Math.min(.028,w*.10,h*.24,(LH-at[1])*.75);for(let k=0;k<3;k++)leaf(at,az+k*TAU/3+j*.17,1.08,L,shoot===1||shoot===6);}
+  if(!s.bloom)continue;
+  const HR=Math.min(.025,h*.16,w*.075),head=[last[0],Math.min(h-FR*1.6,last[1]+h*.025),last[2]];line(last,head,Math.min(.001,h*.006,w*.003),'cyme-branch-misebaya-ref','#b98090');
+  for(let j=0;j<37;j++){const aa=az+j*2.399963,r=HR*Math.sqrt((j+.5)/37),at=[head[0]+Math.sin(aa)*r,head[1]+HR*.45*(1-(r/HR)**2),head[2]+Math.cos(aa)*r];line(head,at,Math.min(.0006,h*.003,w*.002),'pedicel-misebaya','#bb7d91');if(j%2===0)b.add(kit.bud,'bud-misebaya-reference','#aaa28e',...at,FR*.64,FR*.72,FR*.64);else flower(at,aa,shoot%3);}
+ }
+ for(const surface of surfaces){const axis=surface.normal.clone();if(axis.y<.12)axis.y=.12;axis.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y,axis),'YXZ');b.flower?.(surface.point.toArray(),surface.radius*1.5,e.x,e.y,e.z,{component:'petal-misebaya-reference',instanceId:surface.instanceId,vertices:surface.vertices,faceIndex:surface.faceIndex,cameraAxis:axis.toArray()});}
+}
+
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.architecture==='misebayaCultivarReferences'){drawMisebayaCultivarReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='hylotelephiumBorderReferences'){drawBorderSedumReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='sedumSeedReferences'){drawSedumSeedReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='sedumLowMatReferences'){drawSedumLowMatReferences(b,{info,s},kit);return;}
