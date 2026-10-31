@@ -21874,3 +21874,10 @@ test('Agave upper only supplier dimensions remain textual maxima without invente
  }
  assert.deepEqual(CATALOG['p-3e78134c154d'].height,[.3,.3]);assert.deepEqual(CATALOG['p-3e78134c154d'].spread,[.6,.6]);assert.equal(CATALOG['p-3e78134c154d'].sourceChecked,'2026-10-11');
 });
+
+
+test('Water hyacinth domestic lower only height stays textual without invented upper range or reference size',()=>{
+ const info=CATALOG['p-daa12b3e6d9f'];assert.equal(info.height,null);assert.equal(info.spread,null);assert.equal(info.sourceChecked,'2026-11-01');assert.equal(info.latin,'Pontederia crassipes');assert.ok(info.aliases.includes('Eichhornia crassipes'));assert.deepEqual(info.bloom,[7,8,9,10]);assert.equal(info.bloomKnown,true);assert.match(info.care,/15cm以上/);assert.match(info.care,/水温15℃以上/);assert.equal(info.appearance.persistence,'protectedWinter');assert.deepEqual(info.appearance.foliageMonths,[5,6,7,8,9,10]);assert.match(info.appearance.sourceConflict,/用途説明7〜9月/);
+ const p=makePlant('p-daa12b3e6d9f',98410,3,3);Object.assign(p,{height:.25,spread:.4,leafHeight:.2});assert.deepEqual(stateAt(p,{...view(7),reference:true}),stateAt(p,view(7)));const d=emptyDocument(10,6);d.catalogVersion='2026-10-29.49';d.plans.A.plants=[p];const copy=JSON.parse(JSON.stringify(d));assert.deepEqual(validateDocument(d).plans,copy.plans);assert.deepEqual(d,copy);
+ const protectedInfo=CATALOG['p-b012252eaf20'];assert.equal(protectedInfo.sourceChecked,'2026-10-10');assert.equal(protectedInfo.latin,'Limnobium laevigatum');assert.deepEqual(protectedInfo.bloom,[6,7]);
+});
