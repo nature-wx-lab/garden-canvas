@@ -7881,11 +7881,11 @@ test('floating aquatics separate female flowers, sepals, fringes and underwater 
   if(month===1)assert.equal(g.children.length,0,id);
   if(month===7){
    const has=name=>g.children.some(m=>m.userData.component===name);
-   assert.ok(has(id===ids[1]?'leaf-nuphar-photo-reference':id===ids[2]?'leaf-asaza-photo-reference':'leaf-glossy'));
+   assert.ok(has(id===ids[1]?'leaf-nuphar-photo-reference':id===ids[2]?'leaf-asaza-photo-reference':id===ids[3]?'leaf-waterpoppy-photo-reference':'leaf-glossy'));
    if(id===ids[0]){assert.ok(has('carpelHead'));assert.ok(!has('anther'));}
    if(id===ids[1]){assert.ok(has('sepal-nuphar-photo-reference'));assert.ok(has('stigmatic-disc-nuphar-ref'));assert.ok(has('petal-nuphar-ref-inner'));}
    if(id===ids[2])assert.ok(has('corolla-fringe-asaza-ref'));
-   if(id===ids[3]){assert.ok(has('throat'));assert.ok(!has('corollaFringe'));}
+   if(id===ids[3]){assert.ok(has('throat-waterpoppy-ref'));assert.ok(has('petal-waterpoppy-photo-reference'));assert.ok(!has('corollaFringe'));}
   }
   dispose(g);
  }
@@ -22446,4 +22446,38 @@ test('Hygrophila visible model focus frames six summer and winter inputs above t
   try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);for(const aspect of[.8,1.65]){const pose=hygroVisibleFocus1005(g,aspect,40);assert.ok(pose);assert.equal(pose.fit,'hygrophila-visible-model');assert.ok(pose.position[1]>=.1);const camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);for(const mesh of g.children)for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);matrix.premultiply(mesh.matrixWorld);for(let j=0;j<mesh.geometry.attributes.position.count;j++){v.fromBufferAttribute(mesh.geometry.attributes.position,j).applyMatrix4(matrix).project(camera);assert.ok(Math.abs(v.x)<=1+2e-6&&Math.abs(v.y)<=1+2e-6&&v.z>=-1&&v.z<=1);}}poses++;}}finally{dispose(g);}
  }
  assert.equal(hygroVisibleFocus1005({userData:{architecture:'submergedShoots'}}),null);assert.equal(models,6);assert.equal(poses,12);console.log('HYGRO1005_FOCUS '+JSON.stringify({models,poses}));
+});
+
+test('Waterpoppy photo reference fits twenty four independent dimensions with connected floating leaves and three petals',()=>{
+ const dimensions=[[.12,.40,.02],[.01,.10,.005],[.12,.40,.005],[.005,.03,.005],[.02,.05,.02],[.7,.15,.3],[.1,1,.05],[2,3,1.5]];let models=0,leafJoins=0,flowering=0,winterModels=0,vertices=0;
+ for(const dims of dimensions)for(const month of[7,5,1]){
+  const input={...makePlant('p-f2e4c7935581',100610,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input),g=plantModel(input,{year:1,month,reference:false},1);models++;
+  try{
+   g.updateMatrixWorld(true);assert.deepEqual(input,saved);if(month===1){assert.equal(g.children.length,0);assert.equal(g.userData.groundDormant,true);winterModels++;continue;}
+   const component=k=>g.children.find(m=>m.userData.component===k),leaves=component('leaf-waterpoppy-photo-reference'),petioles=component('petiole-waterpoppy-ref'),stems=component('creeping-stem-waterpoppy-ref');assert.equal(leaves?.count,12);assert.equal(petioles?.count,12);assert.equal(stems?.count,6);assert.equal(leaves.geometry.userData.waterpoppyPhotoReference,true);assert.equal(leaves.geometry.userData.closedSurface,true);
+   let lo=Infinity,hi=-Infinity,rad=0,leafHi=-Infinity;const v=new Vector3(),world=new Matrix4();for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));const p=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,world);world.premultiply(mesh.matrixWorld);for(let j=0;j<p.count;j++){v.fromBufferAttribute(p,j).applyMatrix4(world);lo=Math.min(lo,v.y);hi=Math.max(hi,v.y);rad=Math.max(rad,Math.hypot(v.x,v.z));if(mesh===leaves)leafHi=Math.max(leafHi,v.y);vertices++;}}}
+   assert.ok(lo>=-2e-6,JSON.stringify({dims,month,lo}));assert.ok(hi<=dims[0]+2e-6,JSON.stringify({dims,month,hi}));assert.ok(rad*2<=dims[1]+2e-6,JSON.stringify({dims,month,rad}));assert.ok(leafHi<=Math.min(dims[0],dims[2])+2e-6,JSON.stringify({dims,month,leafHi}));
+   const point=(mesh,k,v)=>{const m=new Matrix4();mesh.getMatrixAt(k,m);return v.applyMatrix4(m).applyMatrix4(mesh.matrixWorld);},ends=Array.from({length:stems.count},(_,k)=>point(stems,k,new Vector3(0,.5,0)));
+   for(let k=0;k<12;k++){assert.ok(point(leaves,k,new Vector3()).distanceTo(point(petioles,k,new Vector3(0,.5,0)))<2e-6);assert.ok(ends.some(end=>end.distanceTo(point(petioles,k,new Vector3(0,-.5,0)))<2e-6));leafJoins++;}
+   let roots=0;for(let k=0;k<6;k++){const start=point(stems,k,new Vector3(0,-.5,0));if(!ends.some(end=>end.distanceTo(start)<2e-6))roots++;}assert.equal(roots,1);
+   const petals=component('petal-waterpoppy-photo-reference');if(month===7){assert.equal(petals?.count,3);assert.equal(petals.geometry.userData.part,'petal');assert.equal(petals.geometry.userData.closedSurface,true);const peduncle=component('peduncle-waterpoppy-ref'),at=point(peduncle,0,new Vector3(0,.5,0));for(let k=0;k<3;k++)assert.ok(point(petals,k,new Vector3()).distanceTo(at)<2e-6);assert.ok(ends.some(end=>end.distanceTo(point(peduncle,0,new Vector3(0,-.5,0)))<2e-6));flowering++;}else{assert.equal(petals,undefined);assert.equal(flowerInspectionView(g,.8,40),null);}
+  }finally{dispose(g);}
+ }
+ assert.equal(models,24);assert.equal(leafJoins,192);assert.equal(flowering,8);assert.equal(winterModels,8);console.log('WATERPOPPY1006_BOUNDARIES '+JSON.stringify({models,leafJoins,flowering,winterModels,vertices}));
+});
+test('Waterpoppy camera rays meet three indexed petal models while old garden inputs stay exact',()=>{
+ let models=0,rays=0;for(const dims of[[.12,.40,.02],[.01,.10,.005],[.12,.40,.005]]){
+  const input={...makePlant('p-f2e4c7935581',100610,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input),g=plantModel(input,{year:1,month:7,reference:false},1);models++;
+  try{
+   assert.ok(g.userData.surfaceSelection?.matched);const surface=g.userData.flowerTargets[0].surface;assert.equal(surface.component,'petal-waterpoppy-photo-reference');const mesh=g.children.find(m=>m.userData.component===surface.component);assert.deepEqual(surface.vertices,[0,1,2].map(i=>mesh.geometry.index.getX(surface.faceIndex*3+i)));g.position.set(-2,.012,-1);g.updateMatrixWorld(true);
+   for(const aspect of[.8,1.65]){const pose=flowerInspectionView(g,aspect,40),camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);const ray=new Raycaster();ray.setFromCamera(new Vector2(0,0),camera);const hit=ray.intersectObject(g,true).find(x=>{const z=-x.point.clone().applyMatrix4(camera.matrixWorldInverse).z;return z>=camera.near&&z<=camera.far;});assert.equal(hit?.object.userData.component,surface.component);assert.equal(hit.instanceId,surface.instanceId);assert.equal(hit.faceIndex,surface.faceIndex);assert.ok(hit.point.distanceTo(new Vector3(...pose.target))<2e-6);rays++;}
+  }finally{dispose(g);}
+  const d=emptyDocument(10,6);d.plans.A.plants=[input];const old={...structuredClone(d),catalogVersion:'2026-10-29.68'},copy=structuredClone(old);assert.equal(d.catalogVersion,CATALOG_VERSION);assert.deepEqual(validateDocument(old),d);assert.deepEqual(old,copy);assert.deepEqual(input,saved);const state=stateAt(input,{year:1,month:7,reference:true});assert.equal(state.height,dims[0]);assert.equal(state.spread,dims[1]);assert.equal(state.leafHeight,dims[2]);
+ }assert.equal(models,3);assert.equal(rays,6);console.log('WATERPOPPY1006_CAMERAS '+JSON.stringify({models,rays}));
+});
+test('Waterpoppy leaf petioles and three overlapping petals remain connected without automatic stock multiplication',()=>{
+ const input={...makePlant('p-f2e4c7935581',100610,3,3),height:.12,spread:.40,leafHeight:.02},g=plantModel(input,{year:1,month:7,reference:false},1),later=plantModel(input,{year:5,month:7,reference:false},1);try{
+  const component=(group,k)=>group.children.find(m=>m.userData.component===k),leaves=component(g,'leaf-waterpoppy-photo-reference'),petals=component(g,'petal-waterpoppy-photo-reference');assert.equal(leaves.count,12);assert.equal(petals.count,3);for(const name of['leaf-waterpoppy-photo-reference','petiole-waterpoppy-ref','creeping-stem-waterpoppy-ref','petal-waterpoppy-photo-reference','peduncle-waterpoppy-ref'])assert.deepEqual([...component(g,name).instanceMatrix.array],[...component(later,name).instanceMatrix.array]);assert.ok(!g.children.some(m=>/seed|fruit|offspring|anther|stamen/.test(m.userData.component)));
+  const shader={uniforms:{},vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader};leaves.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,/roughnessFactor=\.34/);assert.match(shader.fragmentShader,/gcWaterpoppyRib/);const a=CATALOG[input.kind].appearance;assert.equal(a.shootProfile,'waterpoppyPhotoReference');assert.equal(a.status,'partial');assert.ok(a.unconfirmed.some(n=>n.includes('写真から計測')&&n.includes('年次増殖')));assert.ok(a.unconfirmed.some(n=>n.includes('雄しべ')&&n.includes('未確認')));assert.deepEqual(a.foliageMonths,[5,6,7,8,9,10]);assert.match(a.phenologyRegion,/参考シナリオ/);
+ }finally{dispose(g);dispose(later);}console.log('WATERPOPPY1006_ILLUSTRATIVE '+JSON.stringify({yearModels:2,leaves:12,creepingNodes:6,petals:3,annualRealism:0}));
 });

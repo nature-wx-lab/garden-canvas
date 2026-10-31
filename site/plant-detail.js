@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1005';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1006';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1005';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1006';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26407,7 +26407,50 @@ function drawNupharPhotoReference(b,{s,rand},kit){
  for(let k=0;k<12;k++){const az=k*TAU/12;f.branch([0,r*.452,0],[Math.sin(az)*r*.30,r*.452,Math.cos(az)*r*.30],r*.004,'#a99028','stigmatic-ray-nuphar-ref');}
 }
 
+// One illustrated Waterpoppy specimen; photo appearance is not a measured organ census.
+export function waterpoppyPhotoReferencePoint(type,t,u){
+ if(type==='leaf'){
+  const ph=u*TAU,sn=Math.sin(ph),cs=Math.cos(ph),rim=1+.006*Math.sin(ph*14),x=sn*.46*(1+.10*Math.max(0,-cs))*rim,y=.43+.57*cs+.14*Math.exp(-(((ph-Math.PI)/.17)**2));
+  return [t*x,.43+t*(y-.43),-.065*t*t*(1+cs)*.5-.008*t*t*sn*sn];
+ }
+ const angle=u*1.20,r=t*(.78+.22*Math.cos(u*Math.PI/2)),wave=.016*Math.sin(t*35+u*7)*Math.abs(u)**3*Math.sin(Math.PI*t);
+ return [Math.sin(angle)*r,.28*t**1.5+.055*u*u*Math.sin(Math.PI*t)+wave,Math.cos(angle)*r];
+}
+export function waterpoppyPhotoReferenceGeometry(type){
+ const leaf=type==='leaf',N=leaf?24:32,C=leaf?96:24,p=[],uv=[],ix=[],stride=(N+1)*(C+1);
+ for(let side=0;side<2;side++)for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=leaf?j/C:j/C*2-1,point=waterpoppyPhotoReferencePoint(type,t,u);
+  if(side){if(leaf)point[2]+=.005*(1-t*t);else point[1]-=.006*(1-t);}
+  p.push(...point);uv.push(leaf?.5+point[0]:j/C,leaf?point[1]:t);
+  if(i<N&&j<C){const k=side*stride+i*(C+1)+j;if(side)ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);else ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}
+ for(let j=0;j<C;j++){const a=N*(C+1)+j,z=a+1;ix.push(a,a+stride,z,z,a+stride,z+stride);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={waterpoppyPhotoReference:true,part:type,illustrativeGeometry:true,closedSurface:true};return g;
+}
+function drawWaterpoppyPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),radius=Math.min(.0007,h*.004,w*.003,LH*.03),rootY=radius*1.2+Math.min(.00002,h*.002),crown=[0,rootY,0],nodes=[];let previous=crown;
+ for(let j=0;j<6;j++){
+  const az=j*2.399+.45,R=w*.105*Math.sqrt((j+.8)/6),node=[Math.sin(az)*R,rootY+LH*.12,Math.cos(az)*R];nodes.push(node);b.branch(previous,node,radius,'#688650','creeping-stem-waterpoppy-ref');previous=node;
+  for(let side=0;side<2;side++){
+   const yaw=az+(side?-.43:.43),rr=w*(side?.115:.095),at=[node[0]+Math.sin(yaw)*rr,LH*.45,node[2]+Math.cos(yaw)*rr],L=Math.min(.065,w*.24)*(.87+j*.018),relief=Math.min(L,LH*.25/.08),pitch=Math.PI/2-Math.min(.10,LH*.12/L)*(j%3)/2;
+   b.branch(node,at,radius*.65,'#688650','petiole-waterpoppy-ref');b.add('waterpoppy-photo-reference-leaf','leaf-waterpoppy-photo-reference',kit.shade(rand,s.leafColor,.025),...at,L,L,relief,pitch,yaw,0);
+  }
+ }
+ if(!s.bloom)return;
+ const r=Math.min(.025,w*.17,h*.60),at=[0,h*.93-r*.32,0],yaw=.18,f=flowerFrame(b,at,0,yaw);b.branch(nodes[2],at,Math.min(.0011,h*.005,w*.006),'#688650','peduncle-waterpoppy-ref');
+ for(let k=0;k<3;k++){
+  const az=k*TAU/3;f.add('waterpoppy-photo-reference-petal','petal-waterpoppy-photo-reference',kit.shade(rand,s.flowerColor,.012),0,0,0,r,r,r,0,az,0);
+  const row=26,col=12,C=24,N=32,vertices=[row*(C+1)+col,(row+1)*(C+1)+col,row*(C+1)+col+1],totalYaw=yaw+az,matrix=new THREE.Matrix4().compose(new THREE.Vector3(...at),new THREE.Quaternion().setFromEuler(new THREE.Euler(0,totalYaw,0,'YXZ')),new THREE.Vector3(r,r,r));matrix.fromArray(new Float32Array(matrix.elements));
+  const points=vertices.map(v=>new THREE.Vector3(...waterpoppyPhotoReferencePoint('petal',Math.floor(v/(C+1))/N,v%(C+1)/C*2-1).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),axis=new THREE.Vector3(Math.sin(totalYaw)*.8,1,Math.cos(totalYaw)*.8).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),'YXZ');b.flower?.(point.toArray(),r*1.7,e.x,e.y,e.z,{component:'petal-waterpoppy-photo-reference',instanceId:k,vertices,faceIndex:(row*C+col)*2,cameraAxis:axis.toArray()});
+ }
+ // The dark throat and pale central body are simplified; no stamen count is asserted.
+ f.add(kit.bud,'throat-waterpoppy-ref','#765339',0,r*.06,0,r*.25,r*.08,r*.25);f.add(kit.bud,'central-body-waterpoppy-ref','#b9b087',0,r*.13,0,r*.09,r*.12,r*.09);
+}
+
 function drawFloatingAquatics(b,{info,s,detail,rand},kit){
+ if(info.appearance?.shootProfile==='waterpoppyPhotoReference'){drawWaterpoppyPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='nupharPhotoReference'){drawNupharPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='asazaPhotoReference'){drawAsazaPhotoReference(b,{s,rand},kit);return;}
  if(s.groundDormant)return;
