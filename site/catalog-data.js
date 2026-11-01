@@ -9717,7 +9717,41 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-891f594612ae":{"label":"ロタラインディカ","latin":"Rotala rotundifolia 'Indica'（流通名）","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.1,0.2],"spread":null,"bloom":[5,6],"bloomKnown":true,"flower":"#c48aba","leafColor":"#9b9762","variegated":false,"colors":["red"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類ごとの水中葉・茎葉体の参考表示","care":"水温・水深・光量で姿が変わります。国内屋外の年間の姿は未校正で、保護栽培の形態見本です。野外への放流・逸出を避けて管理してください。","bloomText":"5・6月（水上の花）","bloomBasis":"国内生産者の水上栽培の記載","source":"https://www.akb.jp/c/water_plants/biotope_plants/002-0161","publisher":"杜若園芸","sourceChecked":"2026-10-11","aliases":["ロタラインディカ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-b716f5384832":{"label":"グリーンロタラ","latin":"Rotala rotundifolia 'Green'","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.2,0.5],"spread":[0.1,0.4],"bloom":[],"bloomKnown":false,"flower":"#ecebdd","leafColor":"#73a155","variegated":false,"colors":["green"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水中の草姿と越冬条件を種類別に表示","care":"水温・水深・光量によって姿が変わります。庭の水面区画で水深を設定してください。野外への放流・逸出を避けて管理してください。","bloomText":"国内の開花月は未確認","bloomBasis":"月別の資料未確認","source":"https://tropica.com/en/plants/plantdetails/22545/22545","publisher":"Tropica","sourceChecked":"2026-10-11","aliases":["グリーンロタラ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-294dab124a2a":{"label":"ロタラ・SP・フラワー","latin":"Rotala sp. 'Flower'","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":null,"spread":null,"bloom":[],"bloomKnown":false,"flower":"#c48aba","leafColor":"#a3aa64","variegated":false,"colors":["orange"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類ごとの水中葉・茎葉体の参考表示","care":"水温・水深・光量で姿が変わります。国内屋外の年間の姿は未校正で、保護栽培の形態見本です。野外への放流・逸出を避けて管理してください。","bloomText":"国内の開花月は未確認","bloomBasis":"月別の資料未確認","source":"https://www.aqua-breath.com/single-post/pot%E6%B0%B4%E8%8D%89%E3%82%AA%E3%82%B9%E3%82%B9%E3%83%A1%E3%81%A7%E3%81%99%EF%BC%81","publisher":"AQUARIUM SHOP Breath","sourceChecked":"2026-10-11","aliases":["ロタラ・SP・フラワー"],"selectionSource":null,"visual":"reference","popularity":[]},"p-bfcbe3f72e36":{
+},"p-891f594612ae":{"label":"ロタラインディカ","latin":"Rotala rotundifolia 'Indica'（流通名）","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.1,0.2],"spread":null,"bloom":[5,6],"bloomKnown":true,"flower":"#c48aba","leafColor":"#9b9762","variegated":false,"colors":["red"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類ごとの水中葉・茎葉体の参考表示","care":"水温・水深・光量で姿が変わります。国内屋外の年間の姿は未校正で、保護栽培の形態見本です。野外への放流・逸出を避けて管理してください。","bloomText":"5・6月（水上の花）","bloomBasis":"国内生産者の水上栽培の記載","source":"https://www.akb.jp/c/water_plants/biotope_plants/002-0161","publisher":"杜若園芸","sourceChecked":"2026-10-11","aliases":["ロタラインディカ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-b716f5384832":{
+  "label": "グリーンロタラ",
+  "latin": "Rotala rotundifolia 'Green'",
+  "genre": "水生植物",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": null,
+  "spread": null,
+  "bloom": [],
+  "bloomKnown": false,
+  "flower": "#ecebdd",
+  "leafColor": "#77aa47",
+  "variegated": false,
+  "colors": [
+    "unknown"
+  ],
+  "sun": [],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "明るい緑の水中葉・側枝としなだれる茎",
+  "care": "メーカーのグリーン系の収録株を参考に、明るい緑の細長い対生葉と、多くの側枝を付けて先端がしなだれる水中の草姿を示します。培養カップの画像と、細長い葉・下部の丸みのある葉を付けたメーカーの全形画像を区別します。水上・水中や培養条件で葉の形は変わります。一般的な株高・株幅と国内の開花月は未確認です。推測の花や季節の赤い紅葉は付けず、温度を保った水槽の参考条件で表示します。全形・全月の実物照合は未完了です。",
+  "bloomText": "国内の開花月は未確認",
+  "bloomBasis": "国内の開花月と収録Greenの花色は未確認です。種資料のピンクの花や国外の春を、収録株の国内の月別表示へ転用していません。",
+  "source": "https://tropica.com/en/plants/plantdetails/22545/22545",
+  "publisher": "Tropica",
+  "sourceChecked": "2026-11-01",
+  "aliases": [
+    "グリーンロタラ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-294dab124a2a":{"label":"ロタラ・SP・フラワー","latin":"Rotala sp. 'Flower'","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":null,"spread":null,"bloom":[],"bloomKnown":false,"flower":"#c48aba","leafColor":"#a3aa64","variegated":false,"colors":["orange"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類ごとの水中葉・茎葉体の参考表示","care":"水温・水深・光量で姿が変わります。国内屋外の年間の姿は未校正で、保護栽培の形態見本です。野外への放流・逸出を避けて管理してください。","bloomText":"国内の開花月は未確認","bloomBasis":"月別の資料未確認","source":"https://www.aqua-breath.com/single-post/pot%E6%B0%B4%E8%8D%89%E3%82%AA%E3%82%B9%E3%82%B9%E3%83%A1%E3%81%A7%E3%81%99%EF%BC%81","publisher":"AQUARIUM SHOP Breath","sourceChecked":"2026-10-11","aliases":["ロタラ・SP・フラワー"],"selectionSource":null,"visual":"reference","popularity":[]},"p-bfcbe3f72e36":{
     "label": "ロタラロトンジフォリア",
     "latin": "Rotala rotundifolia",
     "genre": "水生植物",

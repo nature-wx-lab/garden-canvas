@@ -12247,7 +12247,59 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "shootProfile": "watercoinPhotoReference",
   "sourceConflict": "草丈5〜15cmは国内の生産者の値です。変種資料の葉21〜35×24〜40mm、葉柄35〜200mm以上、花茎25〜175mm、花径2〜2.8mmは部位ごとの値で、草丈や株幅へ読み替えません。直径9cm以上は鉢の案内です。生産者と形態資料の学名表記・分類の範囲には違いがあり、収録名Hydrocotyle verticillataを保ったまま、流通株の分類同定は未確認です。",
   "phenologyRegion": "5〜9月の開花は国内の生産者の記載です。4〜11月の葉と12〜3月の水中保護は管理の参考シナリオで、地域別に同じ株を追った自然の休眠月ではありません。暖かな室内で常緑になるという管理説明と、今の屋外保護表示は区別します。国外の変種資料の草丈を国内の範囲へ統合していません。"
-},"p-891f594612ae":{"sources":[{"url":"https://www.akb.jp/c/water_plants/biotope_plants/002-0161","scope":"catalog-entry"},{"url":"https://idtools.org/appw/index.cfm?entityID=10388&packageID=2197","scope":"genus"}],"basis":{"habit":0,"leafShape":0,"arrangement":1,"leafColor":0,"flowerMonths":0,"flowerTiming":0,"flowerShape":1},"status":"partial","architecture":"submergedShoots","shootProfile":"indica","lifeForm":"herb","habit":"clump","arrangement":"opposite","leafShape":"indicaWaterLeaf","leafLength":0.02,"leafWidth":0.004,"leafColor":"#9b9762","leafTexture":"smooth","leafUnderside":"#be9086","stemColor":"#b08066","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","国内生産者がRotala rotundifolia Indicaとして販売する株を参照します。水上では丸い対生葉と小さなピンクの4弁花の穂、水中では細長く赤みを帯びる葉に切り替えます。","これは流通名のインディカの参考形で、分類上のRotala indicaと同一と断定しません。国内生産者の5〜6月の花期を採用し、冬は暖かい室内で管理する条件を表示します。屋外で自動的に毎春復活するという意味ではありません。"],"waterSurfaceModel":true,"flowerMonths":[5,6],"flowerTiming":"months","flowerShape":"indicaSpike"},"p-b716f5384832":{"sources":[{"url":"https://tropica.com/en/plants/plantdetails/22545/22545","scope":"catalog-entry"},{"url":"https://idtools.org/appw/index.cfm?entityID=10388&packageID=2197","scope":"genus"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"greenRotala","lifeForm":"herb","habit":"spreading","arrangement":"opposite","leafShape":"greenRotalaLeaf","leafLength":0.02,"leafWidth":0.003,"leafColor":"#73a155","leafTexture":"smooth","leafUnderside":"#9fb883","stemColor":"#93a572","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","強い光でも緑色を保つグリーンの栽培型を参照します。細い対生葉とよく分枝する茎を描き、上部が横へ垂れる草姿にします。","温度を保った水中栽培の形態見本です。日本の屋外での冬姿と花期は未確認で、赤色の季節紅葉や推測の花を付けません。"]},"p-294dab124a2a":{"sources":[{"url":"https://www.aqua-breath.com/single-post/pot%E6%B0%B4%E8%8D%89%E3%82%AA%E3%82%B9%E3%82%B9%E3%83%A1%E3%81%A7%E3%81%99%EF%BC%81","scope":"catalog-entry"},{"url":"https://idtools.org/appw/index.cfm?entityID=10388&packageID=2197","scope":"genus"}],"basis":{"habit":0,"leafShape":0,"arrangement":1,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"rotalaFlower","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"rotalaFlowerLeaf","leafLength":0.012,"leafWidth":0.0028,"leafColor":"#a3aa64","leafTexture":"smooth","leafUnderside":"#b9ae87","stemColor":"#af9672","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","販売店が自ら撮影した水中株を参考に、短い節間に葉が幾重にも重なる頂芽を描きます。フラワーという名前を実際の開花と取り違えて、花弁を足すことはしません。","葉数と色は写真を参考にした近似です。種・品種の同一性、国内の花期、屋外の冬姿、水上への移行は未確認で、温度を保った水中形を表示します。"]},"p-bfcbe3f72e36":{
+},"p-891f594612ae":{"sources":[{"url":"https://www.akb.jp/c/water_plants/biotope_plants/002-0161","scope":"catalog-entry"},{"url":"https://idtools.org/appw/index.cfm?entityID=10388&packageID=2197","scope":"genus"}],"basis":{"habit":0,"leafShape":0,"arrangement":1,"leafColor":0,"flowerMonths":0,"flowerTiming":0,"flowerShape":1},"status":"partial","architecture":"submergedShoots","shootProfile":"indica","lifeForm":"herb","habit":"clump","arrangement":"opposite","leafShape":"indicaWaterLeaf","leafLength":0.02,"leafWidth":0.004,"leafColor":"#9b9762","leafTexture":"smooth","leafUnderside":"#be9086","stemColor":"#b08066","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","国内生産者がRotala rotundifolia Indicaとして販売する株を参照します。水上では丸い対生葉と小さなピンクの4弁花の穂、水中では細長く赤みを帯びる葉に切り替えます。","これは流通名のインディカの参考形で、分類上のRotala indicaと同一と断定しません。国内生産者の5〜6月の花期を採用し、冬は暖かい室内で管理する条件を表示します。屋外で自動的に毎春復活するという意味ではありません。"],"waterSurfaceModel":true,"flowerMonths":[5,6],"flowerTiming":"months","flowerShape":"indicaSpike"},"p-b716f5384832":{
+  "sources": [
+    {
+      "url": "https://tropica.com/en/plants/plantdetails/22545/22545",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://idtools.org/appw/index.cfm?entityID=10388&packageID=2197",
+      "scope": "genus"
+    },
+    {
+      "url": "https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Rotala~rotundifolia&page=nswfl",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 1,
+    "arrangement": 1,
+    "leafColor": 0,
+    "architecture": 0
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "greenRotalaPhotoReference",
+  "lifeForm": "herb",
+  "habit": "spreading",
+  "arrangement": "opposite",
+  "leafShape": "greenRotalaLeaf",
+  "leafLength": 0.02,
+  "leafWidth": 0.003,
+  "leafColor": "#77aa47",
+  "leafTexture": "smooth",
+  "leafUnderside": "#a4bc78",
+  "stemColor": "#8eab61",
+  "persistence": "submergedPersistent",
+  "fruitMonths": [],
+  "phenologyRegion": "温度を保った水槽の葉の参考表示です。日本の屋外の休眠・芽出し月や越冬条件は未確認で、全月同じ緑の表示を国内の露地常緑や同じ株の年間記録とは扱いません。強い光でも緑を保つというメーカーの説明を、季節の赤い紅葉へ読み替えていません。",
+  "unconfirmed": [
+    "全形・全月の実物照合",
+    "メーカーの培養カップ画像と、別の全形画像を区別します。培養塊の密度や直径を成株の大きさ、自然な株数へ読み替えていません。全形画像の撮影条件や生成方式は独立確認していません。",
+    "水中で細く薄くなる対生葉と十字状の配置は、属の形態資料とメーカー画像を参考にしています。水上・培養条件の丸みのある葉と、水中の細長い葉を全て同じ形とはしません。",
+    "明るい緑と多い側枝、上部がしなだれる草姿はメーカーの説明を参考にした近似です。枝分かれの位置、節間、葉の長さ・幅・色・光沢は収録株の実測ではありません。",
+    "国内の花期と収録Greenの花色は未確認なので、今の表示には花を付けません。葉の緑を花色の緑として分類せず、一般種のピンクの花も収録株の確認済みの花色としません。",
+    "メーカーの全形画像に根の一部が見えますが、現在の表示には根や地下茎を追加していません。自然な発根量や年次増殖も予測しません。",
+    "茎・枝・葉の数と配置、密度は説明用の近似です。培養カップやメーカー画像と同じ本数・株数を再現したものではありません。",
+    "入力した高さ・株幅・葉の高さへ収めた参考形です。水槽投入後の2か月という条件を一般的な年次成長の予測へ置き換えません。",
+    "温度を保った水槽の参考条件で全月の緑を示します。日本の屋外常緑・休眠月・越冬成功や、同じクローンの月別の姿は未確認です。"
+  ],
+  "flowerShape": "none",
+  "flowerRadius": 0,
+  "sourceConflict": "メーカーの高さ20〜30cm以上は、水槽へ入れて2か月後の平均という条件付きの値です。40〜50cmは茎の長さで、2〜3cmの茎や葉を含む幅も株幅には転用しません。一般的な閉じた草丈範囲と株幅は未確認です。培養カップの大きさ・密度も自然な株高・株幅・株数ではありません。"
+},"p-294dab124a2a":{"sources":[{"url":"https://www.aqua-breath.com/single-post/pot%E6%B0%B4%E8%8D%89%E3%82%AA%E3%82%B9%E3%82%B9%E3%83%A1%E3%81%A7%E3%81%99%EF%BC%81","scope":"catalog-entry"},{"url":"https://idtools.org/appw/index.cfm?entityID=10388&packageID=2197","scope":"genus"}],"basis":{"habit":0,"leafShape":0,"arrangement":1,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"rotalaFlower","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"rotalaFlowerLeaf","leafLength":0.012,"leafWidth":0.0028,"leafColor":"#a3aa64","leafTexture":"smooth","leafUnderside":"#b9ae87","stemColor":"#af9672","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","販売店が自ら撮影した水中株を参考に、短い節間に葉が幾重にも重なる頂芽を描きます。フラワーという名前を実際の開花と取り違えて、花弁を足すことはしません。","葉数と色は写真を参考にした近似です。種・品種の同一性、国内の花期、屋外の冬姿、水上への移行は未確認で、温度を保った水中形を表示します。"]},"p-bfcbe3f72e36":{
     "sources": [
       {
         "url": "https://tropica.com/en/plants/plantdetails/Rotalarotundifolia(033MP)/18810",
