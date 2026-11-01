@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1014';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1015';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1014';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1015';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20882,6 +20882,7 @@ function drawMisebayaCultivarReferences(b,{info,s},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.shootProfile==='hairgrassPhotoReference'){drawHairgrassPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='shortHairPhotoReference'){drawShortHairPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='goldJennyPhotoReference'){drawGoldJennyPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.architecture==='misebayaCultivarReferences'){drawMisebayaCultivarReferences(b,{info,s},kit);return;}
@@ -29788,4 +29789,21 @@ function drawSedumSeedReferences(b,{info,s},kit){
   }
  }
  for(const surface of surfaces){const axis=surface.normal.clone();if(axis.y<.12)axis.y=.12;axis.normalize();const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Y,axis),'YXZ');b.flower?.(surface.point.toArray(),surface.radius*1.5,e.x,e.y,e.z,{component:'petal-sedum-seed-ref-'+profile,instanceId:surface.instanceId,vertices:surface.vertices,faceIndex:surface.faceIndex,cameraAxis:axis.toArray()});}
+}
+
+// Eleocharis acicularis retail reference. Counts, spacing and colors are illustrative.
+function hairgrassPhotoSegment(b,a,z,r,color,component){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('hairgrass-photo-reference-axis',component,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawHairgrassPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00017,w*.0018,LH*.004),floor=r*1.6+Math.min(.00002,LH*.002),n=Math.max(1,Math.round(640*s.leafDensity));
+ for(let k=0;k<n;k++){
+  const az=k*2.399+rand()*.22,R=w*.34*Math.sqrt((k+.5)/n),root=[Math.sin(az)*R,floor,Math.cos(az)*R],tipHeight=Math.max(floor,LH*(.55+.40*rand())),bend=Math.min(w*.055,(tipHeight-floor)*(.13+.20*rand())),side=(rand()-.5)*Math.min(w*.018,(tipHeight-floor)*.08);let previous=root;
+  for(let node=0;node<10;node++){
+   const t=(node+1)/10,at=[root[0]+Math.sin(az)*bend*t*t+Math.cos(az)*side*Math.sin(Math.PI*t),floor+(tipHeight-floor)*t,root[2]+Math.cos(az)*bend*t*t-Math.sin(az)*side*Math.sin(Math.PI*t)];hairgrassPhotoSegment(b,previous,at,r*(1-.48*t),k%23===0?'#9ba36e':kit.shade(rand,s.leafColor,.035),'culm-hairgrass-photo-ref');previous=at;
+  }
+  const t=.075,at=[root[0]+Math.sin(az)*bend*t*t+Math.cos(az)*side*Math.sin(Math.PI*t),floor+(tipHeight-floor)*t,root[2]+Math.cos(az)*bend*t*t-Math.sin(az)*side*Math.sin(Math.PI*t)];hairgrassPhotoSegment(b,root,at,r*1.35,k%4===0?'#a18a71':'#b5ba94','sheath-hairgrass-photo-ref');
+ }
+ // Domestic flowering months and underground geometry are unverified; no spikelets, flowers or rhizomes are drawn.
 }

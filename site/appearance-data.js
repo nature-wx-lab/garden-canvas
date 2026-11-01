@@ -12063,7 +12063,57 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "flowerRadius": 0.0015,
   "waterSurfaceModel": true,
   "sourceConflict": "草丈3〜10cmと花期6〜9月は国内生産者の記載で、株幅は未確認です。9cmは商品や栽培容器のポット径で株幅ではありません。国外の稈径0.2〜0.5mm、小穂2〜4×1〜2mmは種の部位の参考値で、収録株や利用者の株の実測ではありません。中国の稈高や開花月を国内の値へ合算していません。"
-},"p-c23d044f8453":{"sources":[{"url":"https://www.akb.jp/c/water_plants/aqua_plants/foreground_plants/fp-005","scope":"catalog-entry"},{"url":"https://efloras.org/florataxon.aspx?flora_id=1&taxon_id=242357729","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"hair","lifeForm":"herb","habit":"creeping","arrangement":"basal","leafShape":"hairCulm","leafLength":0.2,"leafWidth":0.0006,"leafColor":"#629653","leafTexture":"smooth","leafUnderside":"#86aa7a","stemColor":"#7d9870","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","ヘアーグラスはEleocharis acicularisを参照します。細い円柱状の稈をショートヘアグラスより高く伸ばし、基部に淡褐色〜赤みを帯びる葉鞘を付けます。","水中で柔らかく伸びた稈を参考にしています。国内屋外で地上部が消える月・芽出し月は未確認のため、温度を保った水中葉の条件で表示します。小穂の国内開花月も未確認です。"]},"p-9802ede000e2":{
+},"p-c23d044f8453":{
+  "sources": [
+    {
+      "url": "https://www.akb.jp/c/water_plants/aqua_plants/foreground_plants/fp-005",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://efloras.org/florataxon.aspx?flora_id=1&taxon_id=242357729",
+      "scope": "species"
+    },
+    {
+      "url": "https://efloras.org/florataxon.aspx?flora_id=1&taxon_id=111420",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 1,
+    "arrangement": 2,
+    "leafColor": 0,
+    "architecture": 1
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "hairgrassPhotoReference",
+  "lifeForm": "herb",
+  "habit": "creeping",
+  "arrangement": "basal",
+  "leafShape": "hairCulm",
+  "leafLength": 0.2,
+  "leafWidth": 0.00035,
+  "leafColor": "#659b52",
+  "leafTexture": "smooth",
+  "leafUnderside": "#86aa7a",
+  "stemColor": "#659b52",
+  "persistence": "submergedPersistent",
+  "fruitMonths": [],
+  "phenologyRegion": "温度を保った水中の稈の参考表示です。国内生産者ページでは冬の休眠・芽出し月や国内屋外の全月像を確認できないため、特定の月に地上部が消えるとは設定していません。全月の緑の表示を露地越冬や自然な常緑の保証へ読み替えません。",
+  "unconfirmed": [
+    "全形・全月の実物照合",
+    "細い緑の部分は通常の幅広い葉身ではなく稈です。直立から弓状になる稈と、基部の筒状の葉鞘を区別します。",
+    "生産者写真に小穂が見られても国内の開花月は未確認です。種は小穂を付けますが、現在の立体表示には小穂・花・果実を追加していません。",
+    "地下茎や根は写真に写る地下形として確認できないため描いていません。ランナーによる自然な年次増殖量も予測しません。",
+    "稈や葉鞘の数、長短、向き、密度、太さと配色は表示上の近似で、写真の計測値や同じ株の再現ではありません。",
+    "入力する高さ・株幅・葉の高さへ収めた参考形です。葉の高さは緑の稈の表示丈の目安で、利用者の株を計測した寸法ではありません。",
+    "冬の表示は温度を保った水中の参考条件で、地域別の屋外常緑や越冬成功を保証しません。収録株の変種や同一クローンも未確認です。"
+  ],
+  "flowerShape": "none",
+  "flowerRadius": 0,
+  "sourceConflict": "国内生産者の草丈1〜20cmと、水中では15〜20cm程度という条件付きの説明を区別します。株幅は未確認です。6.5cmはポット規格で株幅や草丈ではありません。国外の稈長1〜60cmを国内の範囲へ合算せず、稈径0.2〜0.5mm・時に0.7mmや小穂の寸法も部位の参考値として扱います。"
+},"p-9802ede000e2":{
   "sources": [
     {
       "url": "https://www.akb.jp/c/water_plants/biotope_plants/flower_plants/002-0170",

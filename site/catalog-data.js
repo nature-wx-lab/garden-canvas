@@ -9593,7 +9593,44 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-c23d044f8453":{"label":"ヘアーグラス","latin":"Eleocharis acicularis","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.1,0.2],"spread":[0.1,0.4],"bloom":[],"bloomKnown":false,"flower":"#ecebdd","leafColor":"#629653","variegated":false,"colors":["green"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水中の草姿と越冬条件を種類別に表示","care":"水温・水深・光量によって姿が変わります。庭の水面区画で水深を設定してください。野外への放流・逸出を避けて管理してください。","bloomText":"国内の開花月は未確認","bloomBasis":"月別の資料未確認","source":"https://www.akb.jp/c/water_plants/aqua_plants/foreground_plants/fp-005","publisher":"杜若園芸","sourceChecked":"2026-10-11","aliases":["ヘアーグラス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-9802ede000e2":{
+},"p-c23d044f8453":{
+  "label": "ヘアーグラス",
+  "latin": "Eleocharis acicularis",
+  "genre": "水生植物",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": [
+    0.01,
+    0.2
+  ],
+  "spread": null,
+  "bloom": [],
+  "bloomKnown": false,
+  "flower": "#ecebdd",
+  "leafColor": "#659b52",
+  "variegated": false,
+  "colors": [
+    "green"
+  ],
+  "sun": [],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "水中の細長い稈・基部の葉鞘",
+  "care": "国内生産者の草丈1〜20cmと、水中では15〜20cm程度という条件付きの説明を区別します。生産者写真の細い緑の稈が直立から弓状に伸びる姿と、基部の淡い葉鞘を参考にします。国内の開花月は未確認なので、今の立体表示には小穂を加えていません。水温・水深・光量で姿が変わり、冬は温度を保った水中の参考条件です。国内屋外の冬姿、全形・全月の実物照合は未完了です。野外への放流・逸出を避けて管理してください。",
+  "bloomText": "国内の開花月は未確認",
+  "bloomBasis": "国内の開花月は未確認です。商品写真に小穂は見られますが、撮影月を確認できず、国外の花期を国内の月へ読み替えていません。",
+  "source": "https://www.akb.jp/c/water_plants/aqua_plants/foreground_plants/fp-005",
+  "publisher": "杜若園芸",
+  "sourceChecked": "2026-11-01",
+  "aliases": [
+    "ヘアーグラス"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-9802ede000e2":{
   "label": "リシマキア・ゴールド",
   "latin": "Lysimachia nummularia（黄葉の流通株）",
   "genre": "水生植物",
