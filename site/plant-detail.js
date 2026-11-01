@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1023';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1024';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1023';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1024';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20882,6 +20882,7 @@ function drawMisebayaCultivarReferences(b,{info,s},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.shootProfile==='greenMyrioPhotoReference'){drawGreenMyrioPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='rotalaFlowerPhotoReference'){drawRotalaFlowerPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='indicaPhotoReference'){drawIndicaPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='newLargePearlPhotoReference'){drawNewLargePearlPhotoReference(b,{info,s,rand},kit);return;}
@@ -30025,6 +30026,42 @@ function drawNewLargePearlPhotoReference(b,{info,s,rand},kit){
  }
  // Creeping segments,short rising shoots and paired blades form an illustrative mat;counts and density are not measurements.
  // No hidden roots,flowers,water-to-air transition,seasonal multiplication or annual growth are drawn.
+}
+
+export function greenMyrioPhotoReferenceGeometry(){
+ const C=6,p=[],uv=[],ix=[],rachisRings=[],pinnaSections=[];
+ function ring(center,r,right,forward,t){const first=p.length/3;for(let j=0;j<=C;j++){const a=j/C*TAU,v=center.clone().addScaledVector(right,Math.cos(a)*r).addScaledVector(forward,Math.sin(a)*r);p.push(...v.toArray());uv.push(j/C,t);}return first;}
+ function connect(a,b){for(let j=0;j<C;j++)ix.push(a+j,b+j,a+j+1,a+j+1,b+j,b+j+1);}
+ let previous=null;
+ for(let j=0;j<=9;j++){const t=j/9,center=new THREE.Vector3(0,t,.07*t*t),first=ring(center,.014*Math.sin(Math.PI*t),new THREE.Vector3(1,0,0),new THREE.Vector3(0,0,1),t);if(previous!==null)connect(previous,first);rachisRings.push({firstRing:first,ringVertices:C,center:center.toArray()});previous=first;}
+ for(let j=1;j<=8;j++)for(const side of[-1,1]){
+  const t=j/9,from=new THREE.Vector3(...rachisRings[j].center),breadth=.49*Math.pow(Math.sin(Math.PI*t),.52)*(.55+.50*t),to=new THREE.Vector3(side*breadth,t+.12*(1-t),.07*t*t+.08*Math.sin(Math.PI*t)),direction=to.clone().sub(from).normalize(),right=new THREE.Vector3(0,0,1).cross(direction).normalize(),forward=direction.clone().cross(right).normalize(),firstRing=p.length/3;let prev=null,lastRing;
+  for(let k=0;k<=3;k++){const u=k/3,center=from.clone().lerp(to,u).add(new THREE.Vector3(0,0,.035*Math.sin(Math.PI*u))),first=ring(center,.012*Math.sin(Math.PI*u),right,forward,u);if(prev!==null)connect(prev,first);prev=first;lastRing=first;}
+  pinnaSections.push({fromRachisRing:j,side,firstRing,lastRing,ringVertices:C,origin:from.toArray(),tip:to.toArray()});
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={greenMyrioPhotoReference:true,rootVertex:0,closedNeedleSections:true,rachisRings,pinnaSections,illustrativePinnaPairs:8};return g;
+}
+
+function greenMyrioPhotoSegment(b,a,z,r,color,kind){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('green-myrio-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawGreenMyrioPhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.005,w*.0015,LH*.018),L=Math.min(.025,w*.065,LH*.15),W=L*.80,stem=info.appearance.stemColor,leafKind='leaf-green-myrio-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ function whorl(at,turn){for(let side=0;side<4;side++)b.add('green-myrio-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,Math.min(L,LH*.40),Math.acos(Math.min(.15,LH*.02/L)),turn+side*TAU/4,0);}
+ for(let shoot=0;shoot<12;shoot++){
+  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,base,Math.cos(az)*R],peak=LH*(.78+.025*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),base+(peak-base)*t,root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
+  for(let j=1;j<=14;j++){
+   const t=j/14,at=path(t);greenMyrioPhotoSegment(b,previous,at,r,stem,'stem-green-myrio-photo-ref');previous=at;whorl(at,az+j*.62);
+   if(j!==5&&j!==9)continue;
+   const turn=az+(j===5?-.90:.95),top=LH*(j===5?.69:.83),reach=w*.070;let prev=at;
+   for(let k=1;k<=7;k++){
+    const u=k/7,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];greenMyrioPhotoSegment(b,prev,tip,r*.70,stem,'side-stem-green-myrio-photo-ref');prev=tip;whorl(tip,turn+k*.62);
+   }
+  }
+ }
+ // Counts,branching,needle thickness and density areprivate displayexamples,notstock measurements.
+ // No roots,turions,flowers,fruit,emersedconversion oroutdoorwintergrowth aredrawn.
 }
 
 export function rotalaFlowerPhotoReferenceGeometry(){
