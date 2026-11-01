@@ -12299,7 +12299,52 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "flowerShape": "none",
   "flowerRadius": 0,
   "sourceConflict": "メーカーの高さ20〜30cm以上は、水槽へ入れて2か月後の平均という条件付きの値です。40〜50cmは茎の長さで、2〜3cmの茎や葉を含む幅も株幅には転用しません。一般的な閉じた草丈範囲と株幅は未確認です。培養カップの大きさ・密度も自然な株高・株幅・株数ではありません。"
-},"p-294dab124a2a":{"sources":[{"url":"https://www.aqua-breath.com/single-post/pot%E6%B0%B4%E8%8D%89%E3%82%AA%E3%82%B9%E3%82%B9%E3%83%A1%E3%81%A7%E3%81%99%EF%BC%81","scope":"catalog-entry"},{"url":"https://idtools.org/appw/index.cfm?entityID=10388&packageID=2197","scope":"genus"}],"basis":{"habit":0,"leafShape":0,"arrangement":1,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"rotalaFlower","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"rotalaFlowerLeaf","leafLength":0.012,"leafWidth":0.0028,"leafColor":"#a3aa64","leafTexture":"smooth","leafUnderside":"#b9ae87","stemColor":"#af9672","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","販売店が自ら撮影した水中株を参考に、短い節間に葉が幾重にも重なる頂芽を描きます。フラワーという名前を実際の開花と取り違えて、花弁を足すことはしません。","葉数と色は写真を参考にした近似です。種・品種の同一性、国内の花期、屋外の冬姿、水上への移行は未確認で、温度を保った水中形を表示します。"]},"p-bfcbe3f72e36":{
+},"p-294dab124a2a":{
+  "sources": [
+    {
+      "url": "https://www.aqua-breath.com/single-post/pot%E6%B0%B4%E8%8D%89%E3%82%AA%E3%82%B9%E3%82%B9%E3%83%A1%E3%81%A7%E3%81%99%EF%BC%81",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://idtools.org/appw/index.cfm?entityID=10388&packageID=2197",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 0,
+    "arrangement": 1,
+    "leafColor": 0
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "rotalaFlowerPhotoReference",
+  "lifeForm": "herb",
+  "habit": "clump",
+  "arrangement": "whorled",
+  "leafShape": "rotalaFlowerLeaf",
+  "leafLength": 0.014,
+  "leafWidth": 0.0031,
+  "leafColor": "#81924d",
+  "leafTexture": "smooth",
+  "leafUnderside": "#9b8263",
+  "stemColor": "#9a7058",
+  "persistence": "submergedPersistent",
+  "fruitMonths": [],
+  "phenologyRegion": "温度を保った水中の葉姿を参考表示します。国内の開花月と屋外の冬姿は未確認です。",
+  "unconfirmed": [
+    "全月の実物照合",
+    "販売店の写真と属の一般記載から作る近似で、同じ実物の写真再現は未検証です。",
+    "草丈と株幅の数値は未確認です。ポットや写真の画素寸法を実物の大きさに換算していません。",
+    "フラワーは流通名です。密な先端は葉として描き、実物の花弁、果実、地下の根は追加しません。",
+    "写真の緑・黄緑・桃褐色は葉色の参考です。実際の花色や季節ごとの色変化は未確認です。",
+    "ロタラ属の対生・十字対生・輪生という一般記載を参考にしています。この流通株の葉序や節ごとの葉数、種・品種の同一性は未確認です。",
+    "茎と葉の本数、枝分かれ、節間、密度、先端の色づきは表示上の近似です。販売本数や自然な増殖を示しません。",
+    "冬も温度を保った水中栽培の葉姿を参考表示します。屋外の越冬、生理的な水温反応、水上への移行、同じ株の全月の姿は未確認です。"
+  ],
+  "flowerShape": "none",
+  "sourceConflict": "販売店の2022年10月9日の記事と、その中でロタラsp.フラワーと示された水中株の写真を参考にします。草丈・株幅の数値と実際の花・開花月は未確認です。花のように見える部分は密に重なる葉で、流通名から花弁を追加しません。記事の日付は撮影日や開花月を示すものではありません。"
+},"p-bfcbe3f72e36":{
     "sources": [
       {
         "url": "https://tropica.com/en/plants/plantdetails/Rotalarotundifolia(033MP)/18810",

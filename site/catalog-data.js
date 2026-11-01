@@ -9751,7 +9751,41 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-294dab124a2a":{"label":"ロタラ・SP・フラワー","latin":"Rotala sp. 'Flower'","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":null,"spread":null,"bloom":[],"bloomKnown":false,"flower":"#c48aba","leafColor":"#a3aa64","variegated":false,"colors":["orange"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類ごとの水中葉・茎葉体の参考表示","care":"水温・水深・光量で姿が変わります。国内屋外の年間の姿は未校正で、保護栽培の形態見本です。野外への放流・逸出を避けて管理してください。","bloomText":"国内の開花月は未確認","bloomBasis":"月別の資料未確認","source":"https://www.aqua-breath.com/single-post/pot%E6%B0%B4%E8%8D%89%E3%82%AA%E3%82%B9%E3%82%B9%E3%83%A1%E3%81%A7%E3%81%99%EF%BC%81","publisher":"AQUARIUM SHOP Breath","sourceChecked":"2026-10-11","aliases":["ロタラ・SP・フラワー"],"selectionSource":null,"visual":"reference","popularity":[]},"p-bfcbe3f72e36":{
+},"p-294dab124a2a":{
+  "label": "ロタラ・SP・フラワー",
+  "latin": "Rotala sp. 'Flower'",
+  "genre": "水生植物",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": null,
+  "spread": null,
+  "bloom": [],
+  "bloomKnown": false,
+  "flower": "#c48aba",
+  "leafColor": "#a3aa64",
+  "variegated": false,
+  "colors": [
+    "unknown"
+  ],
+  "sun": [],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "種類ごとの水中葉・茎葉体の参考表示",
+  "care": "水温・水深・光量で姿が変わります。国内屋外の年間の姿は未校正で、保護栽培の形態見本です。野外への放流・逸出を避けて管理してください。",
+  "bloomText": "開花月は未確認（水中の葉姿を参考表示）",
+  "bloomBasis": "月別の資料未確認",
+  "source": "https://www.aqua-breath.com/single-post/pot%E6%B0%B4%E8%8D%89%E3%82%AA%E3%82%B9%E3%82%B9%E3%83%A1%E3%81%A7%E3%81%99%EF%BC%81",
+  "publisher": "AQUARIUM SHOP Breath",
+  "sourceChecked": "2026-11-01",
+  "aliases": [
+    "ロタラ・SP・フラワー"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-bfcbe3f72e36":{
     "label": "ロタラロトンジフォリア",
     "latin": "Rotala rotundifolia",
     "genre": "水生植物",

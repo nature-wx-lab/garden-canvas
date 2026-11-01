@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1022';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1023';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1022';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1023';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20882,6 +20882,7 @@ function drawMisebayaCultivarReferences(b,{info,s},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.shootProfile==='rotalaFlowerPhotoReference'){drawRotalaFlowerPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='indicaPhotoReference'){drawIndicaPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='newLargePearlPhotoReference'){drawNewLargePearlPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='largePearlPhotoReference'){drawLargePearlPhotoReference(b,{info,s,rand},kit);return;}
@@ -30024,6 +30025,39 @@ function drawNewLargePearlPhotoReference(b,{info,s,rand},kit){
  }
  // Creeping segments,short rising shoots and paired blades form an illustrative mat;counts and density are not measurements.
  // No hidden roots,flowers,water-to-air transition,seasonal multiplication or annual growth are drawn.
+}
+
+export function rotalaFlowerPhotoReferenceGeometry(){
+ const N=28,C=12,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,angle=j/C*TAU,sn=Math.sin(Math.PI*t),width=.5*Math.pow(sn,.70)*(1.02-.08*t),camber=.030*sn+.120*t*t;
+  p.push(Math.cos(angle)*width,t,camber+Math.sin(angle)*.010*sn);uv.push(j/C,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={rotalaFlowerPhotoReference:true,rootVertex:0,closedBlade:true,illustrativeCrossSection:true};return g;
+}
+
+
+function rotalaFlowerPhotoSegment(b,a,z,r,color,kind){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('rotala-sp-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawRotalaFlowerPhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.005,w*.0015,LH*.018),L=Math.min(.014,w*.060,LH*.18),W=L*.22,stem=info.appearance.stemColor,leafKind='leaf-rotala-sp-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ function whorl(at,turn,t){const color=new THREE.Color(s.leafColor).lerp(new THREE.Color('#bc997a'),Math.pow(t,3)*.72).getStyle();for(let side=0;side<4;side++)b.add('rotala-sp-photo-reference-leaf',leafKind,kit.shade(rand,color,.035),...at,W,L,Math.min(L,LH*.40),Math.acos(Math.min(.15,LH*.02/L)),turn+side*TAU/4,0);}
+ for(let shoot=0;shoot<12;shoot++){
+  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,base,Math.cos(az)*R],peak=LH*(.78+.025*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),base+(peak-base)*(1-Math.pow(1-t,1.55)),root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
+  for(let j=1;j<=14;j++){
+   const t=j/14,at=path(t);rotalaFlowerPhotoSegment(b,previous,at,r,stem,'stem-rotala-sp-photo-ref');previous=at;whorl(at,az+j*.62,t);
+   if(j!==5&&j!==9)continue;
+   const turn=az+(j===5?-.90:.95),top=LH*(j===5?.69:.83),reach=w*.070;let prev=at;
+   for(let k=1;k<=7;k++){
+    const u=k/7,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];rotalaFlowerPhotoSegment(b,prev,tip,r*.70,stem,'side-stem-rotala-sp-photo-ref');prev=tip;whorl(tip,turn+k*.62,u);
+   }
+  }
+ }
+ // Leaf directions,counts,internodes,color gradient andbranching areprivate photo-based examples,notstock measurements.
+ // No realflowers,roots,fruits,emersed transition oroutdoor winter schedule are drawn fromthis trade name.
 }
 
 export function indicaPhotoReferencePoint(part,t,angle){
