@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1017';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1018';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1017';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1018';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20882,6 +20882,7 @@ function drawMisebayaCultivarReferences(b,{info,s},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.shootProfile==='nanjenshanPhotoReference'){drawNanjenshanPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='greenRotalaPhotoReference'){drawGreenRotalaPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='cobraGrassPhotoReference'){drawCobraGrassPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='hairgrassPhotoReference'){drawHairgrassPhotoReference(b,{s,rand},kit);return;}
@@ -29889,4 +29890,38 @@ function drawGreenRotalaPhotoReference(b,{info,s,rand},kit){
  }
  // Dense branching, paired blades and arcing tips are reference choices; mesh totals are private.
  // No unconfirmed flowers, underground root network or annual multiplication are drawn.
+}
+
+// Retail Nanjenshan submerged reference;taxon and clone identity remain unverified.
+export function nanjenshanPhotoReferenceGeometry(){
+ const N=28,C=12,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,angle=j/C*TAU,sn=Math.sin(Math.PI*t),width=.5*Math.pow(sn,.70)*(1.02-.08*t),camber=.040*sn+.240*t*t;
+  p.push(Math.cos(angle)*width,t,camber+Math.sin(angle)*.010*sn);uv.push(j/C,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={nanjenshanPhotoReference:true,rootVertex:0,closedBlade:true,illustrativeCrossSection:true};return g;
+}
+
+
+function nanjenshanPhotoSegment(b,a,z,r,color,kind){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('nanjenshan-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawNanjenshanPhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.005,w*.0015,LH*.018),L=Math.min(.020,w*.065,LH*.20),W=L*.06,stem=info.appearance.stemColor,leafKind='leaf-nanjenshan-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ function whorl(at,turn){for(let side=0;side<4;side++)b.add('nanjenshan-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,Math.min(L,LH*.40),Math.acos(Math.min(.15,LH*.02/L)),turn+side*TAU/4,0);}
+ for(let shoot=0;shoot<12;shoot++){
+  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,base,Math.cos(az)*R],peak=LH*(.78+.025*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),base+(peak-base)*t,root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
+  for(let j=1;j<=14;j++){
+   const t=j/14,at=path(t);nanjenshanPhotoSegment(b,previous,at,r,stem,'stem-nanjenshan-photo-ref');previous=at;whorl(at,az+j*.62);
+   if(j!==5&&j!==9)continue;
+   const turn=az+(j===5?-.90:.95),top=LH*(j===5?.69:.83),reach=w*.070;let prev=at;
+   for(let k=1;k<=7;k++){
+    const u=k/7,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];nanjenshanPhotoSegment(b,prev,tip,r*.70,stem,'side-stem-nanjenshan-photo-ref');prev=tip;whorl(tip,turn+k*.62);
+   }
+  }
+ }
+ // The displayed whorl count is a private example within the dated retailer observation range,not a measurement of current stock.
+ // No emersed round leaves,flowers,underground roots,seasonal orange schedule or natural annual multiplication are drawn.
 }

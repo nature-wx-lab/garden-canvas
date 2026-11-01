@@ -12349,7 +12349,61 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
       "低い葉の高さでは葉を横に倒して指定範囲に収めます。同じ株の全月の実物照合、年次成長と地域別の屋外越冬は未検証です。"
     ],
     "sourceConflict": "葉を含む幅2〜3cmは1本の茎の幅です。表の15〜30+cmは水槽に植えて2か月後の平均高さの目安です。株全体の高さの閉じた上限・株幅は未確認です。葉の赤や緑は葉色で、今回のメーカー資料で確認できない花色として扱いません。"
-  },"p-81746a493156":{"sources":[{"url":"https://www.akb.jp/c/suisei/gd3357","scope":"catalog-entry"},{"url":"https://rva.jp/plants/rotala_nanje_torpica6841-.htm","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"nanjenshan","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"nanjenshanWhorl","leafLength":0.022,"leafWidth":0.001,"leafColor":"#8daa60","leafTexture":"smooth","leafUnderside":"#a7bc80","stemColor":"#94a178","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","流通名ナンセアン／Nanjenshanの水中葉を参照し、淡緑色の非常に細い葉を4枚ずつ輪生させます。販売者の観察記録にある3〜5枚輪生の範囲を使っています。","水上の低く這う株と水中で伸びる株は姿が違います。今回は水中形を対象とし、水上の花、国内の開花月、結氷地域の越冬、流通株の分類学的同一性は未確認です。"]},"p-4136736f36e6":{"sources":[{"url":"https://www.engei.net/products/detail?id=12415","scope":"catalog-entry"},{"url":"https://www.pharm.kumamoto-u.ac.jp/yakusodb/detail/006807.php","scope":"species"},{"url":"https://www.nzflora.info/factsheet/Taxon/Equisetum-hyemale.html","scope":"species"},{"url":"https://www.nparks.gov.sg/florafaunaweb/flora/1/5/1550","scope":"species"}],"basis":{"architecture":0,"persistence":0,"leafShape":2,"leafColor":0,"stemColor":0,"arrangement":3,"habit":0,"petals":1,"lifeForm":3},"status":"partial","architecture":"evergreenHorsetail","leafShape":"horsetailSheath","leafColor":"#577b56","stemColor":"#5b815a","arrangement":"whorled","habit":"upright","lifeForm":"herb","persistence":"evergreen","petals":0,"phenologyRegion":"常緑の茎を参考表示。販売元には秋〜春の茎の傷みも記載されており、冬の状態・刈込み後の姿は栽培条件で変わります。胞子嚢穂の出現月は未確認です。","unconfirmed":["茎の本数・間隔・節数・太さ・24本の稜は資料範囲内の一例で、販売株の実測ではありません。","枝の少ない普通の茎を参考表示します。傷んだ茎やまれな側枝、地下茎による拡大・胞子嚢穂は再現していません。","古い節で鞘の歯が落ちる姿を近似しています。微細な表面の突起と同じ株の12か月の姿は未確認です。","葉は茎の節を包む鞘で、独立した葉身の高さではありません。葉丈入力は保存しますが鞘の位置を変えず、小さい株では茎・鞘・歯の太さと長さを一緒に縮める描画上の近似です。"]},"p-553aaea797a9":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/002-0063","scope":"catalog-entry"},{"url":"https://gobotany.nativeplanttrust.org/species/equisetum/fluviatile/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerTiming":0,"winterClimateSensitive":0},"status":"partial","unconfirmed":["全形・全月の実物照合","地域別の萌芽と枯れ込みの月境界","茎葉と花序の密度・寸法比の実測","胞子嚢穂の出現月と胞子成熟期"],"architecture":"waterHorsetail","leafShape":"horsetailSheath","leafColor":"#66865b","stemColor":"#71936a","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"winterDormant","flowerTiming":"months","winterClimateSensitive":true},"p-ba247cf299e6":{
+  },"p-81746a493156":{
+  "sources": [
+    {
+      "url": "https://www.akb.jp/c/suisei/gd3357",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://rva.jp/plants/rotala_nanje_torpica6841-.htm",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://idtools.org/appw/index.cfm?entityID=10388&packageID=2197",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 1,
+    "arrangement": 1,
+    "persistence": 0,
+    "leafColor": 1,
+    "architecture": 1
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "nanjenshanPhotoReference",
+  "lifeForm": "herb",
+  "habit": "clump",
+  "arrangement": "whorled",
+  "leafShape": "nanjenshanWhorl",
+  "leafLength": 0.02,
+  "leafWidth": 0.0012,
+  "leafColor": "#88b24f",
+  "leafTexture": "smooth",
+  "leafUnderside": "#afc783",
+  "stemColor": "#93b16a",
+  "persistence": "submergedPersistent",
+  "fruitMonths": [],
+  "phenologyRegion": "冬は凍らない水中または暖かく明るい室内という生産者の条件を参考に、保護された水中の緑の葉を示します。日本の屋外の休眠・芽出し月や同じ株の全月像は未確認です。売主の生長に伴う橙色の説明を、秋の月別紅葉へ変換していません。",
+  "unconfirmed": [
+    "全形・全月の実物照合",
+    "生産者の水上の丸みのある葉・ピンクの花と、別売主の水中の細い葉の写真を区別します。同じ株の季節変化としてつないだものではありません。",
+    "葉の約3〜5枚輪生は、2003年11月9日撮影の販売株の観察記録を参考にします。現在の生産者株すべての枚数や同一クローンの同定は未確認です。",
+    "水中の細い線形葉が茎の周囲に広がり、先が少し反り返る姿を参考にします。葉の長さ・幅、断面、曲率、色・光沢は流通株の実測値ではありません。",
+    "ピンクの花は生産者の掲載写真で確認しました。国内の開花月は未確認なので、今の水中モデルでは花を表示しません。花を付けない植物という意味ではありません。",
+    "水上では低く這い、水中では伸びる姿を区別しています。水上の花・丸い葉から水中の細葉へ連続的に変わる過程は再現していません。",
+    "茎・枝・節・葉の数と配置、密度は表示上の近似です。販売鉢の本数、自然な株数や年次の増殖量を予測するものではありません。",
+    "根や地下茎、果実は今の表示へ追加していません。撮影株の全長やポット径を、入力する直立方向の草丈や株幅へ読み替えていません。",
+    "流通名Nanjenshanを参考にしています。別売主の古い商品ラベルや可能な雑種という説明から、収録株の正式な種・親種を確定していません。",
+    "冬の緑は温度を保った水中または暖かな室内の参考条件で、寒冷地の屋外越冬や地域別の常緑を保証しません。"
+  ],
+  "flowerShape": "none",
+  "flowerRadius": 0,
+  "sourceConflict": "草丈5〜10cmは国内生産者の記載で、水上では這う姿を併記しています。2003年11月9日に撮影された別売主の株の全長約15cmは、一般的な草丈範囲へ合算しません。同じ撮影株の葉約3〜5枚輪生も、現在の流通株全ての実測値ではありません。9cmの商品ポットと栽培容器の径は株幅へ読み替えず、株幅は未確認です。"
+},"p-4136736f36e6":{"sources":[{"url":"https://www.engei.net/products/detail?id=12415","scope":"catalog-entry"},{"url":"https://www.pharm.kumamoto-u.ac.jp/yakusodb/detail/006807.php","scope":"species"},{"url":"https://www.nzflora.info/factsheet/Taxon/Equisetum-hyemale.html","scope":"species"},{"url":"https://www.nparks.gov.sg/florafaunaweb/flora/1/5/1550","scope":"species"}],"basis":{"architecture":0,"persistence":0,"leafShape":2,"leafColor":0,"stemColor":0,"arrangement":3,"habit":0,"petals":1,"lifeForm":3},"status":"partial","architecture":"evergreenHorsetail","leafShape":"horsetailSheath","leafColor":"#577b56","stemColor":"#5b815a","arrangement":"whorled","habit":"upright","lifeForm":"herb","persistence":"evergreen","petals":0,"phenologyRegion":"常緑の茎を参考表示。販売元には秋〜春の茎の傷みも記載されており、冬の状態・刈込み後の姿は栽培条件で変わります。胞子嚢穂の出現月は未確認です。","unconfirmed":["茎の本数・間隔・節数・太さ・24本の稜は資料範囲内の一例で、販売株の実測ではありません。","枝の少ない普通の茎を参考表示します。傷んだ茎やまれな側枝、地下茎による拡大・胞子嚢穂は再現していません。","古い節で鞘の歯が落ちる姿を近似しています。微細な表面の突起と同じ株の12か月の姿は未確認です。","葉は茎の節を包む鞘で、独立した葉身の高さではありません。葉丈入力は保存しますが鞘の位置を変えず、小さい株では茎・鞘・歯の太さと長さを一緒に縮める描画上の近似です。"]},"p-553aaea797a9":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/002-0063","scope":"catalog-entry"},{"url":"https://gobotany.nativeplanttrust.org/species/equisetum/fluviatile/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerTiming":0,"winterClimateSensitive":0},"status":"partial","unconfirmed":["全形・全月の実物照合","地域別の萌芽と枯れ込みの月境界","茎葉と花序の密度・寸法比の実測","胞子嚢穂の出現月と胞子成熟期"],"architecture":"waterHorsetail","leafShape":"horsetailSheath","leafColor":"#66865b","stemColor":"#71936a","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"winterDormant","flowerTiming":"months","winterClimateSensitive":true},"p-ba247cf299e6":{
   "sources": [
     {
       "url": "https://www.akb.jp/c/suisei/chusui/387",

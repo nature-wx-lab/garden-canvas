@@ -9785,7 +9785,44 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
     "selectionSource": null,
     "visual": "reference",
     "popularity": []
-  },"p-81746a493156":{"label":"ロタラナンセアン","latin":"Rotala sp. 'Nanjenshan'","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.15,0.3],"spread":[0.1,0.4],"bloom":[],"bloomKnown":false,"flower":"#ecebdd","leafColor":"#8daa60","variegated":false,"colors":["green"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水中の草姿と越冬条件を種類別に表示","care":"水温・水深・光量によって姿が変わります。庭の水面区画で水深を設定してください。野外への放流・逸出を避けて管理してください。","bloomText":"国内の開花月は未確認","bloomBasis":"月別の資料未確認","source":"https://www.akb.jp/c/suisei/gd3357","publisher":"杜若園芸","sourceChecked":"2026-10-11","aliases":["ロタラナンセアン"],"selectionSource":null,"visual":"reference","popularity":[]},"p-4136736f36e6":{"label":"トクサ","latin":"Equisetum hyemale","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":[0.3,1],"spread":null,"bloom":[],"bloomKnown":true,"flower":"#babdb3","leafColor":"#577b56","variegated":false,"colors":["green"],"sun":["sun","part"],"moisture":[],"life":"perennial","growth":"多年生。地下茎による広がりと年次成長量は未確認","season":"常緑の有節茎。寒さや乾燥で茎の状態は変化","care":"湿った土を保ち、日なた〜半日陰へ。細い葉は節の鞘になり、緑の茎に灰白〜淡褐色と黒の帯が見られます。通常の葉身がないため、葉丈入力で鞘を茎元へ動かす表示はしません。出荷時の先端カットや秋〜春の傷みは、自然な全株の枯れ込みと区別します。","bloomText":"シダ植物のため花は付けません。胞子嚢穂を表示する月は未確認です。","bloomBasis":"熊本大学薬用植物園の種の記載","source":"https://www.engei.net/products/detail?id=12415","publisher":"園芸ネット","sourceChecked":"2026-10-26","aliases":["トクサ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-553aaea797a9":{"label":"ミズトクサ","latin":"Equisetum fluviatile","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":[0.2,0.8],"spread":null,"bloom":[],"bloomKnown":true,"flower":"#987758","leafColor":"#66865b","variegated":false,"colors":["unknown"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"緑の有節茎・冬の地上部消失","care":"明るい緑の細い茎に節と黒い歯のある鞘が付き、株によって少数の枝を輪生します。トクサとは異なり冬は地上部が枯れます。販売ページの「開花期」を花弁や花に変換していません。 全形・全月の実物照合は未完了です。","bloomText":"シダ植物のため花を咲かせません。胞子嚢穂の月別表示は未確認です。","bloomBasis":"生産者の種類別資料","source":"https://www.akb.jp/c/suisei/chusui/002-0063","publisher":"杜若園芸","sourceChecked":"2026-10-10","aliases":["ミズトクサ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-ba247cf299e6":{
+  },"p-81746a493156":{
+  "label": "ロタラナンセアン",
+  "latin": "Rotala sp. 'Nanjenshan'",
+  "genre": "水生植物",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": [
+    0.05,
+    0.1
+  ],
+  "spread": null,
+  "bloom": [],
+  "bloomKnown": false,
+  "flower": "#c58fbb",
+  "leafColor": "#88b24f",
+  "variegated": false,
+  "colors": [
+    "pink"
+  ],
+  "sun": [],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "水中の細い輪生葉・水上では丸い葉と花",
+  "care": "国内生産者の草丈5〜10cmと水上で這う姿、水中で伸びる細い茎の参考形を区別します。今回は淡緑色の細い葉が輪生する水中形を描き、水上の丸みのある葉と花は表示しません。葉の約3〜5枚輪生は、別売主が2003年に撮影した株の観察範囲を参考にしています。ピンクの花は生産者写真で確認できますが、国内の開花月は未確認です。株幅、流通株の分類学的同一性、同じ株の全形・全月の実物照合は未完了です。野外へ放流・逸出させないでください。",
+  "bloomText": "国内の開花月は未確認",
+  "bloomBasis": "国内の開花月は未確認です。生産者写真でピンクの花は確認しましたが、撮影月や画像URLの日付から開花月を設定していません。",
+  "source": "https://www.akb.jp/c/suisei/gd3357",
+  "publisher": "杜若園芸",
+  "sourceChecked": "2026-11-01",
+  "aliases": [
+    "ロタラナンセアン"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-4136736f36e6":{"label":"トクサ","latin":"Equisetum hyemale","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":[0.3,1],"spread":null,"bloom":[],"bloomKnown":true,"flower":"#babdb3","leafColor":"#577b56","variegated":false,"colors":["green"],"sun":["sun","part"],"moisture":[],"life":"perennial","growth":"多年生。地下茎による広がりと年次成長量は未確認","season":"常緑の有節茎。寒さや乾燥で茎の状態は変化","care":"湿った土を保ち、日なた〜半日陰へ。細い葉は節の鞘になり、緑の茎に灰白〜淡褐色と黒の帯が見られます。通常の葉身がないため、葉丈入力で鞘を茎元へ動かす表示はしません。出荷時の先端カットや秋〜春の傷みは、自然な全株の枯れ込みと区別します。","bloomText":"シダ植物のため花は付けません。胞子嚢穂を表示する月は未確認です。","bloomBasis":"熊本大学薬用植物園の種の記載","source":"https://www.engei.net/products/detail?id=12415","publisher":"園芸ネット","sourceChecked":"2026-10-26","aliases":["トクサ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-553aaea797a9":{"label":"ミズトクサ","latin":"Equisetum fluviatile","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":[0.2,0.8],"spread":null,"bloom":[],"bloomKnown":true,"flower":"#987758","leafColor":"#66865b","variegated":false,"colors":["unknown"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"緑の有節茎・冬の地上部消失","care":"明るい緑の細い茎に節と黒い歯のある鞘が付き、株によって少数の枝を輪生します。トクサとは異なり冬は地上部が枯れます。販売ページの「開花期」を花弁や花に変換していません。 全形・全月の実物照合は未完了です。","bloomText":"シダ植物のため花を咲かせません。胞子嚢穂の月別表示は未確認です。","bloomBasis":"生産者の種類別資料","source":"https://www.akb.jp/c/suisei/chusui/002-0063","publisher":"杜若園芸","sourceChecked":"2026-10-10","aliases":["ミズトクサ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-ba247cf299e6":{
   "label": "ウォーターバコパ",
   "latin": "Bacopa caroliniana",
   "genre": "水生植物",
