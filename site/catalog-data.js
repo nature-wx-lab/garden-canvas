@@ -9585,7 +9585,7 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-2a8de6e63bc9":{"label":"ウィローモス","latin":"Taxiphyllum sp.（参考株）","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":null,"spread":null,"bloom":[],"bloomKnown":true,"flower":"#c48aba","leafColor":"#528644","variegated":false,"colors":["green"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類ごとの水中葉・茎葉体の参考表示","care":"水温・水深・光量で姿が変わります。国内屋外の年間の姿は未校正で、保護栽培の形態見本です。野外への放流・逸出を避けて管理してください。","bloomText":"コケ植物なので花は付けません","bloomBasis":"コケ植物の形態","source":"https://www.adana.co.jp/jp/aquajournal/learn_about_moss/","publisher":"AQUA DESIGN AMANO","sourceChecked":"2026-10-11","aliases":["ウィローモス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-cccad89b0097":{
+},"p-2a8de6e63bc9":{"label":"ウィローモス","latin":"Taxiphyllum sp.（参考株）","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":null,"spread":null,"bloom":[],"bloomKnown":true,"flower":"#c48aba","leafColor":"#528644","variegated":false,"colors":["unknown"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類ごとの水中葉・茎葉体の参考表示","care":"水温・水深・光量で姿が変わります。国内屋外の年間の姿は未校正で、保護栽培の形態見本です。野外への放流・逸出を避けて管理してください。","bloomText":"花を付けません（胞子のうの形成時期は未確認）","bloomBasis":"コケ植物の参考株。葉色を花色とは扱いません。","source":"https://www.adana.co.jp/jp/aquajournal/learn_about_moss/","publisher":"AQUA DESIGN AMANO","sourceChecked":"2026-11-01","aliases":["ウィローモス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-cccad89b0097":{
   "label": "グリーン・ミリオフィラム",
   "latin": "Myriophyllum hippuroides",
   "genre": "水生植物",
