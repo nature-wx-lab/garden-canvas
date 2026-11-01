@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1033';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1034';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1033';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1034';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -21090,6 +21090,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['waterCoin','marsileaMutica','bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(info.appearance?.architecture)){drawWaterMargin(b,{info,s,detail,rand},kit);return;}
  if(['waterHyacinth','amazonFrogbit','salviniaNatans','salviniaMolesta','salviniaCucullata'].includes(info.appearance?.architecture)){drawFreeFloaters(b,{info,s,detail,rand},kit);return;}
  if(['waterArrowhead','nupharEmergent','floatingHeart','waterPoppy'].includes(info.appearance?.architecture)){drawFloatingAquatics(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.shootProfile==='amperaiPhotoReference'){drawAmperaiPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='waterHorsetailPhotoReference'){drawWaterHorsetailPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='miniPapyrusPhotoReference'){drawMiniPapyrusPhotoReference(b,{info,s,rand},kit);return;}
  if(['umbrellaSedgePhotoReference','miniCyperusPhotoReference'].includes(info.appearance?.shootProfile)){drawUmbrellaSedgePhotoReference(b,{info,s,rand},kit);return;}
@@ -30033,6 +30034,53 @@ function drawNewLargePearlPhotoReference(b,{info,s,rand},kit){
  }
  // Creeping segments,short rising shoots and paired blades form an illustrative mat;counts and density are not measurements.
  // No hidden roots,flowers,water-to-air transition,seasonal multiplication or annual growth are drawn.
+}
+
+export function amperaiPhotoReferencePoint(type,t,angle){
+ if(type==='blade'){const taper=Math.pow(1-t,.35);return[Math.cos(angle)*.5*taper,t,2*t*t+Math.sin(angle)*(.45*Math.pow(1-t,2)+.018)*Math.pow(1-t,.25)];}
+ const sn=t===0||t===1?0:Math.max(0,Math.sin(Math.PI*t));return[Math.cos(angle)*.5*Math.pow(sn,.65)*(1-.25*t),t,.15*sn+.035*t*t+Math.sin(angle)*.025*sn];
+}
+export function amperaiPhotoReferenceGeometry(type){
+ const p=[],uv=[],ix=[];if(type==='blade'){
+  const N=64,C=16;p.push(0,0,0);uv.push(.5,0);for(let i=0;i<N;i++)for(let j=0;j<=C;j++){p.push(...amperaiPhotoReferencePoint(type,i/N,j/C*TAU));uv.push((Math.cos(j/C*TAU)+1)/2,i/N);if(i<N-1&&j<C){const k=1+i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}}
+  const tip=p.length/3;p.push(0,1,2);uv.push(.5,1);for(let j=0;j<C;j++){ix.push(0,1+j,2+j);const k=1+(N-1)*(C+1)+j;ix.push(k,tip,k+1);}
+ }else{const N=12,C=8;for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){p.push(...amperaiPhotoReferencePoint(type,i/N,j/C*TAU));uv.push((Math.cos(j/C*TAU)+1)/2,i/N);if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={amperaiPhotoReference:true,closedBlade:type==='blade',closedScale:type==='glume',basalRoundedApexFlattened:type==='blade',sourcePointType:type,rootVertex:0,illustrativeCrossSection:true};return g;
+}
+function amperaiPhotoSegment(b,shape,kind,a,z,r,color){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),direction=to.clone().sub(from),length=direction.length();if(length<1e-9)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize()),'YXZ');b.add(shape,kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r*(kind==='culm'?.7:1),e.x,e.y,e.z);
+}
+function drawAmperaiPhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight),base=Math.min(.001,h*.02),R=Math.min(.0018,h*.003,w*.003),W=Math.min(a.leafWidth,w*.014,(LH-base)*.04,h*.01),leafKind='leaf-amperai-photo-reference-underside-'+a.leafUnderside.slice(1),glumeKind='glume-amperai-photo-reference',front=Math.atan2(.8,1),roots=[];let glumeIndex=0,inspectStem=0,score=-Infinity;
+ for(let i=0;i<28;i++){
+  const az=i*2.399,rad=w*.20*Math.sqrt((i+.5)/28),root=[Math.sin(az)*rad,base,Math.cos(az)*rad];roots.push(root);const sheathLength=Math.min(h*.07,LH*.10);b.add('amperai-photo-reference-sheath','basalSheath','#b1a077',root[0],base+sheathLength/2,root[2],R*1.10,sheathLength,R*.85);
+  for(let j=0;j<3;j++){const L=(LH-base)*(.72+.11*j),turn=az+(j-1)*.28,pitch=Math.min(.04+.04*j,w*.10/Math.max(.00001,L));b.add('amperai-photo-reference-blade',leafKind,kit.shade(rand,s.leafColor,.025),...root,W,L,W,pitch,turn,0);}
+  if(i<9){const value=root[0]*.8+root[2];if(value>score){score=value;inspectStem=i;}}
+ }
+ for(let i=0;i<9;i++){
+  const root=roots[i],az=i*2.399,peak=base+(h-base)*(.80+.015*i),path=t=>[root[0]+Math.sin(az)*w*.02*t*t,base+(peak-base)*t,root[2]+Math.cos(az)*w*.02*t*t];let prior=root;
+  for(let k=1;k<=12;k++){const node=path(k/12);amperaiPhotoSegment(b,'amperai-photo-reference-culm','culm',prior,node,R*(1-.15*k/12),a.stemColor);prior=node;}
+  for(const t of[.4,.65]){const node=path(t),L=Math.min(.015,h*.04,LH*.10),sheathLength=Math.min(.012,h*.02);b.add('amperai-photo-reference-sheath','caulineSheath','#aa966e',node[0],node[1]-sheathLength/2,node[2],R*1.12,sheathLength,R*.80);b.add('amperai-photo-reference-blade','caulineBract',s.leafColor,...node,W*.40,L,W*.40,.40,az,0);}
+  if(!s.bloom)continue;
+  const SL=Math.min(.006,w*.02,h*.012),GL=SL*.75,GW=GL*.30,branchLength=Math.min(.012,w*.025,h*.02);
+  for(let cluster=0;cluster<3;cluster++){
+   const node=path((9+cluster)/12);
+   for(let spike=0;spike<4;spike++){
+    const turn=front+spike*TAU/4,start=[node[0]+Math.sin(turn)*branchLength,node[1]+branchLength*.35,node[2]+Math.cos(turn)*branchLength],direction=new THREE.Vector3(Math.sin(turn)*.2,.95,Math.cos(turn)*.2).normalize(),axisQ=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction),end=new THREE.Vector3(...start).addScaledVector(direction,SL).toArray();amperaiPhotoSegment(b,'amperai-photo-reference-axis','inflorescenceBranch',node,start,R*.20,a.stemColor);amperaiPhotoSegment(b,'amperai-photo-reference-axis','spikeletAxis',start,end,Math.min(R*.12,SL*.03),'#92634c');
+    for(let k=1;k<=5;k++){
+     const origin=new THREE.Vector3(...start).addScaledVector(direction,SL*(k-.25)/5),q=axisQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(.55,k%2?Math.PI/2:-Math.PI/2,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),instanceId=glumeIndex++;b.add('amperai-photo-reference-glume',glumeKind,kit.shade(rand,'#92634c',.025),...origin.toArray(),GW,GL,GL,e.x,e.y,e.z);
+     const matrix=new THREE.Matrix4().compose(origin,new THREE.Quaternion().setFromEuler(e,'YXZ'),new THREE.Vector3(GW,GL,GL));matrix.fromArray(new Float32Array(matrix.elements));
+     for(const t of[.28,.48,.68,.86])for(const side of[1,-1]){const from=new THREE.Vector3(...amperaiPhotoReferencePoint('glume',t,side>0?0:Math.PI).map(Math.fround)).applyMatrix4(matrix),direction=new THREE.Vector3(side*.8,.4,.25).applyQuaternion(q).normalize(),length=GL*.10,center=from.clone().addScaledVector(direction,length/2),hairE=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction),'YXZ'),radius=Math.min(.00002,GW*.02,h*.0001);b.add('amperai-photo-reference-hair','glumeMarginHair-amperai','#d1c3a4',...center.toArray(),radius,length,radius,hairE.x,hairE.y,hairE.z);}
+     if(i!==inspectStem||cluster!==2||spike!==0||k!==5)continue;
+     for(const faceIndex of[110,111,126,127,142,143,158,159]){const row=Math.floor(faceIndex/16),col=Math.floor(faceIndex%16/2),v=row*9+col,vertices=faceIndex%2?[v+1,v+9,v+10]:[v,v+9,v+1],points=vertices.map(index=>new THREE.Vector3(...amperaiPhotoReferencePoint('glume',Math.floor(index/9)/12,index%9/8*TAU).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,p)=>sum.add(p),new THREE.Vector3()).multiplyScalar(1/3),cameraAxis=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),cameraEuler=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),cameraAxis),'YXZ');b.flower?.(point.toArray(),SL*.8,cameraEuler.x,cameraEuler.y,cameraEuler.z,{component:glumeKind,instanceId,vertices,faceIndex,cameraAxis:cameraAxis.toArray()});}
+    }
+   }
+  }
+ }
+ // Basal blade height is independent of reproductive culms and the attached reduced stem-leaf sheaths.
+ // Plant density,axis bends,cross sections and cilia dimensions are illustrative,not retail measurements.
+ // No identified white floral internals,fruit,rhizome spread or same-clone annual growth are simulated.
 }
 
 export function waterHorsetailPhotoReferenceTubeGeometry(type='culm'){
