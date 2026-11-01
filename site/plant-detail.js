@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1031';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1032';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1031';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1032';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -21090,6 +21090,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['waterCoin','marsileaMutica','bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(info.appearance?.architecture)){drawWaterMargin(b,{info,s,detail,rand},kit);return;}
  if(['waterHyacinth','amazonFrogbit','salviniaNatans','salviniaMolesta','salviniaCucullata'].includes(info.appearance?.architecture)){drawFreeFloaters(b,{info,s,detail,rand},kit);return;}
  if(['waterArrowhead','nupharEmergent','floatingHeart','waterPoppy'].includes(info.appearance?.architecture)){drawFloatingAquatics(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.shootProfile==='miniPapyrusPhotoReference'){drawMiniPapyrusPhotoReference(b,{info,s,rand},kit);return;}
  if(['umbrellaSedgePhotoReference','miniCyperusPhotoReference'].includes(info.appearance?.shootProfile)){drawUmbrellaSedgePhotoReference(b,{info,s,rand},kit);return;}
  if(['umbrellaSedge','dwarfPapyrus','waterHorsetail','evergreenHorsetail','twigRush'].includes(info.appearance?.architecture)){drawAquaticReeds(b,{info,s,detail,rand},kit);return;}
  if(['blueFescue','snowTussock','goldMillet','redMelica','crystalSedge','redHookSedge','goldMatRush','goldDwarfBamboo','sweetFlagFans','whitetopSedge'].includes(info.appearance?.architecture)){drawGrassAndSedgeProfiles(b,{info,s,detail,rand},kit);return;}
@@ -30031,6 +30032,46 @@ function drawNewLargePearlPhotoReference(b,{info,s,rand},kit){
  }
  // Creeping segments,short rising shoots and paired blades form an illustrative mat;counts and density are not measurements.
  // No hidden roots,flowers,water-to-air transition,seasonal multiplication or annual growth are drawn.
+}
+
+export function miniPapyrusPhotoReferencePoint(type,t,angle){
+ const sn=t===0||t===1?0:Math.max(0,Math.sin(Math.PI*t)),scale=type==='glume';return[Math.cos(angle)*.5*Math.pow(sn,scale?.65:.72)*(1-.25*t),t,(scale?.15:.04)*sn+(scale?.035:.05)*t*t+Math.sin(angle)*(scale?.025:.010)*sn];
+}
+export function miniPapyrusPhotoReferenceGeometry(type){
+ const N=type==='glume'?12:24,C=type==='glume'?8:10,p=[],uv=[],ix=[];for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){p.push(...miniPapyrusPhotoReferencePoint(type,i/N,j/C*TAU));uv.push((Math.cos(j/C*TAU)+1)/2,i/N);if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={miniPapyrusPhotoReference:true,closedBlade:type==='bract',closedScale:type==='glume',sourcePointType:type,rootVertex:0,illustrativeCrossSection:true};return g;
+}
+function miniPapyrusPhotoSegment(b,shape,kind,a,z,r,color){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),direction=to.clone().sub(from),length=direction.length();if(length<1e-9)return;const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize()),'YXZ');b.add(shape,kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r*(kind==='culm'?.55:1),rotation.x,rotation.y,rotation.z);
+}
+function drawMiniPapyrusPhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const a=info.appearance,h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h),base=Math.min(.001,h*.02),R=Math.min(.0018,h*.004,w*.003),heads=16,rays=40,front=Math.atan2(.8,1);let inspectHead=0,score=-Infinity,glumeIndex=0;
+ for(let i=0;i<heads;i++){const az=i*2.399,v=Math.sqrt((i+.5)/heads)*(Math.sin(az)*.8+Math.cos(az));if(v>score){score=v;inspectHead=i;}}
+ for(let i=0;i<heads;i++){
+  const az=i*2.399,rad=w*.16*Math.sqrt((i+.5)/heads),root=[Math.sin(az)*rad,base,Math.cos(az)*rad],peak=base+(h-base)*(.62+.035*(i%5)),path=t=>[root[0]+Math.sin(az)*w*.035*t*t,base+(peak-base)*t,root[2]+Math.cos(az)*w*.035*t*t],head=path(1);let previous=root;
+  for(let k=1;k<=12;k++){const at=path(k/12);miniPapyrusPhotoSegment(b,'mini-papyrus-photo-reference-culm','culm',previous,at,R*(1-.18*k/12),a.stemColor);previous=at;}
+  const sheathLength=Math.min(h*.07,LH*.20);b.add('mini-papyrus-photo-reference-sheath','basalSheath','#93634c',root[0],base+sheathLength/2,root[2],R*1.15,sheathLength,R*.65);
+  for(let j=0;j<3;j++){const L=Math.min(.12,w*.18,h*.18)*(.75+.125*j);b.add('mini-papyrus-photo-reference-bract','involucralBract',kit.shade(rand,s.leafColor,.03),...head,L*.035,L,L,Math.PI*.48,az+j*TAU/3,0);}
+  const rayLength=Math.min(.075,w*.18,h*.16),SL=Math.min(.0035,w*.008,h*.009),GL=SL*.55,GW=GL*.40;
+  for(let j=0;j<rays;j++){
+   const turn=front+j*2.399,elev=.85-j/(rays-1),horizontal=Math.sqrt(1-elev*elev),length=rayLength*(.72+.28*Math.pow(Math.sin(i*.7+j*1.1),2)),rayPath=t=>[head[0]+Math.sin(turn)*horizontal*length*(.8*t+.2*t*t),head[1]+length*(elev*t+.22*Math.sin(Math.PI*t)),head[2]+Math.cos(turn)*horizontal*length*(.8*t+.2*t*t)];let prior=head;
+   for(let k=1;k<=6;k++){const at=rayPath(k/6);miniPapyrusPhotoSegment(b,'mini-papyrus-photo-reference-ray','umbelRay',prior,at,Math.min(R*.18,h*.0005,w*.0008)*(1-.35*k/6),a.stemColor);prior=at;}
+   if(!s.bloom)continue;const tip=rayPath(1);
+   for(let spike=0;spike<2;spike++){
+    const spikeAz=turn+(spike?-.45:.45),start=[tip[0]+Math.sin(spikeAz)*SL*.25,tip[1]+SL*.30,tip[2]+Math.cos(spikeAz)*SL*.25],direction=new THREE.Vector3(Math.sin(spikeAz)*.2,.95,Math.cos(spikeAz)*.2).normalize(),axisQ=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction),end=new THREE.Vector3(...start).addScaledVector(direction,SL).toArray();miniPapyrusPhotoSegment(b,'mini-papyrus-photo-reference-ray','secondaryRay',tip,start,Math.min(R*.10,SL*.025),a.stemColor);miniPapyrusPhotoSegment(b,'mini-papyrus-photo-reference-ray','spikeletAxis',start,end,Math.min(R*.08,SL*.025),'#b9a27c');
+    for(let k=1;k<=3;k++)for(const side of[1,-1]){
+     const node=new THREE.Vector3(...start).addScaledVector(direction,SL*(k-.25)/3),q=axisQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(.55,side*Math.PI/2,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),instanceId=glumeIndex++;b.add('mini-papyrus-photo-reference-glume','glume',kit.shade(rand,'#b9a27c',.025),...node.toArray(),GW,GL,GL,e.x,e.y,e.z);
+     if(i!==inspectHead||j!==0||spike!==0||k!==3||side!==1)continue;
+     const matrix=new THREE.Matrix4().compose(node,new THREE.Quaternion().setFromEuler(e,'YXZ'),new THREE.Vector3(GW,GL,GL));matrix.fromArray(new Float32Array(matrix.elements));
+     for(const faceIndex of[110,111,126,127,142,143,158,159]){const row=Math.floor(faceIndex/16),col=Math.floor(faceIndex%16/2),v=row*9+col,vertices=faceIndex%2?[v+1,v+9,v+10]:[v,v+9,v+1],points=vertices.map(index=>new THREE.Vector3(...miniPapyrusPhotoReferencePoint('glume',Math.floor(index/9)/12,index%9/8*TAU).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,p)=>sum.add(p),new THREE.Vector3()).multiplyScalar(1/3),cameraAxis=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize(),cameraEuler=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),cameraAxis),'YXZ');b.flower?.(point.toArray(),SL*.8,cameraEuler.x,cameraEuler.y,cameraEuler.z,{component:'glume',instanceId,vertices,faceIndex,cameraAxis:cameraAxis.toArray()});}
+    }
+   }
+  }
+ }
+ // The counts,bends,closed scale section and bract proportions are illustrative,not retail measurements.
+ // Basal true-leaf sheaths follow leafHeight; reproductive stalks follow total height,not ordinary leaf blades.
+ // Microscopic floral organs,fruits,rhizome spread,vivipary and annual growth are not simulated.
 }
 
 export function umbrellaSedgePhotoReferencePoint(type,t,angle){
