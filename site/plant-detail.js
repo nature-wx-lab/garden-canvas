@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1027';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1028';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1027';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1028';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20882,6 +20882,7 @@ function drawMisebayaCultivarReferences(b,{info,s},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.shootProfile==='najasPhotoReference'){drawNajasPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='willowMossPhotoReference'){drawWillowMossPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='southMossPhotoReference'){drawSouthMossPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='orangeMyrioPhotoReference'){drawOrangeMyrioPhotoReference(b,{info,s,rand},kit);return;}
@@ -30029,6 +30030,37 @@ function drawNewLargePearlPhotoReference(b,{info,s,rand},kit){
  }
  // Creeping segments,short rising shoots and paired blades form an illustrative mat;counts and density are not measurements.
  // No hidden roots,flowers,water-to-air transition,seasonal multiplication or annual growth are drawn.
+}
+
+export function najasPhotoReferenceGeometry(midrib=false){
+ const N=24,C=8,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,a=j/C*TAU,sn=Math.sin(Math.PI*t),width=midrib?.035*sn:.5*Math.pow(sn,.70)*(1.12-.30*t),camber=.085*t*t,depth=midrib?.0015*sn:.006*sn;
+  p.push(Math.cos(a)*width,t,camber+(midrib?.006*sn:0)+Math.sin(a)*depth);uv.push(j/C,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={najasPhotoReference:true,rootVertex:0,closedBlade:!midrib,closedMidrib:midrib,illustrativeCrossSection:true};return g;
+}
+function najasPhotoSegment(b,a,z,r,color,kind){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('najas-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawNajasPhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00035,h*.005,w*.0012,LH*.015),L=Math.min(.025,w*.10,LH*.28),W=L*.036,stem=info.appearance.stemColor,leafKind='leaf-najas-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ function cluster(at,turn,t){for(let k=0;k<3;k++){const az=turn+k*TAU/3,lean=Math.acos(.25+.20*t);b.add('najas-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,L,lean,az,0);b.add('najas-photo-reference-midrib','vein-najas-photo-reference',stem,...at,W,L,L,lean,az,0);}}
+ for(let shoot=0;shoot<12;shoot++){
+  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,base,Math.cos(az)*R],peak=LH*(.73+.025*(shoot%4)),path=t=>[root[0]+Math.sin(az+1)*w*.045*Math.sin(t*Math.PI*.6),base+(peak-base)*(1-Math.pow(1-t,1.25)),root[2]+Math.cos(az+1)*w*.045*Math.sin(t*Math.PI*.6)];let previous=root;
+  for(let j=1;j<=16;j++){
+   const t=j/16,at=path(t);najasPhotoSegment(b,previous,at,r,stem,'stem-najas-photo-ref');previous=at;cluster(at,az+j*.7,t);
+   if(![4,7,10,13].includes(j))continue;
+   const turn=az+(j%2?1:-1)*1.2,reach=w*(.05+.02*Math.pow(Math.sin(shoot+j),2)),rise=LH*.12;let prev=at;
+   for(let k=1;k<=8;k++){
+    const u=k/8,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+rise*u,at[2]+Math.cos(turn)*reach*u];najasPhotoSegment(b,prev,tip,r*.7,stem,'side-stem-najas-photo-ref');prev=tip;cluster(tip,turn+k*.75,t);
+   }
+  }
+ }
+ // Clusters,topology,density andleaf cross sections areprivate visual approximations,not measuredphyllotaxy orstockcounts.
+ // Leaflength range comesfromretailer description;no flowers,microteeth,fruit,rootorannualfragmentation trajectory isclaimed.
 }
 
 export function willowMossPhotoReferenceGeometry(){
