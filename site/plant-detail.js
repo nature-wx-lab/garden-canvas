@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1012';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1013';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1012';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1013';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20882,6 +20882,7 @@ function drawMisebayaCultivarReferences(b,{info,s},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.shootProfile==='goldJennyPhotoReference'){drawGoldJennyPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.architecture==='misebayaCultivarReferences'){drawMisebayaCultivarReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='hylotelephiumBorderReferences'){drawBorderSedumReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='sedumSeedReferences'){drawSedumSeedReferences(b,{info,s},kit);return;}
@@ -26341,6 +26342,48 @@ function drawYellowBacopaPhotoReference(b,{s,rand},kit){
   }
  }
 }
+
+// Unnamed yellow-leaf Lysimachia nummularia retail reference; counts are illustrative.
+export function goldJennyPhotoReferencePoint(type,t,u){
+ if(type==='corolla'){
+  const ph=u*TAU,fl=Math.max(0,(t-.20)/.80),r=.05+.045*t+.65*fl**.8*(.67+.33*Math.cos(ph*5));return[Math.sin(ph)*r,t<=.20?.18*t:.036+.18*fl+.05*fl*Math.cos(ph*5),Math.cos(ph)*r];
+ }
+ const sn=Math.max(0,Math.sin(Math.PI*t)),sepal=type==='sepal';return[u*(sepal?.43:.50)*sn**(sepal?.60:.52),t-(sepal?0:.035*u*u*sn),-(sepal?.025:.06)*u*u*sn+(sepal?0:.035*sn)];
+}
+export function goldJennyPhotoReferenceGeometry(type){
+ const corolla=type==='corolla',N=corolla?32:type==='sepal'?16:20,C=corolla?160:type==='sepal'?12:24,p=[],uv=[],ix=[],stride=(N+1)*(C+1);
+ for(let side=0;side<2;side++)for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=corolla?j/C:j/C*2-1,v=goldJennyPhotoReferencePoint(type,t,u);if(side){if(corolla){const radius=Math.hypot(v[0],v[2]),scale=(radius-.012)/radius;v[0]*=scale;v[2]*=scale;}else v[2]+=.005*Math.sin(Math.PI*t);}p.push(...v);uv.push(j/C,t);
+  if(i<N&&j<C){const k=side*stride+i*(C+1)+j;if(corolla?!side:side)ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);else ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ if(!corolla)for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}for(const i of corolla?[0,N]:[N])for(let j=0;j<C;j++){const a=i*(C+1)+j,z=a+1;if(corolla&&i===N)ix.push(a,z,a+stride,z,z+stride,a+stride);else ix.push(a,a+stride,z,z,a+stride,z+stride);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={goldJennyPhotoReference:true,part:type,illustrativeGeometry:true,closedSurface:true};return g;
+}
+function goldJennyPhotoSegment(f,a,z,r,color,kind){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');f.add('gold-jenny-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawGoldJennyPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.0008,h*.007,w*.006),floor=r*1.25+Math.min(.00002,h*.002);
+ for(let shoot=0;shoot<6;shoot++){
+  const az=shoot*2.399+.4,root=[Math.sin(az)*w*.055,floor,Math.cos(az)*w*.055];let previous=root;
+  for(let node=0;node<7;node++){
+   const t=(node+1)/7,at=[root[0]+Math.sin(az)*w*.27*t+Math.cos(az)*w*.024*Math.sin(Math.PI*t),floor+(LH*.66-floor)*t**2.1,root[2]+Math.cos(az)*w*.27*t-Math.sin(az)*w*.024*Math.sin(Math.PI*t)],L=Math.min(.021,w*.14)*(.88+node*.016),P=Math.min(.0035,w*.02,L*.20),relief=Math.min(L,LH*.025/.08),pitch=Math.acos(Math.min(.35,LH*.03/(L+P))),angle=az+node*Math.PI/2;
+   goldJennyPhotoSegment(b,previous,at,r,'#a0af55','creeping-stem-gold-jenny-photo-ref');
+   for(const side of[0,1]){const a=angle+side*Math.PI,v=new THREE.Vector3(0,P,0).applyEuler(new THREE.Euler(pitch,a,0,'YXZ')),leaf=[at[0]+v.x,at[1]+v.y,at[2]+v.z];goldJennyPhotoSegment(b,at,leaf,r*.48,'#a5b650','petiole-gold-jenny-photo-ref');b.add('gold-jenny-photo-reference-leaf','leaf-gold-jenny-photo-reference',kit.shade(rand,s.leafColor,.035),...leaf,L,L,relief,pitch,a,0);}
+   previous=at;if(!s.bloom||s.waterDepth>=.02||node!==5)continue;
+   const D=Math.min(.014,w*.10,h*.16),Pfl=Math.min(.020,h*.18,w*.08),flower=[at[0]+Math.sin(az)*Pfl*.45,Math.min(h*.80,at[1]+Pfl),at[2]+Math.cos(az)*Pfl*.45],tilt=.22,f=flowerFrame(b,flower,tilt,az);
+   goldJennyPhotoSegment(b,at,flower,r*.50,'#a0af55','pedicel-gold-jenny-photo-ref');f.add('gold-jenny-photo-reference-corolla','corolla-gold-jenny-photo-reference',kit.shade(rand,s.flowerColor,.015),0,0,0,D,D,D);
+   for(let k=0;k<5;k++){const a=k*TAU/5,pf=flowerFrame(f,[Math.sin(a)*D*.045,0,Math.cos(a)*D*.045],1.65,a);pf.add('gold-jenny-photo-reference-sepal','sepal-gold-jenny-photo-reference','#91a34e',0,0,0,D*.34,D*.45,D*.25);const base=[Math.sin(a)*D*.04,D*.035,Math.cos(a)*D*.04],tip=[Math.sin(a)*D*.16,D*.21,Math.cos(a)*D*.16];goldJennyPhotoSegment(f,base,tip,D*.008,'#e3b632','filament-gold-jenny-photo-ref');f.add(kit.bud,'anther-gold-jenny-photo-ref','#cf9623',...tip,D*.025,D*.032,D*.025);}
+   // Central pistil is schematic; neither stigma microstructure nor retail clone counts are claimed.
+   goldJennyPhotoSegment(f,[0,D*.03,0],[0,D*.24,0],D*.009,'#bdad45','style-gold-jenny-photo-ref');f.add(kit.bud,'stigma-gold-jenny-photo-ref','#c0ad40',0,D*.245,0,D*.018,D*.014,D*.018);
+   const matrix=new THREE.Matrix4().compose(new THREE.Vector3(...flower),new THREE.Quaternion().setFromEuler(new THREE.Euler(tilt,az,0,'YXZ')),new THREE.Vector3(D,D,D));matrix.fromArray(new Float32Array(matrix.elements));
+   for(let lobe=0;lobe<5;lobe++){const row=28,col=lobe*32,C=160,N=32,stride=(N+1)*(C+1),vertices=[stride+row*(C+1)+col,stride+(row+1)*(C+1)+col,stride+row*(C+1)+col+1],points=vertices.map(index=>{const v=index-stride,p=goldJennyPhotoReferencePoint('corolla',Math.floor(v/(C+1))/N,v%(C+1)/C),radius=Math.hypot(p[0],p[2]),scale=(radius-.012)/radius;p[0]*=scale;p[2]*=scale;return new THREE.Vector3(...p.map(Math.fround)).applyMatrix4(matrix);}),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),axis=new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(tilt,az,0,'YXZ')).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),'YXZ');b.flower?.(point.toArray(),D*.80,e.x,e.y,e.z,{component:'corolla-gold-jenny-photo-reference',instanceId:shoot,vertices,faceIndex:N*C*2+(row*C+col)*2,cameraAxis:axis.toArray()});}
+  }
+ }
+ // No hairs, fruit, underground roots or annual growth are asserted.
+}
+
 
 // Bacopa monnieri leaf-only reference. Domestic flowering months remain unknown.
 export function monnieriPhotoReferencePoint(t,u){
