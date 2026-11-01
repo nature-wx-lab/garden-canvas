@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1011';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1012';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1011';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1012';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26342,11 +26342,38 @@ function drawYellowBacopaPhotoReference(b,{s,rand},kit){
  }
 }
 
+// Bacopa monnieri leaf-only reference. Domestic flowering months remain unknown.
+export function monnieriPhotoReferencePoint(t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));return[u*.25*sn**.55*(.25+.75*t),t,-.04*u*u*sn-.014*t*t];
+}
+export function monnieriPhotoReferenceGeometry(){
+ const N=20,C=24,p=[],uv=[],ix=[],stride=(N+1)*(C+1);
+ for(let side=0;side<2;side++)for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=j/C*2-1,v=monnieriPhotoReferencePoint(t,u);if(side)v[2]+=.025*Math.sin(Math.PI*t);p.push(...v);uv.push(j/C,t);
+  if(i<N&&j<C){const k=side*stride+i*(C+1)+j;if(side)ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);else ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}for(let j=0;j<C;j++){const a=N*(C+1)+j,z=a+1;ix.push(a,a+stride,z,z,a+stride,z+stride);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={monnieriPhotoReference:true,part:'leaf',illustrativeGeometry:true,closedSurface:true};return g;
+}
+function drawMonnieriPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.001,h*.008,w*.007),floor=r*1.25+Math.min(.00002,h*.002);
+ for(let shoot=0;shoot<6;shoot++){
+  const az=shoot*2.399+.4,root=[Math.sin(az)*w*.065,floor,Math.cos(az)*w*.065];let previous=root;
+  for(let node=0;node<8;node++){
+   const t=(node+1)/8,at=[root[0]+Math.sin(az)*w*.26*t+Math.cos(az)*w*.018*Math.sin(Math.PI*t),floor+(LH*.78-floor)*t**2.4,root[2]+Math.cos(az)*w*.26*t-Math.sin(az)*w*.018*Math.sin(Math.PI*t)],L=Math.min(.013,w*.12)*(.84+node*.018),relief=Math.min(L,LH*.035/.069),pitch=Math.acos(Math.min(.44,LH*.035/L)),angle=az+node*Math.PI/2;
+   b.branch(previous,at,r,'#7d9e51','creeping-stem-monnieri-photo-ref');for(const side of[0,1])b.add('monnieri-photo-reference-leaf','leaf-monnieri-photo-reference',kit.shade(rand,s.leafColor,.035),...at,L,L,relief,pitch,angle+side*Math.PI,0);previous=at;
+  }
+ }
+ // No flowers, hairs or hidden nodal roots are added. Axis count/spacing are illustrative.
+}
+
 function drawWaterMargin(b,{info,s,detail,rand},kit){
  if(info.appearance?.shootProfile==='watercoinPhotoReference'){drawWatercoinPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='muticaPhotoReference'){drawMuticaPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='bacopaPhotoReference'){drawBacopaPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='yellowBacopaPhotoReference'){drawYellowBacopaPhotoReference(b,{s,rand},kit);return;}
+ if(info.appearance?.shootProfile==='monnieriPhotoReference'){drawMonnieriPhotoReference(b,{s,rand},kit);return;}
  if(s.groundDormant)return;
  const a=info.appearance,arch=a.architecture,coin=arch==='waterCoin',fern=arch==='marsileaMutica',smooth=arch==='bacopaMonnieri',yellow=arch==='bacopaLanigera',w=s.spread,h=s.height,len=Math.min(a.leafLength,w*.14),green=s.leafColor;
  if(coin||fern){
