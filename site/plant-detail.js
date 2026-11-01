@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1007';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1008';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1007';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1008';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26179,7 +26179,55 @@ function drawBellFamily(b,{info,s,detail,rand},kit){
  }
 }
 
+// Retail Watercoin photo reference; underground axes and individual stock identity remain unverified.
+export function watercoinPhotoReferencePoint(type,t,u){
+ if(type==='leaf'){
+  const ph=u*TAU,edge=(.970+.030*Math.cos(ph*11))*(.995+.005*Math.cos(ph*33))*(1-.045*Math.exp(-(((ph-Math.PI)/.28)**2)));
+  return [.55*t*Math.sin(ph)*edge,t*t*(.047+.012*Math.cos(ph*11)+.003*Math.cos(ph*33)),.50*t*Math.cos(ph)*edge];
+ }
+ const sn=Math.max(0,Math.sin(Math.PI*t));return[u*.42*sn**.60*(.25+.75*t),.07*t*t+.05*u*u*sn,t];
+}
+export function watercoinPhotoReferenceGeometry(type){
+ const leaf=type==='leaf',N=leaf?24:16,C=leaf?132:10,p=[],uv=[],ix=[],stride=(N+1)*(C+1);
+ for(let side=0;side<2;side++)for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=leaf?j/C:j/C*2-1,v=watercoinPhotoReferencePoint(type,t,u);if(side)v[1]-=.004*(1-t*t);p.push(...v);uv.push(leaf?.5+v[0]/1.1:j/C,leaf?.5+v[2]:t);
+  if(i<N&&j<C){const k=side*stride+i*(C+1)+j;if(side)ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);else ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}for(let j=0;j<C;j++){const a=N*(C+1)+j,z=a+1;ix.push(a,a+stride,z,z,a+stride,z+stride);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={watercoinPhotoReference:true,part:type,illustrativeGeometry:true,closedSurface:true};return g;
+}
+function watercoinPhotoSegment(f,a,z,r,color,kind){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');f.add('watercoin-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawWatercoinPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),leafR=Math.min(.00065,h*.005,w*.006,LH*.04),stemR=Math.min(.00075,h*.005,w*.008),floor=r=>r*1.2+Math.min(.00002,h*.002),leaves=[];
+ for(let j=0;j<16;j++){
+  const az=j*2.399+.4,R=w*.29*Math.sqrt((j+.7)/16),D=Math.min(.035,w*.30)*(.86+j*.009),at=[Math.sin(az)*R,LH*(.78+j/15*.15),Math.cos(az)*R],relief=Math.min(D,LH*.05/.065),base=[at[0]-Math.sin(az)*D*.16,floor(leafR),at[2]-Math.cos(az)*D*.16];leaves.push({at,D});let previous=base;
+  for(let k=1;k<=4;k++){const t=k/4,to=[base[0]+Math.sin(az)*D*.16*t+Math.cos(az)*D*.05*Math.sin(Math.PI*t),base[1]+(at[1]-base[1])*t,base[2]+Math.cos(az)*D*.16*t-Math.sin(az)*D*.05*Math.sin(Math.PI*t)];b.branch(previous,to,leafR,'#7fa95c','petiole-watercoin-photo-ref');previous=to;}
+  b.add('watercoin-photo-reference-leaf','leaf-watercoin-photo-reference',kit.shade(rand,s.leafColor,.025),...at,D,relief,D,0,az,0);
+ }
+ if(!s.bloom)return;
+ // Place this illustrative inflorescence in a visible gap, without claiming a measured colony layout.
+ let selected=null;for(let k=0;k<16;k++){const az=k*TAU/16,root=[Math.sin(az)*w*.33,floor(stemR),Math.cos(az)*w*.33],clearance=Math.min(...leaves.map(l=>Math.hypot(root[0]-l.at[0],root[2]-l.at[2])-l.D*.58));if(!selected||clearance>selected.clearance)selected={root,clearance};}
+ const root=selected.root,top=h*.82,nodes=[];let previous=root;for(let level=0;level<3;level++){const at=[root[0],top*[.52,.76,1][level],root[2]];nodes.push(at);b.branch(previous,at,stemR,'#7fa95c','scape-watercoin-photo-ref');previous=at;}
+ const r=Math.min(.0013,w*.04,h*.07),reach=Math.min(.0035,w*.04,h*.035),rise=Math.min(.0007,h*.01);
+ for(let level=2;level>=0;level--)for(let flower=0;flower<6;flower++){
+  const n=(2-level)*6+flower,az=flower*TAU/6+level*.31,node=nodes[level],at=[node[0]+Math.sin(az)*reach,node[1]+rise,node[2]+Math.cos(az)*reach],yaw=az+.2,f=flowerFrame(b,at,0,yaw);b.branch(node,at,stemR*.26,'#7fa95c','pedicel-watercoin-photo-ref');
+  // Five is a source-described typical petal example; the variety source also records occasional sixes.
+  for(let petal=0;petal<5;petal++){
+   const angle=petal*TAU/5;f.add('watercoin-photo-reference-petal','petal-watercoin-photo-reference',kit.shade(rand,s.flowerColor,.012),0,0,0,r,r,r,0,angle,0);
+   const row=13,col=5,C=10,N=16,vertices=[row*(C+1)+col,(row+1)*(C+1)+col,row*(C+1)+col+1],totalYaw=yaw+angle,matrix=new THREE.Matrix4().compose(new THREE.Vector3(...at),new THREE.Quaternion().setFromEuler(new THREE.Euler(0,totalYaw,0,'YXZ')),new THREE.Vector3(r,r,r));matrix.fromArray(new Float32Array(matrix.elements));
+   const points=vertices.map(v=>new THREE.Vector3(...watercoinPhotoReferencePoint('petal',Math.floor(v/(C+1))/N,v%(C+1)/C*2-1).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),axis=new THREE.Vector3(Math.sin(totalYaw)*.8,1,Math.cos(totalYaw)*.8).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),'YXZ');b.flower?.(point.toArray(),r*1.8,e.x,e.y,e.z,{component:'petal-watercoin-photo-reference',instanceId:n*5+petal,vertices,faceIndex:(row*C+col)*2,cameraAxis:axis.toArray()});
+   const a=(petal+.5)*TAU/5,base=[Math.sin(a)*r*.19,r*.10,Math.cos(a)*r*.19],tip=[Math.sin(a)*r*.54,r*.48,Math.cos(a)*r*.54];f.branch(base,tip,r*.017,'#d2dac1','filament-watercoin-photo-ref');f.add(kit.bud,'anther-watercoin-photo-ref','#b6be62',...tip,r*.10,r*.09,r*.10);
+  }
+  f.add('watercoin-photo-reference-platform','stylopodium-watercoin-photo-ref','#8da755',0,r*.05,0,r*.46,r*.14,r*.46);
+  for(const side of[-1,1]){const base=[side*r*.08,r*.12,0],tip=[side*r*.16,r*.35,0];watercoinPhotoSegment(f,base,tip,r*.025,'#adc49a','style-watercoin-photo-ref');f.add(kit.bud,'stigma-watercoin-photo-ref','#9bbd75',...tip,r*.025,r*.025,r*.025);}
+ }
+}
+
 function drawWaterMargin(b,{info,s,detail,rand},kit){
+ if(info.appearance?.shootProfile==='watercoinPhotoReference'){drawWatercoinPhotoReference(b,{s,rand},kit);return;}
  if(s.groundDormant)return;
  const a=info.appearance,arch=a.architecture,coin=arch==='waterCoin',fern=arch==='marsileaMutica',smooth=arch==='bacopaMonnieri',yellow=arch==='bacopaLanigera',w=s.spread,h=s.height,len=Math.min(a.leafLength,w*.14),green=s.leafColor;
  if(coin||fern){
