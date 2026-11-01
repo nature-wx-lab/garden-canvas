@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1015';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1016';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1015';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1016';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20882,6 +20882,7 @@ function drawMisebayaCultivarReferences(b,{info,s},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.shootProfile==='cobraGrassPhotoReference'){drawCobraGrassPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='hairgrassPhotoReference'){drawHairgrassPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='shortHairPhotoReference'){drawShortHairPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='goldJennyPhotoReference'){drawGoldJennyPhotoReference(b,{s,rand},kit);return;}
@@ -29806,4 +29807,52 @@ function drawHairgrassPhotoReference(b,{s,rand},kit){
   const t=.075,at=[root[0]+Math.sin(az)*bend*t*t+Math.cos(az)*side*Math.sin(Math.PI*t),floor+(tipHeight-floor)*t,root[2]+Math.cos(az)*bend*t*t-Math.sin(az)*side*Math.sin(Math.PI*t)];hairgrassPhotoSegment(b,root,at,r*1.35,k%4===0?'#a18a71':'#b5ba94','sheath-hairgrass-photo-ref');
  }
  // Domestic flowering months and underground geometry are unverified; no spikelets, flowers or rhizomes are drawn.
+}
+
+// Lilaeopsis novae-zelandiae: retail phyllode photos and separately named species flower reference.
+export function cobraGrassPhotoReferencePoint(type,t,u){
+ const sn=Math.max(0,Math.sin(Math.PI*t));
+ if(type==='leaf'){const width=.5*Math.min(1,t/.12)**.5*Math.min(1,(1-t)/.18)**.7*(.76+.24*t);return[u*width,t,.065*u*u*sn+.055*t*t];}
+ if(type==='sepal')return[u*.30*sn**.75,t,.04*u*u*sn];
+ const hook=Math.max(0,(t-.76)/.24);return[u*.50*sn**.5,t-.55*hook**1.8,-.06*sn-.45*hook**1.8-.035*u*u*sn];
+}
+export function cobraGrassPhotoReferenceGeometry(type){
+ const N=type==='leaf'?24:16,C=16,p=[],uv=[],ix=[],stride=(N+1)*(C+1);
+ for(let side=0;side<2;side++)for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=j/C*2-1,v=cobraGrassPhotoReferencePoint(type,t,u);if(side)v[2]+=.008*Math.sin(Math.PI*t);p.push(...v);uv.push(j/C,t);
+  if(i<N&&j<C){const k=side*stride+i*(C+1)+j;if(side)ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);else ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}for(const i of[0,N])for(let j=0;j<C;j++){const a=i*(C+1)+j,z=a+1;ix.push(a,a+stride,z,z,a+stride,z+stride);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={cobraGrassPhotoReference:true,part:type,illustrativeGeometry:true,closedSurface:true};return g;
+}
+function cobraGrassPhotoSegment(b,a,z,r,color,kind){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('cobra-grass-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawCobraGrassPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.94),r=Math.min(.00035,w*.002,h*.003),floor=r*.45+Math.min(.00002,h*.002),n=Math.max(1,Math.round(128*s.leafDensity));
+ for(let leaf=0;leaf<n;leaf++){
+  const node=Math.floor(leaf/2),az=node*2.399,rad=w*.30*Math.sqrt((node+.5)/Math.ceil(n/2)),root=[Math.sin(az)*rad,floor,Math.cos(az)*rad],L=Math.max(.0001,LH*(.55+.38*rand())),W=Math.min(.0035,w*.018,LH*.10),pitch=Math.min(.04+rand()*.16,w*.06/L),yaw=az+(leaf%2?1.25:-.35),roll=(rand()-.5)*Math.min(.16,w*.04/L),Z=Math.min(L,w*.05/.055);b.add('cobra-grass-photo-reference-leaf','leaf-cobra-grass-photo-reference',kit.shade(rand,s.leafColor,.035),...root,W,L,Z,pitch,yaw,roll);
+ }
+ if(!s.bloom||s.waterDepth>=.02)return;
+ let flowerIndex=0;
+ for(let umbel=0;umbel<6;umbel++){
+  const az=umbel*TAU/6+.2,R=w*.39,root=[Math.sin(az)*R,floor,Math.cos(az)*R],S=Math.min(.020,h*.28),D=Math.min(.0030,w*.016,h*.065),P=Math.min(.006,w*.025,h*.10),top=[root[0],floor+S,root[2]];cobraGrassPhotoSegment(b,root,top,r*.55,'#8faa5c','scape-cobra-grass-photo-ref');
+  for(let flower=0;flower<4;flower++){
+   const a=flower*TAU/4+az,at=[top[0]+Math.sin(a)*P*.65,top[1]+P*.25,top[2]+Math.cos(a)*P*.65];cobraGrassPhotoSegment(b,top,at,r*.35,'#91ae66','pedicel-cobra-grass-photo-ref');const f=flowerFrame(b,at,0,az);
+   for(let lobe=0;lobe<2;lobe++)f.add('cobra-grass-photo-reference-body','ovary-cobra-grass-photo-reference','#8eaf63',(lobe-.5)*D*.12,-D*.04,0,D*.13,D*.12,D*.15);
+   for(let organ=0;organ<5;organ++){
+    const angle=organ*TAU/5,pitch=1.45,L=D*.58,W=D*.50,scaleZ=D*.50,pf=flowerFrame(f,[0,0,0],pitch,angle);pf.add('cobra-grass-photo-reference-petal','petal-cobra-grass-photo-reference',kit.shade(rand,'#e2e6c8',.025),0,0,0,W,L,scaleZ);
+    f.add('cobra-grass-photo-reference-sepal','sepal-cobra-grass-photo-reference','#8fac69',0,-D*.04,0,D*.18,D*.20,D*.14,1.80,angle+Math.PI/5,0);
+    const tip=[Math.sin(angle+.30)*D*.28,D*.34,Math.cos(angle+.30)*D*.28];cobraGrassPhotoSegment(f,[Math.sin(angle+.30)*D*.10,0,Math.cos(angle+.30)*D*.10],tip,D*.018,'#d8dfaf','filament-cobra-grass-photo-ref');f.add('cobra-grass-photo-reference-body','anther-cobra-grass-photo-reference','#d7ce82',...tip,D*.075,D*.10,D*.045);
+    if(organ!==0)continue;
+    const N=16,C=16,row=13,col=8,k=row*(C+1)+col,vertices=[k+1,k+C+1,k+C+2],matrix=new THREE.Matrix4().compose(new THREE.Vector3(...at),new THREE.Quaternion().setFromEuler(new THREE.Euler(0,az,0,'YXZ')),new THREE.Vector3(1,1,1)).multiply(new THREE.Matrix4().compose(new THREE.Vector3(),new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,angle,0,'YXZ')),new THREE.Vector3(W,L,scaleZ)));matrix.fromArray(new Float32Array(matrix.elements));
+    const points=vertices.map(index=>{const t=Math.floor(index/(C+1))/N,u=(index%(C+1))/C*2-1;return new THREE.Vector3(...cobraGrassPhotoReferencePoint('petal',t,u).map(Math.fround)).applyMatrix4(matrix);}),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),cameraAxis=new THREE.Vector3(0,.7,-1).applyEuler(new THREE.Euler(pitch,angle,0,'YXZ')).applyEuler(new THREE.Euler(0,az,0,'YXZ')).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),cameraAxis),'YXZ');b.flower?.(point.toArray(),D*.7,e.x,e.y,e.z,{component:'petal-cobra-grass-photo-reference',instanceId:flowerIndex*5,vertices,faceIndex:(row*C+col)*2+1,cameraAxis:cameraAxis.toArray()});
+   }
+   for(const side of[-1,1]){const tip=[side*D*.05,D*.10,0];cobraGrassPhotoSegment(f,[side*D*.03,0,0],tip,D*.012,'#b3c78a','style-cobra-grass-photo-ref');f.add('cobra-grass-photo-reference-body','stigma-cobra-grass-photo-reference','#afc77f',...tip,D*.026,D*.022,D*.026);}
+   flowerIndex++;
+  }
+ }
+ // Organ counts have separate species/genus/family provenance; mesh totals and spacing are private illustrative choices.
+ // No underground rhizome network, natural annual multiplication or fruit is drawn.
 }
