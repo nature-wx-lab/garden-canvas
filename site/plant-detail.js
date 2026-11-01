@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1025';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1026';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1025';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1026';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20882,6 +20882,7 @@ function drawMisebayaCultivarReferences(b,{info,s},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.shootProfile==='southMossPhotoReference'){drawSouthMossPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='orangeMyrioPhotoReference'){drawOrangeMyrioPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='greenMyrioPhotoReference'){drawGreenMyrioPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='rotalaFlowerPhotoReference'){drawRotalaFlowerPhotoReference(b,{info,s,rand},kit);return;}
@@ -30028,6 +30029,38 @@ function drawNewLargePearlPhotoReference(b,{info,s,rand},kit){
  // Creeping segments,short rising shoots and paired blades form an illustrative mat;counts and density are not measurements.
  // No hidden roots,flowers,water-to-air transition,seasonal multiplication or annual growth are drawn.
 }
+
+export function southMossPhotoReferenceGeometry(){
+ const N=16,C=8,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,a=j/C*TAU,sn=Math.sin(Math.PI*t),width=.5*Math.pow(sn,.85)*(1.10-.30*t),camber=.055*sn+.060*t*t;
+  p.push(Math.cos(a)*width,t,camber+Math.sin(a)*.015*sn);uv.push(j/C,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={southMossPhotoReference:true,rootVertex:0,closedBlade:true,illustrativeCrossSection:true};return g;
+}
+function southMossPhotoSegment(b,a,z,r,color,kind){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('south-moss-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawSouthMossPhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.001,LH*.03),r=Math.min(.00009,h*.003,w*.0005,LH*.012),L=Math.min(.0035,w*.025,LH*.30),W=L*.44,stem=info.appearance.stemColor,leafKind='leaf-south-moss-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ function leaf(at,turn){b.add('south-moss-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,Math.min(L,LH*.25),Math.acos(.18),turn,0);}
+ const frondCount=64;for(let frond=0;frond<frondCount;frond++){
+  const az=frond*2.399+.20,R=w*.28*Math.sqrt((frond+.5)/frondCount),root=[Math.sin(az)*R,base,Math.cos(az)*R],reach=w*.12,path=t=>[root[0]+Math.sin(az)*reach*t,base+LH*(.66+.025*(frond%3))*t,root[2]+Math.cos(az)*reach*t];let previous=root;
+  for(let j=1;j<=24;j++){
+   const t=j/24,at=path(t);southMossPhotoSegment(b,previous,at,r,stem,'stem-south-moss-photo-ref');previous=at;leaf(at,az+(j%2?1.2:-1.2));
+   if(j%4||j===24)continue;
+   const side=j%8?1:-1,turn=az+side*1.25,branchReach=w*.05*(1-t),rise=LH*.07*(1-t);let prev=at;
+   for(let k=1;k<=8;k++){
+    const u=k/8,tip=[at[0]+Math.sin(turn)*branchReach*u,at[1]+rise*u,at[2]+Math.cos(turn)*branchReach*u];southMossPhotoSegment(b,prev,tip,r*.65,stem,'side-stem-south-moss-photo-ref');prev=tip;leaf(tip,turn+(k%2?1.2:-1.2));
+   }
+  }
+ }
+ // Triangular branch outlines reference the ADA photograph;node/leaf counts,thickness anddensity areprivate examples,notmeasurements.
+ // No flowers,sporecapsules,rhizoids,attachment surface oroutdoorwinter/annualgrowth trajectory aredrawn.
+}
+
 
 export function orangeMyrioPhotoReferenceGeometry(){
  const C=6,p=[],uv=[],ix=[],rachisRings=[],pinnaSections=[];

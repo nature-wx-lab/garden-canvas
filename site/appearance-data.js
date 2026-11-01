@@ -11989,7 +11989,49 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "shootProfile": "yellowBacopaPhotoReference",
   "sourceConflict": "生産者はBacopa lanigeraと記載し、写真には白い網状の斑と青〜紫色の花が見られます。種資料と同じ名前で流通していますが、斑入り流通株の正式な品種同定は未確認です。直径9cmは鉢の案内で、株幅は未確認です。この流通株の葉・花・花柄の実寸は測定しておらず、別種B.carolinianaのmm値を移していません。",
   "phenologyRegion": "草丈5〜15cm・開花7〜9月は国内の生産者の記載です。5〜10月の屋外の葉と11〜4月の非表示は室内保護の管理参考で、自然な休眠・全株の枯死や地域別の越冬成功を示しません。明るい室内で葉を残す管理例が案内されていますが、今の描画では室内の年間の姿を再現していません。"
-},"p-546a932dc379":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/learn_about_moss/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"mossSouth","lifeForm":"moss","habit":"creeping","arrangement":"alternate","leafShape":"mossTriangular","leafLength":0.0018,"leafWidth":0.0008,"leafColor":"#719647","leafTexture":"smooth","leafUnderside":"#94ae67","stemColor":"#769158","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","ADAが南米ウィローモスとして紹介する三角形に広がる茎葉体を参照します。細い軸の左右に短い側枝を出し、その枝にも微小な葉を付けます。","流通名だけでは種を確定できません。温度を保った水中の見本で、日本の屋外の月別変化・低温枯死・胞子のうの発生時期は未確認です。石や流木への活着面そのものは未再現です。"],"flowerShape":"none"},"p-2a8de6e63bc9":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/learn_about_moss/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"mossWillow","lifeForm":"moss","habit":"creeping","arrangement":"alternate","leafShape":"mossIrregular","leafLength":0.0018,"leafWidth":0.0007,"leafColor":"#528644","leafTexture":"smooth","leafUnderside":"#7a9d67","stemColor":"#62824d","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","同名で複数種が流通するというADAの説明に従い、キャラハゴケ属として紹介される参考株を描きます。不規則に伸びる細い枝と小さな葉を重ね、南米ウィローモスの整った三角形と区別します。","国内販売資料には別属の学名が混在するため、名前が同じという理由でその越冬情報を転用しません。温度を保った水中の参考形で、屋外での年間変化・胞子のう・活着面の再現は未確認です。"],"flowerShape":"none"},"p-cccad89b0097":{
+},"p-546a932dc379":{
+  "sources": [
+    {
+      "url": "https://www.adana.co.jp/jp/aquajournal/learn_about_moss/",
+      "scope": "catalog-entry"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 0,
+    "arrangement": 0,
+    "leafColor": 0
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "southMossPhotoReference",
+  "lifeForm": "moss",
+  "habit": "creeping",
+  "arrangement": "alternate",
+  "leafShape": "mossTriangular",
+  "leafLength": 0.0035,
+  "leafWidth": 0.00154,
+  "leafColor": "#719647",
+  "leafTexture": "smooth",
+  "leafUnderside": "#94ae67",
+  "stemColor": "#769158",
+  "persistence": "submergedPersistent",
+  "fruitMonths": [],
+  "phenologyRegion": "花を付けないコケ植物の参考形です。温度を保った水中を想定し、日本の屋外の冬姿と胞子のうの時期は未確認です。",
+  "unconfirmed": [
+    "全月の実物照合",
+    "ADA公式の写真を参考にした立体近似で、同じ株の写真再現は未検証です。",
+    "図鑑は流通するモスの種名・産地に諸説あると説明しています。南米という流通名だけで種や実物の産地を確定していません。",
+    "草丈・株幅の数値は未確認です。葉長・葉幅・軸の太さ、節間と曲がりは写真を参考にした描画上の近似で、株の実測ではありません。",
+    "小さな葉の形と左右に広がる枝を写真から近似しています。正確な葉序、葉の細胞、葉肋、微細な鋸歯や立体断面は未確認です。",
+    "コケ植物なので花を付けません。写真の緑色は葉色で、花弁や種子・果実は描きません。胞子のうの形と形成時期は未確認です。",
+    "茎・枝・節・葉の本数と配置、密度は表示上の近似です。販売量、自然な増殖数や成長速度を予測していません。",
+    "写真の石や流木への活着面、仮根、結束材は再現していません。入力した地面上の配置を実物の活着構造とは扱いません。",
+    "冬も温度を保った水中の参考条件です。屋外の月別変化、越冬・低温枯死、同じ株の全月の姿は未確認です。記事の日付を撮影日や季節変化の時期へ変換していません。"
+  ],
+  "flowerShape": "none",
+  "sourceConflict": "ADA公式の2022年4月15日の図鑑で、南米ウィローモスとして紹介される参考株を使います。三角形に広がる茎葉体を、小さな葉と枝分かれに分けて描きます。三角形は枝全体の輪郭で、個々の葉を三角形と断定するものではありません。流通名から種を確定せず、草丈・株幅の数値も未確認です。"
+},"p-2a8de6e63bc9":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/learn_about_moss/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"mossWillow","lifeForm":"moss","habit":"creeping","arrangement":"alternate","leafShape":"mossIrregular","leafLength":0.0018,"leafWidth":0.0007,"leafColor":"#528644","leafTexture":"smooth","leafUnderside":"#7a9d67","stemColor":"#62824d","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","同名で複数種が流通するというADAの説明に従い、キャラハゴケ属として紹介される参考株を描きます。不規則に伸びる細い枝と小さな葉を重ね、南米ウィローモスの整った三角形と区別します。","国内販売資料には別属の学名が混在するため、名前が同じという理由でその越冬情報を転用しません。温度を保った水中の参考形で、屋外での年間変化・胞子のう・活着面の再現は未確認です。"],"flowerShape":"none"},"p-cccad89b0097":{
   "sources": [
     {
       "url": "https://www.h2-l.jp/news/4012/",
