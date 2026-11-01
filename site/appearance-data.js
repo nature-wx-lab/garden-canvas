@@ -11919,7 +11919,78 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
       "低い葉の高さでは葉を横に倒して指定範囲に収めます。同じ株の全月の実物照合、年次成長と地域別の屋外越冬は未検証です。"
     ],
     "sourceConflict": "葉を含む幅2〜3cmは1本の茎の幅です。表の15〜30+cmは水槽に植えて2か月後の平均高さの目安です。株全体の高さの閉じた上限・株幅は未確認です。葉の赤や緑は葉色で、今回のメーカー資料で確認できない花色として扱いません。"
-  },"p-81746a493156":{"sources":[{"url":"https://www.akb.jp/c/suisei/gd3357","scope":"catalog-entry"},{"url":"https://rva.jp/plants/rotala_nanje_torpica6841-.htm","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"nanjenshan","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"nanjenshanWhorl","leafLength":0.022,"leafWidth":0.001,"leafColor":"#8daa60","leafTexture":"smooth","leafUnderside":"#a7bc80","stemColor":"#94a178","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","流通名ナンセアン／Nanjenshanの水中葉を参照し、淡緑色の非常に細い葉を4枚ずつ輪生させます。販売者の観察記録にある3〜5枚輪生の範囲を使っています。","水上の低く這う株と水中で伸びる株は姿が違います。今回は水中形を対象とし、水上の花、国内の開花月、結氷地域の越冬、流通株の分類学的同一性は未確認です。"]},"p-4136736f36e6":{"sources":[{"url":"https://www.engei.net/products/detail?id=12415","scope":"catalog-entry"},{"url":"https://www.pharm.kumamoto-u.ac.jp/yakusodb/detail/006807.php","scope":"species"},{"url":"https://www.nzflora.info/factsheet/Taxon/Equisetum-hyemale.html","scope":"species"},{"url":"https://www.nparks.gov.sg/florafaunaweb/flora/1/5/1550","scope":"species"}],"basis":{"architecture":0,"persistence":0,"leafShape":2,"leafColor":0,"stemColor":0,"arrangement":3,"habit":0,"petals":1,"lifeForm":3},"status":"partial","architecture":"evergreenHorsetail","leafShape":"horsetailSheath","leafColor":"#577b56","stemColor":"#5b815a","arrangement":"whorled","habit":"upright","lifeForm":"herb","persistence":"evergreen","petals":0,"phenologyRegion":"常緑の茎を参考表示。販売元には秋〜春の茎の傷みも記載されており、冬の状態・刈込み後の姿は栽培条件で変わります。胞子嚢穂の出現月は未確認です。","unconfirmed":["茎の本数・間隔・節数・太さ・24本の稜は資料範囲内の一例で、販売株の実測ではありません。","枝の少ない普通の茎を参考表示します。傷んだ茎やまれな側枝、地下茎による拡大・胞子嚢穂は再現していません。","古い節で鞘の歯が落ちる姿を近似しています。微細な表面の突起と同じ株の12か月の姿は未確認です。","葉は茎の節を包む鞘で、独立した葉身の高さではありません。葉丈入力は保存しますが鞘の位置を変えず、小さい株では茎・鞘・歯の太さと長さを一緒に縮める描画上の近似です。"]},"p-553aaea797a9":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/002-0063","scope":"catalog-entry"},{"url":"https://gobotany.nativeplanttrust.org/species/equisetum/fluviatile/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerTiming":0,"winterClimateSensitive":0},"status":"partial","unconfirmed":["全形・全月の実物照合","地域別の萌芽と枯れ込みの月境界","茎葉と花序の密度・寸法比の実測","胞子嚢穂の出現月と胞子成熟期"],"architecture":"waterHorsetail","leafShape":"horsetailSheath","leafColor":"#66865b","stemColor":"#71936a","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"winterDormant","flowerTiming":"months","winterClimateSensitive":true},"p-ba247cf299e6":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/387","scope":"catalog-entry"},{"url":"https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Bacopa~caroliniana&page=nswfl","scope":"species"},{"url":"https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=gn&name=Bacopa&page=nswfl","scope":"genus"}],"basis":{"habit":0,"persistence":0,"leafColor":0,"leafShape":1,"flowerShape":2,"architecture":1,"arrangement":1,"flowerMonths":0,"flowerTiming":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水深と気温による水上形・水中形の切り替え","地域別の芽出し・枯れ込み月","水中の茎・根の立体表示"],"architecture":"bacopaCaroliniana","leafShape":"bacopaOvate","flowerShape":"bacopaCorolla","leafColor":"#658642","stemColor":"#729057","arrangement":"opposite","habit":"creeping","lifeForm":"herb","persistence":"managedSubmerged","leafTexture":"glossy","leafLength":0.012,"flowerRadius":0.0055,"foliageMonths":[4,5,6,7,8,9,10,11],"flowerMonths":[5,6,7,8,9],"flowerTiming":"months"},"p-d5909b1c35c5":{
+  },"p-81746a493156":{"sources":[{"url":"https://www.akb.jp/c/suisei/gd3357","scope":"catalog-entry"},{"url":"https://rva.jp/plants/rotala_nanje_torpica6841-.htm","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"nanjenshan","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"nanjenshanWhorl","leafLength":0.022,"leafWidth":0.001,"leafColor":"#8daa60","leafTexture":"smooth","leafUnderside":"#a7bc80","stemColor":"#94a178","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","流通名ナンセアン／Nanjenshanの水中葉を参照し、淡緑色の非常に細い葉を4枚ずつ輪生させます。販売者の観察記録にある3〜5枚輪生の範囲を使っています。","水上の低く這う株と水中で伸びる株は姿が違います。今回は水中形を対象とし、水上の花、国内の開花月、結氷地域の越冬、流通株の分類学的同一性は未確認です。"]},"p-4136736f36e6":{"sources":[{"url":"https://www.engei.net/products/detail?id=12415","scope":"catalog-entry"},{"url":"https://www.pharm.kumamoto-u.ac.jp/yakusodb/detail/006807.php","scope":"species"},{"url":"https://www.nzflora.info/factsheet/Taxon/Equisetum-hyemale.html","scope":"species"},{"url":"https://www.nparks.gov.sg/florafaunaweb/flora/1/5/1550","scope":"species"}],"basis":{"architecture":0,"persistence":0,"leafShape":2,"leafColor":0,"stemColor":0,"arrangement":3,"habit":0,"petals":1,"lifeForm":3},"status":"partial","architecture":"evergreenHorsetail","leafShape":"horsetailSheath","leafColor":"#577b56","stemColor":"#5b815a","arrangement":"whorled","habit":"upright","lifeForm":"herb","persistence":"evergreen","petals":0,"phenologyRegion":"常緑の茎を参考表示。販売元には秋〜春の茎の傷みも記載されており、冬の状態・刈込み後の姿は栽培条件で変わります。胞子嚢穂の出現月は未確認です。","unconfirmed":["茎の本数・間隔・節数・太さ・24本の稜は資料範囲内の一例で、販売株の実測ではありません。","枝の少ない普通の茎を参考表示します。傷んだ茎やまれな側枝、地下茎による拡大・胞子嚢穂は再現していません。","古い節で鞘の歯が落ちる姿を近似しています。微細な表面の突起と同じ株の12か月の姿は未確認です。","葉は茎の節を包む鞘で、独立した葉身の高さではありません。葉丈入力は保存しますが鞘の位置を変えず、小さい株では茎・鞘・歯の太さと長さを一緒に縮める描画上の近似です。"]},"p-553aaea797a9":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/002-0063","scope":"catalog-entry"},{"url":"https://gobotany.nativeplanttrust.org/species/equisetum/fluviatile/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerTiming":0,"winterClimateSensitive":0},"status":"partial","unconfirmed":["全形・全月の実物照合","地域別の萌芽と枯れ込みの月境界","茎葉と花序の密度・寸法比の実測","胞子嚢穂の出現月と胞子成熟期"],"architecture":"waterHorsetail","leafShape":"horsetailSheath","leafColor":"#66865b","stemColor":"#71936a","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"winterDormant","flowerTiming":"months","winterClimateSensitive":true},"p-ba247cf299e6":{
+  "sources": [
+    {
+      "url": "https://www.akb.jp/c/suisei/chusui/387",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Bacopa~caroliniana&page=nswfl",
+      "scope": "species"
+    },
+    {
+      "url": "https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=gn&name=Bacopa&page=nswfl",
+      "scope": "genus"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "persistence": 0,
+    "leafColor": 0,
+    "leafShape": 1,
+    "flowerShape": 2,
+    "architecture": 1,
+    "arrangement": 1,
+    "flowerMonths": 0,
+    "flowerTiming": 0
+  },
+  "status": "partial",
+  "unconfirmed": [
+    "全形・全月の実物照合",
+    "水深と気温による水上形・水中形の切り替え",
+    "地域別の芽出し・枯れ込み月",
+    "水中の茎・根の立体表示",
+    "厚い対生葉、光沢、紫色の花と細い毛は参考表現です。色は校正していません。",
+    "花の上2裂・下3裂と、筒内の4本の雄しべ・2裂の柱頭は属の記載を参照しています。写真から数えた各株の器官数ではありません。",
+    "葉や花の数、茎の分岐と配置は説明用です。利用者指定の高さ・幅・葉の高さの中へ調整する形で、器官寸法を実測通りに固定した模型や年次増殖ではありません。",
+    "国外の器官寸法と花期は出所を区別しています。国内で同じ株を年間追跡した照合はしていません。",
+    "数値の水温・気温の閾値は生産者の記載にありません。12〜3月の非表示を自然休眠や、暖かな室内の常緑姿へ読み替えません。"
+  ],
+  "architecture": "bacopaCaroliniana",
+  "leafShape": "bacopaOvate",
+  "flowerShape": "bacopaCorolla",
+  "leafColor": "#6c9f3f",
+  "stemColor": "#7ca154",
+  "arrangement": "opposite",
+  "habit": "creeping",
+  "lifeForm": "herb",
+  "persistence": "managedSubmerged",
+  "leafTexture": "glossy",
+  "leafLength": 0.012,
+  "flowerRadius": 0.0055,
+  "foliageMonths": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "flowerMonths": [
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "flowerTiming": "months",
+  "shootProfile": "bacopaPhotoReference",
+  "sourceConflict": "草丈5〜15cm・開花5〜9月は国内の生産者の記載です。国外の小葉8〜12×6〜10mm、花柄5〜15mm、萼6〜11mm、花冠9〜11mm・筒5〜6mmは器官の値で、草丈や株幅へ読み替えません。直径9cmは鉢の案内で、株幅は未確認です。国外の9〜4月の花期を国内へ合算していません。",
+  "phenologyRegion": "5〜9月の花は国内の生産者の記載を使います。4〜11月の水上葉と12〜3月の非表示は沈水保護の管理参考で、自然な全株の枯れ込みや地域別の越冬成功の予測ではありません。暖かな室内で葉を残す管理例や、水中で花を付けない姿とは区別しています。"
+},"p-d5909b1c35c5":{
   "sources": [
     {
       "url": "https://www.akb.jp/c/gaiteki/384",

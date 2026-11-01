@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1009';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1010';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1009';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1010';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26250,9 +26250,56 @@ function drawMuticaPhotoReference(b,{s,rand},kit){
  // Frond count, spacing and petiole curvature are illustrative; no flowers or hidden rhizomes.
 }
 
+// Grower Bacopa caroliniana reference. Counts/layout are illustrative, not a colony census.
+export function bacopaPhotoReferencePoint(type,t,u){
+ if(type==='corolla'){
+  const ph=u*TAU,fl=Math.max(0,(t-.55)/.45),lobes=.83+.17*Math.cos(ph*5),r=(.14+.045*t+.40*fl**.65*lobes)*(1+.055*fl*Math.cos(ph));return[Math.sin(ph)*r,t<=.55?t:.55+.13*fl+.06*fl*Math.cos(ph*5),Math.cos(ph)*r];
+ }
+ const sn=Math.max(0,Math.sin(Math.PI*t)),sepal=type==='sepal',width=.43*sn**(sepal?.60:.48)*(1-.12*t),y=sepal?t:t-.11*Math.abs(u)**1.5*sn**.55;return[u*width,y,-(sepal?.025:.055)*u*u*sn-.015*t*t];
+}
+export function bacopaPhotoReferenceGeometry(type){
+ const corolla=type==='corolla',N=corolla?32:type==='sepal'?16:20,C=corolla?160:type==='sepal'?12:24,p=[],uv=[],ix=[],stride=(N+1)*(C+1);
+ for(let side=0;side<2;side++)for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=corolla?j/C:j/C*2-1,v=bacopaPhotoReferencePoint(type,t,u);if(side){if(corolla){const radius=Math.hypot(v[0],v[2]),scale=(radius-.012)/radius;v[0]*=scale;v[2]*=scale;}else v[2]+=.004*Math.sin(Math.PI*t);}p.push(...v);uv.push(j/C,t);
+  if(i<N&&j<C){const k=side*stride+i*(C+1)+j;if(corolla?!side:side)ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);else ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ if(!corolla)for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}for(const i of corolla?[0,N]:[N])for(let j=0;j<C;j++){const a=i*(C+1)+j,z=a+1;if(corolla&&i===N)ix.push(a,z,a+stride,z,z+stride,a+stride);else ix.push(a,a+stride,z,z,a+stride,z+stride);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={bacopaPhotoReference:true,part:type,illustrativeGeometry:true,closedSurface:true};return g;
+}
+function bacopaPhotoSegment(f,a,z,r,color,kind){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');f.add('bacopa-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawBacopaPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00055,h*.005,w*.005),floor=r*1.2+Math.min(.00002,h*.002),hairL=Math.min(.00055,h*.01,w*.002);
+ for(let shoot=0;shoot<7;shoot++){
+  const az=shoot*2.399+.3,R=w*.29*Math.sqrt((shoot+.7)/7),root=[Math.sin(az)*R,floor,Math.cos(az)*R],lean=w*.035;let previous=root;
+  for(let node=0;node<6;node++){
+   const t=(node+1)/6,at=[root[0]+Math.sin(az)*lean*t*t,LH*(.16+.66*t),root[2]+Math.cos(az)*lean*t*t],L=Math.min(.012,w*.12)*(.88+node*.02),relief=Math.min(L,LH*.035/.071),pitch=Math.acos(Math.min(.46,LH*.035/L)),angle=az+node*Math.PI/2;
+   bacopaPhotoSegment(b,previous,at,r,'#7ca154','stem-bacopa-photo-ref');
+   for(let k=0;k<6;k++){const t=(k+.5)/6,a=az+k*2.399,pt=previous.map((v,i)=>v+(at[i]-v)*t);bacopaPhotoSegment(b,pt,[pt[0]+Math.sin(a)*hairL,pt[1]+hairL*.13,pt[2]+Math.cos(a)*hairL],hairL*.035,'#c8d4ae','stemHair-bacopa-photo-ref');}
+   for(const side of[0,1])b.add('bacopa-photo-reference-leaf','leaf-bacopa-photo-reference',kit.shade(rand,s.leafColor,.025),...at,L,L,relief,pitch,angle+side*Math.PI,0);
+   previous=at;
+   if(!s.bloom||node!==5)continue;
+   const D=Math.min(.0105,w*.05,h*.10),P=Math.min(.009,w*.05,h*.09),flower=[at[0]+Math.sin(az)*P*.90,at[1]+P*.32,at[2]+Math.cos(az)*P*.90],f=flowerFrame(b,flower,.72,az);
+   bacopaPhotoSegment(b,at,flower,r*.38,'#7ca154','pedicel-bacopa-photo-ref');for(let k=0;k<4;k++){const t=(k+.5)/4,a=az+k*2.399,pt=at.map((v,i)=>v+(flower[i]-v)*t);bacopaPhotoSegment(b,pt,[pt[0]+Math.sin(a)*hairL,pt[1]+hairL*.13,pt[2]+Math.cos(a)*hairL],hairL*.035,'#c8d4ae','pedicelHair-bacopa-photo-ref');}
+   f.add('bacopa-photo-reference-corolla','corolla-bacopa-photo-reference',kit.shade(rand,s.flowerColor,.015),0,0,0,D,D,D);
+   for(let k=0;k<5;k++){
+    const a=k*TAU/5,outer=k<3,SX=D*(outer?.65:.10),SY=D*.70,SZ=D*.30,pf=flowerFrame(f,[Math.sin(a)*D*.10,0,Math.cos(a)*D*.10],.14,a);pf.add('bacopa-photo-reference-sepal','sepal-bacopa-photo-reference','#729a4e',0,0,0,SX,SY,SZ);
+    if(outer)for(const u of[-.3,.3]){const pt=bacopaPhotoReferencePoint('sepal',.95,u).map((v,i)=>v*[SX,SY,SZ][i]);bacopaPhotoSegment(pf,pt,[pt[0]+u*D*.02,pt[1]+D*.025,pt[2]-D*.012],D*.0011,'#c8d4ae','sepalHair-bacopa-photo-ref');}
+   }
+   for(let k=0;k<4;k++){const a=(k+.5)*TAU/4,base=[Math.sin(a)*D*.055,D*.18,Math.cos(a)*D*.055],tip=[Math.sin(a)*D*.085,D*(k<2?.46:.38),Math.cos(a)*D*.085];bacopaPhotoSegment(f,base,tip,D*.009,'#d1c7d9','filament-bacopa-photo-ref');f.add(kit.bud,'anther-bacopa-photo-ref','#ddd6d1',...tip,D*.025,D*.032,D*.025);}
+   bacopaPhotoSegment(f,[0,D*.15,0],[0,D*.50,0],D*.010,'#a8b582','style-bacopa-photo-ref');for(const side of[-1,1])f.add(kit.bud,'stigma-bacopa-photo-ref','#c9ceaa',side*D*.018,D*.51,0,D*.024,D*.015,D*.025);
+   const matrix=new THREE.Matrix4().compose(new THREE.Vector3(...flower),new THREE.Quaternion().setFromEuler(new THREE.Euler(.72,az,0,'YXZ')),new THREE.Vector3(D,D,D));matrix.fromArray(new Float32Array(matrix.elements));
+   for(let lobe=0;lobe<5;lobe++){const row=28,col=lobe*32,C=160,N=32,stride=(N+1)*(C+1),vertices=[stride+row*(C+1)+col,stride+(row+1)*(C+1)+col,stride+row*(C+1)+col+1],points=vertices.map(index=>{const v=index-stride,p=bacopaPhotoReferencePoint('corolla',Math.floor(v/(C+1))/N,v%(C+1)/C),radius=Math.hypot(p[0],p[2]),scale=(radius-.012)/radius;p[0]*=scale;p[2]*=scale;return new THREE.Vector3(...p.map(Math.fround)).applyMatrix4(matrix);}),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),axis=new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(.72,az,0,'YXZ')).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),'YXZ');b.flower?.(point.toArray(),D*.72,e.x,e.y,e.z,{component:'corolla-bacopa-photo-reference',instanceId:shoot,vertices,faceIndex:N*C*2+(row*C+col)*2,cameraAxis:axis.toArray()});}
+  }
+ }
+}
+
 function drawWaterMargin(b,{info,s,detail,rand},kit){
  if(info.appearance?.shootProfile==='watercoinPhotoReference'){drawWatercoinPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='muticaPhotoReference'){drawMuticaPhotoReference(b,{s,rand},kit);return;}
+ if(info.appearance?.shootProfile==='bacopaPhotoReference'){drawBacopaPhotoReference(b,{s,rand},kit);return;}
  if(s.groundDormant)return;
  const a=info.appearance,arch=a.architecture,coin=arch==='waterCoin',fern=arch==='marsileaMutica',smooth=arch==='bacopaMonnieri',yellow=arch==='bacopaLanigera',w=s.spread,h=s.height,len=Math.min(a.leafLength,w*.14),green=s.leafColor;
  if(coin||fern){
