@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1030';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1031';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1030';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1031';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -21090,6 +21090,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['waterCoin','marsileaMutica','bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(info.appearance?.architecture)){drawWaterMargin(b,{info,s,detail,rand},kit);return;}
  if(['waterHyacinth','amazonFrogbit','salviniaNatans','salviniaMolesta','salviniaCucullata'].includes(info.appearance?.architecture)){drawFreeFloaters(b,{info,s,detail,rand},kit);return;}
  if(['waterArrowhead','nupharEmergent','floatingHeart','waterPoppy'].includes(info.appearance?.architecture)){drawFloatingAquatics(b,{info,s,detail,rand},kit);return;}
+ if(['umbrellaSedgePhotoReference','miniCyperusPhotoReference'].includes(info.appearance?.shootProfile)){drawUmbrellaSedgePhotoReference(b,{info,s,rand},kit);return;}
  if(['umbrellaSedge','dwarfPapyrus','waterHorsetail','evergreenHorsetail','twigRush'].includes(info.appearance?.architecture)){drawAquaticReeds(b,{info,s,detail,rand},kit);return;}
  if(['blueFescue','snowTussock','goldMillet','redMelica','crystalSedge','redHookSedge','goldMatRush','goldDwarfBamboo','sweetFlagFans','whitetopSedge'].includes(info.appearance?.architecture)){drawGrassAndSedgeProfiles(b,{info,s,detail,rand},kit);return;}
  if(['spurgeCanes','spurgeDome','snowSpurge','gauraWands'].includes(info.appearance?.architecture)){drawSpurgesAndGaura(b,{info,s,detail,rand},kit);return;}
@@ -30030,6 +30031,52 @@ function drawNewLargePearlPhotoReference(b,{info,s,rand},kit){
  }
  // Creeping segments,short rising shoots and paired blades form an illustrative mat;counts and density are not measurements.
  // No hidden roots,flowers,water-to-air transition,seasonal multiplication or annual growth are drawn.
+}
+
+export function umbrellaSedgePhotoReferencePoint(type,t,angle){
+ const sn=t===0||t===1?0:Math.max(0,Math.sin(Math.PI*t)),scale=type==='glume';
+ return[Math.cos(angle)*.5*Math.pow(sn,scale?.65:.72)*(1-.25*t),t,(scale?.15:.04)*sn+(scale?.035:.05)*t*t+Math.sin(angle)*(scale?.025:.010)*sn];
+}
+export function umbrellaSedgePhotoReferenceGeometry(type){
+ const N=type==='glume'?12:24,C=type==='glume'?8:10,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  p.push(...umbrellaSedgePhotoReferencePoint(type,i/N,j/C*TAU));uv.push((Math.cos(j/C*TAU)+1)/2,i/N);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={umbrellaSedgePhotoReference:true,umbrellaBract:type==='bract',closedBlade:type==='bract',closedScale:type==='glume',rootVertex:0,sourcePointType:type,illustrativeCrossSection:true};return g;
+}
+function umbrellaSedgePhotoSegment(b,shape,kind,a,z,r,color){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),direction=to.clone().sub(from),length=direction.length();if(length<1e-9)return;const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize()),'YXZ');b.add(shape,kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,rotation.x,rotation.y,rotation.z);
+}
+function drawUmbrellaSedgePhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const a=info.appearance,mini=a.shootProfile==='miniCyperusPhotoReference',h=s.height,w=s.spread,LH=Math.min(h*.97,s.leafHeight),base=Math.min(.0015,LH*.04),R=Math.min(.0023,h*.004,w*.002,LH*.015),L=Math.min(a.leafLength,w*.20,LH*.24),W=Math.min(a.leafWidth,L*.055,w*.015,LH*.03),heads=mini?18:14,stem=a.stemColor,bractKind='leaf-umbrella-sedge-photo-reference-bract-underside-'+a.leafUnderside.slice(1),glumeKind='glume-umbrella-sedge-photo-reference',eye=new THREE.Vector3(.8,.6,1).normalize(),front=Math.atan2(.8,1);let glumeIndex=0,inspectHead=0,inspectScore=-Infinity;
+ for(let i=0;i<heads;i++){const az=i*2.399,score=Math.sqrt((i+.5)/heads)*(Math.sin(az)*.8+Math.cos(az));if(score>inspectScore){inspectScore=score;inspectHead=i;}}
+ for(let i=0;i<heads;i++){
+  const az=i*2.399,rad=w*.22*Math.sqrt((i+.5)/heads),root=[Math.sin(az)*rad,base,Math.cos(az)*rad],peak=base+(LH-base)*(.72+.04*(i%4)),reach=w*.045,path=t=>[root[0]+Math.sin(az)*reach*t*t,base+(peak-base)*t,root[2]+Math.cos(az)*reach*t*t],tip=path(1);let previous=root;
+  for(let k=1;k<=12;k++){const at=path(k/12);umbrellaSedgePhotoSegment(b,'umbrella-sedge-photo-reference-culm','culm',previous,at,R*(1-.18*k/12),stem);previous=at;}
+  const sheathLength=LH*.09;b.add('umbrella-sedge-photo-reference-sheath','basalSheath','#8a805e',root[0],base+sheathLength/2,root[2],R*1.16,sheathLength,R*1.16);
+  const bracts=12+i%5;
+  for(let j=0;j<bracts;j++){const turn=az+j*TAU/bracts,len=L*(.76+.24*Math.pow(Math.sin(i+j*.9),2)),lean=Math.acos(.08+.27*Math.pow(Math.sin(i*.8+j*1.3),2));b.add('umbrella-sedge-photo-reference-bract',bractKind,kit.shade(rand,s.leafColor,.035),...tip,W,len,len,lean,turn,0);}
+  if(!s.bloom)continue;
+  const rayLength=Math.min(.045,w*.10,LH*.10),SL=Math.min(.006,w*.015,LH*.04),GL=SL*.50,GW=GL*.45,glumeColor='#a4ad7f';
+  for(let ray=0;ray<5;ray++){
+   const turn=front+ray*TAU/5,rayEnd=[tip[0]+Math.sin(turn)*rayLength,tip[1]+rayLength*.60,tip[2]+Math.cos(turn)*rayLength];umbrellaSedgePhotoSegment(b,'umbrella-sedge-photo-reference-ray','umbelRay',tip,rayEnd,R*.30,stem);
+   for(let spike=0;spike<3;spike++){
+    const spikeAz=turn+(spike-1)*.7,start=[rayEnd[0]+Math.sin(spikeAz)*rayLength*.25,rayEnd[1]+rayLength*.25,rayEnd[2]+Math.cos(spikeAz)*rayLength*.25],direction=new THREE.Vector3(Math.sin(spikeAz)*.25,.92,Math.cos(spikeAz)*.25).normalize(),axisQ=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction),end=new THREE.Vector3(...start).addScaledVector(direction,SL).toArray();umbrellaSedgePhotoSegment(b,'umbrella-sedge-photo-reference-ray','secondaryRay',rayEnd,start,R*.23,stem);umbrellaSedgePhotoSegment(b,'umbrella-sedge-photo-reference-ray','spikeletAxis',start,end,Math.min(R*.18,SL*.035),glumeColor);
+    for(let k=1;k<=6;k++)for(const side of[1,-1]){
+     const node=new THREE.Vector3(...start).addScaledVector(direction,SL*(k-.25)/6),q=axisQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(.55,side*Math.PI/2,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),instanceId=glumeIndex++;b.add('umbrella-sedge-photo-reference-glume',glumeKind,kit.shade(rand,glumeColor,.025),...node.toArray(),GW,GL,GL,e.x,e.y,e.z);
+     if(i!==inspectHead||ray!==0||spike!==0||k!==6||side!==1)continue;
+     const matrix=new THREE.Matrix4().compose(node,new THREE.Quaternion().setFromEuler(e,'YXZ'),new THREE.Vector3(GW,GL,GL));matrix.fromArray(new Float32Array(matrix.elements));
+     for(const faceIndex of[110,111,126,127,142,143,158,159]){
+      const row=Math.floor(faceIndex/16),col=Math.floor(faceIndex%16/2),v=row*9+col,vertices=faceIndex%2?[v+1,v+9,v+10]:[v,v+9,v+1],points=vertices.map(index=>new THREE.Vector3(...umbrellaSedgePhotoReferencePoint('glume',Math.floor(index/9)/12,index%9/8*TAU).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,p)=>sum.add(p),new THREE.Vector3()).multiplyScalar(1/3),cameraAxis=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();const cameraEuler=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),cameraAxis),'YXZ');b.flower?.(point.toArray(),SL*.8,cameraEuler.x,cameraEuler.y,cameraEuler.z,{component:glumeKind,instanceId,vertices,faceIndex,cameraAxis:cameraAxis.toArray()});
+     }
+    }
+   }
+  }
+ }
+ // Counts,axis bends,bract sectionandtwo-row scaleapproximation areprivate graphics,not stock measurements.
+ // Tinyfloral internals,fruit,roots,rhizomegrowth andsame-clone annual dynamics arenotdrawn.
 }
 
 export function acorusGreenWhitePhotoReferenceGeometry(profile,type){
