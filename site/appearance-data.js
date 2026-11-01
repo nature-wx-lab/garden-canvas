@@ -11688,67 +11688,186 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "岩崎園芸のvariegataは高さ10〜15cm・7〜8月と冬の小さなロゼットを述べますが別販売株です。米国の種一般の秋開花や紅葉、寸法も国内の各登録へ統合しません。",
     "にじはなPlantsは一時休店中で、検索キャッシュの旧商品情報を当日の確認へ使いません。2026-10-11の値と日付を保持し、おぎはら植物園の夏〜秋や岩崎園芸の7〜8月で上書きしません。"
   ]
-},"p-daa12b3e6d9f":{"sources":[{"url":"https://www.akb.jp/c/hotei/003-0009","scope":"catalog-entry"},{"url":"https://www.nparks.gov.sg/florafaunaweb/flora/1/9/1984","scope":"species"},{"url":"https://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=200027394","scope":"species"}],"basis":{"architecture":0,"leafShape":1,"flowerShape":2,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"foliageMonths":0,"leafLength":0,"flowerRadius":0,"leafTexture":1,"flowerMonths":0,"flowerTiming":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水中の根または水中葉の立体表示","水温・密度による草姿の変化","流通株の分類同定","国内資料は草丈15cm以上で上限を示していません。30〜60cmの範囲や株幅を補わず、寸法欄は未確認として入力値を保ちます。","花期表の7〜10月と用途文の7〜9月ごろを併記します。期間内の毎月の開花・花数・温度による開閉を保証しません。","寒い時期の屋内・水温15℃以上・高光量は販売元の管理案内です。11〜4月に屋外から保護場所へ移す表示想定を保ち、死亡・越冬成功・年次増殖は予測しません。"],"architecture":"waterHyacinth","leafShape":"hyacinthOrbicular","flowerShape":"hyacinthEye","leafColor":"#54873d","stemColor":"#677c42","arrangement":"basal","habit":"creeping","lifeForm":"herb","persistence":"protectedWinter","foliageMonths":[5,6,7,8,9,10],"leafLength":0.1,"flowerRadius":0.025,"leafTexture":"glossy","flowerMonths":[7,8,9,10],"flowerTiming":"months","sourceConflict":"国内の草丈15cm以上という下限は、成株の上限・葉柄長・株幅ではありません。表示寸法は入力値を使います。花期表7〜10月と用途説明7〜9月ごろを区別します。11〜4月の屋内保護は管理の案内で、同じ株が枯れる月境界や保護後の回復を実測したものではありません。"},"p-097775090353":{"sources":[{"url":"https://www.nies.go.jp/biodiversity/invasive/DB/detail/80070.html","scope":"species"},{"url":"https://efloras.org/florataxon.aspx?flora_id=1&taxon_id=104954","scope":"genus"},{"url":"https://www.akb.jp/c/suisei/chinsui/003-0014","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"persistence":0,"leafColor":2,"flowerMonths":0,"flowerTiming":0,"flowerShape":1},"status":"partial","architecture":"submergedShoots","shootProfile":"cabomba","lifeForm":"herb","habit":"clump","arrangement":"opposite","leafShape":"cabombaFan","leafLength":0.023,"leafWidth":0.034,"leafColor":"#4a8554","leafTexture":"smooth","leafUnderside":"#609665","stemColor":"#63896a","persistence":"waterTurion","fruitMonths":[],"phenologyRegion":"国立環境研究所は花期7〜10月、冬に茎先の越冬芽を作ると説明しています。地域・水温・水深によるずれと、冬芽の形成・解除の月境界は未校正です。","unconfirmed":["全月の実物照合","水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。","扇状の細裂葉を対生させ、細い葉の裂片を二又に分けます。白い花弁3枚と花弁状の萼片3枚、黄色い蜜腺を分け、水面へ伸びる花柄に載せます。","低温期は密な冬芽を中心に示します。冬芽形成の開始・終了月、古い茎が残る量、水深ごとの開花率は未確認です。","この項目はハゴロモモを参考にし、流通するカボンバ類すべての品種を同じ株と判定するものではありません。","株全体の高さ・株幅と年次の自然増殖量は未確認です。表示の葉長・葉幅、節間と枝数は描画例です。","扇状葉の6本の基部裂片と2回の二又分岐を資料の範囲から選んだ立体近似です。糸状裂片の断面や太さは実測・写真同等に校正していません。","通常の7本の茎と各茎の枝、冬の1個の密な茎先は描画例です。販売束の本数や結束材は自然な株数・構造に使わず、節数・葉数と年次の増殖は未校正です。","草丈・株幅・葉高の入力に合わせて葉を収めます。写真の株と同じ寸法比や月別の姿、根の本数、花の正面写真との照合は未完了です。","生産者の20cm以上と10〜4月頃の屋内・ハウス管理は、閉じた草丈範囲や冬芽形成の月境界へ変換していません。"],"flowerMonths":[7,8,9,10],"flowerTiming":"months","flowerShape":"cabombaPerianth","sourceConflict":"カボンバのうちハゴロモモを参考にした項目です。資料の扇状葉1〜3.5cmと約2cmの花径を、株全体の高さ・株幅へ読み替えません。高さ30〜100cm・株幅15〜40cmの閉じた範囲は今回の資料では未確認です。"},"p-790697efed42":{"sources":[{"url":"https://www.akb.jp/c/medakagoods/003-0034","scope":"catalog-entry"},{"url":"https://www.nies.go.jp/biodiversity/invasive/DB/detail/80670.html","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0,"flowerShape":1,"stemColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"egeria","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"egeriaWhorl","leafLength":0.03,"leafWidth":0.005,"leafColor":"#639442","leafTexture":"smooth","leafUnderside":"#8bac65","stemColor":"#789357","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"生産者は水中で冬も常緑と説明しています。凍らない水中の参考条件で、水温による変化や地域別の屋外越冬は未校正です。5〜10月は国立環境研究所の繁殖期で、開花月の確定値とは区別しています。現在の花の表示月も、実測に基づく開花予測ではありません。","unconfirmed":["全月の実物照合","水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。","資料の3〜6枚輪生を参考に、線形葉、中脈と細かな鋸歯、節から下がる白い根を描く近似です。葉数と茎数、節間や枝ぶりは描画例です。","国内の雄株を参考に白い3花弁と9本の雄しべを描きます。冬も葉を残すのは凍らない水中の条件の例です。","高さ・株幅と地域別の開花月は未確認です。5〜10月の花表示は従来の仮の月を残したもので、繁殖期の記載を確定した開花月として扱いません。","販売元の7〜10本という数は鉛巻き1巻の販売規格です。1株の茎数、年次の自然増殖数や水槽の水質改善量は予測していません。","生産者写真は線形葉の幅とねじれ、輪生や枝ぶりの参考です。販売束の結束材と本数は植物の構造や自然な株数として描いていません。","主茎1本と側枝2本、合計28節・葉127枚は描画例です。各節の4〜5枚は資料の3〜6枚輪生を参考にしていますが、節間・枝数・月ごとの葉数と年次増殖量は未校正です。","白い花弁3枚と雄しべ9本は資料の雄花の説明を参考にしています。花の写真との照合、入力寸法に合わせた花柄や葉の角度は未検証です。水面に届かない入力では花を省いています。"],"flowerMonths":[5,6,7,8,9,10],"flowerTiming":"months","flowerShape":"egeriaPetals","sourceConflict":"資料の1m余りという高さの到達値から、30〜100cmという閉じた範囲は作りません。株幅15〜40cmの根拠も確認できませんでした。葉長1.5〜3cm・葉幅3〜6mm、販売単位の7〜10本を株の寸法や自然な茎数へ読み替えません。5〜10月は繁殖期であり、開花月とは区別します。"},"p-74f20c38e156":{"sources":[{"url":"https://www.water.go.jp/kansai/biwako/html/download/files/zusetsu/20180330_plant_03.pdf","scope":"species"},{"url":"https://www.akb.jp/c/suisei/chinsui/ar-136","scope":"species"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"persistence":0,"leafColor":0,"flowerMonths":0,"flowerTiming":0,"flowerShape":1},"status":"partial","architecture":"submergedShoots","shootProfile":"ceratophyllum","lifeForm":"herb","habit":"spreading","arrangement":"whorled","leafShape":"ceratophyllumFork","leafLength":0.023,"leafWidth":0.012,"leafColor":"#467d42","leafTexture":"smooth","leafUnderside":"#789459","stemColor":"#75815a","persistence":"waterTurion","fruitMonths":[],"phenologyRegion":"琵琶湖の資料を参考にした花期5〜8月と晩秋の冬芽の説明です。開花しない集団もあり、地域・水温・水深による違い、冬芽になる月境界と残存茎の量は未校正です。","unconfirmed":["全月の実物照合","水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。","根を持たず水中に浮く茎と、二又に分かれた細い葉の輪生を描きます。晩秋から冬に2〜6cmの冬芽が沈む記載を参考に、冬は水底の短い冬芽を表示します。","5〜8月の花期記載はありますが、開花しない群落も多い資料のため、今回の水中形状では花を強調しません。冬芽になる月境界と残存茎の量は未確認です。","茎の全長と、庭の表示で入力する直立方向の高さは別の値です。横に漂う姿、水深による向き、茎の基部が固着する例の再現は未校正です。","通常は根を持たない資料を参考にしていますが、茎基部が仮根の役割で水底へ固着する例もあります。株全体の高さ・幅、自然な枝数と年次増殖量は未確認です。","主軸1本と側枝2本、通常の28節・葉196枚、冬芽1本の16節・葉112枚は描画例です。各節7枚は資料の5〜8枚輪生を参考にし、自然な茎数・節間・冬芽数や年次増殖量を予測していません。","線状の裂片を二又に分けた立体形状は資料の説明を参考にしています。袋越しの販売写真だけでは、単独の葉の断面や細部を実物と同じと確認できていません。","草丈・株幅・葉高の入力に合わせた図示です。横に漂う位置や茎基部が固着する例、冬芽への移り変わりと実際の月別の姿は未校正です。"],"flowerMonths":[5,6,7,8],"flowerTiming":"months","flowerShape":"none","sourceConflict":"資料の20〜120cmは茎の全長で、直立した株の高さには読み替えません。株幅20〜60cmも未確認です。葉長8〜25mm・時に35mmと冬芽長2〜6cmは各器官の値で、容器直径20cm以上や販売規格の約10本も株幅・自然な茎数ではありません。"},"p-b012252eaf20":{"sources":[{"url":"https://www.akb.jp/c/suisei/fuyu/003-0002","scope":"catalog-entry"},{"url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC9961342/","scope":"species"},{"url":"https://plant-directory.ifas.ufl.edu/plant-directory/limnobium-laevigatum/","scope":"species"}],"basis":{"architecture":0,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"foliageMonths":0,"leafLength":0,"flowerRadius":0,"leafTexture":1,"flowerMonths":0,"flowerTiming":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水中の根または水中葉の立体表示","水温・密度による草姿の変化","流通株の分類同定"],"architecture":"amazonFrogbit","leafShape":"frogbitOrbicular","flowerShape":"frogbitFlowers","leafColor":"#54873d","stemColor":"#677c42","arrangement":"basal","habit":"creeping","lifeForm":"herb","persistence":"protectedWinter","foliageMonths":[5,6,7,8,9,10],"leafLength":0.045,"flowerRadius":0.0075,"leafTexture":"glossy","flowerMonths":[6,7],"flowerTiming":"months"},"p-e9f5ab2a40d1":{"sources":[{"url":"https://www.naro.go.jp/event/files/naroautumn2022-nire2-1tsujo04.pdf","scope":"species"},{"url":"https://onlinelibrary.wiley.com/doi/full/10.1111/epp.12909","scope":"species"},{"url":"https://link.springer.com/article/10.1007/s10933-011-9505-1","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":2,"foliageMonths":0,"leafLength":0,"flowerRadius":0,"leafTexture":1},"status":"partial","unconfirmed":["全形・全月の実物照合","水中の根または水中葉の立体表示","水温・密度による草姿の変化","流通株の分類同定"],"architecture":"salviniaNatans","leafShape":"salviniaFlat","flowerShape":"none","leafColor":"#689346","stemColor":"#677c42","arrangement":"paired","habit":"creeping","lifeForm":"herb","persistence":"sporeAnnual","foliageMonths":[4,5,6,7,8,9,10,11],"leafLength":0.015,"flowerRadius":0,"leafTexture":"hairy"},"p-0d9f8d98a2e2":{"sources":[{"url":"https://www.akb.jp/c/suisei/fuyu/003-0004","scope":"catalog-entry"},{"url":"https://onlinelibrary.wiley.com/doi/full/10.1111/epp.12909","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"foliageMonths":0,"leafLength":0,"flowerRadius":0,"leafTexture":1},"status":"partial","unconfirmed":["全形・全月の実物照合","水中の根または水中葉の立体表示","水温・密度による草姿の変化","流通株の分類同定"],"architecture":"salviniaMolesta","leafShape":"salviniaFolded","flowerShape":"none","leafColor":"#689346","stemColor":"#677c42","arrangement":"paired","habit":"creeping","lifeForm":"herb","persistence":"protectedWinter","foliageMonths":[5,6,7,8,9,10],"leafLength":0.035,"flowerRadius":0,"leafTexture":"hairy"},"p-c76bbcb60009":{"sources":[{"url":"https://www.akb.jp/c/suisei/fuyu/003-0005","scope":"catalog-entry"},{"url":"https://onlinelibrary.wiley.com/doi/full/10.1111/epp.12909","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"foliageMonths":0,"leafLength":0,"flowerRadius":0,"leafTexture":1},"status":"partial","unconfirmed":["全形・全月の実物照合","水中の根または水中葉の立体表示","水温・密度による草姿の変化","流通株の分類同定"],"architecture":"salviniaCucullata","leafShape":"salviniaHood","flowerShape":"none","leafColor":"#689346","stemColor":"#677c42","arrangement":"paired","habit":"creeping","lifeForm":"herb","persistence":"protectedWinter","foliageMonths":[5,6,7,8,9,10],"leafLength":0.02,"flowerRadius":0,"leafTexture":"hairy"},"p-6f783140466d":{
-    "sources": [
-      {
-        "url": "https://www.akb.jp/c/water_plants/biotope_plants/cold_resistance/gd3219",
-        "scope": "catalog-entry"
-      },
-      {
-        "url": "https://tai2.ntu.edu.tw/species/462%20006%2005%200",
-        "scope": "species"
-      },
-      {
-        "url": "https://www.knsk-osaka.jp/zukan/zukan_database/mizukusa/6150b31d71d54c6/2550bc3df09f32f.html",
-        "scope": "species"
-      }
-    ],
-    "basis": {
-      "habit": 0,
-      "leafShape": 0,
-      "arrangement": 0,
-      "persistence": 0,
-      "leafColor": 0,
-      "flowerMonths": 0,
-      "flowerTiming": 0,
-      "flowerShape": 1
+},"p-daa12b3e6d9f":{"sources":[{"url":"https://www.akb.jp/c/hotei/003-0009","scope":"catalog-entry"},{"url":"https://www.nparks.gov.sg/florafaunaweb/flora/1/9/1984","scope":"species"},{"url":"https://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=200027394","scope":"species"}],"basis":{"architecture":0,"leafShape":1,"flowerShape":2,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"foliageMonths":0,"leafLength":0,"flowerRadius":0,"leafTexture":1,"flowerMonths":0,"flowerTiming":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水中の根または水中葉の立体表示","水温・密度による草姿の変化","流通株の分類同定","国内資料は草丈15cm以上で上限を示していません。30〜60cmの範囲や株幅を補わず、寸法欄は未確認として入力値を保ちます。","花期表の7〜10月と用途文の7〜9月ごろを併記します。期間内の毎月の開花・花数・温度による開閉を保証しません。","寒い時期の屋内・水温15℃以上・高光量は販売元の管理案内です。11〜4月に屋外から保護場所へ移す表示想定を保ち、死亡・越冬成功・年次増殖は予測しません。"],"architecture":"waterHyacinth","leafShape":"hyacinthOrbicular","flowerShape":"hyacinthEye","leafColor":"#54873d","stemColor":"#677c42","arrangement":"basal","habit":"creeping","lifeForm":"herb","persistence":"protectedWinter","foliageMonths":[5,6,7,8,9,10],"leafLength":0.1,"flowerRadius":0.025,"leafTexture":"glossy","flowerMonths":[7,8,9,10],"flowerTiming":"months","sourceConflict":"国内の草丈15cm以上という下限は、成株の上限・葉柄長・株幅ではありません。表示寸法は入力値を使います。花期表7〜10月と用途説明7〜9月ごろを区別します。11〜4月の屋内保護は管理の案内で、同じ株が枯れる月境界や保護後の回復を実測したものではありません。"},"p-097775090353":{
+  "sources": [
+    {
+      "url": "https://www.nies.go.jp/biodiversity/invasive/DB/detail/80070.html",
+      "scope": "species"
     },
-    "status": "partial",
-    "architecture": "submergedShoots",
-    "shootProfile": "ovalis",
-    "lifeForm": "herb",
-    "habit": "clump",
-    "arrangement": "alternate",
-    "leafShape": "ovalisAlternate",
-    "leafLength": 0.024,
-    "leafWidth": 0.015,
-    "leafColor": "#789653",
-    "leafTexture": "smooth",
-    "leafUnderside": "#aa705d",
-    "stemColor": "#ab6758",
-    "persistence": "submergedPersistent",
-    "fruitMonths": [],
-    "phenologyRegion": "国内生産者の草丈・水上の花期と、水中の参考姿を分けています。凍結しない水中または暖かい室内という管理条件で、全国の屋外越冬・春の芽出し・秋の紅葉は未校正です。",
-    "unconfirmed": [
-      "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
-      "卵形の葉が互生するミズユキノシタを参考に、水中で赤みを帯びる葉を表示します。花は4萼片で花弁がないため、黄色い大きな花弁を描きません。",
-      "開花月は国内生産者の水上栽培の記載です。この水中葉モデルでは水上へ出た茎と花をまだ再現していません。屋外越冬は寒冷地を除く条件です。",
-      "全月の実物照合",
-      "国内生産者の商品写真2枚を参照します。水上・水中の撮影条件や、植物資料との同一クローンは未確認です。",
-      "葉柄のある丸みのある卵形葉を1節1枚ずつ互生させ、這う茎と側枝をつなぎます。132枚・6本の下部の茎・12本の側枝・60本の根は説明用の配置で、写真の計測値ではありません。",
-      "葉面の厚み・曲率・色・光沢、葉柄の長さと節間は描画上の近似です。種の葉の寸法を全株や全条件へ固定しません。",
-      "花は4萼片・花弁0・雄しべ4という種の記載があります。この水中葉モデルでは水上の花、果実、株数の増殖を描きません。",
-      "9cmポットと這う茎の長さを株幅へ置き換えません。株幅、同じ株の全月の姿・年次成長・国内各地の屋外越冬は未検証です。"
-    ],
-    "flowerMonths": [
-      7,
-      8,
-      9
-    ],
-    "flowerTiming": "months",
-    "flowerShape": "ludwigiaApetalous",
-    "sourceConflict": "草丈5〜15cmと7〜9月の花期は国内生産者の記載です。9cmポット、葉の長さや40cm以上にもなる這う茎の長さを、株全体の幅・高さへ置き換えません。株幅は未確認です。葉や茎の赤み、花柱・花盤・葯それぞれの色を、花全体の代表色として検索に使いません。"
-  },"p-d1be39347dd5":{
+    {
+      "url": "https://efloras.org/florataxon.aspx?flora_id=1&taxon_id=104954",
+      "scope": "genus"
+    },
+    {
+      "url": "https://www.akb.jp/c/suisei/chinsui/003-0014",
+      "scope": "catalog-entry"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 0,
+    "arrangement": 0,
+    "persistence": 0,
+    "leafColor": 2,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "flowerShape": 1
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "cabomba",
+  "lifeForm": "herb",
+  "habit": "clump",
+  "arrangement": "opposite",
+  "leafShape": "cabombaFan",
+  "leafLength": 0.023,
+  "leafWidth": 0.034,
+  "leafColor": "#4a8554",
+  "leafTexture": "smooth",
+  "leafUnderside": "#609665",
+  "stemColor": "#63896a",
+  "persistence": "waterTurion",
+  "fruitMonths": [],
+  "phenologyRegion": "国立環境研究所は花期7〜10月、冬に茎先の越冬芽を作ると説明しています。地域・水温・水深によるずれと、冬芽の形成・解除の月境界は未校正です。",
+  "unconfirmed": [
+    "全月の実物照合",
+    "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
+    "扇状の細裂葉を対生させ、細い葉の裂片を二又に分けます。白い花弁3枚と花弁状の萼片3枚、黄色い蜜腺を分け、水面へ伸びる花柄に載せます。",
+    "低温期は密な冬芽を中心に示します。冬芽形成の開始・終了月、古い茎が残る量、水深ごとの開花率は未確認です。",
+    "この項目はハゴロモモを参考にし、流通するカボンバ類すべての品種を同じ株と判定するものではありません。",
+    "株全体の高さ・株幅と年次の自然増殖量は未確認です。表示の葉長・葉幅、節間と枝数は描画例です。",
+    "葉の基部5〜7裂、その先の1〜3回の二又分岐という資料の範囲を参考にした立体近似です。糸状裂片の断面や太さは実測・写真同等に校正していません。",
+    "茎を株立ちさせ、冬は短く密な茎先を参考に示します。表示する茎・枝・節・葉の数と配置は近似で、販売束の本数や結束材を自然な株数・構造へ読み替えず、年次の増殖も予測していません。",
+    "草丈・株幅・葉高の入力に合わせて葉を収めます。写真の株と同じ寸法比や月別の姿、根の本数、花の正面写真との照合は未完了です。",
+    "生産者の20cm以上と10〜4月頃の屋内・ハウス管理は、閉じた草丈範囲や冬芽形成の月境界へ変換していません。"
+  ],
+  "flowerMonths": [
+    7,
+    8,
+    9,
+    10
+  ],
+  "flowerTiming": "months",
+  "flowerShape": "cabombaPerianth",
+  "sourceConflict": "カボンバのうちハゴロモモを参考にした項目です。資料の扇状葉1〜3.5cmと約2cmの花径を、株全体の高さ・株幅へ読み替えません。高さ30〜100cm・株幅15〜40cmの閉じた範囲は今回の資料では未確認です。"
+},"p-790697efed42":{"sources":[{"url":"https://www.akb.jp/c/medakagoods/003-0034","scope":"catalog-entry"},{"url":"https://www.nies.go.jp/biodiversity/invasive/DB/detail/80670.html","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0,"flowerShape":1,"stemColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"egeria","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"egeriaWhorl","leafLength":0.03,"leafWidth":0.005,"leafColor":"#639442","leafTexture":"smooth","leafUnderside":"#8bac65","stemColor":"#789357","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"生産者は水中で冬も常緑と説明しています。凍らない水中の参考条件で、水温による変化や地域別の屋外越冬は未校正です。5〜10月は国立環境研究所の繁殖期で、開花月の確定値とは区別しています。現在の花の表示月も、実測に基づく開花予測ではありません。","unconfirmed":["全月の実物照合","水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。","資料の3〜6枚輪生を参考に、線形葉、中脈と細かな鋸歯、節から下がる白い根を描く近似です。葉数と茎数、節間や枝ぶりは描画例です。","国内の雄株を参考に白い3花弁と9本の雄しべを描きます。冬も葉を残すのは凍らない水中の条件の例です。","高さ・株幅と地域別の開花月は未確認です。5〜10月の花表示は従来の仮の月を残したもので、繁殖期の記載を確定した開花月として扱いません。","販売元の7〜10本という数は鉛巻き1巻の販売規格です。1株の茎数、年次の自然増殖数や水槽の水質改善量は予測していません。","生産者写真は線形葉の幅とねじれ、輪生や枝ぶりの参考です。販売束の結束材と本数は植物の構造や自然な株数として描いていません。","主茎1本と側枝2本、合計28節・葉127枚は描画例です。各節の4〜5枚は資料の3〜6枚輪生を参考にしていますが、節間・枝数・月ごとの葉数と年次増殖量は未校正です。","白い花弁3枚と雄しべ9本は資料の雄花の説明を参考にしています。花の写真との照合、入力寸法に合わせた花柄や葉の角度は未検証です。水面に届かない入力では花を省いています。"],"flowerMonths":[5,6,7,8,9,10],"flowerTiming":"months","flowerShape":"egeriaPetals","sourceConflict":"資料の1m余りという高さの到達値から、30〜100cmという閉じた範囲は作りません。株幅15〜40cmの根拠も確認できませんでした。葉長1.5〜3cm・葉幅3〜6mm、販売単位の7〜10本を株の寸法や自然な茎数へ読み替えません。5〜10月は繁殖期であり、開花月とは区別します。"},"p-74f20c38e156":{
+  "sources": [
+    {
+      "url": "https://www.water.go.jp/kansai/biwako/html/download/files/zusetsu/20180330_plant_03.pdf",
+      "scope": "species"
+    },
+    {
+      "url": "https://www.akb.jp/c/suisei/chinsui/ar-136",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 0,
+    "arrangement": 0,
+    "persistence": 0,
+    "leafColor": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "flowerShape": 1
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "ceratophyllum",
+  "lifeForm": "herb",
+  "habit": "spreading",
+  "arrangement": "whorled",
+  "leafShape": "ceratophyllumFork",
+  "leafLength": 0.023,
+  "leafWidth": 0.012,
+  "leafColor": "#467d42",
+  "leafTexture": "smooth",
+  "leafUnderside": "#789459",
+  "stemColor": "#75815a",
+  "persistence": "waterTurion",
+  "fruitMonths": [],
+  "phenologyRegion": "琵琶湖の資料を参考にした花期5〜8月と晩秋の冬芽の説明です。開花しない集団もあり、地域・水温・水深による違い、冬芽になる月境界と残存茎の量は未校正です。",
+  "unconfirmed": [
+    "全月の実物照合",
+    "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
+    "根を持たず水中に浮く茎と、二又に分かれた細い葉の輪生を描きます。晩秋から冬に2〜6cmの冬芽が沈む記載を参考に、冬は水底の短い冬芽を表示します。",
+    "5〜8月の花期記載はありますが、開花しない群落も多い資料のため、今回の水中形状では花を強調しません。冬芽になる月境界と残存茎の量は未確認です。",
+    "茎の全長と、庭の表示で入力する直立方向の高さは別の値です。横に漂う姿、水深による向き、茎の基部が固着する例の再現は未校正です。",
+    "通常は根を持たない資料を参考にしていますが、茎基部が仮根の役割で水底へ固着する例もあります。株全体の高さ・幅、自然な枝数と年次増殖量は未確認です。",
+    "輪生する葉は資料の5〜8枚（時に10枚）を参考にします。主軸・側枝・節・葉と冬の短く密な姿の配置は表示上の近似で、自然な株内の本数・葉数・冬芽数や年次増殖量を予測していません。",
+    "線状の裂片を二又に分けた立体形状は資料の説明を参考にしています。袋越しの販売写真だけでは、単独の葉の断面や細部を実物と同じと確認できていません。",
+    "草丈・株幅・葉高の入力に合わせた図示です。横に漂う位置や茎基部が固着する例、冬芽への移り変わりと実際の月別の姿は未校正です。"
+  ],
+  "flowerMonths": [
+    5,
+    6,
+    7,
+    8
+  ],
+  "flowerTiming": "months",
+  "flowerShape": "none",
+  "sourceConflict": "資料の20〜120cmは茎の全長で、直立した株の高さには読み替えません。株幅20〜60cmも未確認です。葉長8〜25mm・時に35mmと冬芽長2〜6cmは各器官の値で、容器直径20cm以上や販売規格の約10本も株幅・自然な茎数ではありません。"
+},"p-b012252eaf20":{"sources":[{"url":"https://www.akb.jp/c/suisei/fuyu/003-0002","scope":"catalog-entry"},{"url":"https://pmc.ncbi.nlm.nih.gov/articles/PMC9961342/","scope":"species"},{"url":"https://plant-directory.ifas.ufl.edu/plant-directory/limnobium-laevigatum/","scope":"species"}],"basis":{"architecture":0,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"foliageMonths":0,"leafLength":0,"flowerRadius":0,"leafTexture":1,"flowerMonths":0,"flowerTiming":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水中の根または水中葉の立体表示","水温・密度による草姿の変化","流通株の分類同定"],"architecture":"amazonFrogbit","leafShape":"frogbitOrbicular","flowerShape":"frogbitFlowers","leafColor":"#54873d","stemColor":"#677c42","arrangement":"basal","habit":"creeping","lifeForm":"herb","persistence":"protectedWinter","foliageMonths":[5,6,7,8,9,10],"leafLength":0.045,"flowerRadius":0.0075,"leafTexture":"glossy","flowerMonths":[6,7],"flowerTiming":"months"},"p-e9f5ab2a40d1":{"sources":[{"url":"https://www.naro.go.jp/event/files/naroautumn2022-nire2-1tsujo04.pdf","scope":"species"},{"url":"https://onlinelibrary.wiley.com/doi/full/10.1111/epp.12909","scope":"species"},{"url":"https://link.springer.com/article/10.1007/s10933-011-9505-1","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":2,"foliageMonths":0,"leafLength":0,"flowerRadius":0,"leafTexture":1},"status":"partial","unconfirmed":["全形・全月の実物照合","水中の根または水中葉の立体表示","水温・密度による草姿の変化","流通株の分類同定"],"architecture":"salviniaNatans","leafShape":"salviniaFlat","flowerShape":"none","leafColor":"#689346","stemColor":"#677c42","arrangement":"paired","habit":"creeping","lifeForm":"herb","persistence":"sporeAnnual","foliageMonths":[4,5,6,7,8,9,10,11],"leafLength":0.015,"flowerRadius":0,"leafTexture":"hairy"},"p-0d9f8d98a2e2":{"sources":[{"url":"https://www.akb.jp/c/suisei/fuyu/003-0004","scope":"catalog-entry"},{"url":"https://onlinelibrary.wiley.com/doi/full/10.1111/epp.12909","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"foliageMonths":0,"leafLength":0,"flowerRadius":0,"leafTexture":1},"status":"partial","unconfirmed":["全形・全月の実物照合","水中の根または水中葉の立体表示","水温・密度による草姿の変化","流通株の分類同定"],"architecture":"salviniaMolesta","leafShape":"salviniaFolded","flowerShape":"none","leafColor":"#689346","stemColor":"#677c42","arrangement":"paired","habit":"creeping","lifeForm":"herb","persistence":"protectedWinter","foliageMonths":[5,6,7,8,9,10],"leafLength":0.035,"flowerRadius":0,"leafTexture":"hairy"},"p-c76bbcb60009":{"sources":[{"url":"https://www.akb.jp/c/suisei/fuyu/003-0005","scope":"catalog-entry"},{"url":"https://onlinelibrary.wiley.com/doi/full/10.1111/epp.12909","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"foliageMonths":0,"leafLength":0,"flowerRadius":0,"leafTexture":1},"status":"partial","unconfirmed":["全形・全月の実物照合","水中の根または水中葉の立体表示","水温・密度による草姿の変化","流通株の分類同定"],"architecture":"salviniaCucullata","leafShape":"salviniaHood","flowerShape":"none","leafColor":"#689346","stemColor":"#677c42","arrangement":"paired","habit":"creeping","lifeForm":"herb","persistence":"protectedWinter","foliageMonths":[5,6,7,8,9,10],"leafLength":0.02,"flowerRadius":0,"leafTexture":"hairy"},"p-6f783140466d":{
+  "sources": [
+    {
+      "url": "https://www.akb.jp/c/water_plants/biotope_plants/cold_resistance/gd3219",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://tai2.ntu.edu.tw/species/462%20006%2005%200",
+      "scope": "species"
+    },
+    {
+      "url": "https://www.knsk-osaka.jp/zukan/zukan_database/mizukusa/6150b31d71d54c6/2550bc3df09f32f.html",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 0,
+    "arrangement": 0,
+    "persistence": 0,
+    "leafColor": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "flowerShape": 1
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "ovalis",
+  "lifeForm": "herb",
+  "habit": "clump",
+  "arrangement": "alternate",
+  "leafShape": "ovalisAlternate",
+  "leafLength": 0.024,
+  "leafWidth": 0.015,
+  "leafColor": "#789653",
+  "leafTexture": "smooth",
+  "leafUnderside": "#aa705d",
+  "stemColor": "#ab6758",
+  "persistence": "submergedPersistent",
+  "fruitMonths": [],
+  "phenologyRegion": "国内生産者の草丈・水上の花期と、水中の参考姿を分けています。凍結しない水中または暖かい室内という管理条件で、全国の屋外越冬・春の芽出し・秋の紅葉は未校正です。",
+  "unconfirmed": [
+    "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
+    "卵形の葉が互生するミズユキノシタを参考に、水中で赤みを帯びる葉を表示します。花は4萼片で花弁がないため、黄色い大きな花弁を描きません。",
+    "開花月は国内生産者の水上栽培の記載です。この水中葉モデルでは水上へ出た茎と花をまだ再現していません。屋外越冬は寒冷地を除く条件です。",
+    "全月の実物照合",
+    "国内生産者の商品写真2枚を参照します。水上・水中の撮影条件や、植物資料との同一クローンは未確認です。",
+    "葉柄のある丸みのある卵形葉を互生させ、這う茎と側枝、節から出る根をつなぎます。葉・茎・枝・根の数と配置は表示上の近似で、写真の計測値ではありません。",
+    "葉面の厚み・曲率・色・光沢、葉柄の長さと節間は描画上の近似です。種の葉の寸法を全株や全条件へ固定しません。",
+    "花は4萼片・花弁0・雄しべ4という種の記載があります。この水中葉モデルでは水上の花、果実、株数の増殖を描きません。",
+    "9cmポットと這う茎の長さを株幅へ置き換えません。株幅、同じ株の全月の姿・年次成長・国内各地の屋外越冬は未検証です。"
+  ],
+  "flowerMonths": [
+    7,
+    8,
+    9
+  ],
+  "flowerTiming": "months",
+  "flowerShape": "ludwigiaApetalous",
+  "sourceConflict": "草丈5〜15cmと7〜9月の花期は国内生産者の記載です。9cmポット、葉の長さや40cm以上にもなる這う茎の長さを、株全体の幅・高さへ置き換えません。株幅は未確認です。葉や茎の赤み、花柱・花盤・葯それぞれの色を、花全体の代表色として検索に使いません。"
+},"p-d1be39347dd5":{
     "sources": [
       {
         "url": "https://tropica.com/en/plants/plantdetails/Ludwigiapalustris(035B)/4453",
@@ -11870,7 +11989,81 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "shootProfile": "yellowBacopaPhotoReference",
   "sourceConflict": "生産者はBacopa lanigeraと記載し、写真には白い網状の斑と青〜紫色の花が見られます。種資料と同じ名前で流通していますが、斑入り流通株の正式な品種同定は未確認です。直径9cmは鉢の案内で、株幅は未確認です。この流通株の葉・花・花柄の実寸は測定しておらず、別種B.carolinianaのmm値を移していません。",
   "phenologyRegion": "草丈5〜15cm・開花7〜9月は国内の生産者の記載です。5〜10月の屋外の葉と11〜4月の非表示は室内保護の管理参考で、自然な休眠・全株の枯死や地域別の越冬成功を示しません。明るい室内で葉を残す管理例が案内されていますが、今の描画では室内の年間の姿を再現していません。"
-},"p-546a932dc379":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/learn_about_moss/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"mossSouth","lifeForm":"moss","habit":"creeping","arrangement":"alternate","leafShape":"mossTriangular","leafLength":0.0018,"leafWidth":0.0008,"leafColor":"#719647","leafTexture":"smooth","leafUnderside":"#94ae67","stemColor":"#769158","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","ADAが南米ウィローモスとして紹介する三角形に広がる茎葉体を参照します。細い軸の左右に短い側枝を出し、その枝にも微小な葉を付けます。","流通名だけでは種を確定できません。温度を保った水中の見本で、日本の屋外の月別変化・低温枯死・胞子のうの発生時期は未確認です。石や流木への活着面そのものは未再現です。"],"flowerShape":"none"},"p-2a8de6e63bc9":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/learn_about_moss/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"mossWillow","lifeForm":"moss","habit":"creeping","arrangement":"alternate","leafShape":"mossIrregular","leafLength":0.0018,"leafWidth":0.0007,"leafColor":"#528644","leafTexture":"smooth","leafUnderside":"#7a9d67","stemColor":"#62824d","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","同名で複数種が流通するというADAの説明に従い、キャラハゴケ属として紹介される参考株を描きます。不規則に伸びる細い枝と小さな葉を重ね、南米ウィローモスの整った三角形と区別します。","国内販売資料には別属の学名が混在するため、名前が同じという理由でその越冬情報を転用しません。温度を保った水中の参考形で、屋外での年間変化・胞子のう・活着面の再現は未確認です。"],"flowerShape":"none"},"p-cccad89b0097":{"sources":[{"url":"https://www.h2-l.jp/news/4012/","scope":"catalog-entry"},{"url":"https://efloras.org/florataxon.aspx?flora_id=1&taxon_id=250130007","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"myrioGreen","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"myrioPectinate","leafLength":0.025,"leafWidth":0.02,"leafColor":"#73a453","leafTexture":"smooth","leafUnderside":"#9aba7a","stemColor":"#8d9c65","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","販売者の学名と北米植物誌のMyriophyllum hippuroidesを照合し、12〜24の細裂片がある葉を主に5枚輪生させます。葉全体は先端側がやや広い倒卵形の輪郭です。","植物誌では冬芽なしとされるため、マツモのような冬芽は付けません。日本の開花月と屋外の冬姿は未確認で、保護された水中葉の条件を表示します。茎は資料では最大1.5mで、入力した高さを自動的な年間成長とは扱いません。"]},"p-2f845bda190a":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/small_talk_16/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"myrioOrange","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"myrioPectinate","leafLength":0.028,"leafWidth":0.024,"leafColor":"#b39a55","leafTexture":"smooth","leafUnderside":"#beae73","stemColor":"#bf9873","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","ADAの水中葉写真を参考に、細い羽状の裂片を持つ葉を輪生させます。基部の黄褐色から頂芽の赤みまでを同じ株に混ぜ、水上の明るい緑色とは区別します。","種名は公式資料でもMyriophyllum sp.です。色は栽培条件によるもので秋の紅葉とは扱いません。日本の花期・屋外の冬姿・水上葉への移行経過は未確認です。"]},"p-a426b5ddc65f":{"sources":[{"url":"https://sakisansou.ocnk.net/product/1088","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/rhynchospora-colorata/","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-0000515018","scope":"species"},{"url":"https://w3.biosci.utexas.edu/prc/K12/pdf/Rhynchospora%20colorata","scope":"species"}],"basis":{"architecture":0,"arrangement":3,"leafShape":2,"leafColor":0,"habit":0,"persistence":0,"flowerShape":2,"flowerMonths":0,"phenologyRegion":0,"petals":3,"stamenCount":3,"pistilCount":3},"status":"partial","architecture":"whitetopReferences","lifeForm":"herb","arrangement":"tristichous","habit":"creeping","leafShape":"whitetopReferenceBlade","leafColor":"#61844a","persistence":"winterDormant","flowerShape":"whitetopReferenceHead","flowerMonths":[5,6,7,8,9,10],"flowerTiming":"months","petals":0,"stamenCount":3,"pistilCount":1,"seedHeadMonths":[],"monthlyLeafDensity":[0,0,0.2,0.65,1,1,1,1,1,0.85,0.35,0],"winterClimateSensitive":true,"phenologyRegion":"国内販売元の5〜10月と冬の地上部休眠を参考表示。春の葉出し量・月境界は近似。暖地で常緑とされる北米資料、冬に切り戻す管理例とは別条件で、日本の全地域を一律に予測しません。","sourceConflict":"国内草丈30〜60cmを保持し、国内株幅は未確認。北米資料の幅2〜3フィートを国内の幅へ転用しません。白い部分は花弁・萼ではなく総苞で、小花に花被はありません。長い総苞の白い部分はNYBG記載の通常30%未満を参考にし、短い総苞では白の比率が高い写真の外観も分けます。葯寸法はNYBGの1.2〜1.6mmとTexasの2〜2.5mmで差があり、前者の参考値を使います。","unconfirmed":["資料に基づくpartialな参考3D。同一個体12か月、実測の本数・葉幅・湾曲・発色・密度は未確認。","地下茎の拡大、剪定後再生、凍害と水深による形の変化は予測していません。","中央の舟型の穎・雄しべ3本・雌しべ1本と2枝の柱頭は海外の種の参考。花数と開き具合、上端の雄花・下部の不稔穎の割合は未実測。","小穂数・総苞の枚数と不等長・白と緑の境界は抽出した外観で、国内流通株を顕微鏡照合した値ではありません。","花粉粒、子房内部、果実、種子と結実率は描いていません。水没による枯死や生育を診断する表示ではありません。"]},"p-02ccaeae76c2":{"sources":[{"url":"https://www.akb.jp/c/suisei/002-0145","scope":"catalog-entry"},{"url":"https://efloras.org/florataxon.aspx?flora_id=1&taxon_id=242357778","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0,"dormantMonths":0,"emergenceMonths":0,"flowerMonths":0,"flowerTiming":0,"flowerShape":1},"status":"partial","architecture":"submergedShoots","shootProfile":"shortHair","lifeForm":"herb","habit":"creeping","arrangement":"basal","leafShape":"hairCulm","leafLength":0.08,"leafWidth":0.00045,"leafColor":"#659845","leafTexture":"smooth","leafUnderside":"#81a567","stemColor":"#789264","persistence":"winterDormant","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","細い緑の部分は広い葉身ではなく稈です。細い円柱状の稈、基部の葉鞘、横に伸びる地下茎を分けます。水上では稈の先の2〜4mmの小穂を描き、深い水中では小穂を表示しません。","国内生産者の冬期地上部休眠という記載を反映し、冬は地上部を消します。12〜2月の休眠と3〜4月の芽出しは季節を月へ置き換えた目安で、地域別の開始日・終了日を確認したものではありません。"],"dormantMonths":[12,1,2],"emergenceMonths":[3,4],"flowerMonths":[6,7,8,9],"flowerTiming":"months","flowerShape":"hairSpikelet"},"p-c23d044f8453":{"sources":[{"url":"https://www.akb.jp/c/water_plants/aqua_plants/foreground_plants/fp-005","scope":"catalog-entry"},{"url":"https://efloras.org/florataxon.aspx?flora_id=1&taxon_id=242357729","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"hair","lifeForm":"herb","habit":"creeping","arrangement":"basal","leafShape":"hairCulm","leafLength":0.2,"leafWidth":0.0006,"leafColor":"#629653","leafTexture":"smooth","leafUnderside":"#86aa7a","stemColor":"#7d9870","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","ヘアーグラスはEleocharis acicularisを参照します。細い円柱状の稈をショートヘアグラスより高く伸ばし、基部に淡褐色〜赤みを帯びる葉鞘を付けます。","水中で柔らかく伸びた稈を参考にしています。国内屋外で地上部が消える月・芽出し月は未確認のため、温度を保った水中葉の条件で表示します。小穂の国内開花月も未確認です。"]},"p-9802ede000e2":{
+},"p-546a932dc379":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/learn_about_moss/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"mossSouth","lifeForm":"moss","habit":"creeping","arrangement":"alternate","leafShape":"mossTriangular","leafLength":0.0018,"leafWidth":0.0008,"leafColor":"#719647","leafTexture":"smooth","leafUnderside":"#94ae67","stemColor":"#769158","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","ADAが南米ウィローモスとして紹介する三角形に広がる茎葉体を参照します。細い軸の左右に短い側枝を出し、その枝にも微小な葉を付けます。","流通名だけでは種を確定できません。温度を保った水中の見本で、日本の屋外の月別変化・低温枯死・胞子のうの発生時期は未確認です。石や流木への活着面そのものは未再現です。"],"flowerShape":"none"},"p-2a8de6e63bc9":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/learn_about_moss/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"mossWillow","lifeForm":"moss","habit":"creeping","arrangement":"alternate","leafShape":"mossIrregular","leafLength":0.0018,"leafWidth":0.0007,"leafColor":"#528644","leafTexture":"smooth","leafUnderside":"#7a9d67","stemColor":"#62824d","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","同名で複数種が流通するというADAの説明に従い、キャラハゴケ属として紹介される参考株を描きます。不規則に伸びる細い枝と小さな葉を重ね、南米ウィローモスの整った三角形と区別します。","国内販売資料には別属の学名が混在するため、名前が同じという理由でその越冬情報を転用しません。温度を保った水中の参考形で、屋外での年間変化・胞子のう・活着面の再現は未確認です。"],"flowerShape":"none"},"p-cccad89b0097":{"sources":[{"url":"https://www.h2-l.jp/news/4012/","scope":"catalog-entry"},{"url":"https://efloras.org/florataxon.aspx?flora_id=1&taxon_id=250130007","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"myrioGreen","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"myrioPectinate","leafLength":0.025,"leafWidth":0.02,"leafColor":"#73a453","leafTexture":"smooth","leafUnderside":"#9aba7a","stemColor":"#8d9c65","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","販売者の学名と北米植物誌のMyriophyllum hippuroidesを照合し、12〜24の細裂片がある葉を主に5枚輪生させます。葉全体は先端側がやや広い倒卵形の輪郭です。","植物誌では冬芽なしとされるため、マツモのような冬芽は付けません。日本の開花月と屋外の冬姿は未確認で、保護された水中葉の条件を表示します。茎は資料では最大1.5mで、入力した高さを自動的な年間成長とは扱いません。"]},"p-2f845bda190a":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/small_talk_16/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"myrioOrange","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"myrioPectinate","leafLength":0.028,"leafWidth":0.024,"leafColor":"#b39a55","leafTexture":"smooth","leafUnderside":"#beae73","stemColor":"#bf9873","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","ADAの水中葉写真を参考に、細い羽状の裂片を持つ葉を輪生させます。基部の黄褐色から頂芽の赤みまでを同じ株に混ぜ、水上の明るい緑色とは区別します。","種名は公式資料でもMyriophyllum sp.です。色は栽培条件によるもので秋の紅葉とは扱いません。日本の花期・屋外の冬姿・水上葉への移行経過は未確認です。"]},"p-a426b5ddc65f":{"sources":[{"url":"https://sakisansou.ocnk.net/product/1088","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/rhynchospora-colorata/","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-0000515018","scope":"species"},{"url":"https://w3.biosci.utexas.edu/prc/K12/pdf/Rhynchospora%20colorata","scope":"species"}],"basis":{"architecture":0,"arrangement":3,"leafShape":2,"leafColor":0,"habit":0,"persistence":0,"flowerShape":2,"flowerMonths":0,"phenologyRegion":0,"petals":3,"stamenCount":3,"pistilCount":3},"status":"partial","architecture":"whitetopReferences","lifeForm":"herb","arrangement":"tristichous","habit":"creeping","leafShape":"whitetopReferenceBlade","leafColor":"#61844a","persistence":"winterDormant","flowerShape":"whitetopReferenceHead","flowerMonths":[5,6,7,8,9,10],"flowerTiming":"months","petals":0,"stamenCount":3,"pistilCount":1,"seedHeadMonths":[],"monthlyLeafDensity":[0,0,0.2,0.65,1,1,1,1,1,0.85,0.35,0],"winterClimateSensitive":true,"phenologyRegion":"国内販売元の5〜10月と冬の地上部休眠を参考表示。春の葉出し量・月境界は近似。暖地で常緑とされる北米資料、冬に切り戻す管理例とは別条件で、日本の全地域を一律に予測しません。","sourceConflict":"国内草丈30〜60cmを保持し、国内株幅は未確認。北米資料の幅2〜3フィートを国内の幅へ転用しません。白い部分は花弁・萼ではなく総苞で、小花に花被はありません。長い総苞の白い部分はNYBG記載の通常30%未満を参考にし、短い総苞では白の比率が高い写真の外観も分けます。葯寸法はNYBGの1.2〜1.6mmとTexasの2〜2.5mmで差があり、前者の参考値を使います。","unconfirmed":["資料に基づくpartialな参考3D。同一個体12か月、実測の本数・葉幅・湾曲・発色・密度は未確認。","地下茎の拡大、剪定後再生、凍害と水深による形の変化は予測していません。","中央の舟型の穎・雄しべ3本・雌しべ1本と2枝の柱頭は海外の種の参考。花数と開き具合、上端の雄花・下部の不稔穎の割合は未実測。","小穂数・総苞の枚数と不等長・白と緑の境界は抽出した外観で、国内流通株を顕微鏡照合した値ではありません。","花粉粒、子房内部、果実、種子と結実率は描いていません。水没による枯死や生育を診断する表示ではありません。"]},"p-02ccaeae76c2":{
+  "sources": [
+    {
+      "url": "https://www.akb.jp/c/suisei/002-0145",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://efloras.org/florataxon.aspx?flora_id=1&taxon_id=242357778",
+      "scope": "species"
+    },
+    {
+      "url": "https://efloras.org/florataxon.aspx?flora_id=2&taxon_id=242357778",
+      "scope": "species"
+    },
+    {
+      "url": "https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?constat=&dist=&lvl=sp&name=Eleocharis~parvula&page=nswfl&showsyn=",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 3,
+    "arrangement": 2,
+    "persistence": 0,
+    "leafColor": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "flowerShape": 1,
+    "architecture": 3
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "shortHairPhotoReference",
+  "lifeForm": "herb",
+  "habit": "creeping",
+  "arrangement": "basal",
+  "leafShape": "hairCulm",
+  "leafLength": 0.08,
+  "leafWidth": 0.00045,
+  "leafColor": "#659845",
+  "leafTexture": "smooth",
+  "leafUnderside": "#81a567",
+  "stemColor": "#659845",
+  "persistence": "winterDormant",
+  "fruitMonths": [],
+  "phenologyRegion": "国内生産者は冬に地上部が一旦枯れたようになるとし、寒冷地以外の越冬と通年の水切れ防止を説明します。12〜2月の休眠と3〜4月の芽出しは季節を月へ置き換えた表示上の目安で、地域別の開始・終了日は未確認です。水深2cmは水上／水中を切り替える仮の境界で、種の実測閾値ではありません。",
+  "unconfirmed": [
+    "全月の実物照合",
+    "細い稈と基部の筒状葉鞘、先端の小穂を区別します。地下茎・塊茎や種子は写真で確認した地下形として描いていません。",
+    "生産者写真には長短・向きや古い淡褐色の部分にばらつきがあります。表示する稈・小穂・鱗片の数、密度、配色は近似で、写真の計測値や自然な年次増殖ではありません。",
+    "種資料の小穂と重なる鱗片を形の参考にします。葯・柱頭・痩果などの内部の微細な花器官は再現していません。緑や淡褐色の小穂を、花弁の色とは扱っていません。",
+    "冬の休眠・春の芽出しを地域別の実測月として検証していません。水深の切替で自然な沈水形への連続変化を再現するものでもありません。",
+    "資料の稈径と小穂の寸法は種の部位の参考値です。入力する草丈・株幅や葉丈を、収録株の測定値へ読み替えていません。葉丈は非開花の稈の表示丈の目安として使います。"
+  ],
+  "dormantMonths": [
+    12,
+    1,
+    2
+  ],
+  "emergenceMonths": [
+    3,
+    4
+  ],
+  "flowerMonths": [
+    6,
+    7,
+    8,
+    9
+  ],
+  "flowerTiming": "months",
+  "flowerShape": "hairSpikelet",
+  "flowerRadius": 0.0015,
+  "waterSurfaceModel": true,
+  "sourceConflict": "草丈3〜10cmと花期6〜9月は国内生産者の記載で、株幅は未確認です。9cmは商品や栽培容器のポット径で株幅ではありません。国外の稈径0.2〜0.5mm、小穂2〜4×1〜2mmは種の部位の参考値で、収録株や利用者の株の実測ではありません。中国の稈高や開花月を国内の値へ合算していません。"
+},"p-c23d044f8453":{"sources":[{"url":"https://www.akb.jp/c/water_plants/aqua_plants/foreground_plants/fp-005","scope":"catalog-entry"},{"url":"https://efloras.org/florataxon.aspx?flora_id=1&taxon_id=242357729","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"hair","lifeForm":"herb","habit":"creeping","arrangement":"basal","leafShape":"hairCulm","leafLength":0.2,"leafWidth":0.0006,"leafColor":"#629653","leafTexture":"smooth","leafUnderside":"#86aa7a","stemColor":"#7d9870","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","ヘアーグラスはEleocharis acicularisを参照します。細い円柱状の稈をショートヘアグラスより高く伸ばし、基部に淡褐色〜赤みを帯びる葉鞘を付けます。","水中で柔らかく伸びた稈を参考にしています。国内屋外で地上部が消える月・芽出し月は未確認のため、温度を保った水中葉の条件で表示します。小穂の国内開花月も未確認です。"]},"p-9802ede000e2":{
   "sources": [
     {
       "url": "https://www.akb.jp/c/water_plants/biotope_plants/flower_plants/002-0170",
@@ -12325,7 +12518,68 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "sourceConflict": "葉長4〜8cm・葉幅3〜6cm、花柄7〜10cm、花径約5cmはそれぞれの部位の値です。成株の草丈や株幅には読み替えません。冬越しの最低水温5℃以上を、気温の閾値や無保護の屋外越冬の保証とはしません。",
   "phenologyRegion": "日本での7〜10月開花は植物園の記載です。5〜10月の屋外表示と寒期の保護は栽培管理の参考シナリオで、地域別に同じ株を追った浮葉の出現・消失月ではありません。水深による浮葉・水上葉の切替や、水中の根・根茎は表示していません。",
   "shootProfile": "waterpoppyPhotoReference"
-},"p-b016e0a19811":{"sources":[{"url":"https://www.akb.jp/c/water_plants/aqua_plants/foreground_plants/fp-013","scope":"catalog-entry"},{"url":"https://tropica.com/en/plants/plantdetails/Hemianthusmicranthemoides%28048A%29/4476","scope":"catalog-entry"},{"url":"https://idtools.org/tools/1055/index.cfm?entityID=10354&packageID=2197","scope":"genus"}],"basis":{"habit":0,"leafShape":1,"arrangement":2,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"pearl","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"pearlWhorl","leafLength":0.007,"leafWidth":0.003,"leafColor":"#79a84f","leafTexture":"smooth","leafUnderside":"#a4c378","stemColor":"#9fb977","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","パールグラスとして流通する細茎と小さく弓なりの葉を描きます。属の資料にある対生または3〜4枚輪生を参考に、水中形の葉を主に3枚、部分的に4枚ずつ配置します。","国内販売名Hemianthus micranthemoidesとTropicaのMicranthemum glomeratumの名称には差があります。全流通株の同一性と国内屋外の寿命・冬姿は未確認で、温度を保った水中栽培の参考形を表示します。"]},"p-c3c1aad2c953":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/1023","scope":"catalog-entry"},{"url":"https://tropica.com/en/plants/plantdetails/Micranthemumumbrosum%28048%29/4475","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"largePearl","lifeForm":"herb","habit":"clump","arrangement":"opposite","leafShape":"largePearlRound","leafLength":0.01,"leafWidth":0.009,"leafColor":"#85ab51","leafTexture":"smooth","leafUnderside":"#acbf83","stemColor":"#a2b37d","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","小さな丸い葉を十字対生にし、水中では茎が立ち上がり側枝が増える姿を描きます。","寒冷地を除き、水中で冬も葉を保ち、少し黄みを帯びるという国内生産者の記載を反映します。黄変の月境界と程度は近似で、凍る池での越冬を再現したものではありません。"],"seasonalColors":{"winter":"#a8b264"}},"p-4211c50a21e0":{"sources":[{"url":"https://www.akb.jp/c/suisei/gd3135","scope":"catalog-entry"},{"url":"https://tropica.com/en/plants/plantdetails/4442/4442","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"newPearl","lifeForm":"herb","habit":"creeping","arrangement":"opposite","leafShape":"newPearlRound","leafLength":0.005,"leafWidth":0.0045,"leafColor":"#7fac55","leafTexture":"smooth","leafUnderside":"#a8c187","stemColor":"#a0b67b","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","細い匍匐茎と節から出る小さな丸葉で低いマットを作ります。形態の参考にしたTropicaのMonte Carloと、収録名だけで特定できない流通株の同一性は未確認です。","寒冷地を除く水中越冬の記載を参考に、冬も葉を残してやや黄みを帯びさせます。正確な月別変色、水上の花、寒冷地の屋外越冬は未確認です。"],"seasonalColors":{"winter":"#a8b264"}},"p-b038c25453b8":{"sources":[{"url":"https://www.akb.jp/c/suisei/fuyou/004-0008","scope":"catalog-entry"},{"url":"https://www.tokyo-shoyaku.com/ohana.php?hana=483","scope":"species"},{"url":"https://www.town.taketoyo.lg.jp/chousei/1001538/1001551/1002276/1002273/1002280/1002310.html","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":0,"leafTexture":0,"leafLength":0,"flowerRadius":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水深による草姿の変化","地域ごとの水上葉の出現と消失月","水中の葉と根茎の立体表示","草丈10〜40cm前後は国内販売元の参考範囲です。12cmポット、葉長20〜30cm、花径4〜5cmを株幅や利用者の株の実測値へ転用しません。","黄色い外側5枚は萼、内側の短い多数の器官が花弁という自治体の説明を採用しています。販売元の3弁という用途説明は、外側の構造の根拠にしていません。","4月の開花記録は特定年の観察で、毎年同じ月に咲く保証ではありません。冬の沈水管理、凍結への注意、屋内の水上管理という生産者の説明も、地域別の越冬成功や自動回復の予測には使いません。","杜若園芸の掲載写真を参考に、基部に切れ込みのある広い葉と、丸く立ち上がる5枚の萼を描いています。写真の色・姿勢は一例で、栽培中の株の実測値ではありません。","葉6枚・花1個、内側の花弁16枚・雄しべ32本・柱頭の放射線12本は描画例です。写真から器官数を確定したものではなく、年次増殖や毎月の葉数・株姿の変化は未校正です。"],"architecture":"nupharEmergent","leafShape":"nupharSagittate","flowerShape":"nupharCup","leafColor":"#517a3d","stemColor":"#688650","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"winterSubmerged","flowerMonths":[4,5,6,7,8,9],"flowerTiming":"months","leafTexture":"glossy","leafLength":0.25,"flowerRadius":0.0225,"sourceConflict":"花の構造は武豊町の外側5枚の萼と、多数の短い内側の花弁という説明を参考にしています。販売元の用途説明には3弁という異なる記載があるため、草丈・花期の資料と花の構造の資料を区別しています。12cmポット径と葉長20〜30cmは成株の株幅には読み替えません。 掲載写真は葉の輪郭と萼の立ち上がりの参考に使い、器官数、株寸法、月ごとの成長量の測定には使いません。","phenologyRegion":"販売元は4〜9月、武豊町は一般に5〜9月とし、2013年4月中旬の開花も記録しています。年や栽培条件による違いを含み、毎年同じ月の開花や冬の回復を予測する表示ではありません。水深による浮葉・水上葉と冬の沈水葉の切替は未校正です。","shootProfile":"nupharPhotoReference"},"p-ab7ec521483e":{"sources":[{"url":"https://www.akb.jp/c/su/onsu/himesuiren/gd1851","scope":"catalog-entry"},{"url":"https://www.akb.jp/c/taeru/free_9_117","scope":"genus"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0,"flowerShape":0,"flowerMonths":0,"flowerTiming":0,"persistence":0,"dormantMonths":1,"emergenceMonths":1},"status":"partial","architecture":"marginGardenPlants","shootProfile":"helvola","lifeForm":"herb","habit":"creeping","arrangement":"basal","leafShape":"helvolaBlade","leafColor":"#658348","leafTexture":"smooth","leafUnderside":"#82494e","stemColor":"#877450","barkColor":"#887963","flowerShape":"helvolaFlower","flowerMonths":[5,6,7,8,9],"flowerTiming":"months","persistence":"winterSubmerged","fruitMonths":[],"winterClimateSensitive":true,"unconfirmed":["全月の実物照合","形態は資料からの近似で、写真と同等の再現は未検証です。","姫スイレンは単一品種名ではありません。小型温帯スイレンのヘルボラの写真と記載を参考に、淡黄色の花、暗い斑点のある浮葉を描きます。収録名全体をこの花色や品種と同一とは断定しません。","国内生産者の5〜9月開花、4月頃の葉出し、11月頃からの水面葉の消失を参考にします。冬の水中葉と地下部そのもの、品種・水温による日付差は未再現です。","浮葉6枚・花1輪、花弁18枚と外側4枚・中心24本は描画例で、品種固有の正確な枚数ではありません。全体写真の多数の花を一株の増殖や年次成長としません。","葉の切れ込み、暗赤褐色の斑点、淡いクリーム色の花被片を写真参考にします。葉脈・葉の厚さ・裏の組織・花の大きさや色の変化は未校正です。","草丈・株幅は未確認です。葉の大きさ5〜20cmと管理水深を使って成株寸法を補わず、表示寸法は利用者の入力値を使います。","4月頃の葉出し・11月頃からの浮葉消失は同じ生産者の温帯スイレン全般の目安です。熱帯スイレンの屋内保護月を混ぜず、冬の沈水葉・根茎・株の凍結や越冬成功・回復は描きません。"],"dormantMonths":[11,12,1,2,3],"emergenceMonths":[4],"phenologyRegion":"4月頃の葉出し・11月頃の浮葉消失は温帯スイレン全体の目安です。品種・地域・水温で変わり、同じ株の月境界・葉量・縮小率は未実測です。冬の水中葉と根茎は表示していません。","sourceConflict":"国内の葉の大きさ5〜20cmは、草丈や株幅ではありません。植え付け水深10〜20cmと19cmカゴも別の値です。姫スイレンは単一品種名ではないため、ヘルボラの写真を形の参考にしています。花期5〜9月は種類別の記載で、毎月の開花数や同一株の年間変化は未確認です。"},"p-2ebde73aa083":{"sources":[{"url":"https://www.engei.net/products/detail?id=258698","scope":"catalog-entry"},{"url":"https://www.rhsplants.co.uk/plants/_/acorus-gramineus-gon/classid.2000038402/sku.pl30007450/","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/acorus-gramineus/","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-0000352676","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-7000000004","scope":"family"}],"basis":{"architecture":0,"shootProfile":0,"arrangement":4,"leafShape":4,"habit":0,"leafColor":0,"persistence":0,"flowerShape":3,"inflorescence":4,"flowerMonths":2,"phenologyRegion":2,"petals":4,"stamenCount":4,"pistilCount":4,"leafPattern":0,"patternColor":0},"status":"partial","architecture":"acorusReferences","shootProfile":"acorusOgon","lifeForm":"herb","arrangement":"distichous","habit":"clump","leafShape":"acorusUnifacialBlade","leafColor":"#bac65e","leafTexture":"glossy","persistence":"evergreen","flowerShape":"acorusReferenceSpadix","inflorescence":"spadix","flowerMonths":[5,6],"flowerTiming":"species-reference","petals":6,"stamenCount":6,"pistilCount":1,"seedHeadMonths":[],"monthlyLeafDensity":[0.7,0.7,0.8,0.95,1,1,1,1,1,1,0.9,0.75],"phenologyRegion":"国内の常緑の黄金品種を参考表示。5〜6月の花は北米の種の参考で、国内品種の月ではありません。英国の半常緑・露出地での落葉は別条件で、日本の全地域の冬姿は未校正。","sourceConflict":"国内販売元の草丈20〜40cmを優先し、従来の15〜30cmを訂正。英国販売元の高さ・幅50cmは別条件の参考で、国内幅は未確認のままです。国内写真は緑の多い黄斑、北米の成熟株写真は明るい黄金色を示し、発色を固定月で予測しません。","unconfirmed":["資料を基に作る部分的な参考3D。同一株の12か月照合、株内の本数・葉幅・湾曲・色は未実測。","小花の花被片6枚・雄しべ6本・雌しべ1本は科の形態。小花と葯の寸法・円柱状花序は種の記載から参考化し、流通品種固有の実測とはしていません。","冬の葉量と垂れ方、開花の株齢、花序数、春の更新・地下茎の伸長、年次拡大は描画用の近似。","子房内部・花粉粒・種子と結実率は未再現。果実色も販売資料の赤色と植物誌の黄白〜褐色の差があるため果実を描いていません。","水没・水深による形の切替、凍害と乾燥害は未予測。湿地向けの参考で、株元や根の状態を診断する表示ではありません。"],"leafPattern":"stripes","patternColor":"#788c4e"},"p-b1eb3be4e657":{"sources":[{"url":"https://world-plants.com/plants-dt/acorus_gramineus/","scope":"catalog-entry"},{"url":"https://www.engei.net/products/detail?id=136666","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/acorus-gramineus/","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-0000352676","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-7000000004","scope":"family"}],"basis":{"architecture":0,"shootProfile":0,"arrangement":4,"leafShape":4,"habit":0,"leafColor":0,"persistence":0,"flowerShape":3,"inflorescence":4,"flowerMonths":1,"phenologyRegion":0,"petals":4,"stamenCount":4,"pistilCount":4},"status":"partial","architecture":"acorusReferences","shootProfile":"acorusHime","lifeForm":"herb","arrangement":"distichous","habit":"clump","leafShape":"acorusUnifacialBlade","leafColor":"#58764c","leafTexture":"glossy","persistence":"evergreen","flowerShape":"acorusReferenceSpadix","inflorescence":"spadix","flowerMonths":[5,6,7],"flowerTiming":"months","petals":6,"stamenCount":6,"pistilCount":1,"seedHeadMonths":[],"monthlyLeafDensity":[0.8,0.8,0.9,1,1,1,1,1,1,1,0.95,0.85],"phenologyRegion":"国内の姫セキショウの5〜7月を参考に表示。同名の矮性流通株の同一クローン確認は未完了。冬の残葉量・月ごとの葉量は未校正。","sourceConflict":"姫5〜10cmを、同じ生産者ページの極姫3〜5cm・黄金姫5〜10cm・朧月15〜30cmと区別。花期は国内販売元の5〜7月を採用し、従来の種の5〜6月から訂正。同じ販売名でも元登録との同一クローンは未確認。","unconfirmed":["資料を基に作る部分的な参考3D。同一株の12か月照合、株内の本数・葉幅・湾曲・色は未実測。","小花の花被片6枚・雄しべ6本・雌しべ1本は科の形態。小花と葯の寸法・円柱状花序は種の記載から参考化し、流通品種固有の実測とはしていません。","冬の葉量と垂れ方、開花の株齢、花序数、春の更新・地下茎の伸長、年次拡大は描画用の近似。","子房内部・花粉粒・種子と結実率は未再現。果実色も販売資料の赤色と植物誌の黄白〜褐色の差があるため果実を描いていません。","水没・水深による形の切替、凍害と乾燥害は未予測。湿地向けの参考で、株元や根の状態を診断する表示ではありません。"]},"p-7a24f0539c5f":{"sources":[{"url":"https://naegibu.com/qrc/kusa_sekisyo03/","scope":"catalog-entry"},{"url":"https://world-plants.com/plants-dt/acorus_gramineus/","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/acorus-gramineus/","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-0000352676","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-7000000004","scope":"family"}],"basis":{"architecture":0,"shootProfile":0,"arrangement":4,"leafShape":4,"habit":0,"leafColor":0,"persistence":0,"flowerShape":3,"inflorescence":4,"flowerMonths":0,"phenologyRegion":0,"petals":4,"stamenCount":4,"pistilCount":4,"leafPattern":0,"patternColor":0},"status":"partial","architecture":"acorusReferences","shootProfile":"acorusMasamune","lifeForm":"herb","arrangement":"distichous","habit":"clump","leafShape":"acorusUnifacialBlade","leafColor":"#628154","leafTexture":"glossy","persistence":"evergreen","flowerShape":"acorusReferenceSpadix","inflorescence":"spadix","flowerMonths":[5,6],"flowerTiming":"months","petals":6,"stamenCount":6,"pistilCount":1,"seedHeadMonths":[],"monthlyLeafDensity":[0.7,0.7,0.85,1,1,1,1,1,1,1,0.85,0.7],"phenologyRegion":"国内の正宗の5〜6月を参考表示。冬の葉が倒れ、春に芽吹く記載を近似。完全落葉の境界や地域差は未予測。","sourceConflict":"正宗10〜20cmを保持。販売元のAcorus gramineus v. decoratusと、元登録のMasamune表記を同定済みとは扱いません。幅欄の表示は曖昧なため数値化せず、写真の20cmはポット込みで草丈の実測には使いません。","unconfirmed":["資料を基に作る部分的な参考3D。同一株の12か月照合、株内の本数・葉幅・湾曲・色は未実測。","小花の花被片6枚・雄しべ6本・雌しべ1本は科の形態。小花と葯の寸法・円柱状花序は種の記載から参考化し、流通品種固有の実測とはしていません。","冬の葉量と垂れ方、開花の株齢、花序数、春の更新・地下茎の伸長、年次拡大は描画用の近似。","子房内部・花粉粒・種子と結実率は未再現。果実色も販売資料の赤色と植物誌の黄白〜褐色の差があるため果実を描いていません。","水没・水深による形の切替、凍害と乾燥害は未予測。湿地向けの参考で、株元や根の状態を診断する表示ではありません。"],"leafPattern":"stripes","patternColor":"#e1e3d0"},"p-115ec5dc0069":{"sources":[{"url":"https://item.rakuten.co.jp/chanet/16581/","scope":"catalog-entry"},{"url":"https://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=222000260","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"najas","lifeForm":"herb","habit":"spreading","arrangement":"opposite","leafShape":"najasFineLeaf","leafLength":0.025,"leafWidth":0.0009,"leafColor":"#699750","leafTexture":"smooth","leafUnderside":"#94a971","stemColor":"#937c59","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","ナヤス・グアダルペンシスとして売られる参考株を使います。細く枝分かれする褐色の茎、2〜3cmほどの細葉、褐色の中脈を描きます。葉の鋸歯は裸眼では目立たない微細なものです。","流通名と種の同一性には未確認が残ります。日本の花期・屋外の冬姿・種子からの更新時期は未確認です。保護された水中株の姿を表示し、北米の開花季節を日本の月へ転用しません。"]},"p-03b938c53e6f":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/402","scope":"catalog-entry"},{"url":"https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Glossostigma~elatinoides&page=nswfl","scope":"species"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"persistence":0,"leafColor":0,"flowerMonths":0,"flowerTiming":0,"flowerShape":1},"status":"partial","architecture":"submergedShoots","shootProfile":"glosso","lifeForm":"herb","habit":"creeping","arrangement":"opposite","leafShape":"glossoSpoon","leafLength":0.016,"leafWidth":0.003,"leafColor":"#72a448","leafTexture":"smooth","leafUnderside":"#a3bb76","stemColor":"#9da96c","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"国内生産者は寒冷地以外での凍らない水中越冬と、暖かな室内の常緑を条件付きで説明しています。地域・水温・水深による残葉の違いと月境界は未校正です。5〜9月は国内の水上の花期で、NSWの12〜5月を国内へ読み替えていません。","unconfirmed":["全月の実物照合","水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。","細い匍匐茎の節から出る小さな根、対生する柄のあるへら形葉を描きます。水中で底を覆う低い姿が対象です。","5〜9月の花期は水上栽培の国内資料です。水中葉モデルでは花を表示しません。冬に水中へ避難して越冬する条件で、凍結・積雪地域の生存は保証しません。","国内の学名を種の資料と照合していますが、写真の株と同じクローン・全月の実物再現は未検証です。","資料の葉全体・葉身・葉柄を区別し、既存の水中葉の近似形状を維持しています。表示する草丈・株幅・葉高と、匍匐茎数・葉数は実測の成長予測ではありません。","国内の花期5〜9月を維持し、南半球NSWの12〜5月を換算・混合しません。NSWの青い二唇形花冠と国内写真の白く見える花を区別し、この水中葉モデルには花を描きません。","冬の残葉は凍らない水中・暖かな室内という条件の参考です。寒冷地、積雪・凍結、水温による月別変化と越冬成功は未校正です。","生産者写真の丸みのある葉身と葉柄を参考にした立体近似です。葉の断面の厚さ・曲率・光沢や色値、写真と同じ寸法比は未校正です。","主茎1本の32節と側枝64本の各7節、合計480節・葉柄と葉身各960枚は描画例です。自然な株数・葉数・匍匐茎の増殖量を予測していません。","葉柄を茎の節と葉身へつなぎ、入力した草丈・株幅・葉高や池の水深へ収めます。根の本数と地下部、同じ株の月別変化と年次成長は未検証です。","水中の健康な葉の参考表示を維持し、冬に残る量や枯れる月を新たに推測していません。国内商品写真の白く見える花は確認しましたが、この水中モデルには花を描きません。"],"flowerMonths":[5,6,7,8,9],"flowerTiming":"months","flowerShape":"glossoLips","sourceConflict":"国内資料の草丈2〜5cmは維持し、株幅10〜40cmの範囲は未確認とします。直径9cmのポット、葉全体6〜20mm・葉身幅1〜3mmや葉柄2〜10mmは株幅ではありません。国内商品写真では白く見える花、NSWの種の記載では青い花冠という違いを残します。同じクローンや照明による色差は未確認です。"},"p-a8dafa56e5f8":{"sources":[{"url":"https://www.akb.jp/c/2025springDM/202503-water_plants/406","scope":"catalog-entry"},{"url":"https://www.nzflora.info/factsheet/taxon/Lilaeopsis-novae-zelandiae.html","scope":"species"},{"url":"https://idtools.org/appw/index.cfm?entityID=10341&packageID=2197","scope":"genus"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0,"flowerMonths":0,"flowerTiming":0,"flowerShape":1},"status":"partial","architecture":"submergedShoots","shootProfile":"cobra","lifeForm":"herb","habit":"creeping","arrangement":"basal","leafShape":"cobraPhyllode","leafLength":0.1,"leafWidth":0.004,"leafColor":"#719855","leafTexture":"smooth","leafUnderside":"#9daf79","stemColor":"#94a17b","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","Lilaeopsis novae-zelandiaeを参照し、横に連なる地下茎の節から平たい細葉を立ち上げます。水上では小さな白い5弁花を3〜4個まとめる散形花序を参考に描きます。","国内生産者の5〜9月の花期を使います。深い水中では花を表示しません。寒冷地を除く水中越冬または暖かな室内という条件で葉を保ちます。流通名だけでは別種との混同を完全には除けません。"],"flowerMonths":[5,6,7,8,9],"flowerTiming":"months","flowerShape":"cobraUmbel"},"p-91d5d4c1fdcd":{"sources":[{"url":"https://www.akb.jp/c/suisei/shissei/001-0003","scope":"catalog-entry"},{"url":"https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Machaerina~rubiginosa&page=nswfl","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerShape":0,"flowerTiming":0,"winterClimateSensitive":0,"flowerMonths":0,"leafWidth":0,"leafLength":0},"status":"partial","unconfirmed":["全形・全月の実物照合","地域別の萌芽と枯れ込みの月境界","茎葉と花序の密度・寸法比の実測"],"architecture":"twigRush","leafShape":"twigRushBlade","leafColor":"#6e974e","stemColor":"#709956","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerShape":"sedgeSpike","flowerTiming":"months","winterClimateSensitive":true,"flowerMonths":[6,7,8],"leafWidth":0.004,"leafLength":0.75},"p-a9c345dcea4e":{"sources":[{"url":"https://www.akb.jp/c/suisei/fuyou/004-0002","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/nymphoides-peltata/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":0,"leafTexture":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水深による草姿の変化","地域ごとの水上葉の出現と消失月","水中の葉と根茎の立体表示","浮葉6枚・花2輪と花冠縁の細い房は描画例です。写真の複数の株や花を、一株の花数や年次の増殖量へ読み替えません。","葉の光沢・細かな波打ちと、黄色い5裂の花冠の形を写真参考にします。葉・花の大きさ、開閉角度、各部の正確な数や色の経時変化は未校正です。","草丈と成株の株幅は未確認です。海外の寸法や国内の商品表の全幅〜5cm、9cmポットから補いません。","水面に見える部分だけの参考表示で、水中の根や根茎は未表示です。月別の地上部の有無は近似で、株の凍結・越冬成功・翌年の回復を予測しません。"],"architecture":"floatingHeart","leafShape":"floatingCordate","flowerShape":"fringedWaterFlower","leafColor":"#638146","stemColor":"#688650","arrangement":"basal","habit":"creeping","lifeForm":"herb","persistence":"winterDormant","flowerMonths":[5,6,7,8,9],"flowerTiming":"months","leafTexture":"glossy","shootProfile":"asazaPhotoReference","sourceConflict":"国内の商品表の全幅〜5cmは対象部位が明確でなく、成株の株幅へ採用しません。9cmは出荷ポット径です。海外資料の水深・草丈・株幅は国内の寸法へ転用せず、表示は入力寸法を使います。花期5〜9月は生産者の記載で、日々の開閉と年間の同一株の変化は未検証です。","phenologyRegion":"水上部の出現・消失は表示上の目安で、地域別の同じ株を月ごとに追った結果ではありません。生産者は冬の沈水管理と凍結への注意、日当たりのよい室内での水上管理も案内しています。冬の水中葉・根茎そのものと、越冬成功や回復は描きません。"},"p-f8b68a8f740f":{
+},"p-b016e0a19811":{"sources":[{"url":"https://www.akb.jp/c/water_plants/aqua_plants/foreground_plants/fp-013","scope":"catalog-entry"},{"url":"https://tropica.com/en/plants/plantdetails/Hemianthusmicranthemoides%28048A%29/4476","scope":"catalog-entry"},{"url":"https://idtools.org/tools/1055/index.cfm?entityID=10354&packageID=2197","scope":"genus"}],"basis":{"habit":0,"leafShape":1,"arrangement":2,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"pearl","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"pearlWhorl","leafLength":0.007,"leafWidth":0.003,"leafColor":"#79a84f","leafTexture":"smooth","leafUnderside":"#a4c378","stemColor":"#9fb977","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","パールグラスとして流通する細茎と小さく弓なりの葉を描きます。属の資料にある対生または3〜4枚輪生を参考に、水中形の葉を主に3枚、部分的に4枚ずつ配置します。","国内販売名Hemianthus micranthemoidesとTropicaのMicranthemum glomeratumの名称には差があります。全流通株の同一性と国内屋外の寿命・冬姿は未確認で、温度を保った水中栽培の参考形を表示します。"]},"p-c3c1aad2c953":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/1023","scope":"catalog-entry"},{"url":"https://tropica.com/en/plants/plantdetails/Micranthemumumbrosum%28048%29/4475","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"largePearl","lifeForm":"herb","habit":"clump","arrangement":"opposite","leafShape":"largePearlRound","leafLength":0.01,"leafWidth":0.009,"leafColor":"#85ab51","leafTexture":"smooth","leafUnderside":"#acbf83","stemColor":"#a2b37d","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","小さな丸い葉を十字対生にし、水中では茎が立ち上がり側枝が増える姿を描きます。","寒冷地を除き、水中で冬も葉を保ち、少し黄みを帯びるという国内生産者の記載を反映します。黄変の月境界と程度は近似で、凍る池での越冬を再現したものではありません。"],"seasonalColors":{"winter":"#a8b264"}},"p-4211c50a21e0":{"sources":[{"url":"https://www.akb.jp/c/suisei/gd3135","scope":"catalog-entry"},{"url":"https://tropica.com/en/plants/plantdetails/4442/4442","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"newPearl","lifeForm":"herb","habit":"creeping","arrangement":"opposite","leafShape":"newPearlRound","leafLength":0.005,"leafWidth":0.0045,"leafColor":"#7fac55","leafTexture":"smooth","leafUnderside":"#a8c187","stemColor":"#a0b67b","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","細い匍匐茎と節から出る小さな丸葉で低いマットを作ります。形態の参考にしたTropicaのMonte Carloと、収録名だけで特定できない流通株の同一性は未確認です。","寒冷地を除く水中越冬の記載を参考に、冬も葉を残してやや黄みを帯びさせます。正確な月別変色、水上の花、寒冷地の屋外越冬は未確認です。"],"seasonalColors":{"winter":"#a8b264"}},"p-b038c25453b8":{"sources":[{"url":"https://www.akb.jp/c/suisei/fuyou/004-0008","scope":"catalog-entry"},{"url":"https://www.tokyo-shoyaku.com/ohana.php?hana=483","scope":"species"},{"url":"https://www.town.taketoyo.lg.jp/chousei/1001538/1001551/1002276/1002273/1002280/1002310.html","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":0,"leafTexture":0,"leafLength":0,"flowerRadius":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水深による草姿の変化","地域ごとの水上葉の出現と消失月","水中の葉と根茎の立体表示","草丈10〜40cm前後は国内販売元の参考範囲です。12cmポット、葉長20〜30cm、花径4〜5cmを株幅や利用者の株の実測値へ転用しません。","黄色い外側5枚は萼、内側の短い多数の器官が花弁という自治体の説明を採用しています。販売元の3弁という用途説明は、外側の構造の根拠にしていません。","4月の開花記録は特定年の観察で、毎年同じ月に咲く保証ではありません。冬の沈水管理、凍結への注意、屋内の水上管理という生産者の説明も、地域別の越冬成功や自動回復の予測には使いません。","杜若園芸の掲載写真を参考に、基部に切れ込みのある広い葉と、丸く立ち上がる5枚の萼を描いています。写真の色・姿勢は一例で、栽培中の株の実測値ではありません。","葉6枚・花1個、内側の花弁16枚・雄しべ32本・柱頭の放射線12本は描画例です。写真から器官数を確定したものではなく、年次増殖や毎月の葉数・株姿の変化は未校正です。"],"architecture":"nupharEmergent","leafShape":"nupharSagittate","flowerShape":"nupharCup","leafColor":"#517a3d","stemColor":"#688650","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"winterSubmerged","flowerMonths":[4,5,6,7,8,9],"flowerTiming":"months","leafTexture":"glossy","leafLength":0.25,"flowerRadius":0.0225,"sourceConflict":"花の構造は武豊町の外側5枚の萼と、多数の短い内側の花弁という説明を参考にしています。販売元の用途説明には3弁という異なる記載があるため、草丈・花期の資料と花の構造の資料を区別しています。12cmポット径と葉長20〜30cmは成株の株幅には読み替えません。 掲載写真は葉の輪郭と萼の立ち上がりの参考に使い、器官数、株寸法、月ごとの成長量の測定には使いません。","phenologyRegion":"販売元は4〜9月、武豊町は一般に5〜9月とし、2013年4月中旬の開花も記録しています。年や栽培条件による違いを含み、毎年同じ月の開花や冬の回復を予測する表示ではありません。水深による浮葉・水上葉と冬の沈水葉の切替は未校正です。","shootProfile":"nupharPhotoReference"},"p-ab7ec521483e":{"sources":[{"url":"https://www.akb.jp/c/su/onsu/himesuiren/gd1851","scope":"catalog-entry"},{"url":"https://www.akb.jp/c/taeru/free_9_117","scope":"genus"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0,"flowerShape":0,"flowerMonths":0,"flowerTiming":0,"persistence":0,"dormantMonths":1,"emergenceMonths":1},"status":"partial","architecture":"marginGardenPlants","shootProfile":"helvola","lifeForm":"herb","habit":"creeping","arrangement":"basal","leafShape":"helvolaBlade","leafColor":"#658348","leafTexture":"smooth","leafUnderside":"#82494e","stemColor":"#877450","barkColor":"#887963","flowerShape":"helvolaFlower","flowerMonths":[5,6,7,8,9],"flowerTiming":"months","persistence":"winterSubmerged","fruitMonths":[],"winterClimateSensitive":true,"unconfirmed":["全月の実物照合","形態は資料からの近似で、写真と同等の再現は未検証です。","姫スイレンは単一品種名ではありません。小型温帯スイレンのヘルボラの写真と記載を参考に、淡黄色の花、暗い斑点のある浮葉を描きます。収録名全体をこの花色や品種と同一とは断定しません。","国内生産者の5〜9月開花、4月頃の葉出し、11月頃からの水面葉の消失を参考にします。冬の水中葉と地下部そのもの、品種・水温による日付差は未再現です。","浮葉6枚・花1輪、花弁18枚と外側4枚・中心24本は描画例で、品種固有の正確な枚数ではありません。全体写真の多数の花を一株の増殖や年次成長としません。","葉の切れ込み、暗赤褐色の斑点、淡いクリーム色の花被片を写真参考にします。葉脈・葉の厚さ・裏の組織・花の大きさや色の変化は未校正です。","草丈・株幅は未確認です。葉の大きさ5〜20cmと管理水深を使って成株寸法を補わず、表示寸法は利用者の入力値を使います。","4月頃の葉出し・11月頃からの浮葉消失は同じ生産者の温帯スイレン全般の目安です。熱帯スイレンの屋内保護月を混ぜず、冬の沈水葉・根茎・株の凍結や越冬成功・回復は描きません。"],"dormantMonths":[11,12,1,2,3],"emergenceMonths":[4],"phenologyRegion":"4月頃の葉出し・11月頃の浮葉消失は温帯スイレン全体の目安です。品種・地域・水温で変わり、同じ株の月境界・葉量・縮小率は未実測です。冬の水中葉と根茎は表示していません。","sourceConflict":"国内の葉の大きさ5〜20cmは、草丈や株幅ではありません。植え付け水深10〜20cmと19cmカゴも別の値です。姫スイレンは単一品種名ではないため、ヘルボラの写真を形の参考にしています。花期5〜9月は種類別の記載で、毎月の開花数や同一株の年間変化は未確認です。"},"p-2ebde73aa083":{"sources":[{"url":"https://www.engei.net/products/detail?id=258698","scope":"catalog-entry"},{"url":"https://www.rhsplants.co.uk/plants/_/acorus-gramineus-gon/classid.2000038402/sku.pl30007450/","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/acorus-gramineus/","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-0000352676","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-7000000004","scope":"family"}],"basis":{"architecture":0,"shootProfile":0,"arrangement":4,"leafShape":4,"habit":0,"leafColor":0,"persistence":0,"flowerShape":3,"inflorescence":4,"flowerMonths":2,"phenologyRegion":2,"petals":4,"stamenCount":4,"pistilCount":4,"leafPattern":0,"patternColor":0},"status":"partial","architecture":"acorusReferences","shootProfile":"acorusOgon","lifeForm":"herb","arrangement":"distichous","habit":"clump","leafShape":"acorusUnifacialBlade","leafColor":"#bac65e","leafTexture":"glossy","persistence":"evergreen","flowerShape":"acorusReferenceSpadix","inflorescence":"spadix","flowerMonths":[5,6],"flowerTiming":"species-reference","petals":6,"stamenCount":6,"pistilCount":1,"seedHeadMonths":[],"monthlyLeafDensity":[0.7,0.7,0.8,0.95,1,1,1,1,1,1,0.9,0.75],"phenologyRegion":"国内の常緑の黄金品種を参考表示。5〜6月の花は北米の種の参考で、国内品種の月ではありません。英国の半常緑・露出地での落葉は別条件で、日本の全地域の冬姿は未校正。","sourceConflict":"国内販売元の草丈20〜40cmを優先し、従来の15〜30cmを訂正。英国販売元の高さ・幅50cmは別条件の参考で、国内幅は未確認のままです。国内写真は緑の多い黄斑、北米の成熟株写真は明るい黄金色を示し、発色を固定月で予測しません。","unconfirmed":["資料を基に作る部分的な参考3D。同一株の12か月照合、株内の本数・葉幅・湾曲・色は未実測。","小花の花被片6枚・雄しべ6本・雌しべ1本は科の形態。小花と葯の寸法・円柱状花序は種の記載から参考化し、流通品種固有の実測とはしていません。","冬の葉量と垂れ方、開花の株齢、花序数、春の更新・地下茎の伸長、年次拡大は描画用の近似。","子房内部・花粉粒・種子と結実率は未再現。果実色も販売資料の赤色と植物誌の黄白〜褐色の差があるため果実を描いていません。","水没・水深による形の切替、凍害と乾燥害は未予測。湿地向けの参考で、株元や根の状態を診断する表示ではありません。"],"leafPattern":"stripes","patternColor":"#788c4e"},"p-b1eb3be4e657":{"sources":[{"url":"https://world-plants.com/plants-dt/acorus_gramineus/","scope":"catalog-entry"},{"url":"https://www.engei.net/products/detail?id=136666","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/acorus-gramineus/","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-0000352676","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-7000000004","scope":"family"}],"basis":{"architecture":0,"shootProfile":0,"arrangement":4,"leafShape":4,"habit":0,"leafColor":0,"persistence":0,"flowerShape":3,"inflorescence":4,"flowerMonths":1,"phenologyRegion":0,"petals":4,"stamenCount":4,"pistilCount":4},"status":"partial","architecture":"acorusReferences","shootProfile":"acorusHime","lifeForm":"herb","arrangement":"distichous","habit":"clump","leafShape":"acorusUnifacialBlade","leafColor":"#58764c","leafTexture":"glossy","persistence":"evergreen","flowerShape":"acorusReferenceSpadix","inflorescence":"spadix","flowerMonths":[5,6,7],"flowerTiming":"months","petals":6,"stamenCount":6,"pistilCount":1,"seedHeadMonths":[],"monthlyLeafDensity":[0.8,0.8,0.9,1,1,1,1,1,1,1,0.95,0.85],"phenologyRegion":"国内の姫セキショウの5〜7月を参考に表示。同名の矮性流通株の同一クローン確認は未完了。冬の残葉量・月ごとの葉量は未校正。","sourceConflict":"姫5〜10cmを、同じ生産者ページの極姫3〜5cm・黄金姫5〜10cm・朧月15〜30cmと区別。花期は国内販売元の5〜7月を採用し、従来の種の5〜6月から訂正。同じ販売名でも元登録との同一クローンは未確認。","unconfirmed":["資料を基に作る部分的な参考3D。同一株の12か月照合、株内の本数・葉幅・湾曲・色は未実測。","小花の花被片6枚・雄しべ6本・雌しべ1本は科の形態。小花と葯の寸法・円柱状花序は種の記載から参考化し、流通品種固有の実測とはしていません。","冬の葉量と垂れ方、開花の株齢、花序数、春の更新・地下茎の伸長、年次拡大は描画用の近似。","子房内部・花粉粒・種子と結実率は未再現。果実色も販売資料の赤色と植物誌の黄白〜褐色の差があるため果実を描いていません。","水没・水深による形の切替、凍害と乾燥害は未予測。湿地向けの参考で、株元や根の状態を診断する表示ではありません。"]},"p-7a24f0539c5f":{"sources":[{"url":"https://naegibu.com/qrc/kusa_sekisyo03/","scope":"catalog-entry"},{"url":"https://world-plants.com/plants-dt/acorus_gramineus/","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/acorus-gramineus/","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-0000352676","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-7000000004","scope":"family"}],"basis":{"architecture":0,"shootProfile":0,"arrangement":4,"leafShape":4,"habit":0,"leafColor":0,"persistence":0,"flowerShape":3,"inflorescence":4,"flowerMonths":0,"phenologyRegion":0,"petals":4,"stamenCount":4,"pistilCount":4,"leafPattern":0,"patternColor":0},"status":"partial","architecture":"acorusReferences","shootProfile":"acorusMasamune","lifeForm":"herb","arrangement":"distichous","habit":"clump","leafShape":"acorusUnifacialBlade","leafColor":"#628154","leafTexture":"glossy","persistence":"evergreen","flowerShape":"acorusReferenceSpadix","inflorescence":"spadix","flowerMonths":[5,6],"flowerTiming":"months","petals":6,"stamenCount":6,"pistilCount":1,"seedHeadMonths":[],"monthlyLeafDensity":[0.7,0.7,0.85,1,1,1,1,1,1,1,0.85,0.7],"phenologyRegion":"国内の正宗の5〜6月を参考表示。冬の葉が倒れ、春に芽吹く記載を近似。完全落葉の境界や地域差は未予測。","sourceConflict":"正宗10〜20cmを保持。販売元のAcorus gramineus v. decoratusと、元登録のMasamune表記を同定済みとは扱いません。幅欄の表示は曖昧なため数値化せず、写真の20cmはポット込みで草丈の実測には使いません。","unconfirmed":["資料を基に作る部分的な参考3D。同一株の12か月照合、株内の本数・葉幅・湾曲・色は未実測。","小花の花被片6枚・雄しべ6本・雌しべ1本は科の形態。小花と葯の寸法・円柱状花序は種の記載から参考化し、流通品種固有の実測とはしていません。","冬の葉量と垂れ方、開花の株齢、花序数、春の更新・地下茎の伸長、年次拡大は描画用の近似。","子房内部・花粉粒・種子と結実率は未再現。果実色も販売資料の赤色と植物誌の黄白〜褐色の差があるため果実を描いていません。","水没・水深による形の切替、凍害と乾燥害は未予測。湿地向けの参考で、株元や根の状態を診断する表示ではありません。"],"leafPattern":"stripes","patternColor":"#e1e3d0"},"p-115ec5dc0069":{"sources":[{"url":"https://item.rakuten.co.jp/chanet/16581/","scope":"catalog-entry"},{"url":"https://www.efloras.org/florataxon.aspx?flora_id=1&taxon_id=222000260","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"najas","lifeForm":"herb","habit":"spreading","arrangement":"opposite","leafShape":"najasFineLeaf","leafLength":0.025,"leafWidth":0.0009,"leafColor":"#699750","leafTexture":"smooth","leafUnderside":"#94a971","stemColor":"#937c59","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","ナヤス・グアダルペンシスとして売られる参考株を使います。細く枝分かれする褐色の茎、2〜3cmほどの細葉、褐色の中脈を描きます。葉の鋸歯は裸眼では目立たない微細なものです。","流通名と種の同一性には未確認が残ります。日本の花期・屋外の冬姿・種子からの更新時期は未確認です。保護された水中株の姿を表示し、北米の開花季節を日本の月へ転用しません。"]},"p-03b938c53e6f":{
+  "sources": [
+    {
+      "url": "https://www.akb.jp/c/suisei/chusui/402",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Glossostigma~elatinoides&page=nswfl",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 0,
+    "arrangement": 0,
+    "persistence": 0,
+    "leafColor": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "flowerShape": 1
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "glosso",
+  "lifeForm": "herb",
+  "habit": "creeping",
+  "arrangement": "opposite",
+  "leafShape": "glossoSpoon",
+  "leafLength": 0.016,
+  "leafWidth": 0.003,
+  "leafColor": "#72a448",
+  "leafTexture": "smooth",
+  "leafUnderside": "#a3bb76",
+  "stemColor": "#9da96c",
+  "persistence": "submergedPersistent",
+  "fruitMonths": [],
+  "phenologyRegion": "国内生産者は寒冷地以外での凍らない水中越冬と、暖かな室内の常緑を条件付きで説明しています。地域・水温・水深による残葉の違いと月境界は未校正です。5〜9月は国内の水上の花期で、NSWの12〜5月を国内へ読み替えていません。",
+  "unconfirmed": [
+    "全月の実物照合",
+    "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
+    "細い匍匐茎の節から出る小さな根、対生する柄のあるへら形葉を描きます。水中で底を覆う低い姿が対象です。",
+    "5〜9月の花期は水上栽培の国内資料です。水中葉モデルでは花を表示しません。冬に水中へ避難して越冬する条件で、凍結・積雪地域の生存は保証しません。",
+    "国内の学名を種の資料と照合していますが、写真の株と同じクローン・全月の実物再現は未検証です。",
+    "資料の葉全体・葉身・葉柄を区別し、既存の水中葉の近似形状を維持しています。表示する草丈・株幅・葉高と、匍匐茎数・葉数は実測の成長予測ではありません。",
+    "国内の花期5〜9月を維持し、南半球NSWの12〜5月を換算・混合しません。NSWの青い二唇形花冠と国内写真の白く見える花を区別し、この水中葉モデルには花を描きません。",
+    "冬の残葉は凍らない水中・暖かな室内という条件の参考です。寒冷地、積雪・凍結、水温による月別変化と越冬成功は未校正です。",
+    "生産者写真の丸みのある葉身と葉柄を参考にした立体近似です。葉の断面の厚さ・曲率・光沢や色値、写真と同じ寸法比は未校正です。",
+    "低く広がる主茎と側枝に、短い葉柄と対生する葉をつなぎます。茎・葉・根の数と配置は表示上の近似で、自然な株数・葉数や匍匐茎の増殖量を予測していません。",
+    "葉柄を茎の節と葉身へつなぎ、入力した草丈・株幅・葉高や池の水深へ収めます。根の本数と地下部、同じ株の月別変化と年次成長は未検証です。",
+    "水中の健康な葉の参考表示を維持し、冬に残る量や枯れる月を新たに推測していません。国内商品写真の白く見える花は確認しましたが、この水中モデルには花を描きません。"
+  ],
+  "flowerMonths": [
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "flowerTiming": "months",
+  "flowerShape": "glossoLips",
+  "sourceConflict": "国内資料の草丈2〜5cmは維持し、株幅10〜40cmの範囲は未確認とします。直径9cmのポット、葉全体6〜20mm・葉身幅1〜3mmや葉柄2〜10mmは株幅ではありません。国内商品写真では白く見える花、NSWの種の記載では青い花冠という違いを残します。同じクローンや照明による色差は未確認です。"
+},"p-a8dafa56e5f8":{"sources":[{"url":"https://www.akb.jp/c/2025springDM/202503-water_plants/406","scope":"catalog-entry"},{"url":"https://www.nzflora.info/factsheet/taxon/Lilaeopsis-novae-zelandiae.html","scope":"species"},{"url":"https://idtools.org/appw/index.cfm?entityID=10341&packageID=2197","scope":"genus"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0,"flowerMonths":0,"flowerTiming":0,"flowerShape":1},"status":"partial","architecture":"submergedShoots","shootProfile":"cobra","lifeForm":"herb","habit":"creeping","arrangement":"basal","leafShape":"cobraPhyllode","leafLength":0.1,"leafWidth":0.004,"leafColor":"#719855","leafTexture":"smooth","leafUnderside":"#9daf79","stemColor":"#94a17b","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"凍らない水中の参考条件。ショートヘアグラスのみ国内の冬期地上部休眠を反映。季節から月への換算は描画上の目安で、地域・水温ごとの校正は未実施です。","unconfirmed":["全月の実物照合","形態記載と生産者写真を参考にした近似で、実物と同等の写真再現は未検証です。","Lilaeopsis novae-zelandiaeを参照し、横に連なる地下茎の節から平たい細葉を立ち上げます。水上では小さな白い5弁花を3〜4個まとめる散形花序を参考に描きます。","国内生産者の5〜9月の花期を使います。深い水中では花を表示しません。寒冷地を除く水中越冬または暖かな室内という条件で葉を保ちます。流通名だけでは別種との混同を完全には除けません。"],"flowerMonths":[5,6,7,8,9],"flowerTiming":"months","flowerShape":"cobraUmbel"},"p-91d5d4c1fdcd":{"sources":[{"url":"https://www.akb.jp/c/suisei/shissei/001-0003","scope":"catalog-entry"},{"url":"https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Machaerina~rubiginosa&page=nswfl","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerShape":0,"flowerTiming":0,"winterClimateSensitive":0,"flowerMonths":0,"leafWidth":0,"leafLength":0},"status":"partial","unconfirmed":["全形・全月の実物照合","地域別の萌芽と枯れ込みの月境界","茎葉と花序の密度・寸法比の実測"],"architecture":"twigRush","leafShape":"twigRushBlade","leafColor":"#6e974e","stemColor":"#709956","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerShape":"sedgeSpike","flowerTiming":"months","winterClimateSensitive":true,"flowerMonths":[6,7,8],"leafWidth":0.004,"leafLength":0.75},"p-a9c345dcea4e":{"sources":[{"url":"https://www.akb.jp/c/suisei/fuyou/004-0002","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/nymphoides-peltata/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":0,"leafTexture":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水深による草姿の変化","地域ごとの水上葉の出現と消失月","水中の葉と根茎の立体表示","浮葉6枚・花2輪と花冠縁の細い房は描画例です。写真の複数の株や花を、一株の花数や年次の増殖量へ読み替えません。","葉の光沢・細かな波打ちと、黄色い5裂の花冠の形を写真参考にします。葉・花の大きさ、開閉角度、各部の正確な数や色の経時変化は未校正です。","草丈と成株の株幅は未確認です。海外の寸法や国内の商品表の全幅〜5cm、9cmポットから補いません。","水面に見える部分だけの参考表示で、水中の根や根茎は未表示です。月別の地上部の有無は近似で、株の凍結・越冬成功・翌年の回復を予測しません。"],"architecture":"floatingHeart","leafShape":"floatingCordate","flowerShape":"fringedWaterFlower","leafColor":"#638146","stemColor":"#688650","arrangement":"basal","habit":"creeping","lifeForm":"herb","persistence":"winterDormant","flowerMonths":[5,6,7,8,9],"flowerTiming":"months","leafTexture":"glossy","shootProfile":"asazaPhotoReference","sourceConflict":"国内の商品表の全幅〜5cmは対象部位が明確でなく、成株の株幅へ採用しません。9cmは出荷ポット径です。海外資料の水深・草丈・株幅は国内の寸法へ転用せず、表示は入力寸法を使います。花期5〜9月は生産者の記載で、日々の開閉と年間の同一株の変化は未検証です。","phenologyRegion":"水上部の出現・消失は表示上の目安で、地域別の同じ株を月ごとに追った結果ではありません。生産者は冬の沈水管理と凍結への注意、日当たりのよい室内での水上管理も案内しています。冬の水中葉・根茎そのものと、越冬成功や回復は描きません。"},"p-f8b68a8f740f":{
   "sources": [
     {
       "url": "https://www.akb.jp/c/aquarium/fp-029",

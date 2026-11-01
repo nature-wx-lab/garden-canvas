@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1013';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1014';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1013';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1014';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20882,6 +20882,7 @@ function drawMisebayaCultivarReferences(b,{info,s},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.shootProfile==='shortHairPhotoReference'){drawShortHairPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='goldJennyPhotoReference'){drawGoldJennyPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.architecture==='misebayaCultivarReferences'){drawMisebayaCultivarReferences(b,{info,s},kit);return;}
  if(info.appearance?.architecture==='hylotelephiumBorderReferences'){drawBorderSedumReferences(b,{info,s},kit);return;}
@@ -26342,6 +26343,47 @@ function drawYellowBacopaPhotoReference(b,{s,rand},kit){
   }
  }
 }
+
+// Retail Eleocharis parvula reference: culms, basal sheaths and terminal spikelets.
+export function shortHairPhotoReferencePoint(type,t,u){
+ if(type==='spikelet'){const a=u*TAU,r=.24*Math.max(0,Math.sin(Math.PI*t))**.65*(1-.18*t);return[Math.sin(a)*r,t,Math.cos(a)*r];}
+ const sn=Math.max(0,Math.sin(Math.PI*t));return[u*.48*sn**.62,t,.14*u*u*sn+.035*t*t];
+}
+export function shortHairPhotoReferenceGeometry(type){
+ const spike=type==='spikelet',N=spike?24:12,C=spike?32:16,p=[],uv=[],ix=[],stride=(N+1)*(C+1);
+ for(let side=0;side<(spike?1:2);side++)for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=spike?j/C:j/C*2-1,v=shortHairPhotoReferencePoint(type,t,u);if(side)v[2]+=.005*Math.sin(Math.PI*t);p.push(...v);uv.push(j/C,t);
+  if(i<N&&j<C){const k=side*stride+i*(C+1)+j;if(spike||side)ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);else ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ if(!spike){for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}for(let j=0;j<C;j++){const a=N*(C+1)+j,z=a+1;ix.push(a,a+stride,z,z,a+stride,z+stride);}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={shortHairPhotoReference:true,part:type,illustrativeGeometry:true,closedSurface:true};return g;
+}
+function shortHairPhotoSegment(f,a,z,r,color,kind){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');f.add('short-hairgrass-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawShortHairPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00020,w*.0018,h*.004),floor=r*1.6+Math.min(.00002,h*.002),n=Math.max(1,Math.round(768*s.leafDensity)),flowers=s.bloom&&s.waterDepth<.02;
+ let spikeIndex=0;
+ for(let k=0;k<n;k++){
+  const az=k*2.399+rand()*.18,R=w*.38*Math.sqrt((k+.5)/n),root=[Math.sin(az)*R,floor,Math.cos(az)*R],fertile=flowers&&k%6===0,S=Math.min(.0032,h*.065,w*.02),tipHeight=fertile?Math.max(floor,h*(.82+.12*rand())-S):Math.max(floor,LH*(.52+.40*rand())),bend=Math.min(w*.025,(tipHeight-floor)*(.10+.12*rand()));let previous=root,previous2=root;
+  for(let node=0;node<8;node++){
+   const t=(node+1)/8,at=[root[0]+Math.sin(az)*bend*t*t,floor+(tipHeight-floor)*t,root[2]+Math.cos(az)*bend*t*t];shortHairPhotoSegment(b,previous,at,r*(1-.42*t),k%17===0?'#a8ad67':kit.shade(rand,s.leafColor,.035),'culm-short-hairgrass-photo-ref');previous2=previous;previous=at;
+  }
+  const sheathTop=[root[0]+Math.sin(az)*bend*.01,floor+Math.min(.008,(tipHeight-floor)*.10),root[2]+Math.cos(az)*bend*.01];shortHairPhotoSegment(b,root,sheathTop,r*1.4,k%3===0?'#aa9d77':'#bcc49b','sheath-short-hairgrass-photo-ref');
+  if(!fertile)continue;
+  const axis=new THREE.Vector3(...previous).sub(new THREE.Vector3(...previous2)).normalize(),rot=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),'YXZ'),f=flowerFrame(b,previous,rot.x,rot.y,rot.z);f.add('short-hairgrass-photo-reference-spikelet','spikelet-short-hairgrass-photo-reference','#9aa36b',0,0,0,S*.45,S,S*.45);
+  for(let glume=0;glume<9;glume++){
+   const a=glume*2.399,base=[Math.sin(a)*S*.10,glume===0?0:S*(.04+.05*(glume-1)),Math.cos(a)*S*.10],pitch=.20,L=S*(glume===0?.62:.50),W=S*(glume===0?.56:.36),Z=S*.40,pf=flowerFrame(f,base,pitch,a);pf.add('short-hairgrass-photo-reference-glume','glume-short-hairgrass-photo-reference',glume%3===0?'#b6b38a':'#9eaa70',0,0,0,W,L,Z);
+   if(glume!==8)continue;
+   const rootMatrix=new THREE.Matrix4().compose(new THREE.Vector3(...previous),new THREE.Quaternion().setFromEuler(rot),new THREE.Vector3(1,1,1)),glumeMatrix=new THREE.Matrix4().compose(new THREE.Vector3(...base),new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,a,0,'YXZ')),new THREE.Vector3(W,L,Z)),matrix=rootMatrix.multiply(glumeMatrix);matrix.fromArray(new Float32Array(matrix.elements));
+   const N=12,C=16,row=7,col=8,stride=(N+1)*(C+1),offset=stride+row*(C+1)+col,vertices=[offset,offset+1,offset+C+1],points=vertices.map(index=>{const v=index-stride,t=Math.floor(v/(C+1))/N,u=(v%(C+1))/C*2-1,p=shortHairPhotoReferencePoint('glume',t,u);p[2]+=.005*Math.sin(Math.PI*t);return new THREE.Vector3(...p.map(Math.fround)).applyMatrix4(matrix);}),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),cameraAxis=new THREE.Vector3(0,.65,1).applyEuler(new THREE.Euler(pitch,a,0,'YXZ')).applyEuler(rot).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),cameraAxis),'YXZ');b.flower?.(point.toArray(),S*.85,e.x,e.y,e.z,{component:'glume-short-hairgrass-photo-reference',instanceId:spikeIndex*9+8,vertices,faceIndex:N*C*2+(row*C+col)*2,cameraAxis:cameraAxis.toArray()});
+  }
+  spikeIndex++;
+ }
+ // Counts, spacing and colors are illustrative. No underground rhizomes/tubers, achenes or floral microanatomy are drawn.
+}
+
 
 // Unnamed yellow-leaf Lysimachia nummularia retail reference; counts are illustrative.
 export function goldJennyPhotoReferencePoint(type,t,u){
