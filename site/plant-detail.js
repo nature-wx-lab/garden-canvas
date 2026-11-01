@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1032';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1033';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1032';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1033';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -21090,6 +21090,7 @@ export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
  if(['waterCoin','marsileaMutica','bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(info.appearance?.architecture)){drawWaterMargin(b,{info,s,detail,rand},kit);return;}
  if(['waterHyacinth','amazonFrogbit','salviniaNatans','salviniaMolesta','salviniaCucullata'].includes(info.appearance?.architecture)){drawFreeFloaters(b,{info,s,detail,rand},kit);return;}
  if(['waterArrowhead','nupharEmergent','floatingHeart','waterPoppy'].includes(info.appearance?.architecture)){drawFloatingAquatics(b,{info,s,detail,rand},kit);return;}
+ if(info.appearance?.shootProfile==='waterHorsetailPhotoReference'){drawWaterHorsetailPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='miniPapyrusPhotoReference'){drawMiniPapyrusPhotoReference(b,{info,s,rand},kit);return;}
  if(['umbrellaSedgePhotoReference','miniCyperusPhotoReference'].includes(info.appearance?.shootProfile)){drawUmbrellaSedgePhotoReference(b,{info,s,rand},kit);return;}
  if(['umbrellaSedge','dwarfPapyrus','waterHorsetail','evergreenHorsetail','twigRush'].includes(info.appearance?.architecture)){drawAquaticReeds(b,{info,s,detail,rand},kit);return;}
@@ -30032,6 +30033,40 @@ function drawNewLargePearlPhotoReference(b,{info,s,rand},kit){
  }
  // Creeping segments,short rising shoots and paired blades form an illustrative mat;counts and density are not measurements.
  // No hidden roots,flowers,water-to-air transition,seasonal multiplication or annual growth are drawn.
+}
+
+export function waterHorsetailPhotoReferenceTubeGeometry(type='culm'){
+ const C=64,p=[],uv=[],ix=[];
+ for(let ring=0;ring<4;ring++)for(let j=0;j<=C;j++){const angle=j/C*TAU,inner=ring>=2,r=inner?.80:type==='culm'?.975+.025*Math.cos(angle*16):1,y=ring%2? .5:-.5;p.push(Math.cos(angle)*r,y,Math.sin(angle)*r);uv.push(j/C,ring%2);}
+ const R=C+1;for(let j=0;j<C;j++){const b=j,t=R+j,ib=R*2+j,it=R*3+j;ix.push(b,t,b+1,b+1,t,t+1,ib,ib+1,it,ib+1,it+1,it,t,it,t+1,t+1,it,it+1,b,b+1,ib,b+1,ib+1,ib);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={waterHorsetailPhotoReference:true,closedTube:true,hollow:true,centralCavityDiameterFraction:.80,illustrativeRidges:type==='culm'?16:0,sourcePointType:type,sectionNotDomesticStockMeasurement:true};return g;
+}
+export function waterHorsetailPhotoReferenceToothGeometry(){
+ const p=[-.5,0,-.04,.5,0,-.04,0,1,-.04,-.5,0,.04,.5,0,.04,0,1,.04],ix=[0,2,1,3,4,5,0,1,4,0,4,3,0,3,2,2,3,5,1,2,4,2,5,4],g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,.5,1,0,0,1,0,.5,1],2));g.setIndex(ix);g.computeVertexNormals();g.userData={waterHorsetailPhotoReference:true,closedSheathTooth:true,sourcePointType:'sheathTooth',illustrativeThickness:true};return g;
+}
+function waterHorsetailPhotoSegment(b,shape,kind,a,z,r,color){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),direction=to.clone().sub(from),length=direction.length();if(length<1e-9)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize()),'YXZ');b.add(shape,kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawWaterHorsetailPhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const a=info.appearance,h=s.height,w=s.spread,base=Math.min(.001,h*.02),R=Math.min(.0018,h*.006,w*.006),sheathLength=Math.min(.003,h*.004),toothLength=Math.min(.001,h*.002),heads=40;
+ for(let i=0;i<heads;i++){
+  const az=i*2.399,rad=w*.24*Math.sqrt((i+.5)/heads),root=[Math.sin(az)*rad,base,Math.cos(az)*rad],peak=base+(h-base)*(.55+.40*((i*7)%17)/16),reach=w*.06*Math.sin(i*.87),path=t=>[root[0]+Math.sin(az)*reach*t*t,base+(peak-base)*t,root[2]+Math.cos(az)*reach*t*t],radius=R*(.75+.25*Math.pow(Math.sin(i*1.31),2));let previous=root;
+  for(let k=1;k<=10;k++){const node=path(k/10);waterHorsetailPhotoSegment(b,'water-horsetail-photo-reference-culm','culm',previous,node,radius*(1-.15*k/10),kit.shade(rand,a.stemColor,.025));previous=node;
+   if(k===10)continue;const r=radius*(1-.15*k/10),from=[node[0],node[1]-sheathLength,node[2]];waterHorsetailPhotoSegment(b,'water-horsetail-photo-reference-sheath','nodeSheath',from,node,r*1.13,'#444d36');
+   for(let j=0;j<16;j++){const turn=j*TAU/16;b.add('water-horsetail-photo-reference-tooth','sheathTooth','#323b2c',node[0]+Math.sin(turn)*r*1.13,node[1],node[2]+Math.cos(turn)*r*1.13,r*.32,toothLength,r,0,turn,0);}
+  }
+  const tip=path(1),apex=Math.min(.002,h*.004);b.add('water-horsetail-photo-reference-apex','culmApex',a.stemColor,tip[0],tip[1]+apex/2,tip[2],radius*.85,apex,radius*.85);
+  if(i%7!==0)continue;const node=path(.5),length=Math.min(h*.16,w*.14),first=Math.min(sheathLength*.45,length*.12);
+  for(let j=0;j<4;j++){
+   const turn=az+j*TAU/4,direction=new THREE.Vector3(Math.sin(turn)*.8,.6,Math.cos(turn)*.8),point=t=>new THREE.Vector3(...node).addScaledVector(direction,t).toArray(),steps=[0,first,length*.50,length];
+   for(let k=1;k<4;k++)waterHorsetailPhotoSegment(b,'water-horsetail-photo-reference-branch','whorledBranch',point(steps[k-1]),point(steps[k]),radius*.28*(1-.12*k),a.stemColor);
+   for(const t of[first,length*.50]){const L=Math.min(sheathLength*.5,first*.6),center=new THREE.Vector3(...point(t)),from=center.clone().addScaledVector(direction,-L/2).toArray(),to=center.addScaledVector(direction,L/2).toArray();waterHorsetailPhotoSegment(b,'water-horsetail-photo-reference-sheath','branchSheath',from,to,radius*.30,'#444d36');}
+  }
+ }
+ // True leaves are node sheaths: leafHeight is retained without relocating nodes or bending culms down.
+ // Counts,ridges,cavity ratio,teeth thickness and sparse branch whorls are approximate graphics,not retail measurements.
+ // No flowering organs,monthly spore cones,microscopic silica surface,rhizome spread or annual growth are drawn.
 }
 
 export function miniPapyrusPhotoReferencePoint(type,t,angle){
