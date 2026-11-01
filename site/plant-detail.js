@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1021';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1022';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1021';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1022';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -20882,6 +20882,7 @@ function drawMisebayaCultivarReferences(b,{info,s},kit){
 }
 
 export function drawDetailedHerb(b,{info,s,p,detail,rand,month},kit){
+ if(info.appearance?.shootProfile==='indicaPhotoReference'){drawIndicaPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='newLargePearlPhotoReference'){drawNewLargePearlPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='largePearlPhotoReference'){drawLargePearlPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='pearlgrassPhotoReference'){drawPearlgrassPhotoReference(b,{info,s,rand},kit);return;}
@@ -30023,4 +30024,57 @@ function drawNewLargePearlPhotoReference(b,{info,s,rand},kit){
  }
  // Creeping segments,short rising shoots and paired blades form an illustrative mat;counts and density are not measurements.
  // No hidden roots,flowers,water-to-air transition,seasonal multiplication or annual growth are drawn.
+}
+
+export function indicaPhotoReferencePoint(part,t,angle){
+ const sn=Math.sin(Math.PI*t),width=part==='petal'?.5*Math.pow(sn,.65)*(.58+.42*t):part==='sepal'?.5*Math.pow(sn,.80)*(1.10-.60*t):.5*Math.pow(sn,.50)*(1.04-.08*t),camber=part==='petal'?-.060*sn-.120*t*t:part==='sepal'?.020*sn:.035*sn+.025*t*t+.10*Math.pow(Math.cos(angle)*width,2);
+ return[Math.cos(angle)*width,t,camber+Math.sin(angle)*.012*sn];
+}
+export function indicaPhotoReferenceGeometry(part='leaf'){
+ const N=part==='petal'?20:part==='sepal'?12:24,C=part==='sepal'?8:12,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){p.push(...indicaPhotoReferencePoint(part,i/N,j/C*TAU));uv.push(j/C,i/N);if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={indicaPhotoReference:true,part,rootVertex:0,closedBlade:true};return g;
+}
+export function indicaHypanthiumReferenceGeometry(){
+ const N=16,p=[],uv=[],ix=[],rings=[[-.5,.55],[.5,1],[.5,.82],[-.5,.38]];
+ for(let r=0;r<4;r++)for(let j=0;j<N;j++){const a=j/N*TAU;p.push(Math.cos(a)*rings[r][1],rings[r][0],Math.sin(a)*rings[r][1]);uv.push(j/N,r/3);}
+ for(let r=0;r<4;r++)for(let j=0;j<N;j++){const a=r*N+j,b=r*N+(j+1)%N,c=((r+1)%4)*N+j,d=((r+1)%4)*N+(j+1)%N;ix.push(a,c,b,b,c,d);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={indicaHypanthiumReference:true,closedWall:true,illustrativeWallThickness:true};return g;
+}
+function indicaPhotoSegment(b,a,z,r,color,kind){
+ const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('indica-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
+}
+function drawIndicaPhotoReference(b,{info,s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,underwater=(s.waterDepth||0)>.02,LH=Math.min(h*.98,s.leafHeight,underwater?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.003,w*.0015,LH*.015),L=Math.min(.012,w*.065,LH*.20),W=L*(underwater?.28:.85),stem=info.appearance.stemColor,leafKind='leaf-indica-photo-reference-underside-'+info.appearance.leafUnderside.slice(1),bloom=s.bloom&&!underwater;let flowerIndex=0;
+ function pair(at,turn){for(let side=0;side<2;side++)b.add('indica-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,Math.min(L,LH*.40),Math.acos(.12),turn+side*Math.PI,0);}
+ function spike(leafAt,top,az){
+  if(!bloom)return;const available=Math.max(h*.01,top[1]-leafAt[1]),length=Math.min(.025,h*.18,available*.70),start=[top[0],top[1]-length,top[2]],P=Math.min(.0012,h*.012,w*.020),PW=P*.85,H=Math.min(.001,h*.010),R=P*.32;
+  indicaPhotoSegment(b,leafAt,start,r*.70,stem,'spike-axis-indica-photo-ref');indicaPhotoSegment(b,start,top,r*.40,stem,'spike-axis-indica-photo-ref');
+  for(let row=0;row<8;row++)for(let side=0;side<2;side++){
+   const yaw=az+row*Math.PI/2+side*Math.PI,pitch=.95,axis=new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),at=new THREE.Vector3(start[0],start[1]+length*(row+.5)/8,start[2]).addScaledVector(axis,H*.5+r*.36).toArray(),f=flowerFrame(b,at,pitch,yaw),petalPitch=1.45;
+   f.add('indica-photo-reference-hypanthium','calyx-tube-indica-photo-reference','#9b9662',0,0,0,R,H,R);
+   for(let organ=0;organ<4;organ++){
+    const angle=organ*Math.PI/2;
+    f.add('indica-photo-reference-petal','petal-indica-photo-reference',kit.shade(rand,'#d181ba',.025),0,H*.5,0,PW,P,P,petalPitch,angle,0);
+    f.add('indica-photo-reference-sepal','sepal-indica-photo-reference','#a28d67',0,H*.5,0,P*.28,P*.38,P*.30,1.12,angle+Math.PI/4,0);
+    const from=[Math.sin(angle)*R*.25,-H*.35,Math.cos(angle)*R*.25],tip=[Math.sin(angle)*R*.60,H*.45,Math.cos(angle)*R*.60];indicaPhotoSegment(f,from,tip,P*.018,'#d5d39e','filament-indica-photo-ref');f.add('indica-photo-reference-body','anther-indica-photo-reference','#e0d59a',...tip,P*.080,P*.11,P*.065);
+    if(organ!==0||row!==6||side!==0)continue;
+    const N=20,C=12,ir=14,col=9,k=ir*(C+1)+col,vertices=[k+1,k+C+1,k+C+2],frameQ=new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),q=frameQ.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(petalPitch,angle,0,'YXZ'))),e=new THREE.Euler().setFromQuaternion(q,'YXZ'),position=new THREE.Vector3(0,H*.5,0).applyQuaternion(frameQ).add(new THREE.Vector3(...at)),matrix=new THREE.Matrix4().compose(position,new THREE.Quaternion().setFromEuler(e),new THREE.Vector3(PW,P,P));matrix.fromArray(new Float32Array(matrix.elements));
+    const points=vertices.map(index=>new THREE.Vector3(...indicaPhotoReferencePoint('petal',Math.floor(index/(C+1))/N,index%(C+1)/C*TAU).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),cameraAxis=points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).normalize();if(cameraAxis.dot(axis)<0)cameraAxis.negate();const cameraEuler=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),cameraAxis),'YXZ');b.flower?.(point.toArray(),P*2,cameraEuler.x,cameraEuler.y,cameraEuler.z,{component:'petal-indica-photo-reference',instanceId:flowerIndex*4,vertices,faceIndex:(ir*C+col)*2+1,cameraAxis:cameraAxis.toArray()});
+   }
+   const styleTop=[0,Math.min(.0005,h*.005),0];indicaPhotoSegment(f,[0,0,0],styleTop,P*.022,'#b5c18b','style-indica-photo-ref');f.add('indica-photo-reference-body','stigma-indica-photo-reference','#b5c18b',...styleTop,P*.050,P*.025,P*.050);flowerIndex++;
+  }
+  for(let side=0;side<2;side++){const angle=az+side*Math.PI; b.add('indica-photo-reference-body','bud-indica-photo-reference',side?'#9d9270':'#a3a36b',top[0]+Math.sin(angle)*P*.38,top[1]+h*.004,top[2]+Math.cos(angle)*P*.38,P*.40,P*.70,P*.40);}
+ }
+ for(let shoot=0;shoot<8;shoot++){
+  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/8),root=[Math.sin(az)*R,base,Math.cos(az)*R],peak=LH*(.78+.02*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),base+(peak-base)*t,root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
+  for(let j=1;j<=12;j++){
+   const at=path(j/12);indicaPhotoSegment(b,previous,at,r,stem,'stem-indica-photo-ref');previous=at;pair(at,az+j*Math.PI/2);
+   if(j!==6)continue;const turn=az+(shoot%2?1.05:-1.05),top=LH*.60,reach=w*.070;let prev=at;
+   for(let k=1;k<=6;k++){const u=k/6,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];indicaPhotoSegment(b,prev,tip,r*.70,stem,'side-stem-indica-photo-ref');prev=tip;pair(tip,turn+k*Math.PI/2);}spike(prev,[prev[0],h*.80,prev[2]],turn);
+  }spike(previous,[previous[0],h*.95,previous[2]],az);
+ }
+ // Counts,spacing,closed tips and internal proportions are illustrative;species organ references are separately attributed.
+ // Underwater switch is a display condition. No hidden roots,fruit,outdoor winter survival or annual multiplication are drawn.
 }
