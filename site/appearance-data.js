@@ -12035,7 +12035,49 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   ],
   "flowerShape": "none",
   "sourceConflict": "国内販売店がMyriophyllum hippuroidesと示す緑の水中株写真と、北米植物誌の種の記載を参考にします。葉の輪生は通常4、範囲4〜6、櫛状の細裂片12〜24は種資料の範囲で、収録株の実測ではありません。花弁のクリーム〜ピンクも種の記載で、国内株の開花確認ではありません。国内の草丈・株幅と開花月は未確認です。"
-},"p-2f845bda190a":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/small_talk_16/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"myrioOrange","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"myrioPectinate","leafLength":0.028,"leafWidth":0.024,"leafColor":"#b39a55","leafTexture":"smooth","leafUnderside":"#beae73","stemColor":"#bf9873","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"水温を保った水中栽培の参考条件です。屋外の冬姿を全月確認したものではありません。水上の開花月は国内生産者の記載を使います。","unconfirmed":["全月の実物照合","形態記載と生産者・販売者の写真から作る近似で、実物と同等の写真再現は未検証です。","ADAの水中葉写真を参考に、細い羽状の裂片を持つ葉を輪生させます。基部の黄褐色から頂芽の赤みまでを同じ株に混ぜ、水上の明るい緑色とは区別します。","種名は公式資料でもMyriophyllum sp.です。色は栽培条件によるもので秋の紅葉とは扱いません。日本の花期・屋外の冬姿・水上葉への移行経過は未確認です。"]},"p-a426b5ddc65f":{"sources":[{"url":"https://sakisansou.ocnk.net/product/1088","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/rhynchospora-colorata/","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-0000515018","scope":"species"},{"url":"https://w3.biosci.utexas.edu/prc/K12/pdf/Rhynchospora%20colorata","scope":"species"}],"basis":{"architecture":0,"arrangement":3,"leafShape":2,"leafColor":0,"habit":0,"persistence":0,"flowerShape":2,"flowerMonths":0,"phenologyRegion":0,"petals":3,"stamenCount":3,"pistilCount":3},"status":"partial","architecture":"whitetopReferences","lifeForm":"herb","arrangement":"tristichous","habit":"creeping","leafShape":"whitetopReferenceBlade","leafColor":"#61844a","persistence":"winterDormant","flowerShape":"whitetopReferenceHead","flowerMonths":[5,6,7,8,9,10],"flowerTiming":"months","petals":0,"stamenCount":3,"pistilCount":1,"seedHeadMonths":[],"monthlyLeafDensity":[0,0,0.2,0.65,1,1,1,1,1,0.85,0.35,0],"winterClimateSensitive":true,"phenologyRegion":"国内販売元の5〜10月と冬の地上部休眠を参考表示。春の葉出し量・月境界は近似。暖地で常緑とされる北米資料、冬に切り戻す管理例とは別条件で、日本の全地域を一律に予測しません。","sourceConflict":"国内草丈30〜60cmを保持し、国内株幅は未確認。北米資料の幅2〜3フィートを国内の幅へ転用しません。白い部分は花弁・萼ではなく総苞で、小花に花被はありません。長い総苞の白い部分はNYBG記載の通常30%未満を参考にし、短い総苞では白の比率が高い写真の外観も分けます。葯寸法はNYBGの1.2〜1.6mmとTexasの2〜2.5mmで差があり、前者の参考値を使います。","unconfirmed":["資料に基づくpartialな参考3D。同一個体12か月、実測の本数・葉幅・湾曲・発色・密度は未確認。","地下茎の拡大、剪定後再生、凍害と水深による形の変化は予測していません。","中央の舟型の穎・雄しべ3本・雌しべ1本と2枝の柱頭は海外の種の参考。花数と開き具合、上端の雄花・下部の不稔穎の割合は未実測。","小穂数・総苞の枚数と不等長・白と緑の境界は抽出した外観で、国内流通株を顕微鏡照合した値ではありません。","花粉粒、子房内部、果実、種子と結実率は描いていません。水没による枯死や生育を診断する表示ではありません。"]},"p-02ccaeae76c2":{
+},"p-2f845bda190a":{
+  "sources": [
+    {
+      "url": "https://www.adana.co.jp/jp/aquajournal/small_talk_16/",
+      "scope": "catalog-entry"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 0,
+    "arrangement": 0,
+    "leafColor": 0
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "orangeMyrioPhotoReference",
+  "lifeForm": "herb",
+  "habit": "clump",
+  "arrangement": "whorled",
+  "leafShape": "myrioPectinate",
+  "leafLength": 0.028,
+  "leafWidth": 0.024,
+  "leafColor": "#b39a55",
+  "leafTexture": "smooth",
+  "leafUnderside": "#beae73",
+  "stemColor": "#b08361",
+  "persistence": "submergedPersistent",
+  "fruitMonths": [],
+  "phenologyRegion": "温度を保った水中葉を参考表示します。国内の開花月・花色と屋外の冬姿は未確認です。",
+  "unconfirmed": [
+    "全月の実物照合",
+    "ADA公式の写真と形態説明を参考にした近似で、同じ株の写真再現は未検証です。",
+    "種名はMyriophyllum sp.で未確定です。近い別種の寸法や開花月をこの株へ代入していません。草丈・株幅の数値は未確認です。",
+    "写真の水中葉は細い糸状の裂片を持ち、黄〜橙の葉色と赤みのある先端を参考にします。光や水質による生理的な色の反応は未再現です。",
+    "明るい黄緑色で輪郭のはっきりした羽状の水上葉は比較資料です。水上葉の4〜5枚輪生という記載を、水中株の葉数の測定として使いません。",
+    "蕾のように見える頂芽も葉として描きます。実際の花、花色、開花月は未確認で、花弁や果実を追加していません。",
+    "茎・枝・節・葉・裂片の本数と配置、細かな分岐や曲がり、太さ、密度は描画上の近似です。販売本数や自然な増殖の予測ではありません。",
+    "冬も温度を保った水中葉の参考条件です。屋外の越冬、地域別の季節変化、水上葉への連続した移行、同じ株の全月の姿は未確認です。",
+    "地下の根、水温・水質・光への生理的反応、自然な年間の増殖は再現していません。記事の日付を撮影日や開花月へ変換していません。"
+  ],
+  "flowerShape": "none",
+  "sourceConflict": "ADA公式の2023年3月27日の記事と、水中葉の写真を参考にします。比較写真は左が水中葉、右が水上葉です。水上葉の4〜5枚輪生を水中株の実測値へ置き換えません。水中の黄橙色と赤みのある頂芽は葉色で、花色や秋の紅葉ではありません。種名、草丈・株幅の数値、国内の花期は未確認です。"
+},"p-a426b5ddc65f":{"sources":[{"url":"https://sakisansou.ocnk.net/product/1088","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/rhynchospora-colorata/","scope":"species"},{"url":"https://www.worldfloraonline.org/taxon/wfo-0000515018","scope":"species"},{"url":"https://w3.biosci.utexas.edu/prc/K12/pdf/Rhynchospora%20colorata","scope":"species"}],"basis":{"architecture":0,"arrangement":3,"leafShape":2,"leafColor":0,"habit":0,"persistence":0,"flowerShape":2,"flowerMonths":0,"phenologyRegion":0,"petals":3,"stamenCount":3,"pistilCount":3},"status":"partial","architecture":"whitetopReferences","lifeForm":"herb","arrangement":"tristichous","habit":"creeping","leafShape":"whitetopReferenceBlade","leafColor":"#61844a","persistence":"winterDormant","flowerShape":"whitetopReferenceHead","flowerMonths":[5,6,7,8,9,10],"flowerTiming":"months","petals":0,"stamenCount":3,"pistilCount":1,"seedHeadMonths":[],"monthlyLeafDensity":[0,0,0.2,0.65,1,1,1,1,1,0.85,0.35,0],"winterClimateSensitive":true,"phenologyRegion":"国内販売元の5〜10月と冬の地上部休眠を参考表示。春の葉出し量・月境界は近似。暖地で常緑とされる北米資料、冬に切り戻す管理例とは別条件で、日本の全地域を一律に予測しません。","sourceConflict":"国内草丈30〜60cmを保持し、国内株幅は未確認。北米資料の幅2〜3フィートを国内の幅へ転用しません。白い部分は花弁・萼ではなく総苞で、小花に花被はありません。長い総苞の白い部分はNYBG記載の通常30%未満を参考にし、短い総苞では白の比率が高い写真の外観も分けます。葯寸法はNYBGの1.2〜1.6mmとTexasの2〜2.5mmで差があり、前者の参考値を使います。","unconfirmed":["資料に基づくpartialな参考3D。同一個体12か月、実測の本数・葉幅・湾曲・発色・密度は未確認。","地下茎の拡大、剪定後再生、凍害と水深による形の変化は予測していません。","中央の舟型の穎・雄しべ3本・雌しべ1本と2枝の柱頭は海外の種の参考。花数と開き具合、上端の雄花・下部の不稔穎の割合は未実測。","小穂数・総苞の枚数と不等長・白と緑の境界は抽出した外観で、国内流通株を顕微鏡照合した値ではありません。","花粉粒、子房内部、果実、種子と結実率は描いていません。水没による枯死や生育を診断する表示ではありません。"]},"p-02ccaeae76c2":{
   "sources": [
     {
       "url": "https://www.akb.jp/c/suisei/002-0145",
