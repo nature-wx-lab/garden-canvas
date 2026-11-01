@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1029';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1030';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1029';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1030';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -23412,7 +23412,7 @@ function drawAcorusReferences(b,{info,s,detail,month,rand},kit){
   const az=c*2.399963,rr=w*.15*Math.sqrt((c+.5)/fans),root=[Math.sin(az)*rr,rootY,Math.cos(az)*rr];
   for(let j=-half;j<=half;j++){
    const side=j<0?Math.PI:0,edge=Math.abs(j)/half,shape=edge>.86&&(!masa||winter)?'acorusArchingRef':edge>.60?'acorusOuterRef':'acorusUprightRef',fy=(LH*.985-rootY)/ACORUS_LEAF_TOP[shape]*(.66+.34*(.5+.5*Math.sin(c*3.71+j*2.93))),reach=Math.min(w*(.025+edge*.25),fy*(.15+edge*.85)),width=Math.min(hime?.002:gold?.0045:.0035,h*.055,w*.035,LH*.075),kind='leaf-acorus-'+type+(gold&&Math.abs(j+c)%4===0?'-broad':'');
-   b.add(gold?'acorus-ogon-photo-reference-'+shape:shape,kind,kit.shade(rand,green,.035),root[0]+Math.sin(az+Math.PI/2)*j/half*w*.012,rootY,root[2]+Math.cos(az+Math.PI/2)*j/half*w*.012,width,fy,reach,0,az+side,0);
+   b.add(gold?'acorus-ogon-photo-reference-'+shape:hime||masa?'acorus-greenwhite-photo-reference-'+type+'-'+shape:shape,kind,kit.shade(rand,green,.035),root[0]+Math.sin(az+Math.PI/2)*j/half*w*.012,rootY,root[2]+Math.cos(az+Math.PI/2)*j/half*w*.012,width,fy,reach,0,az+side,0);
   }
  }
  if(!s.bloom)return;
@@ -30030,6 +30030,16 @@ function drawNewLargePearlPhotoReference(b,{info,s,rand},kit){
  }
  // Creeping segments,short rising shoots and paired blades form an illustrative mat;counts and density are not measurements.
  // No hidden roots,flowers,water-to-air transition,seasonal multiplication or annual growth are drawn.
+}
+
+export function acorusGreenWhitePhotoReferenceGeometry(profile,type){
+ const N=72,C=24,p=[],uv=[],ix=[];
+ for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,angle=j/C*TAU,u=Math.cos(angle),sn=i===0||i===N?0:Math.sin(Math.PI*t),width=.5*Math.pow(sn,.28)*(1-.40*t),center=acorusReferencePoint(type,t,0),relief=(profile==='acorusHime'?.0005:.0006)*sn*(.70+.30*Math.cos(u*Math.PI*6));
+  p.push(u*width,center[1]+.0005*u*u*sn,t+Math.sin(angle)*relief);uv.push((u+1)/2,t);
+  if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={acorusGreenWhitePhotoReference:profile,rootVertex:0,closedBlade:true,sourceCurve:type,illustrativeCrossSection:true,longitudinalReliefApproximate:true};return g;
 }
 
 export function acorusOgonPhotoReferenceGeometry(type){
