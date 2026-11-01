@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1008';
+import {treeProfile} from './tree-profiles.js?v=0.9.1009';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -445,6 +445,7 @@ export function seasonAt(info,month){
  if(a.architecture==='veronicastrumReferences'&&a.standingWinter&&[12,1,2].includes(month))phase='冬の枯れ茎と花後の穂を残した管理例（暦月は目安）';
  if(a.persistence==='winterSubmerged')phase=groundDormant?'水上葉のない時期（水中葉で越冬）':'水上葉と水中葉のある時期';
  if(a.persistence==='managedSubmerged')phase=groundDormant?'冬は沈水させて保護する管理例（水上表示なし・月は目安）':'暖期の水上形を表示する管理例（月は目安）';
+ if(a.persistence==='protectedFernDisplay')phase=groundDormant?'冬は屋内保護を案内する管理参考（地上部表示なし・月は目安）':'葉を展開した参考姿（月は管理上の目安）';
  if(a.architecture==='haworthiaCrowns')phase=[7,8].includes(month)?'保護栽培・高温期も厚葉を残す姿（参考）':'保護栽培・厚葉の株姿（参考）';
  if(a.architecture==='ribbedSucculents')phase=bloom?'保護栽培・開花条件を満たした株の参考':'保護栽培・地上の多肉質の茎を残す姿（参考）';
  if(a.architecture==='agaveRosettes')phase='開花前のロゼット（参考）。開花年齢・結実後の枯死は未再現';

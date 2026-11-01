@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.1008';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.1009';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -152,7 +152,7 @@ export function appearanceSummary(info){
  const value=k=>k==='flowerShape'&&a[k]==='none'?'今回の描画では花を表示しません':TRAIT_VALUES[a[k]]||a[k];
  return ['leafShape','leafPattern','persistence','flowerShape','habit','barkPattern'].filter(k=>a[k]).map(k=>`${TRAIT_LABELS[k]}：${value(k)}`).join(' ／ ');
 }
-Object.assign(TRAIT_VALUES,{waterCoinShield:'中央に柄が付き、浅い波状の縁を持つ丸い盾状葉',marsileaWedge:'1本の柄の先で4枚に開く扇形の小葉',marsileaBand:'小葉を横切る淡色部と褐色を帯びる帯',bacopaOvate:'厚い対生葉・基部が茎を抱く卵形',bacopaRound:'白い網状の斑が入る黄緑の丸い対生葉',bacopaSpoon:'基部がくさび形に細まる小さなへら形の対生葉',bacopaVeins:'白〜淡黄色の網状の葉脈斑',waterCoinWhorls:'細い軸の数段に輪生する小さな5弁花',bacopaCorolla:'上2裂・下3裂の筒状花冠と内部の長短2対の雄しべ',managedSubmerged:'冬は沈水させて保護する管理例（自然な休眠とは区別）'});
+Object.assign(TRAIT_VALUES,{waterCoinShield:'中央に柄が付き、浅い波状の縁を持つ丸い盾状葉',marsileaWedge:'1本の柄の先で4枚に開く扇形の小葉',marsileaBand:'小葉を横切る淡色部と褐色を帯びる帯',bacopaOvate:'厚い対生葉・基部が茎を抱く卵形',bacopaRound:'白い網状の斑が入る黄緑の丸い対生葉',bacopaSpoon:'基部がくさび形に細まる小さなへら形の対生葉',bacopaVeins:'白〜淡黄色の網状の葉脈斑',waterCoinWhorls:'細い軸の数段に輪生する小さな5弁花',bacopaCorolla:'上2裂・下3裂の筒状花冠と内部の長短2対の雄しべ',managedSubmerged:'冬は沈水させて保護する管理例（自然な休眠とは区別）',protectedFernDisplay:'冬は屋内保護を案内する管理参考（自然な休眠とは区別）'});
 Object.assign(TRAIT_VALUES,{calendulaLeaf:'毛のあるへら形の葉',calendulaHead:'重なる舌状花と筒状花の花芯',nemophilaLeaf:'丸い裂片に羽状に切れ込む葉',nemophilaCup:'連続した浅い杯状の5裂花冠',tripartitePoppyLeaf:'3つずつ繰り返し分かれる青緑色の細葉',californiaPoppyCup:'薄い花弁が重なる杯状花',alyssumLeaf:'細い披針形の葉',auriniaLeaf:'銀緑色の毛のあるへら形の葉',alyssumCross:'4枚の丸い花弁が十字に並ぶ小花'});
 Object.assign(TRAIT_VALUES,{nasturtiumShield:'中央に柄が付く丸い盾状葉',nasturtiumFlower:'5弁の不均等な花と後ろに伸びる距',morningGloryLeaf:'心形の基部と3つに分かれる葉',morningGloryFunnel:'連続した漏斗状の花冠',corncockleLeaf:'茎を抱く細い対生葉',corncockleFlower:'5弁に濃い線が入る花と突き出す萼',snapdragonLeaf:'細長い全縁葉',snapdragonLips:'膨らむ下唇が喉を閉じる唇形花',climbing:'支えに巻きつき登る'});
 Object.assign(TRAIT_VALUES,{tridentMaple:'前方に3つに裂けるカエデ葉',dendropanax:'3裂葉と菱状の葉が混生',wavyElliptic:'縁が波打つ楕円葉',oakLance:'先半分に鋸歯のある細長い革質葉',ovateSerrate:'先の尖る楕円形の鋸歯葉',obovateSerrate:'倒卵形の鋸歯葉',lichen:'地衣類の淡い斑紋',linearPetals:'細長い花弁',brushCorolla:'5裂する花冠と多数の長い雄しべ',backToBack:'反り返る5弁花が背中合わせに2輪',catkin:'垂れ下がる雄花序'});

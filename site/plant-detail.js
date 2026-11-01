@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1008';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1009';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1008';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1009';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26226,8 +26226,33 @@ function drawWatercoinPhotoReference(b,{s,rand},kit){
  }
 }
 
+// Grower Marsilea mutica photo reference: a fern frond has four separate fan leaflets.
+export function muticaPhotoReferencePoint(t,u){
+ const angle=u*.66,r=t*(.86+.14*Math.cos(u*Math.PI/2));return[Math.sin(angle)*r,.017*t*t+.029*u*u*t,Math.cos(angle)*r];
+}
+export function muticaPhotoReferenceGeometry(){
+ const N=24,C=32,p=[],uv=[],ix=[],stride=(N+1)*(C+1);
+ for(let side=0;side<2;side++)for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
+  const t=i/N,u=j/C*2-1,v=muticaPhotoReferencePoint(t,u);if(side)v[1]-=.004*Math.sin(Math.PI*t);p.push(...v);uv.push(j/C,t);
+  if(i<N&&j<C){const k=side*stride+i*(C+1)+j;if(side)ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);else ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
+ }
+ for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}for(let j=0;j<C;j++){const a=N*(C+1)+j,z=a+1;ix.push(a,a+stride,z,z,a+stride,z+stride);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={muticaPhotoReference:true,part:'leaflet',illustrativeGeometry:true,closedSurface:true};return g;
+}
+function drawMuticaPhotoReference(b,{s,rand},kit){
+ if(s.groundDormant||s.leafDensity<=0)return;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00058,h*.006,w*.005,LH*.035),floor=r*1.2+Math.min(.00002,h*.002);
+ for(let j=0;j<16;j++){
+  const az=j*2.399+.3,R=w*.26*Math.sqrt((j+.7)/16),L=Math.min(.030,w*.18)*(.88+j*.008),at=[Math.sin(az)*R,LH*(.76+j/15*.15),Math.cos(az)*R],relief=Math.min(L,LH*.035/.046),base=[at[0]-Math.sin(az)*L*.16,floor,at[2]-Math.cos(az)*L*.16];let previous=base;
+  for(let k=1;k<=4;k++){const t=k/4,to=[base[0]+Math.sin(az)*L*.16*t+Math.cos(az)*L*.07*Math.sin(Math.PI*t),base[1]+(at[1]-base[1])*t,base[2]+Math.cos(az)*L*.16*t-Math.sin(az)*L*.07*Math.sin(Math.PI*t)];b.branch(previous,to,r,'#7a9b55','petiole-mutica-photo-ref');previous=to;}
+  for(let leaflet=0;leaflet<4;leaflet++)b.add('mutica-photo-reference-leaflet','leaf-mutica-photo-reference',kit.shade(rand,s.leafColor,.025),...at,L,relief,L,0,az+leaflet*TAU/4,0);
+ }
+ // Frond count, spacing and petiole curvature are illustrative; no flowers or hidden rhizomes.
+}
+
 function drawWaterMargin(b,{info,s,detail,rand},kit){
  if(info.appearance?.shootProfile==='watercoinPhotoReference'){drawWatercoinPhotoReference(b,{s,rand},kit);return;}
+ if(info.appearance?.shootProfile==='muticaPhotoReference'){drawMuticaPhotoReference(b,{s,rand},kit);return;}
  if(s.groundDormant)return;
  const a=info.appearance,arch=a.architecture,coin=arch==='waterCoin',fern=arch==='marsileaMutica',smooth=arch==='bacopaMonnieri',yellow=arch==='bacopaLanigera',w=s.spread,h=s.height,len=Math.min(a.leafLength,w*.14),green=s.leafColor;
  if(coin||fern){
