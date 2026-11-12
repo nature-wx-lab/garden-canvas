@@ -23531,3 +23531,76 @@ test('amperai accepts existing saved gardens without changing independent inputs
 test('amperai evergreen reference keeps low basal leaves distinct from stem leaf sheaths',()=>{
  const c=AMPERAI1034,q=CATALOG[c.id],a=q.appearance;assert.equal(a.persistence,'evergreen');assert.equal(a.foliageMonths,undefined);assert.match(q.care,/葉丈.*株元.*葉/);for(let month=1;month<=12;month++)assert.equal(seasonAt(q,month).groundDormant,false);assert.match(a.unconfirmed.join(' '),/同じ株.*年間/);for(const month of[7,1]){const normal=plantModel({...makePlant(c.id,c.pid,3,3),height:.75,spread:.4,leafHeight:.65},{year:1,month,reference:false},1),low=plantModel({...makePlant(c.id,c.pid,3,3),height:.75,spread:.4,leafHeight:.005},{year:1,month,reference:false},1);try{const part=(g,k)=>g.children.find(m=>m.userData.component===k);assert.deepEqual([...part(normal,'culm').instanceMatrix.array],[...part(low,'culm').instanceMatrix.array]);assert.notDeepEqual([...normal.children.find(m=>m.userData.component.startsWith('leaf-amperai-photo-reference')).instanceMatrix.array],[...low.children.find(m=>m.userData.component.startsWith('leaf-amperai-photo-reference')).instanceMatrix.array]);if(month===1)assert.ok(!part(normal,'glume-amperai-photo-reference'));else assert.deepEqual([...part(normal,'glume-amperai-photo-reference').instanceMatrix.array],[...part(low,'glume-amperai-photo-reference').instanceMatrix.array]);}finally{dispose(normal);dispose(low);}}
 });
+
+
+test('Salvinia natans keeps each divided submerged leaf attached to its floating pair', () => {
+  const id = 'p-e9f5ab2a40d1';
+  const cases = [
+    {depth: .1, month: 7, dimensions: [.035, .12, .018], wet: true},
+    {depth: .02, month: 7, dimensions: [.01, .1, .005], wet: true},
+    {depth: .003, month: 10, dimensions: [.035, .12, .018], wet: true},
+    {depth: 0, month: 7, dimensions: [.035, .12, .018], wet: false},
+    {depth: .0005, month: 7, dimensions: [.035, .12, .018], wet: false},
+    {depth: .1, month: 1, dimensions: [.035, .12, .018], wet: false},
+  ];
+  const matrix = new Matrix4();
+  const endpoint = (mesh, index, y) => {
+    mesh.getMatrixAt(index, matrix);
+    return new Vector3(0, y, 0).applyMatrix4(matrix);
+  };
+  const near = (a, b) => assert.ok(a.distanceTo(b) < 2e-6, `${a.toArray()} / ${b.toArray()}`);
+  for (const {depth, month, dimensions, wet} of cases) {
+    const [height, spread, leafHeight] = dimensions;
+    const input = {...makePlant(id, 103810, 3, 3), height, spread, leafHeight};
+    const saved = structuredClone(input);
+    const g = plantModel(input, {year: 0, month, reference: false, waterDepth: depth}, 1);
+    try {
+      assert.deepEqual(input, saved);
+      assert.equal(g.userData.flowerTargets, undefined);
+      const mesh = kind => g.children.find(m => m.userData.component === kind);
+      const stipes = mesh('salvinia-submerged-leaf-stipe');
+      if (!wet) {
+        assert.ok(g.children.every(m => !m.userData.component.startsWith('salvinia-submerged-leaf-')));
+        if (month === 1) assert.equal(g.children.length, 0);
+        continue;
+      }
+      const floats = mesh('leaf-salvinia');
+      const axes = mesh('salvinia-submerged-leaf-axis');
+      const divisions = mesh('salvinia-submerged-leaf-division');
+      const lobes = mesh('salvinia-submerged-leaf-lobe');
+      assert.equal(stipes.count * 2, floats.count);
+      assert.equal(axes.count, stipes.count * 5);
+      assert.equal(divisions.count, stipes.count * 8);
+      assert.equal(lobes.count, divisions.count * 2);
+      for (let i = 0; i < stipes.count; i++) {
+        const origin = endpoint(stipes, i, -.5);
+        near(origin, endpoint(floats, i * 2, 0));
+        near(origin, endpoint(floats, i * 2 + 1, 0));
+        near(endpoint(stipes, i, .5), endpoint(axes, i * 5, -.5));
+        for (let j = 0; j < 4; j++) {
+          const joint = endpoint(axes, i * 5 + j, .5);
+          near(joint, endpoint(axes, i * 5 + j + 1, -.5));
+          for (let side = 0; side < 2; side++) {
+            const branch = i * 8 + j * 2 + side;
+            near(joint, endpoint(divisions, branch, -.5));
+            const fork = endpoint(divisions, branch, .5);
+            near(fork, endpoint(lobes, branch * 2, -.5));
+            near(fork, endpoint(lobes, branch * 2 + 1, -.5));
+          }
+        }
+      }
+      for (const part of [axes, divisions, lobes]) {
+        for (let i = 0; i < part.count; i++) {
+          const y = endpoint(part, i, .5).y + .012;
+          assert.ok(y < .006 && y > -depth, `depth ${depth}: ${y}`);
+        }
+      }
+    } finally {
+      dispose(g);
+    }
+  }
+  const q = CATALOG[id];
+  assert.deepEqual(q.bloom, []);
+  assert.equal(q.appearance.persistence, 'sporeAnnual');
+  assert.match(q.care, /水中葉が1枚/);
+});

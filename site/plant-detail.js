@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1037';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1038';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1037';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1038';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26591,16 +26591,53 @@ export function frogbitPhotoBladeGeometry() {
   return geometry;
 }
 
+// The third leaf shares the floating pair's node. Its divisions stay above the pond bed.
+function drawSalviniaNatansSubmergedLeaf(axis,node,depth,leafLength,phase){
+ const stipe = Math.min(.00045,leafLength*.028);
+ const span = Math.min(leafLength*.42,depth*.37);
+ const neck = [node[0],node[1]-.018,node[2]];
+ const point = t => [
+  neck[0]+Math.sin(phase)*span*.45*t*t,
+  neck[1]-depth*t,
+  neck[2]+Math.cos(phase)*span*.32*t*t,
+ ];
+ axis.branch(node,neck,stipe,'#716a43','salvinia-submerged-leaf-stipe');
+ let previous = neck;
+ for(let segment=1;segment<=5;segment++){
+  const t = segment/5, joint = point(t);
+  axis.branch(previous,joint,stipe*(1-.58*t),'#746c47','salvinia-submerged-leaf-axis');
+  previous = joint;
+  if(segment===5) continue;
+  for(const side of [-1,1]){
+   const angle = phase+side*Math.PI*.46+t*.7;
+   const reach = span*(1-.68*t);
+   const dx = Math.cos(angle)*reach, dz = Math.sin(angle)*reach;
+   const fork = [joint[0]+dx*.55,joint[1]-depth*.07,joint[2]+dz*.55];
+   axis.branch(joint,fork,stipe*.46,'#827952','salvinia-submerged-leaf-division');
+   for(const turn of [-1,1]){
+    const tip = [
+     joint[0]+dx-dz*turn*.16,
+     neck[1]-depth*(t+(1-t)*(.70+turn*.11)),
+     joint[2]+dz+dx*turn*.16,
+    ];
+    axis.branch(fork,tip,stipe*.24,'#8d825c','salvinia-submerged-leaf-lobe');
+   }
+  }
+ }
+}
+
 function drawFreeFloaters(b,{info,s,detail,rand},kit){
  if(s.groundDormant)return;
  const a=info.appearance,arch=a.architecture,fern=arch.startsWith('salvinia'),hyacinth=arch==='waterHyacinth',nat=arch==='salviniaNatans',hood=arch==='salviniaCucullata',w=s.spread,h=s.height,len=Math.min(a.leafLength,w*(hyacinth?.34:.18)),green=s.leafColor;
  if(fern){
   const shoots=Math.max(4,Math.round(14*detail*s.leafDensity)),nodes=5;
+  const submergedDepth=nat?Math.min(s.waterDepth,len*3):0;
   for(let i=0;i<shoots;i++){
    const an=i*2.399,rr=w*.29*Math.sqrt((i+.5)/shoots),origin=[Math.sin(an)*rr,.010,Math.cos(an)*rr],axis=flowerFrame(b,origin,0,an+rand()*2),step=len*(.73+rand()*.16);
    let prior=[0,0,0];
    for(let k=0;k<nodes;k++){
     const at=[Math.sin(k*.70+i)*len*.25,0,(k-(nodes-1)/2)*step];if(k)axis.branch(prior,at,.0005,'#6d7244','floatingAxis');prior=at;
+    if(submergedDepth>=.001)drawSalviniaNatansSubmergedLeaf(axis,at,submergedDepth,len,i*2.399+k*.67);
     for(const side of [-1,1]){
      const ll=len*(.68+rand()*.36),f=flowerFrame(axis,at,Math.PI/2+(rand()-.5)*.13,side*Math.PI/2+(rand()-.5)*.55);
      f.add(a.leafShape,'leaf-salvinia',kit.shade(rand,green,.06),0,0,0,ll,ll,ll);
