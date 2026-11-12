@@ -22554,6 +22554,45 @@ test('Waterpoppy photo reference fits twenty four independent dimensions with co
  }
  assert.equal(models,24);assert.equal(leafJoins,192);assert.equal(flowering,8);assert.equal(winterModels,8);console.log('WATERPOPPY1006_BOUNDARIES '+JSON.stringify({models,leafJoins,flowering,winterModels,vertices}));
 });
+test('Waterpoppy three green sepals attach to the flowering peduncle below the petals',()=>{
+ const id='p-f2e4c7935581',info=CATALOG[id];
+ assert.equal(info.appearance.sepalCount,3);
+ assert.equal(info.appearance.sources[info.appearance.basis.sepalCount].url,'https://doi.org/10.7751/telopea12960');
+ assert.match(info.care,/萼片3枚/);
+ const matrix=new Matrix4(),v=new Vector3();
+ const part=(g,component)=>g.children.find(m=>m.userData.component===component);
+ for(const [height,spread,leafHeight,waterDepth,month] of [
+  [.12,.40,.055,.16,7],[.01,.10,.005,0,7],[.005,.03,.005,0,7],[.12,.40,.055,.16,5],[.12,.40,.055,.16,1],
+ ]){
+  const p={...makePlant(id,104810,3,3),height,spread,leafHeight};
+  const g=plantModel(p,{year:0,month,waterDepth,reference:false},1);
+  try{
+   const sepals=part(g,'sepal-waterpoppy-photo-reference');
+   if(month!==7){assert.equal(sepals,undefined);continue;}
+   const peduncle=part(g,'peduncle-waterpoppy-ref');
+   peduncle.getMatrixAt(0,matrix);
+   const stem=new Line3(new Vector3(0,-.5,0).applyMatrix4(matrix),new Vector3(0,.5,0).applyMatrix4(matrix));
+   assert.equal(sepals.count,3);
+   assert.equal(sepals.geometry.userData.closedSurface,true);
+   assert.equal(sepals.geometry.userData.part,'sepal');
+   const points=sepals.geometry.attributes.position;
+   const tips=[];
+   for(let i=0;i<sepals.count;i++){
+    sepals.getMatrixAt(i,matrix);
+    const base=new Vector3().applyMatrix4(matrix);
+    assert.ok(stem.closestPointToPoint(base,true,new Vector3()).distanceTo(base)<2e-6);
+    assert.ok(base.y<stem.end.y);
+    for(let j=0;j<points.count;j++){
+     v.fromBufferAttribute(points,j).applyMatrix4(matrix);
+     assert.ok(v.y>=0&&v.y<=height&&Math.hypot(v.x,v.z)<=spread/2);
+    }
+    tips.push(new Vector3(0,.49,.87).applyMatrix4(matrix));
+   }
+   assert.ok(tips[0].distanceTo(tips[1])>0&&tips[1].distanceTo(tips[2])>0);
+  }finally{dispose(g);}
+ }
+});
+
 test('Waterpoppy camera rays meet three indexed petal models while old garden inputs stay exact',()=>{
  let models=0,rays=0;for(const dims of[[.12,.40,.02],[.01,.10,.005],[.12,.40,.005]]){
   const input={...makePlant('p-f2e4c7935581',100610,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input),g=plantModel(input,{year:1,month:7,reference:false},1);models++;

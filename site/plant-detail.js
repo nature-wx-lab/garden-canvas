@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1048';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1049';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1048';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1049';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -27016,14 +27016,18 @@ export function waterpoppyPhotoReferencePoint(type,t,u){
   const ph=u*TAU,sn=Math.sin(ph),cs=Math.cos(ph),rim=1+.006*Math.sin(ph*14),x=sn*.46*(1+.10*Math.max(0,-cs))*rim,y=.43+.57*cs+.14*Math.exp(-(((ph-Math.PI)/.17)**2));
   return [t*x,.43+t*(y-.43),-.065*t*t*(1+cs)*.5-.008*t*t*sn*sn];
  }
+ if(type==='sepal'){
+  const edge=t===0||t===1?0:Math.sin(Math.PI*t);
+  return [.5*u*edge**.64,.45*t+.04*t*t+.055*u*u*edge,.87*t];
+ }
  const angle=u*1.20,r=t*(.78+.22*Math.cos(u*Math.PI/2)),wave=.016*Math.sin(t*35+u*7)*Math.abs(u)**3*Math.sin(Math.PI*t);
  return [Math.sin(angle)*r,.28*t**1.5+.055*u*u*Math.sin(Math.PI*t)+wave,Math.cos(angle)*r];
 }
 export function waterpoppyPhotoReferenceGeometry(type){
- const leaf=type==='leaf',N=leaf?24:32,C=leaf?96:24,p=[],uv=[],ix=[],stride=(N+1)*(C+1);
+ const leaf=type==='leaf',sepal=type==='sepal',N=leaf||sepal?24:32,C=leaf?96:sepal?16:24,p=[],uv=[],ix=[],stride=(N+1)*(C+1);
  for(let side=0;side<2;side++)for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
   const t=i/N,u=leaf?j/C:j/C*2-1,point=waterpoppyPhotoReferencePoint(type,t,u);
-  if(side){if(leaf)point[2]+=.005*(1-t*t);else point[1]-=.006*(1-t);}
+  if(side){if(leaf)point[2]+=.005*(1-t*t);else point[1]-=(sepal?.012:.006)*(1-t);}
   p.push(...point);uv.push(leaf?.5+point[0]:j/C,leaf?point[1]:t);
   if(i<N&&j<C){const k=side*stride+i*(C+1)+j;if(side)ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);else ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
  }
@@ -27044,7 +27048,7 @@ function drawWaterpoppyNodalRoots(b, node, radius, spread, depth, azimuth) {
   b.branch(bend,tip,radius*.24,'#b6ae88','nodal-root-waterpoppy-ref');
  }
 }
-function drawWaterpoppyPhotoReference(b,{s,rand},kit){
+function drawWaterpoppyPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
  const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),radius=Math.min(.0007,h*.004,w*.003,LH*.03);
  const wet=s.waterDepth>=.001,rootY=wet?-.008-Math.min(s.waterDepth*.2,.012):radius*1.2+Math.min(.00002,h*.002);
@@ -27059,6 +27063,14 @@ function drawWaterpoppyPhotoReference(b,{s,rand},kit){
  }
  if(!s.bloom)return;
  const r=Math.min(.025,w*.17,h*.60),at=[0,h*.93-r*.32,0],yaw=.18,f=flowerFrame(b,at,0,yaw);b.branch(nodes[2],at,Math.min(.0011,h*.005,w*.006),'#688650','peduncle-waterpoppy-ref');
+ const sepalLength=r*.76,sepalWidth=r*.34,seat=sepalLength*.24/(at[1]-nodes[2][1]);
+ const calyxBase=at.map((value,i)=>value+(nodes[2][i]-value)*seat);
+ const calyx=flowerFrame(b,calyxBase,0,yaw);
+ const sepals=info.appearance.sepalCount;
+ for(let k=0;k<sepals;k++){
+  const angle=(k+.5)*TAU/sepals;
+  calyx.add('waterpoppy-photo-reference-sepal','sepal-waterpoppy-photo-reference','#8c9f53',0,0,0,sepalWidth,sepalLength,sepalLength,0,angle,0);
+ }
  for(let k=0;k<3;k++){
   const az=k*TAU/3;f.add('waterpoppy-photo-reference-petal','petal-waterpoppy-photo-reference',kit.shade(rand,s.flowerColor,.012),0,0,0,r,r,r,0,az,0);
   const row=26,col=12,C=24,N=32,vertices=[row*(C+1)+col,(row+1)*(C+1)+col,row*(C+1)+col+1],totalYaw=yaw+az,matrix=new THREE.Matrix4().compose(new THREE.Vector3(...at),new THREE.Quaternion().setFromEuler(new THREE.Euler(0,totalYaw,0,'YXZ')),new THREE.Vector3(r,r,r));matrix.fromArray(new Float32Array(matrix.elements));
@@ -27103,7 +27115,7 @@ function drawSagittariaFemalePhotoReference(b,{s,rand},kit){
 
 function drawFloatingAquatics(b,{info,s,detail,rand},kit){
  if(info.appearance?.shootProfile==='sagittariaFemalePhotoReference'){drawSagittariaFemalePhotoReference(b,{s,rand},kit);return;}
- if(info.appearance?.shootProfile==='waterpoppyPhotoReference'){drawWaterpoppyPhotoReference(b,{s,rand},kit);return;}
+ if(info.appearance?.shootProfile==='waterpoppyPhotoReference'){drawWaterpoppyPhotoReference(b,{info,s,rand},kit);return;}
  if(info.appearance?.shootProfile==='nupharPhotoReference'){drawNupharPhotoReference(b,{s,rand},kit);return;}
  if(info.appearance?.shootProfile==='asazaPhotoReference'){drawAsazaPhotoReference(b,{s,rand},kit);return;}
  if(s.groundDormant)return;
