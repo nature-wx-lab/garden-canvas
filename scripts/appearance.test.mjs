@@ -8115,6 +8115,25 @@ test('Paranee pond leaves and flowers join a crown at the bed without changing d
  dispose(dry);assert.deepEqual(p,saved);
 });
 
+test('Paranee distinguishes the photographed stronger and lighter outer-petal markings',()=>{
+ const p={...makePlant('p-738c23a65591',106410,3,3),height:.16,spread:.60,leafHeight:.085};
+ const group=plantModel(p,{year:0,month:7,reference:false,waterDepth:.18});
+ try{
+  const petals=group.children.filter(mesh=>mesh.userData.component.startsWith('petal-paranee-'));
+  const count=suffix=>petals.filter(mesh=>mesh.userData.component.endsWith('-'+suffix)).reduce((n,mesh)=>n+mesh.count,0);
+  assert.equal(count('strong'),31);assert.equal(count('light'),3);assert.equal(count('clear'),28);
+  assert.ok(petals.filter(mesh=>mesh.userData.component.endsWith('-light')).every(mesh=>mesh.userData.component==='petal-paranee-0-light'));
+  const shader=name=>{
+   const mesh=petals.find(m=>m.userData.component===name);
+   const code={uniforms:{},vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader};
+   mesh.material.onBeforeCompile(code,{});return code.fragmentShader;
+  };
+  assert.match(shader('petal-paranee-0-strong'),/mark\*0\.88/);
+  assert.match(shader('petal-paranee-3-strong'),/mark\*0\.17/);
+  assert.doesNotMatch(shader('petal-paranee-3-clear'),/float streak=/);
+ }finally{dispose(group);}
+});
+
 test('Paranee waterlily separates yellow red-streaked petals and mottled notched floating leaves without invented dimensions or fixed petal count',()=>{
  const id='p-738c23a65591',info=CATALOG[id],a=info.appearance;assert.equal(info.latin,'');assert.equal(info.height,null);assert.equal(info.spread,null);assert.equal(a.petals,undefined);assert.equal(a.flowerLayers,undefined);assert.equal(a.architecture,'paraneeWaterlily');assert.equal(a.status,'partial');assert.deepEqual(a.flowerMonths,[5,6,7,8,9]);assert.equal(a.flowerTiming,'months');assert.deepEqual(info.colors,['yellow','red']);assert.match(info.bloomText,/特定の月.*決まるものではありません/);
  for(const small of [false,true])for(let month=1;month<=12;month++){

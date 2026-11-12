@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1064';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1065';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1064';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1065';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -19751,7 +19751,10 @@ function drawParanee(b,{info,s,detail,rand},kit){
   for(let k=0;k<4;k++)f.add('paraneeSepal','sepal-paranee','#839255',0,-L*.020,0,L*.91,L*.91,L*.91,.04,k*TAU/4,0);
   for(let row=0;row<4;row++){
    const count=[10,9,7,5][row],size=L*(1-row*.15);
-   for(let k=0;k<count;k++)f.add('paraneePetal','petal-paranee-'+row,kit.shade(rand,'#efcf67',.018),0,row*L*.032,0,size,size,size,-row*.24,k*TAU/count+row*.37,0);
+   for(let k=0;k<count;k++){
+    const markings=j%2===0?'strong':row===0&&k%3===1?'light':'clear';
+    f.add('paraneePetal','petal-paranee-'+row+'-'+markings,kit.shade(rand,'#efcf67',.018),0,row*L*.032,0,size,size,size,-row*.24,k*TAU/count+row*.37,0);
+   }
   }
   for(let k=0;k<48;k++){
    const yaw=k*2.399,R=L*(.035+.16*Math.sqrt((k+.5)/48)),base=[Math.sin(yaw)*R,L*.055,Math.cos(yaw)*R],tip=[Math.sin(yaw)*R*1.12,L*(.27+.18*(1-k/48)),Math.cos(yaw)*R*1.12];
