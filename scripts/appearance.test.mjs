@@ -22057,6 +22057,42 @@ test('Asaza leaf gland coloration is scoped to the lower surface of its floating
  }finally{dispose(group);}
 });
 
+test('Asaza has five green sepals connected to each flower support',()=>{
+ const plant={...makePlant('p-a9c345dcea4e',105710,3,3),height:.12,spread:.42,leafHeight:.045};
+ const view={year:0,month:7,reference:false};
+ const get=(group,name)=>group.children.find(m=>m.userData.component===name);
+ for(const waterDepth of [0,.025,.22]){
+  const group=plantModel(plant,{...view,waterDepth});
+  try{
+   const sepals=get(group,'sepal-asaza-photo-reference'),cup=get(group,'calyx-base-asaza-ref');
+   const corolla=get(group,'corolla-asaza-photo-reference'),stalk=get(group,'peduncle-asaza-ref');
+   assert.equal(sepals.count,10);assert.equal(cup.count,2);assert.equal(corolla.count,2);
+   const matrix=new Matrix4(),cupMatrix=new Matrix4(),color=new Color();
+   for(let flower=0;flower<2;flower++){
+    corolla.getMatrixAt(flower,matrix);
+    const center=new Vector3().setFromMatrixPosition(matrix);
+    stalk.getMatrixAt(flower,matrix);
+    assert.ok([-.5,.5].some(y=>new Vector3(0,y,0).applyMatrix4(matrix).distanceTo(center)<1e-7));
+    cup.getMatrixAt(flower,cupMatrix);
+    const baseInverse=cupMatrix.clone().invert();
+    for(let i=0;i<5;i++){
+     const index=flower*5+i;
+     sepals.getMatrixAt(index,matrix);sepals.getColorAt(index,color);
+     assert.ok(color.g>color.r&&color.g>color.b);
+     const positions=sepals.geometry.attributes.position;
+     const lower=new Vector3().fromBufferAttribute(positions,6).applyMatrix4(matrix);
+     const upper=new Vector3().fromBufferAttribute(positions,18*13+6).applyMatrix4(matrix);
+     assert.ok(lower.clone().applyMatrix4(baseInverse).length()<1);
+     assert.ok(lower.y<center.y&&upper.y>lower.y&&upper.y-center.y<.002);
+     assert.ok(Math.hypot(upper.x-center.x,upper.z-center.z)>.004);
+    }
+   }
+  }finally{dispose(group);}
+ }
+ const winter=plantModel(plant,{...view,month:1,waterDepth:.22});
+ assert.equal(get(winter,'sepal-asaza-photo-reference'),undefined);dispose(winter);
+});
+
 test('Asaza photo reference fits twenty one independent dimensions with connected floating supports',()=>{
  const dimensions=[[.12,.40,.020],[.04,.10,.010],[.12,.40,.005],[.01,.03,.005],[.7,.15,.3],[.1,1,.05],[2,3,1.5]];let models=0,joins=0,flowering=0,winterModels=0;
  for(const dims of dimensions)for(const month of[7,4,1]){

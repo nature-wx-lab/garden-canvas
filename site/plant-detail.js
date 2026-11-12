@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1056';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1057';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1056';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1057';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26923,11 +26923,16 @@ export function asazaPhotoReferencePoint(type,t,u){
   const notch=1-.985*Math.exp(-(((ph-Math.PI)/.19)**2)),r=t*notch,edge=1+.008*Math.sin(ph*23);
   return [.5*r*Math.sin(ph)*edge,.012*r*r*(.40+.60*Math.abs(Math.sin(ph))),.5*r*Math.cos(ph)*edge];
  }
+ if(type==='sepal'){
+  const across=2*u-1,taper=t===0||t===1?0:Math.sin(Math.PI*t);
+  return [across*.095*taper**.70,-.19+.23*t,.048+.29*t**.85+.022*across*across*taper];
+ }
  const lobe=Math.pow(.5+.5*Math.cos(ph*5),.38),edge=.28+.72*lobe,r=t*edge;
  return [Math.sin(ph)*r,.15*t*t+.075*t*Math.pow(lobe,6),Math.cos(ph)*r];
 }
 export function asazaPhotoReferenceGeometry(type){
- const leaf=type==='leaf',N=leaf?24:32,C=leaf?96:180,p=[],uv=[],ix=[];
+ const [N,C]={leaf:[24,96],corolla:[32,180],sepal:[18,12]}[type];
+ const p=[],uv=[],ix=[];
  for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
   const t=i/N,u=j/C,point=asazaPhotoReferencePoint(type,t,u);p.push(...point);uv.push(u,t);
   if(i<N&&j<C){const k=i*(C+1)+j;ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
@@ -26975,6 +26980,11 @@ function drawAsazaPhotoReference(b,{s,rand},kit){
   const az=flower*2.399+.65,at=[Math.sin(az)*w*.11,flowerY,Math.cos(az)*w*.11],yaw=az+.15,f=flowerFrame(b,at,0,yaw);
   b.branch(flowerBase,at,Math.min(.0009,L*.025,LH*.10),'#75884e','peduncle-asaza-ref');
   f.add('asaza-photo-reference-corolla','corolla-asaza-photo-reference',kit.shade(rand,s.flowerColor,.015),0,0,0,L,L,L);
+  f.add(kit.bud,'calyx-base-asaza-ref','#68823c',0,-L*.095,0,L*.080,L*.14,L*.080);
+  for(let k=0;k<5;k++){
+   const angle=(k+.5)*TAU/5;
+   f.add('asaza-photo-reference-sepal','sepal-asaza-photo-reference','#68823c',0,0,0,L,L,L,0,angle,0);
+  }
   // Fringe starts exactly at vertices on the indexed corolla edge, not an unrelated blade equation.
   for(let k=0;k<180;k++){
    const u=k/180,ph=u*TAU,point=asazaPhotoReferencePoint('corolla',1,u).map(Math.fround).map(v=>v*L),fringe=L*(.060+.040*(.5+.5*Math.sin(k*7.31))),tip=[point[0]+Math.sin(ph)*fringe,point[1]+fringe*.36,point[2]+Math.cos(ph)*fringe];
