@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1045';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1046';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1045';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1046';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26357,9 +26357,17 @@ function drawBacopaPhotoReference(b,{s,rand},kit){
   const az=shoot*2.399+.3,R=w*.29*Math.sqrt((shoot+.7)/7),root=[Math.sin(az)*R,floor,Math.cos(az)*R],lean=w*.035;let previous=root;
   for(let node=0;node<6;node++){
    const t=(node+1)/6,at=[root[0]+Math.sin(az)*lean*t*t,LH*(.16+.66*t),root[2]+Math.cos(az)*lean*t*t],L=Math.min(.012,w*.12)*(.88+node*.02),relief=Math.min(L,LH*.035/.071),pitch=Math.acos(Math.min(.46,LH*.035/L)),angle=az+node*Math.PI/2;
-   bacopaPhotoSegment(b,previous,at,r,'#7ca154','stem-bacopa-photo-ref');
-   for(let k=0;k<6;k++){const t=(k+.5)/6,a=az+k*2.399,pt=previous.map((v,i)=>v+(at[i]-v)*t);bacopaPhotoSegment(b,pt,[pt[0]+Math.sin(a)*hairL,pt[1]+hairL*.13,pt[2]+Math.cos(a)*hairL],hairL*.035,'#c8d4ae','stemHair-bacopa-photo-ref');}
-   for(const side of[0,1])b.add('bacopa-photo-reference-leaf','leaf-bacopa-photo-reference',kit.shade(rand,s.leafColor,.025),...at,L,L,relief,pitch,angle+side*Math.PI,0);
+   // Depth is measured from the bed. The model's small bed clearance leaves
+   // the nominal waterline slightly below this conservative color boundary.
+   const submerged=at[1]<=s.waterDepth;
+   bacopaPhotoSegment(b,previous,at,r,submerged?'#547349':'#7ca154','stem-bacopa-photo-ref');
+   for(let k=0;k<6;k++){
+    const t=(k+.5)/6,a=az+k*2.399,pt=previous.map((v,i)=>v+(at[i]-v)*t);
+    if(pt[1]<=s.waterDepth)continue;
+    bacopaPhotoSegment(b,pt,[pt[0]+Math.sin(a)*hairL,pt[1]+hairL*.13,pt[2]+Math.cos(a)*hairL],hairL*.035,'#c8d4ae','stemHair-bacopa-photo-ref');
+   }
+   const leafColor=submerged?'#477043':s.leafColor;
+   for(const side of[0,1])b.add('bacopa-photo-reference-leaf','leaf-bacopa-photo-reference',kit.shade(rand,leafColor,.025),...at,L,L,relief,pitch,angle+side*Math.PI,0);
    previous=at;
    if(!s.bloom||node!==5)continue;
    const D=Math.min(.0105,w*.05,h*.10),P=Math.min(.009,w*.05,h*.09),flower=[at[0]+Math.sin(az)*P*.90,at[1]+P*.32,at[2]+Math.cos(az)*P*.90],f=flowerFrame(b,flower,.72,az);

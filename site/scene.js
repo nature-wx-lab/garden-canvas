@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1045';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1045';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1046';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1046';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -498,7 +498,15 @@ export function createScene(container,onPick){
     if(type==='flower'){
       const p=plan.plants.find(p=>p.id===selection),group=plants?.children.find(g=>g.userData.plantId===selection),pose=inspectionSeasonActive(p,view)?flowerInspectionView(group,camera.aspect,camera.fov):null;if(!pose)return false;controls.minDistance=Math.min(.12,flowerInspectionDistanceFloor(group));controls.target.fromArray(pose.target);camera.position.fromArray(pose.position);
     }else if(foliagePose){controls.minDistance=.12;controls.target.fromArray(foliagePose.target);camera.position.fromArray(foliagePose.position);
-    }else if(type==='focus'&&selection){controls.minDistance=.12;const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view);controls.target.set(p.x-plan.width/2,plantBaseAt(plan,p)+Math.min(s.height,pondDepthAt(plan,p.x,p.z)||s.height)*.52,p.z-plan.depth/2);const d=Math.max(.16,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);camera.position.copy(controls.target).add(new THREE.Vector3(d,d*.48,d));}
+    }else if(type==='focus'&&selection){
+      controls.minDistance=.12;
+      const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view),depth=pondDepthAt(plan,p.x,p.z);
+      const dormantBacopa=s.groundDormant&&plantInfo(p.kind).appearance?.architecture==='bacopaCaroliniana';
+      const base=plantBaseAt(plan,p)+(dormantBacopa?depth:0);
+      controls.target.set(p.x-plan.width/2,base+Math.min(s.height,depth||s.height)*.52,p.z-plan.depth/2);
+      const d=Math.max(.16,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);
+      camera.position.copy(controls.target).add(new THREE.Vector3(d,d*.48,d));
+    }
     else{
       controls.minDistance=.12;const bounds=new THREE.Box3(new THREE.Vector3(-plan.width/2,0,-plan.depth/2),new THREE.Vector3(plan.width/2,.1,plan.depth/2));
       for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;for(const sign of [-1,1])bounds.expandByPoint(new THREE.Vector3(p.x-plan.width/2+sign*s.spread/2,s.height,p.z-plan.depth/2+sign*s.spread/2));}

@@ -12599,10 +12599,14 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     {
       "url": "https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=gn&name=Bacopa&page=nswfl",
       "scope": "genus"
+    },
+    {
+      "url": "https://fapms.org/wp-content/uploads/2022/02/2015summer.pdf#page=19",
+      "scope": "species"
     }
   ],
   "basis": {
-    "habit": 0,
+    "habit": 3,
     "persistence": 0,
     "leafColor": 0,
     "leafShape": 1,
@@ -12615,9 +12619,9 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "status": "partial",
   "unconfirmed": [
     "全形・全月の実物照合",
-    "水深と気温による水上形・水中形の切り替え",
+    "水温や水位の変化を受けた同じ株の葉・茎の変化",
     "地域別の芽出し・枯れ込み月",
-    "水中の茎・根の立体表示",
+    "水域では底から茎を描き、水中側の葉・茎は暗めの緑、茎の毛は水上側の参考表示です。水中側も厚い対生葉を保ちます。水中に沈んだ茎先の花は表示しません。根や、水位変化後に姿が切り替わるまでの日数は未確認です。",
     "厚い対生葉、光沢、紫色の花と細い毛は参考表現です。色は校正していません。",
     "花の上2裂・下3裂と、筒内の4本の雄しべ・2裂の柱頭は属の記載を参照しています。写真から数えた各株の器官数ではありません。",
     "葉や花の数、茎の分岐と配置は説明用です。利用者指定の高さ・幅・葉の高さの中へ調整する形で、器官寸法を実測通りに固定した模型や年次増殖ではありません。",
@@ -12656,7 +12660,7 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "flowerTiming": "months",
   "shootProfile": "bacopaPhotoReference",
   "sourceConflict": "草丈5〜15cm・開花5〜9月は国内の生産者の記載です。国外の小葉8〜12×6〜10mm、花柄5〜15mm、萼6〜11mm、花冠9〜11mm・筒5〜6mmは器官の値で、草丈や株幅へ読み替えません。直径9cmは鉢の案内で、株幅は未確認です。国外の9〜4月の花期を国内へ合算していません。",
-  "phenologyRegion": "5〜9月の花は国内の生産者の記載を使います。4〜11月の水上葉と12〜3月の非表示は沈水保護の管理参考で、自然な全株の枯れ込みや地域別の越冬成功の予測ではありません。暖かな室内で葉を残す管理例や、水中で花を付けない姿とは区別しています。"
+  "phenologyRegion": "5〜9月の花は国内の生産者の記載を使います。4〜11月の葉と12〜3月の非表示は沈水保護の管理参考で、自然な全株の枯れ込みや地域別の越冬成功の予測ではありません。水域の表示では設定水深と茎先の高さから花の有無を決めます。暖かな室内で葉を残す管理例とは区別しています。"
 },"p-d5909b1c35c5":{
   "sources": [
     {
