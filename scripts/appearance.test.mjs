@@ -22855,8 +22855,8 @@ test('Glossostigma visible model focus frames six summer and winter models above
  assert.equal(glossostigmaVisibleFocus1000({userData:{architecture:'submergedShoots'}}),null);assert.equal(models,6);assert.equal(poses,12);console.log('GLOSSOSTIGMA1000_FOCUS '+JSON.stringify({models,poses}));
 });
 
-function checkTropicaStockContext1001(id,label,latin,average){
- const i=CATALOG[id],a=i.appearance;assert.equal(i.label,label);assert.equal(i.latin,latin);assert.equal(i.height,null);assert.equal(i.spread,null);assert.deepEqual(i.colors,['unknown']);assert.deepEqual(i.bloom,[]);assert.equal(i.bloomKnown,false);assert.equal(i.sourceChecked,'2026-11-01');assert.equal(a.status,'partial');assert.match(i.care,/花色/);assert.ok(i.care.includes(average));assert.match(a.sourceConflict,/2か月後/);assert.match(a.sourceConflict,/株幅/);assert.match(a.sourceConflict,/葉色/);assert.match(a.phenologyRegion,/水槽/);assert.match(a.phenologyRegion,/未校正/);assert.doesNotMatch(a.phenologyRegion,/マツモ|カボンバ/);assert.ok(a.unconfirmed.some(s=>s.includes('同じクローン')));assert.ok(a.unconfirmed.some(s=>s.includes('水中葉モデルには花を描きません')));
+function checkTropicaStockContext1001(id,label,latin,average,checkedDate='2026-11-01'){
+ const i=CATALOG[id],a=i.appearance;assert.equal(i.label,label);assert.equal(i.latin,latin);assert.equal(i.height,null);assert.equal(i.spread,null);assert.deepEqual(i.colors,['unknown']);assert.deepEqual(i.bloom,[]);assert.equal(i.bloomKnown,false);assert.equal(i.sourceChecked,checkedDate);assert.equal(a.status,'partial');assert.match(i.care,/花色/);assert.ok(i.care.includes(average));assert.match(a.sourceConflict,/2か月後/);assert.match(a.sourceConflict,/株幅/);assert.match(a.sourceConflict,/葉色/);assert.match(a.phenologyRegion,/水槽/);assert.match(a.phenologyRegion,/未校正/);assert.doesNotMatch(a.phenologyRegion,/マツモ|カボンバ/);assert.ok(a.unconfirmed.some(s=>s.includes('同じクローン')));assert.ok(a.unconfirmed.some(s=>s.includes('水中葉モデルには花を描きません')));
  return i;
 }
 test('Tropica Super Red source separates stalk width and two month height from whole stock and flower color',()=>{
@@ -22866,7 +22866,7 @@ test('Tropica Rotala mini pot source separates narrow stalk width packaging and 
  const i=checkTropicaStockContext1001('p-bfcbe3f72e36','ロタラロトンジフォリア','Rotala rotundifolia','15〜30+cm');assert.match(i.care,/幅2〜3cm/);assert.match(i.care,/033MP/);assert.match(i.care,/包装規格/);assert.match(i.care,/水中葉は細長い/);assert.equal(i.appearance.shootProfile,'rotundifolia');
 });
 test('Tropica Hygrophila source preserves differing stem and two month height statements without merging bounds',()=>{
- const i=checkTropicaStockContext1001('p-d36c1b56c209','ハイグロフィラ ポリスペルマ','Hygrophila polysperma','20〜30+cm');assert.match(i.care,/25〜40cm/);assert.match(i.care,/幅4〜8cm/);assert.match(i.care,/20〜40cmという成株の範囲へまとめません/);assert.equal(i.appearance.shootProfile,'hygrophila');
+ const i=checkTropicaStockContext1001('p-d36c1b56c209','ハイグロフィラ ポリスペルマ','Hygrophila polysperma','20〜30+cm','2026-11-13');assert.match(i.care,/25〜40cm/);assert.match(i.care,/幅4〜8cm/);assert.match(i.care,/20〜40cmという成株の範囲へまとめません/);assert.equal(i.appearance.shootProfile,'hygrophila');
 });
 
 import{ovalisFoliageInspectionView as ovalisVisibleFocus1002}from '../site/scene.js';
@@ -23020,7 +23020,7 @@ test('Rotala visible model focus frames six summer and winter inputs above the c
 
 import{hygrophilaFoliageInspectionView as hygroVisibleFocus1005}from '../site/scene.js';
 test('Hygrophila photos keep water leaves and uncalibrated surface detail separate from stem and two month stock measurements',()=>{
- const i=CATALOG['p-d36c1b56c209'],a=i.appearance;assert.equal(i.label,'ハイグロフィラ ポリスペルマ');assert.equal(i.latin,'Hygrophila polysperma');assert.equal(i.height,null);assert.equal(i.spread,null);assert.deepEqual(i.colors,['unknown']);assert.deepEqual(i.bloom,[]);assert.equal(i.bloomKnown,false);assert.equal(i.sourceChecked,'2026-11-01');assert.match(i.care,/25〜40cm/);assert.match(i.care,/20〜30\+cm/);assert.match(i.care,/水槽写真/);assert.match(a.sourceConflict,/株幅/);assert.match(a.sourceConflict,/2か月後/);assert.equal(a.arrangement,'opposite');assert.equal(a.status,'partial');assert.ok(a.unconfirmed.some(s=>s.includes('写真3枚')));assert.ok(a.unconfirmed.some(s=>s.includes('別植物')));assert.ok(a.unconfirmed.some(s=>s.includes('葉・節・主茎・側枝・根の数')&&s.includes('写真の計測値ではありません')));assert.ok(a.unconfirmed.some(s=>s.includes('同一クローン')));
+ const i=CATALOG['p-d36c1b56c209'],a=i.appearance;assert.equal(i.label,'ハイグロフィラ ポリスペルマ');assert.equal(i.latin,'Hygrophila polysperma');assert.equal(i.height,null);assert.equal(i.spread,null);assert.deepEqual(i.colors,['unknown']);assert.deepEqual(i.bloom,[]);assert.equal(i.bloomKnown,false);assert.equal(i.sourceChecked,'2026-11-13');assert.match(i.care,/25〜40cm/);assert.match(i.care,/20〜30\+cm/);assert.match(i.care,/水槽写真/);assert.match(a.sourceConflict,/株幅/);assert.match(a.sourceConflict,/2か月後/);assert.equal(a.arrangement,'opposite');assert.equal(a.status,'partial');assert.ok(a.unconfirmed.some(s=>s.includes('写真3枚')));assert.ok(a.unconfirmed.some(s=>s.includes('別植物')));assert.ok(a.unconfirmed.some(s=>s.includes('葉・節・主茎・側枝・根の数')&&s.includes('写真の計測値ではありません')));assert.ok(a.unconfirmed.some(s=>s.includes('同一クローン')));
 });
 test('Hygrophila photo reference fits twenty four independent dimensions with closed paired petiolate blades',()=>{
  const dimsList=[[.30,.35,.25],[.01,.10,.005],[.30,.35,.005],[.01,.10,.01],[.02,.15,.02],[.07,.20,.03],[.1,1,.05],[.5,2,.30]];let models=0,vertices=0;
@@ -23059,6 +23059,44 @@ test('Hygrophila illustrative leaf pairs remain stable across years and protecte
  }
  assert.equal(yearModels,4);assert.equal(pondModels,2);console.log('HYGRO1005_YEAR_AND_WATER '+JSON.stringify({yearModels,pondModels,annualRealismVerified:0}));
 });
+test('Hygrophila lower nodal roots and basal roots meet the pond floor',()=>{
+ const p={...makePlant('p-d36c1b56c209',107210,3,3),height:.24,spread:.33,leafHeight:.19};
+ const matrix=new Matrix4(),v=new Vector3();
+ for(const [waterDepth,month] of [[.001,7],[.007,7],[.18,7],[.18,1],[.45,7]]){
+  const group=plantModel(p,{year:0,month,reference:false,waterDepth});
+  try{
+   const get=prefix=>group.children.find(m=>m.userData.component.startsWith(prefix));
+   const roots=get('root-submerged-hygrophila'),nodal=get('nodal-root-hygrophila'),stems=get('stem-hygrophila');
+   const points=Array.from({length:stems.count},(_,i)=>{
+    stems.getMatrixAt(i,matrix);
+    return new Vector3(0,.5,0).applyMatrix4(matrix);
+   });
+   for(let i=0;i<roots.count;i++){
+    roots.getMatrixAt(i,matrix);
+    const tip=v.set(0,.5,0).applyMatrix4(matrix);
+    assert.ok(tip.y>=-.012-1e-7&&tip.y<-.011);
+   }
+   for(let i=0;i<nodal.count;i+=2){
+    nodal.getMatrixAt(i,matrix);
+    const start=v.set(0,-.5,0).applyMatrix4(matrix);
+    assert.ok(points.some(node=>node.distanceTo(start)<1e-7));
+    nodal.getMatrixAt(i+1,matrix);
+    const tip=v.set(0,.5,0).applyMatrix4(matrix);
+    assert.ok(tip.y>=-.012-1e-7&&tip.y<-.011);
+   }
+   const leaf=get('leaf-submerged-hygrophila'),positions=leaf.geometry.attributes.position;
+   for(let i=0;i<leaf.count;i++){
+    leaf.getMatrixAt(i,matrix);
+    for(let j=0;j<positions.count;j++){
+     v.fromBufferAttribute(positions,j).applyMatrix4(matrix);
+     assert.ok(v.y>=-.012-1e-7&&v.y<waterDepth-.006);
+    }
+   }
+   assert.equal(flowerInspectionView(group,.8,40),null);
+  }finally{dispose(group);}
+ }
+});
+
 test('Hygrophila visible model focus frames six summer and winter inputs above the camera floor',()=>{
  let models=0,poses=0;const v=new Vector3(),matrix=new Matrix4();
  for(const dims of[[.30,.35,.25],[.01,.10,.005],[.30,.35,.005]])for(const month of[7,1]){

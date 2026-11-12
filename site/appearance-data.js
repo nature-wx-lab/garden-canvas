@@ -13410,55 +13410,59 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "sourceConflict": "単品ページの草丈は、切らずに育てると伸びるという記載のみで、数値の草丈・株幅・国内の開花月は未確認です。6.5cmは商品のポット規格で株幅ではありません。国外の葉3.5〜15×1.5〜7mm、別資料の葉10〜15×3〜5mmは部位の値で、草丈や株幅へ読み替えません。",
   "phenologyRegion": "4〜11月の葉と12〜3月の非表示は、冬に完全に水中へ沈めて保護する生産者の寄せ植え管理例を参考にした表示です。切り替え月は表示上の目安で、自然な全株の枯れ込み・地域別の越冬成功を示しません。シンガポール資料の常緑を日本の露地へ読み替えません。冬の水中葉や根の姿は未確認です。"
 },"p-d36c1b56c209":{
-    "sources": [
-      {
-        "url": "https://tropica.com/en/plants/plantdetails/Hygrophilapolysperma(050)/4483",
-        "scope": "catalog-entry"
-      },
-      {
-        "url": "https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Hygrophila~polysperma&page=nswfl",
-        "scope": "species"
-      }
-    ],
-    "basis": {
-      "habit": 0,
-      "leafShape": 0,
-      "arrangement": 0,
-      "persistence": 0,
-      "leafColor": 0
+  "sources": [
+    {
+      "url": "https://tropica.com/en/plants/plantdetails/Hygrophilapolysperma(050)/4483",
+      "scope": "catalog-entry"
     },
-    "status": "partial",
-    "architecture": "submergedShoots",
-    "shootProfile": "hygrophila",
-    "lifeForm": "herb",
-    "habit": "clump",
-    "arrangement": "opposite",
-    "leafShape": "hygrophilaOpposite",
-    "leafLength": 0.04,
-    "leafWidth": 0.012,
-    "leafColor": "#80a556",
-    "leafTexture": "smooth",
-    "leafUnderside": "#a8bd7f",
-    "stemColor": "#91a470",
-    "persistence": "submergedPersistent",
-    "fruitMonths": [],
-    "phenologyRegion": "Tropicaの水槽栽培の参考条件です。表は植えて2か月後の平均高さで、月別の開花・落葉や成株の上限の予測ではありません。水温・光・剪定条件による違いと、屋外・寒冷地での冬の残葉や越冬は未校正です。",
-    "unconfirmed": [
-      "全月の実物照合",
-      "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
-      "全縁の長楕円形葉が対生する茎と節から出る白い根を描きます。葉の色や長さが栽培条件で変わるため、緑色の水中葉を基準にしています。",
-      "国内屋外の冬姿・開花月は未確認です。温度を保った水中栽培を表示し、オーストラリアの秋冬という花期を日本の月へ流用しません。",
-      "この項目は出典のHygrophila polyspermaを参考にします。国内の同名流通株すべてと同じクローンであることは未確認です。",
-      "本文の高さ25〜40cm・幅4〜8cmは茎の説明です。表の20〜30+cmは水槽に植えて2か月後の平均高さの目安で、本文と条件の違う数値を20〜40cmという成株の範囲へまとめません。株幅や年次成長の確定値には使いません。",
-      "メーカーの赤・緑の記載は葉色です。今回の資料では花の色・開花月は未確認で、水中葉モデルには花を描きません。",
-      "トリミング・差し戻しや光・CO2による変化は管理条件の説明です。自然な茎数・根数・株数と、同じ株の全月の姿・年次成長・屋外越冬は未校正です。",
-      "メーカー050の写真3枚（苗、接写、水槽）を参照します。苗の接写だけを水中の形へ流用せず、水槽写真の別植物の細分葉を取り込みません。",
-      "対になる長楕円形の葉を短い葉柄で節につなぎ、主茎から側枝を分けます。葉・節・主茎・側枝・根の数は説明用の配置で、写真の計測値ではありません。",
-      "葉の厚み・反り・凹凸・葉脈、色と光沢、葉柄と節間は近似です。葉の接写や水槽写真は実寸・表面の定量的な校正ではなく、撮影条件や国内同名株との同一クローンは未確認です。",
-      "低い葉の高さでは葉を横に倒して指定範囲に収めます。花・果実・株数の増殖、同じ株の全月と年次成長、地域別の屋外越冬は再現していません。"
-    ],
-    "sourceConflict": "本文の高さ25〜40cm・幅4〜8cmは茎の説明です。表の20〜30+cmは水槽に植えて2か月後の平均高さの目安で、本文と条件の違う数値を20〜40cmという成株の範囲へまとめません。株全体の高さの閉じた上限・株幅は未確認です。葉の赤や緑は葉色で、今回のメーカー資料で確認できない花色として扱いません。"
-  },"p-00897f5fd75a":{"sources":[{"url":"https://www.akb.jp/c/suisei/shissei/348","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/cyperus-alternifolius/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerShape":1,"flowerTiming":0,"winterClimateSensitive":0,"flowerMonths":0,"leafLength":0,"leafWidth":0,"shootProfile":0,"leafUnderside":0},"status":"partial","unconfirmed":["全形・全月の実物照合","同じ株の年間推移、地域別の萌芽と枯れ込みの月境界","茎葉と花序の密度・寸法比の実測、苞の断面と厚さの実測は未確認","写真の苞は通常の葉と区別し、細い閉じた面と概略の曲がりを参考表示します。描画用の本数は販売株の実測値ではありません。","小穂を支える枝と重なった鱗片は近似形状です。個々の微小な花の内部、果実、地下茎の成長は描いていません。","葉裏・鱗片の色、断面、配置と成熟段階別の色変化は写真への校正値ではありません。"],"architecture":"umbrellaSedge","leafShape":"umbrellaBract","leafColor":"#6e974e","stemColor":"#709956","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"winterDormant","flowerShape":"sedgeSpike","flowerTiming":"months","winterClimateSensitive":true,"flowerMonths":[7,8,9,10],"leafLength":0.2,"leafWidth":0.006,"shootProfile":"umbrellaSedgePhotoReference","leafUnderside":"#9cb675","sourceConflict":"国内生産者の同一商品写真で放射状の細い苞と茎を参照します。緑・白は大学の種の花色欄による参照で、小穂の茶色や果実の茶色を花色へまとめません。国内販売株の微小な花そのものの色と、株幅は未確認です。鉢の直径を株幅に置き換えません。開花月と高さの範囲は国内生産者の種類別資料を保持し、海外の寸法や暦を移しません。"},"p-f32a65d4f1da":{"sources":[{"url":"https://www.akb.jp/c/suisei/shissei/370","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/cyperus-alternifolius/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerShape":1,"flowerTiming":0,"winterClimateSensitive":0,"flowerMonths":0,"leafLength":0,"leafWidth":0,"shootProfile":0,"leafUnderside":0,"foliageMonths":0},"status":"partial","unconfirmed":["全形・全月の実物照合","同じ株の年間推移、地域別の萌芽と枯れ込みの月境界","茎葉と花序の密度・寸法比の実測、苞の断面と厚さの実測は未確認","写真の苞は通常の葉と区別し、細い閉じた面と概略の曲がりを参考表示します。描画用の本数は販売株の実測値ではありません。","小穂を支える枝と重なった鱗片は近似形状です。個々の微小な花の内部、果実、地下茎の成長は描いていません。","葉裏・鱗片の色、断面、配置と成熟段階別の色変化は写真への校正値ではありません。"],"architecture":"umbrellaSedge","leafShape":"umbrellaBract","leafColor":"#6e974e","stemColor":"#709956","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"protectedWinter","flowerShape":"sedgeSpike","flowerTiming":"months","winterClimateSensitive":true,"flowerMonths":[7,8,9],"leafLength":0.13,"leafWidth":0.004,"shootProfile":"miniCyperusPhotoReference","leafUnderside":"#9cb675","foliageMonths":[5,6,7,8,9],"sourceConflict":"国内生産者の同一商品写真で放射状の細い苞と茎を参照します。緑・白は大学の種の花色欄による参照で、小穂の茶色や果実の茶色を花色へまとめません。国内販売株の微小な花そのものの色と、株幅は未確認です。鉢の直径を株幅に置き換えません。開花月と高さの範囲は国内生産者の種類別資料を保持し、海外の寸法や暦を移しません。"},"p-fbb7825413ec":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/444","scope":"catalog-entry"},{"url":"https://pza.sanbi.org/cyperus-prolifer","scope":"species"},{"url":"https://www.rhs.org.uk/plants/174712/cyperus-prolifer/details","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerShape":1,"flowerTiming":0,"winterClimateSensitive":0,"flowerMonths":0,"foliageMonths":0,"shootProfile":0},"status":"partial","unconfirmed":["全形・全月の実物照合","同じ株の年間推移、地域別の萌芽と枯れ込みの月境界","茎・鞘・苞・小穂の断面と厚さの実測は未確認です。種の記載の扁平な三角形の茎と赤褐色の基部の鞘を近似表示します。","細い花序の枝と先端の小穂を参考表示します。描画用の本数、枝の曲がりと鱗片の配置は販売株の実測値ではありません。","種の成熟した花序の直径10〜15cmは国内販売株の実測ではありません。株全体の幅は未確認です。","葉丈は株元の鞘の高さの近似に使い、普通の葉身があるように茎先の花序を地面へ動かしません。","個々の微小な花の内部、果実、地下茎の拡大、花序からの増殖は再現していません。成熟段階別の色変化も未校正です。","別学名で販売される同名流通品との同一性は未確認です。RHSのCyperus isocladusの異名扱いを参照します。"],"architecture":"dwarfPapyrus","leafShape":"reducedSheath","leafColor":"#6e974e","stemColor":"#709956","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"protectedWinter","flowerShape":"sedgeSpike","flowerTiming":"months","winterClimateSensitive":true,"flowerMonths":[6,7,8,9],"foliageMonths":[5,6,7,8,9],"shootProfile":"miniPapyrusPhotoReference","sourceConflict":"国内生産者の開花期欄は6〜9月、用途の本文は6〜8月と範囲が異なるため、欄の6〜9月を参照表示します。茶色・クリーム色はSANBIの種の花色欄による参照です。国内販売株の微小な花そのものの色・株幅は未確認です。鉢の直径を株幅に置き換えず、海外の季節を日本の開花月へ移しません。"},"p-7a9dfcd0a936":{
+    {
+      "url": "https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Hygrophila~polysperma&page=nswfl",
+      "scope": "species"
+    },
+    {
+      "url": "https://www.jstage.jst.go.jp/article/bnmnsbot/48/4/48_141/_pdf#page=5",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 0,
+    "arrangement": 0,
+    "persistence": 0,
+    "leafColor": 0
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "hygrophila",
+  "lifeForm": "herb",
+  "habit": "clump",
+  "arrangement": "opposite",
+  "leafShape": "hygrophilaOpposite",
+  "leafLength": 0.04,
+  "leafWidth": 0.012,
+  "leafColor": "#80a556",
+  "leafTexture": "smooth",
+  "leafUnderside": "#a8bd7f",
+  "stemColor": "#91a470",
+  "persistence": "submergedPersistent",
+  "fruitMonths": [],
+  "phenologyRegion": "Tropicaの水槽栽培の参考条件です。表は植えて2か月後の平均高さで、月別の開花・落葉や成株の上限の予測ではありません。水温・光・剪定条件による違いと、屋外・寒冷地での冬の残葉や越冬は未校正です。",
+  "unconfirmed": [
+    "全月の実物照合",
+    "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
+    "国立科学博物館の足利市の調査にある、全縁の葉が対生し、水中や泥の中で節から根を出す姿を参考にします。池では株元と下部の節から池底に根をつなぎ、浅い水域でも葉を水面下に収めます。根の数や長さ、水深別の生育は未校正です。",
+    "足利市の調査では、早春に水中の茎から新芽が出る姿が観察されました。月別の残葉量と地域ごとの開花時期は未確認です。現在の3Dは温度を保った水槽の参考表示です。",
+    "この項目は出典のHygrophila polyspermaを参考にします。国内の同名流通株すべてと同じクローンであることは未確認です。",
+    "本文の高さ25〜40cm・幅4〜8cmは茎の説明です。表の20〜30+cmは水槽に植えて2か月後の平均高さの目安で、本文と条件の違う数値を20〜40cmという成株の範囲へまとめません。株幅や年次成長の確定値には使いません。",
+    "メーカーの赤・緑の記載は葉色です。今回の資料では花の色・開花月は未確認で、水中葉モデルには花を描きません。",
+    "トリミング・差し戻しや光・CO2による変化は管理条件の説明です。自然な茎数・根数・株数と、同じ株の全月の姿・年次成長・屋外越冬は未校正です。",
+    "メーカー050の写真3枚（苗、接写、水槽）を参照します。苗の接写だけを水中の形へ流用せず、水槽写真の別植物の細分葉を取り込みません。",
+    "対になる長楕円形の葉を短い葉柄で節につなぎ、主茎から側枝を分けます。葉・節・主茎・側枝・根の数は説明用の配置で、写真の計測値ではありません。",
+    "葉の厚み・反り・凹凸・葉脈、色と光沢、葉柄と節間は近似です。葉の接写や水槽写真は実寸・表面の定量的な校正ではなく、撮影条件や国内同名株との同一クローンは未確認です。",
+    "低い葉の高さでは葉を横に倒して指定範囲に収めます。花・果実・株数の増殖、同じ株の全月と年次成長、地域別の屋外越冬は再現していません。"
+  ],
+  "sourceConflict": "本文の高さ25〜40cm・幅4〜8cmは茎の説明です。表の20〜30+cmは水槽に植えて2か月後の平均高さの目安で、本文と条件の違う数値を20〜40cmという成株の範囲へまとめません。株全体の高さの閉じた上限・株幅は未確認です。葉の赤や緑は葉色で、今回のメーカー資料で確認できない花色として扱いません。"
+},"p-00897f5fd75a":{"sources":[{"url":"https://www.akb.jp/c/suisei/shissei/348","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/cyperus-alternifolius/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerShape":1,"flowerTiming":0,"winterClimateSensitive":0,"flowerMonths":0,"leafLength":0,"leafWidth":0,"shootProfile":0,"leafUnderside":0},"status":"partial","unconfirmed":["全形・全月の実物照合","同じ株の年間推移、地域別の萌芽と枯れ込みの月境界","茎葉と花序の密度・寸法比の実測、苞の断面と厚さの実測は未確認","写真の苞は通常の葉と区別し、細い閉じた面と概略の曲がりを参考表示します。描画用の本数は販売株の実測値ではありません。","小穂を支える枝と重なった鱗片は近似形状です。個々の微小な花の内部、果実、地下茎の成長は描いていません。","葉裏・鱗片の色、断面、配置と成熟段階別の色変化は写真への校正値ではありません。"],"architecture":"umbrellaSedge","leafShape":"umbrellaBract","leafColor":"#6e974e","stemColor":"#709956","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"winterDormant","flowerShape":"sedgeSpike","flowerTiming":"months","winterClimateSensitive":true,"flowerMonths":[7,8,9,10],"leafLength":0.2,"leafWidth":0.006,"shootProfile":"umbrellaSedgePhotoReference","leafUnderside":"#9cb675","sourceConflict":"国内生産者の同一商品写真で放射状の細い苞と茎を参照します。緑・白は大学の種の花色欄による参照で、小穂の茶色や果実の茶色を花色へまとめません。国内販売株の微小な花そのものの色と、株幅は未確認です。鉢の直径を株幅に置き換えません。開花月と高さの範囲は国内生産者の種類別資料を保持し、海外の寸法や暦を移しません。"},"p-f32a65d4f1da":{"sources":[{"url":"https://www.akb.jp/c/suisei/shissei/370","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/cyperus-alternifolius/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerShape":1,"flowerTiming":0,"winterClimateSensitive":0,"flowerMonths":0,"leafLength":0,"leafWidth":0,"shootProfile":0,"leafUnderside":0,"foliageMonths":0},"status":"partial","unconfirmed":["全形・全月の実物照合","同じ株の年間推移、地域別の萌芽と枯れ込みの月境界","茎葉と花序の密度・寸法比の実測、苞の断面と厚さの実測は未確認","写真の苞は通常の葉と区別し、細い閉じた面と概略の曲がりを参考表示します。描画用の本数は販売株の実測値ではありません。","小穂を支える枝と重なった鱗片は近似形状です。個々の微小な花の内部、果実、地下茎の成長は描いていません。","葉裏・鱗片の色、断面、配置と成熟段階別の色変化は写真への校正値ではありません。"],"architecture":"umbrellaSedge","leafShape":"umbrellaBract","leafColor":"#6e974e","stemColor":"#709956","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"protectedWinter","flowerShape":"sedgeSpike","flowerTiming":"months","winterClimateSensitive":true,"flowerMonths":[7,8,9],"leafLength":0.13,"leafWidth":0.004,"shootProfile":"miniCyperusPhotoReference","leafUnderside":"#9cb675","foliageMonths":[5,6,7,8,9],"sourceConflict":"国内生産者の同一商品写真で放射状の細い苞と茎を参照します。緑・白は大学の種の花色欄による参照で、小穂の茶色や果実の茶色を花色へまとめません。国内販売株の微小な花そのものの色と、株幅は未確認です。鉢の直径を株幅に置き換えません。開花月と高さの範囲は国内生産者の種類別資料を保持し、海外の寸法や暦を移しません。"},"p-fbb7825413ec":{"sources":[{"url":"https://www.akb.jp/c/suisei/chusui/444","scope":"catalog-entry"},{"url":"https://pza.sanbi.org/cyperus-prolifer","scope":"species"},{"url":"https://www.rhs.org.uk/plants/174712/cyperus-prolifer/details","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerShape":1,"flowerTiming":0,"winterClimateSensitive":0,"flowerMonths":0,"foliageMonths":0,"shootProfile":0},"status":"partial","unconfirmed":["全形・全月の実物照合","同じ株の年間推移、地域別の萌芽と枯れ込みの月境界","茎・鞘・苞・小穂の断面と厚さの実測は未確認です。種の記載の扁平な三角形の茎と赤褐色の基部の鞘を近似表示します。","細い花序の枝と先端の小穂を参考表示します。描画用の本数、枝の曲がりと鱗片の配置は販売株の実測値ではありません。","種の成熟した花序の直径10〜15cmは国内販売株の実測ではありません。株全体の幅は未確認です。","葉丈は株元の鞘の高さの近似に使い、普通の葉身があるように茎先の花序を地面へ動かしません。","個々の微小な花の内部、果実、地下茎の拡大、花序からの増殖は再現していません。成熟段階別の色変化も未校正です。","別学名で販売される同名流通品との同一性は未確認です。RHSのCyperus isocladusの異名扱いを参照します。"],"architecture":"dwarfPapyrus","leafShape":"reducedSheath","leafColor":"#6e974e","stemColor":"#709956","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"protectedWinter","flowerShape":"sedgeSpike","flowerTiming":"months","winterClimateSensitive":true,"flowerMonths":[6,7,8,9],"foliageMonths":[5,6,7,8,9],"shootProfile":"miniPapyrusPhotoReference","sourceConflict":"国内生産者の開花期欄は6〜9月、用途の本文は6〜8月と範囲が異なるため、欄の6〜9月を参照表示します。茶色・クリーム色はSANBIの種の花色欄による参照です。国内販売株の微小な花そのものの色・株幅は未確認です。鉢の直径を株幅に置き換えず、海外の季節を日本の開花月へ移しません。"},"p-7a9dfcd0a936":{
   "sources": [
     {
       "url": "https://www.wakaizumi-farm.com/vesikariusu.html",

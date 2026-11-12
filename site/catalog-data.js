@@ -10496,40 +10496,40 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "visual": "reference",
   "popularity": []
 },"p-d36c1b56c209":{
-    "label": "ハイグロフィラ ポリスペルマ",
-    "latin": "Hygrophila polysperma",
-    "genre": "水生植物",
-    "form": "botanical",
-    "group": "宿根草",
-    "leaf": "evergreen",
-    "height": null,
-    "spread": null,
-    "bloom": [],
-    "bloomKnown": false,
-    "flower": "#e5def0",
-    "leafColor": "#80a556",
-    "variegated": false,
-    "colors": [
-      "unknown"
-    ],
-    "sun": [],
-    "moisture": [],
-    "life": "perennial",
-    "growth": "水槽に植えて2か月後の平均高さというメーカーの目安。成株の閉じた高さ範囲・株幅と年次成長は未確認です。",
-    "season": "水槽での葉と枝ぶりの参考。屋外の冬姿は未確認。",
-    "care": "この項目は出典のHygrophila polyspermaを参考にします。国内の同名流通株すべてと同じクローンであることは未確認です。本文の高さ25〜40cm・幅4〜8cmは茎の説明です。表の20〜30+cmは水槽に植えて2か月後の平均高さの目安で、本文と条件の違う数値を20〜40cmという成株の範囲へまとめません。これらを株全体の株幅や、成株の高さの上限へ読み替えません。葉の形や色は光などによって変わると説明されています。メーカーの当該資料では花色・開花月を確認できないため、葉の赤や緑を花色の検索区分に使いません。剪定・差し戻しの管理例から自然な株数や年次増殖量は予測していません。屋外や寒冷地の越冬、月別の残葉は未確認です。野外への放流・逸出を避けて管理してください。 メーカーの水槽写真を参考に、長楕円形の緑葉と側枝を表示します。",
-    "bloomText": "開花月は今回のメーカー資料では未確認",
-    "bloomBasis": "Tropicaの当該商品ページは水槽での葉・茎と栽培条件の説明です。開花月や葉色を花の時期・色へ読み替えません。",
-    "source": "https://tropica.com/en/plants/plantdetails/Hygrophilapolysperma(050)/4483",
-    "publisher": "Tropica",
-    "sourceChecked": "2026-11-01",
-    "aliases": [
-      "ハイグロフィラ ポリスペルマ"
-    ],
-    "selectionSource": null,
-    "visual": "reference",
-    "popularity": []
-  },"p-00897f5fd75a":{"label":"シュロガヤツリ","latin":"Cyperus alternifolius","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":[0.8,1.5],"spread":null,"bloom":[7,8,9,10],"bloomKnown":true,"flower":"#d3ddad","leafColor":"#6e974e","variegated":false,"colors":["green","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水辺の草姿と季節変化","care":"長い茎の頂部に傘状の苞を広げ、その内側から枝分かれした小穂が出ます。通常の葉は茎を包む基部の鞘です。冬の地上部枯れを参考表示しますが、暖地・軒下では緑のまま残る場合があります。 花色の緑・白は種の資料による参照で、国内販売株の微小な花を写真で色合わせした値ではありません。全形・全月の実物照合は未完了です。","bloomText":"資料の開花月：7・8・9・10月","bloomBasis":"生産者の種類別資料","source":"https://www.akb.jp/c/suisei/shissei/348","publisher":"杜若園芸","sourceChecked":"2026-11-01","aliases":["シュロガヤツリ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-f32a65d4f1da":{"label":"ミニシペラス","latin":"Cyperus alternifolius 'Gracilis'","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":[0.3,1],"spread":null,"bloom":[7,8,9],"bloomKnown":true,"flower":"#d3ddad","leafColor":"#6e974e","variegated":false,"colors":["green","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水辺の草姿と季節変化","care":"細い茎の先に細長い苞を放射状に広げます。生産者の管理案内に合わせ、10〜4月は日当たりのよい屋内などの保護場所で管理する条件として屋外表示を省きます。温暖地での屋外越冬の例もあり、各地で同じ暦になることを示しません。 花色の緑・白は種の資料による参照で、国内販売株の微小な花を写真で色合わせした値ではありません。全形・全月の実物照合は未完了です。","bloomText":"資料の開花月：7・8・9月","bloomBasis":"生産者の種類別資料","source":"https://www.akb.jp/c/suisei/shissei/370","publisher":"杜若園芸","sourceChecked":"2026-11-01","aliases":["ミニシペラス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-fbb7825413ec":{"label":"ミニパピルス","latin":"Cyperus prolifer (syn. C. isocladus)","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":[0.6,1.2],"spread":null,"bloom":[6,7,8,9],"bloomKnown":true,"flower":"#b9a27c","leafColor":"#6e974e","variegated":false,"colors":["dark","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水辺の草姿と季節変化","care":"杜若園芸のヒメカミカヤツリ型を採用。普通の葉は株元の鞘に退化し、茎先の細い部分は放射状に広がる花序の枝です。10〜4月は日当たりのよい屋内などの保護場所へ移す管理条件として屋外表示を省きます。花色の茶色・クリーム色は種の資料による参照で、国内販売株の微小な花を写真で色合わせした値ではありません。全形・全月の実物照合は未完了です。","bloomText":"資料の開花月：6・7・8・9月","bloomBasis":"生産者の種類別資料","source":"https://www.akb.jp/c/suisei/chusui/444","publisher":"杜若園芸","sourceChecked":"2026-11-01","aliases":["ミニパピルス","ヒメカミカヤツリ","シペラス イソクラダス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-7a9dfcd0a936":{
+  "label": "ハイグロフィラ ポリスペルマ",
+  "latin": "Hygrophila polysperma",
+  "genre": "水生植物",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": null,
+  "spread": null,
+  "bloom": [],
+  "bloomKnown": false,
+  "flower": "#e5def0",
+  "leafColor": "#80a556",
+  "variegated": false,
+  "colors": [
+    "unknown"
+  ],
+  "sun": [],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "水槽に植えて2か月後の平均高さというメーカーの目安。成株の閉じた高さ範囲・株幅と年次成長は未確認です。",
+  "season": "水槽での葉と枝ぶりの参考。屋外の冬姿は未確認。",
+  "care": "この項目は出典のHygrophila polyspermaを参考にします。国内の同名流通株すべてと同じクローンであることは未確認です。本文の高さ25〜40cm・幅4〜8cmは茎の説明です。表の20〜30+cmは水槽に植えて2か月後の平均高さの目安で、本文と条件の違う数値を20〜40cmという成株の範囲へまとめません。これらを株全体の株幅や、成株の高さの上限へ読み替えません。葉の形や色は光などによって変わると説明されています。メーカーの当該資料では花色・開花月を確認できないため、葉の赤や緑を花色の検索区分に使いません。剪定・差し戻しの管理例から自然な株数や年次増殖量は予測していません。屋外や寒冷地の越冬、月別の残葉は未確認です。野外への放流・逸出を避けて管理してください。 メーカーの水槽写真を参考に長楕円形の緑葉と側枝を描きます。池では国内の現地調査にある節からの根を池底につなぎます。",
+  "bloomText": "開花月は今回のメーカー資料では未確認",
+  "bloomBasis": "Tropicaの当該商品ページは水槽での葉・茎と栽培条件の説明です。開花月や葉色を花の時期・色へ読み替えません。",
+  "source": "https://tropica.com/en/plants/plantdetails/Hygrophilapolysperma(050)/4483",
+  "publisher": "Tropica",
+  "sourceChecked": "2026-11-13",
+  "aliases": [
+    "ハイグロフィラ ポリスペルマ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-00897f5fd75a":{"label":"シュロガヤツリ","latin":"Cyperus alternifolius","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":[0.8,1.5],"spread":null,"bloom":[7,8,9,10],"bloomKnown":true,"flower":"#d3ddad","leafColor":"#6e974e","variegated":false,"colors":["green","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水辺の草姿と季節変化","care":"長い茎の頂部に傘状の苞を広げ、その内側から枝分かれした小穂が出ます。通常の葉は茎を包む基部の鞘です。冬の地上部枯れを参考表示しますが、暖地・軒下では緑のまま残る場合があります。 花色の緑・白は種の資料による参照で、国内販売株の微小な花を写真で色合わせした値ではありません。全形・全月の実物照合は未完了です。","bloomText":"資料の開花月：7・8・9・10月","bloomBasis":"生産者の種類別資料","source":"https://www.akb.jp/c/suisei/shissei/348","publisher":"杜若園芸","sourceChecked":"2026-11-01","aliases":["シュロガヤツリ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-f32a65d4f1da":{"label":"ミニシペラス","latin":"Cyperus alternifolius 'Gracilis'","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":[0.3,1],"spread":null,"bloom":[7,8,9],"bloomKnown":true,"flower":"#d3ddad","leafColor":"#6e974e","variegated":false,"colors":["green","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水辺の草姿と季節変化","care":"細い茎の先に細長い苞を放射状に広げます。生産者の管理案内に合わせ、10〜4月は日当たりのよい屋内などの保護場所で管理する条件として屋外表示を省きます。温暖地での屋外越冬の例もあり、各地で同じ暦になることを示しません。 花色の緑・白は種の資料による参照で、国内販売株の微小な花を写真で色合わせした値ではありません。全形・全月の実物照合は未完了です。","bloomText":"資料の開花月：7・8・9月","bloomBasis":"生産者の種類別資料","source":"https://www.akb.jp/c/suisei/shissei/370","publisher":"杜若園芸","sourceChecked":"2026-11-01","aliases":["ミニシペラス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-fbb7825413ec":{"label":"ミニパピルス","latin":"Cyperus prolifer (syn. C. isocladus)","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":[0.6,1.2],"spread":null,"bloom":[6,7,8,9],"bloomKnown":true,"flower":"#b9a27c","leafColor":"#6e974e","variegated":false,"colors":["dark","white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水辺の草姿と季節変化","care":"杜若園芸のヒメカミカヤツリ型を採用。普通の葉は株元の鞘に退化し、茎先の細い部分は放射状に広がる花序の枝です。10〜4月は日当たりのよい屋内などの保護場所へ移す管理条件として屋外表示を省きます。花色の茶色・クリーム色は種の資料による参照で、国内販売株の微小な花を写真で色合わせした値ではありません。全形・全月の実物照合は未完了です。","bloomText":"資料の開花月：6・7・8・9月","bloomBasis":"生産者の種類別資料","source":"https://www.akb.jp/c/suisei/chusui/444","publisher":"杜若園芸","sourceChecked":"2026-11-01","aliases":["ミニパピルス","ヒメカミカヤツリ","シペラス イソクラダス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-7a9dfcd0a936":{
   "label": "クリスマスローズ ヴェシカリウス",
   "latin": "Helleborus vesicarius",
   "genre": "クリスマスローズ",
