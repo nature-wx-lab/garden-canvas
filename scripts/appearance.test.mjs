@@ -24326,19 +24326,45 @@ test('willowMoss accepts existing saved gardens without changing independent dim
 });
 
 test('najas separates retailer leaf length from stock height and green foliage from unknown flowers',()=>{
- const q=CATALOG['p-115ec5dc0069'],a=q.appearance;assert.match(q.latin,/Najas sp.*流通/);assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'najasPhotoReference');assert.equal(a.arrangement,'unconfirmed');assert.equal(a.leafShape,'linear');assert.equal(a.sources.length,1);assert.ok(Object.values(a.basis).every(n=>n===0));assert.equal(a.leafLength,.025);assert.match(a.sourceConflict,/2〜3cm.*葉長/);assert.match(a.sourceConflict,/12cm.*9cm.*包装/);assert.match(a.unconfirmed.join(' '),/鋸歯.*未確認/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'unknown'}).some(([id])=>id==='p-115ec5dc0069'));for(const color of['green','pink'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-115ec5dc0069'));assert.ok(!/najasPhotoReference|najasFineLeaf|微細.*鋸歯/.test(appearanceSummary(q)));
+ const q=CATALOG['p-115ec5dc0069'],a=q.appearance;assert.match(q.latin,/Najas sp.*流通/);assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-13');assert.equal(a.shootProfile,'najasPhotoReference');assert.equal(a.arrangement,'unconfirmed');assert.equal(a.leafShape,'linear');assert.deepEqual(a.sources.map(s=>s.scope),['catalog-entry','genus']);assert.match(a.unconfirmed.join(' '),/VicFloraのナヤス属.*流通株の葉鞘の形・寸法は未確認/);assert.ok(Object.values(a.basis).every(n=>n===0));assert.equal(a.leafLength,.025);assert.match(a.sourceConflict,/2〜3cm.*葉長/);assert.match(a.sourceConflict,/12cm.*9cm.*包装/);assert.match(a.unconfirmed.join(' '),/鋸歯.*未確認/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'unknown'}).some(([id])=>id==='p-115ec5dc0069'));for(const color of['green','pink'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-115ec5dc0069'));assert.ok(!/najasPhotoReference|najasFineLeaf|微細.*鋸歯/.test(appearanceSummary(q)));
 });
 test('najas reference fits twenty four independent inputs with connected leaves midribs and branches',()=>{
  const dimensions=[[.25,.30,.20],[.01,.10,.005],[.25,.30,.005],[.01,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,leafJoins=0,midribJoins=0,stemJoins=0,branchJoins=0;
  for(const dims of dimensions)for(const month of[7,4,1]){
   const input={...makePlant('p-115ec5dc0069',102810,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input),g=plantModel(input,{year:1,month,reference:false},1);models++;
-  try{g.updateMatrixWorld(true);assert.deepEqual(input,saved);const leaves=g.children.find(m=>m.userData.component.startsWith('leaf-najas-photo-reference')),veins=g.children.find(m=>m.userData.component==='vein-najas-photo-reference'),stems=g.children.find(m=>m.userData.component==='stem-najas-photo-ref'),sides=g.children.find(m=>m.userData.component==='side-stem-najas-photo-ref');assert.equal(leaves.count,1728);assert.equal(veins.count,1728);assert.equal(stems.count,192);assert.equal(sides.count,384);assert.equal(leaves.geometry.userData.closedBlade,true);assert.equal(veins.geometry.userData.closedMidrib,true);assert.ok(!g.children.some(m=>/root|flower|petal|sepal|seed|fruit/.test(m.userData.component)));assert.equal(flowerInspectionView(g,.8,40),null);
+  try{g.updateMatrixWorld(true);assert.deepEqual(input,saved);const leaves=g.children.find(m=>m.userData.component.startsWith('leaf-najas-photo-reference')),veins=g.children.find(m=>m.userData.component==='vein-najas-photo-reference'),stems=g.children.find(m=>m.userData.component==='stem-najas-photo-ref'),sides=g.children.find(m=>m.userData.component==='side-stem-najas-photo-ref');const sheaths=g.children.find(m=>m.userData.component==='leaf-sheath-najas-photo-reference');assert.equal(sheaths.count,576);assert.equal(leaves.count,1728);assert.equal(veins.count,1728);assert.equal(stems.count,192);assert.equal(sides.count,384);assert.equal(leaves.geometry.userData.closedBlade,true);assert.equal(veins.geometry.userData.closedMidrib,true);assert.ok(!g.children.some(m=>/root|flower|petal|sepal|seed|fruit/.test(m.userData.component)));assert.equal(flowerInspectionView(g,.8,40),null);
    let lo=Infinity,hi=-Infinity,rad=0;const v=new Vector3(),world=new Matrix4();for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.normal.array].every(Number.isFinite));const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,world);world.premultiply(mesh.matrixWorld);for(let j=0;j<pos.count;j++){v.fromBufferAttribute(pos,j).applyMatrix4(world);lo=Math.min(lo,v.y);hi=Math.max(hi,v.y);rad=Math.max(rad,Math.hypot(v.x,v.z));vertices++;}}}
    assert.ok(lo>=-2e-6,JSON.stringify({dims,month,lo}));assert.ok(hi<=Math.min(dims[0],dims[2])+2e-6,JSON.stringify({dims,month,hi}));assert.ok(rad*2<=dims[1]+2e-6,JSON.stringify({dims,month,rad}));const point=(mesh,k,v)=>{const mat=new Matrix4();mesh.getMatrixAt(k,mat);return v.applyMatrix4(mat).applyMatrix4(mesh.matrixWorld);};let leaf=0;
-   const check=(at)=>{for(let k=0;k<3;k++){assert.ok(point(leaves,leaf,new Vector3()).distanceTo(at)<2e-6);leafJoins++;assert.ok(point(veins,leaf,new Vector3()).distanceTo(at)<2e-6);midribJoins++;leaf++;}};
+   const check=(at)=>{assert.ok(point(sheaths,leaf/3,new Vector3(0,.5,0)).distanceTo(at)<2e-6);for(let k=0;k<3;k++){assert.ok(point(leaves,leaf,new Vector3()).distanceTo(at)<2e-6);leafJoins++;assert.ok(point(veins,leaf,new Vector3()).distanceTo(at)<2e-6);midribJoins++;leaf++;}};
    for(let shoot=0;shoot<12;shoot++){let sideBranch=0;for(let j=1;j<=16;j++){const main=shoot*16+j-1,at=point(stems,main,new Vector3(0,.5,0));if(j>1){assert.ok(point(stems,main,new Vector3(0,-.5,0)).distanceTo(point(stems,main-1,new Vector3(0,.5,0)))<2e-6);stemJoins++;}check(at);if(![4,7,10,13].includes(j))continue;const start=shoot*32+sideBranch++*8;assert.ok(point(sides,start,new Vector3(0,-.5,0)).distanceTo(at)<2e-6);branchJoins++;for(let k=0;k<8;k++){if(k>0){assert.ok(point(sides,start+k,new Vector3(0,-.5,0)).distanceTo(point(sides,start+k-1,new Vector3(0,.5,0)))<2e-6);stemJoins++;}check(point(sides,start+k,new Vector3(0,.5,0)));}}}assert.equal(leaf,1728);
   }finally{dispose(g);}
  }assert.equal(models,24);console.log('NAJAS1028_BOUNDARIES '+JSON.stringify({models,vertices,leafJoins,midribJoins,stemJoins,branchJoins}));
+});
+test('najas pond stems and leaf sheaths stay between bed and surface at shallow and normal depths',()=>{
+ const p={...makePlant('p-115ec5dc0069',107610,3,3),height:.25,spread:.30,leafHeight:.20};
+ const plan=emptyDocument(8,6).plans.A,points=[[1,1],[5,1],[5,5],[1,5]];
+ const matrix=new Matrix4(),vertex=new Vector3();
+ for(const [depth,month] of [[.001,7],[.007,7],[.15,1],[.3,7]]){
+  plan.zones=[{kind:'water',depth,points}];
+  const group=plantModel(p,{year:0,month,reference:false,waterDepth:depth});
+  const base=plantBaseAt(plan,p);
+  try{
+   let bottom=Infinity,top=-Infinity;
+   for(const mesh of group.children){
+    const positions=mesh.geometry.attributes.position;
+    for(let i=0;i<mesh.count;i++){
+     mesh.getMatrixAt(i,matrix);
+     for(let j=0;j<positions.count;j++){
+      const y=vertex.fromBufferAttribute(positions,j).applyMatrix4(matrix).y+base;
+      bottom=Math.min(bottom,y);
+      top=Math.max(top,y);
+     }
+    }
+   }
+   assert.ok(bottom>=-depth-1e-6&&bottom<=-depth+.002,{depth,bottom});
+   assert.ok(top<=.006,{depth,top});
+  }finally{dispose(group);}
+ }
 });
 test('najas foliage focus frames six summer and protected winter inputs',()=>{
  let models=0,framedPoses=0;for(const dims of[[.25,.30,.20],[.01,.10,.005],[.25,.30,.005]])for(const month of[7,1]){

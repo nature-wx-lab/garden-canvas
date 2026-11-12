@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1075';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1076';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1075';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1076';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -30920,21 +30920,32 @@ function najasPhotoSegment(b,a,z,r,color,kind){
 }
 function drawNajasPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00035,h*.005,w*.0012,LH*.015),L=Math.min(.025,w*.10,LH*.28),W=L*.036,stem=info.appearance.stemColor,leafKind='leaf-najas-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
- function cluster(at,turn,t){for(let k=0;k<3;k++){const az=turn+k*TAU/3,lean=Math.acos(.25+.20*t);b.add('najas-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,L,lean,az,0);b.add('najas-photo-reference-midrib','vein-najas-photo-reference',stem,...at,W,L,L,lean,az,0);}}
+ const wet=s.waterDepth>0,bed=wet?-.012:0;
+ const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,wet?(s.waterDepth+.006)*.90:Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00035,h*.005,w*.0012,LH*.015),L=Math.min(.025,w*.10,LH*.28),W=L*.036,stem=info.appearance.stemColor,leafKind='leaf-najas-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ function cluster(from,at,turn,t,radius){
+  // A short green sleeve represents the overlapping leaf bases around the node.
+  const length=Math.hypot(...at.map((value,i)=>value-from[i]));
+  const fraction=Math.min(.45,L*.12/length);
+  const sheathStart=at.map((value,i)=>value+(from[i]-value)*fraction);
+  najasPhotoSegment(b,sheathStart,at,radius*1.55,s.leafColor,'leaf-sheath-najas-photo-reference');
+  for(let k=0;k<3;k++){
+   const az=turn+k*TAU/3,lean=Math.acos(.25+.20*t);
+   b.add('najas-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,L,lean,az,0);
+   b.add('najas-photo-reference-midrib','vein-najas-photo-reference',stem,...at,W,L,L,lean,az,0);
+  }
+ }
  for(let shoot=0;shoot<12;shoot++){
-  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,base,Math.cos(az)*R],peak=LH*(.73+.025*(shoot%4)),path=t=>[root[0]+Math.sin(az+1)*w*.045*Math.sin(t*Math.PI*.6),base+(peak-base)*(1-Math.pow(1-t,1.25)),root[2]+Math.cos(az+1)*w*.045*Math.sin(t*Math.PI*.6)];let previous=root;
+  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,bed+base,Math.cos(az)*R],peak=LH*(.73+.025*(shoot%4)),path=t=>[root[0]+Math.sin(az+1)*w*.045*Math.sin(t*Math.PI*.6),bed+base+(peak-base)*(1-Math.pow(1-t,1.25)),root[2]+Math.cos(az+1)*w*.045*Math.sin(t*Math.PI*.6)];let previous=root;
   for(let j=1;j<=16;j++){
-   const t=j/16,at=path(t);najasPhotoSegment(b,previous,at,r,stem,'stem-najas-photo-ref');previous=at;cluster(at,az+j*.7,t);
+   const t=j/16,at=path(t);najasPhotoSegment(b,previous,at,r,stem,'stem-najas-photo-ref');cluster(previous,at,az+j*.7,t,r);previous=at;
    if(![4,7,10,13].includes(j))continue;
    const turn=az+(j%2?1:-1)*1.2,reach=w*(.05+.02*Math.pow(Math.sin(shoot+j),2)),rise=LH*.12;let prev=at;
    for(let k=1;k<=8;k++){
-    const u=k/8,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+rise*u,at[2]+Math.cos(turn)*reach*u];najasPhotoSegment(b,prev,tip,r*.7,stem,'side-stem-najas-photo-ref');prev=tip;cluster(tip,turn+k*.75,t);
+    const u=k/8,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+rise*u,at[2]+Math.cos(turn)*reach*u];najasPhotoSegment(b,prev,tip,r*.7,stem,'side-stem-najas-photo-ref');cluster(prev,tip,turn+k*.75,t,r*.7);prev=tip;
    }
   }
  }
- // Clusters,topology,density andleaf cross sections areprivate visual approximations,not measuredphyllotaxy orstockcounts.
- // Leaflength range comesfromretailer description;no flowers,microteeth,fruit,rootorannualfragmentation trajectory isclaimed.
+ // The seller supplies leaf length; VicFlora describes sheathing leaf bases for the genus.
 }
 
 export function willowMossPhotoReferenceGeometry(){
