@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1058';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1058';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1059';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1059';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -76,7 +76,7 @@ export function hygrophilaFoliageInspectionView(group,aspect=1,fov=40){
  return{position:position.toArray(),target:target.toArray(),radius,fit:'hygrophila-visible-model'};
 }
 export function rootedPondInspectionView(group,aspect=1,fov=40){
- if(!group?.children.some(m=>['leaf-submerged-nuphar-photo-reference','runner-asaza-ref','rhizome-helvola-ref'].includes(m.userData.component)))return null;
+ if(!group?.children.some(m=>['leaf-submerged-nuphar-photo-reference','runner-asaza-ref','rhizome-helvola-ref','leaf-submerged-sagittaria-ref'].includes(m.userData.component)))return null;
  group.updateWorldMatrix(true,true);
  const box=new THREE.Box3().setFromObject(group);
  if(box.isEmpty())return null;
@@ -459,7 +459,12 @@ export function createScene(container,onPick){
   function line(points,color,group=root,opacity=1){const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color,transparent:opacity<1,opacity}));group.add(l);return l;}
   function pondClip(base,mode='ground',owner=-1){
     if(!plan.zones.some(z=>z.kind==='water'&&z.depth>0))return base;
-    const m=base.clone(),code=pondMaskCode(plan),condition=mode==='ground'?'pondState.x>.001&&gardenPondWorld.y>-pondState.x+.002':mode==='wall'?'abs(pondSide.x-pondOther.x)<.001||gardenPondWorld.y>-min(pondSide.x,pondOther.x)+.002||gardenPondWorld.y<-max(pondSide.x,pondOther.x)-.002':`pondState.y!=${Number(owner).toFixed(1)}`;
+    const m=base.clone(),code=pondMaskCode(plan);
+    const condition={
+      ground:'pondState.x>.001&&gardenPondWorld.y>-pondState.x+.002',
+      backdrop:'pondState.x>0.0',
+      wall:'abs(pondSide.x-pondOther.x)<.001||gardenPondWorld.y>-min(pondSide.x,pondOther.x)+.002||gardenPondWorld.y<-max(pondSide.x,pondOther.x)-.002',
+    }[mode]??`pondState.y!=${Number(owner).toFixed(1)}`;
     m.onBeforeCompile=shader=>{shader.vertexShader='varying vec3 gardenPondWorld;varying vec2 gardenPondEdge;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ngardenPondWorld=(modelMatrix*vec4(position,1.0)).xyz;gardenPondEdge=normal.xz;');shader.fragmentShader=`varying vec3 gardenPondWorld;varying vec2 gardenPondEdge;vec2 gardenPondAt(vec2 pondXZ){${code}return vec2(gardenPondDepth,gardenZoneOwner); }\n`+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>\nvec2 pondState=gardenPondAt(gardenPondWorld.xz);${mode==='wall'?'vec2 pondSide=gardenPondAt(gardenPondWorld.xz+normalize(gardenPondEdge)*.0002);vec2 pondOther=gardenPondAt(gardenPondWorld.xz-normalize(gardenPondEdge)*.0002);':''}if(${condition})discard;`);};
     m.customProgramCacheKey=()=>mode+owner+code;pondClips.push(m);return m;
   }
@@ -486,7 +491,8 @@ export function createScene(container,onPick){
   }
   function render(next,nextView,id){
     plan=next;view=nextView;selection=id;dispose(root);for(const material of pondClips)material.dispose();pondClips=[];root=new THREE.Group();plants=new THREE.Group();root.add(plants);scene.add(root);
-    backdrop.material=pondClip(mat(BACKDROP_COLOR));const shape=polygon(plan.outline,0,pondClip(turf));const earth=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false}),pondClip(mat('#807357')));earth.customDepthMaterial=pondClip(pondShadow);earth.rotation.x=-Math.PI/2;earth.position.y=-.186;earth.castShadow=true;earth.receiveShadow=true;root.add(earth);
+    // A fixed-height backdrop can coincide with the floor of a 19 cm pond.
+    backdrop.material=pondClip(mat(BACKDROP_COLOR),'backdrop');const shape=polygon(plan.outline,0,pondClip(turf));const earth=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false}),pondClip(mat('#807357')));earth.customDepthMaterial=pondClip(pondShadow);earth.rotation.x=-Math.PI/2;earth.position.y=-.186;earth.castShadow=true;earth.receiveShadow=true;root.add(earth);
     for(const [i,z] of plan.zones.entries()){
       let surface=z.kind==='water'?water:soil;
       if(z.kind==='water'&&z.depth>0){surface=water.clone();surface.transparent=true;surface.opacity=.20;surface.depthWrite=false;surface.side=THREE.DoubleSide;pondClips.push(surface);polygon(z.points,-z.depth,pondClip(silt,'owner',i));}

@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1058';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1059';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1058';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1059';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -27226,7 +27226,27 @@ export function sagittariaFemalePhotoPoint(t,u){
  const sn=Math.max(0,Math.sin(Math.PI*t)),width=.78*sn**.48*(.34+.66*t);
  return [u*width,.06*t*t+.025*u*u*sn+.004*Math.sin(t*31+u*5)*Math.abs(u)**3*sn,t];
 }
+function sagittariaSubmergedBladeGeometry(){
+ const N=28,C=8,positions=[],uv=[],indices=[];
+ for(let row=0;row<=N;row++){
+  const t=row/N,base=Math.min(1,t/.18)**.6;
+  const tip=t<.86?1:Math.sqrt(Math.max(0,1-((t-.86)/.14)**2));
+  const width=.072*base*tip*(.88+.12*t);
+  for(let col=0;col<=C;col++){
+   const u=2*col/C-1;
+   positions.push(u*width,t,.37*t*t+.026*(1-Math.abs(u))*base*tip);
+   uv.push(col/C,t);
+   if(row<N&&col<C){const i=row*(C+1)+col;indices.push(i,i+C+1,i+1,i+1,i+C+1,i+C+2);}
+  }
+ }
+ const geometry=new THREE.BufferGeometry();
+ geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+ geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+ geometry.setIndex(indices);geometry.computeVertexNormals();
+ return geometry;
+}
 export function sagittariaFemalePhotoGeometry(type){
+ if(type==='submerged')return sagittariaSubmergedBladeGeometry();
  if(type==='head'){
   const g=new THREE.SphereGeometry(1,40,24),p=g.attributes.position,v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);const an=Math.atan2(v.x,v.z),lat=Math.acos(Math.max(-1,Math.min(1,v.y))),grain=1+.025*Math.sin(an*17)*Math.sin(lat*13);p.setXYZ(i,v.x*grain,v.y*grain,v.z*grain);}p.needsUpdate=true;g.computeVertexNormals();g.userData={sagittariaFemalePhotoReference:true,part:'femaleHead',illustrativeSurface:true};return g;
  }
@@ -27236,9 +27256,22 @@ export function sagittariaFemalePhotoGeometry(type){
  for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}for(let j=0;j<C;j++){const a=N*(C+1)+j,z=a+1;ix.push(a,a+stride,z,z,a+stride,z+stride);}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={sagittariaFemalePhotoReference:true,part:'petal',illustrativeGeometry:true,closedSurface:true};return g;
 }
+function drawSagittariaSubmergedRosette(b,crown,depth,spread,leafHeight){
+ const scale=Math.min(depth*.86,spread*.43,leafHeight,.25);
+ for(let i=0;i<7;i++){
+  const length=scale*(.68+i*.05);
+  b.add('sagittaria-female-photo-submerged','leaf-submerged-sagittaria-ref',
+        i%2===0?'#668b4d':'#729451',...crown,length,length,length,.67+.045*i,i*2.399+.18,0);
+ }
+}
 function drawSagittariaFemalePhotoReference(b,{s,rand},kit){
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.85);
+ const radius=Math.min(.0012,h*.006,w*.004,LH*.04),stemRadius=Math.min(.0012,h*.006,w*.04);
+ const wet=s.waterDepth>=.001;
+ const rootY=wet?-.012-s.waterDepth+Math.min(.002,s.waterDepth*.09):stemRadius*1.2+Math.min(.00002,h*.002);
+ const crown=[0,rootY,0];
+ if(wet)drawSagittariaSubmergedRosette(b,crown,s.waterDepth,w,LH);
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.85),radius=Math.min(.0012,h*.006,w*.004,LH*.04),stemRadius=Math.min(.0012,h*.006,w*.04),rootY=stemRadius*1.2+Math.min(.00002,h*.002),crown=[0,rootY,0];
  for(let j=0;j<8;j++){const az=j*2.399+.4,R=w*.10*Math.sqrt((j+.7)/8),at=[Math.sin(az)*R,LH*.25,Math.cos(az)*R],L=Math.min(.25,w*.36)*(.89+j*.012),relief=Math.min(L,LH*.20/.13),pitch=Math.acos(Math.min(.98,LH*.70/L));b.branch(crown,at,radius,'#688650','petiole-sagittaria-female-ref');b.add('sagittariaLong','leaf-glossy',kit.shade(rand,s.leafColor,.025),...at,L,L,relief,pitch,az,0);}
  if(!s.bloom)return;
  const nodes=[];let previous=crown;for(let j=0;j<4;j++){const t=[.40,.62,.84,.965][j],at=[Math.sin(j*.8)*w*.018,h*t,Math.cos(j*.8)*w*.018];nodes.push(at);b.branch(previous,at,stemRadius,'#688650','scape-sagittaria-female-ref');previous=at;}

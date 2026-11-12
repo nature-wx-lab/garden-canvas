@@ -22295,7 +22295,7 @@ test('Nuphar rhizome joins the leaf crown and fine roots in the pond bed illustr
 });
 
 test('Sagittaria reference height retains flowerstem basis without merging names or source sizes',()=>{
- const i=CATALOG['p-8d877dd373db'];assert.equal(i.label,'ナガバオモダカ');assert.equal(i.latin,'Sagittaria weatherbiana');assert.deepEqual(i.height,[.15,.7]);assert.equal(i.spread,null);assert.equal(i.sourceChecked,'2026-11-01');assert.deepEqual(i.bloom,[4,5,6,7,8,9]);assert.equal(i.bloomKnown,true);assert.match(i.care,/花茎の範囲/);assert.match(i.care,/葉長7〜30cm/);assert.match(i.appearance.sourceConflict,/約1.5cm/);assert.match(i.appearance.sourceConflict,/約1cm/);assert.match(i.appearance.sourceConflict,/Sagittaria graminea/);assert.match(i.appearance.sourceConflict,/Sagittaria weatherbiana/);assert.ok(i.appearance.unconfirmed.some(x=>x.includes('分類同定')));assert.equal(i.appearance.architecture,'waterArrowhead');assert.equal(i.appearance.persistence,'winterSubmerged');assert.equal(i.appearance.leafLength,.25);assert.equal(i.appearance.flowerRadius,.0075);assert.match(seasonAt(i,1).phase,/水中葉/);
+ const i=CATALOG['p-8d877dd373db'];assert.equal(i.label,'ナガバオモダカ');assert.equal(i.latin,'Sagittaria weatherbiana');assert.deepEqual(i.height,[.15,.7]);assert.equal(i.spread,null);assert.equal(i.sourceChecked,'2026-11-13');assert.deepEqual(i.bloom,[4,5,6,7,8,9]);assert.equal(i.bloomKnown,true);assert.match(i.care,/花茎の範囲/);assert.match(i.care,/葉長7〜30cm/);assert.match(i.appearance.sourceConflict,/約1.5cm/);assert.match(i.appearance.sourceConflict,/約1cm/);assert.match(i.appearance.sourceConflict,/Sagittaria graminea/);assert.match(i.appearance.sourceConflict,/Sagittaria weatherbiana/);assert.ok(i.appearance.unconfirmed.some(x=>x.includes('分類同定')));assert.equal(i.appearance.architecture,'waterArrowhead');assert.equal(i.appearance.persistence,'winterSubmerged');assert.equal(i.appearance.leafLength,.25);assert.equal(i.appearance.flowerRadius,.0075);assert.match(seasonAt(i,1).phase,/水中葉/);
  const p={...makePlant('p-8d877dd373db',99010,3,3),height:.4,spread:.50,leafHeight:.30},d=emptyDocument(10,6);d.plans.A.plants=[p];d.catalogVersion='2026-10-29.54';const saved=structuredClone(d);assert.deepEqual(validateDocument(d).plans,saved.plans);assert.deepEqual(d,saved);assert.equal(stateAt(p,view(7)).height,.4);assert.equal(stateAt(p,{...view(7),reference:true}).height,.7);
 });
 
@@ -22962,6 +22962,45 @@ test('Waterpoppy leaf petioles and three overlapping petals remain connected wit
   const component=(group,k)=>group.children.find(m=>m.userData.component===k),leaves=component(g,'leaf-waterpoppy-photo-reference'),petals=component(g,'petal-waterpoppy-photo-reference');assert.equal(leaves.count,12);assert.equal(petals.count,3);for(const name of['leaf-waterpoppy-photo-reference','petiole-waterpoppy-ref','creeping-stem-waterpoppy-ref','petal-waterpoppy-photo-reference','peduncle-waterpoppy-ref'])assert.deepEqual([...component(g,name).instanceMatrix.array],[...component(later,name).instanceMatrix.array]);assert.ok(!g.children.some(m=>/seed|fruit|offspring/.test(m.userData.component)));
   const shader={uniforms:{},vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader};leaves.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,/roughnessFactor=\.34/);assert.match(shader.fragmentShader,/gcWaterpoppyRib/);const a=CATALOG[input.kind].appearance;assert.equal(a.shootProfile,'waterpoppyPhotoReference');assert.equal(a.status,'partial');assert.ok(a.unconfirmed.some(n=>n.includes('写真から計測')&&n.includes('年次増殖')));assert.ok(a.unconfirmed.some(n=>n.includes('仮雄しべ')&&n.includes('実測していません')));assert.deepEqual(a.foliageMonths,[5,6,7,8,9,10]);assert.match(a.phenologyRegion,/参考シナリオ/);
  }finally{dispose(g);dispose(later);}console.log('WATERPOPPY1006_ILLUSTRATIVE '+JSON.stringify({yearModels:2,leaves:12,creepingNodes:6,petals:3,annualRealism:0}));
+});
+
+test('Sagittaria winter ribbon rosette stays submerged and shares the rooted summer crown',()=>{
+ const plant={...makePlant('p-8d877dd373db',105910,3,3),height:.37,spread:.37,leafHeight:.23};
+ const saved=structuredClone(plant),summer={year:0,month:7,reference:false};
+ const get=(group,name)=>group.children.find(m=>m.userData.component===name);
+ const dry=plantModel(plant,summer);
+ assert.equal(get(dry,'leaf-submerged-sagittaria-ref'),undefined);
+ for(const depth of [.001,.023,.19])for(const month of [1,7]){
+  const group=plantModel(plant,{...summer,month,waterDepth:depth});
+  try{
+   const leaves=get(group,'leaf-submerged-sagittaria-ref');assert.equal(leaves.count,7);
+   const bed=-.012-depth,crown=new Vector3(0,bed+Math.min(.002,depth*.09),0);
+   const matrix=new Matrix4(),positions=leaves.geometry.attributes.position;
+   for(let i=0;i<leaves.count;i++){
+    leaves.getMatrixAt(i,matrix);
+    assert.ok(new Vector3().setFromMatrixPosition(matrix).distanceTo(crown)<1e-7);
+    for(let j=0;j<positions.count;j++){
+     const point=new Vector3().fromBufferAttribute(positions,j).applyMatrix4(matrix);
+     assert.ok(point.y>=bed&&point.y<-.012&&Math.hypot(point.x,point.z)<plant.spread*.5);
+    }
+   }
+   if(month===1){
+    assert.equal(group.children.length,1);
+    assert.equal(group.userData.groundDormant,true);
+    const pose=rootedPondInspectionView(group,349/388);
+    assert.ok(pose.position[1]>.1&&pose.target[1]<-.012);
+   }else{
+    for(const name of ['leaf-glossy','petal-sagittaria-female-photo-reference']){
+     assert.deepEqual(get(group,name).instanceMatrix.array,get(dry,name).instanceMatrix.array);
+    }
+    for(const name of ['petiole-sagittaria-female-ref','scape-sagittaria-female-ref']){
+     get(group,name).getMatrixAt(0,matrix);
+     assert.ok([-.5,.5].some(y=>new Vector3(0,y,0).applyMatrix4(matrix).distanceTo(crown)<1e-7));
+    }
+   }
+  }finally{dispose(group);}
+ }
+ dispose(dry);assert.deepEqual(plant,saved);
 });
 
 test('Sagittaria female flower photo reference fits twenty four independent dimensions with connected leaves and whorled flowers',()=>{

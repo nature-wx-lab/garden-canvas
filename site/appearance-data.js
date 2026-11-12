@@ -12743,6 +12743,14 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     {
       "url": "https://japr.or.jp/wp-content/uploads/shokucho-shi/52/shokucho_52-04.pdf",
       "scope": "species"
+    },
+    {
+      "url": "https://www.akb.jp/c/water_plants/aqua_plants/background_plants/fp-079",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://mikawanoyasou.org/data/nagabaomodaka.htm",
+      "scope": "species"
     }
   ],
   "basis": {
@@ -12766,7 +12774,7 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "全形・全月の実物照合",
     "水深による草姿の変化",
     "地域ごとの水上葉の出現と消失月",
-    "水中の葉と根茎の立体表示",
+    "沈水葉は杜若園芸の帯状葉の記載と、三河の植物観察のナガバオモダカの線形葉の観察を参考に、池底から伸びるロゼットとして描きます。冬は水上の葉と花を描かず、水中の葉だけを表示する参考例です。葉数、根茎の形、越冬できる水深は未確認です。",
     "流通株ごとの分類同定",
     "15〜70cmは自治体の花茎の参考範囲です。葉長7〜30cmは生産者の同名案内にある別の部位の値で、株幅や利用者の個体の実測へ読み替えません。",
     "花径約1.5cmと約1cmは出典ごとの値です。中間の値や1〜1.5cmという新しい統合範囲は作っていません。",
@@ -12798,7 +12806,7 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "leafLength": 0.25,
   "flowerRadius": 0.0075,
   "sourceConflict": "参考高さ15〜70cmは自治体の花茎の値です。花径は自治体が約1.5cm、生産者が約1cmと記載しているため統合しません。生産者のSagittaria graminea表記と収録学名Sagittaria weatherbianaは区別し、流通株の同定が未確認のまま同一分類とは断定しません。",
-  "phenologyRegion": "自治体が示す4〜9月は、その地域と種類に関する参考の花期です。生産者の春〜秋という表現を数値の月へ変換したものではありません。冬の沈水管理の説明と、地域別の水上葉消失月・越冬成功・翌年の回復は区別し、水中の葉や根茎は未表示です。",
+  "phenologyRegion": "自治体が示す4〜9月は、その地域と種類に関する参考の花期です。生産者の春〜秋という表現を数値の月へ変換したものではありません。冬の沈水管理の説明と、地域別の水上葉消失月・越冬成功・翌年の回復は区別し、沈水葉の出現・消失時期や根茎は未校正です。",
   "shootProfile": "sagittariaFemalePhotoReference"
 },"p-f2e4c7935581":{
   "sources": [
