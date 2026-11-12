@@ -22668,6 +22668,39 @@ test('Cabomba floating blades and axillary flower stalk meet the upper shoot',()
  }
 });
 
+test('Cabomba flower illustrates three paired nectaries and a single six-stamen ring',()=>{
+ const p={...makePlant('p-097775090353',106710,3,3),height:.45,spread:.35,leafHeight:.35};
+ const group=plantModel(p,{year:0,month:7,reference:false,waterDepth:.18});
+ try{
+  const get=kind=>group.children.find(m=>m.userData.component===kind);
+  const outer=get('petaloid-sepal-cabomba'),inner=get('petal-submerged-cabomba'),ears=get('nectary-submerged-cabomba');
+  assert.equal(outer.count,inner.count);
+  assert.equal(outer.geometry.userData.forestPart,'cabombaOuter');
+  assert.equal(inner.geometry.userData.forestPart,'cabombaInner');
+  assert.equal(ears.count,inner.count*2);
+  assert.equal(get('carpel-cabomba').count,inner.count);
+  assert.equal(get('stigma-cabomba').count,inner.count);
+  const anthers=get('anther-cabomba'),matrix=new Matrix4();
+  assert.equal(anthers.count,inner.count*2);
+  assert.equal(get('filament-cabomba').count,anthers.count);
+  const origin=(mesh,k)=>{mesh.getMatrixAt(k,matrix);return new Vector3().setFromMatrixPosition(matrix);};
+  for(let i=0;i<inner.count;i++){
+   inner.getMatrixAt(i,matrix);
+   const inverse=matrix.clone().invert();
+   const pair=[origin(ears,i*2).applyMatrix4(inverse),origin(ears,i*2+1).applyMatrix4(inverse)];
+   assert.ok(pair[0].x<0&&pair[1].x>0&&Math.abs(pair[0].x+pair[1].x)<1e-5);
+   assert.ok(pair.every(point=>point.z>.2&&point.z<.4));
+  }
+  const stalk=get('pedicel-submerged-cabomba');
+  for(let i=0;i<stalk.count;i++){
+   stalk.getMatrixAt(i,matrix);
+   const center=new Vector3(0,.5,0).applyMatrix4(matrix);
+   const radii=Array.from({length:6},(_,j)=>origin(anthers,i*6+j).distanceTo(center));
+   assert.ok(Math.max(...radii)-Math.min(...radii)<1e-7);
+  }
+ }finally{dispose(group);}
+});
+
 test('Cabomba visible model focus frames six summer and winter models above the camera floor',()=>{
  let models=0,poses=0;const point=new Vector3(),matrix=new Matrix4();
  for(const dims of[[.45,.35,.45],[.04,.10,.020],[.45,.35,.005]])for(const month of[7,1]){
