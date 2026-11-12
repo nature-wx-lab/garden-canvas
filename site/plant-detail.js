@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1057';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1058';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1057';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1058';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -870,9 +870,26 @@ export function helvolaPhotoReferenceGeometry(type){
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(index);g.computeVertexNormals();g.userData={helvolaPhotoReference:true,part:type,illustrativeGeometry:true};return g;
 }
+function drawHelvolaRhizome(b,spread,depth,bud){
+ const bed=-.012-depth, radius=Math.min(.014,spread*.037,depth*.16);
+ const center=bed+radius*1.42;
+ b.add(bud,'rhizome-helvola-ref','#614d39',0,center,0,radius*2.12,radius*1.22,radius);
+ for(let i=0;i<8;i++){
+  const angle=i*TAU/8,x=Math.sin(angle),z=Math.cos(angle),reach=radius*(2.8+(i%3)*.45);
+  const start=[x*radius,center-radius*.29,z*radius*.62];
+  const bend=[start[0]+x*reach*.58,bed+radius*.55,start[2]+z*reach*.58];
+  const tip=[start[0]+x*reach,bed+radius*.15,start[2]+z*reach];
+  b.branch(start,bend,radius*.115,'#9d866a','fine-root-helvola-ref');
+  b.branch(bend,tip,radius*.060,'#b39d7e','fine-root-helvola-ref');
+ }
+ return [radius*.64,center+radius*.82,0];
+}
 function drawHelvolaPhotoReference(b,{s,rand},kit){
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),leafCount=6;
+ const wet=s.waterDepth>=.001,drySurface=Math.min(LH*.50,h*.20);
+ const surface=wet?-.0058:drySurface;
+ const crown=wet?drawHelvolaRhizome(b,w,s.waterDepth,kit.bud):[0,Math.min(LH*.15,h*.02),0];
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),surface=Math.min(LH*.50,h*.20),crown=[0,Math.min(LH*.15,h*.02),0],leafCount=6;
  for(let j=0;j<leafCount;j++){
   const az=j*2.399+.3,R=w*.26*Math.sqrt((j+.8)/leafCount),at=[Math.sin(az)*R,surface,Math.cos(az)*R],D=Math.min(.14,w*.34,LH*24)*(1-j*.035),radius=Math.min(.001,D*.007,LH*.10);
   b.branch(crown,at,radius,'#71845b','petiole-helvola-ref');
@@ -880,7 +897,8 @@ function drawHelvolaPhotoReference(b,{s,rand},kit){
  }
  if(!s.bloom)return;
  // One displayed flower and fixed organ counts are a drawing example, not stock measurements.
- const L=Math.min(.06,w*.18,h*.65),at=[-w*.04,Math.min(h*.32,LH*.75+L*.10),w*.03],f=flowerFrame(b,at,0,.20),surfaces=[];
+ const L=Math.min(.06,w*.18,h*.65),dryFlowerY=Math.min(h*.32,LH*.75+L*.10);
+ const at=[-w*.04,wet?surface+(dryFlowerY-drySurface):dryFlowerY,w*.03],f=flowerFrame(b,at,0,.20),surfaces=[];
  b.branch(crown,at,Math.min(.0015,L*.030,LH*.16),'#827951','peduncle-helvola-ref');
  for(let k=0;k<4;k++)f.add('helvola-photo-reference-petal','outer-perianth-helvola-ref','#b3b99c',0,-L*.015,0,L*.94,L*.94,L*.94,.17,k*TAU/4+.25,0);
  for(let row=0;row<3;row++){
@@ -904,11 +922,11 @@ function drawHelvolaPhotoReference(b,{s,rand},kit){
 
 function drawMarginGarden(b,{info,s,p,detail,rand},kit){
  const a=info.appearance,type=a.shootProfile,h=s.height,w=s.spread,green=s.leafColor;
+ if(type==='helvola'){drawHelvolaPhotoReference(b,{s,rand},kit);return;}
  if(s.groundDormant)return;
  const blade=(at,az,L,pitch=.8)=>{const f=flowerFrame(b,at,pitch,az);f.add('margin-leaf-'+type,'leaf-margin-'+type+'-underside-'+a.leafUnderside.slice(1),kit.shade(rand,green,.06),0,0,0,type==='hibbertia'?L*.065:L,L,L);
   if(type==='calla'){f.branch([0,.08*L,-.001],[0,.95*L,-.001],.00045,'#83a16b','vein-calla');for(let k=1;k<=6;k++)for(const sign of [-1,1]){const t=.15+k*.1;f.branch([0,t*L,-.001],[sign*L*.23*(1-t),L*(t+.12),-.008*L],.00017,'#88a771','vein-calla');}}
  };
- if(type==='helvola'){drawHelvolaPhotoReference(b,{s,rand},kit);return;}
  if(type==='calla'){
   const n=Math.max(2,Math.round(15*detail*s.leafDensity)),sc=s.leafScale;
   for(let j=0;j<n;j++){const az=j*2.399,L=Math.min(.30,w*.50,h*.48)*(.7+rand()*.3)*sc,root=[Math.sin(az)*w*.12,0,Math.cos(az)*w*.12],top=[root[0]+Math.sin(az)*w*.14,h*(.36+rand()*.25)*sc,root[2]+Math.cos(az)*w*.14];b.branch(root,top,.004*sc,green,'petiole-calla');blade(top,az,L,.48+rand()*.45);}

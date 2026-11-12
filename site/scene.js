@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1057';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1057';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1058';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1058';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -76,7 +76,7 @@ export function hygrophilaFoliageInspectionView(group,aspect=1,fov=40){
  return{position:position.toArray(),target:target.toArray(),radius,fit:'hygrophila-visible-model'};
 }
 export function rootedPondInspectionView(group,aspect=1,fov=40){
- if(!group?.children.some(m=>m.userData.component==='leaf-submerged-nuphar-photo-reference'||m.userData.component==='runner-asaza-ref'))return null;
+ if(!group?.children.some(m=>['leaf-submerged-nuphar-photo-reference','runner-asaza-ref','rhizome-helvola-ref'].includes(m.userData.component)))return null;
  group.updateWorldMatrix(true,true);
  const box=new THREE.Box3().setFromObject(group);
  if(box.isEmpty())return null;
