@@ -8089,15 +8089,19 @@ test('Paranee pond leaves and flowers join a crown at the bed without changing d
   try{
    const base=get(group,'crown-paranee-ref'),petioles=get(group,'petiole-paranee-ref');
    if(month===1){assert.ok(!base&&!petioles);continue;}
-   const crown=at(base,0),leaves=get(group,'leaf-paranee');
+   const crown=at(base,0),leafMeshes=group.children.filter(m=>m.userData.component.startsWith('leaf-paranee'));
    assert.ok(crown.y>-.012-depth&&crown.y<-.012);
-   assert.equal(petioles.count,leaves.count);
-   for(let i=0;i<leaves.count;i++){
-    const origin=at(leaves,i),ends=[at(petioles,i,-.5),at(petioles,i,.5)];
-    assert.ok(origin.y>=-.0058-1e-7&&origin.y<-.0048+1e-7);
+   assert.equal(petioles.count,leafMeshes.reduce((total,mesh)=>total+mesh.count,0));
+   const tops=Array.from({length:petioles.count},(_,i)=>{
+    const ends=[at(petioles,i,-.5),at(petioles,i,.5)];
     assert.ok(ends.some(end=>end.distanceTo(crown)<1e-7));
-    assert.ok(ends.some(end=>end.distanceTo(origin)<1e-7));
-    if(month===7){const prior=at(get(dry,'leaf-paranee'),i);assert.equal(origin.x,prior.x);assert.equal(origin.z,prior.z);}
+    return ends.reduce((upper,end)=>end.y>upper.y?end:upper);
+   });
+   for(const mesh of leafMeshes)for(let i=0;i<mesh.count;i++){
+    const origin=at(mesh,i);
+    assert.ok(origin.y>=-.0058-1e-7&&origin.y<-.0048+1e-7);
+    assert.ok(tops.some(top=>top.distanceTo(origin)<1e-7));
+    if(month===7){const prior=at(get(dry,mesh.userData.component),i);assert.equal(origin.x,prior.x);assert.equal(origin.z,prior.z);}
    }
    const stalks=get(group,'peduncle-paranee-ref');
    if(month===7){
@@ -8131,6 +8135,23 @@ test('Paranee distinguishes the photographed stronger and lighter outer-petal ma
   assert.match(shader('petal-paranee-0-strong'),/mark\*0\.88/);
   assert.match(shader('petal-paranee-3-strong'),/mark\*0\.17/);
   assert.doesNotMatch(shader('petal-paranee-3-clear'),/float streak=/);
+ }finally{dispose(group);}
+});
+
+test('Paranee illustrates both green and mottled pads',()=>{
+ const p={...makePlant('p-738c23a65591',106410,3,3),height:.16,spread:.60,leafHeight:.085};
+ const group=plantModel(p,{year:0,month:7,reference:false,waterDepth:.18});
+ try{
+  const ordinary=group.children.find(mesh=>mesh.userData.component==='leaf-paranee');
+  const marked=group.children.find(mesh=>mesh.userData.component==='leaf-paranee-mottled');
+  assert.ok(ordinary.count>marked.count&&marked.count>0);
+  assert.deepEqual(ordinary.geometry.attributes.position.array,marked.geometry.attributes.position.array);
+  const shader=mesh=>{
+   const code={uniforms:{},vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader};
+   mesh.material.onBeforeCompile(code,{});return code.fragmentShader;
+  };
+  assert.doesNotMatch(shader(ordinary),/float mottle=/);
+  assert.match(shader(marked),/float mottle=/);
  }finally{dispose(group);}
 });
 

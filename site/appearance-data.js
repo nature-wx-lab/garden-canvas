@@ -15265,7 +15265,7 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "inflorescence": "solitary",
   "leafShape": "paraneeFloating",
   "leafPattern": "paraneeMottle",
-  "leafColor": "#8d9d72",
+  "leafColor": "#788e54",
   "flowerShape": "paraneeYellowStreaks",
   "flowerPattern": "streaks",
   "flowerPatternColor": "#b8415e",
@@ -15281,7 +15281,8 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "phenologyRegion": "販売元の5〜9月開花と冬の浮葉消失を参考表示。芽出し・黄変の月は地域・水温で変わります。水面を基準に浮葉と花を描きます。沈水葉・根茎の形や品種の水深ごとの生育は未校正です。",
   "unconfirmed": [
     "花弁の紅色の斑は、国際スイレン協会のコンクール写真と Bennetts Water Gardens の栽培写真を参考に、外側に斑が目立つ花と、外側の一部に淡い筋が残る花を例示します。花ごとの色や模様を月や水温から予測する表示ではありません。",
-    "花弁・雄しべ・葉・花の数、寸法比と浮葉の斑模様は近似です。花弁数を固定した品種特性として扱っていません。",
+    "浮葉は、国際スイレン協会のコンクール写真と Bennetts Water Gardens の栽培写真に見える緑を基調に、斑が目立つ葉と目立たない葉を例示します。斑の数・位置・濃さの分布や葉齢による変化は未確認です。",
+    "花弁・雄しべ・葉・花の数と寸法比は近似です。花弁数を固定した品種特性として扱っていません。",
     "4枚の萼と多数の雄しべは属の資料による参考です。品種の細かな花の中心部・結実は未確認です。",
     "販売株の学名表記、高さと広がり、同じ株の12か月の姿、水中葉と日内の開閉は未確認です。",
     "池での浮葉と花の支持は、杜若園芸と Bennetts Water Gardens のパラニーの資料を参考に、葉柄と花柄を池底の株元につなぐ描画例です。株元の位置と柄の長さは入力した水深に合わせ、資料の栽培水深を実測値や必須条件には使いません。"

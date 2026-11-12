@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1065';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1066';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1065';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1066';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -19738,7 +19738,8 @@ function drawParanee(b,{info,s,detail,rand},kit){
   const color=kit.shade(rand,s.leafColor,.025);
   const at=[Math.sin(yaw)*R,surface+rand()*.001,Math.cos(yaw)*R];
   if(wet)b.branch(crown,at,Math.min(.0012,L*.012),'#72824e','petiole-paranee-ref');
-  b.add('paraneeLeaf','leaf-paranee',color,...at,L,L,L,0,yaw,0);
+  const markings=j%3===0?'leaf-paranee-mottled':'leaf-paranee';
+  b.add('paraneeLeaf',markings,color,...at,L,L,L,0,yaw,0);
  }
  if(!s.bloom)return;
  const flowers=Math.max(1,Math.round(2*detail*s.flowerDensity));
