@@ -23799,3 +23799,45 @@ test('water hyacinth suspended roots attach to each floating rosette and stay ab
   assert.equal(entry.appearance.persistence, 'protectedWinter');
   assert.match(entry.care, /株元から暗紫色〜黒褐色の根が水中に垂れ/);
 });
+
+test('water hyacinth flower observation centers a visible rendered tepal', () => {
+  const cases = [
+    {month: 7, size: [.25, .48, .16], component: 'petal-hyacinth-eye'},
+    {month: 7, size: [.075, .1, .005], component: 'petal-hyacinth-eye'},
+    {month: 7, size: [.25, .48, .005], component: 'petal-hyacinth-eye'},
+    {month: 7, size: [1.4, 1.5, .42], component: 'petal-hyacinth-veins'},
+    {month: 7, size: [.01, .1, .005], component: null},
+    {month: 5, size: [.25, .48, .16], component: null},
+    {month: 1, size: [.25, .48, .16], component: null},
+  ];
+  for (const {month, size, component} of cases) {
+    const [height, spread, leafHeight] = size;
+    const p = {...makePlant('p-daa12b3e6d9f', 104110, 3, 3), height, spread, leafHeight};
+    const view = {year: 0, month, waterDepth: .32, reference: false};
+    const g = plantModel(p, view, 1);
+    g.position.set(-1, .012, 0);
+    g.updateMatrixWorld(true);
+    try {
+      assert.equal(inspectionSeasonActive(p, view), month === 7);
+      for (const aspect of [.9, 1.65]) {
+        const pose = flowerInspectionView(g, aspect, 40);
+        if (!component) {
+          assert.equal(pose, null);
+          continue;
+        }
+        const anchor = g.userData.flowerTargets[0].surface;
+        const camera = new Vector3(...pose.position), target = new Vector3(...pose.target);
+        assert.ok(camera.y >= .1 && g.userData.surfaceSelection.matched);
+        const ray = new Raycaster(camera, target.clone().sub(camera).normalize(), .01, 650);
+        const hit = ray.intersectObject(g, true)[0];
+        assert.equal(anchor.component, component);
+        assert.equal(hit?.object.userData.component, component);
+        assert.equal(hit.instanceId, anchor.instanceId);
+        assert.equal(hit.faceIndex, anchor.faceIndex);
+        assert.ok(hit.point.distanceTo(target) < 1e-7);
+      }
+    } finally {
+      dispose(g);
+    }
+  }
+});
