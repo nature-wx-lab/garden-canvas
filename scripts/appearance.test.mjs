@@ -22521,7 +22521,7 @@ test('Waterpoppy expanded leaf midrib stays on the underside with a closed uncha
  }finally{g.dispose();}
 });
 
-test('Waterpoppy roots join underwater stolon nodes without moving leaves and flowers',()=>{
+test('Waterpoppy roots join underwater stolon nodes while floating leaves retain their horizontal layout',()=>{
  const input={...makePlant('p-f2e4c7935581',104810,3,3),height:.12,spread:.40,leafHeight:.055};
  const view={year:0,month:7,reference:false};
  const dry=plantModel(input,view,1);
@@ -22537,9 +22537,16 @@ test('Waterpoppy roots join underwater stolon nodes without moving leaves and fl
     const roots=mesh(wet,'nodal-root-waterpoppy-ref'),stem=mesh(wet,'creeping-stem-waterpoppy-ref');
     const petiole=mesh(wet,'petiole-waterpoppy-ref'),peduncle=mesh(wet,'peduncle-waterpoppy-ref');
     assert.equal(roots.count,36);
-    for(const key of ['leaf-waterpoppy-photo-reference','petal-waterpoppy-photo-reference']){
-     assert.deepEqual(mesh(wet,key).instanceMatrix.array,mesh(dry,key).instanceMatrix.array);
-     assert.deepEqual(mesh(wet,key).instanceColor.array,mesh(dry,key).instanceColor.array);
+    const leaves=mesh(wet,'leaf-waterpoppy-photo-reference'),dryLeaves=mesh(dry,'leaf-waterpoppy-photo-reference');
+    const petals=mesh(wet,'petal-waterpoppy-photo-reference'),dryPetals=mesh(dry,'petal-waterpoppy-photo-reference');
+    assert.deepEqual(petals.instanceMatrix.array,dryPetals.instanceMatrix.array);
+    assert.deepEqual(petals.instanceColor.array,dryPetals.instanceColor.array);
+    assert.deepEqual(leaves.instanceColor.array,dryLeaves.instanceColor.array);
+    for(let i=0;i<leaves.count;i++){
+     const a=point(leaves,i,0),b=point(dryLeaves,i,0);
+     assert.equal(a.x,b.x);
+     assert.equal(a.z,b.z);
+     assert.ok(a.y<b.y);
     }
     assert.deepEqual(wet.userData.flowerTargets,dry.userData.flowerTargets);
     for(let i=0;i<stem.count;i++){
@@ -22561,6 +22568,31 @@ test('Waterpoppy roots join underwater stolon nodes without moving leaves and fl
   const winter=plantModel(input,{...view,month:1,waterDepth:.16},1);
   try{assert.equal(winter.children.length,0);}finally{dispose(winter);}
  }finally{dispose(dry);}
+});
+
+test('Waterpoppy shallow leaves approach the water surface continuously as depth increases',()=>{
+ const p={...makePlant('p-f2e4c7935581',104810,3,3),height:.12,spread:.40,leafHeight:.055};
+ const view={year:0,month:7,reference:false},saved=structuredClone(p);
+ const origins=[];
+ const matrix=new Matrix4();
+ for(const waterDepth of [0,.0009,.001,.009,.012,.055,.16]){
+  const g=plantModel(p,{...view,waterDepth},1);
+  try{
+   const leaf=g.children.find(m=>m.userData.component==='leaf-waterpoppy-photo-reference');
+   const petioles=g.children.find(m=>m.userData.component==='petiole-waterpoppy-ref');
+   leaf.getMatrixAt(6,matrix);
+   const origin=new Vector3().applyMatrix4(matrix);
+   const vertical=new Vector3(0,1,0).applyMatrix4(matrix).sub(origin).normalize().y;
+   petioles.getMatrixAt(6,matrix);
+   assert.ok(new Vector3(0,.5,0).applyMatrix4(matrix).distanceTo(origin)<2e-6);
+   origins.push({height:origin.y,vertical});
+  }finally{dispose(g);}
+ }
+ assert.ok(origins.slice(1).every((n,i)=>n.height<=origins[i].height&&n.vertical<=origins[i].vertical+1e-6));
+ assert.ok(origins[0].height>0&&origins[0].vertical>0);
+ assert.ok(Math.abs(origins[5].height+.0058)<1e-6&&Math.abs(origins[5].vertical)<1e-6);
+ assert.deepEqual(origins[5],origins[6]);
+ assert.deepEqual(p,saved);
 });
 
 test('Waterpoppy photo reference fits twenty four independent dimensions with connected floating leaves and three petals',()=>{

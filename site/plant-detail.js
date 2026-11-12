@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1051';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1052';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1051';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1052';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -27087,12 +27087,15 @@ function drawWaterpoppyPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
  const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),radius=Math.min(.0007,h*.004,w*.003,LH*.03);
  const wet=s.waterDepth>=.001,rootY=wet?-.008-Math.min(s.waterDepth*.2,.012):radius*1.2+Math.min(.00002,h*.002);
+ // Scale the transition by the entered leaf height rather than a species-wide water depth.
+ const leafRise=LH*.45,level=Math.min(1,s.waterDepth/LH);
+ const leafY=THREE.MathUtils.lerp(leafRise,-.0058,level);
  const crown=[0,rootY,0],nodes=[];let previous=crown;
  for(let j=0;j<6;j++){
   const az=j*2.399+.45,R=w*.105*Math.sqrt((j+.8)/6),node=[Math.sin(az)*R,rootY+(wet?radius*.3*Math.sin(az):LH*.12),Math.cos(az)*R];nodes.push(node);b.branch(previous,node,radius,'#688650','creeping-stem-waterpoppy-ref');previous=node;
   if(wet)drawWaterpoppyNodalRoots(b,node,radius,w,s.waterDepth,az);
   for(let side=0;side<2;side++){
-   const yaw=az+(side?-.43:.43),rr=w*(side?.115:.095),at=[node[0]+Math.sin(yaw)*rr,LH*.45,node[2]+Math.cos(yaw)*rr],L=Math.min(.065,w*.24)*(.87+j*.018),relief=Math.min(L,LH*.25/.08),pitch=Math.PI/2-Math.min(.10,LH*.12/L)*(j%3)/2;
+   const yaw=az+(side?-.43:.43),rr=w*(side?.115:.095),at=[node[0]+Math.sin(yaw)*rr,leafY,node[2]+Math.cos(yaw)*rr],L=Math.min(.065,w*.24)*(.87+j*.018),relief=Math.min(L,LH*.25/.08),pitch=Math.PI/2-Math.min(.10,LH*.12/L)*(j%3)/2*(1-level);
    b.branch(node,at,radius*.65,'#688650','petiole-waterpoppy-ref');b.add('waterpoppy-photo-reference-leaf','leaf-waterpoppy-photo-reference',kit.shade(rand,s.leafColor,.025),...at,L,L,relief,pitch,yaw,0);
   }
  }
