@@ -1,4 +1,4 @@
-import {astilbeFloretGeometry} from '../site/plant-detail.js';
+import {astilbeFloretGeometry,waterpoppyPhotoReferenceGeometry,waterpoppyPhotoReferencePoint} from '../site/plant-detail.js';
 import {inspectionSeasonActive,amperaiFoliageInspectionView,waterHorsetailStemInspectionView,miniPapyrusHeadInspectionView,umbrellaSedgeFoliageInspectionView,acorusGreenWhiteFoliageInspectionView,acorusOgonFoliageInspectionView,najasFoliageInspectionView,willowMossFoliageInspectionView,southMossFoliageInspectionView,orangeMyrioFoliageInspectionView,greenMyrioFoliageInspectionView,rotalaFlowerFoliageInspectionView,indicaFoliageInspectionView,newLargePearlFoliageInspectionView,largePearlFoliageInspectionView,pearlgrassFoliageInspectionView,nanjenshanFoliageInspectionView,greenRotalaFoliageInspectionView,cobraGrassFoliageInspectionView,hairgrassFoliageInspectionView,shortHairFoliageInspectionView,goldJennyFoliageInspectionView,monnieriFoliageInspectionView,yellowBacopaFoliageInspectionView,bacopaFoliageInspectionView,muticaFoliageInspectionView,watercoinFoliageInspectionView,pennisetumFoliageInspectionView,planumRosetteInspectionView,flowerInspectionDistanceFloor,flowerInspectionView} from '../site/scene.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -22493,6 +22493,32 @@ test('Hygrophila visible model focus frames six summer and winter inputs above t
   try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);for(const aspect of[.8,1.65]){const pose=hygroVisibleFocus1005(g,aspect,40);assert.ok(pose);assert.equal(pose.fit,'hygrophila-visible-model');assert.ok(pose.position[1]>=.1);const camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);for(const mesh of g.children)for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);matrix.premultiply(mesh.matrixWorld);for(let j=0;j<mesh.geometry.attributes.position.count;j++){v.fromBufferAttribute(mesh.geometry.attributes.position,j).applyMatrix4(matrix).project(camera);assert.ok(Math.abs(v.x)<=1+2e-6&&Math.abs(v.y)<=1+2e-6&&v.z>=-1&&v.z<=1);}}poses++;}}finally{dispose(g);}
  }
  assert.equal(hygroVisibleFocus1005({userData:{architecture:'submergedShoots'}}),null);assert.equal(models,6);assert.equal(poses,12);console.log('HYGRO1005_FOCUS '+JSON.stringify({models,poses}));
+});
+
+test('Waterpoppy expanded leaf midrib stays on the underside with a closed unchanged margin',()=>{
+ const g=waterpoppyPhotoReferenceGeometry('leaf');
+ try{
+  const rows=24,cols=96,stride=(rows+1)*(cols+1);
+  const points=g.attributes.position,side=g.attributes.waterpoppyUnderside;
+  assert.equal(points.count,stride*2);
+  assert.equal(side.count,points.count);
+  for(let row=0;row<=rows;row++)for(let col=0;col<=cols;col++){
+   const i=row*(cols+1)+col;
+   const expected=waterpoppyPhotoReferencePoint('leaf',row/rows,col/cols).map(Math.fround);
+   assert.deepEqual([points.getX(i),points.getY(i),points.getZ(i)],expected);
+   assert.equal(side.getX(i),0);
+   assert.equal(side.getX(i+stride),1);
+   assert.equal(points.getX(i+stride),points.getX(i));
+   assert.equal(points.getY(i+stride),points.getY(i));
+   assert.ok(points.getZ(i+stride)>=points.getZ(i));
+   if(row===rows)assert.equal(points.getZ(i+stride),points.getZ(i));
+  }
+  const thickness=i=>points.getZ(i+stride)-points.getZ(i);
+  assert.ok(thickness(0)>.045);
+  assert.ok(thickness(12*(cols+1)+24)<.005);
+  assert.ok(g.userData.closedSurface);
+  assert.match(CATALOG['p-f2e4c7935581'].care,/淡い葉裏のふくらんだ主脈/);
+ }finally{g.dispose();}
 });
 
 test('Waterpoppy roots join underwater stolon nodes without moving leaves and flowers',()=>{

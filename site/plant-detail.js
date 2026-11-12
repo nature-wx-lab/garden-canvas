@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1050';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1051';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1050';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1051';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -27027,13 +27027,25 @@ export function waterpoppyPhotoReferenceGeometry(type){
  const leaf=type==='leaf',sepal=type==='sepal',N=leaf||sepal?24:32,C=leaf?96:sepal?16:24,p=[],uv=[],ix=[],stride=(N+1)*(C+1);
  for(let side=0;side<2;side++)for(let i=0;i<=N;i++)for(let j=0;j<=C;j++){
   const t=i/N,u=leaf?j/C:j/C*2-1,point=waterpoppyPhotoReferencePoint(type,t,u);
-  if(side){if(leaf)point[2]+=.005*(1-t*t);else point[1]-=(sepal?.012:.006)*(1-t);}
+  if(side){
+   if(leaf){
+    const along=Math.sin(Math.PI*Math.max(0,Math.min(1,point[1])));
+    const rib=.048*along**1.2*Math.exp(-((point[0]/.068)**2));
+    point[2]+=(.005+rib)*(1-t*t);
+   }else point[1]-=(sepal?.012:.006)*(1-t);
+  }
   p.push(...point);uv.push(leaf?.5+point[0]:j/C,leaf?point[1]:t);
   if(i<N&&j<C){const k=side*stride+i*(C+1)+j;if(side)ix.push(k,k+1,k+C+1,k+1,k+C+2,k+C+1);else ix.push(k,k+C+1,k+1,k+1,k+C+1,k+C+2);}
  }
  for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}
  for(let j=0;j<C;j++){const a=N*(C+1)+j,z=a+1;ix.push(a,a+stride,z,z,a+stride,z+stride);}
- const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={waterpoppyPhotoReference:true,part:type,illustrativeGeometry:true,closedSurface:true};return g;
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={waterpoppyPhotoReference:true,part:type,illustrativeGeometry:true,closedSurface:true};
+ if(leaf){
+  const underside=new Float32Array(stride*2);
+  underside.fill(1,stride);
+  g.setAttribute('waterpoppyUnderside',new THREE.BufferAttribute(underside,1));
+ }
+ return g;
 }
 function drawWaterpoppyNodalRoots(b, node, radius, spread, depth, azimuth) {
  const bed = -.012-depth;
