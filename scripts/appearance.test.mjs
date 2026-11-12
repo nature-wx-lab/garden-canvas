@@ -22770,7 +22770,7 @@ test('Cabomba visible model focus frames six summer and winter models above the 
 
 test('Glossostigma domestic source keeps verified low height and Japanese flowering separate from pot size stock width and NSW season',()=>{
  const info=CATALOG['p-03b938c53e6f'],a=info.appearance;
- assert.equal(info.label,'グロッソスティグマ');assert.equal(info.latin,'Glossostigma elatinoides');assert.deepEqual(info.height,[.02,.05]);assert.equal(info.spread,null);assert.deepEqual(info.bloom,[5,6,7,8,9]);assert.equal(info.bloomKnown,true);assert.deepEqual(info.colors,['white']);assert.equal(info.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'glosso');assert.equal(a.status,'partial');
+ assert.equal(info.label,'グロッソスティグマ');assert.equal(info.latin,'Glossostigma elatinoides');assert.deepEqual(info.height,[.02,.05]);assert.equal(info.spread,null);assert.deepEqual(info.bloom,[5,6,7,8,9]);assert.equal(info.bloomKnown,true);assert.deepEqual(info.colors,['white']);assert.equal(info.sourceChecked,'2026-11-13');assert.equal(a.shootProfile,'glosso');assert.equal(a.status,'partial');
  assert.match(info.care,/直径9cm/);assert.match(info.care,/葉身/);assert.match(info.care,/株幅ではありません/);assert.match(a.sourceConflict,/青い花冠/);assert.match(a.sourceConflict,/白く見える花/);assert.match(a.sourceConflict,/NSW/);assert.match(a.phenologyRegion,/5〜9月/);assert.match(a.phenologyRegion,/12〜5月/);assert.doesNotMatch(a.phenologyRegion,/マツモ|カボンバ/);assert.match(a.phenologyRegion,/未校正/);assert.ok(a.unconfirmed.some(s=>s.includes('水中葉モデルには花を描きません')));assert.ok(a.unconfirmed.some(s=>s.includes('クローン')));
 });
 
@@ -22812,6 +22812,40 @@ test('Glossostigma creeping reference keeps illustrative counts across years and
  }
  assert.equal(yearModels,4);assert.equal(pondModels,2);console.log('GLOSSOSTIGMA1000_YEAR_AND_WATER '+JSON.stringify({yearModels,pondModels,annualRealismVerified:0}));
 });
+test('Glossostigma nodal roots reach the pond floor and spoon blades stay submerged',()=>{
+ const p={...makePlant('p-03b938c53e6f',107110,3,3),height:.04,spread:.30,leafHeight:.03};
+ const matrix=new Matrix4(),v=new Vector3();
+ for(const [waterDepth,month] of [[.001,7],[.007,7],[.10,7],[.10,1],[.20,7]]){
+  const group=plantModel(p,{year:0,month,reference:false,waterDepth});
+  try{
+   const roots=group.children.find(m=>m.userData.component==='root-submerged-glosso-photo-reference');
+   const stems=group.children.find(m=>m.userData.component==='stem-creeping-glossostigma-photo-reference');
+   const leaf=group.children.find(m=>m.userData.component.startsWith('leaf-submerged-glosso-photo-reference'));
+   assert.equal(roots.count,stems.count);
+   const points=Array.from({length:stems.count},(_,i)=>{
+    stems.getMatrixAt(i,matrix);
+    return new Vector3(0,.5,0).applyMatrix4(matrix);
+   });
+   for(let i=0;i<roots.count;i++){
+    roots.getMatrixAt(i,matrix);
+    const start=v.set(0,-.5,0).applyMatrix4(matrix);
+    assert.ok(points.some(node=>node.distanceTo(start)<1e-7));
+    const end=v.set(0,.5,0).applyMatrix4(matrix);
+    assert.ok(end.y>=-.012-1e-7&&end.y<-.0119);
+   }
+   const positions=leaf.geometry.attributes.position;
+   for(let i=0;i<leaf.count;i++){
+    leaf.getMatrixAt(i,matrix);
+    for(let j=0;j<positions.count;j++){
+     v.fromBufferAttribute(positions,j).applyMatrix4(matrix);
+     assert.ok(v.y>=-.012-1e-7&&v.y<waterDepth-.006);
+    }
+   }
+   assert.equal(flowerInspectionView(group,.8,40),null);
+  }finally{dispose(group);}
+ }
+});
+
 test('Glossostigma visible model focus frames six summer and winter models above the camera floor',()=>{
  let models=0,poses=0;const v=new Vector3(),matrix=new Matrix4();
  for(const dims of[[.04,.30,.03],[.01,.10,.005],[.04,.30,.005]])for(const month of[7,1]){

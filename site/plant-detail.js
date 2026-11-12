@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1070';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1071';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1070';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1071';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1232,16 +1232,17 @@ export function glossostigmaPhotoReferenceGeometry(){
 }
 function drawGlossostigmaPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0004,LH*.02),r=Math.min(.0003,h*.01,w*.001,LH*.025),P=Math.min(.006,w*.02,LH*.20),L=Math.min(.006,w*.025,LH*.50),W=Math.min(.003,w*.01,LH*.20),leafKind='leaf-submerged-glosso-photo-reference-underside-'+info.appearance.leafUnderside.slice(1),stem='stem-creeping-glossostigma-photo-reference';
+ const wet=s.waterDepth>0,bed=wet?-.012:0;
+ const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight,wet?(s.waterDepth+.006)*.92:Infinity),base=Math.min(.0004,LH*.02),r=Math.min(.0003,h*.01,w*.001,LH*.025),P=Math.min(.006,w*.02,LH*.20),L=Math.min(.006,w*.025,LH*.50),W=Math.min(.003,w*.01,LH*.20),leafKind='leaf-submerged-glosso-photo-reference-underside-'+info.appearance.leafUnderside.slice(1),stem='stem-creeping-glossostigma-photo-reference';
  function node(at,turn){
-  const root=[at[0],Math.min(base*.15,at[1]*.15),at[2]];b.branch(at,root,Math.min(.00008,r*.45),'#b5ac8b','root-submerged-glosso-photo-reference');
+  const root=[at[0],bed+Math.min(base*.15,(at[1]-bed)*.15),at[2]];b.branch(at,root,Math.min(.00008,r*.45),'#b5ac8b','root-submerged-glosso-photo-reference');
   for(let side=0;side<2;side++){
    const az=turn+side*Math.PI,top=[at[0]+Math.sin(az)*P*.75,at[1]+P*.65,at[2]+Math.cos(az)*P*.75];
    b.branch(at,top,Math.min(.0002,h*.004,w*.0007,LH*.018),'#9da96c','petiole-glossostigma-photo-reference');
    b.add('glossostigma-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.025),...top,W,L,L,1.15+.14*Math.sin(turn),az,0);
   }
  }
- const primary=t=>{const radius=w*.24*Math.sqrt(t),angle=t*32*2.399;return[Math.sin(angle)*radius,base+LH*(.04+.12*(.5+.5*Math.sin(t*TAU*2+.2))),Math.cos(angle)*radius];};let previous=primary(0);
+ const primary=t=>{const radius=w*.24*Math.sqrt(t),angle=t*32*2.399;return[Math.sin(angle)*radius,bed+base+LH*(.04+.12*(.5+.5*Math.sin(t*TAU*2+.2))),Math.cos(angle)*radius];};let previous=primary(0);
  for(let j=1;j<=32;j++){
   const t=j/32,at=primary(t),turn=j*2.399;b.branch(previous,at,r,'#9da96c',stem);previous=at;node(at,turn);
   for(const side of[-1,1]){
