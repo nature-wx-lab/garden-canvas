@@ -11701,6 +11701,14 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     {
       "url": "https://www.akb.jp/c/suisei/chinsui/003-0014",
       "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.water.go.jp/kansai/biwako/html/download/files/zusetsu/20180330_plant_03.pdf",
+      "scope": "species"
+    },
+    {
+      "url": "https://plant-directory.ifas.ufl.edu/plant-directory/cabomba-caroliniana/",
+      "scope": "species"
     }
   ],
   "basis": {
@@ -11733,6 +11741,7 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "全月の実物照合",
     "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
     "扇状の細裂葉を対生させ、細い葉の裂片を二又に分けます。白い花弁3枚と花弁状の萼片3枚、黄色い蜜腺を分け、水面へ伸びる花柄に載せます。",
+    "開花時の水面には、水資源機構の琵琶湖資料とフロリダ大学の標本図を参考に、細い楕円形の浮葉を少数描きます。葉柄を葉身の裏の中央付近につなぎ、その葉の付け根から花柄を出します。浮葉の枚数や、水深と出現頻度の関係は未確認です。",
     "低温期は密な冬芽を中心に示します。冬芽形成の開始・終了月、古い茎が残る量、水深ごとの開花率は未確認です。",
     "この項目はハゴロモモを参考にし、流通するカボンバ類すべての品種を同じ株と判定するものではありません。",
     "株全体の高さ・株幅と年次の自然増殖量は未確認です。表示の葉長・葉幅、節間と枝数は描画例です。",

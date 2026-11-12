@@ -22425,7 +22425,7 @@ test('Egeria domestic source distinguishes reach height and reproduction period 
 });
 
 test('Cabomba source preserves fanleaf dimensions and confirmed flowering without invented stock ranges',()=>{
- const i=CATALOG['p-097775090353'],a=i.appearance;assert.equal(i.latin,'Cabomba caroliniana');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.bloomKnown,true);assert.deepEqual(i.colors,['white']);assert.deepEqual(i.bloom,[7,8,9,10]);assert.equal(i.sourceChecked,'2026-11-01');assert.ok(i.aliases.includes('ハゴロモモ'));assert.match(i.care,/5〜7裂/);assert.match(i.care,/1〜3回/);assert.match(a.sourceConflict,/扇状葉1〜3.5cm/);assert.match(a.sourceConflict,/高さ30〜100cm/);assert.equal(a.shootProfile,'cabomba');assert.equal(a.persistence,'waterTurion');assert.equal(a.flowerShape,'cabombaPerianth');assert.equal(seasonAt(i,7).bloom,true);
+ const i=CATALOG['p-097775090353'],a=i.appearance;assert.equal(i.latin,'Cabomba caroliniana');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.bloomKnown,true);assert.deepEqual(i.colors,['white']);assert.deepEqual(i.bloom,[7,8,9,10]);assert.equal(i.sourceChecked,'2026-11-13');assert.ok(i.aliases.includes('ハゴロモモ'));assert.match(i.care,/5〜7裂/);assert.match(i.care,/1〜3回/);assert.match(a.sourceConflict,/扇状葉1〜3.5cm/);assert.match(a.sourceConflict,/高さ30〜100cm/);assert.equal(a.shootProfile,'cabomba');assert.equal(a.persistence,'waterTurion');assert.equal(a.flowerShape,'cabombaPerianth');assert.equal(seasonAt(i,7).bloom,true);
 });
 test('Ceratophyllum source keeps stem length separate from upright height and qualifies rootlessness winter buds and flowering',()=>{
  const i=CATALOG['p-74f20c38e156'],a=i.appearance;assert.equal(i.latin,'Ceratophyllum demersum');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.bloomKnown,true);assert.deepEqual(i.bloom,[5,6,7,8]);assert.equal(i.sourceChecked,'2026-11-01');assert.match(i.care,/茎の全長/);assert.match(i.care,/5〜8枚/);assert.match(i.care,/時に10枚/);assert.match(i.care,/仮根/);assert.match(i.bloomBasis,/開花しない集団/);assert.match(a.sourceConflict,/冬芽長2〜6cm/);assert.match(a.sourceConflict,/株幅20〜60cm/);assert.equal(a.shootProfile,'ceratophyllum');assert.equal(a.persistence,'waterTurion');assert.equal(a.flowerShape,'none');
@@ -22643,6 +22643,31 @@ test('Cabomba branched shoots and compact winter tip retain illustrative counts 
  }
  assert.equal(yearModels,4);assert.equal(pondModels,2);console.log('CABOMBA997_YEAR_AND_WATER '+JSON.stringify({yearModels,pondModels}));
 });
+test('Cabomba floating blades and axillary flower stalk meet the upper shoot',()=>{
+ const p={...makePlant('p-097775090353',106710,3,3),height:.45,spread:.35,leafHeight:.35};
+ const matrix=new Matrix4();
+ const point=(mesh,i,y=0)=>{mesh.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
+ for(const [waterDepth,month] of [[0,7],[.007,7],[.18,7],[.55,7],[.18,1]]){
+  const group=plantModel(p,{year:0,month,reference:false,waterDepth});
+  try{
+   const get=kind=>group.children.find(m=>m.userData.component===kind);
+   const leaf=get('leaf-floating-cabomba'),stem=get('surface-shoot-cabomba');
+   if(!waterDepth||waterDepth>.45||month===1){assert.ok(!leaf&&!stem);continue;}
+   const stalk=get('pedicel-submerged-cabomba'),petiole=get('petiole-floating-cabomba');
+   assert.equal(leaf.count,stalk.count*2);
+   assert.equal(leaf.count,petiole.count);
+   for(let i=0;i<leaf.count;i++){
+    const blade=point(leaf,i),node=point(stem,i,.5);
+    assert.ok(Math.abs(blade.y-(waterDepth-.0055))<1e-7);
+    assert.ok(point(petiole,i,-.5).distanceTo(node)<1e-7);
+    assert.ok(point(petiole,i,.5).distanceTo(blade)<1e-7);
+    if(i%2===1)assert.ok(point(stalk,(i-1)/2,-.5).distanceTo(node)<1e-7);
+   }
+   assert.ok(flowerInspectionView(group,349/388,40));
+  }finally{dispose(group);}
+ }
+});
+
 test('Cabomba visible model focus frames six summer and winter models above the camera floor',()=>{
  let models=0,poses=0;const point=new Vector3(),matrix=new Matrix4();
  for(const dims of[[.45,.35,.45],[.04,.10,.020],[.45,.35,.005]])for(const month of[7,1]){

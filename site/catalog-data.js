@@ -9433,7 +9433,48 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
     "source": "https://store.shopping.yahoo.co.jp/nijihanaplants/hyl-02.html",
     "checked": "2026-10-11"
   }
-},"p-daa12b3e6d9f":{"label":"ホテイアオイ","latin":"Pontederia crassipes","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":null,"spread":null,"bloom":[7,8,9,10],"bloomKnown":true,"flower":"#b4a4d8","leafColor":"#54873d","variegated":false,"colors":["purple"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認。国内の草丈は15cm以上という下限のみで、成株の上限は未確認です。","season":"浮葉の形と冬の越冬方法","care":"膨らんだ葉柄の先に光沢のある丸い葉を開きます。淡紫の6枚の花被片のうち上側に黄色の目と紫色の筋が入り、花は穂状に付きます。資料の草丈は15cm以上で上限は未確認です。寒い時期は屋内で水温15℃以上と高光量を保つ管理が案内されています。株元から暗紫色〜黒褐色の根が水中に垂れ、細い側根が羽状に広がります。水深を設定した水域で、水底に着く前までの浮遊株の根を参考表示します。全形・全月の実物照合は未完了です。","bloomText":"資料の開花月：7・8・9・10月","bloomBasis":"国内の生産者の種類別記載","source":"https://www.akb.jp/c/hotei/003-0009","publisher":"杜若園芸","sourceChecked":"2026-11-12","aliases":["ホテイアオイ","Eichhornia crassipes"],"selectionSource":null,"visual":"reference","popularity":[]},"p-097775090353":{"label":"カボンバ","latin":"Cabomba caroliniana","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":null,"spread":null,"bloom":[7,8,9,10],"bloomKnown":true,"flower":"#eee9df","leafColor":"#4a8554","variegated":false,"colors":["white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認。閉じた高さ範囲と株幅は未確認です。","season":"扇状の水中葉と茎先の越冬芽","care":"この項目では、流通名カボンバのうちハゴロモモ（Cabomba caroliniana）を参考にしています。扇形の葉は1〜3.5cmと記載されますが、株幅ではありません。葉は基部で5〜7裂し、その先で1〜3回二又に分かれます。資料は花期7〜10月、水面上に約2cmの白い花を付け、冬に茎先が密集して越冬芽を作ると説明しています。高さ30〜100cm・株幅15〜40cmという範囲は、今回の資料では確認できませんでした。水温・水深・光量による姿の違いと冬芽になる月境界は未確認です。野外への放流・逸出を避けて管理してください。 生産者写真と国立環境研究所の写真の扇状葉・枝を参考にした描画例です。生産者の20cm以上は上限付きの草丈範囲ではありません。10〜4月頃の屋内・ハウス管理は栽培管理の説明で、冬芽になる月の実測値ではありません。","bloomText":"資料の開花月：7・8・9・10月","bloomBasis":"国立環境研究所は花期7〜10月と明記しています。","source":"https://www.nies.go.jp/biodiversity/invasive/DB/detail/80070.html","publisher":"国立環境研究所","sourceChecked":"2026-11-01","aliases":["カボンバ","ハゴロモモ","フサジュンサイ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-790697efed42":{
+},"p-daa12b3e6d9f":{"label":"ホテイアオイ","latin":"Pontederia crassipes","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":null,"spread":null,"bloom":[7,8,9,10],"bloomKnown":true,"flower":"#b4a4d8","leafColor":"#54873d","variegated":false,"colors":["purple"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認。国内の草丈は15cm以上という下限のみで、成株の上限は未確認です。","season":"浮葉の形と冬の越冬方法","care":"膨らんだ葉柄の先に光沢のある丸い葉を開きます。淡紫の6枚の花被片のうち上側に黄色の目と紫色の筋が入り、花は穂状に付きます。資料の草丈は15cm以上で上限は未確認です。寒い時期は屋内で水温15℃以上と高光量を保つ管理が案内されています。株元から暗紫色〜黒褐色の根が水中に垂れ、細い側根が羽状に広がります。水深を設定した水域で、水底に着く前までの浮遊株の根を参考表示します。全形・全月の実物照合は未完了です。","bloomText":"資料の開花月：7・8・9・10月","bloomBasis":"国内の生産者の種類別記載","source":"https://www.akb.jp/c/hotei/003-0009","publisher":"杜若園芸","sourceChecked":"2026-11-12","aliases":["ホテイアオイ","Eichhornia crassipes"],"selectionSource":null,"visual":"reference","popularity":[]},"p-097775090353":{
+  "label": "カボンバ",
+  "latin": "Cabomba caroliniana",
+  "genre": "水生植物",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": null,
+  "spread": null,
+  "bloom": [
+    7,
+    8,
+    9,
+    10
+  ],
+  "bloomKnown": true,
+  "flower": "#eee9df",
+  "leafColor": "#4a8554",
+  "variegated": false,
+  "colors": [
+    "white"
+  ],
+  "sun": [],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認。閉じた高さ範囲と株幅は未確認です。",
+  "season": "扇状の水中葉と茎先の越冬芽",
+  "care": "この項目では、流通名カボンバのうちハゴロモモ（Cabomba caroliniana）を参考にしています。扇形の葉は1〜3.5cmと記載されますが、株幅ではありません。葉は基部で5〜7裂し、その先で1〜3回二又に分かれます。資料は花期7〜10月、水面上に約2cmの白い花を付け、冬に茎先が密集して越冬芽を作ると説明しています。池の開花例では、対生する扇状の沈水葉とは別に、細い楕円形の浮葉とその葉腋から伸びる花柄を描きます。高さ30〜100cm・株幅15〜40cmという範囲は、今回の資料では確認できませんでした。水温・水深・光量による姿の違いと冬芽になる月境界は未確認です。野外への放流・逸出を避けて管理してください。 生産者写真と国立環境研究所の写真の扇状葉・枝を参考にした描画例です。生産者の20cm以上は上限付きの草丈範囲ではありません。10〜4月頃の屋内・ハウス管理は栽培管理の説明で、冬芽になる月の実測値ではありません。",
+  "bloomText": "資料の開花月：7・8・9・10月",
+  "bloomBasis": "国立環境研究所は花期7〜10月と明記しています。",
+  "source": "https://www.nies.go.jp/biodiversity/invasive/DB/detail/80070.html",
+  "publisher": "国立環境研究所",
+  "sourceChecked": "2026-11-13",
+  "aliases": [
+    "カボンバ",
+    "ハゴロモモ",
+    "フサジュンサイ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-790697efed42":{
   "label": "アナカリス",
   "latin": "Egeria densa",
   "genre": "水生植物",

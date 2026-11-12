@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1066';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1067';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1066';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1067';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1042,6 +1042,10 @@ function drawWaterMeadow(b,{info,s,p,detail,rand},kit){
 }
 
 export function submergedLeafPoint(type,t,u){
+ if(type==='cabombaFloating'){
+  const span=Math.pow(Math.max(0,Math.sin(Math.PI*t)),.8);
+  return [u*.5*span,.07*u*u*span,t-.5];
+ }
  const sn=Math.sin(Math.PI*t),spoon=type==='glosso',round=type==='ovalis',egeria=type==='egeria';
  let width=spoon?Math.pow(sn,.55)*(.17+1.3*t):round?Math.pow(sn,.68):Math.pow(sn,egeria?.35:.82);
  if(egeria)width*=.95+.05*Math.sin(t*TAU*25);
@@ -1409,8 +1413,25 @@ function drawSubmergedShoots(b,{info,s,p,detail,rand},kit){
     const tip=[at[0]+Math.sin(az+1)*w*(type==='cabomba'?.06:.12),Math.min(limit,at[1]+.065),at[2]+Math.cos(az+1)*w*(type==='cabomba'?.06:.12)];b.branch(at,tip,.0006,stem,'side-shoot-'+type);for(let q=1;q<=3;q++){const loc=at.map((v,i)=>v+(tip[i]-v)*q/3);for(let side=0;side<(type==='ovalis'?1:2);side++)leaf(loc,az+side*Math.PI+q*1.6,a.leafLength*.7,1,1.02);}}
   }
   if(s.bloom&&['cabomba','egeria'].includes(type)&&(type==='cabomba'?s.height>=.06&&s.height>=(water?depth:h)-.025:len>=limit-.025)&&k%4===0){
-   const at=path(.92),top=[at[0]+.01,water?depth+.009:type==='cabomba'?s.height*.95:h+.025,at[2]],f=frame(top,.04,az),R=type==='cabomba'?Math.min(.008,s.height*.035,w*.05):.01;
+   let at=path(.92);
+   if(type==='cabomba'&&water){
+    // Two small peltate blades alternate on the shoot that reaches the water.
+    const surface=depth-.0055,padLength=Math.min(.018,w*.12);
+    let node=path(1);
+    for(let j=0;j<2;j++){
+     const angle=az+j*Math.PI,nodeY=surface-.004+(j+1)*.0015;
+     const next=[node[0]+Math.sin(az)*.003,nodeY,node[2]+Math.cos(az)*.003];
+     const pad=[next[0]+Math.sin(angle)*padLength*.9,surface,next[2]+Math.cos(angle)*padLength*.9];
+     b.branch(node,next,.00046,stem,'surface-shoot-cabomba');
+     b.branch(next,pad,.00024,stem,'petiole-floating-cabomba');
+     b.add('water-cabombaFloating','leaf-floating-cabomba',green,...pad,padLength*.24,padLength*.18,padLength,0,angle,0);
+     node=next;
+    }
+    at=node;
+   }
+   const top=[at[0]+.01,water?depth+.009:type==='cabomba'?s.height*.95:h+.025,at[2]],f=frame(top,.04,az),R=type==='cabomba'?Math.min(.008,s.height*.035,w*.05):.01;
    b.branch(at,top,.00055,'#97a365','pedicel-submerged-'+type);
+   if(type==='cabomba'&&water&&k===0)f.flower([0,.0013,0],R*1.45,.70,0);
    for(let j=0;j<3;j++){const aa=j*TAU/3;f.add('forest-coptisSepal',type==='cabomba'?'petaloid-sepal-cabomba':'sepal-egeria',type==='cabomba'?'#eee9df':'#7a985d',0,-.001,0,R*.7,R*.55,R*.85,0,aa+Math.PI/3,0);f.add('forest-coptisSepal','petal-submerged-'+type,'#f5f2e8',0,0,0,R,R,R,0,aa,0);f.add(kit.bud,'nectary-submerged-'+type,'#d4b845',Math.sin(aa)*.002,.0004,Math.cos(aa)*.002,.0012,.0004,.0012);}
    for(let j=0;j<(type==='cabomba'?6:9);j++){const aa=j*2.399,loc=[Math.sin(aa)*.0018,.0028,Math.cos(aa)*.0018];f.branch([0,0,0],loc,.00010,'#e2ddb0','stamen-submerged');f.add(kit.bud,'anther-submerged','#ddb446',...loc,.00035,.00045,.00035);}
   }
