@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1052';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1053';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1052';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1053';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26970,6 +26970,11 @@ export function nupharPhotoReferencePoint(type,t,u){
   const ph=u*TAU,x=Math.sin(ph)*.34*(1+.10*Math.max(0,-Math.cos(ph))),y=.43+.57*Math.cos(ph)+.14*Math.exp(-(((ph-Math.PI)/.16)**2));
   return [t*x,.43+t*(y-.43),.08*t*t*Math.sin(ph)**2+.04*t**3*(1+Math.cos(ph))+.025*t*t*Math.abs(Math.sin(ph))**4];
  }
+ if(type==='submerged'){
+  const taper=t===0||t===1?0:Math.sin(Math.PI*t);
+  const wave=Math.sin(t*Math.PI*8);
+  return [u*.20*taper**.60*(1+.09*wave),t,.075*t*t+.035*u*u*taper*wave];
+ }
  if(type==='sepal')return [u*.65*Math.sin(Math.PI*t)**.5,.90*t**1.3+.12*u*u*Math.sin(Math.PI*t),.34*Math.sin(Math.PI*t)+.78*t];
  return [u*.38*(.3+.7*Math.sin(Math.PI*t)**.4),t,.20*Math.sin(Math.PI*t)];
 }
@@ -26982,9 +26987,24 @@ export function nupharPhotoReferenceGeometry(type){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={nupharPhotoReference:true,part:type,illustrativeGeometry:true};return g;
 }
 const nupharReferenceLeafPositions=(()=>{const a=[];for(let i=0;i<=24;i++)for(let j=0;j<=96;j++)a.push(...nupharPhotoReferencePoint('leaf',i/24,j/96));return new Float32Array(a);})();
+function drawNupharSubmergedLeaves(b,crown,depth,spread,radius){
+ const maxLength=Math.min(depth*.78,spread*.34,.28);
+ for(let j=0;j<6;j++){
+  const az=j*2.399+.18,length=maxLength*(.74+.05*j);
+  const reach=length*.18;
+  const at=[Math.sin(az)*reach,crown[1]+length*.11,Math.cos(az)*reach];
+  b.branch(crown,at,Math.min(radius*.65,length*.055),'#78885a','submerged-petiole-nuphar-ref');
+  b.add('nuphar-photo-reference-submerged','leaf-submerged-nuphar-photo-reference',
+        j%2===0?'#70854b':'#657d45',...at,length,length,length,.94+j*.04,az,0);
+ }
+}
 function drawNupharPhotoReference(b,{s,rand},kit){
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),leafRadius=Math.min(.0012,h*.006,w*.005,LH*.012);
+ const wet=s.waterDepth>=.001;
+ const rootY=wet?-.012-s.waterDepth+Math.min(.003,s.waterDepth*.10):leafRadius*1.2+Math.min(.00002,h*.002);
+ const crown=[0,rootY,0];
+ if(wet)drawNupharSubmergedLeaves(b,crown,s.waterDepth,w,leafRadius);
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),leafRadius=Math.min(.0012,h*.006,w*.005,LH*.012),crown=[0,leafRadius*1.2+Math.min(.00002,h*.002),0];
  for(let j=0;j<6;j++){
   const az=j*2.399+.4,R=w*.045*Math.sqrt((j+.8)/6),L=.25*(.88+j*.024),relief=Math.min(L,LH*.10/.145),pitch=Math.acos(Math.min(.85,LH*.52/(1.10*L)));
   const tilt=new THREE.Matrix4().makeRotationX(pitch),v=new THREE.Vector3();let high=-Infinity,rad=0;

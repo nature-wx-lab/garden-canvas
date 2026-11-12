@@ -1,5 +1,5 @@
 import {astilbeFloretGeometry,waterpoppyPhotoReferenceGeometry,waterpoppyPhotoReferencePoint} from '../site/plant-detail.js';
-import {inspectionSeasonActive,amperaiFoliageInspectionView,waterHorsetailStemInspectionView,miniPapyrusHeadInspectionView,umbrellaSedgeFoliageInspectionView,acorusGreenWhiteFoliageInspectionView,acorusOgonFoliageInspectionView,najasFoliageInspectionView,willowMossFoliageInspectionView,southMossFoliageInspectionView,orangeMyrioFoliageInspectionView,greenMyrioFoliageInspectionView,rotalaFlowerFoliageInspectionView,indicaFoliageInspectionView,newLargePearlFoliageInspectionView,largePearlFoliageInspectionView,pearlgrassFoliageInspectionView,nanjenshanFoliageInspectionView,greenRotalaFoliageInspectionView,cobraGrassFoliageInspectionView,hairgrassFoliageInspectionView,shortHairFoliageInspectionView,goldJennyFoliageInspectionView,monnieriFoliageInspectionView,yellowBacopaFoliageInspectionView,bacopaFoliageInspectionView,muticaFoliageInspectionView,watercoinFoliageInspectionView,pennisetumFoliageInspectionView,planumRosetteInspectionView,flowerInspectionDistanceFloor,flowerInspectionView} from '../site/scene.js';
+import {nupharSubmergedInspectionView,inspectionSeasonActive,amperaiFoliageInspectionView,waterHorsetailStemInspectionView,miniPapyrusHeadInspectionView,umbrellaSedgeFoliageInspectionView,acorusGreenWhiteFoliageInspectionView,acorusOgonFoliageInspectionView,najasFoliageInspectionView,willowMossFoliageInspectionView,southMossFoliageInspectionView,orangeMyrioFoliageInspectionView,greenMyrioFoliageInspectionView,rotalaFlowerFoliageInspectionView,indicaFoliageInspectionView,newLargePearlFoliageInspectionView,largePearlFoliageInspectionView,pearlgrassFoliageInspectionView,nanjenshanFoliageInspectionView,greenRotalaFoliageInspectionView,cobraGrassFoliageInspectionView,hairgrassFoliageInspectionView,shortHairFoliageInspectionView,goldJennyFoliageInspectionView,monnieriFoliageInspectionView,yellowBacopaFoliageInspectionView,bacopaFoliageInspectionView,muticaFoliageInspectionView,watercoinFoliageInspectionView,pennisetumFoliageInspectionView,planumRosetteInspectionView,flowerInspectionDistanceFloor,flowerInspectionView} from '../site/scene.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Box3,ShaderLib,CylinderGeometry,InstancedMesh,Quaternion,Matrix4,Vector3,Line3,Color,PerspectiveCamera,Vector2,Raycaster,SRGBColorSpace} from '../site/vendor/three.module.js';
@@ -22028,8 +22028,60 @@ test('Asaza fringes meet actual five lobed corolla edges without automatic stock
  });
 
 test('Nuphar source conflicts retain five outer sepals and qualified domestic height and bloom',()=>{
- const i=CATALOG['p-b038c25453b8'];assert.equal(i.label,'コウホネ');assert.equal(i.latin,'Nuphar japonica');assert.deepEqual(i.height,[.1,.4]);assert.equal(i.spread,null);assert.equal(i.sourceChecked,'2026-11-01');assert.deepEqual(i.bloom,[4,5,6,7,8,9]);assert.equal(i.bloomKnown,true);assert.match(i.care,/草丈10〜40cm前後/);assert.match(i.appearance.sourceConflict,/外側5枚の萼/);assert.match(i.appearance.sourceConflict,/3弁/);assert.match(i.appearance.sourceConflict,/12cmポット径と葉長20〜30cm/);assert.match(i.appearance.phenologyRegion,/2013年4月中旬/);assert.equal(i.appearance.architecture,'nupharEmergent');assert.equal(i.appearance.persistence,'winterSubmerged');assert.equal(i.appearance.leafLength,.25);assert.equal(i.appearance.flowerRadius,.0225);assert.equal(seasonAt(i,1).groundDormant,true);assert.match(seasonAt(i,1).phase,/水中葉/);
+ const i=CATALOG['p-b038c25453b8'];assert.ok(i.appearance.sources.some(source=>source.url==='https://www.kobepharma-u.ac.jp/botanical-gardens/news/docs/2022-6letter-Vol23.pdf'));assert.equal(i.label,'コウホネ');assert.equal(i.latin,'Nuphar japonica');assert.deepEqual(i.height,[.1,.4]);assert.equal(i.spread,null);assert.equal(i.sourceChecked,'2026-11-13');assert.deepEqual(i.bloom,[4,5,6,7,8,9]);assert.equal(i.bloomKnown,true);assert.match(i.care,/草丈10〜40cm前後/);assert.match(i.appearance.sourceConflict,/外側5枚の萼/);assert.match(i.appearance.sourceConflict,/3弁/);assert.match(i.appearance.sourceConflict,/12cmポット径と葉長20〜30cm/);assert.match(i.appearance.phenologyRegion,/2013年4月中旬/);assert.equal(i.appearance.architecture,'nupharEmergent');assert.equal(i.appearance.persistence,'winterSubmerged');assert.equal(i.appearance.leafLength,.25);assert.equal(i.appearance.flowerRadius,.0225);assert.equal(seasonAt(i,1).groundDormant,true);assert.match(seasonAt(i,1).phase,/水中葉/);
  const p={...makePlant('p-b038c25453b8',98910,3,3),height:.25,spread:.40,leafHeight:.20},d=emptyDocument(10,6);d.plans.A.plants=[p];d.catalogVersion='2026-10-29.53';const saved=structuredClone(d);assert.deepEqual(validateDocument(d).plans,saved.plans);assert.deepEqual(d,saved);assert.equal(stateAt(p,view(7)).height,.25);assert.equal(stateAt(p,{...view(7),reference:true}).height,.4);
+});
+
+test('Nuphar submerged leaves stay between bed and surface without moving summer foliage or flower',()=>{
+ const plant={...makePlant('p-b038c25453b8',105310,3,3),height:.32,spread:.52,leafHeight:.22};
+ const saved=structuredClone(plant),summer={year:0,month:7,reference:false};
+ const dry=plantModel(plant,summer),dryWinter=plantModel(plant,{...summer,month:1});
+ const component=(group,name)=>group.children.find(m=>m.userData.component===name);
+ const submerged='leaf-submerged-nuphar-photo-reference', emerged='leaf-nuphar-photo-reference';
+ assert.equal(component(dry,submerged),undefined);
+ assert.equal(dryWinter.children.length,0);
+ assert.equal(nupharSubmergedInspectionView(dryWinter),null);
+ for(const depth of [.001,.018,.28])for(const month of [1,7]){
+  const group=plantModel(plant,{...summer,month,waterDepth:depth});
+  try{
+   const leaf=component(group,submerged),petiole=component(group,'submerged-petiole-nuphar-ref');
+   assert.equal(leaf?.count,6);assert.equal(petiole?.count,6);
+   const matrix=new Matrix4(),stem=new Matrix4(),v=new Vector3();
+   for(let i=0;i<leaf.count;i++){
+    leaf.getMatrixAt(i,matrix);petiole.getMatrixAt(i,stem);
+    const base=new Vector3().setFromMatrixPosition(matrix);
+    assert.ok(Math.min(...[-.5,.5].map(y=>new Vector3(0,y,0).applyMatrix4(stem).distanceTo(base)))<1e-7);
+    for(let j=0;j<leaf.geometry.attributes.position.count;j++){
+     v.fromBufferAttribute(leaf.geometry.attributes.position,j).applyMatrix4(matrix);
+     assert.ok(v.y>=-.012-depth-1e-7&&v.y<-.012);
+    }
+   }
+   if(month===1){
+    assert.equal(component(group,emerged),undefined);
+    assert.ok(!group.children.some(m=>m.userData.component.includes('sepal')));
+    for(const aspect of [390/388,1000/660]){
+     const pose=nupharSubmergedInspectionView(group,aspect);
+     assert.equal(pose.fit,'nuphar-water-column');assert.ok(pose.position[1]>.1);
+     assert.ok(pose.target[1]>-.012-depth&&pose.target[1]<-.012);
+    }
+   }else{
+    for(const name of [emerged,'sepal-nuphar-photo-reference']){
+     const previous=component(dry,name),current=component(group,name);
+     assert.ok(previous&&current,name);
+     assert.deepEqual(current.instanceMatrix.array,previous.instanceMatrix.array);
+    }
+    const pose=nupharSubmergedInspectionView(group,390/388);
+    const camera=new PerspectiveCamera(40,390/388,.01,650);
+    camera.position.fromArray(pose.position);camera.lookAt(new Vector3(...pose.target));camera.updateMatrixWorld(true);
+    const bounds=new Box3().setFromObject(group);
+    for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){
+     const point=new Vector3(x,y,z).project(camera);
+     assert.ok(Math.abs(point.x)<1&&Math.abs(point.y)<1);
+    }
+   }
+  }finally{dispose(group);}
+ }
+ dispose(dry);dispose(dryWinter);assert.deepEqual(plant,saved);
 });
 
 test('Sagittaria reference height retains flowerstem basis without merging names or source sizes',()=>{
