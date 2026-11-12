@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1046';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1047';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1046';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1047';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26527,6 +26527,14 @@ export function monnieriPhotoReferenceGeometry(){
  for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}for(let j=0;j<C;j++){const a=N*(C+1)+j,z=a+1;ix.push(a,a+stride,z,z,a+stride,z+stride);}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={monnieriPhotoReference:true,part:'leaf',illustrativeGeometry:true,closedSurface:true};return g;
 }
+function drawMonnieriNodalRoot(b, node, radius, angle) {
+ const span=radius*4;
+ const dx=Math.cos(angle)*span,dz=Math.sin(angle)*span;
+ const joint=[node[0]+dx*.32,(node[1]-.012)*.5,node[2]+dz*.32];
+ const tip=[node[0]+dx,-.012+radius*.25,node[2]+dz];
+ b.branch(node,joint,radius*.34,'#aaa87a','nodal-root-monnieri-photo-ref');
+ b.branch(joint,tip,radius*.17,'#bbb990','nodal-root-monnieri-photo-ref');
+}
 function drawMonnieriPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
  const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.001,h*.008,w*.007),floor=r*1.25+Math.min(.00002,h*.002);
@@ -26535,9 +26543,10 @@ function drawMonnieriPhotoReference(b,{s,rand},kit){
   for(let node=0;node<8;node++){
    const t=(node+1)/8,at=[root[0]+Math.sin(az)*w*.26*t+Math.cos(az)*w*.018*Math.sin(Math.PI*t),floor+(LH*.78-floor)*t**2.4,root[2]+Math.cos(az)*w*.26*t-Math.sin(az)*w*.018*Math.sin(Math.PI*t)],L=Math.min(.013,w*.12)*(.84+node*.018),relief=Math.min(L,LH*.035/.069),pitch=Math.acos(Math.min(.44,LH*.035/L)),angle=az+node*Math.PI/2;
    b.branch(previous,at,r,'#7d9e51','creeping-stem-monnieri-photo-ref');for(const side of[0,1])b.add('monnieri-photo-reference-leaf','leaf-monnieri-photo-reference',kit.shade(rand,s.leafColor,.035),...at,L,L,relief,pitch,angle+side*Math.PI,0);previous=at;
+   if(s.waterDepth>0&&node<3)drawMonnieriNodalRoot(b,at,r,angle);
   }
  }
- // No flowers, hairs or hidden nodal roots are added. Axis count/spacing are illustrative.
+ // Axis and root counts are illustrative. No flowers or hairs are added.
 }
 
 function drawWaterMargin(b,{info,s,detail,rand},kit){

@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1046';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1046';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1047';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1047';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -325,7 +325,15 @@ export function goldJennyFoliageInspectionView(group,aspect=1,fov=40){
 
 export function monnieriFoliageInspectionView(group,aspect=1,fov=40){
  const leaves=group?.children?.filter(m=>m.isInstancedMesh&&m.userData.component==='leaf-monnieri-photo-reference')||[];if(!leaves.length)return null;
- group.updateWorldMatrix(true,true);const leafBox=new THREE.Box3(),bodyBox=new THREE.Box3();for(const mesh of group.children)if(mesh.isInstancedMesh){const box=new THREE.Box3().setFromObject(mesh);bodyBox.union(box);if(leaves.includes(mesh))leafBox.union(box);}if(leafBox.isEmpty()||bodyBox.isEmpty())return null;
+ group.updateWorldMatrix(true,true);
+ const leafBox=new THREE.Box3(),bodyBox=new THREE.Box3();
+ for(const mesh of group.children){
+  if(!mesh.isInstancedMesh||mesh.userData.component==='nodal-root-monnieri-photo-ref')continue;
+  const box=new THREE.Box3().setFromObject(mesh);
+  bodyBox.union(box);
+  if(leaves.includes(mesh))leafBox.union(box);
+ }
+ if(leafBox.isEmpty()||bodyBox.isEmpty())return null;
  const target=leafBox.getCenter(new THREE.Vector3()),direction=new THREE.Vector3(1,1.15,1).normalize(),right=new THREE.Vector3(0,1,0).cross(direction).normalize(),up=direction.clone().cross(right).normalize(),ratio=Number.isFinite(aspect)&&aspect>0?aspect:1,angle=(Number.isFinite(fov)&&fov>5&&fov<100?fov:40)*Math.PI/360,tanV=Math.tan(angle),tanH=tanV*ratio;let distance=.04;
  for(const x of[bodyBox.min.x,bodyBox.max.x])for(const y of[bodyBox.min.y,bodyBox.max.y])for(const z of[bodyBox.min.z,bodyBox.max.z]){const p=new THREE.Vector3(x,y,z).sub(target),depth=p.dot(direction);distance=Math.max(distance,depth+Math.max(Math.abs(p.dot(right))/(tanH*.90),Math.abs(p.dot(up))/(tanV*.90))+.012);}
  distance=Math.max(distance,(CAMERA_FLOOR+1e-7-target.y)/direction.y);return{position:target.clone().addScaledVector(direction,distance).toArray(),target:target.toArray(),fit:'monnieri-visible-leaf-focus'};
@@ -501,7 +509,7 @@ export function createScene(container,onPick){
     }else if(type==='focus'&&selection){
       controls.minDistance=.12;
       const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view),depth=pondDepthAt(plan,p.x,p.z);
-      const dormantBacopa=s.groundDormant&&plantInfo(p.kind).appearance?.architecture==='bacopaCaroliniana';
+      const dormantBacopa=s.groundDormant&&['bacopaCaroliniana','bacopaMonnieri'].includes(plantInfo(p.kind).appearance?.architecture);
       const base=plantBaseAt(plan,p)+(dormantBacopa?depth:0);
       controls.target.set(p.x-plan.width/2,base+Math.min(s.height,depth||s.height)*.52,p.z-plan.depth/2);
       const d=Math.max(.16,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);

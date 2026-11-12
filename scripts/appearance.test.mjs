@@ -22845,8 +22845,47 @@ test('Yellow Bacopa illustrative anatomy retains connected supports and internal
 });
 
 test('Bacopa monnieri source preserves unknown domestic height and calendar while separating documented flower colors',()=>{
- const q=CATALOG['p-f8b68a8f740f'],a=q.appearance;assert.equal(q.latin,'Bacopa monnieri');assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['white','blue','purple']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'monnieriPhotoReference');assert.equal(a.flowerShape,'none');assert.equal(a.flowerRadius,0);assert.equal(a.persistence,'managedSubmerged');assert.equal(a.sources[0].url,'https://www.akb.jp/c/aquarium/fp-029');assert.equal(a.sources[1].url,'https://www.nparks.gov.sg/florafaunaweb/flora/6/8/6847');assert.equal(a.sources[2].url,'https://www.akb.jp/c/yoseue/ar-062');assert.match(a.sources[4].url,/Bacopa~monnieri/);assert.ok(!Object.hasOwn(a.basis,'flowerShape'));assert.match(a.sourceConflict,/6.5cm.*ポット/);assert.match(a.sourceConflict,/3.5〜15×1.5〜7mm/);assert.match(a.sourceConflict,/10〜15×3〜5mm/);assert.match(a.phenologyRegion,/シンガポール.*常緑/);assert.match(q.care,/今の描画では花を表示しません/);assert.match(a.unconfirmed.join(' '),/花を付けない種類という意味ではありません/);assert.equal(seasonAt(q,7).known,false);assert.equal(seasonAt(q,7).bloom,false);for(const color of['white','blue','purple'])assert.ok(searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-f8b68a8f740f'));for(const color of['yellow','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-f8b68a8f740f'));
+ const q=CATALOG['p-f8b68a8f740f'],a=q.appearance;assert.equal(q.latin,'Bacopa monnieri');assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['white','blue','purple']);assert.equal(q.sourceChecked,'2026-11-12');assert.equal(a.shootProfile,'monnieriPhotoReference');assert.equal(a.flowerShape,'none');assert.equal(a.flowerRadius,0);assert.equal(a.persistence,'managedSubmerged');assert.equal(a.sources[0].url,'https://www.akb.jp/c/aquarium/fp-029');assert.equal(a.sources[1].url,'https://www.nparks.gov.sg/florafaunaweb/flora/6/8/6847');assert.equal(a.sources[2].url,'https://www.akb.jp/c/yoseue/ar-062');assert.match(a.sources[a.basis.habit].url,/Bacopa~monnieri/);assert.match(q.care,/下の節に根を参考表示/);assert.ok(a.unconfirmed.some(note=>note.includes('低い節から底に伸びる根')&&note.includes('実測していません')));assert.ok(!Object.hasOwn(a.basis,'flowerShape'));assert.match(a.sourceConflict,/6.5cm.*ポット/);assert.match(a.sourceConflict,/3.5〜15×1.5〜7mm/);assert.match(a.sourceConflict,/10〜15×3〜5mm/);assert.match(a.phenologyRegion,/シンガポール.*常緑/);assert.match(q.care,/今の描画では花を表示しません/);assert.match(a.unconfirmed.join(' '),/花を付けない種類という意味ではありません/);assert.equal(seasonAt(q,7).known,false);assert.equal(seasonAt(q,7).bloom,false);for(const color of['white','blue','purple'])assert.ok(searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-f8b68a8f740f'));for(const color of['yellow','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-f8b68a8f740f'));
 });
+test('Bacopa monnieri roots connect low stem nodes to the pond bed and preserve upper growth',()=>{
+ const p={...makePlant('p-f8b68a8f740f',104710,3,3),height:.12,spread:.28,leafHeight:.11};
+ const view={year:0,month:7,reference:false};
+ const dry=plantModel(p,view,1),wet=plantModel(p,{...view,waterDepth:.16},1);
+ const winter=plantModel(p,{...view,month:1,waterDepth:.16},1);
+ const part=(g,key)=>g.children.find(m=>m.userData.component===key);
+ const matrix=new Matrix4();
+ const point=(m,i,y)=>{m.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
+ try{
+  const saved=structuredClone(p),root=part(wet,'nodal-root-monnieri-photo-ref');
+  const stem=part(wet,'creeping-stem-monnieri-photo-ref'),leaf=part(wet,'leaf-monnieri-photo-reference');
+  assert.equal(root.count,36);
+  assert.equal(part(dry,'nodal-root-monnieri-photo-ref'),undefined);
+  assert.equal(winter.children.length,0);
+  for(const m of [stem,leaf]){
+   const prior=part(dry,m.userData.component);
+   assert.deepEqual(m.instanceMatrix.array,prior.instanceMatrix.array);
+   assert.deepEqual(m.instanceColor.array,prior.instanceColor.array);
+  }
+  for(let shoot=0;shoot<6;shoot++)for(let node=0;node<3;node++){
+   const i=(shoot*3+node)*2;
+   assert.ok(point(root,i,-.5).distanceTo(point(stem,shoot*8+node,.5))<2e-6);
+   assert.ok(point(root,i,.5).distanceTo(point(root,i+1,-.5))<2e-6);
+   const y=point(root,i+1,.5).y;
+   assert.ok(y>-.012&&y<-.011);
+  }
+  const plan=emptyDocument(8,6).plans.A;
+  assert.equal(plantBaseAt(plan,p),.012);
+  plan.zones=[{kind:'water',depth:.16,points:[[1,1],[5,1],[5,5],[1,5]]}];
+  wet.position.y=plantBaseAt(plan,p);
+  assert.equal(wet.position.y,.012-.16);
+  wet.updateMatrixWorld(true);
+  const box=new Box3().setFromObject(wet);
+  assert.ok(box.min.y>=-.16&&box.max.y<.006);
+  assert.equal(flowerInspectionView(wet,1,40),null);
+  assert.deepEqual(p,saved);
+ }finally{[dry,wet,winter].forEach(dispose);}
+});
+
 test('Bacopa monnieri photo reference fits twenty four independent dimensions with connected opposite spoon leaves',()=>{
  const dimensions=[[.12,.28,.11],[.01,.10,.005],[.12,.28,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,leafJoins=0,stemJoins=0,winterModels=0,vertices=0;
  for(const dims of dimensions)for(const month of[7,4,1]){
