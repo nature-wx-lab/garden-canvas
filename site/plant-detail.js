@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1060';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1061';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1060';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1061';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1082,6 +1082,10 @@ export function egeriaPhotoReferencePoint(type,t,u){
   const tooth=t>.45?1+.014*(1-2*Math.abs((t*17)%1-.5)):1;
   return [u*.5*sn**.62*(.72+.28*t)*tooth,t,.10*t*t+.04*u*u*sn+.055*u*Math.sin(t*TAU)];
  }
+ if(type==='spathe'){
+  const angle=u*(Math.PI-.22),radius=.14+.50*sn**.72+.10*t;
+  return [Math.sin(angle)*radius,t,Math.cos(angle)*radius];
+ }
  return [u*.5*sn**.60*(.65+.35*t),.08*t*t+.035*u*u*sn,t];
 }
 export function egeriaPhotoReferenceGeometry(type){
@@ -1116,8 +1120,12 @@ function drawEgeriaPhotoReference(b,{s,rand},kit){
  const R=Math.min(.010,w*.12,h*.17),flowerY=water?s.waterDepth+.004:h*.93;
  // A source-described surface flower cannot fit below a deeper water surface.
  if(flowerY+R*.25>h)return;
- const end=main(1),at=[end[0],flowerY,end[2]],yaw=.25,f=flowerFrame(b,at,0,yaw);
- b.branch(end,at,Math.min(.00055,R*.055),'#98a768','pedicel-submerged-egeria-photo-reference');
+ const end=main(1),axil=main(12/14),at=[end[0],flowerY,end[2]],yaw=.25,f=flowerFrame(b,at,0,yaw);
+ const dx=at[0]-axil[0],dy=at[1]-axil[1],dz=at[2]-axil[2];
+ const sheathLength=Math.min(R*.84,Math.hypot(dx,dy,dz)*.48,LH*.22),sheathWidth=sheathLength*.24;
+ const tilt=Math.atan2(Math.hypot(dx,dz),dy),bearing=Math.atan2(dx,dz);
+ b.add('egeria-photo-reference-spathe','spathe-egeria-photo-reference','#8c9f61',...axil,sheathWidth,sheathLength,sheathWidth,tilt,bearing,0);
+ b.branch(axil,at,Math.min(.00055,R*.055),'#98a768','pedicel-submerged-egeria-photo-reference');
  f.add(kit.bud,'receptacle-egeria-photo-reference','#b5c474',0,0,0,R*.14,R*.10,R*.14);
  for(let k=0;k<3;k++){
   const turn=k*TAU/3;f.add('egeria-photo-reference-petal','sepal-egeria-photo-reference','#7a985d',0,-R*.03,0,R*.50,R*.18,R*.55,0,turn+Math.PI/3,0);

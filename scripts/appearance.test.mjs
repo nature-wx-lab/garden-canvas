@@ -22342,7 +22342,7 @@ test('Nuphar five sepal cup and illustrative inner organs stay connected without
 });
 
 test('Egeria domestic source distinguishes reach height and reproduction period from confirmed stock dimensions and flower months',()=>{
- const i=CATALOG['p-790697efed42'],a=i.appearance;assert.equal(i.label,'アナカリス');assert.equal(i.latin,'Egeria densa');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.bloomKnown,false);assert.deepEqual(i.colors,['white']);assert.ok(i.aliases.includes('オオカナダモ'));assert.equal(i.sourceChecked,'2026-11-01');assert.match(i.bloomText,/開花月は未確認/);assert.match(i.bloomBasis,/繁殖期/);assert.match(a.sourceConflict,/30〜100cm/);assert.match(a.sourceConflict,/株幅15〜40cm/);assert.match(a.sourceConflict,/葉長1.5〜3cm/);assert.match(a.sourceConflict,/販売単位の7〜10本/);assert.equal(a.basis.flowerMonths,undefined);assert.equal(a.basis.flowerTiming,undefined);assert.equal(a.architecture,'submergedShoots');assert.equal(a.shootProfile,'egeria');assert.equal(a.persistence,'submergedPersistent');assert.deepEqual(a.flowerMonths,[5,6,7,8,9,10]);assert.ok(a.unconfirmed.some(x=>x.includes('従来の仮の月')));assert.equal(seasonAt(i,1).groundDormant,false);assert.equal(seasonAt(i,7).bloom,true);
+ const i=CATALOG['p-790697efed42'],a=i.appearance;assert.equal(i.label,'アナカリス');assert.equal(i.latin,'Egeria densa');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.bloomKnown,false);assert.deepEqual(i.colors,['white']);assert.ok(i.aliases.includes('オオカナダモ'));assert.equal(i.sourceChecked,'2026-11-13');assert.match(i.bloomText,/開花月は未確認/);assert.match(i.bloomBasis,/繁殖期/);assert.match(a.sourceConflict,/30〜100cm/);assert.match(a.sourceConflict,/株幅15〜40cm/);assert.match(a.sourceConflict,/葉長1.5〜3cm/);assert.match(a.sourceConflict,/販売単位の7〜10本/);assert.equal(a.basis.flowerMonths,undefined);assert.equal(a.basis.flowerTiming,undefined);assert.equal(a.architecture,'submergedShoots');assert.equal(a.shootProfile,'egeria');assert.equal(a.persistence,'submergedPersistent');assert.deepEqual(a.flowerMonths,[5,6,7,8,9,10]);assert.ok(a.unconfirmed.some(x=>x.includes('従来の仮の月')));assert.equal(seasonAt(i,1).groundDormant,false);assert.equal(seasonAt(i,7).bloom,true);
 });
 
 test('Cabomba source preserves fanleaf dimensions and confirmed flowering without invented stock ranges',()=>{
@@ -22350,6 +22350,30 @@ test('Cabomba source preserves fanleaf dimensions and confirmed flowering withou
 });
 test('Ceratophyllum source keeps stem length separate from upright height and qualifies rootlessness winter buds and flowering',()=>{
  const i=CATALOG['p-74f20c38e156'],a=i.appearance;assert.equal(i.latin,'Ceratophyllum demersum');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.bloomKnown,true);assert.deepEqual(i.bloom,[5,6,7,8]);assert.equal(i.sourceChecked,'2026-11-01');assert.match(i.care,/茎の全長/);assert.match(i.care,/5〜8枚/);assert.match(i.care,/時に10枚/);assert.match(i.care,/仮根/);assert.match(i.bloomBasis,/開花しない集団/);assert.match(a.sourceConflict,/冬芽長2〜6cm/);assert.match(a.sourceConflict,/株幅20〜60cm/);assert.equal(a.shootProfile,'ceratophyllum');assert.equal(a.persistence,'waterTurion');assert.equal(a.flowerShape,'none');
+});
+
+test('Egeria spathe supports an axillary stalk below the independent shoot tip',()=>{
+ const plant={...makePlant('p-790697efed42',106110,3,3),height:.32,spread:.35,leafHeight:.22};
+ const get=(group,name)=>group.children.find(m=>m.userData.component===name);
+ for(const [waterDepth,month] of [[0,7],[.16,7],[.40,7],[.16,1]]){
+  const group=plantModel(plant,{year:0,month,reference:false,waterDepth});
+  try{
+   const spathe=get(group,'spathe-egeria-photo-reference'),stalk=get(group,'pedicel-submerged-egeria-photo-reference');
+   if(month===1||waterDepth>.32){assert.ok(!spathe&&!stalk);continue;}
+   assert.equal(spathe.count,1);assert.equal(stalk.count,1);
+   const stems=get(group,'stem-submerged-egeria-photo-reference');
+   const matrix=new Matrix4();
+   const point=(mesh,i,y)=>{mesh.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
+   const crown=point(stems,11,.5),tip=point(stems,13,.5),opening=point(spathe,0,1);
+   const joins=point(stalk,0,-.5),flower=point(stalk,0,.5);
+   assert.ok(point(spathe,0,0).distanceTo(crown)<1e-7&&joins.distanceTo(crown)<1e-7);
+   assert.ok(joins.distanceTo(tip)>.001);
+   const axis=flower.clone().sub(joins),offset=opening.clone().sub(joins);
+   assert.ok(axis.dot(offset)>0&&axis.clone().cross(offset).length()<1e-8);
+   assert.ok(opening.y<flower.y);
+   if(waterDepth)assert.ok(opening.y+.012-waterDepth<.006&&flower.y+.012-waterDepth>.006);
+  }finally{dispose(group);}
+ }
 });
 
 test('Egeria photo reference fits twenty four independent dimensions with connected whorled leaves and roots',()=>{

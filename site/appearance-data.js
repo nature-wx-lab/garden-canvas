@@ -11750,7 +11750,73 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "flowerTiming": "months",
   "flowerShape": "cabombaPerianth",
   "sourceConflict": "カボンバのうちハゴロモモを参考にした項目です。資料の扇状葉1〜3.5cmと約2cmの花径を、株全体の高さ・株幅へ読み替えません。高さ30〜100cm・株幅15〜40cmの閉じた範囲は今回の資料では未確認です。"
-},"p-790697efed42":{"sources":[{"url":"https://www.akb.jp/c/medakagoods/003-0034","scope":"catalog-entry"},{"url":"https://www.nies.go.jp/biodiversity/invasive/DB/detail/80670.html","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"persistence":0,"leafColor":0,"flowerShape":1,"stemColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"egeria","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"egeriaWhorl","leafLength":0.03,"leafWidth":0.005,"leafColor":"#639442","leafTexture":"smooth","leafUnderside":"#8bac65","stemColor":"#789357","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"生産者は水中で冬も常緑と説明しています。凍らない水中の参考条件で、水温による変化や地域別の屋外越冬は未校正です。5〜10月は国立環境研究所の繁殖期で、開花月の確定値とは区別しています。現在の花の表示月も、実測に基づく開花予測ではありません。","unconfirmed":["全月の実物照合","水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。","資料の3〜6枚輪生を参考に、線形葉、中脈と細かな鋸歯、節から下がる白い根を描く近似です。葉数と茎数、節間や枝ぶりは描画例です。","国内の雄株を参考に白い3花弁と9本の雄しべを描きます。冬も葉を残すのは凍らない水中の条件の例です。","高さ・株幅と地域別の開花月は未確認です。5〜10月の花表示は従来の仮の月を残したもので、繁殖期の記載を確定した開花月として扱いません。","販売元の7〜10本という数は鉛巻き1巻の販売規格です。1株の茎数、年次の自然増殖数や水槽の水質改善量は予測していません。","生産者写真は線形葉の幅とねじれ、輪生や枝ぶりの参考です。販売束の結束材と本数は植物の構造や自然な株数として描いていません。","主茎1本と側枝2本、合計28節・葉127枚は描画例です。各節の4〜5枚は資料の3〜6枚輪生を参考にしていますが、節間・枝数・月ごとの葉数と年次増殖量は未校正です。","白い花弁3枚と雄しべ9本は資料の雄花の説明を参考にしています。花の写真との照合、入力寸法に合わせた花柄や葉の角度は未検証です。水面に届かない入力では花を省いています。"],"flowerMonths":[5,6,7,8,9,10],"flowerTiming":"months","flowerShape":"egeriaPetals","sourceConflict":"資料の1m余りという高さの到達値から、30〜100cmという閉じた範囲は作りません。株幅15〜40cmの根拠も確認できませんでした。葉長1.5〜3cm・葉幅3〜6mm、販売単位の7〜10本を株の寸法や自然な茎数へ読み替えません。5〜10月は繁殖期であり、開花月とは区別します。"},"p-74f20c38e156":{
+},"p-790697efed42":{
+  "sources": [
+    {
+      "url": "https://www.akb.jp/c/medakagoods/003-0034",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://www.nies.go.jp/biodiversity/invasive/DB/detail/80670.html",
+      "scope": "species"
+    },
+    {
+      "url": "https://nzflora.info/factsheet/Taxon/Egeria-densa.html",
+      "scope": "species"
+    },
+    {
+      "url": "https://www1.ous.ac.jp/garden/hada/plantsdic/angiospermae/monocotyledoneae/hydrocharitaceae/ookanadamo/ookanadamo.htm",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 1,
+    "arrangement": 1,
+    "persistence": 0,
+    "leafColor": 0,
+    "flowerShape": 1,
+    "stemColor": 0
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "egeria",
+  "lifeForm": "herb",
+  "habit": "clump",
+  "arrangement": "whorled",
+  "leafShape": "egeriaWhorl",
+  "leafLength": 0.03,
+  "leafWidth": 0.005,
+  "leafColor": "#639442",
+  "leafTexture": "smooth",
+  "leafUnderside": "#8bac65",
+  "stemColor": "#789357",
+  "persistence": "submergedPersistent",
+  "fruitMonths": [],
+  "phenologyRegion": "生産者は水中で冬も常緑と説明しています。凍らない水中の参考条件で、水温による変化や地域別の屋外越冬は未校正です。5〜10月は国立環境研究所の繁殖期で、開花月の確定値とは区別しています。現在の花の表示月も、実測に基づく開花予測ではありません。",
+  "unconfirmed": [
+    "全月の実物照合",
+    "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
+    "資料の3〜6枚輪生を参考に、線形葉、中脈と細かな鋸歯、節から下がる白い根を描く近似です。葉数と茎数、節間や枝ぶりは描画例です。",
+    "国内の雄株を参考に白い3花弁と9本の雄しべを描きます。冬も葉を残すのは凍らない水中の条件の例です。",
+    "高さ・株幅と地域別の開花月は未確認です。5〜10月の花表示は従来の仮の月を残したもので、繁殖期の記載を確定した開花月として扱いません。",
+    "販売元の7〜10本という数は鉛巻き1巻の販売規格です。1株の茎数、年次の自然増殖数や水槽の水質改善量は予測していません。",
+    "生産者写真は線形葉の幅とねじれ、輪生や枝ぶりの参考です。販売束の結束材と本数は植物の構造や自然な株数として描いていません。",
+    "主茎1本と側枝2本、合計28節・葉127枚は描画例です。各節の4〜5枚は資料の3〜6枚輪生を参考にしていますが、節間・枝数・月ごとの葉数と年次増殖量は未校正です。",
+    "雄花は岡山理科大学の写真と国立環境研究所の記載を参考にしています。ニュージーランド植物誌の葉腋の記載に基づき、上部の節の小さな苞鞘から、雄花1輪へ花柄を伸ばします。苞鞘の寸法と花柄の角度は描画例です。水面に届かない入力では花を省きます。"
+  ],
+  "flowerMonths": [
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "flowerTiming": "months",
+  "flowerShape": "egeriaPetals",
+  "sourceConflict": "資料の1m余りという高さの到達値から、30〜100cmという閉じた範囲は作りません。株幅15〜40cmの根拠も確認できませんでした。葉長1.5〜3cm・葉幅3〜6mm、販売単位の7〜10本を株の寸法や自然な茎数へ読み替えません。5〜10月は繁殖期であり、開花月とは区別します。"
+},"p-74f20c38e156":{
   "sources": [
     {
       "url": "https://www.water.go.jp/kansai/biwako/html/download/files/zusetsu/20180330_plant_03.pdf",
