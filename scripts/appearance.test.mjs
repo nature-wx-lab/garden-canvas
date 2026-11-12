@@ -23604,3 +23604,67 @@ test('Salvinia natans keeps each divided submerged leaf attached to its floating
   assert.equal(q.appearance.persistence, 'sporeAnnual');
   assert.match(q.care, /水中葉が1枚/);
 });
+
+test('Salvinia molesta carries one submerged tuft on the common floating-leaf node', () => {
+  const id = 'p-0d9f8d98a2e2';
+  const scenarios = [
+    {depth: .2, month: 7, dimensions: [.1, .3, .06], submerged: true},
+    {depth: .025, month: 7, dimensions: [.045, .1, .005], submerged: true},
+    {depth: .003, month: 8, dimensions: [.1, .3, .06], submerged: true},
+    {depth: 0, month: 7, dimensions: [.1, .3, .06], submerged: false},
+    {depth: .2, month: 1, dimensions: [.1, .3, .06], submerged: false},
+  ];
+  const matrix = new Matrix4();
+  const endpoint = (mesh, index, y) => {
+    mesh.getMatrixAt(index, matrix);
+    return new Vector3(0, y, 0).applyMatrix4(matrix);
+  };
+  const attached = (a, b) => assert.ok(a.distanceTo(b) < 2e-6);
+  for (const {depth, month, dimensions, submerged} of scenarios) {
+    const [height, spread, leafHeight] = dimensions;
+    const p = {...makePlant(id, 103910, 3, 3), height, spread, leafHeight};
+    const g = plantModel(p, {year: 0, month, reference: false, waterDepth: depth}, 1);
+    try {
+      const mesh = kind => g.children.find(m => m.userData.component === kind);
+      const stipes = mesh('salvinia-submerged-leaf-stipe');
+      assert.equal(g.userData.flowerTargets, undefined);
+      if (!submerged) {
+        assert.ok(g.children.every(m => !m.userData.component.startsWith('salvinia-submerged-leaf-')));
+        if (month === 1) assert.equal(g.children.length, 0);
+        continue;
+      }
+      const floating = mesh('leaf-salvinia');
+      const divisions = mesh('salvinia-submerged-leaf-division');
+      const lobes = mesh('salvinia-submerged-leaf-lobe');
+      assert.equal(stipes.count * 2, floating.count);
+      assert.equal(stipes.count * 18, divisions.count);
+      assert.equal(divisions.count, lobes.count);
+      for (let i = 0; i < stipes.count; i++) {
+        const root = endpoint(stipes, i, -.5);
+        const joint = endpoint(stipes, i, .5);
+        attached(root, endpoint(floating, i * 2, 0));
+        attached(root, endpoint(floating, i * 2 + 1, 0));
+        for (let ray = 0; ray < 9; ray++) {
+          const n = i * 18 + ray * 2;
+          const bend = endpoint(divisions, n, .5);
+          attached(joint, endpoint(divisions, n, -.5));
+          attached(bend, endpoint(divisions, n + 1, -.5));
+          attached(bend, endpoint(lobes, n, -.5));
+          attached(bend, endpoint(lobes, n + 1, -.5));
+        }
+      }
+      for (const part of [divisions, lobes]) {
+        for (let i = 0; i < part.count; i++) {
+          const y = endpoint(part, i, .5).y + .012;
+          assert.ok(y < .006 && y > -depth);
+        }
+      }
+    } finally {
+      dispose(g);
+    }
+  }
+  const entry = CATALOG[id];
+  assert.equal(entry.appearance.persistence, 'protectedWinter');
+  assert.deepEqual(entry.bloom, []);
+  assert.match(entry.care, /短い柄の先で細い束に分かれます/);
+});
