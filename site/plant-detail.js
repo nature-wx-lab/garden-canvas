@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1073';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1074';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1073';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1074';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1336,22 +1336,31 @@ export function rotalaPhotoReferenceGeometry(){
 }
 function drawRotalaPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),radius=Math.min(.00055,h*.006,w*.0018,LH*.02),L=Math.min(.020,w*.065),W=L*.20,stem=info.appearance.stemColor,leafKind='leaf-submerged-rotala-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ const wet=s.waterDepth>0,bed=wet?-.012:0;
+ const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight,wet?(s.waterDepth+.006)*.90:Infinity),base=Math.min(.0015,LH*.05),radius=Math.min(.00055,h*.006,w*.0018,LH*.02),L=Math.min(.020,w*.065),W=L*.20,stem=info.appearance.stemColor,leafKind='leaf-submerged-rotala-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
  function pair(at,turn,t){for(let side=0;side<2;side++)b.add('rotala-photo-reference-leaf',leafKind,kit.shade(rand,t>.70?'#b98972':s.leafColor,.035),...at,W,L,Math.min(L,LH*.45),Math.acos(Math.min(.65,LH*.10/L)),turn+side*Math.PI,0);}
  for(let shoot=0;shoot<16;shoot++){
-  const az=shoot*2.399+.2,rad=w*.25*Math.sqrt((shoot+.5)/16),origin=[Math.sin(az)*rad,base,Math.cos(az)*rad],peak=LH*(.68+.04*(shoot%4)),bend=w*.025,path=t=>[origin[0]+Math.sin(az+1)*bend*Math.sin(t*Math.PI*.6),base+(peak-base)*t,origin[2]+Math.cos(az+1)*bend*Math.sin(t*Math.PI*.6)];
-  for(let r=0;r<3;r++){const turn=az+r*TAU/3;b.branch(origin,[origin[0]+Math.sin(turn)*w*.011,base*.45,origin[2]+Math.cos(turn)*w*.011],Math.min(.00016,radius*.35),'#bab49d','root-submerged-rotala-photo-reference');}
+  const az=shoot*2.399+.2,rad=w*.25*Math.sqrt((shoot+.5)/16),origin=[Math.sin(az)*rad,bed+base,Math.cos(az)*rad],peak=LH*(.68+.04*(shoot%4)),bend=w*.025,path=t=>[origin[0]+Math.sin(az+1)*bend*Math.sin(t*Math.PI*.6),bed+base+(peak-base)*t,origin[2]+Math.cos(az+1)*bend*Math.sin(t*Math.PI*.6)];
+  for(let r=0;r<3;r++){const turn=az+r*TAU/3;b.branch(origin,[origin[0]+Math.sin(turn)*w*.011,bed+base*.45,origin[2]+Math.cos(turn)*w*.011],Math.min(.00016,radius*.35),'#bab49d','root-submerged-rotala-photo-reference');}
   let previous=origin;
   for(let j=1;j<=14;j++){
    const t=j/14,at=path(t);b.branch(previous,at,radius,stem,'stem-rotala-photo-reference');previous=at;pair(at,az+j*Math.PI/2,t);
-   if(j===5||j===9){const turn=az+(j===5?-.90:1.0),top=LH*(j===5?.67:.77),reach=w*.065;let prev=at;
+   if(wet&&j===2){
+    const direction=az+.68,reach=w*.028;
+    const tip=[at[0]+Math.sin(direction)*reach,bed+base*.20,at[2]+Math.cos(direction)*reach];
+    const bend=[(at[0]+tip[0])*.5,at[1]+(tip[1]-at[1])*.62,(at[2]+tip[2])*.5];
+    const rootRadius=Math.min(.00014,radius*.30);
+    b.branch(at,bend,rootRadius,'#bab49d','nodal-root-rotala-photo-reference');
+    b.branch(bend,tip,rootRadius*.64,'#bab49d','nodal-root-rotala-photo-reference');
+   }
+   if(j===5||j===9){const turn=az+(j===5?-.90:1.0),top=bed+LH*(j===5?.67:.77),reach=w*.065;let prev=at;
     for(let k=1;k<=7;k++){
      const u=k/7,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];b.branch(prev,tip,radius*.7,stem,'side-shoot-rotala-photo-reference');prev=tip;pair(tip,turn+k*Math.PI/2,u*.85);
     }
    }
   }
  }
- //16rooted main shoots,32connected side shoots:448nodes/896opposite blades.No emergent flowers or seasonal color prediction.
+ // The submerged example has basal and lower nodal roots, with opposite blades.
 }
 
 // Green lanceolate manufacturer photo reference; section, venation and counts are illustrative.

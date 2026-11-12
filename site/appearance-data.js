@@ -12581,56 +12581,61 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "flowerShape": "none",
   "sourceConflict": "販売店の2022年10月9日の記事と、その中でロタラsp.フラワーと示された水中株の写真を参考にします。草丈・株幅の数値と実際の花・開花月は未確認です。花のように見える部分は密に重なる葉で、流通名から花弁を追加しません。記事の日付は撮影日や開花月を示すものではありません。"
 },"p-bfcbe3f72e36":{
-    "sources": [
-      {
-        "url": "https://tropica.com/en/plants/plantdetails/Rotalarotundifolia(033MP)/18810",
-        "scope": "catalog-entry"
-      },
-      {
-        "url": "https://www.wetlandpark.gov.hk/en/biodiversity/reserve-highlights/flower-of-the-month/rotala-rotundifolia/2",
-        "scope": "species"
-      }
-    ],
-    "basis": {
-      "habit": 0,
-      "leafShape": 0,
-      "arrangement": 0,
-      "persistence": 0,
-      "leafColor": 0
+  "sources": [
+    {
+      "url": "https://tropica.com/en/plants/plantdetails/Rotalarotundifolia(033MP)/18810",
+      "scope": "catalog-entry"
     },
-    "status": "partial",
-    "architecture": "submergedShoots",
-    "shootProfile": "rotundifolia",
-    "lifeForm": "herb",
-    "habit": "clump",
-    "arrangement": "opposite",
-    "leafShape": "rotalaSubmerged",
-    "leafLength": 0.02,
-    "leafWidth": 0.004,
-    "leafColor": "#849855",
-    "leafTexture": "smooth",
-    "leafUnderside": "#b48b79",
-    "stemColor": "#a78363",
-    "persistence": "submergedPersistent",
-    "fruitMonths": [],
-    "phenologyRegion": "Tropicaの水槽栽培の参考条件です。表は植えて2か月後の平均高さで、月別の開花・落葉や成株の上限の予測ではありません。水温・光・剪定条件による違いと、屋外・寒冷地での冬の残葉や越冬は未校正です。",
-    "unconfirmed": [
-      "全月の実物照合",
-      "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
-      "水上の丸い葉と異なる水中の細い葉を描きます。対生葉と側枝を参考に、上部にやや赤みのある水中葉を混ぜます。",
-      "水上茎・花・国内屋外の冬姿は未確認です。温度を保った水中栽培の参考条件を表示し、春の芽出しや秋の紅葉を推測で足しません。",
-      "この項目は出典のRotala rotundifoliaを参考にします。国内の同名流通株すべてと同じクローンであることは未確認です。",
-      "葉を含む幅2〜3cmは1本の茎の幅です。表の15〜30+cmは水槽に植えて2か月後の平均高さの目安です。株幅や年次成長の確定値には使いません。",
-      "メーカーの赤・緑の記載は葉色です。今回の資料では花の色・開花月は未確認で、水中葉モデルには花を描きません。",
-      "トリミング・差し戻しや光・CO2による変化は管理条件の説明です。自然な茎数・根数・株数と、同じ株の全月の姿・年次成長・屋外越冬は未校正です。",
-      "メーカー033MPの写真2枚（包装内の苗と水中）を参照します。丸みのある水上葉を水中の細長い葉へ流用せず、水槽の別植物の細分葉を取り込みません。",
-      "細長い葉を対で茎の節につなぎ、主茎から側枝を分けます。葉・節・主茎・側枝・根の数は説明用の配置で、写真の計測値ではありません。",
-      "葉の厚み・曲率・葉脈と色、節間と枝ぶりは近似です。上部の赤みは栽培条件の参考で、紅葉や全月の色の予測ではありません。撮影条件や国内同名株との同一クローンは未照合です。",
-      "香港の種の資料には水上のピンクの花と2〜4月の花期が示されますが、国内各地の開花月やこのメーカー株と同じ条件とは確認していません。この水中葉モデルに花・果実・株数の増殖は描きません。",
-      "低い葉の高さでは葉を横に倒して指定範囲に収めます。同じ株の全月の実物照合、年次成長と地域別の屋外越冬は未検証です。"
-    ],
-    "sourceConflict": "葉を含む幅2〜3cmは1本の茎の幅です。表の15〜30+cmは水槽に植えて2か月後の平均高さの目安です。株全体の高さの閉じた上限・株幅は未確認です。葉の赤や緑は葉色で、今回のメーカー資料で確認できない花色として扱いません。"
-  },"p-81746a493156":{
+    {
+      "url": "https://www.wetlandpark.gov.hk/en/biodiversity/reserve-highlights/flower-of-the-month/rotala-rotundifolia/2",
+      "scope": "species"
+    },
+    {
+      "url": "https://www.iplant.cn/fsz/info/Rotala%20rotundifolia",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 0,
+    "arrangement": 0,
+    "persistence": 0,
+    "leafColor": 0
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "rotundifolia",
+  "lifeForm": "herb",
+  "habit": "clump",
+  "arrangement": "opposite",
+  "leafShape": "rotalaSubmerged",
+  "leafLength": 0.02,
+  "leafWidth": 0.004,
+  "leafColor": "#849855",
+  "leafTexture": "smooth",
+  "leafUnderside": "#b48b79",
+  "stemColor": "#a78363",
+  "persistence": "submergedPersistent",
+  "fruitMonths": [],
+  "phenologyRegion": "Tropicaの水槽栽培の参考条件です。表は植えて2か月後の平均高さで、月別の開花・落葉や成株の上限の予測ではありません。水温・光・剪定条件による違いと、屋外・寒冷地での冬の残葉や越冬は未校正です。",
+  "unconfirmed": [
+    "全月の実物照合",
+    "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
+    "水上の丸い葉と異なる水中の細い葉を描きます。対生葉と側枝を参考に、上部にやや赤みのある水中葉を混ぜます。",
+    "水上茎・花・国内屋外の冬姿は未確認です。温度を保った水中栽培の参考条件を表示し、春の芽出しや秋の紅葉を推測で足しません。",
+    "この項目は出典のRotala rotundifoliaを参考にします。国内の同名流通株すべてと同じクローンであることは未確認です。",
+    "葉を含む幅2〜3cmは1本の茎の幅です。表の15〜30+cmは水槽に植えて2か月後の平均高さの目安です。株幅や年次成長の確定値には使いません。",
+    "メーカーの赤・緑の記載は葉色です。今回の資料では花の色・開花月は未確認で、水中葉モデルには花を描きません。",
+    "トリミング・差し戻しや光・CO2による変化は管理条件の説明です。自然な茎数・根数・株数と、同じ株の全月の姿・年次成長・屋外越冬は未校正です。",
+    "メーカー033MPの写真2枚（包装内の苗と水中）を参照します。丸みのある水上葉を水中の細長い葉へ流用せず、水槽の別植物の細分葉を取り込みません。",
+    "細長い葉を対で茎の節につなぎ、主茎から側枝を分けます。葉・節・主茎・側枝・根の数は説明用の配置で、写真の計測値ではありません。",
+    "深圳植物誌の下部の茎と節の不定根の記載を参考に、池では株元と下部の節から池底へ根をつなぎます。浅い水域でも葉を水面下に収めます。浮遊する茎や水深別の根の長さは未校正です。",
+    "葉の厚み・曲率・葉脈と色、節間と枝ぶりは近似です。上部の赤みは栽培条件の参考で、紅葉や全月の色の予測ではありません。撮影条件や国内同名株との同一クローンは未照合です。",
+    "香港の種の資料には水上のピンクの花と2〜4月の花期が示されますが、国内各地の開花月やこのメーカー株と同じ条件とは確認していません。この水中葉モデルに花・果実・株数の増殖は描きません。",
+    "低い葉の高さでは葉を横に倒して指定範囲に収めます。同じ株の全月の実物照合、年次成長と地域別の屋外越冬は未検証です。"
+  ],
+  "sourceConflict": "葉を含む幅2〜3cmは1本の茎の幅です。表の15〜30+cmは水槽に植えて2か月後の平均高さの目安です。株全体の高さの閉じた上限・株幅は未確認です。葉の赤や緑は葉色で、今回のメーカー資料で確認できない花色として扱いません。"
+},"p-81746a493156":{
   "sources": [
     {
       "url": "https://www.akb.jp/c/suisei/gd3357",

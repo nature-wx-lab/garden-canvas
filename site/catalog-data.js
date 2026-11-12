@@ -10011,40 +10011,40 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "visual": "reference",
   "popularity": []
 },"p-bfcbe3f72e36":{
-    "label": "ロタラロトンジフォリア",
-    "latin": "Rotala rotundifolia",
-    "genre": "水生植物",
-    "form": "botanical",
-    "group": "宿根草",
-    "leaf": "evergreen",
-    "height": null,
-    "spread": null,
-    "bloom": [],
-    "bloomKnown": false,
-    "flower": "#d69aca",
-    "leafColor": "#849855",
-    "variegated": false,
-    "colors": [
-      "unknown"
-    ],
-    "sun": [],
-    "moisture": [],
-    "life": "perennial",
-    "growth": "水槽に植えて2か月後の平均高さというメーカーの目安。成株の閉じた高さ範囲・株幅と年次成長は未確認です。",
-    "season": "水槽での葉と枝ぶりの参考。屋外の冬姿は未確認。",
-    "care": "この項目は出典のRotala rotundifoliaを参考にします。国内の同名流通株すべてと同じクローンであることは未確認です。葉を含む幅2〜3cmは1本の茎の幅です。表の15〜30+cmは水槽に植えて2か月後の平均高さの目安です。これらを株全体の株幅や、成株の高さの上限へ読み替えません。丸い葉は水上の形に関する説明で、水中葉は細長いとされています。033MPのミニポットはココナツ繊維の包装規格で、矮性品種や株幅ではありません。赤い葉の発色も光の条件に関する説明です。メーカーの当該資料では花色・開花月を確認できないため、葉の赤や緑を花色の検索区分に使いません。剪定・差し戻しの管理例から自然な株数や年次増殖量は予測していません。屋外や寒冷地の越冬、月別の残葉は未確認です。野外への放流・逸出を避けて管理してください。 メーカーの水中写真を参考に、茎につく細長い葉と側枝を表示します。",
-    "bloomText": "開花月は今回のメーカー資料では未確認",
-    "bloomBasis": "Tropicaの当該商品ページは水槽での葉・茎と栽培条件の説明です。開花月や葉色を花の時期・色へ読み替えません。",
-    "source": "https://tropica.com/en/plants/plantdetails/Rotalarotundifolia(033MP)/18810",
-    "publisher": "Tropica",
-    "sourceChecked": "2026-11-01",
-    "aliases": [
-      "ロタラロトンジフォリア"
-    ],
-    "selectionSource": null,
-    "visual": "reference",
-    "popularity": []
-  },"p-81746a493156":{
+  "label": "ロタラロトンジフォリア",
+  "latin": "Rotala rotundifolia",
+  "genre": "水生植物",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": null,
+  "spread": null,
+  "bloom": [],
+  "bloomKnown": false,
+  "flower": "#d69aca",
+  "leafColor": "#849855",
+  "variegated": false,
+  "colors": [
+    "unknown"
+  ],
+  "sun": [],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "水槽に植えて2か月後の平均高さというメーカーの目安。成株の閉じた高さ範囲・株幅と年次成長は未確認です。",
+  "season": "水槽での葉と枝ぶりの参考。屋外の冬姿は未確認。",
+  "care": "この項目は出典のRotala rotundifoliaを参考にします。国内の同名流通株すべてと同じクローンであることは未確認です。葉を含む幅2〜3cmは1本の茎の幅です。表の15〜30+cmは水槽に植えて2か月後の平均高さの目安です。これらを株全体の株幅や、成株の高さの上限へ読み替えません。丸い葉は水上の形に関する説明で、水中葉は細長いとされています。033MPのミニポットはココナツ繊維の包装規格で、矮性品種や株幅ではありません。赤い葉の発色も光の条件に関する説明です。メーカーの当該資料では花色・開花月を確認できないため、葉の赤や緑を花色の検索区分に使いません。剪定・差し戻しの管理例から自然な株数や年次増殖量は予測していません。屋外や寒冷地の越冬、月別の残葉は未確認です。野外への放流・逸出を避けて管理してください。 メーカーの水中写真を参考に細長い葉と側枝を描き、池では下部の茎の節から根を池底へつなぎます。",
+  "bloomText": "開花月は今回のメーカー資料では未確認",
+  "bloomBasis": "Tropicaの当該商品ページは水槽での葉・茎と栽培条件の説明です。開花月や葉色を花の時期・色へ読み替えません。",
+  "source": "https://tropica.com/en/plants/plantdetails/Rotalarotundifolia(033MP)/18810",
+  "publisher": "Tropica",
+  "sourceChecked": "2026-11-13",
+  "aliases": [
+    "ロタラロトンジフォリア"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-81746a493156":{
   "label": "ロタラナンセアン",
   "latin": "Rotala sp. 'Nanjenshan'",
   "genre": "水生植物",

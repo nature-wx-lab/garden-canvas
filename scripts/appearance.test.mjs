@@ -22863,7 +22863,7 @@ test('Tropica Super Red source separates stalk width and two month height from w
  const i=checkTropicaStockContext1001('p-d1be39347dd5','ルドウィジアsp.スーパーレッド',"Ludwigia palustris 'Super Red'",'10〜30+cm');assert.match(i.care,/幅2〜4cm/);assert.match(i.care,/1本の茎/);assert.match(i.care,/赤くなるのは葉/);assert.equal(i.appearance.shootProfile,'superRed');
 });
 test('Tropica Rotala mini pot source separates narrow stalk width packaging and emergent leaves from mature stock',()=>{
- const i=checkTropicaStockContext1001('p-bfcbe3f72e36','ロタラロトンジフォリア','Rotala rotundifolia','15〜30+cm');assert.match(i.care,/幅2〜3cm/);assert.match(i.care,/033MP/);assert.match(i.care,/包装規格/);assert.match(i.care,/水中葉は細長い/);assert.equal(i.appearance.shootProfile,'rotundifolia');
+ const i=checkTropicaStockContext1001('p-bfcbe3f72e36','ロタラロトンジフォリア','Rotala rotundifolia','15〜30+cm','2026-11-13');assert.match(i.care,/幅2〜3cm/);assert.match(i.care,/033MP/);assert.match(i.care,/包装規格/);assert.match(i.care,/水中葉は細長い/);assert.equal(i.appearance.shootProfile,'rotundifolia');
 });
 test('Tropica Hygrophila source preserves differing stem and two month height statements without merging bounds',()=>{
  const i=checkTropicaStockContext1001('p-d36c1b56c209','ハイグロフィラ ポリスペルマ','Hygrophila polysperma','20〜30+cm','2026-11-13');assert.match(i.care,/25〜40cm/);assert.match(i.care,/幅4〜8cm/);assert.match(i.care,/20〜40cmという成株の範囲へまとめません/);assert.equal(i.appearance.shootProfile,'hygrophila');
@@ -23004,7 +23004,7 @@ test('Super Red visible model focus frames six summer and winter inputs above th
 
 import{rotalaFoliageInspectionView as rotalaVisibleFocus1004}from '../site/scene.js';
 test('Rotala manufacturer and wetland sources keep underwater leaves separate from packaging emergent leaves and foreign flower seasons',()=>{
- const i=CATALOG['p-bfcbe3f72e36'],a=i.appearance;assert.equal(i.label,'ロタラロトンジフォリア');assert.equal(i.latin,'Rotala rotundifolia');assert.equal(i.height,null);assert.equal(i.spread,null);assert.deepEqual(i.colors,['unknown']);assert.deepEqual(i.bloom,[]);assert.equal(i.bloomKnown,false);assert.equal(i.sourceChecked,'2026-11-01');assert.match(i.care,/15〜30\+cm/);assert.match(i.care,/033MP/);assert.match(i.care,/水中写真/);assert.equal(a.arrangement,'opposite');assert.equal(a.status,'partial');assert.ok(a.sources.some(s=>s.url.includes('www.wetlandpark.gov.hk')));assert.ok(a.unconfirmed.some(s=>s.includes('香港')&&s.includes('国内各地')));assert.ok(a.unconfirmed.some(s=>s.includes('別植物')));assert.ok(a.unconfirmed.some(s=>s.includes('葉・節・主茎・側枝・根の数')&&s.includes('写真の計測値ではありません')));
+ const i=CATALOG['p-bfcbe3f72e36'],a=i.appearance;assert.equal(i.label,'ロタラロトンジフォリア');assert.equal(i.latin,'Rotala rotundifolia');assert.equal(i.height,null);assert.equal(i.spread,null);assert.deepEqual(i.colors,['unknown']);assert.deepEqual(i.bloom,[]);assert.equal(i.bloomKnown,false);assert.equal(i.sourceChecked,'2026-11-13');assert.match(i.care,/15〜30\+cm/);assert.match(i.care,/033MP/);assert.match(i.care,/水中写真/);assert.equal(a.arrangement,'opposite');assert.equal(a.status,'partial');assert.ok(a.sources.some(s=>s.url.includes('www.wetlandpark.gov.hk')));assert.ok(a.unconfirmed.some(s=>s.includes('香港')&&s.includes('国内各地')));assert.ok(a.unconfirmed.some(s=>s.includes('別植物')));assert.ok(a.unconfirmed.some(s=>s.includes('葉・節・主茎・側枝・根の数')&&s.includes('写真の計測値ではありません')));
 });
 test('Rotala photo reference fits twenty four independent dimensions with closed narrow opposite blades',()=>{
  const dimsList=[[.25,.35,.20],[.01,.10,.005],[.25,.35,.005],[.01,.10,.01],[.02,.15,.02],[.07,.20,.03],[.1,1,.05],[.5,2,.30]];let models=0,vertices=0;
@@ -23042,6 +23042,42 @@ test('Rotala illustrative leaf pairs remain stable across years and protected wi
  }
  assert.equal(yearModels,4);assert.equal(pondModels,2);console.log('ROTALA1004_YEAR_AND_WATER '+JSON.stringify({yearModels,pondModels,annualRealismVerified:0}));
 });
+test('Rotala submerged blades stay below water with lower nodal roots in the substrate',()=>{
+ const p={...makePlant('p-bfcbe3f72e36',107410,3,3),height:.23,spread:.34,leafHeight:.18};
+ const matrix=new Matrix4(),v=new Vector3();
+ for(const [waterDepth,month] of [[.001,7],[.007,7],[.18,7],[.18,1],[.45,7]]){
+  const group=plantModel(p,{year:0,month,reference:false,waterDepth});
+  try{
+   const get=prefix=>group.children.find(m=>m.userData.component.startsWith(prefix));
+   const roots=get('root-submerged-rotala'),nodal=get('nodal-root-rotala'),stems=get('stem-rotala');
+   const points=Array.from({length:stems.count},(_,i)=>{
+    stems.getMatrixAt(i,matrix);
+    return new Vector3(0,.5,0).applyMatrix4(matrix);
+   });
+   for(let i=0;i<roots.count;i++){
+    roots.getMatrixAt(i,matrix);
+    assert.ok(Math.abs(v.set(0,.5,0).applyMatrix4(matrix).y+.012)<.001);
+   }
+   for(let i=0;i<nodal.count;i+=2){
+    nodal.getMatrixAt(i,matrix);
+    const start=v.set(0,-.5,0).applyMatrix4(matrix);
+    assert.ok(points.some(node=>node.distanceTo(start)<1e-7));
+    nodal.getMatrixAt(i+1,matrix);
+    assert.ok(Math.abs(v.set(0,.5,0).applyMatrix4(matrix).y+.012)<.001);
+   }
+   const leaf=get('leaf-submerged-rotala'),positions=leaf.geometry.attributes.position;
+   for(let i=0;i<leaf.count;i++){
+    leaf.getMatrixAt(i,matrix);
+    for(let j=0;j<positions.count;j++){
+     v.fromBufferAttribute(positions,j).applyMatrix4(matrix);
+     assert.ok(v.y>=-.012-1e-7&&v.y<waterDepth-.006);
+    }
+   }
+   assert.equal(flowerInspectionView(group,.8,40),null);
+  }finally{dispose(group);}
+ }
+});
+
 test('Rotala visible model focus frames six summer and winter inputs above the camera floor',()=>{
  let models=0,poses=0;const v=new Vector3(),matrix=new Matrix4();
  for(const dims of[[.25,.35,.20],[.01,.10,.005],[.25,.35,.005]])for(const month of[7,1]){
