@@ -1,5 +1,5 @@
 import {astilbeFloretGeometry,waterpoppyPhotoReferenceGeometry,waterpoppyPhotoReferencePoint} from '../site/plant-detail.js';
-import {nupharSubmergedInspectionView,inspectionSeasonActive,amperaiFoliageInspectionView,waterHorsetailStemInspectionView,miniPapyrusHeadInspectionView,umbrellaSedgeFoliageInspectionView,acorusGreenWhiteFoliageInspectionView,acorusOgonFoliageInspectionView,najasFoliageInspectionView,willowMossFoliageInspectionView,southMossFoliageInspectionView,orangeMyrioFoliageInspectionView,greenMyrioFoliageInspectionView,rotalaFlowerFoliageInspectionView,indicaFoliageInspectionView,newLargePearlFoliageInspectionView,largePearlFoliageInspectionView,pearlgrassFoliageInspectionView,nanjenshanFoliageInspectionView,greenRotalaFoliageInspectionView,cobraGrassFoliageInspectionView,hairgrassFoliageInspectionView,shortHairFoliageInspectionView,goldJennyFoliageInspectionView,monnieriFoliageInspectionView,yellowBacopaFoliageInspectionView,bacopaFoliageInspectionView,muticaFoliageInspectionView,watercoinFoliageInspectionView,pennisetumFoliageInspectionView,planumRosetteInspectionView,flowerInspectionDistanceFloor,flowerInspectionView} from '../site/scene.js';
+import {rootedPondInspectionView,inspectionSeasonActive,amperaiFoliageInspectionView,waterHorsetailStemInspectionView,miniPapyrusHeadInspectionView,umbrellaSedgeFoliageInspectionView,acorusGreenWhiteFoliageInspectionView,acorusOgonFoliageInspectionView,najasFoliageInspectionView,willowMossFoliageInspectionView,southMossFoliageInspectionView,orangeMyrioFoliageInspectionView,greenMyrioFoliageInspectionView,rotalaFlowerFoliageInspectionView,indicaFoliageInspectionView,newLargePearlFoliageInspectionView,largePearlFoliageInspectionView,pearlgrassFoliageInspectionView,nanjenshanFoliageInspectionView,greenRotalaFoliageInspectionView,cobraGrassFoliageInspectionView,hairgrassFoliageInspectionView,shortHairFoliageInspectionView,goldJennyFoliageInspectionView,monnieriFoliageInspectionView,yellowBacopaFoliageInspectionView,bacopaFoliageInspectionView,muticaFoliageInspectionView,watercoinFoliageInspectionView,pennisetumFoliageInspectionView,planumRosetteInspectionView,flowerInspectionDistanceFloor,flowerInspectionView} from '../site/scene.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Box3,ShaderLib,CylinderGeometry,InstancedMesh,Quaternion,Matrix4,Vector3,Line3,Color,PerspectiveCamera,Vector2,Raycaster,SRGBColorSpace} from '../site/vendor/three.module.js';
@@ -21975,9 +21975,69 @@ test('Helvola cream cup and blotched floating leaves stay isolated without autom
 });
 
 test('Asaza photo reference preserves source uncertainty and Japanese bloom without width inference',()=>{
- const i=CATALOG['p-a9c345dcea4e'];assert.equal(i.label,'アサザ');assert.equal(i.latin,'Nymphoides peltata');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.sourceChecked,'2026-11-01');assert.deepEqual(i.bloom,[5,6,7,8,9]);assert.equal(i.bloomKnown,true);assert.equal(i.appearance.architecture,'floatingHeart');assert.equal(i.appearance.shootProfile,'asazaPhotoReference');assert.equal(i.appearance.leafLength,undefined);assert.equal(i.appearance.flowerRadius,undefined);assert.match(i.appearance.sourceConflict,/全幅〜5cm/);assert.ok(i.appearance.unconfirmed.some(x=>x.includes('描画例')&&x.includes('6枚')));
+ const i=CATALOG['p-a9c345dcea4e'];assert.equal(i.label,'アサザ');assert.equal(i.latin,'Nymphoides peltata');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.sourceChecked,'2026-11-13');assert.deepEqual(i.bloom,[5,6,7,8,9]);assert.equal(i.bloomKnown,true);assert.equal(i.appearance.architecture,'floatingHeart');assert.equal(i.appearance.shootProfile,'asazaPhotoReference');assert.equal(i.appearance.leafLength,undefined);assert.equal(i.appearance.flowerRadius,undefined);assert.match(i.appearance.sourceConflict,/全幅〜5cm/);assert.ok(i.appearance.unconfirmed.some(x=>x.includes('描画例')&&x.includes('6枚')));
  for(const month of[5,9])assert.equal(seasonAt(i,month).bloom,true);assert.equal(seasonAt(i,4).bloom,false);assert.equal(seasonAt(i,1).groundDormant,true);
 });
+test('Asaza pond float leaves and flower stalks remain joined to sediment shoots across depths',()=>{
+ const plant={...makePlant('p-a9c345dcea4e',105510,3,3),height:.12,spread:.42,leafHeight:.045};
+ const original=structuredClone(plant),season={year:0,month:7,reference:false};
+ const get=(group,name)=>group.children.find(m=>m.userData.component===name);
+ const matrix=new Matrix4();
+ const endpoints=(mesh,i)=>{
+  mesh.getMatrixAt(i,matrix);
+  return [-.5,.5].map(y=>new Vector3(0,y,0).applyMatrix4(matrix));
+ };
+ const close=(a,b)=>a.distanceTo(b)<1e-7;
+ for(const [waterDepth,month] of [[0,7],[.001,7],[.025,4],[.22,7],[.22,1]]){
+  const group=plantModel(plant,{...season,month,waterDepth});
+  try{
+   const runner=get(group,'runner-asaza-ref'),roots=get(group,'root-asaza-ref');
+   if(waterDepth===0||month===1){assert.ok(!runner&&!roots);continue;}
+   const rhizome=get(group,'rhizome-asaza-ref'),petioles=get(group,'petiole-asaza-ref');
+   const leaf=get(group,'leaf-asaza-photo-reference'),stem=get(group,'flowering-stem-asaza-ref');
+   assert.equal(runner.count,2);assert.equal(rhizome.count,2);assert.equal(roots.count,10);
+   const aspect=349/388,pose=rootedPondInspectionView(group,aspect);
+   const camera=new PerspectiveCamera(40,aspect,.01,650);
+   camera.position.fromArray(pose.position);camera.lookAt(new Vector3(...pose.target));camera.updateMatrixWorld(true);
+   const bounds=new Box3().setFromObject(group);
+   for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){
+    const point=new Vector3(x,y,z).project(camera);
+    assert.ok(Math.abs(point.x)<1&&Math.abs(point.y)<1);
+   }
+   const feet=[],crowns=[],bed=-.012-waterDepth;
+   const first=endpoints(runner,0),second=endpoints(runner,1);
+   const node=first.find(v=>second.some(u=>close(u,v)));
+   assert.ok(node&&node.y>bed&&node.y<-.012);
+   for(let i=0;i<2;i++){
+    const ends=endpoints(rhizome,i);
+    const foot=ends.find(v=>endpoints(runner,i).some(u=>close(u,v)));
+    feet.push(foot);crowns.push(ends.find(v=>v!==foot));
+   }
+   for(let i=0;i<roots.count;i++){
+    const ends=endpoints(roots,i);
+    assert.ok(ends.some(v=>close(v,feet[Math.floor(i/5)])));
+    assert.ok(ends.every(v=>v.y>=bed&&v.y<-.012));
+   }
+   let platforms=[];
+   if(month===7){
+    platforms=endpoints(stem,0);
+    assert.ok(platforms.some(v=>close(v,node)));
+    const peduncles=get(group,'peduncle-asaza-ref');
+    for(let i=0;i<peduncles.count;i++)assert.ok(endpoints(peduncles,i).some(v=>platforms.some(p=>close(p,v))));
+   }else assert.equal(stem,undefined);
+   for(let i=0;i<leaf.count;i++){
+    leaf.getMatrixAt(i,matrix);const origin=new Vector3().setFromMatrixPosition(matrix);
+    assert.ok(Math.abs(origin.y+.0058)<1e-7);
+    const ends=endpoints(petioles,i);
+    assert.ok(ends.some(v=>close(v,origin)));
+    assert.ok(ends.some(v=>[...crowns,...platforms].some(c=>close(c,v))));
+   }
+  }finally{dispose(group);}
+ }
+ assert.deepEqual(plant,original);
+ assert.ok(CATALOG[plant.kind].appearance.sources.some(s=>s.url==='https://pmc.ncbi.nlm.nih.gov/articles/PMC9441140/#fig-1'));
+});
+
 test('Asaza photo reference fits twenty one independent dimensions with connected floating supports',()=>{
  const dimensions=[[.12,.40,.020],[.04,.10,.010],[.12,.40,.005],[.01,.03,.005],[.7,.15,.3],[.1,1,.05],[2,3,1.5]];let models=0,joins=0,flowering=0,winterModels=0;
  for(const dims of dimensions)for(const month of[7,4,1]){
@@ -22040,7 +22100,7 @@ test('Nuphar submerged leaves stay between bed and surface without moving summer
  const submerged='leaf-submerged-nuphar-photo-reference', emerged='leaf-nuphar-photo-reference';
  assert.equal(component(dry,submerged),undefined);
  assert.equal(dryWinter.children.length,0);
- assert.equal(nupharSubmergedInspectionView(dryWinter),null);
+ assert.equal(rootedPondInspectionView(dryWinter),null);
  for(const depth of [.001,.018,.28])for(const month of [1,7]){
   const group=plantModel(plant,{...summer,month,waterDepth:depth});
   try{
@@ -22060,8 +22120,8 @@ test('Nuphar submerged leaves stay between bed and surface without moving summer
     assert.equal(component(group,emerged),undefined);
     assert.ok(!group.children.some(m=>m.userData.component.includes('sepal')));
     for(const aspect of [390/388,1000/660]){
-     const pose=nupharSubmergedInspectionView(group,aspect);
-     assert.equal(pose.fit,'nuphar-water-column');assert.ok(pose.position[1]>.1);
+     const pose=rootedPondInspectionView(group,aspect);
+     assert.equal(pose.fit,'rooted-pond-model');assert.ok(pose.position[1]>.1);
      assert.ok(pose.target[1]>-.012-depth&&pose.target[1]<-.012);
     }
    }else{
@@ -22070,7 +22130,7 @@ test('Nuphar submerged leaves stay between bed and surface without moving summer
      assert.ok(previous&&current,name);
      assert.deepEqual(current.instanceMatrix.array,previous.instanceMatrix.array);
     }
-    const pose=nupharSubmergedInspectionView(group,390/388);
+    const pose=rootedPondInspectionView(group,390/388);
     const camera=new PerspectiveCamera(40,390/388,.01,650);
     camera.position.fromArray(pose.position);camera.lookAt(new Vector3(...pose.target));camera.updateMatrixWorld(true);
     const bounds=new Box3().setFromObject(group);

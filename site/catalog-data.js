@@ -10212,7 +10212,47 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-91d5d4c1fdcd":{"label":"アンペライ","latin":"Machaerina rubiginosa","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.5,1],"spread":null,"bloom":[6,7,8],"bloomKnown":true,"flower":"#895447","leafColor":"#6e974e","variegated":false,"colors":["unknown"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水辺の草姿と季節変化","care":"硬い茎と細い葉が株元から直立し、葉は下側に丸みがあり先端側は平たくなります。葉丈は株元の葉の高さに使い、茎先の花序や節の鞘とは分けて参考表示します。生産者は冬も水上で常緑と記載していますが、各地の同じ株の冬姿を追跡した表示ではありません。赤褐色の穂は鱗片の色として参照し、微小な花そのものの色は未確認です。全形・全月の実物照合は未完了です。","bloomText":"資料の開花月：6・7・8月","bloomBasis":"生産者の種類別資料","source":"https://www.akb.jp/c/suisei/shissei/001-0003","publisher":"杜若園芸","sourceChecked":"2026-11-01","aliases":["アンペライ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-a9c345dcea4e":{"label":"アサザ","latin":"Nymphoides peltata","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":null,"spread":null,"bloom":[5,6,7,8,9],"bloomKnown":true,"flower":"#e8c73a","leafColor":"#638146","variegated":false,"colors":["yellow"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認。出荷ポット径や対象部位の曖昧な数値を草丈・株幅へ読み替えません。","season":"水面上の葉と花・水中での越冬","care":"生産者の写真を参考に、切れ込みのある丸い緑の浮葉と、縁が細かな房状になった黄色い5裂の花冠を描きます。花期は国内資料の5〜9月です。朝に開き午後に閉じる一日花ですが、日内の開閉は表示しません。草丈・成株の株幅は未確認で、表示寸法は入力値を使います。","bloomText":"資料の開花月：5・6・7・8・9月","bloomBasis":"国内の生産者・植物園の種類別記載","source":"https://www.akb.jp/c/suisei/fuyou/004-0002","publisher":"杜若園芸","sourceChecked":"2026-11-01","aliases":["アサザ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-f8b68a8f740f":{
+},"p-91d5d4c1fdcd":{"label":"アンペライ","latin":"Machaerina rubiginosa","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.5,1],"spread":null,"bloom":[6,7,8],"bloomKnown":true,"flower":"#895447","leafColor":"#6e974e","variegated":false,"colors":["unknown"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水辺の草姿と季節変化","care":"硬い茎と細い葉が株元から直立し、葉は下側に丸みがあり先端側は平たくなります。葉丈は株元の葉の高さに使い、茎先の花序や節の鞘とは分けて参考表示します。生産者は冬も水上で常緑と記載していますが、各地の同じ株の冬姿を追跡した表示ではありません。赤褐色の穂は鱗片の色として参照し、微小な花そのものの色は未確認です。全形・全月の実物照合は未完了です。","bloomText":"資料の開花月：6・7・8月","bloomBasis":"生産者の種類別資料","source":"https://www.akb.jp/c/suisei/shissei/001-0003","publisher":"杜若園芸","sourceChecked":"2026-11-01","aliases":["アンペライ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-a9c345dcea4e":{
+  "label": "アサザ",
+  "latin": "Nymphoides peltata",
+  "genre": "水生植物",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "herb",
+  "height": null,
+  "spread": null,
+  "bloom": [
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "bloomKnown": true,
+  "flower": "#e8c73a",
+  "leafColor": "#638146",
+  "variegated": false,
+  "colors": [
+    "yellow"
+  ],
+  "sun": [],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認。出荷ポット径や対象部位の曖昧な数値を草丈・株幅へ読み替えません。",
+  "season": "水面上の葉と花・水中での越冬",
+  "care": "生産者の写真を参考に、切れ込みのある丸い緑の浮葉と、縁が細かな房状になった黄色い5裂の花冠を描きます。池では浮葉を水面に合わせ、水底をはう走出枝と、そこにつながる短い根茎を描きます。花期は国内生産者の5〜9月を表示に使います。朝に開き午後に閉じる一日花ですが、日内の開閉は表示しません。草丈・成株の株幅は未確認で、表示寸法は入力値を使います。",
+  "bloomText": "資料の開花月：5・6・7・8・9月",
+  "bloomBasis": "国内の生産者・植物園の種類別記載 環境省の第5次レッドデータブックは野生の花期を6〜9月としています。",
+  "source": "https://www.akb.jp/c/suisei/fuyou/004-0002",
+  "publisher": "杜若園芸",
+  "sourceChecked": "2026-11-13",
+  "aliases": [
+    "アサザ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-f8b68a8f740f":{
   "label": "バコパ・モンニエリ",
   "latin": "Bacopa monnieri",
   "genre": "水生植物",

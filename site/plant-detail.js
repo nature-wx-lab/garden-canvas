@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1054';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1055';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1054';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1055';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26934,19 +26934,46 @@ export function asazaPhotoReferenceGeometry(type){
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={asazaPhotoReference:true,part:type,illustrativeGeometry:true};return g;
 }
+function drawAsazaBedRunner(b,spread,depth){
+ const bed=-.012-depth;
+ const radius=Math.min(.0024,spread*.014,depth*.14);
+ const crownY=bed+radius*2.6;
+ const crowns=[[-spread*.17,crownY,spread*.055],[spread*.16,crownY,-spread*.04]];
+ const node=[0,bed+radius*1.7,0];
+ for(const crown of crowns){
+  const foot=[crown[0],node[1],crown[2]];
+  b.branch(node,foot,radius,'#85905a','runner-asaza-ref');
+  b.branch(foot,crown,radius*1.2,'#807c4d','rhizome-asaza-ref');
+  for(let i=0;i<5;i++){
+   const angle=i*TAU/5,reach=Math.min(spread*.04,radius*(3.6+i*.4));
+   const tip=[foot[0]+Math.sin(angle)*reach,bed+radius*.22,foot[2]+Math.cos(angle)*reach];
+   b.branch(foot,tip,radius*.18,'#ae9e75','root-asaza-ref');
+  }
+ }
+ return{crowns,node};
+}
 function drawAsazaPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),surface=Math.min(LH*.50,h*.20),crown=[0,Math.min(LH*.15,h*.02),0];
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80);
+ const wet=s.waterDepth>=.001, drySurface=Math.min(LH*.50,h*.20);
+ const surface=wet?-.0058:drySurface;
+ const crown=[0,Math.min(LH*.15,h*.02),0];
+ const support=wet?drawAsazaBedRunner(b,w,s.waterDepth):null;
+ const flowerBase=support?[0,surface-.002,0]:crown;
  for(let j=0;j<6;j++){
   const az=j*2.399+.4,R=w*.26*Math.sqrt((j+.8)/6),at=[Math.sin(az)*R,surface,Math.cos(az)*R],D=Math.min(.11,w*.35,LH*22,h*2)*(1-j*.025),radius=Math.min(.0009,D*.007,LH*.10);
-  b.branch(crown,at,radius,'#6d8651','petiole-asaza-ref');
+  const shortShoot=support?.crowns[at[0]<0?0:1]??crown;
+  const base=s.bloom&&j>=4?flowerBase:shortShoot;
+  b.branch(base,at,radius,'#6d8651','petiole-asaza-ref');
   b.add('asaza-photo-reference-leaf','leaf-asaza-photo-reference',kit.shade(rand,s.leafColor,.025),...at,D,D,D,0,az,0);
  }
  if(!s.bloom)return;
- const L=Math.min(.025,w*.09,h*.22,LH*2.8),flowerY=Math.min(h*.52,surface+L*.45);
+ const L=Math.min(.025,w*.09,h*.22,LH*2.8),dryFlowerY=Math.min(h*.52,drySurface+L*.45);
+ const flowerY=wet?surface+(dryFlowerY-drySurface):dryFlowerY;
+ if(support)b.branch(support.node,flowerBase,Math.min(.0011,L*.032),'#75884e','flowering-stem-asaza-ref');
  for(let flower=0;flower<2;flower++){
   const az=flower*2.399+.65,at=[Math.sin(az)*w*.11,flowerY,Math.cos(az)*w*.11],yaw=az+.15,f=flowerFrame(b,at,0,yaw);
-  b.branch(crown,at,Math.min(.0009,L*.025,LH*.10),'#75884e','peduncle-asaza-ref');
+  b.branch(flowerBase,at,Math.min(.0009,L*.025,LH*.10),'#75884e','peduncle-asaza-ref');
   f.add('asaza-photo-reference-corolla','corolla-asaza-photo-reference',kit.shade(rand,s.flowerColor,.015),0,0,0,L,L,L);
   // Fringe starts exactly at vertices on the indexed corolla edge, not an unrelated blade equation.
   for(let k=0;k<180;k++){

@@ -13077,7 +13077,72 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "flowerRadius": 0.0015,
   "waterSurfaceModel": true,
   "sourceConflict": "草丈5〜15cmと花期5〜9月は国内生産者の値で、株幅は未確認です。9cmの商品ポットと直径15cm以上の栽培容器は、株幅へ読み替えません。NZの葉状部の長さ約12cm以下・花茎約2cm以下・小花柄約6mmは部位の参考で、全株の高さや収録株の測定値へ合算しません。"
-},"p-91d5d4c1fdcd":{"sources":[{"url":"https://www.akb.jp/c/suisei/shissei/001-0003","scope":"catalog-entry"},{"url":"https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Machaerina~rubiginosa&page=nswfl","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerShape":1,"flowerTiming":0,"winterClimateSensitive":0,"flowerMonths":0,"leafWidth":0,"leafLength":0,"shootProfile":0,"leafUnderside":0},"status":"partial","unconfirmed":["全形・全月の実物照合","同じ株の年間推移、地域別の葉の更新や冬姿の差","国内販売株の葉・茎・鞘・小穂の断面と寸法の実測は未確認です。葉の下側の丸みと先端側の平たい形を近似表示します。","株の本数、葉の配置、茎の曲がりと花序の密度は販売株の実測値ではありません。葉裏の色と鞘の色も写真への校正値ではありません。","種の記載を参考に小穂の鱗片と縁毛を表示します。縁毛の長さ・断面・本数は国内販売株で未確認です。","株元の葉と、茎の節に付く小さな葉や鞘を区別します。葉丈を下げても花序を地面へ移動しません。","種の写真の白い部分を、花弁や雄しべなどの器官と断定していません。花の内部、果実、地下茎の拡大と年間成長は再現していません。","国内の開花期6〜8月を参照し、海外の春〜夏という記載を日本の暦に移しません。"],"architecture":"twigRush","leafShape":"twigRushBlade","leafColor":"#6e974e","stemColor":"#709956","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerShape":"sedgeSpike","flowerTiming":"months","winterClimateSensitive":true,"flowerMonths":[6,7,8],"leafWidth":0.004,"leafLength":0.75,"shootProfile":"amperaiPhotoReference","leafUnderside":"#8aa95f","sourceConflict":"国内資料の高さ50〜100cm前後は概数で、株幅は未確認です。赤褐色は小穂の鱗片の記述で、微小な花色そのものは未確認です。国内の商品写真は葉と株元を、花序は種に紐づく海外の写真・記載を参照します。鉢の直径や海外の草丈・季節を国内販売株の幅・高さ・開花月へ置き換えません。"},"p-a9c345dcea4e":{"sources":[{"url":"https://www.akb.jp/c/suisei/fuyou/004-0002","scope":"catalog-entry"},{"url":"https://plants.ces.ncsu.edu/plants/nymphoides-peltata/","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"flowerShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerMonths":0,"flowerTiming":0,"leafTexture":0},"status":"partial","unconfirmed":["全形・全月の実物照合","水深による草姿の変化","地域ごとの水上葉の出現と消失月","水中の葉と根茎の立体表示","浮葉6枚・花2輪と花冠縁の細い房は描画例です。写真の複数の株や花を、一株の花数や年次の増殖量へ読み替えません。","葉の光沢・細かな波打ちと、黄色い5裂の花冠の形を写真参考にします。葉・花の大きさ、開閉角度、各部の正確な数や色の経時変化は未校正です。","草丈と成株の株幅は未確認です。海外の寸法や国内の商品表の全幅〜5cm、9cmポットから補いません。","水面に見える部分だけの参考表示で、水中の根や根茎は未表示です。月別の地上部の有無は近似で、株の凍結・越冬成功・翌年の回復を予測しません。"],"architecture":"floatingHeart","leafShape":"floatingCordate","flowerShape":"fringedWaterFlower","leafColor":"#638146","stemColor":"#688650","arrangement":"basal","habit":"creeping","lifeForm":"herb","persistence":"winterDormant","flowerMonths":[5,6,7,8,9],"flowerTiming":"months","leafTexture":"glossy","shootProfile":"asazaPhotoReference","sourceConflict":"国内の商品表の全幅〜5cmは対象部位が明確でなく、成株の株幅へ採用しません。9cmは出荷ポット径です。海外資料の水深・草丈・株幅は国内の寸法へ転用せず、表示は入力寸法を使います。花期5〜9月は生産者の記載で、日々の開閉と年間の同一株の変化は未検証です。","phenologyRegion":"水上部の出現・消失は表示上の目安で、地域別の同じ株を月ごとに追った結果ではありません。生産者は冬の沈水管理と凍結への注意、日当たりのよい室内での水上管理も案内しています。冬の水中葉・根茎そのものと、越冬成功や回復は描きません。"},"p-f8b68a8f740f":{
+},"p-91d5d4c1fdcd":{"sources":[{"url":"https://www.akb.jp/c/suisei/shissei/001-0003","scope":"catalog-entry"},{"url":"https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Machaerina~rubiginosa&page=nswfl","scope":"species"}],"basis":{"architecture":1,"leafShape":1,"leafColor":0,"stemColor":0,"arrangement":0,"habit":0,"lifeForm":0,"persistence":0,"flowerShape":1,"flowerTiming":0,"winterClimateSensitive":0,"flowerMonths":0,"leafWidth":0,"leafLength":0,"shootProfile":0,"leafUnderside":0},"status":"partial","unconfirmed":["全形・全月の実物照合","同じ株の年間推移、地域別の葉の更新や冬姿の差","国内販売株の葉・茎・鞘・小穂の断面と寸法の実測は未確認です。葉の下側の丸みと先端側の平たい形を近似表示します。","株の本数、葉の配置、茎の曲がりと花序の密度は販売株の実測値ではありません。葉裏の色と鞘の色も写真への校正値ではありません。","種の記載を参考に小穂の鱗片と縁毛を表示します。縁毛の長さ・断面・本数は国内販売株で未確認です。","株元の葉と、茎の節に付く小さな葉や鞘を区別します。葉丈を下げても花序を地面へ移動しません。","種の写真の白い部分を、花弁や雄しべなどの器官と断定していません。花の内部、果実、地下茎の拡大と年間成長は再現していません。","国内の開花期6〜8月を参照し、海外の春〜夏という記載を日本の暦に移しません。"],"architecture":"twigRush","leafShape":"twigRushBlade","leafColor":"#6e974e","stemColor":"#709956","arrangement":"basal","habit":"clump","lifeForm":"herb","persistence":"evergreen","flowerShape":"sedgeSpike","flowerTiming":"months","winterClimateSensitive":true,"flowerMonths":[6,7,8],"leafWidth":0.004,"leafLength":0.75,"shootProfile":"amperaiPhotoReference","leafUnderside":"#8aa95f","sourceConflict":"国内資料の高さ50〜100cm前後は概数で、株幅は未確認です。赤褐色は小穂の鱗片の記述で、微小な花色そのものは未確認です。国内の商品写真は葉と株元を、花序は種に紐づく海外の写真・記載を参照します。鉢の直径や海外の草丈・季節を国内販売株の幅・高さ・開花月へ置き換えません。"},"p-a9c345dcea4e":{
+  "sources": [
+    {
+      "url": "https://www.akb.jp/c/suisei/fuyou/004-0002",
+      "scope": "catalog-entry"
+    },
+    {
+      "url": "https://plants.ces.ncsu.edu/plants/nymphoides-peltata/",
+      "scope": "species"
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9441140/#fig-1",
+      "scope": "species"
+    },
+    {
+      "url": "https://www.env.go.jp/nature/kisho/5th-rl-2025/VP2142_RDB5th.pdf#page=3",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "architecture": 1,
+    "leafShape": 1,
+    "flowerShape": 1,
+    "leafColor": 0,
+    "stemColor": 0,
+    "arrangement": 0,
+    "habit": 0,
+    "lifeForm": 0,
+    "persistence": 0,
+    "flowerMonths": 0,
+    "flowerTiming": 0,
+    "leafTexture": 0
+  },
+  "status": "partial",
+  "unconfirmed": [
+    "全形・全月の実物照合",
+    "水深による草姿の変化",
+    "地域ごとの水上葉の出現と消失月",
+    "池底の根茎と走出枝は Klok・van der Velde の現地研究の図1を参考にしています。短い根茎から長い葉柄が伸び、走出枝を起点にした花茎も水面へ伸びる描画例です。観察用に根茎と細根を池底のすぐ上に表示します。",
+    "浮葉6枚・花2輪と花冠縁の細い房は描画例です。写真の複数の株や花を、一株の花数や年次の増殖量へ読み替えません。",
+    "葉の光沢・細かな波打ちと、黄色い5裂の花冠の形を写真参考にします。葉・花の大きさ、開閉角度、各部の正確な数や色の経時変化は未校正です。",
+    "草丈と成株の株幅は未確認です。海外の寸法や国内の商品表の全幅〜5cm、9cmポットから補いません。",
+    "浮葉は水面に合わせます。根茎と走出枝の長さ・本数、実際に伸びる水深、冬の地下部と地域差は未校正です。凍結・越冬成功・翌年の回復を予測しません。"
+  ],
+  "architecture": "floatingHeart",
+  "leafShape": "floatingCordate",
+  "flowerShape": "fringedWaterFlower",
+  "leafColor": "#638146",
+  "stemColor": "#688650",
+  "arrangement": "basal",
+  "habit": "creeping",
+  "lifeForm": "herb",
+  "persistence": "winterDormant",
+  "flowerMonths": [
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "flowerTiming": "months",
+  "leafTexture": "glossy",
+  "shootProfile": "asazaPhotoReference",
+  "sourceConflict": "国内の商品表の全幅〜5cmは対象部位が明確でなく、成株の株幅へ採用しません。9cmは出荷ポット径です。海外資料の水深・草丈・株幅は国内の寸法へ転用せず、表示は入力寸法を使います。花期5〜9月は生産者の記載で、日々の開閉と年間の同一株の変化は未検証です。",
+  "phenologyRegion": "水上部の出現・消失は表示上の目安で、地域別の同じ株を月ごとに追った結果ではありません。生産者は冬の沈水管理と凍結への注意、日当たりのよい室内での水上管理も案内しています。冬の地下部の状態や越冬成功・回復は未校正です。"
+},"p-f8b68a8f740f":{
   "sources": [
     {
       "url": "https://www.akb.jp/c/aquarium/fp-029",
