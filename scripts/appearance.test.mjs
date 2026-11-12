@@ -22701,6 +22701,34 @@ test('Cabomba flower illustrates three paired nectaries and a single six-stamen 
  }finally{dispose(group);}
 });
 
+test('Cabomba lower roots reach the bed and foliage stays submerged in shallow water',()=>{
+ const p={...makePlant('p-097775090353',106710,3,3),height:.45,spread:.35,leafHeight:.35},saved=structuredClone(p);
+ const matrix=new Matrix4(),position=new Vector3();
+ for(const waterDepth of [.001,.007,.035,.18,.55])for(const month of [1,7]){
+  const group=plantModel(p,{year:0,month,reference:false,waterDepth});
+  try{
+   const get=prefix=>group.children.find(m=>m.userData.component.startsWith(prefix));
+   const blade=get('leaf-submerged-cabomba'),pos=blade.geometry.attributes.position;
+   for(let i=0;i<blade.count;i++){
+    blade.getMatrixAt(i,matrix);
+    for(let j=0;j<pos.count;j++){
+     position.fromBufferAttribute(pos,j).applyMatrix4(matrix);
+     assert.ok(position.y<waterDepth-.006+1e-7);
+     assert.ok(position.y>=-.012-1e-7);
+    }
+   }
+   const roots=get('root-submerged-cabomba');
+   if(month===1){assert.equal(roots,undefined);continue;}
+   for(let i=1;i<roots.count;i+=2){
+    roots.getMatrixAt(i,matrix);
+    const tip=position.set(0,.5,0).applyMatrix4(matrix);
+    assert.ok(tip.y>=-.012&&tip.y<-.0118);
+   }
+  }finally{dispose(group);}
+ }
+ assert.deepEqual(p,saved);
+});
+
 test('Cabomba visible model focus frames six summer and winter models above the camera floor',()=>{
  let models=0,poses=0;const point=new Vector3(),matrix=new Matrix4();
  for(const dims of[[.45,.35,.45],[.04,.10,.020],[.45,.35,.005]])for(const month of[7,1]){

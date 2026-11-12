@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1068';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1069';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1068';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1069';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1415,25 +1415,42 @@ function drawSubmergedShoots(b,{info,s,p,detail,rand},kit){
  if(['mossSouth','mossWillow','myrioGreen','myrioOrange','goldJenny','indica','rotalaFlower','najas'].includes(info.appearance.shootProfile)){drawWaterBranches(b,{info,s,p,detail,rand},kit);return;}
  if(['shortHair','hair','greenRotala','nanjenshan','pearl','largePearl','newPearl','cobra'].includes(info.appearance.shootProfile)){drawWaterMeadow(b,{info,s,p,detail,rand},kit);return;}
  const a=info.appearance,type=a.shootProfile,h=type==='cabomba'?Math.min(s.height,s.leafHeight):s.height,w=s.spread,depth=s.waterDepth,water=depth>0,winter=[12,1,2].includes(s.month),fine=['cabomba','ceratophyllum'].includes(type),mat=type==='glosso',turion=winter&&fine;
+ const cabombaWet=type==='cabomba'&&water;
+ const bed=-.012,waterColumn=depth+.006,waterLine=bed+waterColumn;
+ const cabombaBase=cabombaWet?bed+Math.min(.001,h*.04,waterColumn*.07):Math.min(.001,h*.04);
  const green=s.leafColor,stem=a.stemColor,kind='leaf-submerged-'+type+'-underside-'+a.leafUnderside.slice(1),frame=(at,pitch,az)=>flowerFrame(b,at,pitch,az);
- function leaf(at,az,L,scale=1,pitch=1.0,color=green){const len=type==='cabomba'?Math.min(L*scale,h*.20,w*.08):L*scale,f=frame(at,pitch,az),shape=fine?'water-fine-'+type:'water-'+type;f.add(shape,kind,kit.shade(rand,color,.025),0,0,0,fine?len:len*a.leafWidth/a.leafLength,len,len);}
+ function leaf(at,az,L,scale=1,pitch=1.0,color=green){const available=cabombaWet?Math.max(.00002,(waterLine-at[1])*.80):Infinity;
+  const len=type==='cabomba'?Math.min(L*scale,h*.20,w*.08,available):L*scale,f=frame(at,pitch,az),shape=fine?'water-fine-'+type:'water-'+type;f.add(shape,kind,kit.shade(rand,color,.025),0,0,0,fine?len:len*a.leafWidth/a.leafLength,len,len);}
  if(turion){
   const n=type==='cabomba'?1:Math.round(11*detail);
-  for(let k=0;k<n;k++){const az=k*2.399,rad=w*.28*Math.sqrt((k+.5)/n),len=type==='cabomba'?Math.min(.055,h*.65,w*.45):.045,base=[Math.sin(az)*rad,type==='cabomba'?Math.min(.001,h*.04):.003,Math.cos(az)*rad];b.branch(base,[base[0],len,base[2]],type==='cabomba'?Math.min(.001,h*.015,w*.008):.001,stem,'turion-axis-'+type);
-   for(let j=0;j<15;j++)for(let q=0;q<(type==='cabomba'?2:7);q++)leaf([base[0],len*(j+1)/16,base[2]],az+q*TAU/(type==='cabomba'?2:7)+j*.7,a.leafLength,.26+.19*Math.sin(Math.PI*j/15),.40);
+  for(let k=0;k<n;k++){const az=k*2.399,rad=w*.28*Math.sqrt((k+.5)/n),len=type==='cabomba'?Math.min(.055,h*.65,w*.45,cabombaWet?waterColumn*.70:Infinity):.045,base=[Math.sin(az)*rad,type==='cabomba'?cabombaBase:.003,Math.cos(az)*rad];
+   const startY=cabombaWet?base[1]:0;
+   b.branch(base,[base[0],startY+len,base[2]],type==='cabomba'?Math.min(.001,h*.015,w*.008):.001,stem,'turion-axis-'+type);
+   for(let j=0;j<15;j++)for(let q=0;q<(type==='cabomba'?2:7);q++)leaf([base[0],startY+len*(j+1)/16,base[2]],az+q*TAU/(type==='cabomba'?2:7)+j*.7,a.leafLength,.26+.19*Math.sin(Math.PI*j/15),.40);
   }
   return;
  }
- const n=Math.round((mat?150:type==='cabomba'?7:type==='ceratophyllum'?13:type==='egeria'?19:20)*detail),limit=type==='cabomba'?Math.min(h*.72,water?Math.max(.001,depth-.035):Infinity):water?Math.max(.025,depth-.035):h;
+ const n=Math.round((mat?150:type==='cabomba'?7:type==='ceratophyllum'?13:type==='egeria'?19:20)*detail),limit=cabombaWet?bed+Math.min(h*.72,waterColumn-Math.min(.029,waterColumn*.38)):type==='cabomba'?h*.72:water?Math.max(.025,depth-.035):h;
  for(let k=0;k<n;k++){
-  const az=k*2.399+rand()*.35,runAz=mat?rand()*TAU:az,rad=w*(mat?.40:.29)*Math.sqrt((k+.5)/n),base=[Math.sin(az)*rad,mat?.003:type==='ceratophyllum'&&water?limit*(.26+rand()*.22):type==='cabomba'?Math.min(.001,h*.04):.003,Math.cos(az)*rad];
+  const az=k*2.399+rand()*.35,runAz=mat?rand()*TAU:az,rad=w*(mat?.40:.29)*Math.sqrt((k+.5)/n),base=[Math.sin(az)*rad,mat?.003:type==='ceratophyllum'&&water?limit*(.26+rand()*.22):type==='cabomba'?cabombaBase:.003,Math.cos(az)*rad];
   const len=h*(.64+rand()*.34),visible=mat?Math.min(.02,h*.3):Math.min(len,limit-base[1]),bend=Math.min(w*.19,Math.max(.005,len-visible)*.6),nodes=mat?10:Math.min(28,Math.max(7,Math.ceil(len/.018)));
   const floating=type==='ceratophyllum',reach=floating?Math.min(len*.72,w*.50):mat?w*.12:bend;
   const path=t=>[base[0]+Math.sin(runAz)*reach*t,base[1]+(mat?.004*Math.sin(Math.PI*t):floating?visible*(.25*t+.40*Math.sin(t*Math.PI*.65)):visible*(1-Math.pow(1-t,1.7))),base[2]+Math.cos(runAz)*reach*t+(type==='cabomba'?Math.min(.006,w*.02):.006)*Math.sin(t*6+az)];
   let prev=base;for(let j=1;j<=nodes;j++){const t=j/nodes,at=path(t);b.branch(prev,at,type==='cabomba'?Math.min(.0007,h*.015,w*.008):type==='egeria'?.0012:fine?.0007:.0009,stem,'stem-submerged-'+type);prev=at;
    const whorl=type==='cabomba'?2:type==='ceratophyllum'?7:type==='egeria'?4+(j%2):type==='ovalis'?1:2,rotation=j*(type==='ovalis'?2.399:1.5708);
    for(let q=0;q<whorl;q++){const aa=az+rotation+q*TAU/whorl,L=a.leafLength*(.72+.28*Math.sin(Math.PI*t*.8));leaf(at,aa,L,1,mat?1.03:fine?.91:type==='egeria'?.72:1.02,type==='rotundifolia'&&t>.73?'#b37c64':green);}
-   if(type!=='ceratophyllum'&&j%5===1){for(let q=0;q<3;q++){const aa=az+q*2.2,root=[at[0]+Math.sin(aa)*(type==='cabomba'?Math.min(.01,w*.03):.01),Math.max(type==='cabomba'?Math.min(.001,h*.04):.001,at[1]-.03),at[2]+Math.cos(aa)*(type==='cabomba'?Math.min(.01,w*.03):.01)];b.branch(at,root,type==='cabomba'?Math.min(.0002,h*.005,w*.003):.0002,'#c9c8ac','root-submerged-'+type);}}
+   if(cabombaWet&&j===1){
+    const rootRadius=Math.min(.0002,h*.005,w*.003,waterColumn*.022);
+    for(let q=0;q<3;q++){
+     const angle=az+q*2.2,reach=Math.min(.014,w*.035);
+     const dx=Math.sin(angle)*reach,dz=Math.cos(angle)*reach;
+     const tip=[at[0]+dx,bed+rootRadius*.65,at[2]+dz];
+     const bend=[at[0]+dx*.46,(at[1]+tip[1])*.5,at[2]+dz*.46];
+     b.branch(at,bend,rootRadius,'#c9c8ac','root-submerged-cabomba');
+     b.branch(bend,tip,rootRadius*.65,'#c9c8ac','root-submerged-cabomba');
+    }
+   }
+   if(!cabombaWet&&type!=='ceratophyllum'&&j%5===1){for(let q=0;q<3;q++){const aa=az+q*2.2,root=[at[0]+Math.sin(aa)*(type==='cabomba'?Math.min(.01,w*.03):.01),Math.max(type==='cabomba'?Math.min(.001,h*.04):.001,at[1]-.03),at[2]+Math.cos(aa)*(type==='cabomba'?Math.min(.01,w*.03):.01)];b.branch(at,root,type==='cabomba'?Math.min(.0002,h*.005,w*.003):.0002,'#c9c8ac','root-submerged-'+type);}}
    if((!fine||type==='cabomba')&&!mat&&type!=='egeria'&&j===Math.floor(nodes*.5)){
     const tip=[at[0]+Math.sin(az+1)*w*(type==='cabomba'?.06:.12),Math.min(limit,at[1]+.065),at[2]+Math.cos(az+1)*w*(type==='cabomba'?.06:.12)];b.branch(at,tip,.0006,stem,'side-shoot-'+type);for(let q=1;q<=3;q++){const loc=at.map((v,i)=>v+(tip[i]-v)*q/3);for(let side=0;side<(type==='ovalis'?1:2);side++)leaf(loc,az+side*Math.PI+q*1.6,a.leafLength*.7,1,1.02);}}
   }
@@ -1441,7 +1458,7 @@ function drawSubmergedShoots(b,{info,s,p,detail,rand},kit){
    let at=path(.92);
    if(water){
     // Two small peltate blades alternate on the shoot that reaches the water.
-    const surface=depth-.0055,padLength=Math.min(.018,w*.12);
+    const surface=waterLine+.0005,padLength=Math.min(.018,w*.12);
     let node=path(1);
     for(let j=0;j<2;j++){
      const angle=az+j*Math.PI,nodeY=surface-.004+(j+1)*.0015;
