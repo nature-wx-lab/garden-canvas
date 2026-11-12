@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1069';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1070';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1069';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1070';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1186,9 +1186,12 @@ export function matsumoReferenceGeometry(){
 }
 function drawMatsumoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,water=s.waterDepth>0,LH=Math.min(s.leafHeight,h*.92,water?Math.max(.003,s.waterDepth-.012):Infinity),winter=[12,1,2].includes(s.month),leafKind='leaf-submerged-ceratophyllum-reference';
+ const h=s.height,w=s.spread,water=s.waterDepth>0,winter=[12,1,2].includes(s.month),leafKind='leaf-submerged-ceratophyllum-reference';
+ const bed=-.012,waterColumn=s.waterDepth+.006,waterline=bed+waterColumn;
+ const LH=Math.min(s.leafHeight,h*.92,water?waterColumn*.84:Infinity);
  if(winter){
-  const length=Math.min(.04,h*.80,LH*.80,w*.50),base=[0,Math.min(.001,h*.04,LH*.04),0],radius=Math.min(.0009,length*.018,w*.01);let prev=base;
+  const baseY=(water?bed:0)+Math.min(.001,h*.04,LH*.04);
+  const length=Math.min(.04,h*.80,LH*.80,w*.50),base=[0,baseY,0],radius=Math.min(.0009,length*.018,w*.01);let prev=base;
   for(let j=1;j<=16;j++){
    const t=j/16,at=[0,base[1]+length*.68*t,0];b.branch(prev,at,radius,'#75815a','turion-axis-ceratophyllum-reference');prev=at;
    const L=Math.min(.006,length*.22,w*.15)*( .76+.24*Math.sin(t*Math.PI*.82));
@@ -1196,13 +1199,16 @@ function drawMatsumoReference(b,{s,rand},kit){
   }
   return;
  }
- const radius=Math.min(.0008,h*.005,w*.004,LH*.018),base=[0,Math.min(h*.04,LH*.05,w*.03,.015),0],az=.35;
+ const clearance=Math.min(.018,waterColumn*.12);
+ const ceiling=water?waterline-clearance:LH;
+ const originY=ceiling-LH;
+ const radius=Math.min(.0008,h*.005,w*.004,LH*.018),base=[0,originY+Math.min(h*.04,LH*.05,w*.03,.015),0],az=.35;
  const main=t=>[Math.sin(az)*w*.055*Math.sin(t*Math.PI*.85),base[1]+LH*.72*(1-Math.pow(1-t,1.18)),Math.cos(az)*w*.030*t];
  function shoot(path,n,turn){
   let prev=path(0);
   for(let j=1;j<=n;j++){
    const t=j/n,at=path(t);b.branch(prev,at,radius,'#75815a','stem-submerged-ceratophyllum-reference');prev=at;
-   const L=Math.min(.020*(.88+.12*Math.sin(t*Math.PI*.8)),w*.16,LH*.60,Math.max(.00002,(LH-at[1])*.82));
+   const L=Math.min(.020*(.88+.12*Math.sin(t*Math.PI*.8)),w*.16,LH*.60,Math.max(.00002,(ceiling-at[1])*.82));
    for(let k=0;k<7;k++)b.add('matsumo-forked-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.025),...at,L,L,L,.72+(j%3)*.08,turn+j*.91+k*TAU/7,0);
   }
  }

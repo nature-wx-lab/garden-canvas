@@ -22428,7 +22428,7 @@ test('Cabomba source preserves fanleaf dimensions and confirmed flowering withou
  const i=CATALOG['p-097775090353'],a=i.appearance;assert.equal(i.latin,'Cabomba caroliniana');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.bloomKnown,true);assert.deepEqual(i.colors,['white']);assert.deepEqual(i.bloom,[7,8,9,10]);assert.equal(i.sourceChecked,'2026-11-13');assert.ok(i.aliases.includes('ハゴロモモ'));assert.match(i.care,/5〜7裂/);assert.match(i.care,/1〜3回/);assert.match(a.sourceConflict,/扇状葉1〜3.5cm/);assert.match(a.sourceConflict,/高さ30〜100cm/);assert.equal(a.shootProfile,'cabomba');assert.equal(a.persistence,'waterTurion');assert.equal(a.flowerShape,'cabombaPerianth');assert.equal(seasonAt(i,7).bloom,true);
 });
 test('Ceratophyllum source keeps stem length separate from upright height and qualifies rootlessness winter buds and flowering',()=>{
- const i=CATALOG['p-74f20c38e156'],a=i.appearance;assert.equal(i.latin,'Ceratophyllum demersum');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.bloomKnown,true);assert.deepEqual(i.bloom,[5,6,7,8]);assert.equal(i.sourceChecked,'2026-11-01');assert.match(i.care,/茎の全長/);assert.match(i.care,/5〜8枚/);assert.match(i.care,/時に10枚/);assert.match(i.care,/仮根/);assert.match(i.bloomBasis,/開花しない集団/);assert.match(a.sourceConflict,/冬芽長2〜6cm/);assert.match(a.sourceConflict,/株幅20〜60cm/);assert.equal(a.shootProfile,'ceratophyllum');assert.equal(a.persistence,'waterTurion');assert.equal(a.flowerShape,'none');
+ const i=CATALOG['p-74f20c38e156'],a=i.appearance;assert.equal(i.latin,'Ceratophyllum demersum');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.bloomKnown,true);assert.deepEqual(i.bloom,[5,6,7,8]);assert.equal(i.sourceChecked,'2026-11-13');assert.match(i.care,/茎の全長/);assert.match(i.care,/5〜8枚/);assert.match(i.care,/時に10枚/);assert.match(i.care,/仮根/);assert.match(i.bloomBasis,/開花しない集団/);assert.match(a.sourceConflict,/冬芽長2〜6cm/);assert.match(a.sourceConflict,/株幅20〜60cm/);assert.equal(a.shootProfile,'ceratophyllum');assert.equal(a.persistence,'waterTurion');assert.equal(a.flowerShape,'none');
 });
 
 test('Egeria spathe supports an axillary stalk below the independent shoot tip',()=>{
@@ -22591,6 +22591,36 @@ test('Ceratophyllum floating shoots and winter buds retain rootless display with
 });
 
 import{matsumoFoliageInspectionView as matsumoVisibleFocus996}from'../site/scene.js';
+test('Ceratophyllum draws rootless shoots below the surface and winter buds at the bed',()=>{
+ const p={...makePlant('p-74f20c38e156',107010,3,3),height:.30,spread:.35,leafHeight:.28};
+ const matrix=new Matrix4(),v=new Vector3();
+ for(const waterDepth of [.001,.007,.045,.45,.80]){
+  const waterline=waterDepth-.006;
+  for(const month of [1,4,7]){
+   const group=plantModel(p,{year:0,month,reference:false,waterDepth});
+   try{
+    const leaf=group.children.find(m=>m.userData.component==='leaf-submerged-ceratophyllum-reference');
+    const axis=group.children.find(m=>m.userData.component.startsWith(month===1?'turion-axis':'stem-submerged'));
+    axis.getMatrixAt(0,matrix);
+    const base=v.set(0,-.5,0).applyMatrix4(matrix).y;
+    assert.ok(base>-.012);
+    if(month===1)assert.ok(base<=-.011+1e-7);
+    if(month===7&&waterDepth>=.45)assert.ok(base>0);
+    const position=leaf.geometry.attributes.position;
+    for(let i=0;i<leaf.count;i++){
+     leaf.getMatrixAt(i,matrix);
+     for(let j=0;j<position.count;j++){
+      v.fromBufferAttribute(position,j).applyMatrix4(matrix);
+      assert.ok(v.y>=-.012-1e-7&&v.y<waterline);
+     }
+    }
+    assert.ok(!group.children.some(m=>m.userData.component.startsWith('root')));
+    assert.equal(flowerInspectionView(group,.8,40),null);
+   }finally{dispose(group);}
+  }
+ }
+});
+
 test('Ceratophyllum visible model focus frames six summer and winter models above the camera floor',()=>{
  let models=0,poses=0;const point=new Vector3(),matrix=new Matrix4();
  for(const dims of[[.45,.35,.45],[.04,.10,.020],[.45,.35,.005]])for(const month of[7,1]){
