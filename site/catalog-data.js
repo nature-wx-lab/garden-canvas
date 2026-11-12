@@ -9598,40 +9598,40 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "visual": "reference",
   "popularity": []
 },"p-d1be39347dd5":{
-    "label": "ルドウィジアsp.スーパーレッド",
-    "latin": "Ludwigia palustris 'Super Red'",
-    "genre": "水生植物",
-    "form": "botanical",
-    "group": "宿根草",
-    "leaf": "evergreen",
-    "height": null,
-    "spread": null,
-    "bloom": [],
-    "bloomKnown": false,
-    "flower": "#869853",
-    "leafColor": "#b44d46",
-    "variegated": false,
-    "colors": [
-      "unknown"
-    ],
-    "sun": [],
-    "moisture": [],
-    "life": "perennial",
-    "growth": "水槽に植えて2か月後の平均高さというメーカーの目安。成株の閉じた高さ範囲・株幅と年次成長は未確認です。",
-    "season": "水槽での葉と枝ぶりの参考。屋外の冬姿は未確認。",
-    "care": "この項目は出典のLudwigia palustris ‘Super Red’を参考にしています。流通する「sp.スーパーレッド」すべてを同じクローンと判定するものではありません。本文の高さ10〜30cm・幅2〜4cmは1本の茎の説明です。表の10〜30+cmは水槽に植えて2か月後の平均高さの目安です。これらを株全体の株幅や、成株の高さの上限へ読み替えません。赤くなるのは葉で、光やCO2の条件による説明です。メーカーの当該資料では花色・開花月を確認できないため、葉の赤や緑を花色の検索区分に使いません。剪定・差し戻しの管理例から自然な株数や年次増殖量は予測していません。屋外や寒冷地の越冬、月別の残葉は未確認です。野外への放流・逸出を避けて管理してください。 メーカーの水中写真を参考に、対になる楕円形の葉と赤い側枝を表示します。",
-    "bloomText": "開花月は今回のメーカー資料では未確認",
-    "bloomBasis": "Tropicaの当該商品ページは水槽での葉・茎と栽培条件の説明です。開花月や葉色を花の時期・色へ読み替えません。",
-    "source": "https://tropica.com/en/plants/plantdetails/Ludwigiapalustris(035B)/4453",
-    "publisher": "Tropica",
-    "sourceChecked": "2026-11-01",
-    "aliases": [
-      "ルドウィジアsp.スーパーレッド"
-    ],
-    "selectionSource": null,
-    "visual": "reference",
-    "popularity": []
-  },"p-b4a83f923387":{
+  "label": "ルドウィジアsp.スーパーレッド",
+  "latin": "Ludwigia palustris 'Super Red'",
+  "genre": "水生植物",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": null,
+  "spread": null,
+  "bloom": [],
+  "bloomKnown": false,
+  "flower": "#869853",
+  "leafColor": "#b44d46",
+  "variegated": false,
+  "colors": [
+    "unknown"
+  ],
+  "sun": [],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "水槽に植えて2か月後の平均高さというメーカーの目安。成株の閉じた高さ範囲・株幅と年次成長は未確認です。",
+  "season": "水槽での葉と枝ぶりの参考。屋外の冬姿は未確認。",
+  "care": "この項目は出典のLudwigia palustris ‘Super Red’を参考にしています。流通する「sp.スーパーレッド」すべてを同じクローンと判定するものではありません。本文の高さ10〜30cm・幅2〜4cmは1本の茎の説明です。表の10〜30+cmは水槽に植えて2か月後の平均高さの目安です。これらを株全体の株幅や、成株の高さの上限へ読み替えません。赤くなるのは葉で、光やCO2の条件による説明です。メーカーの当該資料では花色・開花月を確認できないため、葉の赤や緑を花色の検索区分に使いません。剪定・差し戻しの管理例から自然な株数や年次増殖量は予測していません。屋外や寒冷地の越冬、月別の残葉は未確認です。野外への放流・逸出を避けて管理してください。 メーカーの水中写真を参考に、対になる楕円形の葉と赤い側枝を表示します。池では池底に続く株元の根と、茎の節から水中に垂れる細い根を描きます。",
+  "bloomText": "開花月は今回のメーカー資料では未確認",
+  "bloomBasis": "Tropicaの当該商品ページは水槽での葉・茎と栽培条件の説明です。開花月や葉色を花の時期・色へ読み替えません。",
+  "source": "https://tropica.com/en/plants/plantdetails/Ludwigiapalustris(035B)/4453",
+  "publisher": "Tropica",
+  "sourceChecked": "2026-11-13",
+  "aliases": [
+    "ルドウィジアsp.スーパーレッド"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-b4a83f923387":{
   "label": "イエローバコパ",
   "latin": "Bacopa lanigera（斑入り流通株）",
   "genre": "水生植物",

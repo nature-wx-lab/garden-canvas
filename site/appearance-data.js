@@ -11966,55 +11966,64 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "flowerShape": "ludwigiaApetalous",
   "sourceConflict": "草丈5〜15cmと7〜9月の花期は国内生産者の記載です。9cmポット、葉の長さや40cm以上にもなる這う茎の長さを、株全体の幅・高さへ置き換えません。株幅は未確認です。葉や茎の赤み、花柱・花盤・葯それぞれの色を、花全体の代表色として検索に使いません。"
 },"p-d1be39347dd5":{
-    "sources": [
-      {
-        "url": "https://tropica.com/en/plants/plantdetails/Ludwigiapalustris(035B)/4453",
-        "scope": "catalog-entry"
-      },
-      {
-        "url": "https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Ludwigia~palustris&page=nswfl",
-        "scope": "species"
-      }
-    ],
-    "basis": {
-      "habit": 0,
-      "leafShape": 0,
-      "arrangement": 0,
-      "persistence": 0,
-      "leafColor": 0
+  "sources": [
+    {
+      "url": "https://tropica.com/en/plants/plantdetails/Ludwigiapalustris(035B)/4453",
+      "scope": "catalog-entry"
     },
-    "status": "partial",
-    "architecture": "submergedShoots",
-    "shootProfile": "superRed",
-    "lifeForm": "herb",
-    "habit": "clump",
-    "arrangement": "opposite",
-    "leafShape": "palustrisOpposite",
-    "leafLength": 0.026,
-    "leafWidth": 0.012,
-    "leafColor": "#b44d46",
-    "leafTexture": "smooth",
-    "leafUnderside": "#ba6766",
-    "stemColor": "#a84746",
-    "persistence": "submergedPersistent",
-    "fruitMonths": [],
-    "phenologyRegion": "Tropicaの水槽栽培の参考条件です。表は植えて2か月後の平均高さで、月別の開花・落葉や成株の上限の予測ではありません。水温・光・剪定条件による違いと、屋外・寒冷地での冬の残葉や越冬は未校正です。",
-    "unconfirmed": [
-      "全月の実物照合",
-      "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
-      "対生する赤い楕円形葉、赤い茎、側枝を描き分けます。TropicaのLudwigia palustris Super Redを参照していますが、収録名sp.で流通する全株の同一性は保証しません。",
-      "赤さは光量などで変わります。国内屋外の月別越冬資料を未確認のため、温度を保った水中栽培の葉姿として表示します。季節による紅葉とは扱いません。",
-      "この項目は出典のLudwigia palustris ‘Super Red’を参考にしています。流通する「sp.スーパーレッド」すべてを同じクローンと判定するものではありません。",
-      "本文の高さ10〜30cm・幅2〜4cmは1本の茎の説明です。表の10〜30+cmは水槽に植えて2か月後の平均高さの目安です。株幅や年次成長の確定値には使いません。",
-      "メーカーの赤・緑の記載は葉色です。今回の資料では花の色・開花月は未確認で、水中葉モデルには花を描きません。",
-      "トリミング・差し戻しや光・CO2による変化は管理条件の説明です。自然な茎数・根数・株数と、同じ株の全月の姿・年次成長・屋外越冬は未校正です。",
-      "メーカー035Bの写真2枚（鉢入りと水中）を参照します。葉色の違い、撮影時の光・CO2や国内の同名流通株との同一クローンは未確認です。",
-      "対になる楕円形の葉を短い葉柄で赤い茎へつなぎ、主茎から側枝を分けます。葉・節・主茎・側枝・根の数は説明用の配置で、写真の計測値ではありません。",
-      "葉面の厚み・曲率・葉脈・光沢と色、葉柄や節間は近似です。NSWの種の葉の寸法は、このメーカー品種や全販売株の寸法として保証しません。",
-      "低い葉の高さを指定した場合は、葉を横に倒して指定範囲へ収めます。花・果実・切り戻し後の増殖・同じ株の全月や年次成長は再現していません。"
-    ],
-    "sourceConflict": "本文の高さ10〜30cm・幅2〜4cmは1本の茎の説明です。表の10〜30+cmは水槽に植えて2か月後の平均高さの目安です。株全体の高さの閉じた上限・株幅は未確認です。葉の赤や緑は葉色で、今回のメーカー資料で確認できない花色として扱いません。"
-  },"p-b4a83f923387":{
+    {
+      "url": "https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Ludwigia~palustris&page=nswfl",
+      "scope": "species"
+    },
+    {
+      "url": "https://tropica.com/en/articles/ludwigia-palustris/",
+      "scope": "species"
+    },
+    {
+      "url": "https://burkeherbarium.org/imagecollection/taxon.php?Taxon=Ludwigia+palustris",
+      "scope": "species"
+    }
+  ],
+  "basis": {
+    "habit": 0,
+    "leafShape": 0,
+    "arrangement": 0,
+    "persistence": 0,
+    "leafColor": 0
+  },
+  "status": "partial",
+  "architecture": "submergedShoots",
+  "shootProfile": "superRed",
+  "lifeForm": "herb",
+  "habit": "clump",
+  "arrangement": "opposite",
+  "leafShape": "palustrisOpposite",
+  "leafLength": 0.026,
+  "leafWidth": 0.012,
+  "leafColor": "#b44d46",
+  "leafTexture": "smooth",
+  "leafUnderside": "#ba6766",
+  "stemColor": "#a84746",
+  "persistence": "submergedPersistent",
+  "fruitMonths": [],
+  "phenologyRegion": "Tropicaの水槽栽培の参考条件です。表は植えて2か月後の平均高さで、月別の開花・落葉や成株の上限の予測ではありません。水温・光・剪定条件による違いと、屋外・寒冷地での冬の残葉や越冬は未校正です。",
+  "unconfirmed": [
+    "全月の実物照合",
+    "水中葉の形態を参考にした近似で、実物と同等の写真再現は未検証です。",
+    "対生する赤い楕円形葉、赤い茎、側枝を描き分けます。TropicaのLudwigia palustris Super Redを参照していますが、収録名sp.で流通する全株の同一性は保証しません。",
+    "赤さは光量などで変わります。国内屋外の月別越冬資料を未確認のため、温度を保った水中栽培の葉姿として表示します。季節による紅葉とは扱いません。",
+    "この項目は出典のLudwigia palustris ‘Super Red’を参考にしています。流通する「sp.スーパーレッド」すべてを同じクローンと判定するものではありません。",
+    "本文の高さ10〜30cm・幅2〜4cmは1本の茎の説明です。表の10〜30+cmは水槽に植えて2か月後の平均高さの目安です。株幅や年次成長の確定値には使いません。",
+    "メーカーの赤・緑の記載は葉色です。今回の資料では花の色・開花月は未確認で、水中葉モデルには花を描きません。",
+    "トリミング・差し戻しや光・CO2による変化は管理条件の説明です。自然な茎数・根数・株数と、同じ株の全月の姿・年次成長・屋外越冬は未校正です。",
+    "メーカー035Bの写真2枚（鉢入りと水中）を参照します。葉色の違い、撮影時の光・CO2や国内の同名流通株との同一クローンは未確認です。",
+    "対になる楕円形の葉を短い葉柄で赤い茎へつなぎ、主茎から側枝を分けます。葉・節・主茎・側枝・根の数は説明用の配置で、写真の計測値ではありません。",
+    "Tropicaの水槽での根の記載とバーク博物館の種の資料を参考に、池では株元の根を池底につなぎ、下部の節から細い根を垂らします。浅い水域でも葉を水面下に収めます。節ごとの発根頻度、根の長さや底質への入り方は未校正です。",
+    "葉面の厚み・曲率・葉脈・光沢と色、葉柄や節間は近似です。NSWの種の葉の寸法は、このメーカー品種や全販売株の寸法として保証しません。",
+    "低い葉の高さを指定した場合は、葉を横に倒して指定範囲へ収めます。花・果実・切り戻し後の増殖・同じ株の全月や年次成長は再現していません。"
+  ],
+  "sourceConflict": "本文の高さ10〜30cm・幅2〜4cmは1本の茎の説明です。表の10〜30+cmは水槽に植えて2か月後の平均高さの目安です。株全体の高さの閉じた上限・株幅は未確認です。葉の赤や緑は葉色で、今回のメーカー資料で確認できない花色として扱いません。"
+},"p-b4a83f923387":{
   "sources": [
     {
       "url": "https://www.akb.jp/c/suisei/chusui/002-0003",

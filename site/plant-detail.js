@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1074';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1075';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1074';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1075';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1303,25 +1303,35 @@ export function superRedPhotoReferenceGeometry(){
 }
 function drawSuperRedPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0018,LH*.05),radius=Math.min(.0007,h*.006,w*.002,LH*.02),P=Math.min(.0035,w*.015,LH*.065),L=Math.min(.021,w*.065),W=L*.55,stem=info.appearance.stemColor,leafKind='leaf-submerged-super-red-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ const wet=s.waterDepth>0,bed=wet?-.012:0;
+ const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight,wet?(s.waterDepth+.006)*.90:Infinity),base=Math.min(.0018,LH*.05),radius=Math.min(.0007,h*.006,w*.002,LH*.02),P=Math.min(.0035,w*.015,LH*.065),L=Math.min(.021,w*.065),W=L*.55,stem=info.appearance.stemColor,leafKind='leaf-submerged-super-red-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
  function pair(at,turn){for(let side=0;side<2;side++){
   const az=turn+side*Math.PI,tip=[at[0]+Math.sin(az)*P*.85,at[1]+P*.4,at[2]+Math.cos(az)*P*.85];b.branch(at,tip,Math.min(.00022,radius*.5),stem,'petiole-super-red-photo-reference');
   b.add('super-red-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.045),...tip,W,L,Math.min(L,LH*.45),Math.acos(Math.min(.65,LH*.10/L)),az,0);
  }}
  for(let shoot=0;shoot<12;shoot++){
-  const az=shoot*2.399+.12,rad=w*.25*Math.sqrt((shoot+.5)/12),origin=[Math.sin(az)*rad,base,Math.cos(az)*rad],peak=LH*(.70+.05*(shoot%3)),bend=w*.025,path=t=>[origin[0]+Math.sin(az+1.3)*bend*Math.sin(t*Math.PI*.6),base+(peak-base)*t,origin[2]+Math.cos(az+1.3)*bend*Math.sin(t*Math.PI*.6)];
-  for(let r=0;r<3;r++){const turn=az+r*TAU/3;const tip=[origin[0]+Math.sin(turn)*w*.012,base*.45,origin[2]+Math.cos(turn)*w*.012];b.branch(origin,tip,Math.min(.0002,radius*.35),'#b9b398','root-submerged-super-red-photo-reference');}
+  const az=shoot*2.399+.12,rad=w*.25*Math.sqrt((shoot+.5)/12),origin=[Math.sin(az)*rad,bed+base,Math.cos(az)*rad],peak=LH*(.70+.05*(shoot%3)),bend=w*.025,path=t=>[origin[0]+Math.sin(az+1.3)*bend*Math.sin(t*Math.PI*.6),bed+base+(peak-base)*t,origin[2]+Math.cos(az+1.3)*bend*Math.sin(t*Math.PI*.6)];
+  for(let r=0;r<3;r++){const turn=az+r*TAU/3;const tip=[origin[0]+Math.sin(turn)*w*.012,bed+base*.45,origin[2]+Math.cos(turn)*w*.012];b.branch(origin,tip,Math.min(.0002,radius*.35),'#b9b398','root-submerged-super-red-photo-reference');}
   let previous=origin;
   for(let j=1;j<=12;j++){
    const at=path(j/12);b.branch(previous,at,radius,stem,'stem-super-red-photo-reference');previous=at;pair(at,az+j*Math.PI/2);
-   if(j===4||j===8){const turn=az+(j===4?-.95:1.05),top=LH*(j===4?.69:.78),reach=w*.075;let prev=at;
+   if(wet&&j===4){
+    const angle=az+.8,drop=Math.min(.012,(at[1]-bed)*.52);
+    const dx=Math.sin(angle)*drop*.52,dz=Math.cos(angle)*drop*.52;
+    const bend=[at[0]+dx*.66,at[1]-drop*.55,at[2]+dz*.66];
+    const tip=[at[0]+dx,at[1]-drop,at[2]+dz];
+    const rootRadius=Math.min(.00016,radius*.30);
+    b.branch(at,bend,rootRadius,'#c9c0a2','nodal-root-super-red-photo-reference');
+    b.branch(bend,tip,rootRadius*.59,'#c9c0a2','nodal-root-super-red-photo-reference');
+   }
+   if(j===4||j===8){const turn=az+(j===4?-.95:1.05),top=bed+LH*(j===4?.69:.78),reach=w*.075;let prev=at;
     for(let k=1;k<=6;k++){
      const t=k/6,tip=[at[0]+Math.sin(turn)*reach*t,at[1]+(top-at[1])*(1-Math.pow(1-t,1.2)),at[2]+Math.cos(turn)*reach*t];b.branch(prev,tip,radius*.7,stem,'side-shoot-super-red-photo-reference');prev=tip;pair(tip,turn+k*Math.PI/2);
     }
    }
   }
  }
- //12rooted main shoots plus24connected side shoots;288nodes/576pairedblades,36basal roots.No flowers or growth simulation.
+ // The pond reference has grounded basal roots and short roots hanging from lower nodes.
 }
 
 // Narrow water-leaf reference; photo counts, section and coloration are illustrative.
