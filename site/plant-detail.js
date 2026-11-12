@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1049';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1050';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1049';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1050';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -27048,6 +27048,29 @@ function drawWaterpoppyNodalRoots(b, node, radius, spread, depth, azimuth) {
   b.branch(bend,tip,radius*.24,'#b6ae88','nodal-root-waterpoppy-ref');
  }
 }
+function drawWaterpoppyFlowerCenter(f,r,kit) {
+ f.add(kit.bud,'throat-waterpoppy-ref','#765339',0,r*.06,0,r*.25,r*.08,r*.25);
+ const ring=(angle,radius,height)=>[Math.sin(angle)*r*radius,r*height,Math.cos(angle)*r*radius];
+ // The field study distinguishes the outer sterile organs from the inner fertile stamens.
+ // These counts describe the illustration, with six carpels as a documented typical example.
+ for(let k=0;k<12;k++){
+  const angle=k*TAU/12,height=.28+.04*Math.sin(k*2.399);
+  const sterileBase=ring(angle,.18,.075),sterileBend=ring(angle,.25,height*.62),sterileTip=ring(angle,.30,height);
+  f.branch(sterileBase,sterileBend,r*.019,'#562f39','staminode-waterpoppy-ref');
+  f.branch(sterileBend,sterileTip,r*.008,'#663b42','staminode-waterpoppy-ref');
+  const fertileAngle=angle+TAU/24,base=ring(fertileAngle,.115,.08),tip=ring(fertileAngle,.18,.26);
+  f.branch(base,tip,r*.012,'#5b343d','filament-waterpoppy-ref');
+  f.add(kit.bud,'anther-waterpoppy-ref','#b59a60',...tip,r*.023,r*.045,r*.020,0,fertileAngle,0);
+ }
+ for(let k=0;k<6;k++){
+  const angle=k*TAU/6;
+  const ovary=ring(angle,.043,.13),style=ring(angle,.071,.29),stigma=ring(angle,.080,.35);
+  f.add(kit.bud,'carpel-waterpoppy-ref','#a49e6d',...ovary,r*.037,r*.105,r*.037,0,angle,0);
+  f.branch(ovary,style,r*.021,'#82755e','style-waterpoppy-ref');
+  f.branch(style,stigma,r*.013,'#714451','style-waterpoppy-ref');
+  f.add(kit.bud,'stigma-waterpoppy-ref','#69404e',...stigma,r*.022,r*.027,r*.022);
+ }
+}
 function drawWaterpoppyPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
  const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),radius=Math.min(.0007,h*.004,w*.003,LH*.03);
@@ -27076,8 +27099,7 @@ function drawWaterpoppyPhotoReference(b,{info,s,rand},kit){
   const row=26,col=12,C=24,N=32,vertices=[row*(C+1)+col,(row+1)*(C+1)+col,row*(C+1)+col+1],totalYaw=yaw+az,matrix=new THREE.Matrix4().compose(new THREE.Vector3(...at),new THREE.Quaternion().setFromEuler(new THREE.Euler(0,totalYaw,0,'YXZ')),new THREE.Vector3(r,r,r));matrix.fromArray(new Float32Array(matrix.elements));
   const points=vertices.map(v=>new THREE.Vector3(...waterpoppyPhotoReferencePoint('petal',Math.floor(v/(C+1))/N,v%(C+1)/C*2-1).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),axis=new THREE.Vector3(Math.sin(totalYaw)*.8,1,Math.cos(totalYaw)*.8).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),'YXZ');b.flower?.(point.toArray(),r*1.7,e.x,e.y,e.z,{component:'petal-waterpoppy-photo-reference',instanceId:k,vertices,faceIndex:(row*C+col)*2,cameraAxis:axis.toArray()});
  }
- // The dark throat and pale central body are simplified; no stamen count is asserted.
- f.add(kit.bud,'throat-waterpoppy-ref','#765339',0,r*.06,0,r*.25,r*.08,r*.25);f.add(kit.bud,'central-body-waterpoppy-ref','#b9b087',0,r*.13,0,r*.09,r*.12,r*.09);
+ drawWaterpoppyFlowerCenter(f,r,kit);
 }
 
 // Female flower photo reference; blurred background leaves are not a new leaf reference.

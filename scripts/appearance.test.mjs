@@ -22603,10 +22603,44 @@ test('Waterpoppy camera rays meet three indexed petal models while old garden in
   const d=emptyDocument(10,6);d.plans.A.plants=[input];const old={...structuredClone(d),catalogVersion:'2026-10-29.68'},copy=structuredClone(old);assert.equal(d.catalogVersion,CATALOG_VERSION);assert.deepEqual(validateDocument(old),d);assert.deepEqual(old,copy);assert.deepEqual(input,saved);const state=stateAt(input,{year:1,month:7,reference:true});assert.equal(state.height,dims[0]);assert.equal(state.spread,dims[1]);assert.equal(state.leafHeight,dims[2]);
  }assert.equal(models,3);assert.equal(rays,6);console.log('WATERPOPPY1006_CAMERAS '+JSON.stringify({models,rays}));
 });
+test('Waterpoppy flower center distinguishes sterile tips, fertile anthers and the central carpels',()=>{
+ const id='p-f2e4c7935581';
+ const matrix=new Matrix4();
+ const point=(mesh,index,v=new Vector3())=>{mesh.getMatrixAt(index,matrix);return v.applyMatrix4(matrix);};
+ const same=(a,b)=>a.distanceTo(b)<2e-6;
+ for(const [height,spread,leafHeight] of [[.12,.40,.055],[.005,.03,.005]]){
+  const p={...makePlant(id,104810,3,3),height,spread,leafHeight};
+  const g=plantModel(p,{year:0,month:7,reference:false},1);
+  try{
+   const part=key=>g.children.find(m=>m.userData.component===key+'-waterpoppy-ref');
+   const sterile=part('staminode'),filaments=part('filament'),anthers=part('anther');
+   const carpels=part('carpel'),styles=part('style'),stigmas=part('stigma');
+   assert.deepEqual([sterile.count,filaments.count,anthers.count,carpels.count,styles.count,stigmas.count],[24,12,12,6,12,6]);
+   assert.equal(part('central-body'),undefined);
+   for(let i=0;i<12;i++){
+    assert.ok(same(point(sterile,i*2,new Vector3(0,.5,0)),point(sterile,i*2+1,new Vector3(0,-.5,0))));
+    assert.ok(same(point(filaments,i,new Vector3(0,.5,0)),point(anthers,i)));
+   }
+   for(let i=0;i<6;i++){
+    assert.ok(same(point(carpels,i),point(styles,i*2,new Vector3(0,-.5,0))));
+    assert.ok(same(point(styles,i*2,new Vector3(0,.5,0)),point(styles,i*2+1,new Vector3(0,-.5,0))));
+    assert.ok(same(point(styles,i*2+1,new Vector3(0,.5,0)),point(stigmas,i)));
+   }
+   const radius=point=>Math.hypot(point.x,point.z);
+   assert.ok(radius(point(stigmas,0))<radius(point(anthers,0)));
+   assert.ok(radius(point(anthers,0))<radius(point(sterile,1,new Vector3(0,.5,0))));
+   for(const organ of [sterile,filaments,anthers,carpels,styles,stigmas]){
+    const box=new Box3().setFromObject(organ);
+    assert.ok(box.max.y<=height+2e-6&&box.min.y>=0);
+   }
+  }finally{dispose(g);}
+ }
+});
+
 test('Waterpoppy leaf petioles and three overlapping petals remain connected without automatic stock multiplication',()=>{
  const input={...makePlant('p-f2e4c7935581',100610,3,3),height:.12,spread:.40,leafHeight:.02},g=plantModel(input,{year:1,month:7,reference:false},1),later=plantModel(input,{year:5,month:7,reference:false},1);try{
-  const component=(group,k)=>group.children.find(m=>m.userData.component===k),leaves=component(g,'leaf-waterpoppy-photo-reference'),petals=component(g,'petal-waterpoppy-photo-reference');assert.equal(leaves.count,12);assert.equal(petals.count,3);for(const name of['leaf-waterpoppy-photo-reference','petiole-waterpoppy-ref','creeping-stem-waterpoppy-ref','petal-waterpoppy-photo-reference','peduncle-waterpoppy-ref'])assert.deepEqual([...component(g,name).instanceMatrix.array],[...component(later,name).instanceMatrix.array]);assert.ok(!g.children.some(m=>/seed|fruit|offspring|anther|stamen/.test(m.userData.component)));
-  const shader={uniforms:{},vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader};leaves.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,/roughnessFactor=\.34/);assert.match(shader.fragmentShader,/gcWaterpoppyRib/);const a=CATALOG[input.kind].appearance;assert.equal(a.shootProfile,'waterpoppyPhotoReference');assert.equal(a.status,'partial');assert.ok(a.unconfirmed.some(n=>n.includes('写真から計測')&&n.includes('年次増殖')));assert.ok(a.unconfirmed.some(n=>n.includes('雄しべ')&&n.includes('未確認')));assert.deepEqual(a.foliageMonths,[5,6,7,8,9,10]);assert.match(a.phenologyRegion,/参考シナリオ/);
+  const component=(group,k)=>group.children.find(m=>m.userData.component===k),leaves=component(g,'leaf-waterpoppy-photo-reference'),petals=component(g,'petal-waterpoppy-photo-reference');assert.equal(leaves.count,12);assert.equal(petals.count,3);for(const name of['leaf-waterpoppy-photo-reference','petiole-waterpoppy-ref','creeping-stem-waterpoppy-ref','petal-waterpoppy-photo-reference','peduncle-waterpoppy-ref'])assert.deepEqual([...component(g,name).instanceMatrix.array],[...component(later,name).instanceMatrix.array]);assert.ok(!g.children.some(m=>/seed|fruit|offspring/.test(m.userData.component)));
+  const shader={uniforms:{},vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader};leaves.material.onBeforeCompile(shader,{});assert.match(shader.fragmentShader,/roughnessFactor=\.34/);assert.match(shader.fragmentShader,/gcWaterpoppyRib/);const a=CATALOG[input.kind].appearance;assert.equal(a.shootProfile,'waterpoppyPhotoReference');assert.equal(a.status,'partial');assert.ok(a.unconfirmed.some(n=>n.includes('写真から計測')&&n.includes('年次増殖')));assert.ok(a.unconfirmed.some(n=>n.includes('仮雄しべ')&&n.includes('実測していません')));assert.deepEqual(a.foliageMonths,[5,6,7,8,9,10]);assert.match(a.phenologyRegion,/参考シナリオ/);
  }finally{dispose(g);dispose(later);}console.log('WATERPOPPY1006_ILLUSTRATIVE '+JSON.stringify({yearModels:2,leaves:12,creepingNodes:6,petals:3,annualRealism:0}));
 });
 
