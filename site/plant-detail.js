@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1061';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1062';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1061';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1062';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1135,7 +1135,18 @@ function drawEgeriaPhotoReference(b,{s,rand},kit){
   const points=vertices.map(v=>new THREE.Vector3(...egeriaPhotoReferencePoint('petal',Math.floor(v/(C+1))/N,v%(C+1)/C*2-1).map(Math.fround)).applyMatrix4(matrix)),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),axis=new THREE.Vector3(Math.sin(totalYaw)*.25,1,Math.cos(totalYaw)*.25).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),'YXZ');
   b.flower?.(point.toArray(),R*1.7,e.x,e.y,e.z,{component:'petal-submerged-egeria-photo-reference',instanceId:k,vertices,faceIndex:(row*C+col)*2,cameraAxis:axis.toArray()});
  }
- for(let k=0;k<9;k++){const angle=k*TAU/9,base=[Math.sin(angle)*R*.08,0,Math.cos(angle)*R*.08],tip=[Math.sin(angle)*R*.17,R*.18,Math.cos(angle)*R*.17];f.branch(base,tip,R*.008,'#ded9b5','filament-egeria-photo-reference');f.add(kit.bud,'anther-egeria-photo-reference','#d9b944',...tip,R*.035,R*.045,R*.025);}
+ const stamenRings=[
+  {base:.066,tip:.078,height:.206,offset:Math.PI/3},
+  {base:.097,tip:.152,height:.165,offset:0},
+  {base:.13,tip:.238,height:.136,offset:Math.PI/3},
+ ];
+ for(const ring of stamenRings)for(let i=0;i<3;i++){
+  const angle=i*TAU/3+ring.offset,sin=Math.sin(angle),cos=Math.cos(angle);
+  const base=[sin*R*ring.base,0,cos*R*ring.base];
+  const tip=[sin*R*ring.tip,R*ring.height,cos*R*ring.tip];
+  f.branch(base,tip,R*.008,'#ded9b5','filament-egeria-photo-reference');
+  f.add(kit.bud,'anther-egeria-photo-reference','#d9b944',...tip,R*.028,R*.037,R*.023);
+ }
 }
 
 // Ceratophyllum leaf forks follow the domestic description; mesh radii and counts are examples.
