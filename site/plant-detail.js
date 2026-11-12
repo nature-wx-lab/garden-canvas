@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1040';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1041';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1040';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1041';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26675,6 +26675,32 @@ function drawCucullataSubmergedLeaf(axis, node, depth, leafLength, phase) {
  }
 }
 
+function drawWaterHyacinthRoots(b, center, depth, leafLength, phase) {
+ const neckY = center[1]-.020;
+ const radius = Math.min(.0011, leafLength*.017);
+ const spread = Math.min(leafLength*.38, depth*.34);
+ for (let root = 0; root < 11; root++) {
+  const angle = phase+root*2.399;
+  const dx = Math.sin(angle), dz = Math.cos(angle);
+  const extent = depth*(.64+.36*(.5+.5*Math.cos(phase+root*1.63)));
+  const reach = spread*(.38+.62*Math.sqrt((root+.5)/11));
+  let previous = [center[0]+dx*radius*1.5, neckY, center[2]+dz*radius*1.5];
+  b.branch(center, previous, radius, '#4e4354', 'hyacinth-root-axis');
+  for (let segment = 1; segment <= 9; segment++) {
+   const t = segment/9, offset = reach*(.22*t+.78*t*t);
+   const joint = [center[0]+dx*offset, neckY-extent*t, center[2]+dz*offset];
+   b.branch(previous, joint, radius*(.86-.65*t), '#463a4d', 'hyacinth-root-axis');
+   previous = joint;
+   if (segment === 9) continue;
+   const lateral = Math.min(reach*.24, extent*.11)*Math.sin(Math.PI*t);
+   for (const side of [-1,1]) {
+    const tip = [joint[0]+dz*lateral*side, joint[1]-extent*(1-t)*.24, joint[2]-dx*lateral*side];
+    b.branch(joint, tip, radius*.20, '#514256', 'hyacinth-root-lateral');
+   }
+  }
+ }
+}
+
 function drawFreeFloaters(b,{info,s,detail,rand},kit){
  if(s.groundDormant)return;
  const a=info.appearance,arch=a.architecture,fern=arch.startsWith('salvinia'),hyacinth=arch==='waterHyacinth',nat=arch==='salviniaNatans',hood=arch==='salviniaCucullata',w=s.spread,h=s.height,len=Math.min(a.leafLength,w*(hyacinth?.34:.18)),green=s.leafColor;
@@ -26713,10 +26739,12 @@ function drawFreeFloaters(b,{info,s,detail,rand},kit){
   }return;
  }
  const photoFrogbit=a.leafShape==='frogbitPhotoBlade';
+ const hyacinthRootDepth=hyacinth?Math.min(s.waterDepth,len*2.6):0;
  const rosettes=hyacinth?3:Math.max(3,Math.round(9*detail*s.leafDensity));let previous=null;
  for(let i=0;i<rosettes;i++){
   const angle=i*2.399,rr=w*(hyacinth?.21:.34)*Math.sqrt((i+.25)/rosettes),cx=Math.sin(angle)*rr,cz=Math.cos(angle)*rr,center=[cx,photoFrogbit?Math.min(.012,s.leafHeight*.46):.012,cz];
   if(previous)b.branch(previous,center,hyacinth?.0018:.0009,a.stemColor,'stolon');previous=center;
+  if(hyacinthRootDepth>=.001)drawWaterHyacinthRoots(b,center,hyacinthRootDepth,len,angle);
   const count=hyacinth?7:6;
   for(let j=0;j<count;j++){
    const an=angle+j*TAU/count+(rand()-.5)*.18,ll=len*(.76+rand()*.28),reach=hyacinth?ll*.34:ll*.14,yy=hyacinth?Math.min(h*.49,ll*.8)*(.65+rand()*.35):.017+rand()*.001,at=[cx+Math.sin(an)*reach,photoFrogbit?Math.min(yy,s.leafHeight*.78):yy,cz+Math.cos(an)*reach];
