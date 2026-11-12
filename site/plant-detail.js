@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1047';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1048';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1047';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1048';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -27031,11 +27031,27 @@ export function waterpoppyPhotoReferenceGeometry(type){
  for(let j=0;j<C;j++){const a=N*(C+1)+j,z=a+1;ix.push(a,a+stride,z,z,a+stride,z+stride);}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={waterpoppyPhotoReference:true,part:type,illustrativeGeometry:true,closedSurface:true};return g;
 }
+function drawWaterpoppyNodalRoots(b, node, radius, spread, depth, azimuth) {
+ const bed = -.012-depth;
+ const extent = Math.min((node[1]-bed)*.92, spread*.17, .055);
+ for(let root=0;root<3;root++){
+  const turn=azimuth+root*TAU/3;
+  const length=extent*(.72+root*.14),sway=Math.min(length*.23,spread*.03);
+  const dx=Math.sin(turn)*sway,dz=Math.cos(turn)*sway;
+  const bend=[node[0]+dx*.37,node[1]-length*.56,node[2]+dz*.37];
+  const tip=[node[0]+dx,node[1]-length,node[2]+dz];
+  b.branch(node,bend,radius*.48,'#a79b71','nodal-root-waterpoppy-ref');
+  b.branch(bend,tip,radius*.24,'#b6ae88','nodal-root-waterpoppy-ref');
+ }
+}
 function drawWaterpoppyPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),radius=Math.min(.0007,h*.004,w*.003,LH*.03),rootY=radius*1.2+Math.min(.00002,h*.002),crown=[0,rootY,0],nodes=[];let previous=crown;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),radius=Math.min(.0007,h*.004,w*.003,LH*.03);
+ const wet=s.waterDepth>=.001,rootY=wet?-.008-Math.min(s.waterDepth*.2,.012):radius*1.2+Math.min(.00002,h*.002);
+ const crown=[0,rootY,0],nodes=[];let previous=crown;
  for(let j=0;j<6;j++){
-  const az=j*2.399+.45,R=w*.105*Math.sqrt((j+.8)/6),node=[Math.sin(az)*R,rootY+LH*.12,Math.cos(az)*R];nodes.push(node);b.branch(previous,node,radius,'#688650','creeping-stem-waterpoppy-ref');previous=node;
+  const az=j*2.399+.45,R=w*.105*Math.sqrt((j+.8)/6),node=[Math.sin(az)*R,rootY+(wet?radius*.3*Math.sin(az):LH*.12),Math.cos(az)*R];nodes.push(node);b.branch(previous,node,radius,'#688650','creeping-stem-waterpoppy-ref');previous=node;
+  if(wet)drawWaterpoppyNodalRoots(b,node,radius,w,s.waterDepth,az);
   for(let side=0;side<2;side++){
    const yaw=az+(side?-.43:.43),rr=w*(side?.115:.095),at=[node[0]+Math.sin(yaw)*rr,LH*.45,node[2]+Math.cos(yaw)*rr],L=Math.min(.065,w*.24)*(.87+j*.018),relief=Math.min(L,LH*.25/.08),pitch=Math.PI/2-Math.min(.10,LH*.12/L)*(j%3)/2;
    b.branch(node,at,radius*.65,'#688650','petiole-waterpoppy-ref');b.add('waterpoppy-photo-reference-leaf','leaf-waterpoppy-photo-reference',kit.shade(rand,s.leafColor,.025),...at,L,L,relief,pitch,yaw,0);

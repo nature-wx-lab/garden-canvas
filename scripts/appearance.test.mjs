@@ -22023,7 +22023,7 @@ test('Asaza fringes meet actual five lobed corolla edges without automatic stock
 });
 
  test('Waterpoppy organ dimensions and winter water threshold stay separate from whole plant size',()=>{
- const i=CATALOG['p-f2e4c7935581'];assert.equal(i.label,'ウォーターポピー');assert.equal(i.latin,'Hydrocleys nymphoides');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.sourceChecked,'2026-11-01');assert.deepEqual(i.bloom,[7,8,9,10]);assert.equal(i.bloomKnown,true);assert.deepEqual(i.colors,['yellow']);assert.match(i.care,/長さ4〜8cm・幅3〜6cm/);assert.match(i.care,/最低水温5℃以上/);assert.match(i.appearance.sourceConflict,/花柄7〜10cm/);assert.match(i.appearance.sourceConflict,/草丈や株幅には読み替えません/);assert.equal(i.appearance.architecture,'waterPoppy');assert.equal(i.appearance.persistence,'protectedWinter');assert.deepEqual(i.appearance.foliageMonths,[5,6,7,8,9,10]);assert.equal(i.appearance.leafLength,.065);assert.equal(i.appearance.flowerRadius,.025);assert.ok(i.appearance.unconfirmed.some(x=>x.includes('描画例')));
+ const i=CATALOG['p-f2e4c7935581'];assert.equal(i.label,'ウォーターポピー');assert.equal(i.latin,'Hydrocleys nymphoides');assert.equal(i.height,null);assert.equal(i.spread,null);assert.equal(i.sourceChecked,'2026-11-13');assert.deepEqual(i.bloom,[7,8,9,10]);assert.equal(i.bloomKnown,true);assert.deepEqual(i.colors,['yellow']);assert.match(i.care,/長さ4〜8cm・幅3〜6cm/);assert.match(i.care,/最低水温5℃以上/);assert.match(i.care,/節にひげ根/);assert.equal(i.appearance.sources[i.appearance.basis.architecture].url,'https://doi.org/10.7751/telopea12960');assert.match(i.appearance.sourceConflict,/花柄7〜10cm/);assert.match(i.appearance.sourceConflict,/草丈や株幅には読み替えません/);assert.equal(i.appearance.architecture,'waterPoppy');assert.equal(i.appearance.persistence,'protectedWinter');assert.deepEqual(i.appearance.foliageMonths,[5,6,7,8,9,10]);assert.equal(i.appearance.leafLength,.065);assert.equal(i.appearance.flowerRadius,.025);assert.ok(i.appearance.unconfirmed.some(x=>x.includes('描画例')));
  const p={...makePlant('p-f2e4c7935581',98810,3,3),height:.12,spread:.40,leafHeight:.02},saved=structuredClone(p),d=emptyDocument(10,6);d.plans.A.plants=[p];d.catalogVersion='2026-10-29.52';const copy=structuredClone(d);assert.deepEqual(validateDocument(d).plans,copy.plans);assert.deepEqual(d,copy);assert.deepEqual(p,saved);assert.deepEqual(stateAt(p,{...view(7),reference:true}),stateAt(p,view(7)));
  });
 
@@ -22493,6 +22493,48 @@ test('Hygrophila visible model focus frames six summer and winter inputs above t
   try{g.position.set(-2,.012,-1);g.updateMatrixWorld(true);for(const aspect of[.8,1.65]){const pose=hygroVisibleFocus1005(g,aspect,40);assert.ok(pose);assert.equal(pose.fit,'hygrophila-visible-model');assert.ok(pose.position[1]>=.1);const camera=new PerspectiveCamera(40,aspect,.01,650);camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);for(const mesh of g.children)for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);matrix.premultiply(mesh.matrixWorld);for(let j=0;j<mesh.geometry.attributes.position.count;j++){v.fromBufferAttribute(mesh.geometry.attributes.position,j).applyMatrix4(matrix).project(camera);assert.ok(Math.abs(v.x)<=1+2e-6&&Math.abs(v.y)<=1+2e-6&&v.z>=-1&&v.z<=1);}}poses++;}}finally{dispose(g);}
  }
  assert.equal(hygroVisibleFocus1005({userData:{architecture:'submergedShoots'}}),null);assert.equal(models,6);assert.equal(poses,12);console.log('HYGRO1005_FOCUS '+JSON.stringify({models,poses}));
+});
+
+test('Waterpoppy roots join underwater stolon nodes without moving leaves and flowers',()=>{
+ const input={...makePlant('p-f2e4c7935581',104810,3,3),height:.12,spread:.40,leafHeight:.055};
+ const view={year:0,month:7,reference:false};
+ const dry=plantModel(input,view,1);
+ const mesh=(g,key)=>g.children.find(m=>m.userData.component===key);
+ const matrix=new Matrix4();
+ const point=(m,i,y)=>{m.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
+ const same=(a,b)=>a.distanceTo(b)<2e-6;
+ try {
+  assert.equal(mesh(dry,'nodal-root-waterpoppy-ref'),undefined);
+  for(const depth of [.001,.009,.16]){
+   const wet=plantModel(input,{...view,waterDepth:depth},1);
+   try{
+    const roots=mesh(wet,'nodal-root-waterpoppy-ref'),stem=mesh(wet,'creeping-stem-waterpoppy-ref');
+    const petiole=mesh(wet,'petiole-waterpoppy-ref'),peduncle=mesh(wet,'peduncle-waterpoppy-ref');
+    assert.equal(roots.count,36);
+    for(const key of ['leaf-waterpoppy-photo-reference','petal-waterpoppy-photo-reference']){
+     assert.deepEqual(mesh(wet,key).instanceMatrix.array,mesh(dry,key).instanceMatrix.array);
+     assert.deepEqual(mesh(wet,key).instanceColor.array,mesh(dry,key).instanceColor.array);
+    }
+    assert.deepEqual(wet.userData.flowerTargets,dry.userData.flowerTargets);
+    for(let i=0;i<stem.count;i++){
+     const node=point(stem,i,.5);
+     assert.ok(node.y<-.006);
+     assert.ok(same(node,point(petiole,i*2,-.5)));
+     assert.ok(same(node,point(petiole,i*2+1,-.5)));
+     if(i===2)assert.ok(same(node,point(peduncle,0,-.5)));
+     for(let k=0;k<3;k++){
+      const index=i*6+k*2;
+      assert.ok(same(node,point(roots,index,-.5)));
+      assert.ok(same(point(roots,index,.5),point(roots,index+1,-.5)));
+      const tip=point(roots,index+1,.5);
+      assert.ok(tip.y>-.012-depth&&tip.y<node.y);
+     }
+    }
+   }finally{dispose(wet);}
+  }
+  const winter=plantModel(input,{...view,month:1,waterDepth:.16},1);
+  try{assert.equal(winter.children.length,0);}finally{dispose(winter);}
+ }finally{dispose(dry);}
 });
 
 test('Waterpoppy photo reference fits twenty four independent dimensions with connected floating leaves and three petals',()=>{
