@@ -9556,48 +9556,48 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "visual": "reference",
   "popularity": []
 },"p-b012252eaf20":{"label":"アマゾンフロッグピット","latin":"Limnobium laevigatum","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":null,"spread":null,"bloom":[6,7],"bloomKnown":true,"flower":"#eeeeda","leafColor":"#54873d","variegated":false,"colors":["white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"浮葉の形と冬の越冬方法","care":"販売写真に見られる丸い若い浮葉を参考に、水面に広がる姿を表示します。淡い葉裏の厚みは海外の種資料を参照しました。株元から淡緑色の根が垂れます。水深を設定した水域では、長い根の軸と細い側根・根毛を参考表示します。花期6〜7月、冬は屋外で越冬せず、保温した室内管理という販売元の記載を参考にしています。草丈・株幅の範囲は未確認です。","bloomText":"資料の開花月：6・7月","bloomBasis":"国内の生産者の種類別記載","source":"https://www.akb.jp/c/suisei/fuyu/003-0002","publisher":"杜若園芸","sourceChecked":"2026-11-12","aliases":["アマゾンフロッグピット","アマゾントチカガミ","Hydrocharis laevigata"],"selectionSource":null,"visual":"reference","popularity":[]},"p-e9f5ab2a40d1":{"label":"サルビニア・ナタンス","latin":"Salvinia natans","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":null,"spread":null,"bloom":[],"bloomKnown":true,"flower":"#babdb3","leafColor":"#689346","variegated":false,"colors":["unknown"],"sun":[],"moisture":[],"life":"annual","growth":"年次成長は未確認","season":"浮葉の形と冬の越冬方法","care":"茎の各節から平たい楕円形の浮葉が2枚向かい合い、細かく分かれた水中葉が1枚垂れます。根はなく、根のように見える部分が水中葉です。水深を設定した水域で水中葉を参考表示します。浮葉の毛は短い柄から分かれ、先端は合着しません。関東の生育期は4〜11月が目安で、冬は浮葉が消え胞子で越冬します。秋から初冬に水中葉の基部につく胞子嚢は、今回の3Dでは描いていません。同じ流通名の別種も報告されており、この表示はサンショウモ（Salvinia natans）を対象にしています。同じ株の全形・全月の実物照合と翌年の胞子からの再生表示は未完了です。","bloomText":"花をつけない水生シダです。","bloomBasis":"シダ類のため花をつけない","source":"https://www.naro.go.jp/event/files/naroautumn2022-nire2-1tsujo04.pdf","publisher":"農研機構・EPPO Bulletin","sourceChecked":"2026-11-12","aliases":["サルビニア・ナタンス","サンショウモ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-0d9f8d98a2e2":{"label":"サルビニア・モレスタ","latin":"Salvinia molesta","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":null,"spread":null,"bloom":[],"bloomKnown":true,"flower":"#babdb3","leafColor":"#689346","variegated":false,"colors":["unknown"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"浮葉の形と冬の越冬方法","care":"浮葉は対になり、販売写真のように混み合うと折れ曲がり、葉の縁が波打ちます。浮葉の毛は4本に分かれ、先端で再びつながります。同じ節から水中葉が1枚垂れ、短い柄の先で細い束に分かれます。根はありません。水深を設定した水域でこの水中葉を参考表示します。花はつけません。寒期の室内保護は販売元の記載を参考にしています。水中葉の長さ・裂片数・色は写真を参考にした描画上の近似です。胞子嚢は描いていません。草丈・株幅の範囲と同じ株の全月の姿は未確認です。","bloomText":"花をつけない水生シダです。","bloomBasis":"シダ類のため花をつけない","source":"https://www.akb.jp/c/suisei/fuyu/003-0004","publisher":"杜若園芸","sourceChecked":"2026-11-12","aliases":["サルビニア・モレスタ","オオサンショウモ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-c76bbcb60009":{"label":"サルビニア・ククラータ","latin":"Salvinia cucullata","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"herb","height":null,"spread":null,"bloom":[],"bloomKnown":true,"flower":"#babdb3","leafColor":"#689346","variegated":false,"colors":["unknown"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"浮葉の形と冬の越冬方法","care":"対になった浮葉の縁が内側へ巻き込み、深いくぼみを作ります。浮葉の表面は分岐しない単毛です。同じ節から細長い水中葉が1枚伸びます。根のように見える水中葉には短い細裂片が密に並び、水深を設定した水域で参考表示します。シダのため花はつけません。11〜4月は販売元の案内に沿った室内保護の参考期間です。水中葉の長さ・裂片数・色は種の写真からの近似です。胞子嚢は描いていません。草丈・株幅の範囲と同じ株の全月の姿は未確認です。","bloomText":"花をつけない水生シダです。","bloomBasis":"シダ類のため花をつけない","source":"https://www.akb.jp/c/suisei/fuyu/003-0005","publisher":"杜若園芸","sourceChecked":"2026-11-12","aliases":["サルビニア・ククラータ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-6f783140466d":{
-    "label": "ルドヴィジア オバリス",
-    "latin": "Ludwigia ovalis",
-    "genre": "水生植物",
-    "form": "botanical",
-    "group": "宿根草",
-    "leaf": "evergreen",
-    "height": [
-      0.05,
-      0.15
-    ],
-    "spread": null,
-    "bloom": [
-      7,
-      8,
-      9
-    ],
-    "bloomKnown": true,
-    "flower": "#869853",
-    "leafColor": "#789653",
-    "variegated": false,
-    "colors": [
-      "unknown"
-    ],
-    "sun": [],
-    "moisture": [],
-    "life": "perennial",
-    "growth": "年次成長は未確認",
-    "season": "水中葉と越冬器官を種類別に表示",
-    "care": "ミズユキノシタの別名で販売される水草です。国内生産者の草丈5〜15cm・花期7〜9月を示します。株幅は未確認で、9cmのポット径は株幅ではありません。葉柄のある互生葉と、節から根を出す這う下部の茎を参照しています。写真では葉に緑や赤みが見えますが、花色として扱いません。寒冷地以外の凍結しない水中、または日当たりのよい暖かい室内という越冬条件です。野外への放流・逸出を避けて管理してください。",
-    "bloomText": "7・8・9月",
-    "bloomBasis": "国内生産者の7〜9月の記載。この水中葉モデルに花は描かない。",
-    "source": "https://www.akb.jp/c/water_plants/biotope_plants/cold_resistance/gd3219",
-    "publisher": "杜若園芸",
-    "sourceChecked": "2026-11-01",
-    "aliases": [
-      "ルドヴィジア オバリス",
-      "ミズユキノシタ"
-    ],
-    "selectionSource": null,
-    "visual": "reference",
-    "popularity": []
-  },"p-d1be39347dd5":{
+  "label": "ルドヴィジア オバリス",
+  "latin": "Ludwigia ovalis",
+  "genre": "水生植物",
+  "form": "botanical",
+  "group": "宿根草",
+  "leaf": "evergreen",
+  "height": [
+    0.05,
+    0.15
+  ],
+  "spread": null,
+  "bloom": [
+    7,
+    8,
+    9
+  ],
+  "bloomKnown": true,
+  "flower": "#869853",
+  "leafColor": "#789653",
+  "variegated": false,
+  "colors": [
+    "unknown"
+  ],
+  "sun": [],
+  "moisture": [],
+  "life": "perennial",
+  "growth": "年次成長は未確認",
+  "season": "水中葉と越冬器官を種類別に表示",
+  "care": "ミズユキノシタの別名で販売される水草です。国内生産者の草丈5〜15cm・花期7〜9月を示します。株幅は未確認で、9cmのポット径は株幅ではありません。葉柄のある互生葉と、節から根を出す這う下部の茎を参照しています。池の3D表示では茎の節から伸びる根を池底につなぎます。写真では葉に緑や赤みが見えますが、花色として扱いません。寒冷地以外の凍結しない水中、または日当たりのよい暖かい室内という越冬条件です。野外への放流・逸出を避けて管理してください。",
+  "bloomText": "7・8・9月",
+  "bloomBasis": "国内生産者の7〜9月の記載。この水中葉モデルに花は描かない。",
+  "source": "https://www.akb.jp/c/water_plants/biotope_plants/cold_resistance/gd3219",
+  "publisher": "杜若園芸",
+  "sourceChecked": "2026-11-13",
+  "aliases": [
+    "ルドヴィジア オバリス",
+    "ミズユキノシタ"
+  ],
+  "selectionSource": null,
+  "visual": "reference",
+  "popularity": []
+},"p-d1be39347dd5":{
     "label": "ルドウィジアsp.スーパーレッド",
     "latin": "Ludwigia palustris 'Super Red'",
     "genre": "水生植物",

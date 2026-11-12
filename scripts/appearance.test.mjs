@@ -22871,7 +22871,7 @@ test('Tropica Hygrophila source preserves differing stem and two month height st
 
 import{ovalisFoliageInspectionView as ovalisVisibleFocus1002}from '../site/scene.js';
 test('Ludwigia ovalis source keeps domestic stock height and alias separate from creeping stem length pot width and flower parts',()=>{
- const i=CATALOG['p-6f783140466d'],a=i.appearance;assert.equal(i.label,'ルドヴィジア オバリス');assert.equal(i.latin,'Ludwigia ovalis');assert.ok(i.aliases.includes('ミズユキノシタ'));assert.deepEqual(i.height,[.05,.15]);assert.equal(i.spread,null);assert.deepEqual(i.bloom,[7,8,9]);assert.equal(i.bloomKnown,true);assert.deepEqual(i.colors,['unknown']);assert.equal(i.sourceChecked,'2026-11-01');assert.match(i.care,/9cm/);assert.match(a.sourceConflict,/這う茎の長さ/);assert.match(a.sourceConflict,/株幅は未確認/);assert.match(a.sourceConflict,/花全体/);assert.equal(a.arrangement,'alternate');assert.equal(a.flowerShape,'ludwigiaApetalous');assert.equal(a.status,'partial');assert.doesNotMatch(a.phenologyRegion,/マツモ|カボンバ/);assert.ok(a.unconfirmed.some(s=>s.includes('葉・茎・枝・根の数と配置は表示上の近似')&&s.includes('写真の計測値ではありません')));assert.ok(!a.unconfirmed.some(s=>s.includes('132枚')));assert.ok(a.sources.some(s=>s.url.includes('tai2.ntu.edu.tw')));
+ const i=CATALOG['p-6f783140466d'],a=i.appearance;assert.equal(i.label,'ルドヴィジア オバリス');assert.equal(i.latin,'Ludwigia ovalis');assert.ok(i.aliases.includes('ミズユキノシタ'));assert.deepEqual(i.height,[.05,.15]);assert.equal(i.spread,null);assert.deepEqual(i.bloom,[7,8,9]);assert.equal(i.bloomKnown,true);assert.deepEqual(i.colors,['unknown']);assert.equal(i.sourceChecked,'2026-11-13');assert.match(i.care,/9cm/);assert.match(a.sourceConflict,/這う茎の長さ/);assert.match(a.sourceConflict,/株幅は未確認/);assert.match(a.sourceConflict,/花全体/);assert.equal(a.arrangement,'alternate');assert.equal(a.flowerShape,'ludwigiaApetalous');assert.equal(a.status,'partial');assert.doesNotMatch(a.phenologyRegion,/マツモ|カボンバ/);assert.ok(a.unconfirmed.some(s=>s.includes('葉・茎・枝・根の数と配置は表示上の近似')&&s.includes('写真の計測値ではありません')));assert.ok(!a.unconfirmed.some(s=>s.includes('132枚')));assert.ok(a.sources.some(s=>s.url.includes('tai2.ntu.edu.tw')));
 });
 test('Ludwigia ovalis reference fits twenty four independent dimensions with closed petiolate alternate leaves',()=>{
  const dimsList=[[.12,.35,.10],[.01,.10,.005],[.12,.35,.005],[.01,.10,.01],[.02,.15,.02],[.07,.20,.03],[.1,1,.05],[.5,2,.30]];let models=0,vertices=0;
@@ -22910,6 +22910,39 @@ test('Ludwigia ovalis illustrative branches remain stable across years and prote
  }
  assert.equal(yearModels,4);assert.equal(pondModels,2);console.log('OVALIS1002_YEAR_AND_WATER '+JSON.stringify({yearModels,pondModels,annualRealismVerified:0}));
 });
+test('Ludwigia ovalis keeps creeping nodes grounded and alternating leaves submerged',()=>{
+ const p={...makePlant('p-6f783140466d',107310,3,3),height:.12,spread:.30,leafHeight:.085};
+ const matrix=new Matrix4(),v=new Vector3();
+ for(const [waterDepth,month] of [[.001,7],[.007,7],[.14,7],[.14,1],[.35,7]]){
+  const group=plantModel(p,{year:0,month,reference:false,waterDepth});
+  try{
+   const get=prefix=>group.children.find(m=>m.userData.component.startsWith(prefix));
+   const roots=get('root-submerged-ovalis'),stems=get('stem-creeping-ovalis');
+   const points=Array.from({length:stems.count},(_,i)=>{
+    stems.getMatrixAt(i,matrix);
+    return new Vector3(0,.5,0).applyMatrix4(matrix);
+   });
+   assert.equal(roots.count,points.length);
+   for(let i=0;i<roots.count;i++){
+    roots.getMatrixAt(i,matrix);
+    const start=v.set(0,-.5,0).applyMatrix4(matrix);
+    assert.ok(points.some(node=>node.distanceTo(start)<1e-7));
+    const tip=v.set(0,.5,0).applyMatrix4(matrix);
+    assert.ok(tip.y>=-.012-1e-7&&tip.y<-.011);
+   }
+   const leaf=get('leaf-submerged-ovalis'),positions=leaf.geometry.attributes.position;
+   for(let i=0;i<leaf.count;i++){
+    leaf.getMatrixAt(i,matrix);
+    for(let j=0;j<positions.count;j++){
+     v.fromBufferAttribute(positions,j).applyMatrix4(matrix);
+     assert.ok(v.y>=-.012-1e-7&&v.y<waterDepth-.006);
+    }
+   }
+   assert.equal(flowerInspectionView(group,.8,40),null);
+  }finally{dispose(group);}
+ }
+});
+
 test('Ludwigia ovalis visible model focus frames six summer and winter inputs above the camera floor',()=>{
  let models=0,poses=0;const v=new Vector3(),matrix=new Matrix4();
  for(const dims of[[.12,.35,.10],[.01,.10,.005],[.12,.35,.005]])for(const month of[7,1]){

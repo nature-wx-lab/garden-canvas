@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1072';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1073';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1072';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1073';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1268,18 +1268,19 @@ export function ovalisPhotoReferenceGeometry(){
 }
 function drawOvalisPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),radius=Math.min(.0006,h*.008,w*.002,LH*.02),P=Math.min(.004,w*.015,LH*.07),L=Math.min(.024,w*.065),W=L*.80,stem=info.appearance.stemColor,leafKind='leaf-submerged-ovalis-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ const wet=s.waterDepth>0,bed=wet?-.012:0;
+ const h=s.height,w=s.spread,LH=Math.min(h,s.leafHeight,wet?(s.waterDepth+.006)*.92:Infinity),base=Math.min(.0015,LH*.05),radius=Math.min(.0006,h*.008,w*.002,LH*.02),P=Math.min(.004,w*.015,LH*.07),L=Math.min(.024,w*.065),W=L*.80,stem=info.appearance.stemColor,leafKind='leaf-submerged-ovalis-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
  function leaf(at,turn,root){
   const tip=[at[0]+Math.sin(turn)*P*.82,at[1]+P*.45,at[2]+Math.cos(turn)*P*.82];
   b.branch(at,tip,Math.min(.00025,radius*.55),stem,'petiole-ovalis-photo-reference');
   b.add('ovalis-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.045),...tip,W,L,Math.min(L,LH*.55),Math.acos(Math.min(.62,LH*.10/L)),turn,0);
-  if(root)b.branch(at,[at[0],base*.3,at[2]],Math.min(.00018,radius*.4),'#b6ad8d','root-submerged-ovalis-photo-reference');
+  if(root)b.branch(at,[at[0],bed+base*.3,at[2]],Math.min(.00018,radius*.4),'#b6ad8d','root-submerged-ovalis-photo-reference');
  }
  for(let runner=0;runner<6;runner++){
-  const az=runner*TAU/6+.18,origin=[0,base,0],path=t=>[Math.sin(az)*w*.26*t,base+LH*(.045+.10*Math.sin(Math.PI*t)),Math.cos(az)*w*.26*t];let previous=origin;
+  const az=runner*TAU/6+.18,origin=[0,bed+base,0],path=t=>[Math.sin(az)*w*.26*t,bed+base+LH*(.045+.10*Math.sin(Math.PI*t)),Math.cos(az)*w*.26*t];let previous=origin;
   for(let j=1;j<=10;j++){
    const at=path(j/10);b.branch(previous,at,radius,stem,'stem-creeping-ovalis-photo-reference');previous=at;leaf(at,az+j*Math.PI,true);
-   if(j===4||j===7){const turn=az+(j===4?-.8:.8),top=LH*(.64+.07*((runner+j)%3)),reach=w*.075;let prev=at;
+   if(j===4||j===7){const turn=az+(j===4?-.8:.8),top=bed+LH*(.64+.07*((runner+j)%3)),reach=w*.075;let prev=at;
     for(let k=1;k<=6;k++){
      const u=k/6,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];
      b.branch(prev,tip,radius*.75,stem,'stem-ascending-ovalis-photo-reference');prev=tip;leaf(tip,turn+k*Math.PI,false);
