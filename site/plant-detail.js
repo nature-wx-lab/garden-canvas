@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1039';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1040';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1039';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1040';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26648,13 +26648,41 @@ function drawMolestaSubmergedLeaf(axis, node, depth, leafLength, phase) {
  }
 }
 
+// In the reference photographs, narrow submerged axes carry short, dense lateral divisions.
+function drawCucullataSubmergedLeaf(axis, node, depth, leafLength, phase) {
+ const stipe = Math.min(.00048, leafLength*.022);
+ const neck = [node[0], node[1]-.018, node[2]];
+ const span = Math.min(leafLength*.30, depth*.28);
+ const dx = Math.cos(phase), dz = Math.sin(phase);
+ axis.branch(node, neck, stipe, '#76694e', 'salvinia-submerged-leaf-stipe');
+ let previous = neck;
+ for (let segment = 1; segment <= 9; segment++) {
+  const t = segment/9;
+  const joint = [neck[0]+dx*span*.9*t*t, neck[1]-depth*t, neck[2]+dz*span*.9*t*t];
+  axis.branch(previous, joint, stipe*(1-.69*t), '#71644a', 'salvinia-submerged-leaf-axis');
+  previous = joint;
+  if (segment === 9) continue;
+  const angle = phase+segment*1.13;
+  const reach = span*Math.pow(Math.sin(Math.PI*t), .72);
+  for (const side of [-1,1]) {
+   const tip = [
+    joint[0]+Math.cos(angle)*reach*side,
+    joint[1]-depth*(1-t)*.32,
+    joint[2]+Math.sin(angle)*reach*side,
+   ];
+   axis.branch(joint, tip, stipe*(.28-.10*t), '#817359', 'salvinia-submerged-leaf-division');
+  }
+ }
+}
+
 function drawFreeFloaters(b,{info,s,detail,rand},kit){
  if(s.groundDormant)return;
  const a=info.appearance,arch=a.architecture,fern=arch.startsWith('salvinia'),hyacinth=arch==='waterHyacinth',nat=arch==='salviniaNatans',hood=arch==='salviniaCucullata',w=s.spread,h=s.height,len=Math.min(a.leafLength,w*(hyacinth?.34:.18)),green=s.leafColor;
  if(fern){
   const shoots=Math.max(4,Math.round(14*detail*s.leafDensity)),nodes=5;
   const molesta=arch==='salviniaMolesta';
-  const submergedDepth=nat||molesta?Math.min(s.waterDepth,len*(nat?3:4.1)):0;
+  const depthFactor=nat?3:molesta?4.1:hood?3.5:0;
+  const submergedDepth=Math.min(s.waterDepth,len*depthFactor);
   for(let i=0;i<shoots;i++){
    const an=i*2.399,rr=w*.29*Math.sqrt((i+.5)/shoots),origin=[Math.sin(an)*rr,.010,Math.cos(an)*rr],axis=flowerFrame(b,origin,0,an+rand()*2),step=len*(.73+rand()*.16);
    let prior=[0,0,0];
@@ -26663,7 +26691,8 @@ function drawFreeFloaters(b,{info,s,detail,rand},kit){
     if(submergedDepth>=.001){
      const phase=i*2.399+k*.67;
      if(nat)drawSalviniaNatansSubmergedLeaf(axis,at,submergedDepth,len,phase);
-     else drawMolestaSubmergedLeaf(axis,at,submergedDepth,len,phase);
+     else if(molesta)drawMolestaSubmergedLeaf(axis,at,submergedDepth,len,phase);
+     else drawCucullataSubmergedLeaf(axis,at,submergedDepth,len,phase);
     }
     for(const side of [-1,1]){
      const ll=len*(.68+rand()*.36),f=flowerFrame(axis,at,Math.PI/2+(rand()-.5)*.13,side*Math.PI/2+(rand()-.5)*.55);
