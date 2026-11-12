@@ -23443,6 +23443,36 @@ test('waterHorsetail stem focus frames six seasonal independent inputs',()=>{
   }finally{dispose(g);}
  }assert.equal(models,6);assert.equal(poses,12);console.log('WATER_HORSETAIL1033_STEM_FOCUS '+JSON.stringify({models,poses}));
 });
+test('waterHorsetail stem focus leaves sedge and papyrus culms to their own cameras', () => {
+  const cases = [...UMBRELLA_SEDGES1031_CASES, MINI_PAPYRUS1032];
+  for (const c of cases) {
+    const [height, spread, leafHeight] = c.normal;
+    const input = {...makePlant(c.id, c.pid, 3, 3), height, spread, leafHeight};
+    const g = plantModel(input, {year: 1, month: 8, reference: false}, 1);
+    try {
+      assert.ok(g.children.some(mesh => mesh.userData.component === 'culm'), c.id);
+      assert.equal(waterHorsetailStemInspectionView(g, 1.65, 40), null, c.id);
+      const focus = c === MINI_PAPYRUS1032 ? miniPapyrusHeadInspectionView : umbrellaSedgeFoliageInspectionView;
+      assert.ok(focus(g, 1.65, 40), c.id);
+    } finally {
+      dispose(g);
+    }
+  }
+});
+test('miniPapyrus head focus leaves flowering umbrella sedges to their own camera', () => {
+  for (const c of UMBRELLA_SEDGES1031_CASES) {
+    const [height, spread, leafHeight] = c.normal;
+    const input = {...makePlant(c.id, c.pid, 3, 3), height, spread, leafHeight};
+    const g = plantModel(input, {year: 1, month: 8, reference: false}, 1);
+    try {
+      assert.ok(g.children.some(mesh => mesh.userData.component === 'umbelRay'), c.id);
+      assert.equal(miniPapyrusHeadInspectionView(g, 1.65, 40), null, c.id);
+      assert.ok(umbrellaSedgeFoliageInspectionView(g, 1.65, 40), c.id);
+    } finally {
+      dispose(g);
+    }
+  }
+});
 test('waterHorsetail culm sheath and sparse branches retain actual attachment roots',()=>{
  const c=WATER_HORSETAIL1033;let joins=0;for(const month of[7,5]){const g=plantModel({...makePlant(c.id,c.pid,3,3),height:.5,spread:.35,leafHeight:.4},{year:1,month,reference:false},1);try{g.updateMatrixWorld(true);const mesh=k=>g.children.find(m=>m.userData.component===k),culms=mesh('culm'),sheaths=mesh('nodeSheath'),branches=mesh('whorledBranch'),at=(m,i,p)=>{const matrix=new Matrix4();m.getMatrixAt(i,matrix);return p.applyMatrix4(matrix).applyMatrix4(m.matrixWorld);},close=(a,b)=>{assert.ok(a.distanceTo(b)<2e-6);joins++;};let branch=0;for(let i=0;i<40;i++){for(let k=1;k<10;k++)close(at(culms,i*10+k,new Vector3(0,-.5,0)),at(culms,i*10+k-1,new Vector3(0,.5,0)));for(let k=1;k<10;k++)close(at(sheaths,i*9+k-1,new Vector3(0,.5,0)),at(culms,i*10+k-1,new Vector3(0,.5,0)));if(i%7===0){const node=at(culms,i*10+4,new Vector3(0,.5,0));for(let j=0;j<4;j++){close(at(branches,branch,new Vector3(0,-.5,0)),node);for(let k=1;k<3;k++)close(at(branches,branch+k,new Vector3(0,-.5,0)),at(branches,branch+k-1,new Vector3(0,.5,0)));const first=at(branches,branch,new Vector3(0,.5,0)).distanceTo(at(branches,branch,new Vector3(0,-.5,0))),sheath=at(sheaths,i*9+4,new Vector3(0,.5,0)).distanceTo(at(sheaths,i*9+4,new Vector3(0,-.5,0)));assert.ok(first<sheath);branch+=3;}}}assert.equal(branch,72);
  }finally{dispose(g);}}console.log('WATER_HORSETAIL1033_CONNECTED '+JSON.stringify({models:2,joins}));
