@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1043';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1044';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1043';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1044';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26219,18 +26219,59 @@ export function watercoinPhotoReferenceGeometry(type){
 function watercoinPhotoSegment(f,a,z,r,color,kind){
  const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');f.add('watercoin-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
 }
+function drawWatercoinCreepingStem(b, nodes, radius, spread, depth) {
+ // Join the existing stalk bases with short connections. The layout is illustrative.
+ const connected = [nodes[0]];
+ const remaining = nodes.slice(1);
+ while (remaining.length) {
+  let nearest = Infinity, start = null, endIndex = 0;
+  for (const node of connected) {
+   for (let i = 0; i < remaining.length; i++) {
+    const end = remaining[i];
+    const distance = Math.hypot(node[0]-end[0], node[2]-end[2]);
+    if (distance < nearest) {
+     nearest = distance;
+     start = node;
+     endIndex = i;
+    }
+   }
+  }
+  const [end] = remaining.splice(endIndex, 1);
+  watercoinPhotoSegment(b, start, end, radius, '#779653', 'creeping-stem-watercoin-photo-ref');
+  connected.push(end);
+ }
+ if (depth <= 0) return;
+ const extent = Math.min(depth*.84, spread*.13, .035);
+ for (let i = 0; i < nodes.length; i++) {
+  const node = nodes[i], angle = i*2.399;
+  const sway = extent*.17, length = extent*(.62+.38*(i%4)/3);
+  const neck = [node[0], -.008, node[2]];
+  const bend = [node[0]+Math.sin(angle)*sway*.28, neck[1]-length*.55, node[2]+Math.cos(angle)*sway*.28];
+  const end = [node[0]+Math.sin(angle)*sway, neck[1]-length, node[2]+Math.cos(angle)*sway];
+  const rootRadius = Math.min(radius*.60, extent*.12);
+  watercoinPhotoSegment(b, node, neck, rootRadius, '#b8b88e', 'nodal-root-watercoin-photo-ref');
+  watercoinPhotoSegment(b, neck, bend, rootRadius*.8, '#babd97', 'nodal-root-watercoin-photo-ref');
+  watercoinPhotoSegment(b, bend, end, rootRadius*.47, '#c4c7a0', 'nodal-root-watercoin-photo-ref');
+ }
+}
 function drawWatercoinPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),leafR=Math.min(.00065,h*.005,w*.006,LH*.04),stemR=Math.min(.00075,h*.005,w*.008),floor=r=>r*1.2+Math.min(.00002,h*.002),leaves=[];
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),leafR=Math.min(.00065,h*.005,w*.006,LH*.04),stemR=Math.min(.00075,h*.005,w*.008),floor=r=>r*1.2+Math.min(.00002,h*.002),leaves=[],stemNodes=[];
  for(let j=0;j<16;j++){
   const az=j*2.399+.4,R=w*.29*Math.sqrt((j+.7)/16),D=Math.min(.035,w*.30)*(.86+j*.009),at=[Math.sin(az)*R,LH*(.78+j/15*.15),Math.cos(az)*R],relief=Math.min(D,LH*.05/.065),base=[at[0]-Math.sin(az)*D*.16,floor(leafR),at[2]-Math.cos(az)*D*.16];leaves.push({at,D});let previous=base;
+  stemNodes.push(base);
   for(let k=1;k<=4;k++){const t=k/4,to=[base[0]+Math.sin(az)*D*.16*t+Math.cos(az)*D*.05*Math.sin(Math.PI*t),base[1]+(at[1]-base[1])*t,base[2]+Math.cos(az)*D*.16*t-Math.sin(az)*D*.05*Math.sin(Math.PI*t)];b.branch(previous,to,leafR,'#7fa95c','petiole-watercoin-photo-ref');previous=to;}
   b.add('watercoin-photo-reference-leaf','leaf-watercoin-photo-reference',kit.shade(rand,s.leafColor,.025),...at,D,relief,D,0,az,0);
  }
- if(!s.bloom)return;
+ if(!s.bloom){
+  drawWatercoinCreepingStem(b,stemNodes,leafR*.84,w,s.waterDepth);
+  return;
+ }
  // Place this illustrative inflorescence in a visible gap, without claiming a measured colony layout.
  let selected=null;for(let k=0;k<16;k++){const az=k*TAU/16,root=[Math.sin(az)*w*.33,floor(stemR),Math.cos(az)*w*.33],clearance=Math.min(...leaves.map(l=>Math.hypot(root[0]-l.at[0],root[2]-l.at[2])-l.D*.58));if(!selected||clearance>selected.clearance)selected={root,clearance};}
  const root=selected.root,top=h*.82,nodes=[];let previous=root;for(let level=0;level<3;level++){const at=[root[0],top*[.52,.76,1][level],root[2]];nodes.push(at);b.branch(previous,at,stemR,'#7fa95c','scape-watercoin-photo-ref');previous=at;}
+ stemNodes.push(root);
+ drawWatercoinCreepingStem(b,stemNodes,leafR*.84,w,s.waterDepth);
  const r=Math.min(.0013,w*.04,h*.07),reach=Math.min(.0035,w*.04,h*.035),rise=Math.min(.0007,h*.01);
  for(let level=2;level>=0;level--)for(let flower=0;flower<6;flower++){
   const n=(2-level)*6+flower,az=flower*TAU/6+level*.31,node=nodes[level],at=[node[0]+Math.sin(az)*reach,node[1]+rise,node[2]+Math.cos(az)*reach],yaw=az+.2,f=flowerFrame(b,at,0,yaw);b.branch(node,at,stemR*.26,'#7fa95c','pedicel-watercoin-photo-ref');

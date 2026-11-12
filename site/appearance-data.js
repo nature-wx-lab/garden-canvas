@@ -12314,10 +12314,18 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     {
       "url": "https://w3.biosci.utexas.edu/prc/K12/pages/Hydrocotyle%20verticillata%20triradiata.html",
       "scope": "species"
+    },
+    {
+      "url": "https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Hydrocotyle~verticillata&page=nswfl",
+      "scope": "species"
+    },
+    {
+      "url": "https://lkcnhm.nus.edu.sg/nis/whorled-pennywort-hydrocotyle-verticillata-thunb-araliaceae-a-new-record-of-a-casual-aquatic-macrophyte-in-singapore/",
+      "scope": "species"
     }
   ],
   "basis": {
-    "habit": 0,
+    "habit": 2,
     "persistence": 0,
     "leafColor": 0,
     "leafShape": 0,
@@ -12336,11 +12344,11 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "全形・全月の実物照合",
     "水深と気温による水上形・水中形の切り替え",
     "地域別の芽出し・枯れ込み月",
-    "水中の茎・根の立体表示",
+    "植物誌と現地調査を参考に、地表や水面近くをはう茎と、水中に垂れる節の根を表示します。茎の分岐と根の本数・長さは説明用で、底への定着や水深に応じた伸び方は未確認です。",
     "流通株の分類同定",
     "生産者の学名表記と、形の参考に使う国外の変種資料は同じ範囲と断定しません。流通株ごとの分類同定や、同じ株の年間変化は未確認です。",
     "葉21〜35×24〜40mmや花径2〜2.8mmは国外の変種資料の部位の値です。入力寸法内で調整する参考形で、利用者の株を実測したものではありません。",
-    "写真の光沢、葉脈、葉の縁の浅い凹凸と花の集まりは参考表現です。色は校正しておらず、地下茎と根は表示していません。",
+    "写真の光沢、葉脈、葉の縁の浅い凹凸と花の集まりは参考表現です。色は校正しておらず、地下に隠れる部分は表示していません。",
     "資料では花弁は主に5枚で、6枚の例も記載されています。今の描画は5枚の参考例です。葉・茎・花の数や配置は説明用で、写真から計測した株や年次増殖ではありません。",
     "冬の水中保護に数値の水温・気温の閾値は示されていません。12〜3月の非表示を自然な全株の枯れ込みや、暖かな室内での姿へ読み替えません。"
   ],
