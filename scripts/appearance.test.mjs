@@ -22970,12 +22970,27 @@ test('Sagittaria winter ribbon rosette stays submerged and shares the rooted sum
  const get=(group,name)=>group.children.find(m=>m.userData.component===name);
  const dry=plantModel(plant,summer);
  assert.equal(get(dry,'leaf-submerged-sagittaria-ref'),undefined);
+ assert.equal(get(dry,'runner-sagittaria-ref'),undefined);
  for(const depth of [.001,.023,.19])for(const month of [1,7]){
   const group=plantModel(plant,{...summer,month,waterDepth:depth});
   try{
    const leaves=get(group,'leaf-submerged-sagittaria-ref');assert.equal(leaves.count,7);
    const bed=-.012-depth,crown=new Vector3(0,bed+Math.min(.002,depth*.09),0);
    const matrix=new Matrix4(),positions=leaves.geometry.attributes.position;
+   const runners=get(group,'runner-sagittaria-ref'),roots=get(group,'fine-root-sagittaria-ref');
+   assert.equal(runners.count,8);assert.equal(roots.count,7);
+   const ends=(mesh,i)=>{
+    mesh.getMatrixAt(i,matrix);
+    return [-.5,.5].map(y=>new Vector3(0,y,0).applyMatrix4(matrix));
+   };
+   const close=(a,b)=>a.distanceTo(b)<1e-7;
+   for(let i=0;i<runners.count;i++){
+    const points=ends(runners,i);
+    const previous=i%4===0?[crown]:ends(runners,i-1);
+    assert.ok(points.some(p=>previous.some(q=>close(p,q))));
+    assert.ok(points.every(p=>p.y>=bed&&p.y<-.012));
+   }
+   for(let i=0;i<roots.count;i++)assert.ok(ends(roots,i).some(p=>close(p,crown)));
    for(let i=0;i<leaves.count;i++){
     leaves.getMatrixAt(i,matrix);
     assert.ok(new Vector3().setFromMatrixPosition(matrix).distanceTo(crown)<1e-7);
@@ -22985,7 +23000,9 @@ test('Sagittaria winter ribbon rosette stays submerged and shares the rooted sum
     }
    }
    if(month===1){
-    assert.equal(group.children.length,1);
+    assert.deepEqual(group.children.map(mesh=>mesh.userData.component).sort(),[
+     'fine-root-sagittaria-ref','leaf-submerged-sagittaria-ref','runner-sagittaria-ref',
+    ]);
     assert.equal(group.userData.groundDormant,true);
     const pose=rootedPondInspectionView(group,349/388);
     assert.ok(pose.position[1]>.1&&pose.target[1]<-.012);

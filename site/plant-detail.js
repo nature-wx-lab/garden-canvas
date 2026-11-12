@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1059';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1060';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1059';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1060';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -27264,13 +27264,34 @@ function drawSagittariaSubmergedRosette(b,crown,depth,spread,leafHeight){
         i%2===0?'#668b4d':'#729451',...crown,length,length,length,.67+.045*i,i*2.399+.18,0);
  }
 }
+function drawSagittariaRunners(b,crown,depth,spread){
+ const bed=-.012-depth,radius=Math.min(.0016,spread*.009,depth*.14);
+ for(const angle of [1.65,3.83]){
+  const length=Math.min(.13,spread*.36,depth*2.9)*(angle<2?1:.74);
+  let previous=crown;
+  for(let i=1;i<=4;i++){
+   const t=i/4,bearing=angle+t*.36;
+   const node=[Math.sin(bearing)*length*t,bed+radius*(1.35+.38*Math.sin(Math.PI*t)),Math.cos(bearing)*length*t];
+   b.branch(previous,node,radius*(1-.36*t),'#ae9e73','runner-sagittaria-ref');
+   previous=node;
+  }
+ }
+ for(let i=0;i<7;i++){
+  const az=i*TAU/7,reach=Math.min(spread*.05,radius*(4.2+i*.36));
+  const tip=[Math.sin(az)*reach,bed+radius*.20,Math.cos(az)*reach];
+  b.branch(crown,tip,radius*.16,'#b5a782','fine-root-sagittaria-ref');
+ }
+}
 function drawSagittariaFemalePhotoReference(b,{s,rand},kit){
  const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.85);
  const radius=Math.min(.0012,h*.006,w*.004,LH*.04),stemRadius=Math.min(.0012,h*.006,w*.04);
  const wet=s.waterDepth>=.001;
  const rootY=wet?-.012-s.waterDepth+Math.min(.002,s.waterDepth*.09):stemRadius*1.2+Math.min(.00002,h*.002);
  const crown=[0,rootY,0];
- if(wet)drawSagittariaSubmergedRosette(b,crown,s.waterDepth,w,LH);
+ if(wet){
+  drawSagittariaSubmergedRosette(b,crown,s.waterDepth,w,LH);
+  drawSagittariaRunners(b,crown,s.waterDepth,w);
+ }
  if(s.groundDormant||s.leafDensity<=0)return;
  for(let j=0;j<8;j++){const az=j*2.399+.4,R=w*.10*Math.sqrt((j+.7)/8),at=[Math.sin(az)*R,LH*.25,Math.cos(az)*R],L=Math.min(.25,w*.36)*(.89+j*.012),relief=Math.min(L,LH*.20/.13),pitch=Math.acos(Math.min(.98,LH*.70/L));b.branch(crown,at,radius,'#688650','petiole-sagittaria-female-ref');b.add('sagittariaLong','leaf-glossy',kit.shade(rand,s.leafColor,.025),...at,L,L,relief,pitch,az,0);}
  if(!s.bloom)return;
