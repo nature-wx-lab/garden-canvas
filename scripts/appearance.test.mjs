@@ -22401,6 +22401,39 @@ test('Egeria male flower has a high inner stamen whorl and two lower outer whorl
  }finally{dispose(group);}
 });
 
+test('Egeria roots meet the pond bed and shallow foliage remains below the water plane',()=>{
+ const plant={...makePlant('p-790697efed42',106110,3,3),height:.32,spread:.35,leafHeight:.22};
+ const original=structuredClone(plant),bed=-.012;
+ for(const depth of [.001,.007,.16,.23,.40]){
+  const group=plantModel(plant,{year:0,month:7,reference:false,waterDepth:depth});
+  try{
+   const get=name=>group.children.find(m=>m.userData.component===name);
+   const stems=get('stem-submerged-egeria-photo-reference'),roots=get('root-submerged-egeria-photo-reference');
+   const leaves=get('leaf-submerged-egeria-photo-reference-underside-8bac65');
+   const matrix=new Matrix4(),point=new Vector3(),surface=depth-.006;
+   const at=(m,i,y)=>{m.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
+   assert.equal(roots.count,6);assert.equal(leaves.count,127);
+   for(let i=0;i<3;i++){
+    assert.ok(at(roots,2*i,-.5).distanceTo(at(stems,i===2?1:0,.5))<1e-7);
+    assert.ok(at(roots,2*i,.5).distanceTo(at(roots,2*i+1,-.5))<1e-7);
+    const tip=at(roots,2*i+1,.5);
+    assert.ok(tip.y>=bed&&tip.y<bed+.00015);
+   }
+   for(const mesh of [stems,roots,leaves])for(let i=0;i<mesh.count;i++){
+    mesh.getMatrixAt(i,matrix);const pos=mesh.geometry.attributes.position;
+    for(let j=0;j<pos.count;j++){
+     point.fromBufferAttribute(pos,j).applyMatrix4(matrix);
+     assert.ok(point.y>=bed-1e-7&&point.y<surface,JSON.stringify({depth,component:mesh.userData.component,y:point.y}));
+    }
+   }
+   const stalk=get('pedicel-submerged-egeria-photo-reference');
+   if(depth===.40)assert.equal(stalk,undefined);
+   else assert.ok(at(stalk,0,.5).y>surface);
+  }finally{dispose(group);}
+ }
+ assert.deepEqual(plant,original);
+});
+
 test('Egeria photo reference fits twenty four independent dimensions with connected whorled leaves and roots',()=>{
  const dimensions=[[.45,.35,.45],[.04,.10,.020],[.45,.35,.005],[.005,.03,.005],[.02,.05,.02],[.7,.15,.3],[.1,1,.05],[2,3,1.5]];let models=0,leafJoins=0,rootJoins=0,flowering=0,vertices=0;
  for(const dims of dimensions)for(const month of[7,4,1]){

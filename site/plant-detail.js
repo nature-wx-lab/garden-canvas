@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1062';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1063';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1062';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1063';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1098,14 +1098,19 @@ export function egeriaPhotoReferenceGeometry(type){
 }
 function drawEgeriaPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,water=s.waterDepth>0,LH=Math.min(s.leafHeight,h*.96,water?Math.max(.003,s.waterDepth-.012):Infinity),radius=Math.min(.0012,h*.006,w*.006,LH*.02),crown=[0,radius*1.4+Math.min(.00002,h*.002),0],az=.35;
+ const h=s.height,w=s.spread,water=s.waterDepth>0;
+ // Scene offsets this submerged model by 12 mm above the bed.
+ const bed=-.012,waterColumn=s.waterDepth+.006;
+ const LH=Math.min(s.leafHeight,h*.96,water?waterColumn*.90:Infinity);
+ const radius=Math.min(.0012,h*.006,w*.006,LH*.02),az=.35;
+ const crownY=water?bed+Math.min(.0015,waterColumn*.08):radius*1.4+Math.min(.00002,h*.002);
+ const crown=[0,crownY,0],leafCeiling=water?crownY+LH:LH;
  const main=t=>[Math.sin(az)*w*.060*Math.sin(t*Math.PI*.9),crown[1]+LH*.90*(1-Math.pow(1-t,1.20)),Math.cos(az)*w*.025*t];
- const nodeEnds=[];
  function shoot(path,n,turn){
   let prev=path(0);
   for(let j=1;j<=n;j++){
-   const t=j/n,at=path(t);b.branch(prev,at,radius,'#789357','stem-submerged-egeria-photo-reference');prev=at;nodeEnds.push(at);
-   const count=4+j%2,rotation=turn+j*1.5708,L=Math.min(.025*(.84+.16*Math.sin(t*Math.PI*.8)),w*.17,LH*.75,Math.max(.00002,(LH-at[1])*.94));
+   const t=j/n,at=path(t);b.branch(prev,at,radius,'#789357','stem-submerged-egeria-photo-reference');prev=at;
+   const count=4+j%2,rotation=turn+j*1.5708,L=Math.min(.025*(.84+.16*Math.sin(t*Math.PI*.8)),w*.17,LH*.75,Math.max(.00002,(leafCeiling-at[1])*.94));
    for(let k=0;k<count;k++)b.add('egeria-photo-reference-leaf','leaf-submerged-egeria-photo-reference-underside-8bac65',kit.shade(rand,s.leafColor,.035),...at,L*.18,L,L,.52+(j%3)*.11,rotation+k*TAU/count,0);
   }
  }
@@ -1115,11 +1120,20 @@ function drawEgeriaPhotoReference(b,{s,rand},kit){
   shoot(t=>[at[0]+Math.sin(turn)*reach*t,at[1]+(tipY-at[1])*(1-Math.pow(1-t,1.25)),at[2]+Math.cos(turn)*reach*t+.008*Math.min(1,w/.1)*Math.sin(t*Math.PI)],7,turn);
  }
  const rootAt=main(1/14),rootRadius=Math.min(.00018,h*.004,w*.002,LH*.015);
- for(let k=0;k<3;k++){const angle=k*2.399+.2;b.branch(rootAt,[rootAt[0]+Math.sin(angle)*w*.04,rootRadius*1.5,rootAt[2]+Math.cos(angle)*w*.04],rootRadius,'#d3d5b8','root-submerged-egeria-photo-reference');}
+ for(let k=0;k<3;k++){
+  const angle=k*2.399+.2,node=water&&k===2?main(2/14):rootAt;
+  const dx=Math.sin(angle)*w*.04,dz=Math.cos(angle)*w*.04;
+  const tip=[node[0]+dx,water?bed+rootRadius*.7:rootRadius*1.5,node[2]+dz];
+  if(water){
+   const bend=[node[0]+dx*.38,node[1]+(tip[1]-node[1])*.60,node[2]+dz*.38];
+   b.branch(node,bend,rootRadius,'#d3d5b8','root-submerged-egeria-photo-reference');
+   b.branch(bend,tip,rootRadius*.63,'#d3d5b8','root-submerged-egeria-photo-reference');
+  }else b.branch(node,tip,rootRadius,'#d3d5b8','root-submerged-egeria-photo-reference');
+ }
  if(!s.bloom)return;
  const R=Math.min(.010,w*.12,h*.17),flowerY=water?s.waterDepth+.004:h*.93;
  // A source-described surface flower cannot fit below a deeper water surface.
- if(flowerY+R*.25>h)return;
+ if(flowerY+R*.25-(water?bed:0)>h)return;
  const end=main(1),axil=main(12/14),at=[end[0],flowerY,end[2]],yaw=.25,f=flowerFrame(b,at,0,yaw);
  const dx=at[0]-axil[0],dy=at[1]-axil[1],dz=at[2]-axil[2];
  const sheathLength=Math.min(R*.84,Math.hypot(dx,dy,dz)*.48,LH*.22),sheathWidth=sheathLength*.24;
