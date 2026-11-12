@@ -1,4 +1,4 @@
-import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.1035';
+import {APPEARANCE_DATA} from './appearance-data.js?v=0.9.1036';
 
 export const TRAIT_LABELS={leafShape:'葉の形',leafPattern:'葉の模様',persistence:'葉・地上部の季節変化',flowerShape:'花の形',habit:'枝ぶり・草姿',barkColor:'幹の色',barkPattern:'樹皮',emergenceMonths:'芽出し',flowerMonths:'開花月'};
 const CONIFER_LABELS={flatScale:'平たい小枝に十字対生する鱗片葉',appressedScale:'細い枝を覆う小さな鱗片葉',softAwl:'柔らかい針状の幼形葉',threadScale:'糸状に垂れる枝を覆う鱗片葉',spiralYew:'らせん状に並ぶ平たい針葉',flatYew:'左右に開く平たい針葉',whorledAwl:'3輪生し白い帯を持つ針葉',bluntScale:'先の丸い鱗片葉と葉裏の白い気孔帯',pointedScale:'先の尖る鱗片葉と葉裏の白い気孔帯'};
@@ -225,7 +225,7 @@ Object.assign(TRAIT_VALUES,{spurgeLinearLeaf:'螺旋状に密につく細長い�
 
 Object.assign(TRAIT_VALUES,{winterSubmerged:'冬は水上葉が消え、水中葉で越冬',sagittariaLong:'長い柄の先に付く細長い楕円葉',sagittariaFemale:'白い3弁と緑色の雌しべの集合',nupharSagittate:'基部が矢じり形に切れ込む長い葉',nupharCup:'黄色い5枚の萼・内側の小花弁・円盤状の柱頭',floatingCordate:'切れ込みのある丸い浮葉',waterPoppyCordate:'光沢のある広卵形〜心形の浮葉',fringedWaterFlower:'縁が細かい房状になる黄色い5裂花冠',waterPoppyCup:'淡黄色の3弁が重なり濃い花心を囲む花'});
 
-Object.assign(TRAIT_VALUES,{salviniaFlat:'対になった平たい楕円の浮葉・先端が離れた分岐毛',salviniaFolded:'二つ折りで波打つ浮葉・先端がつながる4分岐の毛',salviniaHood:'縁がフード状に巻く浮葉・分岐しない毛',hyacinthOrbicular:'膨らんだ葉柄の先に付く光沢のある丸い葉',frogbitOrbicular:'短い柄の丸い浮葉・葉裏に海綿状の組織',hyacinthEye:'淡紫の6裂花被・上側の裂片に黄色と紫の斑紋',frogbitFlowers:'細い3弁の雄花と分かれた柱頭の雌花',sporeAnnual:'冬は浮葉が消え胞子で越冬する一年性の水生シダ'});
+Object.assign(TRAIT_VALUES,{salviniaFlat:'対になった平たい楕円の浮葉・先端が離れた分岐毛',salviniaFolded:'二つ折りで波打つ浮葉・先端がつながる4分岐の毛',salviniaHood:'縁がフード状に巻く浮葉・分岐しない毛',hyacinthOrbicular:'膨らんだ葉柄の先に付く光沢のある丸い葉',frogbitOrbicular:'短い柄の丸い浮葉・葉裏に海綿状の組織',frogbitPhotoBlade:'短い葉柄の丸い浮葉・厚みのある淡緑色の葉裏',hyacinthEye:'淡紫の6裂花被・上側の裂片に黄色と紫の斑紋',frogbitFlowers:'細い3弁の雄花と分かれた柱頭の雌花',sporeAnnual:'冬は浮葉が消え胞子で越冬する一年性の水生シダ'});
 
 Object.assign(TRAIT_VALUES,{edraianthusLinear:'細い線形の葉',phyteumaBasal:'長い葉柄を持つ卵形の根元の葉と細い茎葉',michauxiaRough:'粗い毛と鋸歯を持つ長い葉',jasioneOblong:'根元に集まる細長い葉',tracheliumSerrate:'濃色で粗い鋸歯のある卵形葉',wahlenbergiaLeaf:'白い軟骨質の細い縁がある小さな葉',edraianthusBell:'上向きの5裂鐘形花の集まり',phyteumaFloret:'細い5裂片と長い花柱を持つ小花の球状花序',michauxiaReflexed:'強く反る8〜10裂の白い花冠と長い花柱',jasioneFloret:'基部で葯が輪になる5裂の小花の球状花序',tracheliumFloret:'細長い筒と5裂花冠・長い花柱の散房花序',wahlenbergiaBell:'青い脈のある5裂の淡青白色の鐘形花'});
 

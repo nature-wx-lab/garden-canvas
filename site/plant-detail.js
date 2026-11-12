@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1035';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1036';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1035';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1036';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26530,6 +26530,67 @@ function drawWaterMargin(b,{info,s,detail,rand},kit){
  }
 }
 
+export function frogbitPhotoBladeGeometry() {
+  const segmentCount = 72;
+  const ringCount = 12;
+  function bladePoint(radius, angle, underside) {
+    const distanceFromBase = angle - Math.PI;
+    const notch = .039 * Math.exp(-((distanceFromBase / .19) ** 2));
+    const waviness = 1 + .003 * Math.sin(6 * angle);
+    const x = .495 * Math.sin(angle) * radius * waviness;
+    const y = .461 + (.5 * Math.cos(angle) * waviness + notch) * radius;
+    const remaining = Math.max(0, 1 - radius * radius);
+    const z = underside ? .105 * remaining ** 1.22 : -.014 * remaining;
+    return [x, y, z];
+  }
+
+  const positions = [];
+  const uvs = [];
+  const triangles = [];
+
+  function addVertex(radius, segment, underside) {
+    const [x, y, z] = bladePoint(radius, segment * TAU / segmentCount, underside);
+    const index = positions.length / 3;
+    positions.push(x, y, z);
+    uvs.push(.5 + x, y);
+    return index;
+  }
+
+  const rim = Array.from({length: segmentCount}, (_, i) => addVertex(1, i, false));
+
+  function addFace(underside) {
+    const centre = addVertex(0, 0, underside);
+    const rings = Array.from({length: ringCount - 1}, (_, i) =>
+      Array.from({length: segmentCount}, (_, j) => addVertex((i + 1) / ringCount, j, underside)),
+    );
+    rings.push(rim);
+    function addTriangle(a, b, c) {
+      triangles.push(a, underside ? c : b, underside ? b : c);
+    }
+    for (let i = 0; i < segmentCount; i++) {
+      const next = (i + 1) % segmentCount;
+      addTriangle(centre, rings[0][i], rings[0][next]);
+      for (let ring = 1; ring < rings.length; ring++) {
+        const inner = rings[ring - 1];
+        const outer = rings[ring];
+        addTriangle(inner[i], outer[i], outer[next]);
+        addTriangle(inner[i], outer[next], inner[next]);
+      }
+    }
+    return centre;
+  }
+
+  const upperCentre = addFace(false);
+  const undersideCentre = addFace(true);
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geometry.setIndex(triangles);
+  geometry.computeVertexNormals();
+  geometry.userData = {frogbitPhotoBlade: true, upperCentre, undersideCentre, petioleAttachment: rim[segmentCount / 2]};
+  return geometry;
+}
+
 function drawFreeFloaters(b,{info,s,detail,rand},kit){
  if(s.groundDormant)return;
  const a=info.appearance,arch=a.architecture,fern=arch.startsWith('salvinia'),hyacinth=arch==='waterHyacinth',nat=arch==='salviniaNatans',hood=arch==='salviniaCucullata',w=s.spread,h=s.height,len=Math.min(a.leafLength,w*(hyacinth?.34:.18)),green=s.leafColor;
@@ -26558,16 +26619,23 @@ function drawFreeFloaters(b,{info,s,detail,rand},kit){
    }
   }return;
  }
+ const photoFrogbit=a.leafShape==='frogbitPhotoBlade';
  const rosettes=hyacinth?3:Math.max(3,Math.round(9*detail*s.leafDensity));let previous=null;
  for(let i=0;i<rosettes;i++){
-  const angle=i*2.399,rr=w*(hyacinth?.21:.34)*Math.sqrt((i+.25)/rosettes),cx=Math.sin(angle)*rr,cz=Math.cos(angle)*rr,center=[cx,.012,cz];
+  const angle=i*2.399,rr=w*(hyacinth?.21:.34)*Math.sqrt((i+.25)/rosettes),cx=Math.sin(angle)*rr,cz=Math.cos(angle)*rr,center=[cx,photoFrogbit?Math.min(.012,s.leafHeight*.46):.012,cz];
   if(previous)b.branch(previous,center,hyacinth?.0018:.0009,a.stemColor,'stolon');previous=center;
   const count=hyacinth?7:6;
   for(let j=0;j<count;j++){
-   const an=angle+j*TAU/count+(rand()-.5)*.18,ll=len*(.76+rand()*.28),reach=hyacinth?ll*.34:ll*.14,yy=hyacinth?Math.min(h*.49,ll*.8)*(.65+rand()*.35):.017+rand()*.001,at=[cx+Math.sin(an)*reach,yy,cz+Math.cos(an)*reach];
+   const an=angle+j*TAU/count+(rand()-.5)*.18,ll=len*(.76+rand()*.28),reach=hyacinth?ll*.34:ll*.14,yy=hyacinth?Math.min(h*.49,ll*.8)*(.65+rand()*.35):.017+rand()*.001,at=[cx+Math.sin(an)*reach,photoFrogbit?Math.min(yy,s.leafHeight*.78):yy,cz+Math.cos(an)*reach];
    b.branch(center,at,hyacinth?.002:.0009,a.stemColor,'petiole');
    if(hyacinth){const mid=center.map((v,n)=>v+(at[n]-v)*.58);b.add(kit.bud,'inflatedPetiole',kit.shade(rand,'#77964b',.04),...mid,ll*.18,Math.max(.008,yy*.39),ll*.18,.15,an,0);}
-   const f=flowerFrame(b,at,hyacinth?.72+rand()*.5:Math.PI/2+(rand()-.5)*.07,an);
+   const pitch=hyacinth?.72+rand()*.5:Math.PI/2+(rand()-.5)*.07;
+   if(photoFrogbit){
+    const bladeLength=Math.min(ll,w*.5-rr-reach),thicknessScale=Math.min(bladeLength,at[1]*6);
+    b.add('frogbitPhotoBlade','leaf-frogbit-photo-reference-back-'+a.leafUnderside.slice(1),kit.shade(rand,green,.055),...at,bladeLength,bladeLength,thicknessScale,Math.PI/2,an);
+    continue;
+   }
+   const f=flowerFrame(b,at,pitch,an);
    f.add(a.leafShape,'leaf-glossy',kit.shade(rand,green,.055),0,0,0,ll,ll,ll);
    if(!hyacinth)f.add(a.leafShape,'spongyUnderside','#91a363',0,0,.0015,ll*.97,ll*.99,ll*.45);
    for(let v=-3;v<=3;v++){
@@ -26594,13 +26662,16 @@ function drawFreeFloaters(b,{info,s,detail,rand},kit){
    }
   }else if(i%2===0){
    const r=a.flowerRadius,at=[cx,.022,cz],f=flowerFrame(b,at,.15,angle);
+   const flowerRoot=[cx,Math.min(.001,h*.02),cz];
+   if(photoFrogbit)b.branch(flowerRoot,at,.0004,a.stemColor,'frogbit-male-pedicel');
    // Male flowers have three narrow petals; female flowers expose divided styles.
    for(let j=0;j<3;j++){
     const an=j*TAU/3;f.add('nupharSmallPetal','petal','#eeeeda',0,0,0,r*.60,r,r,1.29,an,0);f.add('nupharSmallPetal','sepal','#a7b07d',0,-.0003,0,r*.5,r*.7,r*.7,1.5,an+.4,0);
    }
    f.add(kit.bud,'staminalColumn','#d4d2a9',0,r*.22,0,r*.09,r*.24,r*.09);
    for(let j=0;j<6;j++){const an=j*TAU/6;f.add(kit.bud,'anther','#c8ba72',Math.sin(an)*r*.09,r*.47,Math.cos(an)*r*.09,r*.065,r*.085,r*.04);}
-   const female=flowerFrame(b,[cx+len*.3,.020,cz],0,angle);
+   const femaleAt=[cx+len*.3,.020,cz],female=flowerFrame(b,femaleAt,0,angle);
+   if(photoFrogbit)b.branch(flowerRoot,femaleAt,.0004,a.stemColor,'frogbit-female-pedicel');
    female.add(kit.bud,'ovary','#819d63',0,0,0,r*.23,r*.29,r*.23);
    for(let j=0;j<6;j++){
     const an=j*TAU/6,base=[0,r*.16,0],fork=[Math.sin(an)*r*.35,r*.36,Math.cos(an)*r*.35];female.branch(base,fork,r*.015,'#d8d7b4','style');
