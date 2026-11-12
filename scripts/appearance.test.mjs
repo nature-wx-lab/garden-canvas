@@ -22084,6 +22084,52 @@ test('Nuphar submerged leaves stay between bed and surface without moving summer
  dispose(dry);dispose(dryWinter);assert.deepEqual(plant,saved);
 });
 
+test('Nuphar rhizome joins the leaf crown and fine roots in the pond bed illustration',()=>{
+ const plant={...makePlant('p-b038c25453b8',105310,3,3),height:.32,spread:.52,leafHeight:.22};
+ const season={year:0,month:1,reference:false};
+ const name=m=>m.userData.component;
+ const matches=(group,component)=>group.children.find(m=>name(m)===component);
+ const matrix=new Matrix4();
+ const endpoints=(mesh,i)=>{
+  mesh.getMatrixAt(i,matrix);
+  return [-.5,.5].map(y=>new Vector3(0,y,0).applyMatrix4(matrix));
+ };
+ for(const depth of [0,.001,.018,.28]){
+  const group=plantModel(plant,{...season,waterDepth:depth});
+  try{
+   const rhizome=matches(group,'rhizome-nuphar-ref'),nodes=matches(group,'rhizome-nuphar-node');
+   const roots=matches(group,'fine-root-nuphar-ref'),crown=matches(group,'crown-nuphar-ref');
+   if(depth===0){assert.ok(!rhizome&&!nodes&&!roots&&!crown);continue;}
+   assert.equal(rhizome.count,4);assert.equal(nodes.count,5);assert.equal(roots.count,20);
+   const origins=Array.from({length:nodes.count},(_,i)=>{
+    nodes.getMatrixAt(i,matrix);return new Vector3().setFromMatrixPosition(matrix);
+   });
+   const close=(a,b)=>a.distanceTo(b)<1e-7;
+   for(let i=0;i<rhizome.count;i++){
+    const pair=endpoints(rhizome,i);
+    assert.ok(pair.some(v=>close(v,origins[i]))&&pair.some(v=>close(v,origins[i+1])));
+   }
+   for(let i=0;i<roots.count;i+=2){
+    const pair=endpoints(roots,i),next=endpoints(roots,i+1);
+    assert.ok(pair.some(v=>close(v,origins[Math.floor(i/4)])));
+    assert.ok(pair.some(v=>next.some(end=>close(v,end))));
+   }
+   const join=endpoints(crown,0),leafStem=endpoints(matches(group,'submerged-petiole-nuphar-ref'),0);
+   assert.ok(join.some(v=>close(v,origins[0]))&&join.some(v=>leafStem.some(end=>close(v,end))));
+   const bed=-.012-depth;
+   for(const mesh of [rhizome,nodes,roots,crown])for(let i=0;i<mesh.count;i++){
+    mesh.getMatrixAt(i,matrix);
+    const p=mesh.geometry.attributes.position;
+    for(let j=0;j<p.count;j++){
+     const v=new Vector3().fromBufferAttribute(p,j).applyMatrix4(matrix);
+     assert.ok(v.y>=bed-1e-7&&v.y<-.012);
+    }
+   }
+  }finally{dispose(group);}
+ }
+ assert.ok(CATALOG[plant.kind].appearance.unconfirmed.some(note=>/泥の中.*観察用に池底/.test(note)));
+});
+
 test('Sagittaria reference height retains flowerstem basis without merging names or source sizes',()=>{
  const i=CATALOG['p-8d877dd373db'];assert.equal(i.label,'ナガバオモダカ');assert.equal(i.latin,'Sagittaria weatherbiana');assert.deepEqual(i.height,[.15,.7]);assert.equal(i.spread,null);assert.equal(i.sourceChecked,'2026-11-01');assert.deepEqual(i.bloom,[4,5,6,7,8,9]);assert.equal(i.bloomKnown,true);assert.match(i.care,/花茎の範囲/);assert.match(i.care,/葉長7〜30cm/);assert.match(i.appearance.sourceConflict,/約1.5cm/);assert.match(i.appearance.sourceConflict,/約1cm/);assert.match(i.appearance.sourceConflict,/Sagittaria graminea/);assert.match(i.appearance.sourceConflict,/Sagittaria weatherbiana/);assert.ok(i.appearance.unconfirmed.some(x=>x.includes('分類同定')));assert.equal(i.appearance.architecture,'waterArrowhead');assert.equal(i.appearance.persistence,'winterSubmerged');assert.equal(i.appearance.leafLength,.25);assert.equal(i.appearance.flowerRadius,.0075);assert.match(seasonAt(i,1).phase,/水中葉/);
  const p={...makePlant('p-8d877dd373db',99010,3,3),height:.4,spread:.50,leafHeight:.30},d=emptyDocument(10,6);d.plans.A.plants=[p];d.catalogVersion='2026-10-29.54';const saved=structuredClone(d);assert.deepEqual(validateDocument(d).plans,saved.plans);assert.deepEqual(d,saved);assert.equal(stateAt(p,view(7)).height,.4);assert.equal(stateAt(p,{...view(7),reference:true}).height,.7);

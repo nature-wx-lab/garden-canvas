@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1053';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1054';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1053';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1054';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26998,12 +26998,41 @@ function drawNupharSubmergedLeaves(b,crown,depth,spread,radius){
         j%2===0?'#70854b':'#657d45',...at,length,length,length,.94+j*.04,az,0);
  }
 }
+function drawNupharRhizome(b,crown,depth,spread,bud){
+ // Expose the normally buried organs just above the bed in the reference view.
+ const bed=-.012-depth, radius=Math.min(.014,spread*.025,depth*.16);
+ const length=Math.min(.18,spread*.33,depth*2.8);
+ const nodes=[
+  [0,bed+radius*1.40,0],
+  [-length*.27,bed+radius*1.47,-length*.05],
+  [-length*.54,bed+radius*1.35,-length*.08],
+  [-length*.77,bed+radius*1.19,-length*.05],
+  [-length,bed+radius,0],
+ ];
+ const thickness=[1,.95,.84,.74,.61],color='#5f513c';
+ for(let j=0;j<nodes.length;j++){
+  const node=nodes[j],width=radius*thickness[j];
+  b.add(bud,'rhizome-nuphar-node',color,...node,width,width,width);
+  if(j>0)b.branch(nodes[j-1],node,width,color,'rhizome-nuphar-ref');
+  for(const side of [-1,1]){
+   const reach=side*radius*(2.6+j*.26);
+   const bend=[node[0]-radius*.52,bed+radius*.56,node[2]+reach*.60];
+   const tip=[node[0]-radius*(.7+j*.12),bed+radius*.16,node[2]+reach];
+   b.branch(node,bend,width*.12,'#a88f6e','fine-root-nuphar-ref');
+   b.branch(bend,tip,width*.07,'#baa686','fine-root-nuphar-ref');
+  }
+ }
+ b.branch(nodes[0],crown,radius*.48,'#82714e','crown-nuphar-ref');
+}
 function drawNupharPhotoReference(b,{s,rand},kit){
  const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.80),leafRadius=Math.min(.0012,h*.006,w*.005,LH*.012);
  const wet=s.waterDepth>=.001;
  const rootY=wet?-.012-s.waterDepth+Math.min(.003,s.waterDepth*.10):leafRadius*1.2+Math.min(.00002,h*.002);
  const crown=[0,rootY,0];
- if(wet)drawNupharSubmergedLeaves(b,crown,s.waterDepth,w,leafRadius);
+ if(wet){
+  drawNupharSubmergedLeaves(b,crown,s.waterDepth,w,leafRadius);
+  drawNupharRhizome(b,crown,s.waterDepth,w,kit.bud);
+ }
  if(s.groundDormant||s.leafDensity<=0)return;
  for(let j=0;j<6;j++){
   const az=j*2.399+.4,R=w*.045*Math.sqrt((j+.8)/6),L=.25*(.88+j*.024),relief=Math.min(L,LH*.10/.145),pitch=Math.acos(Math.min(.85,LH*.52/(1.10*L)));
