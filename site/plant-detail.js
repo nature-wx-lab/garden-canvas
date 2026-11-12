@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1042';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1043';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1042';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1043';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26701,6 +26701,40 @@ function drawWaterHyacinthRoots(b, center, depth, leafLength, phase) {
  }
 }
 
+function drawFrogbitRoots(b, center, depth, leafLength, phase) {
+ const neck = [center[0], -.008, center[2]];
+ const extent = depth*(.83+.16*Math.cos(phase)**2);
+ const span = Math.min(leafLength*.23, extent*.20);
+ const radius = Math.min(.00075, leafLength*.022);
+ const segments = extent < .0024 ? 6 : 12;
+ const path = t => [
+  neck[0]+Math.sin(phase)*span*.7*t*t,
+  neck[1]-extent*t,
+  neck[2]+Math.cos(phase)*span*.7*t*t,
+ ];
+ b.branch(center, neck, radius, '#a8ad77', 'frogbit-root-axis');
+ let previous = neck;
+ for (let segment = 1; segment <= segments; segment++) {
+  const t = segment/segments, joint = path(t);
+  b.branch(previous, joint, radius*(1-.76*t), '#b3b889', 'frogbit-root-axis');
+  previous = joint;
+  if (segment === segments || segments === 6) continue;
+  const angle = phase+segment*1.35;
+  const hair = Math.min(leafLength*.088, extent*.11)*Math.sin(Math.PI*t);
+  for (const side of [-1,1]) {
+   const dx = Math.cos(angle)*side, dz = Math.sin(angle)*side;
+   const tip = [joint[0]+dx*hair, joint[1]-hair*.25, joint[2]+dz*hair];
+   b.branch(joint, tip, radius*.12, '#c5cba0', 'frogbit-root-hair');
+   if (t > .5 || segment%2 !== 0) continue;
+   const reach = span*(1-t)*.86;
+   const bend = [joint[0]+dx*reach*.63, joint[1]-extent*.12, joint[2]+dz*reach*.63];
+   const end = [joint[0]+dx*reach, joint[1]-extent*(.29+.04*side), joint[2]+dz*reach];
+   b.branch(joint, bend, radius*.42, '#aeb582', 'frogbit-root-lateral');
+   b.branch(bend, end, radius*.24, '#c1c69a', 'frogbit-root-lateral');
+  }
+ }
+}
+
 function drawFreeFloaters(b,{info,s,detail,rand},kit){
  if(s.groundDormant)return;
  const a=info.appearance,arch=a.architecture,fern=arch.startsWith('salvinia'),hyacinth=arch==='waterHyacinth',nat=arch==='salviniaNatans',hood=arch==='salviniaCucullata',w=s.spread,h=s.height,len=Math.min(a.leafLength,w*(hyacinth?.34:.18)),green=s.leafColor;
@@ -26739,12 +26773,14 @@ function drawFreeFloaters(b,{info,s,detail,rand},kit){
   }return;
  }
  const photoFrogbit=a.leafShape==='frogbitPhotoBlade';
+ const frogbitRootDepth=photoFrogbit?Math.min(s.waterDepth,len*3.1):0;
  const hyacinthRootDepth=hyacinth?Math.min(s.waterDepth,len*2.6):0;
  const rosettes=hyacinth?3:Math.max(3,Math.round(9*detail*s.leafDensity));let previous=null;
  for(let i=0;i<rosettes;i++){
   const angle=i*2.399,rr=w*(hyacinth?.21:.34)*Math.sqrt((i+.25)/rosettes),cx=Math.sin(angle)*rr,cz=Math.cos(angle)*rr,center=[cx,photoFrogbit?Math.min(.012,s.leafHeight*.46):.012,cz];
   if(previous)b.branch(previous,center,hyacinth?.0018:.0009,a.stemColor,'stolon');previous=center;
   if(hyacinthRootDepth>=.001)drawWaterHyacinthRoots(b,center,hyacinthRootDepth,len,angle);
+  if(frogbitRootDepth>=.001)drawFrogbitRoots(b,center,frogbitRootDepth,len,angle);
   const count=hyacinth?7:6;
   for(let j=0;j<count;j++){
    const an=angle+j*TAU/count+(rand()-.5)*.18,ll=len*(.76+rand()*.28),reach=hyacinth?ll*.34:ll*.14,yy=hyacinth?Math.min(h*.49,ll*.8)*(.65+rand()*.35):.017+rand()*.001,at=[cx+Math.sin(an)*reach,photoFrogbit?Math.min(yy,s.leafHeight*.78):yy,cz+Math.cos(an)*reach];
