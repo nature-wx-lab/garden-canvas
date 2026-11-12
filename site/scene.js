@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1063';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1063';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1064';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1064';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -75,8 +75,9 @@ export function hygrophilaFoliageInspectionView(group,aspect=1,fov=40){
  const target=box.getCenter(new THREE.Vector3()),radius=box.getSize(new THREE.Vector3()).length()/2,direction=new THREE.Vector3(1,.9,1).normalize(),ratio=Number.isFinite(aspect)&&aspect>0?Math.min(1,aspect):1,angle=Math.atan(Math.tan((Number.isFinite(fov)&&fov>5&&fov<100?fov:40)*Math.PI/360)*ratio),distance=Math.max(.12,radius*1.12/Math.sin(angle),(CAMERA_FLOOR+1e-7-target.y)/direction.y),position=target.clone().addScaledVector(direction,distance);
  return{position:position.toArray(),target:target.toArray(),radius,fit:'hygrophila-visible-model'};
 }
+const ROOTED_POND_COMPONENTS=new Set(['leaf-submerged-nuphar-photo-reference','runner-asaza-ref','rhizome-helvola-ref','leaf-submerged-sagittaria-ref','crown-paranee-ref']);
 export function rootedPondInspectionView(group,aspect=1,fov=40){
- if(!group?.children.some(m=>['leaf-submerged-nuphar-photo-reference','runner-asaza-ref','rhizome-helvola-ref','leaf-submerged-sagittaria-ref'].includes(m.userData.component)))return null;
+ if(!group?.children.some(mesh=>ROOTED_POND_COMPONENTS.has(mesh.userData.component)))return null;
  group.updateWorldMatrix(true,true);
  const box=new THREE.Box3().setFromObject(group);
  if(box.isEmpty())return null;

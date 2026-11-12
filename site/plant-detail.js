@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1063';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1064';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1063';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1064';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -19728,15 +19728,25 @@ export function paraneePoint(type,t,u){
  return [u*(sepal?.20:.26)*sn**.85,.20*t+.045*sn+.045*u*u*sn,.015+.985*t];
 }
 function drawParanee(b,{info,s,detail,rand},kit){
- const h=s.height,w=s.spread,n=Math.max(3,Math.round(10*detail*s.leafDensity)),surface=Math.min(.008,h*.10);
+ const h=s.height,w=s.spread,n=Math.max(3,Math.round(10*detail*s.leafDensity));
+ const wet=s.waterDepth>=.001,drySurface=Math.min(.008,h*.10),surface=wet?-.0058:drySurface;
+ const radius=Math.min(.006,w*.025,s.waterDepth*.20);
+ const crown=[0,-.012-s.waterDepth+radius*1.3,0];
+ if(wet&&s.leafDensity>0)b.add(kit.bud,'crown-paranee-ref','#6e5f46',...crown,radius,radius*.8,radius);
  if(s.leafDensity>0)for(let j=0;j<n;j++){
   const yaw=j*2.399,R=w*.30*Math.sqrt((j+.5)/n),L=Math.min(.24,w*.25)*(.76+rand()*.24)*s.leafScale;
-  b.add('paraneeLeaf','leaf-paranee',kit.shade(rand,s.leafColor,.025),Math.sin(yaw)*R,surface+rand()*.001,Math.cos(yaw)*R,L,L,L,0,yaw,0);
+  const color=kit.shade(rand,s.leafColor,.025);
+  const at=[Math.sin(yaw)*R,surface+rand()*.001,Math.cos(yaw)*R];
+  if(wet)b.branch(crown,at,Math.min(.0012,L*.012),'#72824e','petiole-paranee-ref');
+  b.add('paraneeLeaf','leaf-paranee',color,...at,L,L,L,0,yaw,0);
  }
  if(!s.bloom)return;
  const flowers=Math.max(1,Math.round(2*detail*s.flowerDensity));
  for(let j=0;j<flowers;j++){
-  const yaw=j*2.399+.5,R=w*.16,at=[Math.sin(yaw)*R,Math.min(.030,h*.20),Math.cos(yaw)*R],L=Math.min(.075,h*.60,w*.16),f=flowerFrame(b,at,0,yaw);
+  const yaw=j*2.399+.5,R=w*.16,dryFlowerY=Math.min(.030,h*.20);
+  const at=[Math.sin(yaw)*R,wet?surface+(dryFlowerY-drySurface):dryFlowerY,Math.cos(yaw)*R];
+  const L=Math.min(.075,h*.60,w*.16),f=flowerFrame(b,at,0,yaw);
+  if(wet)b.branch(crown,at,Math.min(.0015,L*.042),'#758149','peduncle-paranee-ref');
   if(j===0)f.flower([0,L*.20,0],L*1.15,.60,0);
   for(let k=0;k<4;k++)f.add('paraneeSepal','sepal-paranee','#839255',0,-L*.020,0,L*.91,L*.91,L*.91,.04,k*TAU/4,0);
   for(let row=0;row<4;row++){
