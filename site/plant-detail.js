@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1044';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1045';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1044';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1045';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26219,7 +26219,7 @@ export function watercoinPhotoReferenceGeometry(type){
 function watercoinPhotoSegment(f,a,z,r,color,kind){
  const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');f.add('watercoin-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
 }
-function drawWatercoinCreepingStem(b, nodes, radius, spread, depth) {
+function connectCreepingStemNodes(nodes, connect) {
  // Join the existing stalk bases with short connections. The layout is illustrative.
  const connected = [nodes[0]];
  const remaining = nodes.slice(1);
@@ -26237,9 +26237,12 @@ function drawWatercoinCreepingStem(b, nodes, radius, spread, depth) {
    }
   }
   const [end] = remaining.splice(endIndex, 1);
-  watercoinPhotoSegment(b, start, end, radius, '#779653', 'creeping-stem-watercoin-photo-ref');
+  connect(start,end);
   connected.push(end);
  }
+}
+function drawWatercoinCreepingStem(b, nodes, radius, spread, depth) {
+ connectCreepingStemNodes(nodes,(a,z)=>watercoinPhotoSegment(b,a,z,radius,'#779653','creeping-stem-watercoin-photo-ref'));
  if (depth <= 0) return;
  const extent = Math.min(depth*.84, spread*.13, .035);
  for (let i = 0; i < nodes.length; i++) {
@@ -26300,15 +26303,32 @@ export function muticaPhotoReferenceGeometry(){
  for(let i=0;i<N;i++)for(const j of[0,C]){const a=i*(C+1)+j,z=(i+1)*(C+1)+j;ix.push(a,z,a+stride,z,z+stride,a+stride);}for(let j=0;j<C;j++){const a=N*(C+1)+j,z=a+1;ix.push(a,a+stride,z,z,a+stride,z+stride);}
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={muticaPhotoReference:true,part:'leaflet',illustrativeGeometry:true,closedSurface:true};return g;
 }
+function drawMuticaRhizome(b, stalkBases, radius, depth) {
+ // Scene places this plant at .012 and the pond bed at -depth.
+ const bed = -.012-depth;
+ const nodes = stalkBases.map(([x,,z])=>[x,bed+radius*2.3,z]);
+ connectCreepingStemNodes(nodes,(a,z)=>b.branch(a,z,radius,'#a79d65','rhizome-mutica-photo-ref'));
+ for(let i=0;i<nodes.length;i++){
+  const node = nodes[i], angle = i*2.399;
+  b.branch(node,stalkBases[i],radius*.65,'#8e995d','lower-petiole-mutica-photo-ref');
+  for(const offset of [0,1.6]){
+   const reach = radius*(2+offset);
+   const end = [node[0]+Math.cos(angle+offset)*reach,bed+radius*.3,node[2]+Math.sin(angle+offset)*reach];
+   b.branch(node,end,radius*.27,'#9b8d64','root-mutica-photo-ref');
+  }
+ }
+}
 function drawMuticaPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00058,h*.006,w*.005,LH*.035),floor=r*1.2+Math.min(.00002,h*.002);
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00058,h*.006,w*.005,LH*.035),floor=r*1.2+Math.min(.00002,h*.002),stalkBases=[];
  for(let j=0;j<16;j++){
   const az=j*2.399+.3,R=w*.26*Math.sqrt((j+.7)/16),L=Math.min(.030,w*.18)*(.88+j*.008),at=[Math.sin(az)*R,LH*(.76+j/15*.15),Math.cos(az)*R],relief=Math.min(L,LH*.035/.046),base=[at[0]-Math.sin(az)*L*.16,floor,at[2]-Math.cos(az)*L*.16];let previous=base;
+  stalkBases.push(base);
   for(let k=1;k<=4;k++){const t=k/4,to=[base[0]+Math.sin(az)*L*.16*t+Math.cos(az)*L*.07*Math.sin(Math.PI*t),base[1]+(at[1]-base[1])*t,base[2]+Math.cos(az)*L*.16*t-Math.sin(az)*L*.07*Math.sin(Math.PI*t)];b.branch(previous,to,r,'#7a9b55','petiole-mutica-photo-ref');previous=to;}
   for(let leaflet=0;leaflet<4;leaflet++)b.add('mutica-photo-reference-leaflet','leaf-mutica-photo-reference',kit.shade(rand,s.leafColor,.025),...at,L,relief,L,0,az+leaflet*TAU/4,0);
  }
- // Frond count, spacing and petiole curvature are illustrative; no flowers or hidden rhizomes.
+ // Model the visible attachment in shallow water only, without changing the four-part fronds.
+ if(s.waterDepth>0&&s.waterDepth<=h)drawMuticaRhizome(b,stalkBases,Math.min(.001,w*.008,h*.02),s.waterDepth);
 }
 
 // Grower Bacopa caroliniana reference. Counts/layout are illustrative, not a colony census.

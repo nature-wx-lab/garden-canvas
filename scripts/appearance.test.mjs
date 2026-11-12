@@ -22652,8 +22652,54 @@ test('Watercoin foliage focus frames six summer and winter inputs around the vis
 });
 
 test('Marsilea mutica photo source separates domestic height from fern organ dimensions and winter protection',()=>{
- const q=CATALOG['p-d5909b1c35c5'],a=q.appearance;assert.equal(q.latin,'Marsilea mutica');assert.deepEqual(q.height,[.05,.15]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'muticaPhotoReference');assert.equal(a.persistence,'protectedFernDisplay');assert.match(seasonAt(q,1).label,/屋内保護.*管理参考/);assert.match(seasonAt(q,7).label,/管理上の目安/);assert.equal(a.flowerShape,'none');assert.equal(a.flowerRadius,0);assert.equal(a.sources[0].url,'https://www.akb.jp/c/gaiteki/384');assert.match(a.sources[1].url,/NSWfl/);assert.match(a.sources[2].url,/austplants/);assert.deepEqual(a.foliageMonths,[4,5,6,7,8,9,10,11]);assert.match(a.sourceConflict,/5〜30cm/);assert.match(a.sourceConflict,/5〜50mm/);assert.match(a.sourceConflict,/20〜40mm/);assert.match(a.sourceConflict,/5〜20mm/);assert.match(a.sourceConflict,/直径9cmは鉢/);assert.match(a.phenologyRegion,/10〜4月頃の屋内保護/);assert.match(a.phenologyRegion,/自然な芽出し/);assert.match(a.unconfirmed.join(' '),/同じ株の年次成長/);assert.match(q.care,/花を付けないシダ/);
+ const q=CATALOG['p-d5909b1c35c5'],a=q.appearance;assert.equal(q.latin,'Marsilea mutica');assert.deepEqual(q.height,[.05,.15]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-12');assert.equal(a.shootProfile,'muticaPhotoReference');assert.equal(a.persistence,'protectedFernDisplay');assert.match(seasonAt(q,1).label,/屋内保護.*管理参考/);assert.match(seasonAt(q,7).label,/管理上の目安/);assert.equal(a.flowerShape,'none');assert.equal(a.flowerRadius,0);assert.equal(a.sources[0].url,'https://www.akb.jp/c/gaiteki/384');assert.match(a.sources[1].url,/NSWfl/);assert.match(a.sources[2].url,/austplants/);assert.deepEqual(a.foliageMonths,[4,5,6,7,8,9,10,11]);assert.match(a.sourceConflict,/5〜30cm/);assert.match(a.sourceConflict,/5〜50mm/);assert.match(a.sourceConflict,/20〜40mm/);assert.match(a.sourceConflict,/5〜20mm/);assert.match(a.sourceConflict,/直径9cmは鉢/);assert.match(a.phenologyRegion,/10〜4月頃の屋内保護/);assert.match(a.phenologyRegion,/自然な芽出し/);assert.match(a.unconfirmed.join(' '),/同じ株の年次成長/);assert.match(q.care,/花を付けないシダ/);assert.equal(a.sources[a.basis.habit].url,'https://www.nzflora.info/factsheet/taxon/Marsilea-mutica.html');assert.ok(a.unconfirmed.some(note=>note.includes('底をはう根茎')&&note.includes('作図上の目安')));
 });
+test('Marsilea mutica attaches each shallow-water leaf stalk and nodal root to the pond-bed rhizome',()=>{
+ const p={...makePlant('p-d5909b1c35c5',104510,3,3),height:.12,spread:.28,leafHeight:.10};
+ const matrix=new Matrix4();
+ const point=(mesh,i,y)=>{mesh.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
+ const same=(a,b)=>a.distanceTo(b)<2e-6;
+ for(const [month,waterDepth] of [[7,0],[7,.001],[7,.08],[7,.12],[7,.121],[7,.5],[1,.08]]){
+  const g=plantModel(p,{year:0,month,waterDepth,reference:false},1);
+  try{
+   const part=key=>g.children.find(m=>m.userData.component===key);
+   const rhizome=part('rhizome-mutica-photo-ref'),roots=part('root-mutica-photo-ref'),lower=part('lower-petiole-mutica-photo-ref');
+   if(month===1||waterDepth===0||waterDepth>p.height){
+    assert.equal(rhizome,undefined);
+    assert.equal(roots,undefined);
+    assert.equal(lower,undefined);
+    continue;
+   }
+   assert.equal(rhizome.count,15);
+   assert.equal(roots.count,32);
+   assert.equal(lower.count,16);
+   const upper=part('petiole-mutica-photo-ref'),bed=-.012-waterDepth;
+   const nodes=Array.from({length:16},(_,i)=>point(lower,i,-.5));
+   const reached=new Set([0]);
+   for(let i=0;i<rhizome.count;i++){
+    assert.ok(reached.has(nodes.findIndex(n=>same(n,point(rhizome,i,-.5)))));
+    const end=nodes.findIndex(n=>same(n,point(rhizome,i,.5)));
+    assert.ok(end>=0&&!reached.has(end));
+    reached.add(end);
+   }
+   assert.equal(reached.size,nodes.length);
+   for(let i=0;i<nodes.length;i++){
+    assert.ok(same(point(lower,i,.5),point(upper,i*4,-.5)));
+    assert.ok(nodes[i].y<-.006&&nodes[i].y>bed);
+    for(const root of [i*2,i*2+1]){
+     assert.ok(same(point(roots,root,-.5),nodes[i]));
+     const tip=point(roots,root,.5);
+     assert.ok(tip.y>bed&&tip.y<nodes[i].y);
+    }
+   }
+   const pose=muticaFoliageInspectionView(g,1.3,40);
+   g.remove(rhizome,roots,lower);
+   assert.deepEqual(muticaFoliageInspectionView(g,1.3,40),pose);
+   g.add(rhizome,roots,lower);
+  }finally{dispose(g);}
+ }
+});
+
 test('Marsilea mutica closed fan leaflets fit twenty four independent dimensions and fourfold junctions',()=>{
  const dimensions=[[.12,.28,.11],[.01,.10,.005],[.12,.28,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,leafletJoins=0,petioleJoins=0,winterModels=0,vertices=0;
  for(const dims of dimensions)for(const month of[7,4,1]){

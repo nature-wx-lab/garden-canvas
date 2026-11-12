@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1044';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1044';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1045';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1045';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -93,7 +93,16 @@ export function watercoinFoliageInspectionView(group,aspect=1,fov=40){
 }
 export function muticaFoliageInspectionView(group,aspect=1,fov=40){
  const leaves=group?.children?.filter(m=>m.isInstancedMesh&&m.userData.component==='leaf-mutica-photo-reference')||[];if(!leaves.length)return null;
- group.updateWorldMatrix(true,true);const leafBox=new THREE.Box3(),bodyBox=new THREE.Box3();for(const mesh of group.children)if(mesh.isInstancedMesh){const box=new THREE.Box3().setFromObject(mesh);bodyBox.union(box);if(leaves.includes(mesh))leafBox.union(box);}if(leafBox.isEmpty()||bodyBox.isEmpty())return null;
+ group.updateWorldMatrix(true,true);
+ const leafBox=new THREE.Box3(),bodyBox=new THREE.Box3();
+ for(const mesh of group.children){
+  const part=mesh.userData.component;
+  if(!mesh.isInstancedMesh||part==='rhizome-mutica-photo-ref'||part==='root-mutica-photo-ref'||part==='lower-petiole-mutica-photo-ref')continue;
+  const box=new THREE.Box3().setFromObject(mesh);
+  bodyBox.union(box);
+  if(leaves.includes(mesh))leafBox.union(box);
+ }
+ if(leafBox.isEmpty()||bodyBox.isEmpty())return null;
  const target=leafBox.getCenter(new THREE.Vector3()),direction=new THREE.Vector3(1,1.15,1).normalize(),right=new THREE.Vector3(0,1,0).cross(direction).normalize(),up=direction.clone().cross(right).normalize(),ratio=Number.isFinite(aspect)&&aspect>0?aspect:1,angle=(Number.isFinite(fov)&&fov>5&&fov<100?fov:40)*Math.PI/360,tanV=Math.tan(angle),tanH=tanV*ratio;let distance=.04;
  for(const x of[bodyBox.min.x,bodyBox.max.x])for(const y of[bodyBox.min.y,bodyBox.max.y])for(const z of[bodyBox.min.z,bodyBox.max.z]){const p=new THREE.Vector3(x,y,z).sub(target),depth=p.dot(direction);distance=Math.max(distance,depth+Math.max(Math.abs(p.dot(right))/(tanH*.90),Math.abs(p.dot(up))/(tanV*.90))+.012);}
  distance=Math.max(distance,(CAMERA_FLOOR+1e-7-target.y)/direction.y);return{position:target.clone().addScaledVector(direction,distance).toArray(),target:target.toArray(),fit:'mutica-visible-leaf-focus'};
