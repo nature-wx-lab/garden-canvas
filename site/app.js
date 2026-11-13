@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1097';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1097';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1097';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1097';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS } from './model.js?v=0.9.1097';
-import { createScene } from './scene.js?v=0.9.1097';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1098';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1098';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1098';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1098';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS } from './model.js?v=0.9.1098';
+import { createScene } from './scene.js?v=0.9.1098';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
@@ -119,11 +119,30 @@ function syncIdeas(){const p=plan(),o=observations(p,shown().view);metrics('obse
   $('time-basis').textContent=shown().view.reference?'資料の成株上限寸法を表示中。指定年の予測ではありません。剪定シナリオは適用しません。通常表示に戻すと元の年数・設定へ戻ります。':`年数と季節は別々に指定できます。成長シナリオ未設定 ${o.unmodeled}株は初期寸法のまま。花期・落葉・葉量は地域差のある参考表現です。`;
 }
 function syncComparison(){const d=shown();if(!d.plans.B){$('comparison').replaceChildren(el('p','「Bに複製」で現在の庭を残して、別案をつくれます。'));return;}const rows=['A','B'].map(k=>{const p=d.plans[k],b=budget(p),c=calendar(p,d.view.year);return [k,`${p.plants.length}株`,`${yen(b.total)}${b.unknown?` ＋ ${b.unknown}株未入力`:''}`,`${c.reduce((n,m)=>n+m.events.reduce((s,e)=>s+e.count,0),0)}回`,`${time(c.reduce((n,m)=>n+m.min,0),c.reduce((n,m)=>n+m.max,0))}${c.some(m=>m.unknown)?' ＋ 未入力あり':''}`];});$('comparison').replaceChildren(table(['案','全株数','購入費','年間作業','年間時間'],rows));const a=budget(d.plans.A),b=budget(d.plans.B);$('comparison').append(el('p',`B − A：株数 ${d.plans.B.plants.length-d.plans.A.plants.length}株 ／ 入力済み購入費 ${yen(b.total-a.total)}${a.unknown||b.unknown?'（未入力があるため総額差は未確定）':''}`));}
+function syncPlantButtons(container,plants,describe){
+  const focused=container.contains(document.activeElement)?document.activeElement.dataset.plantId:null;
+  container.replaceChildren(...plants.map(plant=>{
+    const {label,title,selectPlant}=describe(plant);
+    const control=button(label,selectPlant);
+    control.dataset.plantId=String(plant.id);
+    control.setAttribute('aria-pressed',String(plant.id===selected));
+    if(title)control.title=title;
+    return control;
+  }));
+  if(focused)container.querySelector(`[data-plant-id="${focused}"]`)?.focus({preventScroll:true});
+}
 function sync(){const d=shown(),p=plan();
-  $('specimen-nav').replaceChildren(...p.plants.slice(0,16).map(v=>{const info=plantInfo(v.kind),b=button(info.label,()=>{select(v.id);engine?.view('focus');});b.setAttribute('aria-pressed',String(selected===v.id));b.title=treeProfile(info)?HABITS[treeProfile(info).habit]:info.genre;return b;}));if(selected&&!p.plants.some(p=>p.id===selected))selected=null;
+  if(selected&&!p.plants.some(plant=>plant.id===selected))selected=null;
+  syncPlantButtons($('specimen-nav'),p.plants.slice(0,16),plant=>{
+    const info=plantInfo(plant.kind),tree=treeProfile(info);
+    return {label:info.label,title:tree?HABITS[tree.habit]:info.genre,selectPlant:()=>{select(plant.id);engine?.view('focus');}};
+  });
   $('plan-a').setAttribute('aria-pressed',String(d.active==='A'));$('plan-b').setAttribute('aria-pressed',String(d.active==='B'));$('plan-b').disabled=!d.plans.B||!!preview;$('plan-a').disabled=!!preview;$('duplicate-plan').disabled=!!preview||!!doc.plans.B;$('undo').disabled=!history.length||!!preview;$('redo').disabled=!future.length||!!preview;
   $('count').textContent=`${p.plants.length}株`;$('area').textContent=`${area(p.outline).toFixed(1)}m² · ${p.plants.length}株`;
-  $('plant-list').replaceChildren(...p.plants.map(p=>{const b=button(`${p.locked?'固定 · ':''}#${p.id} ${plantInfo(p.kind).label}`,()=>select(p.id));b.setAttribute('aria-pressed',String(p.id===selected));return b;}));
+  syncPlantButtons($('plant-list'),p.plants,plant=>({
+    label:`${plant.locked?'固定 · ':''}#${plant.id} ${plantInfo(plant.kind).label}`,
+    selectPlant:()=>select(plant.id),
+  }));
   for(const k of ['month','year'])$(k).value=d.view[k];$('month-label').textContent=`${d.view.month}月`;$('year-label').textContent=`${d.view.year}年`;$('reference').checked=d.view.reference;$('footprints').checked=d.view.footprints;
   $('edit-body').inert=!!preview;$('preview-bar').hidden=!preview;syncSelected();updateSourceMonth($('catalog-info'));syncGarden();syncBudget();syncCalendar();syncIdeas();syncComparison();engine?.render(p,d.view,selected);$('focus-flower').hidden=!engine?.hasFlower();setMode(mode);
 }
