@@ -27,7 +27,7 @@ def scan(data,label,vendor=False):
     if any(s in text for s in paths) or CREDENTIAL.search(text):fail(label+' contains a private-path or credential pattern')
     local_user=os.environ.get('USER','')
     if local_user not in {'','runner','root'} and local_user.casefold() in text.casefold():fail(label+' contains the local account name')
-    if not vendor and any(not SAFE_EMAIL.fullmatch(e) for e in EMAIL.findall(text)):fail(label+' contains an unapproved email-like value')
+    if not vendor and '@' in text and any(not SAFE_EMAIL.fullmatch(e) for e in EMAIL.findall(text)):fail(label+' contains an unapproved email-like value')
 
 def scan_asset(data,name,assets):
     item=assets.get(name,{})
