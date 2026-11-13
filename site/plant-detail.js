@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1096';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1097';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1096';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength} from './model.js?v=0.9.1096';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1097';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength} from './model.js?v=0.9.1097';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26417,11 +26417,13 @@ function connectCreepingStemNodes(nodes, connect) {
 function drawWatercoinCreepingStem(b, nodes, radius, spread, depth) {
  connectCreepingStemNodes(nodes,(a,z)=>watercoinPhotoSegment(b,a,z,radius,'#779653','creeping-stem-watercoin-photo-ref'));
  if (depth <= 0) return;
- const extent = Math.min(depth*.84, spread*.13, .035);
+ const bed = -PLANT_BASE_Y-depth;
+ const neckY = POND_SURFACE_Y-PLANT_BASE_Y-Math.min(.002,depth*.40);
+ const extent = Math.min(depth*.84, (neckY-bed)*.98, spread*.13, .035);
  for (let i = 0; i < nodes.length; i++) {
   const node = nodes[i], angle = i*2.399;
   const sway = extent*.17, length = extent*(.62+.38*(i%4)/3);
-  const neck = [node[0], -.008, node[2]];
+  const neck = [node[0], neckY, node[2]];
   const bend = [node[0]+Math.sin(angle)*sway*.28, neck[1]-length*.55, node[2]+Math.cos(angle)*sway*.28];
   const end = [node[0]+Math.sin(angle)*sway, neck[1]-length, node[2]+Math.cos(angle)*sway];
   const rootRadius = Math.min(radius*.60, extent*.12);

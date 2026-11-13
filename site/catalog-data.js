@@ -9751,7 +9751,7 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "bloomBasis": "杜若園芸の種類別記載",
   "source": "https://www.akb.jp/c/water_plants/biotope_plants/cold_resistance/cold_resistance_chusui/388",
   "publisher": "杜若園芸",
-  "sourceChecked": "2026-11-12",
+  "sourceChecked": "2026-11-13",
   "aliases": [
     "ウォーターコイン",
     "ウチワゼニクサ",

@@ -23509,7 +23509,7 @@ test('Sagittaria white three petal female flowers and green heads remain connect
 });
 
 test('Watercoin photo source preserves domestic height bloom and qualified varietal organ dimensions',()=>{
- const i=CATALOG['p-76c710fd7cde'],a=i.appearance;assert.equal(i.label,'ウォーターコイン');assert.equal(i.latin,'Hydrocotyle verticillata');assert.deepEqual(i.height,[.05,.15]);assert.equal(i.spread,null);assert.deepEqual(i.bloom,[5,6,7,8,9]);assert.equal(i.bloomKnown,true);assert.deepEqual(i.colors,['white']);assert.equal(i.sourceChecked,'2026-11-12');assert.match(i.care,/5枚の参考例/);assert.match(i.care,/6枚の花弁/);assert.match(i.care,/暖かな室内で常緑/);assert.match(i.care,/水中に垂れる節の根/);assert.equal(a.sources[a.basis.habit].url,'https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Hydrocotyle~verticillata&page=nswfl');assert.ok(a.sources.some(source=>source.url==='https://lkcnhm.nus.edu.sg/nis/whorled-pennywort-hydrocotyle-verticillata-thunb-araliaceae-a-new-record-of-a-casual-aquatic-macrophyte-in-singapore/'));assert.ok(a.unconfirmed.some(note=>note.includes('底への定着')&&note.includes('未確認')));assert.match(a.sourceConflict,/21〜35×24〜40mm/);assert.match(a.sourceConflict,/直径9cm以上は鉢/);assert.match(a.sourceConflict,/流通株の分類同定は未確認/);assert.match(a.phenologyRegion,/国外の変種資料の草丈/);assert.equal(a.shootProfile,'watercoinPhotoReference');assert.equal(a.persistence,'managedSubmerged');assert.deepEqual(a.foliageMonths,[4,5,6,7,8,9,10,11]);assert.equal(a.leafLength,.035);assert.equal(a.flowerRadius,.0013);assert.equal(a.status,'partial');assert.ok(a.unconfirmed.some(n=>n.includes('数値の水温・気温の閾値は示されていません')));assert.ok(a.unconfirmed.some(n=>n.includes('写真から計測')&&n.includes('年次増殖')));
+ const i=CATALOG['p-76c710fd7cde'],a=i.appearance;assert.equal(i.label,'ウォーターコイン');assert.equal(i.latin,'Hydrocotyle verticillata');assert.deepEqual(i.height,[.05,.15]);assert.equal(i.spread,null);assert.deepEqual(i.bloom,[5,6,7,8,9]);assert.equal(i.bloomKnown,true);assert.deepEqual(i.colors,['white']);assert.equal(i.sourceChecked,'2026-11-13');assert.match(i.care,/5枚の参考例/);assert.match(i.care,/6枚の花弁/);assert.match(i.care,/暖かな室内で常緑/);assert.match(i.care,/水中に垂れる節の根/);assert.equal(a.sources[a.basis.habit].url,'https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=sp&name=Hydrocotyle~verticillata&page=nswfl');assert.ok(a.sources.some(source=>source.url==='https://lkcnhm.nus.edu.sg/nis/whorled-pennywort-hydrocotyle-verticillata-thunb-araliaceae-a-new-record-of-a-casual-aquatic-macrophyte-in-singapore/'));assert.match(a.unconfirmed.join(' '),/根先が水底より上/);assert.ok(a.unconfirmed.some(note=>note.includes('底への定着')&&note.includes('未確認')));assert.match(a.sourceConflict,/21〜35×24〜40mm/);assert.match(a.sourceConflict,/直径9cm以上は鉢/);assert.match(a.sourceConflict,/流通株の分類同定は未確認/);assert.match(a.phenologyRegion,/国外の変種資料の草丈/);assert.equal(a.shootProfile,'watercoinPhotoReference');assert.equal(a.persistence,'managedSubmerged');assert.deepEqual(a.foliageMonths,[4,5,6,7,8,9,10,11]);assert.equal(a.leafLength,.035);assert.equal(a.flowerRadius,.0013);assert.equal(a.status,'partial');assert.ok(a.unconfirmed.some(n=>n.includes('数値の水温・気温の閾値は示されていません')));assert.ok(a.unconfirmed.some(n=>n.includes('写真から計測')&&n.includes('年次増殖')));
 });
 test('Watercoin photo reference fits twenty four independent dimensions with central peltate petiole attachment',()=>{
  const dimensions=[[.12,.25,.12],[.01,.10,.005],[.12,.25,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,leafJoins=0,petalJoins=0,flowering=0,winterModels=0,vertices=0;
@@ -23577,8 +23577,9 @@ test('Watercoin creeping stems join stalk bases and wet nodal roots stay above t
     const index=i*3;
     assert.ok(same(nodes[i],point(roots,index,-.5)));
     for(let j=0;j<2;j++)assert.ok(same(point(roots,index+j,.5),point(roots,index+j+1,-.5)));
-    const tip=point(roots,index+2,.5);
-    assert.ok(tip.y<-.008&&tip.y>-.008-depth);
+    const tip=point(roots,index+2,.5),neck=point(roots,index,.5);
+    assert.ok(neck.y+PLANT_BASE_Y<POND_SURFACE_Y);
+    assert.ok(tip.y<neck.y&&tip.y+PLANT_BASE_Y>-depth);
    }
    const withSupports=watercoinFoliageInspectionView(g,1.3,40);
    g.remove(stem,roots);
