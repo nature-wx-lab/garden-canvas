@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1106';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1106';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1106';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1106';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS } from './model.js?v=0.9.1106';
-import { createScene } from './scene.js?v=0.9.1106';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1107';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1107';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1107';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1107';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1107';
+import { createScene } from './scene.js?v=0.9.1107';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -224,7 +224,26 @@ function bind(){
   $('preview-replace').addEventListener('click',()=>previewReplacement($('replacement').value));$('cancel-preview').addEventListener('click',()=>{preview=null;resetMode();sync();message('交換を取り消し、元の案へ戻りました。');});$('accept-preview').addEventListener('click',()=>{if(!preview)return;checkpoint();doc=validateDocument(preview);preview=null;resetMode();sync();message('交換を採用しました。価格や手入れは新しい植物に合わせて設定できます。');});
   $('apply-scenario').addEventListener('click',()=>withPlant(p=>{if(number('future-height')<p.height||number('future-spread')<p.spread||number('future-leaf')<p.leafHeight)throw new Error('成長後の寸法は初期寸法以上にしてください。小さくする場合は剪定設定を使います。');p.scenario={year:number('scenario-year'),height:number('future-height'),spread:number('future-spread'),leafHeight:number('future-leaf')};},'自分で設定した成長シナリオを反映しました。年数スライダーで確認できます。'));$('clear-scenario').addEventListener('click',()=>withPlant(p=>{p.scenario=null;},'年次成長の仮定を解除しました。'));
   $('apply-management').addEventListener('click',()=>withPlant(p=>{p.management={height:number('target-height'),spread:number('target-spread'),method:$('prune-method').value,recovery:number('recovery')};},'剪定寸法と回復の仮定を設定しました。「手入れ予定」に剪定月を登録すると表示に反映します。'));$('clear-management').addEventListener('click',()=>withPlant(p=>{p.management=null;},'剪定の寸法シナリオを解除しました。予定表の作業は残ります。'));
-  $('task-type').addEventListener('change',()=>{const water=$('task-type').value==='water';$('task-count').max=water?31:1;if(!water)$('task-count').value=1;});$('add-task').addEventListener('click',()=>withPlant(p=>{if(p.tasks.length>=36)throw new Error('1株につき手入れ予定は36件までです。');const t={id:nextId(p.tasks),type:$('task-type').value,month:number('task-month'),repeat:$('task-repeat').value,count:number('task-count'),min:optional('task-min'),max:optional('task-max')};if(p.tasks.some(e=>e.type===t.type&&e.month===t.month&&e.repeat===t.repeat))throw new Error('同じ種類・月・繰り返しの予定が登録済みです。');p.tasks.push(t);calendarMonth=t.month;},'手入れ予定を追加しました。予定表と3Dが同じ剪定月を参照します。',true));
+  const updateTaskCount=()=>{
+    const limit=taskCountLimit($('task-type').value),input=$('task-count');
+    input.max=limit;input.readOnly=limit===1;
+    if(limit===1)input.value=1;
+  };
+  $('task-type').addEventListener('change',updateTaskCount);
+  updateTaskCount();
+  $('add-task').addEventListener('click',()=>{
+    const type=$('task-type').value,count=number('task-count'),min=optional('task-min'),max=optional('task-max');
+    const limit=taskCountLimit(type);
+    if(!Number.isInteger(count)||count<1||count>limit){message(`月内の回数は${limit===1?'1回':'1〜31回の整数'}で指定してください。`);return;}
+    if(!validTaskMinutes(min,max)){message('作業時間は最短・最長ともに未入力にするか、0〜10000分で最短が最長以下になるよう入力してください。');return;}
+    const month=number('task-month'),repeat=$('task-repeat').value;
+    withPlant(p=>{
+      if(p.tasks.length>=36)throw new Error('1株につき手入れ予定は36件までです。');
+      if(p.tasks.some(e=>e.type===type&&e.month===month&&e.repeat===repeat))throw new Error('同じ種類・月・繰り返しの予定が登録済みです。');
+      p.tasks.push({id:nextId(p.tasks),type,month,repeat,count,min,max});
+      calendarMonth=month;
+    },'手入れ予定を追加しました。予定表と3Dが同じ剪定月を参照します。',true);
+  });
   $('resize-garden').addEventListener('click',()=>{const ok=mutate(p=>{if(p.plants.some(p=>p.locked))throw new Error('固定された植物があります。寸法変更で配置も伸縮するため、先に固定を解除してください。');const w=number('width'),d=number('depth'),rx=w/p.width,rz=d/p.depth;p.width=w;p.depth=d;p.outline=p.outline.map(([x,z])=>[round(x*rx),round(z*rz)]);p.zones.forEach(z=>{z.points=z.points.map(([x,z])=>[round(x*rx),round(z*rz)]);});p.obstacles.forEach(o=>{o.x=round(o.x*rx);o.z=round(o.z*rz);o.width=round(o.width*rx);o.depth=round(o.depth*rz);});p.plants.forEach(p=>{p.x=round(p.x*rx);p.z=round(p.z*rz);});},'庭と配置の平面寸法を伸縮しました。');if(ok)engine?.view('home');});
   $('shape').addEventListener('change',()=>{if($('shape').value==='custom')startDrawing('outline');else{const shape=$('shape').value;mutate(p=>{const outline=outlineFor(shape,p.width,p.depth);checkBoundary(p,outline);p.outline=outline;},'庭の形を変更しました。');}});$('draw-outline').addEventListener('click',()=>startDrawing('outline'));$('draw-zone').addEventListener('click',()=>startDrawing('zone'));$('circle-zone').addEventListener('click',()=>startDrawing('circle'));$('finish-outline').addEventListener('click',finishDrawing);$('undo-point').addEventListener('click',()=>{draft.pop();updateDraft();});$('cancel-outline').addEventListener('click',()=>{resetMode();sync();message('形の編集を取り消しました。');});
   $('obstacle-type').addEventListener('change',()=>{$('obstacle-height').value={house:2.5,path:.05,fence:1.5}[$('obstacle-type').value];});$('add-obstacle').addEventListener('click',()=>mutate(p=>{if(p.obstacles.length>=16)throw new Error('外構は16個までです。');const o={type:$('obstacle-type').value};for(const key of ['x','z','width','depth','height'])o[key]=number(`obstacle-${key}`);if(!contained(obstaclePoints(o),p.outline))throw new Error('外構全体が庭の輪郭に収まる位置と寸法にしてください。');if(p.plants.some(p=>inside(p.x,p.z,obstaclePoints(o))))throw new Error('外構の内側に植物があります。先に植物を移動してください。');p.obstacles.push(o);},'外構を配置しました。'));$('apply-conditions').addEventListener('click',()=>mutate(p=>{p.sun=$('sun').value;p.moisture=$('moisture').value;},'植物候補を庭の条件で絞りました。'));$('apply-hours').addEventListener('click',()=>mutate(p=>{p.hours=Array.from({length:12},(_,i)=>optional(`hours-${i}`));p.prep=number('prep');},'月別に使える時間を更新しました。作業予定は維持しています。'));

@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1106';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1106';
-import { seasonAt } from './catalog-search.js?v=0.9.1106';
+import {treeProfile} from './tree-profiles.js?v=0.9.1107';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1107';
+import { seasonAt } from './catalog-search.js?v=0.9.1107';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -24,6 +24,8 @@ export const isRaouliaMat=kind=>plantInfo(kind).appearance?.architecture==='raou
 export const plantSizeLimits=kind=>isRaouliaMat(kind)?{minHeight:.003,minLeafHeight:.001,step:.001,digits:3}:{minHeight:.01,minLeafHeight:.005,step:.01,digits:2};
 const within=(v,min,max)=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
 const integer=(v,min,max)=>Number.isInteger(v)&&within(v,min,max);
+export const taskCountLimit=type=>type==='water'?31:1;
+export const validTaskMinutes=(min,max)=>min===null&&max===null||within(min,0,10000)&&within(max,min,10000);
 const keys=(o,expected)=>o&&Object.getPrototypeOf(o)===Object.prototype&&Object.keys(o).sort().join('|')===[...expected].sort().join('|');
 const cross=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
 const onSegment=(p,a,b)=>Math.abs(cross(a,b,p))<1e-8&&p[0]>=Math.min(a[0],b[0])-1e-8&&p[0]<=Math.max(a[0],b[0])+1e-8&&p[1]>=Math.min(a[1],b[1])-1e-8&&p[1]<=Math.max(a[1],b[1])+1e-8;
@@ -223,7 +225,7 @@ export function validateDocument(input){
       if(!keys(p,['id','kind','x','z','height','spread','leafHeight','start','role','price','locked','scenario','management','tasks'])||!integer(p.id,1,1000000)||ids.has(p.id)||typeof p.kind!=='string'||!(Object.hasOwn(CATALOG,p.kind)||Object.hasOwn(LEGACY,p.kind))||!within(p.height,limits.minHeight,60)||!within(p.spread,.1,60)||!within(p.leafHeight,limits.minLeafHeight,p.height)||!within(p.x,0,plan.width)||!within(p.z,0,plan.depth)||!canPlant(plan,p.x,p.z)||!integer(p.start,0,131)||!['new','existing','reference'].includes(p.role)||p.price!==null&&!integer(p.price,0,10000000)||typeof p.locked!=='boolean'||!Array.isArray(p.tasks)||p.tasks.length>36)bad();ids.add(p.id);
       const s=p.scenario;if(s!==null&&(!keys(s,['year','height','spread','leafHeight'])||!integer(s.year,1,10)||!within(s.height,p.height,60)||!within(s.spread,p.spread,60)||!within(s.leafHeight,p.leafHeight,s.height)))bad();
       const m=p.management;if(m!==null&&(!keys(m,['height','spread','method','recovery'])||!within(m.height,limits.minHeight,60)||!within(m.spread,.1,60)||!['thin','trim'].includes(m.method)||!integer(m.recovery,1,36)))bad();
-      const taskIds=new Set();for(const t of p.tasks){if(!keys(t,['id','type','month','repeat','count','min','max'])||!integer(t.id,1,1000)||taskIds.has(t.id)||!Object.hasOwn(TASKS,t.type)||!integer(t.month,1,12)||!['annual','first'].includes(t.repeat)||!integer(t.count,1,t.type==='water'?31:1)||!(t.min===null&&t.max===null||within(t.min,0,10000)&&within(t.max,t.min,10000)))bad();taskIds.add(t.id);}
+      const taskIds=new Set();for(const t of p.tasks){if(!keys(t,['id','type','month','repeat','count','min','max'])||!integer(t.id,1,1000)||taskIds.has(t.id)||!Object.hasOwn(TASKS,t.type)||!integer(t.month,1,12)||!['annual','first'].includes(t.repeat)||!integer(t.count,1,taskCountLimit(t.type))||!validTaskMinutes(t.min,t.max))bad();taskIds.add(t.id);}
     }
   }return clone(v);
 }
