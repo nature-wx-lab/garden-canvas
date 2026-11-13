@@ -23915,7 +23915,7 @@ test('Lysimachia Gold flower focus resolves three independent frames and visible
 });
 
 test('Eleocharis parvula source preserves domestic height and bloom while keeping stock width unknown',()=>{
- const q=CATALOG['p-02ccaeae76c2'],a=q.appearance;assert.equal(q.latin,'Eleocharis parvula');assert.deepEqual(q.height,[.03,.10]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[6,7,8,9]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['green']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'shortHairPhotoReference');assert.equal(a.persistence,'winterDormant');assert.match(a.sources[3].url,/Eleocharis~parvula/);assert.match(a.sourceConflict,/9cm.*ポット/);assert.match(a.phenologyRegion,/2cm.*仮の境界/);assert.match(a.phenologyRegion,/12〜2月.*3〜4月.*目安/);assert.ok(!Object.hasOwn(a.basis,'dormantMonths'));assert.ok(!Object.hasOwn(a.basis,'emergenceMonths'));assert.match(q.care,/稈.*小穂/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'green'}).some(([id])=>id==='p-02ccaeae76c2'));for(const color of['yellow','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-02ccaeae76c2'));
+ const q=CATALOG['p-02ccaeae76c2'],a=q.appearance;assert.equal(q.latin,'Eleocharis parvula');assert.deepEqual(q.height,[.03,.10]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[6,7,8,9]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['green']);assert.equal(q.sourceChecked,'2026-11-13');assert.match(a.unconfirmed.join(' '),/細い地下茎を水底.*水面より低い稈には小穂/);assert.equal(a.shootProfile,'shortHairPhotoReference');assert.equal(a.persistence,'winterDormant');assert.match(a.sources[3].url,/Eleocharis~parvula/);assert.match(a.sourceConflict,/9cm.*ポット/);assert.match(a.phenologyRegion,/2cm.*仮の境界/);assert.match(a.phenologyRegion,/12〜2月.*3〜4月.*目安/);assert.ok(!Object.hasOwn(a.basis,'dormantMonths'));assert.ok(!Object.hasOwn(a.basis,'emergenceMonths'));assert.match(q.care,/稈.*小穂/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'green'}).some(([id])=>id==='p-02ccaeae76c2'));for(const color of['yellow','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-02ccaeae76c2'));
 });
 test('Eleocharis parvula photo reference fits twenty four independent inputs with joined culms and terminal spikelets',()=>{
  const dimensions=[[.10,.25,.08],[.01,.10,.005],[.10,.25,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,culmJoins=0,sheathJoins=0,spikeletJoins=0,winterModels=0,flowerModels=0;
@@ -23928,6 +23928,45 @@ test('Eleocharis parvula photo reference fits twenty four independent inputs wit
    if(month===7){assert.ok(spikes?.count>0);assert.ok(g.userData.surfaceSelection?.matched);const glumes=g.children.find(m=>m.userData.component==='glume-short-hairgrass-photo-reference');assert.equal(glumes.count,spikes.count*9);assert.equal(glumes.geometry.userData.closedSurface,true);for(let k=0;k<spikes.count;k++){assert.ok(point(spikes,k,new Vector3()).distanceTo(point(culms,k*6*8+7,new Vector3(0,.5,0)))<2e-6);spikeletJoins++;}flowerModels++;}else{assert.equal(spikes,undefined);assert.equal(flowerInspectionView(g,.8,40),null);}
   }finally{dispose(g);}
  }assert.equal(models,24);assert.equal(winterModels,8);assert.equal(flowerModels,8);console.log('SHORT_HAIRGRASS1014_BOUNDARIES '+JSON.stringify({models,vertices,culmJoins,sheathJoins,spikeletJoins,winterModels,flowerModels}));
+});
+test('Eleocharis parvula connects wet culms at the bed and keeps submerged tips free of spikelets',()=>{
+ const p={...makePlant('p-02ccaeae76c2',108410,3,3),height:.10,spread:.25,leafHeight:.08};
+ const matrix=new Matrix4();
+ const point=(mesh,i,y)=>{mesh.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
+ const view={year:0,month:7,reference:false};
+ for(const depth of [.007,.14]){
+  const group=plantModel(p,{...view,waterDepth:depth});
+  try{
+   const get=key=>group.children.find(m=>m.userData.component===key);
+   const culms=get('culm-short-hairgrass-photo-ref'),rhizomes=get('rhizome-short-hairgrass-photo-ref');
+   const count=culms.count/8;
+   assert.equal(rhizomes.count,count-Math.ceil(count/8));
+   for(let i=0;i<rhizomes.count;i++){
+    const j=(Math.floor(i/7)*8+i%7)*8;
+    const from=point(rhizomes,i,-.5),to=point(rhizomes,i,.5);
+    assert.ok(from.distanceTo(point(culms,j,-.5))<2e-6);
+    assert.ok(to.distanceTo(point(culms,j+8,-.5))<2e-6);
+    assert.ok(from.y>-.012&&from.y<-.011&&Math.abs(from.y-to.y)<1e-6);
+   }
+   const spikelets=get('spikelet-short-hairgrass-photo-reference');
+   if(depth===.007){
+    assert.ok(spikelets.count>0);
+    for(let i=0;i<spikelets.count;i++)assert.ok(point(spikelets,i,0).y+.012-depth>.006);
+    group.position.y=.012-depth;
+    group.updateMatrixWorld(true);
+    for(const aspect of [.8,1.65]){
+     const pose=flowerInspectionView(group,aspect,40);
+     const camera=new PerspectiveCamera(40,aspect,.01,650);
+     camera.position.fromArray(pose.position);camera.lookAt(...pose.target);camera.updateMatrixWorld(true);
+     const ray=new Raycaster();ray.setFromCamera(new Vector2(),camera);
+     assert.ok(ray.intersectObject(group,true).some(hit=>hit.object.userData.component==='glume-short-hairgrass-photo-reference'));
+    }
+   }else assert.equal(spikelets,undefined);
+  }finally{dispose(group);}
+ }
+ const low={...p,height:.01,leafHeight:.005};
+ assert.equal(stateAt(low,{...view,waterDepth:.007}).bloom,false);
+ assert.equal(stateAt(low,{...view,waterDepth:0}).bloom,true);
 });
 test('Eleocharis parvula foliage focus frames six summer and winter inputs',()=>{
  let models=0,framedPoses=0,winterAbsent=0;for(const dims of[[.10,.25,.08],[.01,.10,.005],[.10,.25,.005]])for(const month of[7,1]){

@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1083';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1084';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1083';
-import {PLANT_BASE_Y,POND_SURFACE_Y} from './model.js?v=0.9.1083';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1084';
+import {PLANT_BASE_Y,POND_SURFACE_Y} from './model.js?v=0.9.1084';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26635,25 +26635,41 @@ function shortHairPhotoSegment(f,a,z,r,color,kind){
 }
 function drawShortHairPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
+ const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
+ const waterline=wet?bed+s.waterDepth+POND_SURFACE_Y:-Infinity;
  const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00020,w*.0018,h*.004),floor=r*1.6+Math.min(.00002,h*.002),n=Math.max(1,Math.round(768*s.leafDensity)),flowers=s.bloom&&s.waterDepth<.02;
- let spikeIndex=0;
+ let spikeIndex=0,previousBase;
  for(let k=0;k<n;k++){
-  const az=k*2.399+rand()*.18,R=w*.38*Math.sqrt((k+.5)/n),root=[Math.sin(az)*R,floor,Math.cos(az)*R],fertile=flowers&&k%6===0,S=Math.min(.0032,h*.065,w*.02),tipHeight=fertile?Math.max(floor,h*(.82+.12*rand())-S):Math.max(floor,LH*(.52+.40*rand())),bend=Math.min(w*.025,(tipHeight-floor)*(.10+.12*rand()));let previous=root,previous2=root;
+  const az=k*2.399+rand()*.18,R=w*.38*Math.sqrt((k+.5)/n);
+  const group=Math.floor(k/8),turn=group*2.399,center=w*.33*Math.sqrt((group+.5)/Math.ceil(n/8));
+  const along=(k%8-3.5)*Math.min(.009,w*.015);
+  const root=wet
+   ?[Math.sin(turn)*center+Math.cos(turn)*along,bed+floor,Math.cos(turn)*center-Math.sin(turn)*along]
+   :[Math.sin(az)*R,floor,Math.cos(az)*R];
+  if(wet&&k%8)shortHairPhotoSegment(b,previousBase,root,r*.75,'#9f967a','rhizome-short-hairgrass-photo-ref');
+  previousBase=root;
+  const fertile=flowers&&k%6===0,S=Math.min(.0032,h*.065,w*.02);
+  const tipHeight=fertile?Math.max(floor,h*(.82+.12*rand())-S):Math.max(floor,LH*(.52+.40*rand()));
+  const bend=Math.min(w*.025,(tipHeight-floor)*(.10+.12*rand()));
+  let previous=root,previous2=root;
   for(let node=0;node<8;node++){
-   const t=(node+1)/8,at=[root[0]+Math.sin(az)*bend*t*t,floor+(tipHeight-floor)*t,root[2]+Math.cos(az)*bend*t*t];shortHairPhotoSegment(b,previous,at,r*(1-.42*t),k%17===0?'#a8ad67':kit.shade(rand,s.leafColor,.035),'culm-short-hairgrass-photo-ref');previous2=previous;previous=at;
+   const t=(node+1)/8,at=[root[0]+Math.sin(az)*bend*t*t,bed+floor+(tipHeight-floor)*t,root[2]+Math.cos(az)*bend*t*t];shortHairPhotoSegment(b,previous,at,r*(1-.42*t),k%17===0?'#a8ad67':kit.shade(rand,s.leafColor,.035),'culm-short-hairgrass-photo-ref');previous2=previous;previous=at;
   }
-  const sheathTop=[root[0]+Math.sin(az)*bend*.01,floor+Math.min(.008,(tipHeight-floor)*.10),root[2]+Math.cos(az)*bend*.01];shortHairPhotoSegment(b,root,sheathTop,r*1.4,k%3===0?'#aa9d77':'#bcc49b','sheath-short-hairgrass-photo-ref');
-  if(!fertile)continue;
+  const sheathTop=[root[0]+Math.sin(az)*bend*.01,bed+floor+Math.min(.008,(tipHeight-floor)*.10),root[2]+Math.cos(az)*bend*.01];shortHairPhotoSegment(b,root,sheathTop,r*1.4,k%3===0?'#aa9d77':'#bcc49b','sheath-short-hairgrass-photo-ref');
+  if(!fertile||previous[1]<=waterline)continue;
   const axis=new THREE.Vector3(...previous).sub(new THREE.Vector3(...previous2)).normalize(),rot=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),axis),'YXZ'),f=flowerFrame(b,previous,rot.x,rot.y,rot.z);f.add('short-hairgrass-photo-reference-spikelet','spikelet-short-hairgrass-photo-reference','#9aa36b',0,0,0,S*.45,S,S*.45);
   for(let glume=0;glume<9;glume++){
    const a=glume*2.399,base=[Math.sin(a)*S*.10,glume===0?0:S*(.04+.05*(glume-1)),Math.cos(a)*S*.10],pitch=.20,L=S*(glume===0?.62:.50),W=S*(glume===0?.56:.36),Z=S*.40,pf=flowerFrame(f,base,pitch,a);pf.add('short-hairgrass-photo-reference-glume','glume-short-hairgrass-photo-reference',glume%3===0?'#b6b38a':'#9eaa70',0,0,0,W,L,Z);
    if(glume!==8)continue;
    const rootMatrix=new THREE.Matrix4().compose(new THREE.Vector3(...previous),new THREE.Quaternion().setFromEuler(rot),new THREE.Vector3(1,1,1)),glumeMatrix=new THREE.Matrix4().compose(new THREE.Vector3(...base),new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch,a,0,'YXZ')),new THREE.Vector3(W,L,Z)),matrix=rootMatrix.multiply(glumeMatrix);matrix.fromArray(new Float32Array(matrix.elements));
-   const N=12,C=16,row=7,col=8,stride=(N+1)*(C+1),offset=stride+row*(C+1)+col,vertices=[offset,offset+1,offset+C+1],points=vertices.map(index=>{const v=index-stride,t=Math.floor(v/(C+1))/N,u=(v%(C+1))/C*2-1,p=shortHairPhotoReferencePoint('glume',t,u);p[2]+=.005*Math.sin(Math.PI*t);return new THREE.Vector3(...p.map(Math.fround)).applyMatrix4(matrix);}),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3),cameraAxis=new THREE.Vector3(0,.65,1).applyEuler(new THREE.Euler(pitch,a,0,'YXZ')).applyEuler(rot).normalize(),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),cameraAxis),'YXZ');b.flower?.(point.toArray(),S*.85,e.x,e.y,e.z,{component:'glume-short-hairgrass-photo-reference',instanceId:spikeIndex*9+8,vertices,faceIndex:N*C*2+(row*C+col)*2,cameraAxis:cameraAxis.toArray()});
+   const N=12,C=16,row=7,col=8,stride=(N+1)*(C+1),offset=stride+row*(C+1)+col,vertices=[offset,offset+1,offset+C+1],points=vertices.map(index=>{const v=index-stride,t=Math.floor(v/(C+1))/N,u=(v%(C+1))/C*2-1,p=shortHairPhotoReferencePoint('glume',t,u);p[2]+=.005*Math.sin(Math.PI*t);return new THREE.Vector3(...p.map(Math.fround)).applyMatrix4(matrix);}),point=points.reduce((sum,v)=>sum.add(v),new THREE.Vector3()).multiplyScalar(1/3);
+   const cameraAxis=new THREE.Vector3(0,wet?2.0:.65,1).applyEuler(new THREE.Euler(pitch,a,0,'YXZ')).applyEuler(rot).normalize();
+   const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),cameraAxis),'YXZ');
+   b.flower?.(point.toArray(),S*.85,e.x,e.y,e.z,{component:'glume-short-hairgrass-photo-reference',instanceId:spikeIndex*9+8,vertices,faceIndex:N*C*2+(row*C+col)*2,cameraAxis:cameraAxis.toArray()});
   }
   spikeIndex++;
  }
- // Counts, spacing and colors are illustrative. No underground rhizomes/tubers, achenes or floral microanatomy are drawn.
+ // The shallow bed reference shows thin creeping stems. Tubers remain outside the illustration.
 }
 
 
