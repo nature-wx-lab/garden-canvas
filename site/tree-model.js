@@ -1,6 +1,6 @@
 // Branch topology is constructed before seasonal foliage, so winter reveals the same tree.
 // Dimensions belong to the plan; these branching parameters are visual interpretations.
-import {foliageKind} from './appearance.js?v=0.9.1124';
+import {foliageKind} from './appearance.js?v=0.9.1125';
 const TAU=Math.PI*2,clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 function rng(seed){let n=seed>>>0;return()=>{n^=n<<13;n^=n>>>17;n^=n<<5;return(n>>>0)/4294967296;};}
 const mix=(a,b,t)=>a.map((x,i)=>x+(b[i]-x)*t);
@@ -120,10 +120,11 @@ export function drawTree(b,{profile,info,p,s,detail},kit){
      const length=size*(.75+r()*.4)*(s.leafScale??1);b.add(shape,leafKind,colour,...pos,length,length,length,1.32+r()*.28,angle,(r()-.5)*.3);
     }
    }
+   const camphor=info.latin==='Cinnamomum camphora';
    const terminalFlower=['cyme','corymb','umbel','panicle','pendantRaceme','terminalSolitary'].includes(a.inflorescence)&&a.architecture!=='longstalkHolly';
-   const flowerSite=a.inflorescence!=='pendantRaceme'||i%Math.max(4,stride*2)===0;
+   const flowerSite=camphor?i%Math.max(8,stride*4)===0:a.inflorescence!=='pendantRaceme'||i%Math.max(4,stride*2)===0;
    if(flowerSite&&a.inflorescence!=='branchClusters'&&flowerDensity>0&&(!terminalFlower||n===nodes-1)&&r()<flowerDensity*(profile.showy===false&&!a.flowerShape?0:terminalFlower?.75:.16)){
-    const pos=[center[0]+Math.sin(angle)*size*.3,center[1]+.015,center[2]+Math.cos(angle)*size*.3],c=profile.flowerColor||s.flowerColor||'#f2e4df';
+    const pos=camphor?center:[center[0]+Math.sin(angle)*size*.3,center[1]+.015,center[2]+Math.cos(angle)*size*.3],c=profile.flowerColor||s.flowerColor||'#f2e4df';
     if(profile.flowerKind==='cherry'){
      const radius=profile.flowerSize||.024;
      for(let cluster=0;cluster<3;cluster++){
@@ -149,13 +150,17 @@ export function drawTree(b,{profile,info,p,s,detail},kit){
      const panicle=a.inflorescence==='panicle',axillary=a.inflorescence==='axillaryRaceme',axilUmbel=a.inflorescence==='axillaryUmbel',single=a.architecture==='longstalkHolly';
      const clusters=single?1:panicle?(a.architecture==='fringeTree'?49:23):axillary||axilUmbel?4:['cyme','corymb','umbel'].includes(a.inflorescence)?9:1,length=a.inflorescenceLength||.075;
      const head=single?[pos[0]+Math.sin(angle)*.03,pos[1]-.01,pos[2]+Math.cos(angle)*.03]:[...pos];
+     const crownEdge=camphor&&Math.hypot(pos[0],pos[2])>w*.24;
      if(single)b.branch(pos,head,.0005,'#81905a','peduncle');
      if(panicle)b.branch(pos,[pos[0],pos[1]+length,pos[2]],.00055,'#81905a','peduncle');
      for(let j=0;j<clusters;j++){
       const aa=j*2.399,f=j/Math.max(1,clusters-1),rr=panicle?(1-f)*length*.40:clusters>1?Math.sqrt(f)*(axillary?.014:axilUmbel?.008:.022):0;
       const at=[head[0]+Math.sin(aa)*rr,head[1]+(panicle?f*length:axillary?f*.035:axilUmbel?.006:0),head[2]+Math.cos(aa)*rr];
       if(clusters>1)b.branch(panicle?[pos[0],at[1],pos[2]]:pos,at,.00025,'#8b9760','peduncle');
-      kit.detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius||(a.flowerShape==='linearPetals'?.004:clusters>1?.006:profile.flowerSize||.009),color:c,shape:a.flowerShape,petals:a.petals||5,stamenCount:a.stamenCount||2,layers:a.flowerLayers||1,pattern:a.flowerPattern,patternColor:a.flowerPatternColor,palette:a.flowerPalette,tilt:a.flowerShape==='sweetshrub'?.65+r()*.55:0,yaw:angle},{bud,rand:r,shade});
+      kit.detailedFlower(b,{x:at[0],y:at[1],z:at[2],r:a.flowerRadius||(a.flowerShape==='linearPetals'?.004:clusters>1?.006:profile.flowerSize||.009),color:c,shape:a.flowerShape,petals:a.tepalCount||a.petals||5,stamenCount:a.stamenCount||2,layers:a.flowerLayers||1,pattern:a.flowerPattern,patternColor:a.flowerPatternColor,palette:a.flowerPalette,tilt:a.flowerShape==='sweetshrub'?.65+r()*.55:0,yaw:angle,markInspection:!camphor},{bud,rand:r,shade});
+      if(crownEdge&&j===clusters-1)b.flower(at,.009,0,angle,0,{
+       cameraAxis:[pos[0],w*.33,pos[2]],
+      });
      }
     }else flower(b,...pos,profile.flowerSize||.025,c,r,profile.doubleFlower?3:1,5);
    }

@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1124';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1124';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1125';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1125';
 
 const BACKDROP_COLOR='#65755a';
 export {CAMERA_FLOOR};
@@ -361,8 +361,7 @@ export function monnieriFoliageInspectionView(group,aspect=1,fov=40){
 export function inspectionSeasonActive(p,view){
  if(!p)return false;const s=stateAt(p,view);return s.present&&!s.groundDormant&&(s.bloom||(plantInfo(p.kind).appearance?.shootProfile==='purpleMajesty'&&s.seedHeads));
 }
-export function flowerInspectionView(group,aspect=1,fov=40){
- const anchors=group?.userData?.flowerTargets;
+export function flowerInspectionView(group,aspect=1,fov=40,anchors=group?.userData?.flowerTargets){
  if(!Array.isArray(anchors))return null;
  const anchor=anchors.find(a=>a&&typeof a==='object'&&Array.isArray(a.origin)&&a.origin.length===3&&a.origin.every(Number.isFinite)&&Array.isArray(a.axis)&&a.axis.length===3&&a.axis.every(Number.isFinite)&&Math.hypot(...a.axis)>.00001&&Number.isFinite(a.radius)&&a.radius>0&&a.radius<10);
  if(!anchor)return null;
@@ -371,6 +370,26 @@ export function flowerInspectionView(group,aspect=1,fov=40){
  const radius=Math.max(.004,anchor.radius*group.matrixWorld.getMaxScaleOnAxis()),axis=anchor.surface?new THREE.Vector3(...anchor.axis).applyNormalMatrix(new THREE.Matrix3().getNormalMatrix(group.matrixWorld)):new THREE.Vector3(...anchor.axis).transformDirection(group.matrixWorld),target=group.localToWorld(new THREE.Vector3(...anchor.origin)).addScaledVector(axis,radius*((surfaceInspectionFloor(group)!==null||['hybridHyssopSpikes','rupestrisBranches','pajamasCymes','limeCatmintMound','catmintMounds','pinkCatmintBranches','simpleCatmintBranches','giantCatmintShoots','tallNepetaSpires','nervosaHeads','uprightFaassenii','subsessilisWhorls','physostegiaRows','paniclePhlox','springPhloxTrails','carolinaPhloxHeads','pinnatePolemonium','roseCampion','doubleRaggedRobin','dianthusCymes','silverSnapdragons','heucherellaCrowns','winterbellsReferences','vesicariusReferences','hybridHelleboreDoubleReferences','goldHelleboreReferences','wildHelleboreReferences','glandorfensisReferences','frostkissReferences','ballardiaeReferences','ericsmithiiReferences','nigercorsReferences','lemonnieraeReferences','thibetanusReferences','foetidusReferences','sterniiReferences','argutifoliusReferences','lividusReferences','nigerCultivarReferences','rugosaSourceReferences','bergamoAnnualReference','ogisMonardaColourReferences','retailMonardaReferences','ruelliaTropicstarReference','woodlandPhloxReferences','mallowReferences','retailPeachBellReferences','fineAmsoniaReferences','stormcloudReferences','amsoniaEllipticaReferences','chrysanthemumReferences','annLeysReferences','gardenAsterReferences','showmakersAsterReferences','callistephusReferences','gaillardiaSourceReferences','achilleaReferences','autumnJoyReferences','milleniumAlliumReferences','limelightHydrangeaReferences','magnusEchinaceaReferences','smallVariegatedAlternantheraReferences','texturedAlternantheraReferences','alternantheraCultivarReferences','aromaticArtemisiaReferences','artemisiaFoliageReferences','mukdeniaReferences','dwarfAlchemillaReferences','heucheraCultivarReferences','rodgersiaCultivarReferences','peltateHerbReferences','rheumReferences','reedFoliageReferences','canaryReferences','sorghastrumReferences','boutelouaReferences','sandLovegrassReference','sesleriaReference','imperataRedReference','cortaderiaReferences','moliniaReferences','deschampsiaReferences','miscanthusReferences','elymusReferences','schizachyriumReferences','andropogonReferences','chasmanthiumReferences'].includes(group.userData.architecture))?0:.30)),direction=anchor.surface?.cameraAxis?new THREE.Vector3(...anchor.surface.cameraAxis).applyNormalMatrix(new THREE.Matrix3().getNormalMatrix(group.matrixWorld)):group.userData.architecture==='hordeumReference'?new THREE.Vector3(axis.z,.18,-axis.x).multiplyScalar(.80).add(new THREE.Vector3(.8,.18,1).multiplyScalar(.35)).normalize():axis.clone().multiplyScalar(nodding?.45:sedgeExterior?.20:.90).add(new THREE.Vector3(.8,.18,1).multiplyScalar(nodding?.75:sedgeExterior?.90:.45)).normalize(),ratio=Number.isFinite(aspect)&&aspect>0?Math.min(1,aspect):1,angle=Math.atan(Math.tan((Number.isFinite(fov)&&fov>5&&fov<100?fov:40)*Math.PI/360)*ratio),distance=Math.max(flowerInspectionDistanceFloor(group),radius*1.20/Math.sin(angle),anchor.surface?.cameraAxis&&direction.y>0?(CAMERA_FLOOR+1e-7-target.y)/direction.y:0),position=target.clone().addScaledVector(direction,distance);
  position.y=Math.max(CAMERA_FLOOR+1e-7,position.y);
  return {position:position.toArray(),target:target.toArray()};
+}
+export function visibleCamphorFlower(group,aspect,fov){
+ const anchors=group.userData.flowerTargets??[];
+ const ray=new THREE.Raycaster(),center=new THREE.Vector2();
+ const camera=new THREE.PerspectiveCamera(fov,aspect,.01,650);
+ group.updateWorldMatrix(true,true);
+ for(const anchor of anchors){
+  const pose=flowerInspectionView(group,aspect,fov,[anchor]);
+  if(!pose)continue;
+  camera.position.fromArray(pose.position);
+  camera.lookAt(...pose.target);
+  camera.updateMatrixWorld(true);
+  ray.setFromCamera(center,camera);
+  const hit=ray.intersectObject(group,true).find(candidate=>{
+   const depth=-candidate.point.clone().applyMatrix4(camera.matrixWorldInverse).z;
+   return depth>=camera.near&&depth<=camera.far;
+  });
+  if(hit&&['petal','seed'].includes(hit.object.userData.component))return pose;
+ }
+ return null;
 }
 export function restoreCameraPose(camera,controls,pose){
  if(!pose)return;
@@ -459,6 +478,7 @@ export function createScene(container,onPick){
   const pondClips=new Map();
   const pondMaterials=new Set();
   let pondCode='';
+  let camphorObservation=null;
   let dirty=true,root=null,plants=null,selectionOutline=null,draft=null,plan=null,view=null,selection=null,visible=true,windLevel=1,frameCount=0,lastDraw=0,lastTick=0,elapsed=0,lastVisibilityCheck=-Infinity;
   const textureStatus=document.createElement('div');textureStatus.className='texture-status';textureStatus.textContent='芝と土の質感を読み込み中…';textureStatus.setAttribute('role','status');container.append(textureStatus);
   let texturesLoaded=0,textureFailed=false;container.dataset.textures='loading';
@@ -517,6 +537,7 @@ export function createScene(container,onPick){
   }
   function selectPlant(id){
     selection=id;
+    camphorObservation=null;
     dispose(selectionOutline);
     selectionOutline=null;
     const p=plan.plants.find(plant=>plant.id===id);
@@ -677,7 +698,12 @@ export function createScene(container,onPick){
     const p=plan?.plants.find(plant=>plant.id===selection);
     if(!p)return null;
     const waterDepth=pondDepthAt(plan,p.x,p.z);
-    return inspectionSeasonActive(p,{...view,waterDepth})?flowerInspectionView(group,camera.aspect,camera.fov):null;
+    if(!group||!inspectionSeasonActive(p,{...view,waterDepth}))return null;
+    if(plantInfo(p.kind).latin!=='Cinnamomum camphora')return flowerInspectionView(group,camera.aspect,camera.fov);
+    if(camphorObservation?.aspect!==camera.aspect){
+      camphorObservation={aspect:camera.aspect,pose:visibleCamphorFlower(group,camera.aspect,camera.fov)};
+    }
+    return camphorObservation.pose;
   }
   return {render,select:selectPlant,hasFlower:()=>!!selectedFlowerPose(plants?.children.find(g=>g.userData.plantId===selection)),wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},selecting:value=>{selecting=value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(controls.minDistance,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{restoreCameraPose(camera,controls,c);dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
 }
