@@ -23926,7 +23926,7 @@ test('Yellow Bacopa starts at the pond bed and only offers flowers above the sur
  const p={...makePlant('p-b4a83f923387',109610,3,3),height:.12,spread:.28,leafHeight:.11},saved=structuredClone(p);
  const plan=emptyDocument(8,6).plans.A,matrix=new Matrix4();
  const point=(mesh,index,y)=>{mesh.getMatrixAt(index,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
- for(const [depth,month,bloom] of [[.007,7,true],[.089,7,true],[.090,7,false],[.15,7,false],[.15,1,false]]){
+ for(const [depth,month,bloom] of [[.007,7,true],[.08826,7,true],[.08829,7,false],[.089,7,false],[.15,7,false],[.15,1,false]]){
   plan.zones=[{kind:'water',depth,points:[[1,1],[5,1],[5,5],[1,5]]}];
   const state={year:0,month,reference:false,waterDepth:depth};
   const group=plantModel(p,state);
@@ -23934,6 +23934,18 @@ test('Yellow Bacopa starts at the pond bed and only offers flowers above the sur
    assert.equal(stateAt(p,state).bloom,bloom);
    assert.equal(!!flowerInspectionView(group,.9,40),bloom);
    assert.ok(Math.abs(plantBaseAt(plan,p)+depth-PLANT_BASE_Y)<1e-12);
+   const flowerParts=group.children.filter(mesh=>/^(corolla|sepal)-yellow-bacopa-photo-reference$/.test(mesh.userData.component));
+   assert.equal(flowerParts.length,bloom?2:0);
+   if(bloom){
+    const vertex=new Vector3(),waterline=depth+POND_SURFACE_Y-PLANT_BASE_Y;
+    for(const mesh of flowerParts){
+     const positions=mesh.geometry.attributes.position;
+     for(let i=0;i<mesh.count;i++){
+      mesh.getMatrixAt(i,matrix);
+      for(let j=0;j<positions.count;j++)assert.ok(vertex.fromBufferAttribute(positions,j).applyMatrix4(matrix).y>waterline);
+     }
+    }
+   }
    if(month===1){assert.equal(group.children.length,0);continue;}
    const roots=group.children.find(m=>m.userData.component==='basal-root-yellow-bacopa-photo-ref');
    const stems=group.children.find(m=>m.userData.component==='stem-yellow-bacopa-photo-ref');

@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1163';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1164';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1163';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1163';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1164';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1164';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26627,6 +26627,7 @@ function drawYellowBacopaPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
  const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
  const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00055,h*.005,w*.005),floor=bed+r*1.2+Math.min(.00002,h*.002),hairL=Math.min(.001,h*.015,w*.004);
+ const {diameter:D,pedicel:P,centerY}=yellowBacopaFlowerDimensions(h,w,s.leafHeight);
  for(let shoot=0;shoot<9;shoot++){
   const az=shoot*2.399+.3,R=w*.29*Math.sqrt((shoot+.7)/9),root=[Math.sin(az)*R,floor,Math.cos(az)*R],lean=w*.035;let previous=root;
   if(wet)for(const side of [-1,1]){
@@ -26643,7 +26644,7 @@ function drawYellowBacopaPhotoReference(b,{s,rand},kit){
    for(const side of[0,1]){const lf=flowerFrame(b,at,pitch,angle+side*Math.PI);lf.add('yellow-bacopa-photo-reference-leaf','leaf-yellow-bacopa-photo-reference',kit.shade(rand,s.leafColor,.035),0,0,0,L,L,relief);const length=Math.min(hairL,LH*.03);for(const row of[4,8,12,16])for(const col of[2,22]){const pt=yellowBacopaPhotoReferencePoint('leaf',row/20,col/24*2-1).map(Math.fround).map((v,i)=>v*[L,L,relief][i]);yellowBacopaPhotoSegment(lf,pt,[pt[0],pt[1],pt[2]-length],length*.035,'#e1dfc1','leafHair-yellow-bacopa-photo-ref');}}
    previous=at;
    if(!s.bloom||node!==4)continue;
-   const D=Math.min(.012,w*.055,h*.10),P=Math.min(.011,w*.055,h*.09),flower=[at[0]+Math.sin(az)*P*.90,at[1]+P*.50,at[2]+Math.cos(az)*P*.90],f=flowerFrame(b,flower,.72,az);
+   const flower=[at[0]+Math.sin(az)*P*.90,bed+centerY,at[2]+Math.cos(az)*P*.90],f=flowerFrame(b,flower,.72,az);
    yellowBacopaPhotoSegment(b,at,flower,r*.38,'#9c9271','pedicel-yellow-bacopa-photo-ref');for(let k=0;k<6;k++){const t=(k+.5)/6,a=az+k*2.399,pt=at.map((v,i)=>v+(flower[i]-v)*t);yellowBacopaPhotoSegment(b,pt,[pt[0]+Math.sin(a)*hairL,pt[1]+hairL*.13,pt[2]+Math.cos(a)*hairL],hairL*.035,'#e1dfc1','pedicelHair-yellow-bacopa-photo-ref');}
    f.add('yellow-bacopa-photo-reference-corolla','corolla-yellow-bacopa-photo-reference',kit.shade(rand,s.flowerColor,.015),0,0,0,D,D,D);
    for(let k=0;k<5;k++){
