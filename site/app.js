@@ -1,12 +1,13 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1168';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1168';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1168';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1168';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1168';
-import { createScene } from './scene.js?v=0.9.1168';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1169';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1169';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1169';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1169';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1169';
+import { createScene } from './scene.js?v=0.9.1169';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
+let previewPlantInputs=null;
 const shown=()=>preview||doc,plan=()=>currentPlan(shown()),selectedPlant=()=>plan().plants.find(p=>p.id===selected);
 const number=id=>$(id).value.trim()===''?NaN:Number($(id).value),optional=id=>$(id).value.trim()===''?null:Number($(id).value);
 const yen=v=>`${v.toLocaleString('ja-JP')}円`,time=(a,b)=>a===b?`${round(a)}分`:`${round(a)}〜${round(b)}分`;
@@ -525,6 +526,10 @@ function previewReplacement(kind,trigger){
     const index=target.plants.findIndex(candidate=>candidate.id===plant.id);
     target.plants[index]=replacePlant(plant,kind);
     preview=validateDocument(next);
+    previewPlantInputs={
+      values:Array.from($('selected-fields').querySelectorAll('input[id], select[id]'),input=>[input.id,input.value]),
+      priceEdited:$('price').dataset.edited,
+    };
     previewTrigger=trigger;
     previewKind=kind;
     resetMode();
@@ -536,6 +541,7 @@ function previewReplacement(kind,trigger){
     message('交換をプレビューしています。採用するまで元の案は変更されません。');
   }catch(error){
     preview=null;
+    previewPlantInputs=null;
     previewTrigger=null;
     previewKind=null;
     message(error.message);
@@ -550,6 +556,11 @@ function finishReplacement(accept){
   preview=null;
   resetMode();
   sync();
+  if(!accept&&previewPlantInputs){
+    for(const [id,value] of previewPlantInputs.values)$(id).value=value;
+    if(previewPlantInputs.priceEdited!==undefined)$('price').dataset.edited=previewPlantInputs.priceEdited;
+  }
+  previewPlantInputs=null;
   const replacement=$('replacement');
   if(!accept&&previewTrigger===$('preview-replace')&&Array.from(replacement.options).some(option=>option.value===previewKind)){
     replacement.value=previewKind;
