@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1153';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1154';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1153';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions} from './model.js?v=0.9.1153';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1154';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1154';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26679,7 +26679,7 @@ function drawShortHairPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
  const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
  const waterline=wet?bed+s.waterDepth+POND_SURFACE_Y:-Infinity;
- const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00020,w*.0018,h*.004),floor=r*1.6+Math.min(.00002,h*.002),n=Math.max(1,Math.round(768*s.leafDensity)),flowers=s.bloom&&s.waterDepth<.02;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00020,w*.0018,h*.004),floor=r*1.6+Math.min(.00002,h*.002),n=Math.max(1,Math.round(768*s.leafDensity)),spikeletLength=shortHairSpikeletLength(h,w);
  let spikeIndex=0,previousBase;
  for(let k=0;k<n;k++){
   const az=k*2.399+rand()*.18,R=w*.38*Math.sqrt((k+.5)/n);
@@ -26690,8 +26690,8 @@ function drawShortHairPhotoReference(b,{s,rand},kit){
    :[Math.sin(az)*R,floor,Math.cos(az)*R];
   if(wet&&k%8)shortHairPhotoSegment(b,previousBase,root,r*.75,'#9f967a','rhizome-short-hairgrass-photo-ref');
   previousBase=root;
-  const fertile=flowers&&k%6===0,S=Math.min(.0032,h*.065,w*.02);
-  const tipHeight=fertile?Math.max(floor,h*(.82+.12*rand())-S):Math.max(floor,LH*(.52+.40*rand()));
+  const fertile=s.bloom&&k%6===0,S=spikeletLength;
+  const tipHeight=fertile?Math.max(floor,h*(shortHairFertileCulmMinimum+.12*rand())-S):Math.max(floor,LH*(.52+.40*rand()));
   const bend=Math.min(w*.025,(tipHeight-floor)*(.10+.12*rand()));
   let previous=root,previous2=root;
   for(let node=0;node<8;node++){
