@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1144';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1144';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1144';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1144';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1144';
-import { createScene } from './scene.js?v=0.9.1144';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1145';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1145';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1145';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1145';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1145';
+import { createScene } from './scene.js?v=0.9.1145';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -255,26 +255,48 @@ function syncGarden(){const p=plan();for(const id of ['width','depth','sun','moi
   $('obstacle-list').replaceChildren(...p.obstacles.map((o,i)=>itemRow(`${{house:'建物',path:'通路',fence:'塀'}[o.type]} ${i+1} · ${o.width.toFixed(1)} × ${o.depth.toFixed(1)}m`,()=>mutate(p=>p.obstacles.splice(i,1),'外構を取り除きました。'))));
 }
 function syncBudget(){const b=budget(plan());metrics('budget-summary',[[yen(b.total),'入力済み価格の小計'],[`${b.unknown}株`,'価格未入力'],[`${b.count}株`,'新規購入する株']]);$('budget-table').replaceChildren(table(['植物・初期サイズ','株数','単価','金額'],b.rows.map(r=>[`${plantInfo(r.kind).label} (${r.height}m × ${r.spread}m)`,r.count,r.price===null?'未入力':yen(r.price),r.price===null?'未確定':yen(r.total)])));}
+let calendarDisplay=null;
 function syncCalendar(){
-  const year=shown().view.year,months=calendar(plan(),year);
+  const garden=plan(),year=shown().view.year;
   const selectedMonth=calendarMonth??shown().view.month;
-  const total=months.reduce((a,m)=>({min:a.min+m.min,max:a.max+m.max,unknown:a.unknown+m.unknown,count:a.count+m.events.reduce((n,e)=>n+e.count,0)}),{min:0,max:0,unknown:0,count:0});
-  const pruneCount=months.flatMap(m=>m.events).filter(e=>['prune','cutback'].includes(e.type)).length;
-  $('care-summary').textContent=`計画開始から ${year}年の予定：${total.count}回。入力済み時間 ${time(total.min,total.max)} / 年${total.unknown?` ＋ 時間未入力 ${total.unknown}件（合計未確定）`:''}。うち剪定・切り戻し ${pruneCount}件。`;
+  const redraw=calendarDisplay?.garden!==garden||calendarDisplay.year!==year;
+  const months=redraw?calendar(garden,year):calendarDisplay.months;
   const grid=$('calendar');
-  for(const m of months){
-    const control=grid.children[m.month-1]??grid.appendChild(button('',()=>{calendarMonth=m.month;syncCalendar();}));
-    control.replaceChildren(el('strong',`${m.month}月`),el('span',m.events.length?`${m.events.length}件 · ${time(m.min,m.max)}`:'予定未登録'));
-    if(m.unknown)control.append(el('br'),el('span',`時間未入力 ${m.unknown}件`));
-    const over=m.available!==null&&m.max>m.available;
-    if(m.available!==null){
-      const estimate=m.min>m.available?' · 超過':over?' · 超過の可能性':m.unknown?' · 判定未確定':'';
-      control.append(el('br'),el('span',`使える ${round(m.available)}分${estimate}`));
+  if(redraw){
+    const total={min:0,max:0,unknown:0,count:0};
+    let pruneCount=0;
+    for(const m of months){
+      total.min+=m.min;
+      total.max+=m.max;
+      total.unknown+=m.unknown;
+      for(const event of m.events){
+        total.count+=event.count;
+        if(event.type==='prune'||event.type==='cutback')pruneCount++;
+      }
+      const control=grid.children[m.month-1]??grid.appendChild(button('',()=>{calendarMonth=m.month;syncCalendar();}));
+      control.replaceChildren(el('strong',`${m.month}月`),el('span',m.events.length?`${m.events.length}件 · ${time(m.min,m.max)}`:'予定未登録'));
+      if(m.unknown)control.append(el('br'),el('span',`時間未入力 ${m.unknown}件`));
+      const over=m.available!==null&&m.max>m.available;
+      if(m.available!==null){
+        const estimate=m.min>m.available?' · 超過':over?' · 超過の可能性':m.unknown?' · 判定未確定':'';
+        control.append(el('br'),el('span',`使える ${round(m.available)}分${estimate}`));
+      }
+      control.classList.toggle('over',over);
     }
-    control.classList.toggle('over',over);
-    control.setAttribute('aria-pressed',String(m.month===selectedMonth));
+    $('care-summary').textContent=`計画開始から ${year}年の予定：${total.count}回。入力済み時間 ${time(total.min,total.max)} / 年${total.unknown?` ＋ 時間未入力 ${total.unknown}件（合計未確定）`:''}。うち剪定・切り戻し ${pruneCount}件。`;
   }
-  const m=months[selectedMonth-1];$('month-tasks').replaceChildren(el('strong',`${selectedMonth}月の予定`),...m.events.map(t=>{const p=el('p',`#${t.plantId} ${plantInfo(t.kind).label}：${TASKS[t.type]} ×${t.count} ／ ${t.min===null?'時間未入力':time(t.min*t.count,t.max*t.count)}`);p.append(document.createTextNode(' '),button('植物を調整',()=>{select(t.plantId);$('selected-name').focus();}));return p;}));if(!m.events.length)$('month-tasks').append(el('p','植物を選び、「手入れ予定」から追加できます。','hint'));
+  if(!redraw&&calendarDisplay.selectedMonth===selectedMonth)return;
+  for(const [index,control] of Array.from(grid.children).entries()){
+    control.setAttribute('aria-pressed',String(index+1===selectedMonth));
+  }
+  const m=months[selectedMonth-1];
+  $('month-tasks').replaceChildren(el('strong',`${selectedMonth}月の予定`),...m.events.map(event=>{
+    const item=el('p',`#${event.plantId} ${plantInfo(event.kind).label}：${TASKS[event.type]} ×${event.count} ／ ${event.min===null?'時間未入力':time(event.min*event.count,event.max*event.count)}`);
+    item.append(document.createTextNode(' '),button('植物を調整',()=>{select(event.plantId);$('selected-name').focus();}));
+    return item;
+  }));
+  if(!m.events.length)$('month-tasks').append(el('p','植物を選び、「手入れ予定」から追加できます。','hint'));
+  calendarDisplay={garden,year,months,selectedMonth};
 }
 function syncIdeas(){const p=plan(),o=observations(p,shown().view);metrics('observations',[[`${o.visible}株`,'この時点に植わっている株'],[`${o.overlap}組`,'株幅・樹冠の重なり'],[`${o.outside}株`,'外周・外構への張り出し']]);
   const flowers=[...new Set(p.plants.filter(plant=>{const s=stateAt(plant,{...shown().view,waterDepth:pondDepthAt(p,plant.x,plant.z)});return s.present&&s.bloom;}).map(p=>plantInfo(p.kind).label))];$('season-story').textContent=`${shown().view.month}月の開花参考：${flowers.join('、')||'カタログ上の開花表示はありません。枝・葉・枯れ穂も見どころです'}。重なりは平面の幅の参考で、根の競合や栽培可否の判定ではありません。`;
