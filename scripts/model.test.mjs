@@ -215,6 +215,20 @@ test('pond depth preserves flat legacy plans and overlapping zones use the last 
  const mask=pondMaskCode(p);assert.ok(!mask.includes('--'));assert.ok(!mask.includes('/(0.00000)'));assert.ok(mask.includes('gardenPondDepth=(0.30000)'));assert.ok(mask.includes('gardenZoneOwner=(2.00000)'));
 });
 
+test('pond shader keeps small signed slopes and positive depths when writing decimal literals',()=>{
+ for(const delta of [0,1e-6,-1e-6]){
+  const doc=emptyDocument(8,6),plan=doc.plans.A;
+  plan.zones=[{kind:'water',depth:1e-6,points:[[1,1],[5,1+delta],[5,5],[1,5]]}];
+  const restored=validateDocument(clone(doc));
+  const code=pondMaskCode(restored.plans.A);
+  assert.ok(!/\/\(-?0\.00000\)/.test(code));
+  assert.match(code,/gardenPondDepth=\(1\.000000000e-6\)/);
+  const divisions=[...code.matchAll(/\/\(([^)]+)\)/g)].map(match=>Number(match[1]));
+  assert.equal(divisions.length,delta?3:2);
+  if(delta)assert.ok(divisions.some(value=>Math.abs(value-delta)<1e-12));
+  assert.equal(pondDepthAt(restored.plans.A,3,3),1e-6);
+ }
+});
 test('pond surfaces with positive depth share a waterline across all zone positions',()=>{
  for(const index of [0,1,5,11]){
   for(const depth of [.001,.007,.18,2])assert.equal(zoneSurfaceElevation({kind:'water',depth},index),.006);

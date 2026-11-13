@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1098';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1098';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1099';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1099';
 
 const BACKDROP_COLOR='#65755a';
 export {CAMERA_FLOOR};
@@ -410,7 +410,12 @@ const contactGeometry=new THREE.PlaneGeometry(1,1);sharedGeometry.add(contactGeo
 
 // Use the same last-zone-wins rule as planting. Fragment clipping also handles overlapping ponds.
 export function pondMaskCode(plan){
- const num=x=>'('+Number(x).toFixed(5)+')',lines=['float gardenPondDepth=0.0;float gardenZoneOwner=-1.0;'];
+ const num=value=>{
+  const rounded=Number(value).toFixed(5);
+  const literal=Number(rounded)===0&&value!==0?Number(value).toExponential(9):rounded;
+  return '('+literal+')';
+ };
+ const lines=['float gardenPondDepth=0.0;float gardenZoneOwner=-1.0;'];
  for(const [i,zone] of plan.zones.entries()){
   const pts=zone.points.map(([x,z])=>[x-plan.width/2,z-plan.depth/2]);lines.push('{bool pondInside=false;');
   for(let j=0;j<pts.length;j++){const a=pts[j],b=pts[(j+1)%pts.length];if(Math.abs(a[1]-b[1])<1e-10)continue;lines.push(`if(((pondXZ.y>${num(a[1])})!=(pondXZ.y>${num(b[1])}))&&pondXZ.x<(${num(b[0]-a[0])}*(pondXZ.y-${num(a[1])})/${num(b[1]-a[1])}+${num(a[0])}))pondInside=!pondInside;`);}
