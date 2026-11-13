@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1125';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1125';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1125';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1125';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1125';
-import { createScene } from './scene.js?v=0.9.1125';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1126';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1126';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1126';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1126';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1126';
+import { createScene } from './scene.js?v=0.9.1126';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -176,6 +176,12 @@ function metrics(target,items){$(target).replaceChildren(...items.map(([value,la
 function table(headers,rows){const t=el('table'),head=el('thead'),tr=el('tr');headers.forEach(h=>tr.append(el('th',h)));head.append(tr);const body=el('tbody');rows.forEach(row=>{const r=el('tr');row.forEach(c=>r.append(el('td',c)));body.append(r);});t.append(head,body);return t;}
 function itemRow(text,remove){const row=el('div',undefined,'item-row');row.append(el('span',text),button('削除',remove));return row;}
 function syncSelected(){const p=selectedPlant();$('no-selection').hidden=!!p;$('selected-fields').hidden=!p;if(!p)return;const info=plantInfo(p.kind),limits=plantSizeLimits(p.kind);$('selected-name').textContent=`#${p.id} ${info.label}`;$('focus-flower').textContent=info.appearance?.shootProfile==='purpleMajesty'?'穂を観察':'花を観察';$('focus-flower').title=info.appearance?.shootProfile==='purpleMajesty'?'風を止めて穂へ寄ります':'風を止めて花へ寄ります';$('lock').textContent=p.locked?'固定を解除':'固定する';$('lock').setAttribute('aria-pressed',String(p.locked));
+  for(const id of [
+    'move','remove','height','spread','leaf-height','price','plant-x','plant-z','start-year','start-month',
+    'role','apply-plant','replacement-search','replacement','preview-replace',
+    'scenario-year','future-height','future-spread','future-leaf','apply-scenario','clear-scenario',
+    'target-height','target-spread','prune-method','recovery','apply-management','clear-management',
+  ])$(id).disabled=p.locked;
   for(const id of ['height','future-height','target-height']){$(id).min=String(limits.minHeight);$(id).step=String(limits.step);}
   for(const id of ['leaf-height','future-leaf']){$(id).min=String(limits.minLeafHeight);$(id).step=String(limits.step);}
   for(const [id,value] of Object.entries({height:p.height,spread:p.spread,'leaf-height':p.leafHeight,price:p.price,'plant-x':p.x,'plant-z':p.z,'start-year':Math.floor(p.start/12),'start-month':p.start%12+1,role:p.role,'scenario-year':p.scenario?.year||3,'future-height':p.scenario?.height??p.height,'future-spread':p.scenario?.spread??p.spread,'future-leaf':p.scenario?.leafHeight??p.leafHeight,'target-height':p.management?.height??p.height,'target-spread':p.management?.spread??p.spread,'prune-method':p.management?.method||'thin',recovery:p.management?.recovery||6}))$(id).value=value??'';
