@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1119';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1119';
-import { seasonAt } from './catalog-search.js?v=0.9.1119';
+import {treeProfile} from './tree-profiles.js?v=0.9.1120';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1120';
+import { seasonAt } from './catalog-search.js?v=0.9.1120';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -90,10 +90,12 @@ function annualPhloxCycle(start,info){
   const months=info.appearance.flowerMonths||info.bloom;
   return {first:year*12+(months[0]||5)-1,end:year*12+(months.at(-1)||11)};
 }
-export function taskEvents(p,year){
-  const info=plantInfo(p.kind);
-  const end=info.appearance?.architecture==='annualPhloxReferences'?annualPhloxCycle(p.start,info).end
+function taskEnd(p,info){
+  return info.appearance?.architecture==='annualPhloxReferences'?annualPhloxCycle(p.start,info).end
     :info.life==='annual'?p.start+12:info.life==='biennial'?p.start+24:Infinity;
+}
+export function taskEvents(p,year){
+  const end=taskEnd(p,plantInfo(p.kind));
   const result=[];
   for(const t of p.tasks){
     const at=year*12+t.month-1;
@@ -101,6 +103,21 @@ export function taskEvents(p,year){
     result.push({...t,at,plantId:p.id,kind:p.kind});
   }
   return result;
+}
+function lastPruningEvent(p,info,at){
+  const end=taskEnd(p,info);
+  let latest=null,latestAt=-1;
+  for(const task of p.tasks){
+    if(task.type!=='prune'&&task.type!=='cutback')continue;
+    const limit=Math.min(at,end-1,task.repeat==='first'?p.start+11:Infinity);
+    const monthIndex=task.month-1;
+    const eventAt=Math.floor((limit-monthIndex)/12)*12+monthIndex;
+    if(eventAt>=p.start&&eventAt>latestAt){
+      latest=task;
+      latestAt=eventAt;
+    }
+  }
+  return latest?{...latest,at:latestAt,plantId:p.id,kind:p.kind}:null;
 }
 export function stateAt(p,view){
   const at=dateIndex(view),age=at-p.start,info=plantInfo(p.kind);
@@ -115,9 +132,9 @@ export function stateAt(p,view){
   const natural={height,spread,leafHeight},trunkHeight=info.group==='木'||['maple','olive'].includes(info.form)?height*.3:0;
   let last=null,unsupported=false;
   if(p.management&&!view.reference&&present){
-    for(let year=0;year<=view.year;year++)for(const e of taskEvents(p,year))if(['prune','cutback'].includes(e.type)&&e.at<=dateIndex(view)&&(!last||last.at<e.at))last=e;
+    last=lastPruningEvent(p,info,at);
     unsupported=isRaouliaMat(p.kind)?p.management.height<plantSizeLimits(p.kind).minHeight:p.management.height<trunkHeight+.15;
-    if(last&&!unsupported){const recovery=Math.min(1,(dateIndex(view)-last.at)/p.management.recovery);height=Math.min(height,p.management.height)+(height-Math.min(height,p.management.height))*recovery;spread=Math.min(spread,p.management.spread)+(spread-Math.min(spread,p.management.spread))*recovery;leafHeight=Math.min(leafHeight,height);}
+    if(last&&!unsupported){const recovery=Math.min(1,(at-last.at)/p.management.recovery);height=Math.min(height,p.management.height)+(height-Math.min(height,p.management.height))*recovery;spread=Math.min(spread,p.management.spread)+(spread-Math.min(spread,p.management.spread))*recovery;leafHeight=Math.min(leafHeight,height);}
   }
   const season=seasonAt(info,view.month),flowerOptions=info.appearance?.flowerOptions;
   const minimumFlowerYears=info.appearance?.minFloweringYearsAfterPlanting;
