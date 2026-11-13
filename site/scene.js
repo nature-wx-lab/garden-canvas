@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1150';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1150';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1151';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1151';
 
 const BACKDROP_COLOR='#65755a';
 export {CAMERA_FLOOR};
@@ -551,6 +551,7 @@ export function createScene(container,onPick){
       return new THREE.Vector3(x-plan.width/2+Math.cos(a)*r,y,z-plan.depth/2+Math.sin(a)*r);
     }),color,group);
   }
+  let plantStates=new Map();
   function selectPlant(id){
     selection=id;
     camphorObservation=null;
@@ -560,7 +561,7 @@ export function createScene(container,onPick){
     const group=plants.children.find(plant=>plant.userData.plantId===id);
     controls.minDistance=Math.min(.12,flowerInspectionDistanceFloor(group));
     if(p&&group){
-      const state=stateAt(p,view);
+      const state=plantStates.get(p.id);
       selectionOutline=new THREE.Group();
       root.add(selectionOutline);
       circle(p.x,p.z,state.spread/2+.06,'#d2b05f',.018,selectionOutline);
@@ -578,7 +579,7 @@ export function createScene(container,onPick){
   function solid(color,x,y,z,sx,sy,sz){const m=new THREE.Mesh(box,mat(color));m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;root.add(m);return m;}
   let groundGroup=null,groundKey=null;
   function groundDetail(){
-    const lowMats=plan.plants.filter(p=>isRaouliaMat(p.kind)).map(p=>({p,s:stateAt(p,view)})).filter(({s})=>s.present&&!s.groundDormant);
+    const lowMats=plan.plants.filter(p=>isRaouliaMat(p.kind)).map(p=>({p,s:plantStates.get(p.id)})).filter(({s})=>s.present&&!s.groundDormant);
     const key=JSON.stringify([plan.width,plan.depth,plan.outline,
       plan.zones.map(zone=>[zone.kind==='water',zone.points]),
       plan.obstacles.map(o=>[o.x,o.z,o.width,o.depth]),
@@ -623,7 +624,7 @@ export function createScene(container,onPick){
       const material=new THREE.LineBasicMaterial({color:'#f2efcd',transparent:true,opacity:.48});
       footprintOverlay.add(new THREE.LineSegments(geometry,material));
       for(const p of plan.plants){
-        const state=stateAt(p,view);
+        const state=plantStates.get(p.id);
         if(state.present)circle(p.x,p.z,state.spread/2,'#9bb9b1',.04,footprintOverlay);
       }
     }
@@ -633,6 +634,7 @@ export function createScene(container,onPick){
   function render(next,nextView,id){
     groundGroup?.removeFromParent();
     plan=next;view=nextView;dispose(root);selectionOutline=null;footprintOverlay=null;
+    plantStates=new Map(plan.plants.map(plant=>[plant.id,stateAt(plant,view)]));
     const wallDepth=Math.max(0,...plan.zones.map(zone=>zone.kind==='water'?(zone.depth??0):0));
     const code=wallDepth>0?pondMaskCode(plan):'';
     if(code!==pondCode){
@@ -658,12 +660,12 @@ export function createScene(container,onPick){
       else{solid('#827660',cx,o.height/2,cz,o.width,o.height,o.depth);const count=Math.min(80,Math.ceil(o.width/.16));for(let j=0;j<count;j++)solid('#a0947b',o.x+(j+.5)*o.width/count-plan.width/2,o.height/2,cz,o.width/count*.87,o.height,o.depth+.025);}
     }
     const detail=Math.min(1,Math.sqrt(18/Math.max(1,plan.plants.length)));
-    for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;const depth=pondDepthAt(plan,p.x,p.z),g=plantModel(p,{...view,waterDepth:depth},detail);g.position.set(p.x-plan.width/2,plantBaseAt(plan,p),p.z-plan.depth/2);plants.add(g);
+    for(const p of plan.plants){const s=plantStates.get(p.id);if(!s.present)continue;const depth=pondDepthAt(plan,p.x,p.z),g=plantModel(p,{...view,waterDepth:depth},detail);g.position.set(p.x-plan.width/2,plantBaseAt(plan,p),p.z-plan.depth/2);plants.add(g);
       const contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.rotation.x=-Math.PI/2;contact.position.set(g.position.x,isRaouliaMat(p.kind)?g.position.y-.0006:.012,g.position.z);contact.scale.set(s.spread*.95,s.spread*.95,1);if(zoneAt(plan,p.x,p.z)?.kind!=='water')root.add(contact);
     }
     showFootprints(view.footprints);
     selectPlant(id);
-    tallest=Math.max(1,...plan.plants.map(p=>stateAt(p,view).height),...plan.obstacles.map(o=>o.height));fitShadow();
+    tallest=Math.max(1,...Array.from(plantStates.values(),state=>state.height),...plan.obstacles.map(o=>o.height));fitShadow();
     container.dataset.plantCount=String(plants.children.length);dirty=true;
   }
   function setWind(value){windLevel=[0,1,1.7].includes(Number(value))?Number(value):0;wind.strength.value=windLevel;container.dataset.wind=String(windLevel);lastTick=0;dirty=true;}
@@ -682,7 +684,7 @@ export function createScene(container,onPick){
     }else if(foliagePose){controls.minDistance=.12;controls.target.fromArray(foliagePose.target);camera.position.fromArray(foliagePose.position);
     }else if(focusPlant){
       controls.minDistance=.12;
-      const p=focusPlant,s=stateAt(p,view),depth=pondDepthAt(plan,p.x,p.z);
+      const p=focusPlant,s=plantStates.get(p.id),depth=pondDepthAt(plan,p.x,p.z);
       const dormantBacopa=s.groundDormant&&['bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(plantInfo(p.kind).appearance?.architecture);
       const base=plantBaseAt(plan,p)+(dormantBacopa?depth:0);
       controls.target.set(p.x-plan.width/2,base+Math.min(s.height,depth||s.height)*.52,p.z-plan.depth/2);
@@ -691,12 +693,12 @@ export function createScene(container,onPick){
     }
     else{
       controls.minDistance=.12;const bounds=new THREE.Box3(new THREE.Vector3(-plan.width/2,0,-plan.depth/2),new THREE.Vector3(plan.width/2,.1,plan.depth/2));
-      for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;for(const sign of [-1,1])bounds.expandByPoint(new THREE.Vector3(p.x-plan.width/2+sign*s.spread/2,s.height,p.z-plan.depth/2+sign*s.spread/2));}
+      for(const p of plan.plants){const s=plantStates.get(p.id);if(!s.present)continue;for(const sign of [-1,1])bounds.expandByPoint(new THREE.Vector3(p.x-plan.width/2+sign*s.spread/2,s.height,p.z-plan.depth/2+sign*s.spread/2));}
       const center=bounds.getCenter(new THREE.Vector3());controls.target.set(center.x,type==='eye'?.7:center.y*.18,center.z);
       const direction=type==='top'?new THREE.Vector3(0,1,.0001):type==='eye'?new THREE.Vector3(.8,.06,1):new THREE.Vector3(.82,.66,1);direction.normalize();
       const right=new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0),direction).normalize(),up=new THREE.Vector3().crossVectors(direction,right),tan=Math.tan(camera.fov*Math.PI/360);let distance=2;
       const fitPoints=plan.outline.map(([x,z])=>new THREE.Vector3(x-plan.width/2,0,z-plan.depth/2));
-      for(const p of plan.plants){const s=stateAt(p,view);if(s.present)for(const dx of [-1,1])for(const dz of [-1,1])fitPoints.push(new THREE.Vector3(p.x-plan.width/2+dx*s.spread/2,s.height,p.z-plan.depth/2+dz*s.spread/2));}
+      for(const p of plan.plants){const s=plantStates.get(p.id);if(s.present)for(const dx of [-1,1])for(const dz of [-1,1])fitPoints.push(new THREE.Vector3(p.x-plan.width/2+dx*s.spread/2,s.height,p.z-plan.depth/2+dz*s.spread/2));}
       for(const point of fitPoints){const delta=point.sub(controls.target);distance=Math.max(distance,delta.dot(direction)+1.13*Math.max(Math.abs(delta.dot(right))/(tan*camera.aspect),Math.abs(delta.dot(up))/tan));}
       camera.position.copy(controls.target).addScaledVector(direction,distance);if(type==='eye')camera.position.y=1.6;
     }
