@@ -24262,7 +24262,7 @@ test('new large pearlgrass accepts existing saved gardens without changing indep
  for(const dims of[[.035,.30,.03],[.01,.10,.005],[.035,.30,.005]]){const input={...makePlant('p-4211c50a21e0',102110,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},d=emptyDocument(10,6);d.plans.A.plants=[input];const old={...structuredClone(d),catalogVersion:'2026-10-29.83'},copy=structuredClone(old);assert.deepEqual(validateDocument(old),d);assert.deepEqual(old,copy);assert.deepEqual([input.height,input.spread,input.leafHeight],dims);const state=stateAt(input,{year:1,month:7,reference:true});assert.equal(state.height,dims[0]);assert.equal(state.spread,dims[1]);assert.ok(Math.abs(state.leafHeight-dims[2])<1e-12);}
 });
 test('indica separates domestic pink bloom and warm indoor winter from species flower references',()=>{
- const q=CATALOG['p-891f594612ae'],a=q.appearance;assert.deepEqual(q.height,[.1,.2]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[5,6]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['pink']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'indicaPhotoReference');assert.equal(a.petals,4);assert.equal(a.stamenCount,4);assert.ok(a.sources.some(x=>x.scope==='species'&&x.url.includes('plantnet.rbgsyd.nsw.gov.au')));assert.match(a.sourceConflict,/10〜20cm.*9cm.*株幅/);assert.match(a.phenologyRegion,/暖かい室内/);assert.match(a.unconfirmed.join(' '),/別種.*Rotala indica/);assert.match(a.unconfirmed.join(' '),/種資料.*4花弁.*4雄しべ/);assert.match(appearanceSummary(q),/水中の細葉と水上の丸葉/);assert.ok(!a.unconfirmed.some(n=>/256|1024|96節|8本/.test(n)));assert.ok(searchCatalog(CATALOG,{query:q.label,color:'pink'}).some(([id])=>id==='p-891f594612ae'));for(const color of['red','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-891f594612ae'));
+ const q=CATALOG['p-891f594612ae'],a=q.appearance;assert.deepEqual(q.height,[.1,.2]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[5,6]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['pink']);assert.equal(q.sourceChecked,'2026-11-13');assert.match(a.unconfirmed.join(' '),/深圳植物誌.*下部の節.*水底へ細い根/);assert.equal(a.shootProfile,'indicaPhotoReference');assert.equal(a.petals,4);assert.equal(a.stamenCount,4);assert.ok(a.sources.some(x=>x.scope==='species'&&x.url.includes('plantnet.rbgsyd.nsw.gov.au')));assert.match(a.sourceConflict,/10〜20cm.*9cm.*株幅/);assert.match(a.phenologyRegion,/暖かい室内/);assert.match(a.unconfirmed.join(' '),/別種.*Rotala indica/);assert.match(a.unconfirmed.join(' '),/種資料.*4花弁.*4雄しべ/);assert.match(appearanceSummary(q),/水中の細葉と水上の丸葉/);assert.ok(!a.unconfirmed.some(n=>/256|1024|96節|8本/.test(n)));assert.ok(searchCatalog(CATALOG,{query:q.label,color:'pink'}).some(([id])=>id==='p-891f594612ae'));for(const color of['red','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-891f594612ae'));
 });
 test('indica reference fits twenty four independent inputs with connected leaves and terminal spikes',()=>{
  const dimensions=[[.20,.30,.14],[.01,.10,.005],[.20,.30,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,leafJoins=0,stemJoins=0,branchJoins=0,flowerJoins=0;
@@ -24275,6 +24275,41 @@ test('indica reference fits twenty four independent inputs with connected leaves
    if(flower){const calyx=part('calyx-tube-indica-photo-reference'),petals=part('petal-indica-photo-reference'),sepals=part('sepal-indica-photo-reference'),filaments=part('filament-indica-photo-ref'),anthers=part('anther-indica-photo-reference'),styles=part('style-indica-photo-ref'),stigmas=part('stigma-indica-photo-reference');assert.equal(calyx.geometry.userData.closedWall,true);for(let f=0;f<256;f++){const mouth=point(calyx,f,new Vector3(0,.5,0));for(let k=0;k<4;k++){assert.ok(point(petals,f*4+k,new Vector3()).distanceTo(mouth)<2e-6);assert.ok(point(sepals,f*4+k,new Vector3()).distanceTo(mouth)<2e-6);assert.ok(point(filaments,f*4+k,new Vector3(0,.5,0)).distanceTo(point(anthers,f*4+k,new Vector3()))<2e-6);flowerJoins+=3;}assert.ok(point(styles,f,new Vector3(0,.5,0)).distanceTo(point(stigmas,f,new Vector3()))<2e-6);flowerJoins++;}}
   }finally{dispose(g);}
  }assert.equal(models,24);console.log('INDICA1022_BOUNDARIES '+JSON.stringify({models,vertices,leafJoins,stemJoins,branchJoins,flowerJoins}));
+});
+test('indica pond lower nodes connect to the bed and two centimetres selects submerged foliage',()=>{
+ const p={...makePlant('p-891f594612ae',108610,3,3),height:.18,spread:.30,leafHeight:.14};
+ const view={year:0,month:5,reference:false};
+ const matrix=new Matrix4(),vertex=new Vector3();
+ const point=(mesh,i,y)=>{mesh.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
+ for(const depth of [.007,.02,.16]){
+  const group=plantModel(p,{...view,waterDepth:depth});
+  try{
+   const part=key=>group.children.find(m=>m.userData.component===key);
+   const roots=part('nodal-root-indica-photo-ref'),stems=part('stem-indica-photo-ref');
+   const nodes=Array.from({length:stems.count},(_,i)=>point(stems,i,.5));
+   assert.ok(roots.count>0);
+   for(let i=0;i<roots.count;i+=2){
+    const start=point(roots,i,-.5);
+    assert.ok(nodes.some(n=>n.distanceTo(start)<2e-6));
+    assert.ok(point(roots,i,.5).distanceTo(point(roots,i+1,-.5))<2e-6);
+    assert.ok(point(roots,i+1,.5).y>-.012&&point(roots,i+1,.5).y<-.011);
+   }
+   if(depth<.02){assert.ok(part('petal-indica-photo-reference').count>0);continue;}
+   assert.equal(part('petal-indica-photo-reference'),undefined);
+   assert.equal(stateAt(p,{...view,waterDepth:depth}).bloom,false);
+   for(const mesh of group.children){
+    const vertices=mesh.geometry.attributes.position;
+    for(let i=0;i<mesh.count;i++){
+     mesh.getMatrixAt(i,matrix);
+     for(let j=0;j<vertices.count;j++){
+      const y=vertex.fromBufferAttribute(vertices,j).applyMatrix4(matrix).y+.012-depth;
+      assert.ok(y>=-depth-1e-6&&y<=.006);
+     }
+    }
+   }
+  }finally{dispose(group);}
+ }
+ assert.equal(stateAt({...p,height:.01,leafHeight:.005},{...view,waterDepth:.007}).bloom,false);
 });
 test('indica flower focus selects an exposed petal face for three independent inputs',()=>{
  let models=0,rays=0;for(const dims of[[.20,.30,.14],[.01,.10,.005],[.20,.30,.005]]){

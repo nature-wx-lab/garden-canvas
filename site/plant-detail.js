@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1085';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1086';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1085';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight} from './model.js?v=0.9.1085';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1086';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength} from './model.js?v=0.9.1086';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -31238,10 +31238,14 @@ function indicaPhotoSegment(b,a,z,r,color,kind){
 }
 function drawIndicaPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,underwater=(s.waterDepth||0)>.02,LH=Math.min(h*.98,s.leafHeight,underwater?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.003,w*.0015,LH*.015),L=Math.min(.012,w*.065,LH*.20),W=L*(underwater?.28:.85),stem=info.appearance.stemColor,leafKind='leaf-indica-photo-reference-underside-'+info.appearance.leafUnderside.slice(1),bloom=s.bloom&&!underwater;let flowerIndex=0;
+ const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
+ const underwater=s.waterDepth>=.02,waterline=wet?bed+s.waterDepth+POND_SURFACE_Y:-Infinity;
+ const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,underwater?(s.waterDepth+POND_SURFACE_Y)*.90:Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.003,w*.0015,LH*.015),L=Math.min(.012,w*.065,LH*.20),W=L*(underwater?.28:.85),stem=info.appearance.stemColor,leafKind='leaf-indica-photo-reference-underside-'+info.appearance.leafUnderside.slice(1),bloom=s.bloom&&!underwater;let flowerIndex=0;
  function pair(at,turn){for(let side=0;side<2;side++)b.add('indica-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,Math.min(L,LH*.40),Math.acos(.12),turn+side*Math.PI,0);}
  function spike(leafAt,top,az){
-  if(!bloom)return;const available=Math.max(h*.01,top[1]-leafAt[1]),length=Math.min(.025,h*.18,available*.70),start=[top[0],top[1]-length,top[2]],P=Math.min(.0012,h*.012,w*.020),PW=P*.85,H=Math.min(.001,h*.010),R=P*.32;
+  if(!bloom)return;
+  const length=indicaSpikeLength(h,leafAt[1],top[1]),start=[top[0],top[1]-length,top[2]],P=Math.min(.0012,h*.012,w*.020),PW=P*.85,H=Math.min(.001,h*.010),R=P*.32;
+  if(start[1]<=waterline)return;
   indicaPhotoSegment(b,leafAt,start,r*.70,stem,'spike-axis-indica-photo-ref');indicaPhotoSegment(b,start,top,r*.40,stem,'spike-axis-indica-photo-ref');
   for(let row=0;row<8;row++)for(let side=0;side<2;side++){
    const yaw=az+row*Math.PI/2+side*Math.PI,pitch=.95,axis=new THREE.Vector3(0,1,0).applyEuler(new THREE.Euler(pitch,yaw,0,'YXZ')),at=new THREE.Vector3(start[0],start[1]+length*(row+.5)/8,start[2]).addScaledVector(axis,H*.5+r*.36).toArray(),f=flowerFrame(b,at,pitch,yaw),petalPitch=1.45;
@@ -31260,13 +31264,20 @@ function drawIndicaPhotoReference(b,{info,s,rand},kit){
   for(let side=0;side<2;side++){const angle=az+side*Math.PI; b.add('indica-photo-reference-body','bud-indica-photo-reference',side?'#9d9270':'#a3a36b',top[0]+Math.sin(angle)*P*.38,top[1]+h*.004,top[2]+Math.cos(angle)*P*.38,P*.40,P*.70,P*.40);}
  }
  for(let shoot=0;shoot<8;shoot++){
-  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/8),root=[Math.sin(az)*R,base,Math.cos(az)*R],peak=LH*(.78+.02*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),base+(peak-base)*t,root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
+  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/8),root=[Math.sin(az)*R,bed+base,Math.cos(az)*R],peak=LH*(.78+.02*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),bed+base+(peak-base)*t,root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
   for(let j=1;j<=12;j++){
    const at=path(j/12);indicaPhotoSegment(b,previous,at,r,stem,'stem-indica-photo-ref');previous=at;pair(at,az+j*Math.PI/2);
-   if(j!==6)continue;const turn=az+(shoot%2?1.05:-1.05),top=LH*.60,reach=w*.070;let prev=at;
-   for(let k=1;k<=6;k++){const u=k/6,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];indicaPhotoSegment(b,prev,tip,r*.70,stem,'side-stem-indica-photo-ref');prev=tip;pair(tip,turn+k*Math.PI/2);}spike(prev,[prev[0],h*.80,prev[2]],turn);
-  }spike(previous,[previous[0],h*.95,previous[2]],az);
+   if(wet&&j<=2&&at[1]<waterline){
+    const turn=az+j*1.6,reach=Math.min(.008,w*.028);
+    const bend=[at[0]+Math.sin(turn)*reach*.45,bed+(at[1]-bed)*.35,at[2]+Math.cos(turn)*reach*.45];
+    const tip=[at[0]+Math.sin(turn)*reach,bed+r*.15,at[2]+Math.cos(turn)*reach];
+    indicaPhotoSegment(b,at,bend,r*.27,'#b3a487','nodal-root-indica-photo-ref');
+    indicaPhotoSegment(b,bend,tip,r*.14,'#b3a487','nodal-root-indica-photo-ref');
+   }
+   if(j!==6)continue;const turn=az+(shoot%2?1.05:-1.05),top=bed+LH*.60,reach=w*.070;let prev=at;
+   for(let k=1;k<=6;k++){const u=k/6,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];indicaPhotoSegment(b,prev,tip,r*.70,stem,'side-stem-indica-photo-ref');prev=tip;pair(tip,turn+k*Math.PI/2);}spike(prev,[prev[0],bed+h*.80,prev[2]],turn);
+  }spike(previous,[previous[0],bed+h*.95,previous[2]],az);
  }
  // Counts,spacing,closed tips and internal proportions are illustrative;species organ references are separately attributed.
- // Underwater switch is a display condition. No hidden roots,fruit,outdoor winter survival or annual multiplication are drawn.
+ // The lower node roots follow the species description; the cultivar's root spacing is illustrative.
 }
