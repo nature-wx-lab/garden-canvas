@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1176';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1176';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1176';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1176';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1176';
-import { createScene } from './scene.js?v=0.9.1176';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1177';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1177';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1177';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1177';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1177';
+import { createScene } from './scene.js?v=0.9.1177';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -136,7 +136,7 @@ function drawReplacement(){
 function historyEntry(scope){
   const document=clone(doc);
   if(scope==='calendar')return {document,scope,calendarMonth};
-  if(scope==='zones')return {document,scope};
+  if(scope==='zones')return {document,scope,zonePlan:doc.active};
   if(!scope)return {document};
   const camera=engine?.capture();
   document.view.camera=validSavedCamera(camera)?camera:null;
@@ -150,14 +150,17 @@ function checkpoint(scope){
 function restoreEdit(from,to){
   if(!from.length||preview)return false;
   const entry=from.pop(),{document,scope}=entry;
-  to.push(historyEntry(scope));
+  const refreshGarden=scope!=='zones'||entry.zonePlan!==doc.active||document.active!==doc.active;
+  const reverse=historyEntry(scope);
+  if(scope==='zones')reverse.zonePlan=entry.zonePlan;
+  to.push(reverse);
   if(scope==='calendar'||scope==='view')calendarMonth=entry.calendarMonth;
   if(scope==='view')selected=entry.selected;
   else document.view=doc.view;
   doc=document;
   resetMode();
-  if(scope==='zones')syncGardenZones();
-  sync({refreshGarden:scope!=='zones'});
+  if(!refreshGarden)syncGardenZones();
+  sync({refreshGarden});
   if(scope==='view'){
     if(doc.view.camera)engine?.restore(doc.view.camera);
     else engine?.view('home');
