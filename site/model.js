@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1123';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1123';
-import { seasonAt } from './catalog-search.js?v=0.9.1123';
+import {treeProfile} from './tree-profiles.js?v=0.9.1124';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1124';
+import { seasonAt } from './catalog-search.js?v=0.9.1124';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -28,8 +28,22 @@ export const taskCountLimit=type=>type==='water'?31:1;
 export const validTaskMinutes=(min,max)=>min===null&&max===null||within(min,0,10000)&&within(max,min,10000);
 const keys=(o,expected)=>o&&Object.getPrototypeOf(o)===Object.prototype&&Object.keys(o).sort().join('|')===[...expected].sort().join('|');
 const cross=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
-const onSegment=(p,a,b)=>Math.abs(cross(a,b,p))<1e-8&&p[0]>=Math.min(a[0],b[0])-1e-8&&p[0]<=Math.max(a[0],b[0])+1e-8&&p[1]>=Math.min(a[1],b[1])-1e-8&&p[1]<=Math.max(a[1],b[1])+1e-8;
-export function inside(x,z,points){let result=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const a=points[i],b=points[j];if(onSegment([x,z],a,b))return true;if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])result=!result;}return result;}
+const boundaryTolerance=1e-8;
+function onSegmentAt(x,z,a,b){
+  return Math.abs((b[0]-a[0])*(z-a[1])-(b[1]-a[1])*(x-a[0]))<boundaryTolerance
+    && x>=Math.min(a[0],b[0])-boundaryTolerance && x<=Math.max(a[0],b[0])+boundaryTolerance
+    && z>=Math.min(a[1],b[1])-boundaryTolerance && z<=Math.max(a[1],b[1])+boundaryTolerance;
+}
+const onSegment=(p,a,b)=>onSegmentAt(p[0],p[1],a,b);
+export function inside(x,z,points){
+  let result=false;
+  for(let i=0,j=points.length-1;i<points.length;j=i++){
+    const a=points[i],b=points[j];
+    if(onSegmentAt(x,z,a,b))return true;
+    if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])result=!result;
+  }
+  return result;
+}
 export const zoneAt=(plan,x,z)=>plan.zones.findLast(zone=>inside(x,z,zone.points));
 export const pondDepthAt=(plan,x,z)=>{const zone=zoneAt(plan,x,z);return zone?.kind==='water'?(zone.depth??0):0;};
 export const plantBaseAt=(plan,p)=>{
@@ -76,7 +90,21 @@ export function contained(inner,outer){
   }return true;
 }
 export const obstaclePoints=o=>[[o.x,o.z],[o.x+o.width,o.z],[o.x+o.width,o.z+o.depth],[o.x,o.z+o.depth]];
-export const canPlant=(plan,x,z)=>inside(x,z,plan.outline)&&!plan.obstacles.some(o=>inside(x,z,obstaclePoints(o)));
+function nearRectangleEdge(value,edge,edgeLength){
+  return value>=edge-boundaryTolerance && value<=edge+boundaryTolerance
+    && Math.abs(edgeLength*(value-edge))<boundaryTolerance;
+}
+function insideObstacle(x,z,o){
+  const maxX=o.x+o.width,maxZ=o.z+o.depth;
+  if(x<o.x-boundaryTolerance||x>maxX+boundaryTolerance
+    ||z<o.z-boundaryTolerance||z>maxZ+boundaryTolerance)return false;
+  if(x>=o.x&&x<maxX&&z>=o.z&&z<maxZ)return true;
+  // A rectangle's edge cross products reduce to width or depth times distance.
+  const dx=maxX-o.x,dz=maxZ-o.z;
+  return nearRectangleEdge(z,o.z,dx)||nearRectangleEdge(z,maxZ,dx)
+    ||nearRectangleEdge(x,o.x,dz)||nearRectangleEdge(x,maxX,dz);
+}
+export const canPlant=(plan,x,z)=>inside(x,z,plan.outline)&&!plan.obstacles.some(o=>insideObstacle(x,z,o));
 export function makePlant(kind,id,x,z){
   const info=plantInfo(kind),tree=info.group==='木',arch=info.appearance?.architecture,floater=info.appearance?.flowerPalette?.groundRunner?.25:arch==='uncommonGardenTree'&&info.appearance.shootProfile==='baobab'?.65:arch==='marginGardenPlants'?({helvola:.12,calla:.65,lavatera:.8,hibbertia:.3}[info.appearance.shootProfile]):arch?.startsWith('salvinia')?.03:arch==='amazonFrogbit'?.06:arch==='waterHyacinth'?.3:['waterCoin','marsileaMutica','bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(arch)?.12:null,height=arch==='raouliaMats'?.006:floater??(arch==='submergedShoots'?(info.appearance.lifeForm==='moss'?.05:Math.min(.35,info.height?.[1]??.35)):tree?1.5:info.group==='低木'?.65:info.form==='grass'?.65:.35),spread=info.appearance?.flowerPalette?.groundRunner?1:tree?round(height*(treeProfile(info)?.spread&&treeProfile(info)?.height?Math.min(1.6,treeProfile(info).spread[1]/treeProfile(info).height[1]):.65)):info.group==='低木'?.55:.3;
   return {id,kind,x,z,height,spread,leafHeight:arch==='raouliaMats'?.003:round(info.leaf==='herb'||info.leaf==='grass'?height*.55:height),start:0,role:'new',price:null,locked:false,scenario:null,management:null,tasks:[]};
