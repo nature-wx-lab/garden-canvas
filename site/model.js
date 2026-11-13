@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1102';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1102';
-import { seasonAt } from './catalog-search.js?v=0.9.1102';
+import {treeProfile} from './tree-profiles.js?v=0.9.1103';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1103';
+import { seasonAt } from './catalog-search.js?v=0.9.1103';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -141,7 +141,24 @@ export function stateAt(p,view){
   return {present,expired,standingDead:!!standingDead,...season,waterDepth,age:Math.max(0,age)/12,height,spread,leafHeight,natural,trunkHeight,basis,last,unsupported,winter:[12,1,2].includes(view.month)};
 }
 export function budget(plan){const rows=new Map();let total=0,unknown=0,count=0;for(const p of plan.plants){if(p.role!=='new')continue;count++;const key=[p.kind,p.height,p.spread,p.price].join('|');if(!rows.has(key))rows.set(key,{kind:p.kind,height:p.height,spread:p.spread,price:p.price,count:0,total:0});const row=rows.get(key);row.count++;if(p.price===null)unknown++;else{total+=p.price;row.total+=p.price;}}return {total,unknown,count,rows:[...rows.values()]};}
-export function calendar(plan,year){return Array.from({length:12},(_,i)=>{const events=plan.plants.flatMap(p=>taskEvents(p,year)).filter(t=>t.month===i+1);let min=events.length?plan.prep:0,max=min,unknown=0;for(const e of events){if(e.min===null||e.max===null)unknown++;else{min+=e.min*e.count;max+=e.max*e.count;}}return {month:i+1,events,min,max,unknown,available:plan.hours[i]===null?null:plan.hours[i]*60};});}
+export function calendar(plan,year){
+  const months=Array.from({length:12},(_,i)=>({
+    month:i+1,events:[],min:0,max:0,unknown:0,available:plan.hours[i]===null?null:plan.hours[i]*60,
+  }));
+  for(const plant of plan.plants){
+    for(const event of taskEvents(plant,year)){
+      const month=months[event.month-1];
+      if(!month.events.length)month.min=month.max=plan.prep;
+      month.events.push(event);
+      if(event.min===null||event.max===null)month.unknown++;
+      else{
+        month.min+=event.min*event.count;
+        month.max+=event.max*event.count;
+      }
+    }
+  }
+  return months;
+}
 export function observations(plan,view){let overlap=0,outside=0,unmodeled=0;const visible=plan.plants.map(p=>({p,s:stateAt(p,view)})).filter(v=>v.s.present);for(let i=0;i<visible.length;i++){const {p,s}=visible[i];if(!p.scenario&&!view.reference)unmodeled++;for(let j=i+1;j<visible.length;j++){const q=visible[j];if(Math.hypot(p.x-q.p.x,p.z-q.p.z)<(s.spread+q.s.spread)/2)overlap++;}if(Array.from({length:24},(_,n)=>{const a=n*Math.PI/12;return !canPlant(plan,p.x+Math.cos(a)*s.spread/2,p.z+Math.sin(a)*s.spread/2);}).some(Boolean))outside++;}return {overlap,outside,unmodeled,visible:visible.length};}
 function migrateV1(v){
   const bad=()=>{throw new Error('旧版ファイルの形式が不正です。');};
