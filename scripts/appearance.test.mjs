@@ -24116,7 +24116,7 @@ test('cobra grass flower focus resolves three indexed petal surfaces and preserv
  }assert.equal(models,3);assert.equal(rays,6);console.log('COBRA_GRASS1016_CAMERAS '+JSON.stringify({models,rays}));
 });
 test('green rotala separates two month tank height from stem length and unknown general stock dimensions',()=>{
- const q=CATALOG['p-b716f5384832'],a=q.appearance;assert.equal(q.latin,"Rotala rotundifolia 'Green'");assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'greenRotalaPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.flowerShape,'none');assert.match(a.sourceConflict,/20〜30cm.*2か月/);assert.match(a.sourceConflict,/40〜50cm.*2〜3cm.*株幅/);assert.match(a.phenologyRegion,/強い光.*緑/);assert.match(a.unconfirmed.join(' '),/培養カップ.*全形画像/);assert.match(a.unconfirmed.join(' '),/葉の緑を花色の緑として分類せず/);assert.match(a.unconfirmed.join(' '),/根.*追加していません/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'unknown'}).some(([id])=>id==='p-b716f5384832'));for(const color of['green','pink'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-b716f5384832'));
+ const q=CATALOG['p-b716f5384832'],a=q.appearance;assert.equal(q.latin,"Rotala rotundifolia 'Green'");assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-13');assert.equal(a.shootProfile,'greenRotalaPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.flowerShape,'none');assert.match(a.sourceConflict,/20〜30cm.*2か月/);assert.match(a.sourceConflict,/40〜50cm.*2〜3cm.*株幅/);assert.match(a.phenologyRegion,/強い光.*緑/);assert.match(a.unconfirmed.join(' '),/培養カップ.*全形画像/);assert.match(a.unconfirmed.join(' '),/葉の緑を花色の緑として分類せず/);assert.match(a.unconfirmed.join(' '),/短い根を水底につなぎます.*地下茎.*未確認/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'unknown'}).some(([id])=>id==='p-b716f5384832'));for(const color of['green','pink'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-b716f5384832'));
 });
 test('green rotala reference fits twenty four independent inputs with connected opposite foliage',()=>{
  const dimensions=[[.35,.30,.30],[.01,.10,.005],[.35,.30,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,leafJoins=0,stemJoins=0,branchJoins=0;
@@ -24128,6 +24128,33 @@ test('green rotala reference fits twenty four independent inputs with connected 
    for(let shoot=0;shoot<16;shoot++)for(let j=1;j<=14;j++){const main=shoot*14+j-1,at=point(stems,main,new Vector3(0,.5,0));if(j>1){assert.ok(point(stems,main,new Vector3(0,-.5,0)).distanceTo(point(stems,main-1,new Vector3(0,.5,0)))<2e-6);stemJoins++;}for(let side=0;side<2;side++){assert.ok(point(leaves,leaf++,new Vector3()).distanceTo(at)<2e-6);leafJoins++;}if(j!==5&&j!==9)continue;const start=shoot*14+(j===5?0:7);assert.ok(point(sides,start,new Vector3(0,-.5,0)).distanceTo(at)<2e-6);branchJoins++;for(let k=0;k<7;k++){if(k>0){assert.ok(point(sides,start+k,new Vector3(0,-.5,0)).distanceTo(point(sides,start+k-1,new Vector3(0,.5,0)))<2e-6);stemJoins++;}const at=point(sides,start+k,new Vector3(0,.5,0));for(let side=0;side<2;side++){assert.ok(point(leaves,leaf++,new Vector3()).distanceTo(at)<2e-6);leafJoins++;}}}assert.equal(leaf,896);
   }finally{dispose(g);}
  }assert.equal(models,24);console.log('GREEN_ROTALA1017_BOUNDARIES '+JSON.stringify({models,vertices,leafJoins,stemJoins,branchJoins}));
+});
+test('green rotala pond basal roots meet the bed and hanging shoots stay underwater',()=>{
+ const p={...makePlant('p-b716f5384832',108710,3,3),height:.23,spread:.34,leafHeight:.18};
+ const matrix=new Matrix4(),vertex=new Vector3();
+ const point=(mesh,i,y)=>{mesh.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
+ for(const [depth,month] of [[.001,7],[.007,7],[.14,1],[.30,7]]){
+  const group=plantModel(p,{year:0,month,reference:false,waterDepth:depth});
+  try{
+   const get=key=>group.children.find(m=>m.userData.component===key);
+   const roots=get('basal-root-green-rotala-photo-ref'),stems=get('stem-green-rotala-photo-ref');
+   assert.equal(roots.count,32);
+   for(let i=0;i<roots.count;i++){
+    assert.ok(point(roots,i,-.5).distanceTo(point(stems,Math.floor(i/2)*14,-.5))<2e-6);
+    assert.ok(point(roots,i,.5).y>-.012&&point(roots,i,.5).y<-.011);
+   }
+   for(const mesh of group.children){
+    const vertices=mesh.geometry.attributes.position;
+    for(let i=0;i<mesh.count;i++){
+     mesh.getMatrixAt(i,matrix);
+     for(let j=0;j<vertices.count;j++){
+      const y=vertex.fromBufferAttribute(vertices,j).applyMatrix4(matrix).y+.012-depth;
+      assert.ok(y>=-depth-1e-6&&y<=.006);
+     }
+    }
+   }
+  }finally{dispose(group);}
+ }
 });
 test('green rotala foliage focus frames six summer and protected winter inputs',()=>{
  let models=0,framedPoses=0;for(const dims of[[.35,.30,.30],[.01,.10,.005],[.35,.30,.005]])for(const month of[7,1]){

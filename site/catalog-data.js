@@ -9760,41 +9760,7 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-891f594612ae":{"label":"ロタラインディカ","latin":"Rotala rotundifolia 'Indica'（流通名）","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.1,0.2],"spread":null,"bloom":[5,6],"bloomKnown":true,"flower":"#c48aba","leafColor":"#9b9762","variegated":false,"colors":["pink"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類ごとの水中葉・茎葉体の参考表示","care":"国内生産者の草丈10〜20cm、5〜6月の開花、丸葉とピンクの花を採用します。赤みのある茎から伸びる花穂と、対になる丸い水上葉を参考表示します。株幅は未確認です。生産者は屋外越冬できないと案内しており、冬の表示は日当たりのよい暖かい室内で保護する参考条件です。水中の細葉は属資料による参考で、水上形との連続した変化は再現していません。流通名のインディカを別種のRotala indicaと混同せず、野外へ放流・逸出させないでください。","bloomText":"5・6月（水上の花）","bloomBasis":"国内生産者の水上栽培の記載","source":"https://www.akb.jp/c/water_plants/biotope_plants/002-0161","publisher":"杜若園芸","sourceChecked":"2026-11-13","aliases":["ロタラインディカ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-b716f5384832":{
-  "label": "グリーンロタラ",
-  "latin": "Rotala rotundifolia 'Green'",
-  "genre": "水生植物",
-  "form": "botanical",
-  "group": "宿根草",
-  "leaf": "evergreen",
-  "height": null,
-  "spread": null,
-  "bloom": [],
-  "bloomKnown": false,
-  "flower": "#ecebdd",
-  "leafColor": "#77aa47",
-  "variegated": false,
-  "colors": [
-    "unknown"
-  ],
-  "sun": [],
-  "moisture": [],
-  "life": "perennial",
-  "growth": "年次成長は未確認",
-  "season": "明るい緑の水中葉・側枝としなだれる茎",
-  "care": "メーカーのグリーン系の収録株を参考に、明るい緑の細長い対生葉と、多くの側枝を付けて先端がしなだれる水中の草姿を示します。培養カップの画像と、細長い葉・下部の丸みのある葉を付けたメーカーの全形画像を区別します。水上・水中や培養条件で葉の形は変わります。一般的な株高・株幅と国内の開花月は未確認です。推測の花や季節の赤い紅葉は付けず、温度を保った水槽の参考条件で表示します。全形・全月の実物照合は未完了です。",
-  "bloomText": "国内の開花月は未確認",
-  "bloomBasis": "国内の開花月と収録Greenの花色は未確認です。種資料のピンクの花や国外の春を、収録株の国内の月別表示へ転用していません。",
-  "source": "https://tropica.com/en/plants/plantdetails/22545/22545",
-  "publisher": "Tropica",
-  "sourceChecked": "2026-11-01",
-  "aliases": [
-    "グリーンロタラ"
-  ],
-  "selectionSource": null,
-  "visual": "reference",
-  "popularity": []
-},"p-294dab124a2a":{
+},"p-891f594612ae":{"label":"ロタラインディカ","latin":"Rotala rotundifolia 'Indica'（流通名）","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.1,0.2],"spread":null,"bloom":[5,6],"bloomKnown":true,"flower":"#c48aba","leafColor":"#9b9762","variegated":false,"colors":["pink"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"種類ごとの水中葉・茎葉体の参考表示","care":"国内生産者の草丈10〜20cm、5〜6月の開花、丸葉とピンクの花を採用します。赤みのある茎から伸びる花穂と、対になる丸い水上葉を参考表示します。株幅は未確認です。生産者は屋外越冬できないと案内しており、冬の表示は日当たりのよい暖かい室内で保護する参考条件です。水中の細葉は属資料による参考で、水上形との連続した変化は再現していません。流通名のインディカを別種のRotala indicaと混同せず、野外へ放流・逸出させないでください。","bloomText":"5・6月（水上の花）","bloomBasis":"国内生産者の水上栽培の記載","source":"https://www.akb.jp/c/water_plants/biotope_plants/002-0161","publisher":"杜若園芸","sourceChecked":"2026-11-13","aliases":["ロタラインディカ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-b716f5384832":{"label":"グリーンロタラ","latin":"Rotala rotundifolia 'Green'","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":null,"spread":null,"bloom":[],"bloomKnown":false,"flower":"#ecebdd","leafColor":"#77aa47","variegated":false,"colors":["unknown"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"明るい緑の水中葉・側枝としなだれる茎","care":"メーカーのグリーン系の収録株を参考に、明るい緑の細長い対生葉と、多くの側枝を付けて先端がしなだれる水中の草姿を示します。培養カップの画像と、細長い葉・下部の丸みのある葉を付けたメーカーの全形画像を区別します。水上・水中や培養条件で葉の形は変わります。一般的な株高・株幅と国内の開花月は未確認です。推測の花や季節の赤い紅葉は付けず、温度を保った水槽の参考条件で表示します。全形・全月の実物照合は未完了です。","bloomText":"国内の開花月は未確認","bloomBasis":"国内の開花月と収録Greenの花色は未確認です。種資料のピンクの花や国外の春を、収録株の国内の月別表示へ転用していません。","source":"https://tropica.com/en/plants/plantdetails/22545/22545","publisher":"Tropica","sourceChecked":"2026-11-13","aliases":["グリーンロタラ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-294dab124a2a":{
   "label": "ロタラ・SP・フラワー",
   "latin": "Rotala sp. 'Flower'",
   "genre": "水生植物",
