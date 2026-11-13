@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1126';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1126';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1126';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1126';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1126';
-import { createScene } from './scene.js?v=0.9.1126';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1127';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1127';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1127';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1127';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1127';
+import { createScene } from './scene.js?v=0.9.1127';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -168,7 +168,15 @@ function setMode(value){if(preview&&value!=='orbit'){message('交換プレビュ
   engine?.selecting(value==='orbit');
   $('orbit').setAttribute('aria-pressed',String(value==='orbit'));$('viewport').dataset.mode=value;
   const statuses={orbit:`案 ${shown().active} · 3Dの参考表現`,add:`${plantInfo(addKind).label}を置く場所をクリック`,move:'移動先をクリック',clone:'複製する場所をクリック',outline:'庭の外周の角を順番にクリック',zone:'区画の角を順番にクリック',circle:'中心 → 半径の順に2点クリック'};
-  $('view-status').textContent=statuses[value];for(const b of $('catalog').children)b.setAttribute('aria-pressed',String(value==='add'&&b.dataset.kind===addKind));
+  $('view-status').textContent=statuses[value];
+  syncPlacementButtons();
+}
+function syncPlacementButtons(){
+  for(const id of ['catalog','candidates']){
+    for(const control of $(id).querySelectorAll('button[data-kind]')){
+      control.setAttribute('aria-pressed',String(mode==='add'&&control.dataset.kind===addKind));
+    }
+  }
 }
 function resetMode(){setMode('orbit');}
 function select(id){selected=id;setMode('orbit');editor('plant-panel');syncSelection();syncPlantState();syncSceneSelection();if(selectedPlant())message(`${plantInfo(selectedPlant().kind).label}を選びました。`);}
@@ -223,8 +231,22 @@ function syncCalendar(){
 }
 function syncIdeas(){const p=plan(),o=observations(p,shown().view);metrics('observations',[[`${o.visible}株`,'この時点に植わっている株'],[`${o.overlap}組`,'株幅・樹冠の重なり'],[`${o.outside}株`,'外周・外構への張り出し']]);
   const flowers=[...new Set(p.plants.filter(plant=>{const s=stateAt(plant,{...shown().view,waterDepth:pondDepthAt(p,plant.x,plant.z)});return s.present&&s.bloom;}).map(p=>plantInfo(p.kind).label))];$('season-story').textContent=`${shown().view.month}月の開花参考：${flowers.join('、')||'カタログ上の開花表示はありません。枝・葉・枯れ穂も見どころです'}。重なりは平面の幅の参考で、根の競合や栽培可否の判定ではありません。`;
-  const candidateKinds=Object.keys(CATALOG).filter(k=>!CATALOG[k].appearance?.collection&&CATALOG[k].sun.includes(p.sun)&&CATALOG[k].moisture.includes(p.moisture)).slice(0,6);$('candidates').replaceChildren(...candidateKinds.map(k=>button(`${CATALOG[k].label} · ${CATALOG[k].season}`,()=>{if(selectedPlant())previewReplacement(k);else{addKind=k;setMode('add');sourceCard('catalog-info',k);message('庭をクリックして、この候補を配置できます。');}})));
-  if(!candidateKinds.length)$('candidates').append(el('p','このカタログでは条件に一致する候補が見つかりません。条件を緩めず、植物の追加収録をお待ちください。','hint'));
+  const candidates=$('candidates'),conditions=JSON.stringify([p.sun,p.moisture]);
+  if(candidates.dataset.conditions!==conditions){
+    candidates.dataset.conditions=conditions;
+    const choices=Object.entries(CATALOG).filter(([,info])=>
+      !info.appearance?.collection&&info.sun.includes(p.sun)&&info.moisture.includes(p.moisture)).slice(0,6);
+    candidates.replaceChildren(...choices.map(([kind,info])=>{
+      const control=button(`${info.label} · ${info.season}`,()=>{
+        if(selectedPlant())previewReplacement(kind);
+        else chooseKind(kind);
+      });
+      control.dataset.kind=kind;
+      return control;
+    }));
+    if(!choices.length)candidates.append(el('p','このカタログでは条件に一致する候補が見つかりません。条件を緩めず、植物の追加収録をお待ちください。','hint'));
+  }
+  syncPlacementButtons();
   $('time-basis').textContent=shown().view.reference?'資料の成株上限寸法を表示中。指定年の予測ではありません。剪定シナリオは適用しません。通常表示に戻すと元の年数・設定へ戻ります。':`年数と季節は別々に指定できます。成長シナリオ未設定 ${o.unmodeled}株は初期寸法のまま。花期・落葉・葉量は地域差のある参考表現です。`;
 }
 function syncComparison(){const d=shown();if(!d.plans.B){$('comparison').replaceChildren(el('p','「Bに複製」で現在の庭を残して、別案をつくれます。'));return;}const rows=['A','B'].map(k=>{const p=d.plans[k],b=budget(p),c=calendar(p,d.view.year);return [k,`${p.plants.length}株`,`${yen(b.total)}${b.unknown?` ＋ ${b.unknown}株未入力`:''}`,`${c.reduce((n,m)=>n+m.events.reduce((s,e)=>s+e.count,0),0)}回`,`${time(c.reduce((n,m)=>n+m.min,0),c.reduce((n,m)=>n+m.max,0))}${c.some(m=>m.unknown)?' ＋ 未入力あり':''}`];});$('comparison').replaceChildren(table(['案','全株数','購入費','年間作業','年間時間'],rows));const a=budget(d.plans.A),b=budget(d.plans.B);$('comparison').append(el('p',`B − A：株数 ${d.plans.B.plants.length-d.plans.A.plants.length}株 ／ 入力済み購入費 ${yen(b.total-a.total)}${a.unknown||b.unknown?'（未入力があるため総額差は未確定）':''}`));}
