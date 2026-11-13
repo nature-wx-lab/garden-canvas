@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1139';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1139';
-import { seasonAt } from './catalog-search.js?v=0.9.1139';
+import {treeProfile} from './tree-profiles.js?v=0.9.1140';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1140';
+import { seasonAt } from './catalog-search.js?v=0.9.1140';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -255,7 +255,29 @@ export function calendar(plan,year){
   }
   return months;
 }
-export function observations(plan,view){let overlap=0,outside=0,unmodeled=0;const visible=plan.plants.map(p=>({p,s:stateAt(p,view)})).filter(v=>v.s.present);for(let i=0;i<visible.length;i++){const {p,s}=visible[i];if(!p.scenario&&!view.reference)unmodeled++;for(let j=i+1;j<visible.length;j++){const q=visible[j];if(Math.hypot(p.x-q.p.x,p.z-q.p.z)<(s.spread+q.s.spread)/2)overlap++;}if(Array.from({length:24},(_,n)=>{const a=n*Math.PI/12;return !canPlant(plan,p.x+Math.cos(a)*s.spread/2,p.z+Math.sin(a)*s.spread/2);}).some(Boolean))outside++;}return {overlap,outside,unmodeled,visible:visible.length};}
+const footprintDirections=Array.from({length:24},(_,index)=>{
+  const angle=index*Math.PI/12;
+  return [Math.cos(angle),Math.sin(angle)];
+});
+export function observations(plan,view){
+  let overlap=0,outside=0,unmodeled=0;
+  const visible=plan.plants.map(plant=>({plant,state:stateAt(plant,view)})).filter(item=>item.state.present);
+  for(let i=0;i<visible.length;i++){
+    const {plant,state}=visible[i];
+    if(!plant.scenario&&!view.reference)unmodeled++;
+    for(let j=i+1;j<visible.length;j++){
+      const other=visible[j];
+      if(Math.hypot(plant.x-other.plant.x,plant.z-other.plant.z)<(state.spread+other.state.spread)/2)overlap++;
+    }
+    for(const [x,z] of footprintDirections){
+      if(!canPlant(plan,plant.x+x*state.spread/2,plant.z+z*state.spread/2)){
+        outside++;
+        break;
+      }
+    }
+  }
+  return {overlap,outside,unmodeled,visible:visible.length};
+}
 function migrateV1(v){
   const bad=()=>{throw new Error('旧版ファイルの形式が不正です。');};
   if(!keys(v,['version','width','depth','outline','plants','month'])||!integer(v.month,1,12)||!Array.isArray(v.plants)||v.plants.length>100)bad();
