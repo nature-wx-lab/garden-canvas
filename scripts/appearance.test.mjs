@@ -13200,8 +13200,30 @@ test('Gilded Gold and Mozart Blue needles stay on actual woody nodes within inde
  const tiny=[[.01,.1,.005],[.5,.1,.005],[.01,.6,.005],[.5,.1,.015001]],eps=1e-7,attachEps2=(2e-7)**2;let models=0,nearCrownLeaves=0;const diagnostics=[];
  for(const c of ROSEMARY_CULTIVARS_680){for(const[dims,month]of[...c.sizes.flatMap(d=>Array.from({length:12},(_,i)=>[d,i+1])),...tiny.flatMap(d=>[4,10].map(m=>[d,m]))]){models++;const p={...makePlant(c.id,c.pid,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},before=structuredClone(p),s=stateAt(p,{month,year:1,reference:false}),g=plantModel(p,{month,year:1,reference:false}),matrix=new Matrix4(),point=new Vector3(),segments=[],origins=[];let leaves=0,top=-Infinity,ground=Infinity,radius=0,leafTop=-Infinity,vertices=0;
   try{g.updateMatrixWorld(true);for(const mesh of g.children){const leaf=mesh.userData.component.startsWith('leaf-aromatic-rosemary'),wood=/^(wood-aromatic|stem-aromatic)/.test(mesh.userData.component),baseWood=mesh.userData.component==='wood-aromatic-base',pos=mesh.geometry.attributes.position;assert.ok(mesh.instanceMatrix.array.every(Number.isFinite)&&mesh.geometry.attributes.normal.array.every(Number.isFinite));if(leaf){leaves+=mesh.count;assert.equal(mesh.geometry.userData.aromaticLeaf.type,'rosemary');assert.equal(mesh.geometry.userData.aromaticLeaf.rolled,true);}
-   for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,matrix);matrix.premultiply(mesh.matrixWorld);if(wood)segments.push(new Line3(new Vector3(0,-.5,0).applyMatrix4(matrix),new Vector3(0,.5,0).applyMatrix4(matrix)));if(leaf)origins.push(new Vector3().applyMatrix4(matrix));for(let j=0;j<pos.count;j++){point.fromBufferAttribute(pos,j).applyMatrix4(matrix);vertices++;assert.ok(point.toArray().every(Number.isFinite));assert.ok(point.y>=(baseWood?-s.height*.007:0)-eps,'only original ground-contact wood can penetrate by its unchanged radius');assert.ok(point.y<=s.height+eps,'height');assert.ok(Math.hypot(point.x,point.z)*2<=s.spread+eps,'spread');if(leaf)assert.ok(point.y<=Math.min(s.height,s.leafHeight)+eps,'needle leaf ceiling');top=Math.max(top,point.y);ground=Math.min(ground,point.y);radius=Math.max(radius,Math.hypot(point.x,point.z));if(leaf)leafTop=Math.max(leafTop,point.y);}}
-  }assert.ok(vertices>0&&segments.length>0);if(s.leafHeight<=.015)assert.equal(leaves,0);else assert.ok(leaves>0);assert.equal(leaves%2,0);for(const pt of origins)assert.ok(segments.some(line=>line.closestPointToPoint(pt,true,new Vector3()).distanceToSquared(pt)<=attachEps2),'needle remains attached to actual woody shoot or original crown');if(dims[2]===.015001)nearCrownLeaves+=leaves;if(month===4&&c.sizes.includes(dims))diagnostics.push({id:c.id,dims,actualHeight:top,actualSpread:radius*2,actualLeafHeight:leafTop,ground,leaves,vertices});assert.deepEqual(p,before);
+   const component=mesh.userData.component;
+   const lowerY=(baseWood?-s.height*.007:0)-eps;
+   const upperY=s.height+eps,upperSpread=s.spread+eps,upperLeaf=Math.min(s.height,s.leafHeight)+eps;
+   for(let i=0;i<mesh.count;i++){
+    mesh.getMatrixAt(i,matrix);
+    matrix.premultiply(mesh.matrixWorld);
+    if(wood)segments.push(new Line3(new Vector3(0,-.5,0).applyMatrix4(matrix),new Vector3(0,.5,0).applyMatrix4(matrix)));
+    if(leaf)origins.push(new Vector3().applyMatrix4(matrix));
+    for(let j=0;j<pos.count;j++){
+     point.fromBufferAttribute(pos,j).applyMatrix4(matrix);
+     vertices++;
+     if(!(Number.isFinite(point.x)&&Number.isFinite(point.y)&&Number.isFinite(point.z)))assert.fail(component+' nonfinite vertex');
+     if(!(point.y>=lowerY))assert.fail(component+' below the ground-contact limit: '+point.y);
+     if(!(point.y<=upperY))assert.fail(component+' height '+point.y);
+     const radial=Math.hypot(point.x,point.z);
+     if(!(radial*2<=upperSpread))assert.fail(component+' spread '+radial*2);
+     if(leaf&&!(point.y<=upperLeaf))assert.fail(component+' needle leaf ceiling '+point.y);
+     top=Math.max(top,point.y);
+     ground=Math.min(ground,point.y);
+     radius=Math.max(radius,radial);
+     if(leaf)leafTop=Math.max(leafTop,point.y);
+    }
+   }
+  }assert.ok(vertices>0&&segments.length>0);if(s.leafHeight<=.015)assert.equal(leaves,0);else assert.ok(leaves>0);assert.equal(leaves%2,0);const closest=new Vector3();for(const pt of origins)assert.ok(segments.some(line=>line.closestPointToPoint(pt,true,closest).distanceToSquared(pt)<=attachEps2),'needle remains attached to actual woody shoot or original crown');if(dims[2]===.015001)nearCrownLeaves+=leaves;if(month===4&&c.sizes.includes(dims))diagnostics.push({id:c.id,dims,actualHeight:top,actualSpread:radius*2,actualLeafHeight:leafTop,ground,leaves,vertices});assert.deepEqual(p,before);
   }finally{dispose(g);}
  }}assert.equal(models,64);assert.ok(nearCrownLeaves>0);const doc=emptyDocument(24,6);doc.plans.A.plants=ROSEMARY_CULTIVARS_680.flatMap(c=>[...c.sizes,...tiny].map(d=>({c,d}))).map(({c,d},i)=>({...makePlant(c.id,680100+i,1+i*1.8,3),height:d[0],spread:d[1],leafHeight:d[2]}));doc.view.month=4;doc.view.year=1;const raw={...structuredClone(doc),catalogVersion:'2026-10-24.65'},before=structuredClone(raw);assert.deepEqual(validateDocument(raw),doc);assert.deepEqual(raw,before);console.log('ROSEMARY_CULTIVARS_680_CAPS '+JSON.stringify({models,nearCrownLeaves,diagnostics}));
 });
