@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1155';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1155';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1155';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1155';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1155';
-import { createScene } from './scene.js?v=0.9.1155';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1156';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1156';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1156';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1156';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1156';
+import { createScene } from './scene.js?v=0.9.1156';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -255,7 +255,49 @@ function syncGardenShape(){
   $('shape').value=gardenShape(plan());
 }
 function syncGarden(){const p=plan();for(const id of ['width','depth','sun','moisture','prep'])$(id).value=p[id];syncGardenShape();p.hours.forEach((h,i)=>$(`hours-${i}`).value=h??'');
-  $('zone-list').replaceChildren(...p.zones.map((z,i)=>{const row=itemRow(`${z.kind==='water'?'水面':'花壇'} ${i+1} · ${area(z.points).toFixed(1)}m²`,()=>mutate(p=>p.zones.splice(i,1),'区画を取り除きました。植物は残ります。'));const type=el('select');type.setAttribute('aria-label',`区画${i+1}の種類`);for(const [v,label] of [['soil','花壇'],['water','池・水面']]){const option=el('option',label);option.value=v;type.append(option);}type.value=z.kind||'soil';type.addEventListener('change',()=>{const value=type.value;mutate(p=>{p.zones[i].kind=value;if(value!=='water')delete p.zones[i].depth;},'区画の種類を変更しました。');});row.append(type);if(z.kind==='water'){const label=el('label','水深 (m)'),input=el('input');input.type='number';input.min='0';input.max='2';input.step='.05';input.value=String(z.depth??0);input.setAttribute('aria-label',`水面${i+1}の水深`);const applyDepth=()=>{const depth=Number(input.value);if(input.value.trim()===''||!Number.isFinite(depth)||depth<0||depth>2){message('水深は0〜2mで入力してください。');input.value=String(plan().zones[i].depth??0);return;}mutate(p=>{p.zones[i].depth=depth;},'池の水深を変更しました。');};const apply=button('水深を反映',applyDepth);apply.setAttribute('aria-label',`水面${i+1}の水深を反映`);input.addEventListener('keydown',e=>{if(e.key==='Enter')applyDepth();});label.append(input);row.append(label,apply);}return row;}));
+  $('zone-list').replaceChildren(...p.zones.map((zone,index)=>{
+    const name=zone.kind==='water'?'水面':'花壇',number=index+1;
+    const row=itemRow(`${name} ${number} · ${area(zone.points).toFixed(1)}m²`,()=>
+      mutate(plan=>plan.zones.splice(index,1),'区画を取り除きました。植物は残ります。'));
+    const type=el('select');
+    type.setAttribute('aria-label',`区画${number}の種類`);
+    for(const [value,text] of [['soil','花壇'],['water','池・水面']]){
+      const option=el('option',text);option.value=value;type.append(option);
+    }
+    type.value=zone.kind||'soil';
+    type.addEventListener('change',()=>{
+      const value=type.value;
+      mutate(plan=>{
+        plan.zones[index].kind=value;
+        if(value!=='water')delete plan.zones[index].depth;
+      },'区画の種類を変更しました。');
+    });
+    row.append(type);
+    if(zone.kind!=='water')return row;
+    const label=el('label','水深 (m)'),input=el('input');
+    input.type='number';input.min='0';input.max='2';input.step='0.001';
+    input.value=String(zone.depth??0);
+    const inputName=`水面${number}の水深`,applyName=`水面${number}の水深を反映`;
+    input.setAttribute('aria-label',inputName);
+    const applyDepth=focusName=>{
+      const depth=Number(input.value);
+      if(input.value.trim()===''||!Number.isFinite(depth)||depth<0||depth>2){
+        message('水深は0〜2mで入力してください。');
+        input.value=String(plan().zones[index].depth??0);
+        return;
+      }
+      if(mutate(plan=>{plan.zones[index].depth=depth;},'池の水深を変更しました。')){
+        $('zone-list').querySelector(`[aria-label="${focusName}"]`)?.focus({preventScroll:true});
+      }
+    };
+    const apply=button('水深を反映',()=>applyDepth(applyName));
+    apply.setAttribute('aria-label',applyName);
+    input.addEventListener('keydown',event=>{
+      if(event.key==='Enter'){event.preventDefault();applyDepth(inputName);}
+    });
+    label.append(input);row.append(label,apply);
+    return row;
+  }));
   $('obstacle-list').replaceChildren(...p.obstacles.map((o,i)=>itemRow(`${{house:'建物',path:'通路',fence:'塀'}[o.type]} ${i+1} · ${o.width.toFixed(1)} × ${o.depth.toFixed(1)}m`,()=>mutate(p=>p.obstacles.splice(i,1),'外構を取り除きました。'))));
 }
 function syncBudget(){const b=budget(plan());metrics('budget-summary',[[yen(b.total),'入力済み価格の小計'],[`${b.unknown}株`,'価格未入力'],[`${b.count}株`,'新規購入する株']]);$('budget-table').replaceChildren(table(['植物・初期サイズ','株数','単価','金額'],b.rows.map(r=>[`${plantInfo(r.kind).label} (${r.height}m × ${r.spread}m)`,r.count,r.price===null?'未入力':yen(r.price),r.price===null?'未確定':yen(r.total)])));}
