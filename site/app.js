@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1149';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1149';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1149';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1149';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1149';
-import { createScene } from './scene.js?v=0.9.1149';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1150';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1150';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1150';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1150';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1150';
+import { createScene } from './scene.js?v=0.9.1150';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -569,7 +569,15 @@ function bind(){
   $('annual-gallery').addEventListener('click',()=>openGallery(annualGalleryDocument,
     '冬の休眠と常緑の違い、葉の模様と花の形を見比べる庭です。月を変えて確認できます。「戻す」で元の庭へ戻れます。'));
   for(const id of ['catalog-filter','catalog-color','catalog-status','catalog-popular','catalog-habit','catalog-dry-garden'])$(id).addEventListener('change',()=>{catalogIndex=0;drawCatalog();});$('catalog-search').addEventListener('input',()=>{catalogIndex=0;drawCatalog();});
-  $('catalog-prev').addEventListener('click',()=>{catalogIndex--;drawCatalog();});$('catalog-next').addEventListener('click',()=>{catalogIndex++;drawCatalog();});drawCatalog();sourceCard('catalog-info','salvia');
+  for(const [id,direction,other] of [['catalog-prev',-1,'catalog-next'],['catalog-next',1,'catalog-prev']]){
+    $(id).addEventListener('click',event=>{
+      catalogIndex+=direction;
+      drawCatalog();
+      if(event.detail===0&&event.currentTarget.disabled)$(other).focus();
+    });
+  }
+  drawCatalog();
+  sourceCard('catalog-info','salvia');
   $('orbit').addEventListener('click',()=>{resetMode();message('ドラッグで回転。植物をクリックすると選べます。');});for(const type of ['home','top','eye'])$(`view-${type}`).addEventListener('click',()=>engine?.view(type));$('focus').addEventListener('click',()=>{engine?.view('focus');if(matchMedia('(max-width:760px)').matches)$('viewport').scrollIntoView({block:'center'});});$('focus-flower').addEventListener('click',()=>{const organ=$('focus-flower').textContent==='穂を観察'?'穂':'花';if(!engine?.view('flower')){message(`この月は観察できる${organ}がありません。`);return;}$('wind-select').value='0';engine.wind(0);if(matchMedia('(max-width:760px)').matches)$('viewport').scrollIntoView({block:'center'});message(`${organ}へ寄って風を止めました。ドラッグで角度を変えられます。`);});$('zoom-in').addEventListener('click',()=>engine?.zoom(.8));$('zoom-out').addEventListener('click',()=>engine?.zoom(1.25));
   $('footprints').addEventListener('change',()=>{
     const enabled=$('footprints').checked;
