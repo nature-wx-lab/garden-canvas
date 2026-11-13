@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1151';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1152';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1151';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength,egeriaFlowerRadius,egeriaFlowerFits} from './model.js?v=0.9.1151';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1152';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions} from './model.js?v=0.9.1152';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26737,14 +26737,15 @@ function goldJennyPhotoSegment(f,a,z,r,color,kind){
 function drawGoldJennyPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
  const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.0008,h*.007,w*.006),floor=r*1.25+Math.min(.00002,h*.002);
+ const flowerDimensions=s.bloom?goldJennyFlowerDimensions(h,w,s.leafHeight):null;
  for(let shoot=0;shoot<6;shoot++){
   const az=shoot*2.399+.4,root=[Math.sin(az)*w*.055,floor,Math.cos(az)*w*.055];let previous=root;
   for(let node=0;node<7;node++){
    const t=(node+1)/7,at=[root[0]+Math.sin(az)*w*.27*t+Math.cos(az)*w*.024*Math.sin(Math.PI*t),floor+(LH*.66-floor)*t**2.1,root[2]+Math.cos(az)*w*.27*t-Math.sin(az)*w*.024*Math.sin(Math.PI*t)],L=Math.min(.021,w*.14)*(.88+node*.016),P=Math.min(.0035,w*.02,L*.20),relief=Math.min(L,LH*.025/.08),pitch=Math.acos(Math.min(.35,LH*.03/(L+P))),angle=az+node*Math.PI/2;
    goldJennyPhotoSegment(b,previous,at,r,'#a0af55','creeping-stem-gold-jenny-photo-ref');
    for(const side of[0,1]){const a=angle+side*Math.PI,v=new THREE.Vector3(0,P,0).applyEuler(new THREE.Euler(pitch,a,0,'YXZ')),leaf=[at[0]+v.x,at[1]+v.y,at[2]+v.z];goldJennyPhotoSegment(b,at,leaf,r*.48,'#a5b650','petiole-gold-jenny-photo-ref');b.add('gold-jenny-photo-reference-leaf','leaf-gold-jenny-photo-reference',kit.shade(rand,s.leafColor,.035),...leaf,L,L,relief,pitch,a,0);}
-   previous=at;if(!s.bloom||s.waterDepth>=.02||node!==5)continue;
-   const D=Math.min(.014,w*.10,h*.16),Pfl=Math.min(.020,h*.18,w*.08),flower=[at[0]+Math.sin(az)*Pfl*.45,Math.min(h*.80,at[1]+Pfl),at[2]+Math.cos(az)*Pfl*.45],tilt=.22,f=flowerFrame(b,flower,tilt,az);
+   previous=at;if(!flowerDimensions||node!==5)continue;
+   const {diameter:D,stalk:Pfl,centerY}=flowerDimensions,flower=[at[0]+Math.sin(az)*Pfl*.45,centerY,at[2]+Math.cos(az)*Pfl*.45],tilt=.22,f=flowerFrame(b,flower,tilt,az);
    goldJennyPhotoSegment(b,at,flower,r*.50,'#a0af55','pedicel-gold-jenny-photo-ref');f.add('gold-jenny-photo-reference-corolla','corolla-gold-jenny-photo-reference',kit.shade(rand,s.flowerColor,.015),0,0,0,D,D,D);
    for(let k=0;k<5;k++){const a=k*TAU/5,pf=flowerFrame(f,[Math.sin(a)*D*.045,0,Math.cos(a)*D*.045],1.65,a);pf.add('gold-jenny-photo-reference-sepal','sepal-gold-jenny-photo-reference','#91a34e',0,0,0,D*.34,D*.45,D*.25);const base=[Math.sin(a)*D*.04,D*.035,Math.cos(a)*D*.04],tip=[Math.sin(a)*D*.16,D*.21,Math.cos(a)*D*.16];goldJennyPhotoSegment(f,base,tip,D*.008,'#e3b632','filament-gold-jenny-photo-ref');f.add(kit.bud,'anther-gold-jenny-photo-ref','#cf9623',...tip,D*.025,D*.032,D*.025);}
    // Central pistil is schematic; neither stigma microstructure nor retail clone counts are claimed.

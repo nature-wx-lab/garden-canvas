@@ -5,14 +5,12 @@ import {emptyDocument,sampleDocument,validateDocument,makePlant,clone,outlineFor
 const view=(year,month,reference=false)=>({year,month,reference,footprints:false,camera:null});
 const fixture=()=>{const d=emptyDocument();d.plans.A.plants=[makePlant('maple',1,2,2)];return d;};
 const task=(type,month,repeat='annual',min=10,max=20,count=1)=>({id:1,type,month,repeat,min,max,count});
-test('water-surface flowering disappears at the same depth boundary as the rendered flowers',()=>{
- for(const kind of ['p-9802ede000e2','p-891f594612ae']){
-  const plant=makePlant(kind,1,2,2);
-  assert.equal(stateAt(plant,{...view(0,5),waterDepth:.019}).bloom,true);
-  assert.equal(stateAt(plant,{...view(0,5),waterDepth:.02}).bloom,false);
-  assert.equal(stateAt(plant,{...view(0,5),waterDepth:.3}).bloom,false);
-  assert.equal(stateAt(plant,{...view(0,1),waterDepth:0}).bloom,false);
- }
+test('Indica water-surface flowering disappears at the same depth boundary as the rendered flowers',()=>{
+ const plant=makePlant('p-891f594612ae',1,2,2);
+ assert.equal(stateAt(plant,{...view(0,5),waterDepth:.019}).bloom,true);
+ assert.equal(stateAt(plant,{...view(0,5),waterDepth:.02}).bloom,false);
+ assert.equal(stateAt(plant,{...view(0,5),waterDepth:.3}).bloom,false);
+ assert.equal(stateAt(plant,{...view(0,1),waterDepth:0}).bloom,false);
 });
 test('submerged ovalis and indica do not advertise flowers in the placed plant state',()=>{
   const ovalis=makePlant('p-6f783140466d',1,2,2);

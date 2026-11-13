@@ -3,7 +3,7 @@ import {rootedPondInspectionView,inspectionSeasonActive,amperaiFoliageInspection
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Box3,ShaderLib,CylinderGeometry,InstancedMesh,Quaternion,Matrix4,Vector3,Line3,Color,PerspectiveCamera,Vector2,Raycaster,SRGBColorSpace} from '../site/vendor/three.module.js';
-import {CATALOG,makePlant,stateAt,annualGalleryDocument,validateDocument,emptyDocument,plantBaseAt,PLANT_BASE_Y,POND_SURFACE_Y} from '../site/model.js';
+import {CATALOG,makePlant,stateAt,annualGalleryDocument,validateDocument,emptyDocument,plantBaseAt,PLANT_BASE_Y,POND_SURFACE_Y,goldJennyFlowerDimensions} from '../site/model.js';
 import {CATALOG_VERSION} from '../site/catalog.js';
 import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
@@ -24028,7 +24028,7 @@ test('Bacopa monnieri illustrative creeping axes remain glabrous connected and u
 });
 
 test('Lysimachia Gold source separates domestic height bloom and unnamed yellow leaf identity',()=>{
- const q=CATALOG['p-9802ede000e2'],a=q.appearance;assert.equal(q.latin,'Lysimachia nummularia（黄葉の流通株）');assert.deepEqual(q.height,[.05,.10]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[4,5,6,7]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['yellow']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'goldJennyPhotoReference');assert.equal(a.sources[0].scope,'catalog-entry');assert.match(a.sources[2].url,/Lysimachia~nummularia/);assert.match(a.sourceConflict,/9cm.*ポット/);assert.match(a.sourceConflict,/品種同一性は未確認/);assert.match(a.phenologyRegion,/冬.*未確認/);assert.match(a.phenologyRegion,/水深2cm.*仮の境界.*実測閾値ではありません/);assert.match(q.care,/浅い水位/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'yellow'}).some(([id])=>id==='p-9802ede000e2'));for(const color of['purple','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-9802ede000e2'));
+ const q=CATALOG['p-9802ede000e2'],a=q.appearance;assert.equal(q.latin,'Lysimachia nummularia（黄葉の流通株）');assert.deepEqual(q.height,[.05,.10]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[4,5,6,7]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['yellow']);assert.equal(q.sourceChecked,'2026-11-13');assert.equal(a.shootProfile,'goldJennyPhotoReference');assert.equal(a.sources[0].scope,'catalog-entry');assert.match(a.sources[2].url,/Lysimachia~nummularia/);assert.match(a.sourceConflict,/9cm.*ポット/);assert.match(a.sourceConflict,/品種同一性は未確認/);assert.match(a.phenologyRegion,/冬.*未確認/);assert.match(a.phenologyRegion,/株の寸法.*花が水面より上.*水中での開花や生育を予測するものではありません/);assert.match(q.care,/花が水面より上に出る水位/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'yellow'}).some(([id])=>id==='p-9802ede000e2'));for(const color of['purple','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-9802ede000e2'));
 });
 test('Lysimachia Gold photo reference fits twenty four independent inputs with connected round paired leaves',()=>{
  const dimensions=[[.10,.26,.08],[.01,.10,.005],[.10,.26,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,leafJoins=0,stemJoins=0,winterModels=0,flowerModels=0;
@@ -24042,6 +24042,48 @@ test('Lysimachia Gold photo reference fits twenty four independent inputs with c
   }finally{dispose(g);}
  }assert.equal(models,24);assert.equal(winterModels,8);assert.equal(flowerModels,8);console.log('GOLD_JENNY1013_BOUNDARIES '+JSON.stringify({models,vertices,leafJoins,stemJoins,winterModels,flowerModels}));
 });
+test('Lysimachia Gold matches flower visibility, inspection and actual waterline at different sizes',()=>{
+ const base=makePlant('p-9802ede000e2',101310,3,3),matrix=new Matrix4(),point=new Vector3();
+ const regular={...base,height:.10,spread:.26,leafHeight:.08};
+ const {centerY,diameter}=goldJennyFlowerDimensions(regular.height,regular.spread,regular.leafHeight);
+ const displayLimit=centerY-diameter*.20+PLANT_BASE_Y-POND_SURFACE_Y;
+ const cases=[
+  [regular,0,6,false,true],[regular,.025,6,false,true],[regular,.06,6,false,false],
+  [regular,displayLimit-.000001,6,false,true],[regular,displayLimit+.000001,6,false,false],
+  [{...regular,height:.01,leafHeight:.005},.012,6,false,false],
+  [{...regular,height:.06,leafHeight:.005},.022,6,false,false],
+  [{...regular,height:.06,leafHeight:.005},.022,6,true,true],
+  [regular,.005,1,false,false],
+ ];
+ for(const [plant,waterDepth,month,reference,visible] of cases){
+  const view={year:1,month,reference,waterDepth},state=stateAt(plant,view),g=plantModel(plant,view);
+  try{
+   assert.equal(state.bloom,visible);assert.equal(state.flowerDensity>0,visible);
+   assert.equal(inspectionSeasonActive(plant,view),visible);
+   assert.equal(!!flowerInspectionView(g,.8,40),visible);
+   assert.ok(g.children.some(mesh=>mesh.userData.component==='leaf-gold-jenny-photo-reference'));
+   const corolla=g.children.find(mesh=>mesh.userData.component==='corolla-gold-jenny-photo-reference');
+   assert.equal(!!corolla,visible);
+   if(!visible&&month===6)assert.match(state.label,/現在の水深では花を表示しません/);
+   if(!corolla||waterDepth===0)continue;
+   for(const component of ['corolla','sepal']){
+    const mesh=g.children.find(m=>m.userData.component===`${component}-gold-jenny-photo-reference`);
+    const positions=mesh.geometry.attributes.position;
+    for(let index=0;index<mesh.count;index++){
+     mesh.getMatrixAt(index,matrix);
+     for(let vertex=0;vertex<positions.count;vertex++){
+      const y=point.fromBufferAttribute(positions,vertex).applyMatrix4(matrix).y+PLANT_BASE_Y-waterDepth;
+      assert.ok(y>POND_SURFACE_Y,`${component}: ${y}`);
+     }
+    }
+   }
+  }finally{dispose(g);}
+ }
+ const document=emptyDocument(10,6);document.plans.A.plants=[regular];
+ const previous={...structuredClone(document),catalogVersion:'2026-11-13.155'},saved=structuredClone(previous);
+ assert.deepEqual(validateDocument(previous),document);assert.deepEqual(previous,saved);
+});
+
 test('Lysimachia Gold foliage focus frames six manual summer winter inputs',()=>{
  let models=0,framedPoses=0;for(const dims of[[.10,.26,.08],[.01,.10,.005],[.10,.26,.005]])for(const month of[6,1]){
   const input={...makePlant('p-9802ede000e2',101310,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},saved=structuredClone(input),g=plantModel(input,{year:1,month,reference:false},1);models++;
