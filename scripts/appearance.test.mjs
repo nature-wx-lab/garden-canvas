@@ -3,7 +3,7 @@ import {rootedPondInspectionView,inspectionSeasonActive,amperaiFoliageInspection
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Box3,ShaderLib,CylinderGeometry,InstancedMesh,Quaternion,Matrix4,Vector3,Line3,Color,PerspectiveCamera,Vector2,Raycaster,SRGBColorSpace} from '../site/vendor/three.module.js';
-import {CATALOG,makePlant,stateAt,annualGalleryDocument,validateDocument,emptyDocument,plantBaseAt} from '../site/model.js';
+import {CATALOG,makePlant,stateAt,annualGalleryDocument,validateDocument,emptyDocument,plantBaseAt,PLANT_BASE_Y,POND_SURFACE_Y} from '../site/model.js';
 import {CATALOG_VERSION} from '../site/catalog.js';
 import {APPEARANCE_DATA} from '../site/appearance-data.js';
 import {seasonAt,searchCatalog} from '../site/catalog-search.js';
@@ -24172,7 +24172,7 @@ test('green rotala accepts existing saved gardens without changing independent d
  for(const dims of[[.35,.30,.30],[.01,.10,.005],[.35,.30,.005]]){const input={...makePlant('p-b716f5384832',101710,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},d=emptyDocument(10,6);d.plans.A.plants=[input];const old={...structuredClone(d),catalogVersion:'2026-10-29.79'},copy=structuredClone(old);assert.deepEqual(validateDocument(old),d);assert.deepEqual(old,copy);assert.deepEqual([input.height,input.spread,input.leafHeight],dims);const state=stateAt(input,{year:1,month:7,reference:true});assert.equal(state.height,dims[0]);assert.equal(state.spread,dims[1]);assert.ok(Math.abs(state.leafHeight-dims[2])<1e-12);}
 });
 test('nanjenshan separates domestic height and pink photo flowers from unknown bloom and dated retail observations',()=>{
- const q=CATALOG['p-81746a493156'],a=q.appearance;assert.equal(q.latin,"Rotala sp. 'Nanjenshan'");assert.deepEqual(q.height,[.05,.10]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['pink']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'nanjenshanPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.flowerShape,'none');assert.match(a.sourceConflict,/5〜10cm.*15cm/);assert.match(a.sourceConflict,/2003.*3〜5/);assert.match(a.sourceConflict,/9cm.*株幅/);assert.match(a.unconfirmed.join(' '),/ピンク.*写真/);assert.match(a.unconfirmed.join(' '),/開花月.*未確認/);assert.match(a.unconfirmed.join(' '),/水上.*丸/);assert.ok(!a.unconfirmed.some(n=>/4枚ずつ/.test(n)));assert.ok(searchCatalog(CATALOG,{query:q.label,color:'pink'}).some(([id])=>id==='p-81746a493156'));for(const color of['green','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-81746a493156'));
+ const q=CATALOG['p-81746a493156'],a=q.appearance;assert.equal(q.latin,"Rotala sp. 'Nanjenshan'");assert.deepEqual(q.height,[.05,.10]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['pink']);assert.equal(q.sourceChecked,'2026-11-13');assert.equal(a.shootProfile,'nanjenshanPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.flowerShape,'none');assert.match(a.unconfirmed.join(' '),/水底から茎.*葉先が水面より下/);assert.match(a.sourceConflict,/5〜10cm.*15cm/);assert.match(a.sourceConflict,/2003.*3〜5/);assert.match(a.sourceConflict,/9cm.*株幅/);assert.match(a.unconfirmed.join(' '),/ピンク.*写真/);assert.match(a.unconfirmed.join(' '),/開花月.*未確認/);assert.match(a.unconfirmed.join(' '),/水上.*丸/);assert.ok(!a.unconfirmed.some(n=>/4枚ずつ/.test(n)));assert.ok(searchCatalog(CATALOG,{query:q.label,color:'pink'}).some(([id])=>id==='p-81746a493156'));for(const color of['green','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-81746a493156'));
 });
 test('nanjenshan reference fits twenty four independent inputs with connected narrow whorls',()=>{
  const dimensions=[[.20,.30,.18],[.01,.10,.005],[.20,.30,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,leafJoins=0,stemJoins=0,branchJoins=0;
@@ -24361,7 +24361,7 @@ test('indica accepts existing saved gardens without changing independent dimensi
 });
 
 test('rotalaFlower separates dense submerged leaf tips from true flowers and unknown stock measurements',()=>{
- const q=CATALOG['p-294dab124a2a'],a=q.appearance;assert.equal(q.latin,"Rotala sp. 'Flower'");assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'rotalaFlowerPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.flowerShape,'none');assert.match(a.sourceConflict,/2022.*10.*9/);assert.match(a.sourceConflict,/実際の花.*開花月.*未確認/);assert.match(a.unconfirmed.join(' '),/草丈.*株幅.*未確認/);assert.match(a.unconfirmed.join(' '),/フラワー.*花弁/);assert.match(a.unconfirmed.join(' '),/葉序.*未確認/);assert.ok(!a.unconfirmed.some(n=>/4枚ずつ|1344|12本/.test(n)));assert.ok(searchCatalog(CATALOG,{query:q.label,color:'unknown'}).some(([id])=>id==='p-294dab124a2a'));for(const color of['orange','pink'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-294dab124a2a'));assert.ok(!/rotalaFlowerPhotoReference|rotalaFlowerLeaf/.test(appearanceSummary(q)));
+ const q=CATALOG['p-294dab124a2a'],a=q.appearance;assert.equal(q.latin,"Rotala sp. 'Flower'");assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-13');assert.equal(a.shootProfile,'rotalaFlowerPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.flowerShape,'none');assert.match(a.unconfirmed.join(' '),/水底から茎.*葉先が水面より下/);assert.match(a.sourceConflict,/2022.*10.*9/);assert.match(a.sourceConflict,/実際の花.*開花月.*未確認/);assert.match(a.unconfirmed.join(' '),/草丈.*株幅.*未確認/);assert.match(a.unconfirmed.join(' '),/フラワー.*花弁/);assert.match(a.unconfirmed.join(' '),/葉序.*未確認/);assert.ok(!a.unconfirmed.some(n=>/4枚ずつ|1344|12本/.test(n)));assert.ok(searchCatalog(CATALOG,{query:q.label,color:'unknown'}).some(([id])=>id==='p-294dab124a2a'));for(const color of['orange','pink'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-294dab124a2a'));assert.ok(!/rotalaFlowerPhotoReference|rotalaFlowerLeaf/.test(appearanceSummary(q)));
 });
 test('rotalaFlower reference fits twenty four independent inputs with connected narrow whorls',()=>{
  const dimensions=[[.20,.30,.18],[.01,.10,.005],[.20,.30,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,leafJoins=0,stemJoins=0,branchJoins=0;
@@ -24373,6 +24373,36 @@ test('rotalaFlower reference fits twenty four independent inputs with connected 
    for(let shoot=0;shoot<12;shoot++)for(let j=1;j<=14;j++){const main=shoot*14+j-1,at=point(stems,main,new Vector3(0,.5,0));if(j>1){assert.ok(point(stems,main,new Vector3(0,-.5,0)).distanceTo(point(stems,main-1,new Vector3(0,.5,0)))<2e-6);stemJoins++;}for(let side=0;side<4;side++){assert.ok(point(leaves,leaf++,new Vector3()).distanceTo(at)<2e-6);leafJoins++;}if(j!==5&&j!==9)continue;const start=shoot*14+(j===5?0:7);assert.ok(point(sides,start,new Vector3(0,-.5,0)).distanceTo(at)<2e-6);branchJoins++;for(let k=0;k<7;k++){if(k>0){assert.ok(point(sides,start+k,new Vector3(0,-.5,0)).distanceTo(point(sides,start+k-1,new Vector3(0,.5,0)))<2e-6);stemJoins++;}const at=point(sides,start+k,new Vector3(0,.5,0));for(let side=0;side<4;side++){assert.ok(point(leaves,leaf++,new Vector3()).distanceTo(at)<2e-6);leafJoins++;}}}assert.equal(leaf,1344);
   }finally{dispose(g);}
  }assert.equal(models,24);console.log('ROTALA_FLOWER1023_BOUNDARIES '+JSON.stringify({models,vertices,leafJoins,stemJoins,branchJoins}));
+});
+test('nanjenshan and rotalaFlower stems rise from the pond bed and stay below the surface',()=>{
+ const matrix=new Matrix4(),vertex=new Vector3();
+ for(const [id,stem] of [['p-81746a493156','stem-nanjenshan-photo-ref'],['p-294dab124a2a','stem-rotala-sp-photo-ref']]){
+  const p={...makePlant(id,108910,3,3),height:.20,spread:.30,leafHeight:.15},saved=structuredClone(p);
+  for(const [depth,month] of [[.001,7],[.007,7],[.14,1],[.30,7]]){
+   const group=plantModel(p,{year:0,month,reference:false,waterDepth:depth});
+   try{
+    const stems=group.children.find(mesh=>mesh.userData.component===stem);
+    assert.equal(stems.count,168);
+    for(let shoot=0;shoot<12;shoot++){
+     stems.getMatrixAt(shoot*14,matrix);
+     const rootY=vertex.set(0,-.5,0).applyMatrix4(matrix).y+PLANT_BASE_Y;
+     assert.ok(rootY>0&&rootY<=.001501);
+    }
+    for(const mesh of group.children){
+     const positions=mesh.geometry.attributes.position;
+     for(let i=0;i<mesh.count;i++){
+      mesh.getMatrixAt(i,matrix);
+      for(let j=0;j<positions.count;j++){
+       const y=vertex.fromBufferAttribute(positions,j).applyMatrix4(matrix).y+PLANT_BASE_Y;
+       assert.ok(y>=-1e-6&&y<=depth+POND_SURFACE_Y,JSON.stringify({id,depth,y}));
+      }
+     }
+    }
+    assert.equal(flowerInspectionView(group,.8,40),null);
+    assert.deepEqual(p,saved);
+   }finally{dispose(group);}
+  }
+ }
 });
 test('rotalaFlower foliage focus frames six summer and protected winter inputs',()=>{
  let models=0,framedPoses=0;for(const dims of[[.20,.30,.18],[.01,.10,.005],[.20,.30,.005]])for(const month of[7,1]){

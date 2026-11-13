@@ -9787,7 +9787,7 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "bloomBasis": "月別の資料未確認",
   "source": "https://www.aqua-breath.com/single-post/pot%E6%B0%B4%E8%8D%89%E3%82%AA%E3%82%B9%E3%82%B9%E3%83%A1%E3%81%A7%E3%81%99%EF%BC%81",
   "publisher": "AQUARIUM SHOP Breath",
-  "sourceChecked": "2026-11-01",
+  "sourceChecked": "2026-11-13",
   "aliases": [
     "ロタラ・SP・フラワー"
   ],
@@ -9858,7 +9858,7 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "bloomBasis": "国内の開花月は未確認です。生産者写真でピンクの花は確認しましたが、撮影月や画像URLの日付から開花月を設定していません。",
   "source": "https://www.akb.jp/c/suisei/gd3357",
   "publisher": "杜若園芸",
-  "sourceChecked": "2026-11-01",
+  "sourceChecked": "2026-11-13",
   "aliases": [
     "ロタラナンセアン"
   ],

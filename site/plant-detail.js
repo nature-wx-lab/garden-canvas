@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1088';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1089';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1088';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength} from './model.js?v=0.9.1088';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1089';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength} from './model.js?v=0.9.1089';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -30680,14 +30680,15 @@ function nanjenshanPhotoSegment(b,a,z,r,color,kind){
 }
 function drawNanjenshanPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.005,w*.0015,LH*.018),L=Math.min(.020,w*.065,LH*.20),W=L*.06,stem=info.appearance.stemColor,leafKind='leaf-nanjenshan-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
+ const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,wet?(s.waterDepth+POND_SURFACE_Y)*.90:Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.005,w*.0015,LH*.018),L=Math.min(.020,w*.065,LH*.20),W=L*.06,stem=info.appearance.stemColor,leafKind='leaf-nanjenshan-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
  function whorl(at,turn){for(let side=0;side<4;side++)b.add('nanjenshan-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,Math.min(L,LH*.40),Math.acos(Math.min(.15,LH*.02/L)),turn+side*TAU/4,0);}
  for(let shoot=0;shoot<12;shoot++){
-  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,base,Math.cos(az)*R],peak=LH*(.78+.025*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),base+(peak-base)*t,root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
+  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,bed+base,Math.cos(az)*R],peak=LH*(.78+.025*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),bed+base+(peak-base)*t,root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
   for(let j=1;j<=14;j++){
    const t=j/14,at=path(t);nanjenshanPhotoSegment(b,previous,at,r,stem,'stem-nanjenshan-photo-ref');previous=at;whorl(at,az+j*.62);
    if(j!==5&&j!==9)continue;
-   const turn=az+(j===5?-.90:.95),top=LH*(j===5?.69:.83),reach=w*.070;let prev=at;
+   const turn=az+(j===5?-.90:.95),top=bed+LH*(j===5?.69:.83),reach=w*.070;let prev=at;
    for(let k=1;k<=7;k++){
     const u=k/7,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];nanjenshanPhotoSegment(b,prev,tip,r*.70,stem,'side-stem-nanjenshan-photo-ref');prev=tip;whorl(tip,turn+k*.62);
    }
@@ -31207,14 +31208,15 @@ function rotalaFlowerPhotoSegment(b,a,z,r,color,kind){
 }
 function drawRotalaFlowerPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.005,w*.0015,LH*.018),L=Math.min(.014,w*.060,LH*.18),W=L*.22,stem=info.appearance.stemColor,leafKind='leaf-rotala-sp-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
+ const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,wet?(s.waterDepth+POND_SURFACE_Y)*.90:Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.005,w*.0015,LH*.018),L=Math.min(.014,w*.060,LH*.18),W=L*.22,stem=info.appearance.stemColor,leafKind='leaf-rotala-sp-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
  function whorl(at,turn,t){const color=new THREE.Color(s.leafColor).lerp(new THREE.Color('#bc997a'),Math.pow(t,3)*.72).getStyle();for(let side=0;side<4;side++)b.add('rotala-sp-photo-reference-leaf',leafKind,kit.shade(rand,color,.035),...at,W,L,Math.min(L,LH*.40),Math.acos(Math.min(.15,LH*.02/L)),turn+side*TAU/4,0);}
  for(let shoot=0;shoot<12;shoot++){
-  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,base,Math.cos(az)*R],peak=LH*(.78+.025*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),base+(peak-base)*(1-Math.pow(1-t,1.55)),root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
+  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,bed+base,Math.cos(az)*R],peak=LH*(.78+.025*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),bed+base+(peak-base)*(1-Math.pow(1-t,1.55)),root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
   for(let j=1;j<=14;j++){
    const t=j/14,at=path(t);rotalaFlowerPhotoSegment(b,previous,at,r,stem,'stem-rotala-sp-photo-ref');previous=at;whorl(at,az+j*.62,t);
    if(j!==5&&j!==9)continue;
-   const turn=az+(j===5?-.90:.95),top=LH*(j===5?.69:.83),reach=w*.070;let prev=at;
+   const turn=az+(j===5?-.90:.95),top=bed+LH*(j===5?.69:.83),reach=w*.070;let prev=at;
    for(let k=1;k<=7;k++){
     const u=k/7,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];rotalaFlowerPhotoSegment(b,prev,tip,r*.70,stem,'side-stem-rotala-sp-photo-ref');prev=tip;whorl(tip,turn+k*.62,u);
    }
