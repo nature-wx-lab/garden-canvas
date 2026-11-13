@@ -7610,10 +7610,17 @@ test('new leaf patterns and floral architectures produce finite geometry at both
   if(!representatives.has(key))representatives.set(key,id);
  }
  for(const [key,id] of representatives){
-  const info=CATALOG[id];for(const month of [1,info.appearance.flowerMonths?.[0]||info.bloom[0]||6]){
+  const info=CATALOG[id],flowerMonth=info.appearance.flowerMonths?.[0]||info.bloom[0]||6;
+  for(const month of new Set([1,flowerMonth])){
    const g=plantModel(makePlant(id,304,2,2),view(month),.35);
-   for(const m of g.children){if(m.isInstancedMesh){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),key);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),key);}}
-   dispose(g);
+   try{
+    for(const mesh of g.children){
+     if(!mesh.isInstancedMesh)continue;
+     const label=`${key} ${id} month ${month}`;
+     assert.ok(mesh.instanceMatrix.array.every(Number.isFinite),label);
+     assert.ok(mesh.geometry.attributes.position.array.every(Number.isFinite),label);
+    }
+   }finally{dispose(g);}
   }
  }
 });
