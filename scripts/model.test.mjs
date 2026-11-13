@@ -224,8 +224,21 @@ test('Eupatorieae microflower observation fits millimetre florets without changi
  }
 });
 
-test('saved macro cameras still reject too-close or underground viewpoints',()=>{
- for(const position of [[0,.4,.039],[0,.099,.1]]){const doc=fixture();doc.view.camera={position,target:[0,.4,0]};assert.throws(()=>validateDocument(doc));}
+test('saved macro cameras preserve renderable close views and reject invalid viewpoints',()=>{
+ const doc=fixture(),target=[-1,.4,1],camera=new PerspectiveCamera(40,.9,.01,650),controls=new OrbitControls(camera,null);
+ for(const distance of [.012,.0154,.04,.12]){
+  const pose={position:[-1,.4,1+distance],target};
+  doc.view.camera=pose;
+  assert.deepEqual(validateDocument(clone(doc)).view.camera,pose);
+  controls.minDistance=.12;
+  restoreCameraPose(camera,controls,pose);
+  assert.ok(camera.position.distanceTo(new Vector3(...pose.position))<1e-9);
+  assert.deepEqual(controls.target.toArray(),target);
+ }
+ for(const position of [[-1,.4,1],[-1,.4,1.0119],[-1,.099,1.1],[501,.4,1],[-1,NaN,1.1],Array(3)]){
+  doc.view.camera={position,target};
+  assert.throws(()=>validateDocument(doc));
+ }
 });
 
 test('Rheum minimum flowering years use planting age without inventing annual size growth or existing plant age',()=>{

@@ -1,10 +1,11 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y } from './model.js?v=0.9.1092';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1092';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1093';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1093';
 
 const BACKDROP_COLOR='#65755a';
-export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
+export {CAMERA_FLOOR};
+export const CAMERA_MAX_POLAR=Math.PI-.025;
 export function viewportIntersects(rect,width,height){
  return width>0&&height>0&&rect.width>0&&rect.height>0&&rect.right>0&&rect.bottom>0&&rect.left<width&&rect.top<height;
 }
@@ -370,7 +371,7 @@ export function flowerInspectionView(group,aspect=1,fov=40){
 export function restoreCameraPose(camera,controls,pose){
  if(!pose)return;
  camera.position.fromArray(pose.position);controls.target.fromArray(pose.target);
- controls.minDistance=Math.min(.12,Math.max(.04,camera.position.distanceTo(controls.target)));
+ controls.minDistance=Math.min(.12,Math.max(MIN_SAVED_CAMERA_DISTANCE,camera.position.distanceTo(controls.target)));
  controls.update();
 }
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
