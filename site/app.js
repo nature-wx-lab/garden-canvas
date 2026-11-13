@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1131';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1131';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1131';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1131';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1131';
-import { createScene } from './scene.js?v=0.9.1131';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1132';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1132';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1132';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1132';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1132';
+import { createScene } from './scene.js?v=0.9.1132';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -191,7 +191,8 @@ function setMode(value){if(preview&&value!=='orbit'){message('交換プレビュ
   mode=value;
   const drawing=isDrawing(value);
   $('outline-tools').hidden=!drawing;
-  for(const id of ['view-home','view-top','view-eye','focus','focus-flower'])$(id).disabled=drawing;
+  for(const id of ['view-home','view-top','view-eye','focus-flower'])$(id).disabled=drawing;
+  syncPlantFocusAvailability();
   engine?.editing(drawing);
   engine?.selecting(value==='orbit');
   $('orbit').setAttribute('aria-pressed',String(value==='orbit'));$('viewport').dataset.mode=value;
@@ -295,13 +296,19 @@ function syncSelection(){const p=plan();
   if(selected&&!p.plants.some(plant=>plant.id===selected))selected=null;
   syncPlantButtons($('specimen-nav'),p.plants.slice(0,16),plant=>{
     const info=plantInfo(plant.kind),tree=treeProfile(info);
-    return {label:info.label,title:tree?HABITS[tree.habit]:info.genre,selectPlant:()=>{select(plant.id);engine?.view('focus');}};
+    return {label:info.label,title:tree?HABITS[tree.habit]:info.genre,selectPlant:()=>{
+      select(plant.id);
+      const unavailable=plantFocusUnavailable(plant);
+      if(unavailable)message(unavailable);
+      else engine?.view('focus');
+    }};
   });
   syncPlantButtons($('plant-list'),p.plants,plant=>({
     label:`${plant.locked?'固定 · ':''}#${plant.id} ${plantInfo(plant.kind).label}`,
     selectPlant:()=>select(plant.id),
   }));
   syncSelected();
+  syncSpecimenTitles();
 }
 function sync(){
   const d=shown(),p=plan();
@@ -330,7 +337,26 @@ function syncView(){
   syncComparison();
   syncScene();
 }
+function plantFocusUnavailable(plant){
+  const state=stateAt(plant,shown().view);
+  return state.present?'':state.expired?'この株の生育期間は終了しました。':'この月はまだ植え付け前です。';
+}
+function syncPlantFocusAvailability(){
+  const plant=selectedPlant();
+  $('focus').disabled=isDrawing(mode)||!plant||!!plantFocusUnavailable(plant);
+}
+function syncSpecimenTitles(){
+  const plants=plan().plants;
+  for(const button of $('specimen-nav').querySelectorAll('[data-plant-id]')){
+    const specimen=plants.find(p=>String(p.id)===button.dataset.plantId);
+    if(!specimen)continue;
+    const info=plantInfo(specimen.kind),tree=treeProfile(info);
+    button.title=plantFocusUnavailable(specimen)||(tree?HABITS[tree.habit]:info.genre);
+  }
+}
 function syncPlantState(){
+  syncPlantFocusAvailability();
+  syncSpecimenTitles();
   const plant=selectedPlant();
   if(plant){
     const s=stateAt(plant,shown().view),limits=plantSizeLimits(plant.kind);
