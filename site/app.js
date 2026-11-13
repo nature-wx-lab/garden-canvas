@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1116';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1116';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1116';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1116';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1116';
-import { createScene } from './scene.js?v=0.9.1116';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1117';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1117';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1117';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1117';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1117';
+import { createScene } from './scene.js?v=0.9.1117';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -149,8 +149,12 @@ function syncCalendar(){
     const control=grid.children[m.month-1]??grid.appendChild(button('',()=>{calendarMonth=m.month;syncCalendar();}));
     control.replaceChildren(el('strong',`${m.month}月`),el('span',m.events.length?`${m.events.length}件 · ${time(m.min,m.max)}`:'予定未登録'));
     if(m.unknown)control.append(el('br'),el('span',`時間未入力 ${m.unknown}件`));
-    if(m.available!==null)control.append(el('br'),el('span',`使える ${round(m.available)}分${m.max>m.available?' · 超過':m.unknown?' · 判定未確定':''}`));
-    control.classList.toggle('over',m.available!==null&&m.max>m.available);
+    const over=m.available!==null&&m.max>m.available;
+    if(m.available!==null){
+      const estimate=m.min>m.available?' · 超過':over?' · 超過の可能性':m.unknown?' · 判定未確定':'';
+      control.append(el('br'),el('span',`使える ${round(m.available)}分${estimate}`));
+    }
+    control.classList.toggle('over',over);
     control.setAttribute('aria-pressed',String(m.month===selectedMonth));
   }
   const m=months[selectedMonth-1];$('month-tasks').replaceChildren(el('strong',`${selectedMonth}月の予定`),...m.events.map(t=>{const p=el('p',`#${t.plantId} ${plantInfo(t.kind).label}：${TASKS[t.type]} ×${t.count} ／ ${t.min===null?'時間未入力':time(t.min*t.count,t.max*t.count)}`);p.append(document.createTextNode(' '),button('植物を調整',()=>select(t.plantId)));return p;}));if(!m.events.length)$('month-tasks').append(el('p','植物を選び、「手入れ予定」から追加できます。','hint'));
