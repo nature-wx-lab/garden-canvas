@@ -23953,7 +23953,7 @@ test('Eleocharis parvula spikelet focus resolves three indexed glume surfaces wi
  }assert.equal(models,3);assert.equal(rays,6);console.log('SHORT_HAIRGRASS1014_CAMERAS '+JSON.stringify({models,rays}));
 });
 test('hairgrass preserves domestic general and conditional submerged height without inventing bloom or stock width',()=>{
- const q=CATALOG['p-c23d044f8453'],a=q.appearance;assert.equal(q.latin,'Eleocharis acicularis');assert.deepEqual(q.height,[.01,.20]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['green']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'hairgrassPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.flowerShape,'none');assert.match(a.sourceConflict,/1〜20cm.*15〜20cm/);assert.match(a.sourceConflict,/6\.5cm.*ポット/);assert.match(a.phenologyRegion,/温度を保った水中.*参考/);assert.match(a.unconfirmed.join(' '),/小穂.*国内.*開花月/);assert.match(a.unconfirmed.join(' '),/地下茎.*描/);assert.ok(!Object.hasOwn(a,'flowerMonths'));assert.ok(!Object.hasOwn(a,'dormantMonths'));assert.ok(!Object.hasOwn(a,'emergenceMonths'));assert.match(q.care,/稈.*葉鞘/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'green'}).some(([id])=>id==='p-c23d044f8453'));for(const color of['yellow','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-c23d044f8453'));
+ const q=CATALOG['p-c23d044f8453'],a=q.appearance;assert.equal(q.latin,'Eleocharis acicularis');assert.deepEqual(q.height,[.01,.20]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['green']);assert.equal(q.sourceChecked,'2026-11-13');assert.equal(a.shootProfile,'hairgrassPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.flowerShape,'none');assert.match(a.sourceConflict,/1〜20cm.*15〜20cm/);assert.match(a.sourceConflict,/6\.5cm.*ポット/);assert.match(a.phenologyRegion,/温度を保った水中.*参考/);assert.match(a.unconfirmed.join(' '),/小穂.*国内.*開花月/);assert.match(a.unconfirmed.join(' '),/水底に沿う細い地下茎で稈の基部をつなぎます/);assert.ok(!Object.hasOwn(a,'flowerMonths'));assert.ok(!Object.hasOwn(a,'dormantMonths'));assert.ok(!Object.hasOwn(a,'emergenceMonths'));assert.match(q.care,/稈.*葉鞘/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'green'}).some(([id])=>id==='p-c23d044f8453'));for(const color of['yellow','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-c23d044f8453'));
 });
 test('hairgrass independent height spread and foliage bounds retain connected culms',()=>{
  const dimensions=[[.20,.25,.16],[.01,.10,.005],[.20,.25,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,culmJoins=0,sheathJoins=0;
@@ -23964,6 +23964,31 @@ test('hairgrass independent height spread and foliage bounds retain connected cu
    assert.ok(lo>=-2e-6,JSON.stringify({dims,month,lo}));assert.ok(hi<=Math.min(dims[0],dims[2])+2e-6,JSON.stringify({dims,month,hi}));assert.ok(rad*2<=dims[1]+2e-6,JSON.stringify({dims,month,rad}));const point=(mesh,k,v)=>{const mat=new Matrix4();mesh.getMatrixAt(k,mat);return v.applyMatrix4(mat).applyMatrix4(mesh.matrixWorld);};for(let k=0;k<culms.count;k++)if(k%10){assert.ok(point(culms,k,new Vector3(0,-.5,0)).distanceTo(point(culms,k-1,new Vector3(0,.5,0)))<2e-6);culmJoins++;}for(let k=0;k<sheaths.count;k++){assert.ok(point(sheaths,k,new Vector3(0,-.5,0)).distanceTo(point(culms,k*10,new Vector3(0,-.5,0)))<2e-6);sheathJoins++;}
   }finally{dispose(g);}
  }assert.equal(models,24);console.log('HAIRGRASS1015_BOUNDARIES '+JSON.stringify({models,vertices,culmJoins,sheathJoins}));
+});
+test('hairgrass pond rhizomes connect neighboring culms immediately above the bed',()=>{
+ const p={...makePlant('p-c23d044f8453',108310,3,3),height:.18,spread:.30,leafHeight:.15};
+ const matrix=new Matrix4();
+ const point=(mesh,i,y)=>{mesh.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
+ for(const [depth,month] of [[0,7],[.007,7],[.13,1]]){
+  const group=plantModel(p,{year:0,month,reference:false,waterDepth:depth});
+  try{
+   const culms=group.children.find(m=>m.userData.component==='culm-hairgrass-photo-ref');
+   const rhizomes=group.children.find(m=>m.userData.component==='rhizome-hairgrass-photo-ref');
+   if(!depth){assert.equal(rhizomes,undefined);continue;}
+   const count=culms.count/10;
+   assert.equal(rhizomes.count,count-Math.ceil(count/10));
+   for(let i=0;i<rhizomes.count;i++){
+    const j=(Math.floor(i/9)*10+i%9)*10;
+    const start=point(rhizomes,i,-.5),end=point(rhizomes,i,.5);
+    assert.ok(start.distanceTo(point(culms,j,-.5))<2e-6);
+    assert.ok(end.distanceTo(point(culms,j+10,-.5))<2e-6);
+    assert.ok(start.y>-.012&&start.y<-.011&&Math.abs(end.y-start.y)<1e-6);
+   }
+   const isAboveWater=point(culms,9,.5).y+.012-depth>.006;
+   assert.equal(isAboveWater,depth===.007);
+   assert.equal(flowerInspectionView(group,.8,40),null);
+  }finally{dispose(group);}
+ }
 });
 test('hairgrass foliage inspection frames six summer and protected winter inputs',()=>{
  let models=0,framedPoses=0;for(const dims of[[.20,.25,.16],[.01,.10,.005],[.20,.25,.005]])for(const month of[7,1]){

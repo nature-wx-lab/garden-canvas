@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1082';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1083';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1082';
-import {PLANT_BASE_Y,POND_SURFACE_Y} from './model.js?v=0.9.1082';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1083';
+import {PLANT_BASE_Y,POND_SURFACE_Y} from './model.js?v=0.9.1083';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -30510,15 +30510,25 @@ function hairgrassPhotoSegment(b,a,z,r,color,component){
 }
 function drawHairgrassPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
+ const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
  const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00017,w*.0018,LH*.004),floor=r*1.6+Math.min(.00002,LH*.002),n=Math.max(1,Math.round(640*s.leafDensity));
+ let previousBase;
  for(let k=0;k<n;k++){
-  const az=k*2.399+rand()*.22,R=w*.34*Math.sqrt((k+.5)/n),root=[Math.sin(az)*R,floor,Math.cos(az)*R],tipHeight=Math.max(floor,LH*(.55+.40*rand())),bend=Math.min(w*.055,(tipHeight-floor)*(.13+.20*rand())),side=(rand()-.5)*Math.min(w*.018,(tipHeight-floor)*.08);let previous=root;
+  const az=k*2.399+rand()*.22,R=w*.34*Math.sqrt((k+.5)/n);
+  const row=Math.floor(k/10),turn=row*2.399,center=w*.30*Math.sqrt((row+.5)/Math.ceil(n/10));
+  const along=(k%10-4.5)*Math.min(.012,w*.015);
+  const root=wet
+   ?[Math.sin(turn)*center+Math.cos(turn)*along,bed+floor,Math.cos(turn)*center-Math.sin(turn)*along]
+   :[Math.sin(az)*R,floor,Math.cos(az)*R];
+  if(wet&&k%10)hairgrassPhotoSegment(b,previousBase,root,r*1.15,'#a69b79','rhizome-hairgrass-photo-ref');
+  previousBase=root;
+  const tipHeight=Math.max(floor,LH*(.55+.40*rand())),bend=Math.min(w*.055,(tipHeight-floor)*(.13+.20*rand())),side=(rand()-.5)*Math.min(w*.018,(tipHeight-floor)*.08);let previous=root;
   for(let node=0;node<10;node++){
-   const t=(node+1)/10,at=[root[0]+Math.sin(az)*bend*t*t+Math.cos(az)*side*Math.sin(Math.PI*t),floor+(tipHeight-floor)*t,root[2]+Math.cos(az)*bend*t*t-Math.sin(az)*side*Math.sin(Math.PI*t)];hairgrassPhotoSegment(b,previous,at,r*(1-.48*t),k%23===0?'#9ba36e':kit.shade(rand,s.leafColor,.035),'culm-hairgrass-photo-ref');previous=at;
+   const t=(node+1)/10,at=[root[0]+Math.sin(az)*bend*t*t+Math.cos(az)*side*Math.sin(Math.PI*t),bed+floor+(tipHeight-floor)*t,root[2]+Math.cos(az)*bend*t*t-Math.sin(az)*side*Math.sin(Math.PI*t)];hairgrassPhotoSegment(b,previous,at,r*(1-.48*t),k%23===0?'#9ba36e':kit.shade(rand,s.leafColor,.035),'culm-hairgrass-photo-ref');previous=at;
   }
-  const t=.075,at=[root[0]+Math.sin(az)*bend*t*t+Math.cos(az)*side*Math.sin(Math.PI*t),floor+(tipHeight-floor)*t,root[2]+Math.cos(az)*bend*t*t-Math.sin(az)*side*Math.sin(Math.PI*t)];hairgrassPhotoSegment(b,root,at,r*1.35,k%4===0?'#a18a71':'#b5ba94','sheath-hairgrass-photo-ref');
+  const t=.075,at=[root[0]+Math.sin(az)*bend*t*t+Math.cos(az)*side*Math.sin(Math.PI*t),bed+floor+(tipHeight-floor)*t,root[2]+Math.cos(az)*bend*t*t-Math.sin(az)*side*Math.sin(Math.PI*t)];hairgrassPhotoSegment(b,root,at,r*1.35,k%4===0?'#a18a71':'#b5ba94','sheath-hairgrass-photo-ref');
  }
- // Domestic flowering months and underground geometry are unverified; no spikelets, flowers or rhizomes are drawn.
+ // Shallow beds can have emergent culms. The reference omits undocumented local flowering.
 }
 
 // Lilaeopsis novae-zelandiae: retail phyllode photos and separately named species flower reference.
