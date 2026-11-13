@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1135';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1135';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1136';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1136';
 
 const BACKDROP_COLOR='#65755a';
 export {CAMERA_FLOOR};
@@ -398,7 +398,14 @@ export function restoreCameraPose(camera,controls,pose){
  controls.update();
 }
 const sceneMaterials=new Map(),up=new THREE.Vector3(0,1,0);
-function mat(color){if(!sceneMaterials.has(color))sceneMaterials.set(color,new THREE.MeshStandardMaterial({color,roughness:.92}));return sceneMaterials.get(color);}
+function mat(color){
+  if(!sceneMaterials.has(color)){
+    const material=new THREE.MeshStandardMaterial({color,roughness:.92});
+    sceneMaterials.set(color,material);
+    sharedMaterials.add(material);
+  }
+  return sceneMaterials.get(color);
+}
 const sphere=new THREE.SphereGeometry(1,8,6),box=new THREE.BoxGeometry(1,1,1);sharedGeometry.add(sphere);sharedGeometry.add(box);
 function grainTexture(type){
   const size=256,data=new Uint8Array(size*size*4),rand=random(type==='grass'?421:718);
@@ -501,7 +508,16 @@ export function createScene(container,onPick){
   document.addEventListener('visibilitychange',()=>{lastTick=0;dirty=true;});
   reduced.addEventListener('change',e=>{if(e.matches){setWind(0);container.dispatchEvent(new CustomEvent('wind-reduced'));}});
   controls.addEventListener('change',()=>{keepCameraAboveGround(camera,controls.target);fitShadow();dirty=true;});
-  function dispose(group){if(!group)return;group.traverse(o=>{if(o.geometry&&!sharedGeometry.has(o.geometry))o.geometry.dispose();if(o.isInstancedMesh)o.dispose();if(o.material&&!sharedMaterials.has(o.material)&&!pondMaterials.has(o.material)&&!Array.from(sceneMaterials.values()).includes(o.material))o.material.dispose();});group.removeFromParent();}
+  function dispose(group){
+    if(!group)return;
+    group.traverse(object=>{
+      if(object.geometry&&!sharedGeometry.has(object.geometry))object.geometry.dispose();
+      if(object.isInstancedMesh)object.dispose();
+      const material=object.material;
+      if(material&&!sharedMaterials.has(material)&&!pondMaterials.has(material))material.dispose();
+    });
+    group.removeFromParent();
+  }
   function line(points,color,group=root,opacity=1){const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color,transparent:opacity<1,opacity}));group.add(l);return l;}
   function pondClip(base,mode='ground',owner=-1){
     if(!pondCode)return base;
