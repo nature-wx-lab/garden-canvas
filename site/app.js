@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1128';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1128';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1128';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1128';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1128';
-import { createScene } from './scene.js?v=0.9.1128';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1129';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1129';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1129';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1129';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1129';
+import { createScene } from './scene.js?v=0.9.1129';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -348,7 +348,17 @@ function syncFlowerControl(){
   $('focus-flower').hidden=!engine?.hasFlower();
 }
 function previewReplacement(kind){const p=selectedPlant();if(!p){message('先に交換したい植物を選んでください。');return;}try{if(preview)throw new Error('まず現在のプレビューを採用するか、元に戻ってください。');if(p.kind===kind)throw new Error('交換先に別の植物を選んでください。');const next=clone(doc),target=currentPlan(next);target.plants[target.plants.findIndex(v=>v.id===p.id)]=replacePlant(p,kind);preview=validateDocument(next);resetMode();const before=budget(currentPlan(doc)),after=budget(target);$('preview-title').textContent=`${plantInfo(p.kind).label} → ${plantInfo(kind).label}`;$('preview-diff').textContent=`同じ位置・植える日で比較。入力済み購入費差 ${yen(after.total-before.total)}、価格未入力 ${after.unknown}株。旧植物の手入れ予定は引き継ぎません。`;sync();message('交換をプレビューしています。採用するまで元の案は変更されません。');}catch(e){preview=null;message(e.message);}}
-function startDrawing(value){if(preview)return;resetMode();setMode(value);updateDraft();engine?.view('top');message(value==='circle'?'中心と円周の2点をクリックしてください。':'真上の庭で角を順にクリックし、「形を確定」を押します。');}
+function startDrawing(value){
+  if(preview)return;
+  resetMode();
+  setMode(value);
+  updateDraft();
+  engine?.view('top');
+  $('outline-tools').scrollIntoView({block:'nearest'});
+  $('viewport').scrollIntoView({block:'nearest'});
+  $('viewport').focus({preventScroll:true});
+  message(value==='circle'?'中心と円周の2点をクリックしてください。':'真上の庭で角を順にクリックし、「形を確定」を押します。');
+}
 function updateDraft(){engine?.drawDraft(draft);const lengths=draft.slice(1).map((p,i)=>Math.hypot(p[0]-draft[i][0],p[1]-draft[i][1]).toFixed(1));$('outline-count').textContent=`${draft.length}点${lengths.length?' · 辺 '+lengths.join(' / ')+'m':''}`;}
 function checkBoundary(p,points){if(p.plants.some(p=>!inside(p.x,p.z,points))||p.zones.some(z=>!contained(z.points,points))||p.obstacles.some(o=>!contained(obstaclePoints(o),points)))throw new Error('新しい外周から植物・花壇・外構がはみ出します。先に移すか取り除いてください。');}
 function finishDrawing(){const type=mode;if(!isDrawing(type))return;let points=clone(draft);if(type==='circle'){if(points.length!==2){message('円は中心と円周の2点を選んでください。');return;}points=circleZonePoints(...points);}const garden=plan();if(!validOutline(points,garden.width,garden.depth,type==='outline'?1:.04)){message('庭の寸法内で交差しない形を囲んでください。外周は1m²以上、区画は0.04m²以上です。');return;}mutate(p=>{if(type==='outline'){checkBoundary(p,points);p.outline=points;}else{if(p.zones.length>=12)throw new Error('花壇と水面は合わせて12区画までです。');p.zones.push({points,kind:$('zone-kind').value,...($('zone-kind').value==='water'?{depth:.3}:{})});}},type==='outline'?'庭の輪郭を変更しました。':'区画を追加しました。');}
