@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1178';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1178';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1178';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1178';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1178';
-import { createScene } from './scene.js?v=0.9.1178';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1179';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1179';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1179';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1179';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1179';
+import { createScene } from './scene.js?v=0.9.1179';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -160,7 +160,7 @@ function restoreEdit(from,to){
   doc=document;
   resetMode();
   if(!refreshGarden)syncGardenZones();
-  sync({refreshGarden});
+  sync({refreshGarden,refreshSelection:refreshGarden});
   if(scope==='view'){
     if(doc.view.camera)engine?.restore(doc.view.camera);
     else engine?.view('home');
@@ -185,7 +185,8 @@ function mutate(fn,text,afterCommit,scope){
   doc=checked;
   resetMode();
   afterCommit?.();
-  sync({refreshGarden:scope!=='zones'});
+  const zoneEdit=scope==='zones';
+  sync({refreshGarden:!zoneEdit,refreshSelection:!zoneEdit});
   message(text);
   return true;
 }
@@ -452,7 +453,7 @@ function syncSelection(){const p=plan();
   syncSelected();
   syncSpecimenTitles();
 }
-function sync({refreshGarden=true}={}){
+function sync({refreshGarden=true,refreshSelection=true}={}){
   const d=shown(),p=plan();
   $('plan-a').setAttribute('aria-pressed',String(d.active==='A'));$('plan-b').setAttribute('aria-pressed',String(d.active==='B'));$('plan-b').disabled=!d.plans.B||!!preview;$('plan-a').disabled=!!preview;$('duplicate-plan').disabled=!!preview||!!doc.plans.B;$('undo').disabled=!history.length||!!preview;$('redo').disabled=!future.length||!!preview;
   $('count').textContent=`${p.plants.length}株`;$('area').textContent=`${area(p.outline).toFixed(1)}m² · ${p.plants.length}株`;
@@ -461,7 +462,7 @@ function sync({refreshGarden=true}={}){
   $('prep').disabled=!!preview;
   for(const input of $('hours-inputs').querySelectorAll('input'))input.disabled=!!preview;
   $('preview-bar').hidden=!preview;
-  syncSelection();
+  if(refreshSelection)syncSelection();
   if(refreshGarden)syncGarden();
   syncBudget();
   syncView();
