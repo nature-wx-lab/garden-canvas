@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1118';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1118';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1119';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1119';
 
 const BACKDROP_COLOR='#65755a';
 export {CAMERA_FLOOR};
@@ -459,7 +459,7 @@ export function createScene(container,onPick){
   const pondClips=new Map();
   const pondMaterials=new Set();
   let pondCode='';
-  let dirty=true,root=null,plants=null,draft=null,plan=null,view=null,selection=null,visible=true,windLevel=1,frameCount=0,lastDraw=0,lastTick=0,elapsed=0,lastVisibilityCheck=-Infinity;
+  let dirty=true,root=null,plants=null,selectionOutline=null,draft=null,plan=null,view=null,selection=null,visible=true,windLevel=1,frameCount=0,lastDraw=0,lastTick=0,elapsed=0,lastVisibilityCheck=-Infinity;
   const textureStatus=document.createElement('div');textureStatus.className='texture-status';textureStatus.textContent='芝と土の質感を読み込み中…';textureStatus.setAttribute('role','status');container.append(textureStatus);
   let texturesLoaded=0,textureFailed=false;container.dataset.textures='loading';
   const loader=new THREE.TextureLoader();
@@ -481,7 +481,7 @@ export function createScene(container,onPick){
   document.addEventListener('visibilitychange',()=>{lastTick=0;dirty=true;});
   reduced.addEventListener('change',e=>{if(e.matches){setWind(0);container.dispatchEvent(new CustomEvent('wind-reduced'));}});
   controls.addEventListener('change',()=>{keepCameraAboveGround(camera,controls.target);fitShadow();dirty=true;});
-  function dispose(group){if(!group)return;group.traverse(o=>{if(o.geometry&&!sharedGeometry.has(o.geometry))o.geometry.dispose();if(o.isInstancedMesh)o.dispose();if(o.material&&!sharedMaterials.has(o.material)&&!pondMaterials.has(o.material)&&!Array.from(sceneMaterials.values()).includes(o.material))o.material.dispose();});scene.remove(group);}
+  function dispose(group){if(!group)return;group.traverse(o=>{if(o.geometry&&!sharedGeometry.has(o.geometry))o.geometry.dispose();if(o.isInstancedMesh)o.dispose();if(o.material&&!sharedMaterials.has(o.material)&&!pondMaterials.has(o.material)&&!Array.from(sceneMaterials.values()).includes(o.material))o.material.dispose();});group.removeFromParent();}
   function line(points,color,group=root,opacity=1){const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color,transparent:opacity<1,opacity}));group.add(l);return l;}
   function pondClip(base,mode='ground',owner=-1){
     if(!pondCode)return base;
@@ -509,7 +509,35 @@ export function createScene(container,onPick){
     cache.set(key,m);pondMaterials.add(m);return m;
   }
   function polygon(points,y,material){const shape=new THREE.Shape(points.map(([x,z])=>new THREE.Vector2(x-plan.width/2,-z+plan.depth/2)));const m=new THREE.Mesh(new THREE.ShapeGeometry(shape),material);m.rotation.x=-Math.PI/2;m.position.y=y;m.receiveShadow=true;root.add(m);return shape;}
-  function circle(x,z,r,color,y=.04){line(Array.from({length:65},(_,i)=>{const a=i*Math.PI/32;return new THREE.Vector3(x-plan.width/2+Math.cos(a)*r,y,z-plan.depth/2+Math.sin(a)*r);}),color);}
+  function circle(x,z,r,color,y=.04,group=root){
+    line(Array.from({length:65},(_,i)=>{
+      const a=i*Math.PI/32;
+      return new THREE.Vector3(x-plan.width/2+Math.cos(a)*r,y,z-plan.depth/2+Math.sin(a)*r);
+    }),color,group);
+  }
+  function selectPlant(id){
+    selection=id;
+    dispose(selectionOutline);
+    selectionOutline=null;
+    const p=plan.plants.find(plant=>plant.id===id);
+    const group=plants.children.find(plant=>plant.userData.plantId===id);
+    controls.minDistance=Math.min(.12,flowerInspectionDistanceFloor(group));
+    if(p&&group){
+      const state=stateAt(p,view);
+      selectionOutline=new THREE.Group();
+      root.add(selectionOutline);
+      circle(p.x,p.z,state.spread/2+.06,'#d2b05f',.018,selectionOutline);
+      if(p.management){
+        const low=isRaouliaMat(p.kind),base=low?plantBaseAt(plan,p):0;
+        circle(p.x,p.z,p.management.spread/2,'#7bacad',base+p.management.height,selectionOutline);
+        for(const a of [0,Math.PI]){
+          const x=p.x-plan.width/2+Math.cos(a)*p.management.spread/2,z=p.z-plan.depth/2;
+          line([new THREE.Vector3(x,low?base:.04,z),new THREE.Vector3(x,base+p.management.height,z)],'#7bacad',selectionOutline);
+        }
+      }
+    }
+    dirty=true;
+  }
   function solid(color,x,y,z,sx,sy,sz){const m=new THREE.Mesh(box,mat(color));m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;root.add(m);return m;}
   function groundDetail(){
     const rand=random(923),group=new THREE.Group(),lawn=batch(group,.08,.1,.3),mulch=new THREE.Group(),pebbleGeometry=new THREE.IcosahedronGeometry(1,0),matrices=[],colors=[];
@@ -530,7 +558,7 @@ export function createScene(container,onPick){
     if(matrices.length){const chips=new THREE.InstancedMesh(pebbleGeometry,mat('#ffffff'),matrices.length);matrices.forEach((m,i)=>{chips.setMatrixAt(i,m);chips.setColorAt(i,colors[i]);});chips.receiveShadow=true;mulch.add(chips);root.add(mulch);}else pebbleGeometry.dispose();
   }
   function render(next,nextView,id){
-    plan=next;view=nextView;selection=id;dispose(root);
+    plan=next;view=nextView;dispose(root);selectionOutline=null;
     const wallDepth=Math.max(0,...plan.zones.map(zone=>zone.kind==='water'?(zone.depth??0):0));
     const code=wallDepth>0?pondMaskCode(plan):'';
     if(code!==pondCode){
@@ -559,9 +587,9 @@ export function createScene(container,onPick){
     const detail=Math.min(1,Math.sqrt(18/Math.max(1,plan.plants.length)));
     for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;const depth=pondDepthAt(plan,p.x,p.z),g=plantModel(p,{...view,waterDepth:depth},detail);g.position.set(p.x-plan.width/2,plantBaseAt(plan,p),p.z-plan.depth/2);plants.add(g);
       const contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.rotation.x=-Math.PI/2;contact.position.set(g.position.x,isRaouliaMat(p.kind)?g.position.y-.0006:.012,g.position.z);contact.scale.set(s.spread*.95,s.spread*.95,1);if(zoneAt(plan,p.x,p.z)?.kind!=='water')root.add(contact);
-      if(view.footprints)circle(p.x,p.z,s.spread/2,'#9bb9b1');if(p.id===id){circle(p.x,p.z,s.spread/2+.06,'#d2b05f',.018);if(p.management){const low=isRaouliaMat(p.kind),base=low?plantBaseAt(plan,p):0;circle(p.x,p.z,p.management.spread/2,'#7bacad',base+p.management.height);for(const a of [0,Math.PI]){const x=p.x-plan.width/2+Math.cos(a)*p.management.spread/2,z=p.z-plan.depth/2;line([new THREE.Vector3(x,low?base:.04,z),new THREE.Vector3(x,base+p.management.height,z)],'#7bacad');}}}
+      if(view.footprints)circle(p.x,p.z,s.spread/2,'#9bb9b1');
     }
-    controls.minDistance=Math.min(.12,flowerInspectionDistanceFloor(plants.children.find(g=>g.userData.plantId===selection)));
+    selectPlant(id);
     tallest=Math.max(1,...plan.plants.map(p=>stateAt(p,view).height),...plan.obstacles.map(o=>o.height));fitShadow();
     container.dataset.plantCount=String(plants.children.length);dirty=true;
   }
@@ -618,5 +646,5 @@ export function createScene(container,onPick){
     const waterDepth=pondDepthAt(plan,p.x,p.z);
     return inspectionSeasonActive(p,{...view,waterDepth})?flowerInspectionView(group,camera.aspect,camera.fov):null;
   }
-  return {render,hasFlower:()=>!!selectedFlowerPose(plants?.children.find(g=>g.userData.plantId===selection)),wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(controls.minDistance,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{restoreCameraPose(camera,controls,c);dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
+  return {render,select:selectPlant,hasFlower:()=>!!selectedFlowerPose(plants?.children.find(g=>g.userData.plantId===selection)),wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(controls.minDistance,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{restoreCameraPose(camera,controls,c);dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
 }

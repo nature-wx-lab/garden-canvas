@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1118';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1118';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1118';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1118';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1118';
-import { createScene } from './scene.js?v=0.9.1118';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1119';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1119';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1119';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1119';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1119';
+import { createScene } from './scene.js?v=0.9.1119';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -115,7 +115,7 @@ function setMode(value){if(preview&&value!=='orbit'){message('交換プレビュ
   $('view-status').textContent=statuses[value];for(const b of $('catalog').children)b.setAttribute('aria-pressed',String(value==='add'&&b.dataset.kind===addKind));
 }
 function resetMode(){setMode('orbit');}
-function select(id){selected=id;setMode('orbit');editor('plant-panel');syncSelection();syncPlantState();syncScene();if(selectedPlant())message(`${plantInfo(selectedPlant().kind).label}を選びました。`);}
+function select(id){selected=id;setMode('orbit');editor('plant-panel');syncSelection();syncPlantState();syncSceneSelection();if(selectedPlant())message(`${plantInfo(selectedPlant().kind).label}を選びました。`);}
 function metrics(target,items){$(target).replaceChildren(...items.map(([value,label])=>{const d=el('div',undefined,'metric');d.append(el('strong',value),el('span',label));return d;}));}
 function table(headers,rows){const t=el('table'),head=el('thead'),tr=el('tr');headers.forEach(h=>tr.append(el('th',h)));head.append(tr);const body=el('tbody');rows.forEach(row=>{const r=el('tr');row.forEach(c=>r.append(el('td',c)));body.append(r);});t.append(head,body);return t;}
 function itemRow(text,remove){const row=el('div',undefined,'item-row');row.append(el('span',text),button('削除',remove));return row;}
@@ -226,6 +226,13 @@ function syncPlantState(){
 }
 function syncScene(){
   engine?.render(plan(),shown().view,selected);
+  syncFlowerControl();
+}
+function syncSceneSelection(){
+  engine?.select(selected);
+  syncFlowerControl();
+}
+function syncFlowerControl(){
   $('focus-flower').hidden=!engine?.hasFlower();
 }
 function previewReplacement(kind){const p=selectedPlant();if(!p){message('先に交換したい植物を選んでください。');return;}try{if(preview)throw new Error('まず現在のプレビューを採用するか、元に戻ってください。');if(p.kind===kind)throw new Error('交換先に別の植物を選んでください。');const next=clone(doc),target=currentPlan(next);target.plants[target.plants.findIndex(v=>v.id===p.id)]=replacePlant(p,kind);preview=validateDocument(next);resetMode();const before=budget(currentPlan(doc)),after=budget(target);$('preview-title').textContent=`${plantInfo(p.kind).label} → ${plantInfo(kind).label}`;$('preview-diff').textContent=`同じ位置・植える日で比較。入力済み購入費差 ${yen(after.total-before.total)}、価格未入力 ${after.unknown}株。旧植物の手入れ予定は引き継ぎません。`;sync();message('交換をプレビューしています。採用するまで元の案は変更されません。');}catch(e){preview=null;message(e.message);}}
@@ -235,7 +242,7 @@ function checkBoundary(p,points){if(p.plants.some(p=>!inside(p.x,p.z,points))||p
 function finishDrawing(){const type=mode;if(!isDrawing(type))return;let points=clone(draft);if(type==='circle'){if(points.length!==2){message('円は中心と円周の2点を選んでください。');return;}points=circleZonePoints(...points);}const garden=plan();if(!validOutline(points,garden.width,garden.depth,type==='outline'?1:.04)){message('庭の寸法内で交差しない形を囲んでください。外周は1m²以上、区画は0.04m²以上です。');return;}mutate(p=>{if(type==='outline'){checkBoundary(p,points);p.outline=points;}else{if(p.zones.length>=12)throw new Error('花壇と水面は合わせて12区画までです。');p.zones.push({points,kind:$('zone-kind').value,...($('zone-kind').value==='water'?{depth:.3}:{})});}},type==='outline'?'庭の輪郭を変更しました。':'区画を追加しました。');}
 function pick(point){if(preview){if(point.id)select(point.id);return;}if(isDrawing(mode)){if(point.x<0||point.z<0||point.x>plan().width||point.z>plan().depth){message('庭の幅・奥行きの範囲内を選んでください。');return;}if(draft.length>=(mode==='circle'?2:32)){message('「形を確定」を押してください。');return;}draft.push([point.x,point.z]);updateDraft();return;}
   if(['add','move','clone'].includes(mode)){if(!canPlant(plan(),point.x,point.z)){message('庭の輪郭の内側で、建物・通路・塀のない場所を選んでください。');return;}const action=mode;if(action==='move'){withPlant(p=>{p.x=point.x;p.z=point.z;},'植物を移動しました。');}else{let created;const source=copyPlant;const ok=mutate(p=>{if(p.plants.length>=100)throw new Error('1案につき100株までです。');created=nextId(p.plants);p.plants.push(action==='clone'?{...clone(source),id:created,x:point.x,z:point.z,locked:false}:makePlant(addKind,created,point.x,point.z));},action==='clone'?'同じ設定で植物を複製しました。':'植物を配置しました。初期サイズと植える日を調整できます。');if(ok){selected=created;if(action==='add')setMode('add');sync();}}return;}
-  if(point.id)select(point.id);else{selected=null;syncSelection();syncScene();}
+  if(point.id)select(point.id);else{selected=null;syncSelection();syncSceneSelection();}
 }
 function bind(){
   for(const b of document.querySelectorAll('[data-editor]'))b.addEventListener('click',()=>editor(b.dataset.editor));for(const b of document.querySelectorAll('[data-insight]'))b.addEventListener('click',()=>insight(b.dataset.insight));
