@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1156';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1156';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1157';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1157';
 
 const BACKDROP_COLOR='#65755a';
 export {CAMERA_FLOOR};
@@ -544,7 +544,7 @@ export function createScene(container,onPick){
     m.customProgramCacheKey=()=>mode+code;
     cache.set(key,m);pondMaterials.add(m);return m;
   }
-  function polygon(points,y,material){const shape=new THREE.Shape(points.map(([x,z])=>new THREE.Vector2(x-plan.width/2,-z+plan.depth/2)));const m=new THREE.Mesh(new THREE.ShapeGeometry(shape),material);m.rotation.x=-Math.PI/2;m.position.y=y;m.receiveShadow=true;root.add(m);return shape;}
+  function polygon(points,y,material,group){const shape=new THREE.Shape(points.map(([x,z])=>new THREE.Vector2(x-plan.width/2,-z+plan.depth/2)));const m=new THREE.Mesh(new THREE.ShapeGeometry(shape),material);m.rotation.x=-Math.PI/2;m.position.y=y;m.receiveShadow=true;group.add(m);return shape;}
   function circle(x,z,r,color,y=.04,group=root){
     line(Array.from({length:65},(_,i)=>{
       const a=i*Math.PI/32;
@@ -578,6 +578,7 @@ export function createScene(container,onPick){
   }
   function solid(color,x,y,z,sx,sy,sz){const m=new THREE.Mesh(box,mat(color));m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;root.add(m);return m;}
   let groundGroup=null,groundKey=null;
+  let gardenSurfaces=null,surfaceKey=null;
   function groundDetail(){
     const lowMats=plan.plants.filter(p=>isRaouliaMat(p.kind)).map(p=>({p,s:plantStates.get(p.id)})).filter(({s})=>s.present&&!s.groundDormant);
     const key=JSON.stringify([plan.width,plan.depth,plan.outline,
@@ -633,32 +634,13 @@ export function createScene(container,onPick){
   }
   function render(next,nextView,id){
     groundGroup?.removeFromParent();
+    gardenSurfaces?.removeFromParent();
     plan=next;view=nextView;dispose(root);selectionOutline=null;footprintOverlay=null;
     plantStates=new Map(plan.plants.map(plant=>[plant.id,stateAt(plant,view)]));
-    const wallDepth=Math.max(0,...plan.zones.map(zone=>zone.kind==='water'?(zone.depth??0):0));
-    const code=wallDepth>0?pondMaskCode(plan):'';
-    if(code!==pondCode){
-      for(const material of pondMaterials)material.dispose();
-      pondMaterials.clear();pondClips.clear();pondCode=code;
-    }
     root=new THREE.Group();plants=new THREE.Group();root.add(plants);scene.add(root);
-    // A fixed-height backdrop can coincide with the floor of a 19 cm pond.
-    backdrop.material=pondClip(mat(BACKDROP_COLOR),'backdrop');const shape=polygon(plan.outline,0,pondClip(turf));const earth=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false}),pondClip(mat('#807357')));earth.customDepthMaterial=pondClip(pondShadow);earth.rotation.x=-Math.PI/2;earth.position.y=-.186;earth.castShadow=true;earth.receiveShadow=true;root.add(earth);
-    for(const [i,z] of plan.zones.entries()){
-      const wet=z.kind==='water'&&z.depth>0;
-      const surface=wet?deepWater:z.kind==='water'?water:soil;
-      if(wet)polygon(z.points,-z.depth,pondClip(silt,'owner',i));
-      if(wallDepth>0){const positions=[];for(let j=0;j<z.points.length;j++){const [ax,az]=z.points[j],[bx,bz]=z.points[(j+1)%z.points.length],a=[ax-plan.width/2,0,az-plan.depth/2],b=[bx-plan.width/2,0,bz-plan.depth/2],c=[b[0],-wallDepth,b[2]],d=[a[0],-wallDepth,a[2]];positions.push(...a,...b,...c,...a,...c,...d);}
-       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();const wallMaterial=pondClip(mat('#81765b'),'wall');wallMaterial.side=THREE.DoubleSide;const walls=new THREE.Mesh(geometry,wallMaterial);walls.receiveShadow=true;root.add(walls);
-      }
-      polygon(z.points,zoneSurfaceElevation(z,i),pondClip(surface,'owner',i));line([...z.points,z.points[0]].map(([x,z])=>new THREE.Vector3(x-plan.width/2,.012,z-plan.depth/2)),z.kind==='water'?'#6c8981':'#756d51');
-    }
+    drawGardenSurfaces();
     groundDetail();
-    for(const o of plan.obstacles){const cx=o.x+o.width/2-plan.width/2,cz=o.z+o.depth/2-plan.depth/2;
-      if(o.type==='house'){solid('#c8c1ad',cx,o.height/2,cz,o.width,o.height,o.depth);solid('#606c64',cx,o.height+.06,cz,o.width+.16,.12,o.depth+.16);for(let k=0;k<Math.max(1,Math.floor(o.width));k++)solid('#637d7c',o.x-plan.width/2+(k+.5)*o.width/Math.max(1,Math.floor(o.width)),o.height*.55,o.z+o.depth-plan.depth/2+.014,.4,o.height*.24,.025);}
-      else if(o.type==='path'){solid('#b7b0a0',cx,.015,cz,o.width,.03,o.depth);const tiles=Math.min(45,Math.ceil(o.depth/.6));for(let j=1;j<tiles;j++)solid('#878a7b',cx,.032,o.z+j*o.depth/tiles-plan.depth/2,o.width,.002,.012);}
-      else{solid('#827660',cx,o.height/2,cz,o.width,o.height,o.depth);const count=Math.min(80,Math.ceil(o.width/.16));for(let j=0;j<count;j++)solid('#a0947b',o.x+(j+.5)*o.width/count-plan.width/2,o.height/2,cz,o.width/count*.87,o.height,o.depth+.025);}
-    }
+    drawObstacles();
     const detail=Math.min(1,Math.sqrt(18/Math.max(1,plan.plants.length)));
     for(const p of plan.plants){const s=plantStates.get(p.id);if(!s.present)continue;const depth=pondDepthAt(plan,p.x,p.z),g=plantModel(p,{...view,waterDepth:depth},detail);g.position.set(p.x-plan.width/2,plantBaseAt(plan,p),p.z-plan.depth/2);plants.add(g);
       const contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.rotation.x=-Math.PI/2;contact.position.set(g.position.x,isRaouliaMat(p.kind)?g.position.y-.0006:.012,g.position.z);contact.scale.set(s.spread*.95,s.spread*.95,1);if(zoneAt(plan,p.x,p.z)?.kind!=='water')root.add(contact);
@@ -667,6 +649,38 @@ export function createScene(container,onPick){
     selectPlant(id);
     tallest=Math.max(1,...Array.from(plantStates.values(),state=>state.height),...plan.obstacles.map(o=>o.height));fitShadow();
     container.dataset.plantCount=String(plants.children.length);dirty=true;
+  }
+  function drawGardenSurfaces(){
+    const key=JSON.stringify([plan.width,plan.depth,plan.outline,plan.zones]);
+    if(gardenSurfaces&&key===surfaceKey){root.add(gardenSurfaces);return;}
+    dispose(gardenSurfaces);
+    const wallDepth=Math.max(0,...plan.zones.map(zone=>zone.kind==='water'?(zone.depth??0):0));
+    const code=wallDepth>0?pondMaskCode(plan):'';
+    if(code!==pondCode){
+      for(const material of pondMaterials)material.dispose();
+      pondMaterials.clear();pondClips.clear();pondCode=code;
+    }
+    gardenSurfaces=new THREE.Group();
+    surfaceKey=key;
+    root.add(gardenSurfaces);
+    // A fixed-height backdrop can coincide with the floor of a 19 cm pond.
+    backdrop.material=pondClip(mat(BACKDROP_COLOR),'backdrop');const shape=polygon(plan.outline,0,pondClip(turf),gardenSurfaces);const earth=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false}),pondClip(mat('#807357')));earth.customDepthMaterial=pondClip(pondShadow);earth.rotation.x=-Math.PI/2;earth.position.y=-.186;earth.castShadow=true;earth.receiveShadow=true;gardenSurfaces.add(earth);
+    for(const [i,z] of plan.zones.entries()){
+      const wet=z.kind==='water'&&z.depth>0;
+      const surface=wet?deepWater:z.kind==='water'?water:soil;
+      if(wet)polygon(z.points,-z.depth,pondClip(silt,'owner',i),gardenSurfaces);
+      if(wallDepth>0){const positions=[];for(let j=0;j<z.points.length;j++){const [ax,az]=z.points[j],[bx,bz]=z.points[(j+1)%z.points.length],a=[ax-plan.width/2,0,az-plan.depth/2],b=[bx-plan.width/2,0,bz-plan.depth/2],c=[b[0],-wallDepth,b[2]],d=[a[0],-wallDepth,a[2]];positions.push(...a,...b,...c,...a,...c,...d);}
+       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();const wallMaterial=pondClip(mat('#81765b'),'wall');wallMaterial.side=THREE.DoubleSide;const walls=new THREE.Mesh(geometry,wallMaterial);walls.receiveShadow=true;gardenSurfaces.add(walls);
+      }
+      polygon(z.points,zoneSurfaceElevation(z,i),pondClip(surface,'owner',i),gardenSurfaces);line([...z.points,z.points[0]].map(([x,z])=>new THREE.Vector3(x-plan.width/2,.012,z-plan.depth/2)),z.kind==='water'?'#6c8981':'#756d51',gardenSurfaces);
+    }
+  }
+  function drawObstacles(){
+    for(const o of plan.obstacles){const cx=o.x+o.width/2-plan.width/2,cz=o.z+o.depth/2-plan.depth/2;
+      if(o.type==='house'){solid('#c8c1ad',cx,o.height/2,cz,o.width,o.height,o.depth);solid('#606c64',cx,o.height+.06,cz,o.width+.16,.12,o.depth+.16);for(let k=0;k<Math.max(1,Math.floor(o.width));k++)solid('#637d7c',o.x-plan.width/2+(k+.5)*o.width/Math.max(1,Math.floor(o.width)),o.height*.55,o.z+o.depth-plan.depth/2+.014,.4,o.height*.24,.025);}
+      else if(o.type==='path'){solid('#b7b0a0',cx,.015,cz,o.width,.03,o.depth);const tiles=Math.min(45,Math.ceil(o.depth/.6));for(let j=1;j<tiles;j++)solid('#878a7b',cx,.032,o.z+j*o.depth/tiles-plan.depth/2,o.width,.002,.012);}
+      else{solid('#827660',cx,o.height/2,cz,o.width,o.height,o.depth);const count=Math.min(80,Math.ceil(o.width/.16));for(let j=0;j<count;j++)solid('#a0947b',o.x+(j+.5)*o.width/count-plan.width/2,o.height/2,cz,o.width/count*.87,o.height,o.depth+.025);}
+    }
   }
   function setWind(value){windLevel=[0,1,1.7].includes(Number(value))?Number(value):0;wind.strength.value=windLevel;container.dataset.wind=String(windLevel);lastTick=0;dirty=true;}
   function setLight(value){const evening=value==='evening';sunDirection.set(...(evening?[-11,6,5]:[-7,12,8])).normalize();sun.color.set(evening?'#ffd7a0':'#fff0d2');sun.intensity=evening?2.3:2.8;hemisphere.intensity=evening?.72:.95;sky.material.uniforms.top.value.set(evening?'#bac3ce':'#adc5d0');sky.material.uniforms.bottom.value.set(evening?'#e7cdb0':'#e3e0ce');fitShadow();dirty=true;}
