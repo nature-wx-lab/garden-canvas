@@ -22873,12 +22873,52 @@ import{ovalisFoliageInspectionView as ovalisVisibleFocus1002}from '../site/scene
 test('Ludwigia ovalis source keeps domestic stock height and alias separate from creeping stem length pot width and flower parts',()=>{
  const i=CATALOG['p-6f783140466d'],a=i.appearance;assert.equal(i.label,'ルドヴィジア オバリス');assert.equal(i.latin,'Ludwigia ovalis');assert.ok(i.aliases.includes('ミズユキノシタ'));assert.deepEqual(i.height,[.05,.15]);assert.equal(i.spread,null);assert.deepEqual(i.bloom,[7,8,9]);assert.equal(i.bloomKnown,true);assert.deepEqual(i.colors,['unknown']);assert.equal(i.sourceChecked,'2026-11-13');assert.match(i.care,/9cm/);assert.match(a.sourceConflict,/這う茎の長さ/);assert.match(a.sourceConflict,/株幅は未確認/);assert.match(a.sourceConflict,/花全体/);assert.equal(a.arrangement,'alternate');assert.equal(a.flowerShape,'ludwigiaApetalous');assert.equal(a.status,'partial');assert.doesNotMatch(a.phenologyRegion,/マツモ|カボンバ/);assert.ok(a.unconfirmed.some(s=>s.includes('葉・茎・枝・根の数と配置は表示上の近似')&&s.includes('写真の計測値ではありません')));assert.ok(!a.unconfirmed.some(s=>s.includes('132枚')));assert.ok(a.sources.some(s=>s.url.includes('tai2.ntu.edu.tw')));
 });
+test('Ludwigia ovalis dry-season flower is a connected four-sepal organ with an actual macro surface',()=>{
+  for(const dims of [[.15,.3,.15],[.01,.1,.005]])for(const [month,waterDepth] of [[7,0],[7,.001],[7,.3],[1,0]]){
+    const plant={...makePlant('p-6f783140466d',111510,2,2),height:dims[0],spread:dims[1],leafHeight:dims[2]};
+    const view={year:0,month,reference:false,waterDepth},group=plantModel(plant,view);
+    try{
+      const flower=month===7&&waterDepth===0;
+      const components=new Map(group.children.map(mesh=>[mesh.userData.component,mesh]));
+      for(const [part,count] of [['ovary',12],['nectary',12],['sepal',48],['anther',48],['filament',48],['style',12],['stigma',12]]){
+        assert.equal(components.get(part+'-ovalis-flower')?.count??0,flower?count:0);
+      }
+      assert.ok(![...components.keys()].some(name=>name.startsWith('petal')));
+      assert.equal(stateAt(plant,view).bloom,flower);
+      if(!flower){assert.equal(flowerInspectionView(group,.8,40),null);continue;}
+      group.position.set(-2,.012,-1);
+      group.updateMatrixWorld(true);
+      const ovary=components.get('ovary-ovalis-flower'),stems=components.get('stem-ascending-ovalis-photo-reference');
+      const matrix=new Matrix4(),ends=[];
+      for(let i=0;i<stems.count;i++){
+        stems.getMatrixAt(i,matrix);
+        ends.push(new Vector3(0,.5,0).applyMatrix4(matrix));
+      }
+      for(let i=0;i<ovary.count;i++){
+        ovary.getMatrixAt(i,matrix);
+        const base=new Vector3(0,-1,0).applyMatrix4(matrix);
+        assert.ok(ends.some(tip=>tip.distanceTo(base)<2e-6));
+      }
+      const surface=group.userData.flowerTargets[0].surface;
+      for(const aspect of [.8,1.65]){
+        const pose=flowerInspectionView(group,aspect,40),position=new Vector3(...pose.position),target=new Vector3(...pose.target);
+        assert.ok(position.y>.1&&position.distanceTo(target)>=.012);
+        const ray=new Raycaster(position,target.clone().sub(position).normalize(),.01,650);
+        const hit=ray.intersectObject(group,true)[0];
+        assert.equal(hit?.object,components.get(surface.component));
+        assert.equal(hit.instanceId,surface.instanceId);
+        assert.equal(hit.faceIndex,surface.faceIndex);
+        assert.ok(hit.point.distanceTo(target)<1e-7);
+      }
+    }finally{dispose(group);}
+  }
+});
 test('Ludwigia ovalis reference fits twenty four independent dimensions with closed petiolate alternate leaves',()=>{
  const dimsList=[[.12,.35,.10],[.01,.10,.005],[.12,.35,.005],[.01,.10,.01],[.02,.15,.02],[.07,.20,.03],[.1,1,.05],[.5,2,.30]];let models=0,vertices=0;
  for(const dims of dimsList)for(const month of[7,4,1]){
   const p={...makePlant('p-6f783140466d',100210,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},copy=structuredClone(p),g=plantModel(p,{year:1,month,reference:false},1);models++;
   try{
-   g.updateMatrixWorld(true);const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-submerged-ovalis-photo-reference-')),petiole=g.children.find(m=>m.userData.component==='petiole-ovalis-photo-reference'),creeping=g.children.find(m=>m.userData.component==='stem-creeping-ovalis-photo-reference'),ascending=g.children.find(m=>m.userData.component==='stem-ascending-ovalis-photo-reference'),roots=g.children.find(m=>m.userData.component==='root-submerged-ovalis-photo-reference');assert.equal(leaf?.count,132);assert.equal(petiole?.count,132);assert.equal(creeping?.count,60);assert.equal(ascending?.count,72);assert.equal(roots?.count,60);assert.equal(leaf.geometry.userData.closedBlade,true);assert.ok(!g.children.some(m=>/petal|flower|fruit|offspring|turion/.test(m.userData.component)));
+   g.updateMatrixWorld(true);const leaf=g.children.find(m=>m.userData.component.startsWith('leaf-submerged-ovalis-photo-reference-')),petiole=g.children.find(m=>m.userData.component==='petiole-ovalis-photo-reference'),creeping=g.children.find(m=>m.userData.component==='stem-creeping-ovalis-photo-reference'),ascending=g.children.find(m=>m.userData.component==='stem-ascending-ovalis-photo-reference'),roots=g.children.find(m=>m.userData.component==='root-submerged-ovalis-photo-reference');assert.equal(leaf?.count,132);assert.equal(petiole?.count,132);assert.equal(creeping?.count,60);assert.equal(ascending?.count,72);assert.equal(roots?.count,60);assert.equal(leaf.geometry.userData.closedBlade,true);assert.ok(!g.children.some(m=>/petal|fruit|offspring|turion/.test(m.userData.component)));assert.equal(g.children.some(m=>m.userData.component==='sepal-ovalis-flower'),month===7);
    const point=new Vector3(),matrix=new Matrix4();let lo=Infinity,hi=-Infinity,rad=0,leafTop=-Infinity;
    for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);matrix.premultiply(mesh.matrixWorld);for(let j=0;j<mesh.geometry.attributes.position.count;j++){point.fromBufferAttribute(mesh.geometry.attributes.position,j).applyMatrix4(matrix);lo=Math.min(lo,point.y);hi=Math.max(hi,point.y);rad=Math.max(rad,Math.hypot(point.x,point.z));if(mesh===leaf)leafTop=Math.max(leafTop,point.y);vertices++;}}}
    assert.ok(lo>=-2e-6,JSON.stringify({dims,month,lo}));assert.ok(hi<=dims[0]+2e-6,JSON.stringify({dims,month,hi}));assert.ok(rad*2<=dims[1]+2e-6,JSON.stringify({dims,month,rad}));assert.ok(leafTop<=Math.min(dims[0],dims[2])+2e-6,JSON.stringify({dims,month,leafTop}));if(dims[0]===.12&&dims[2]===.005){leaf.getMatrixAt(0,matrix);const root=new Vector3(0,0,0).applyMatrix4(matrix),tip=new Vector3(0,1,0).applyMatrix4(matrix);assert.ok(Math.hypot(tip.x-root.x,tip.z-root.z)>.018,'Low foliage retains broad leaf length by inclination');}assert.deepEqual(p,copy);

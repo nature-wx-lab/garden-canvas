@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1114';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1115';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1114';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength} from './model.js?v=0.9.1114';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1115';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength} from './model.js?v=0.9.1115';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1267,6 +1267,37 @@ export function ovalisPhotoReferenceGeometry(){
  }
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();g.userData={ovalisPhotoReference:true,rootVertex:0,closedBlade:true,illustrativeCrossSection:true};return g;
 }
+export function ovalisFlowerSepalGeometry(){
+ const vertices=[
+  [0,0,0],[-.19,.046,.19],[-.29,.105,.43],[-.18,.164,.68],
+  [-.07,.225,.88],[0,.235,1],[.07,.225,.88],[.18,.164,.68],
+  [.29,.105,.43],[.19,.046,.19],[0,.188,.46],[0,.091,.46],
+ ];
+ const indices=[];
+ for(let i=0;i<10;i++){
+  const next=(i+1)%10;
+  indices.push(i,next,10,i,11,next);
+ }
+ const geometry=new THREE.BufferGeometry();
+ geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices.flat(),3));
+ geometry.setIndex(indices);
+ geometry.computeVertexNormals();
+ return geometry;
+}
+function drawOvalisFlower(b,origin,yaw,radius,kit){
+ const frame=flowerFrame(b,origin,0,yaw),centerY=radius*.46;
+ frame.add(kit.bud,'ovary-ovalis-flower','#88964a',0,centerY*.52,0,radius*.31,centerY*.52,radius*.31);
+ frame.add(kit.bud,'nectary-ovalis-flower','#a6b75e',0,centerY,0,radius*.31,radius*.12,radius*.31);
+ for(let organ=0;organ<4;organ++){
+  const az=organ*TAU/4;
+  frame.add('ovalis-flower-sepal','sepal-ovalis-flower','#b9c49a',0,centerY,0,radius,radius,radius,0,az,0);
+  const x=Math.sin(az)*radius*.23,z=Math.cos(az)*radius*.23;
+  frame.branch([x,centerY,z],[x,centerY+radius*.29,z],radius*.042,'#dce4bd','filament-ovalis-flower');
+  frame.add(kit.bud,'anther-ovalis-flower','#e8d489',x,centerY+radius*.35,z,radius*.13,radius*.15,radius*.11,0,az,0);
+ }
+ frame.branch([0,centerY,0],[0,centerY+radius*.39,0],radius*.045,'#94a658','style-ovalis-flower');
+ frame.add(kit.bud,'stigma-ovalis-flower','#839641',0,centerY+radius*.44,0,radius*.14,radius*.11,radius*.14);
+}
 function drawOvalisPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
  const wet=s.waterDepth>0,bed=wet?-.012:0;
@@ -1285,11 +1316,12 @@ function drawOvalisPhotoReference(b,{info,s,rand},kit){
     for(let k=1;k<=6;k++){
      const u=k/6,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];
      b.branch(prev,tip,radius*.75,stem,'stem-ascending-ovalis-photo-reference');prev=tip;leaf(tip,turn+k*Math.PI,false);
+     if(s.bloom&&k===6)drawOvalisFlower(b,tip,turn+Math.PI,Math.min(.0022,h*.09,w*.017,LH*.18),kit);
     }
    }
   }
  }
- //6connected basal runners and12ascending side shoots:132single alternate leaves;60basal roots.No water-surface flowers.
+ // Six basal runners and twelve ascending shoots retain the established leaf and root layout.
 }
 
 // Manufacturer gallery reference; curvature, section, counts and colors are illustrative.
