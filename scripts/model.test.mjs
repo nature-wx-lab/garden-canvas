@@ -73,6 +73,22 @@ test('raoulia rests just above the visible zone surface and ordinary bases stay 
 });
 test('unknown price is not zero; existing and reference plants do not enter purchase total',()=>{const d=sampleDocument(),p=d.plans.A.plants;p[0].price=5000;p[1].role='existing';p[1].price=9000;p[2].role='reference';p[3].price=0;const b=budget(d.plans.A);assert.equal(b.total,5000);assert.equal(b.count,6);assert.equal(b.unknown,4);});
 test('first year means first 12 months after planting, crossing the year boundary',()=>{const p=makePlant('rose',1,2,2);p.start=10;p.tasks=[task('feed',3,'first')];assert.equal(taskEvents(p,0).length,0);assert.equal(taskEvents(p,1).length,1);assert.equal(taskEvents(p,2).length,0);});
+test('annual phlox care follows the same planned cycle as the three dimensional plant',()=>{
+  for(const kind of ['p-9dede15d4dab','p-040a45429ccc']){
+    const d=fixture(),p=d.plans.A.plants[0]=makePlant(kind,1,2,2);
+    p.tasks=[task('water',11),{...task('feed',11,'first'),id:2},{...task('water',12),id:3}];
+    for(const [start,year,novemberTasks] of [[0,0,2],[9,1,1]]){
+      p.start=start;
+      const months=calendar(d.plans.A,year);
+      assert.equal(stateAt(p,view(year,11)).present,true);
+      assert.equal(months[10].events.length,novemberTasks);
+      assert.equal(stateAt(p,view(year,12)).present,false);
+      assert.equal(months[11].events.length,0);
+      assert.equal(taskEvents(p,year+1).length,0);
+    }
+    assert.equal(p.tasks.length,3);
+  }
+});
 test('calendar and pruning appearance use identical event dates and deterministic jumps',()=>{const d=fixture(),p=d.plans.A.plants[0];p.management={height:1,spread:.6,method:'trim',recovery:6};p.tasks=[task('prune',3)];const before=stateAt(p,view(0,2)),at=stateAt(p,view(0,3)),late=stateAt(p,view(0,9));assert.equal(before.last,null);assert.equal(at.height,1);assert.equal(at.trunkHeight,before.trunkHeight);assert.equal(at.last.at,calendar(d.plans.A,0)[2].events[0].at);assert.equal(late.height,p.height);stateAt(p,view(5,10));assert.deepEqual(stateAt(p,view(0,3)),at);});
 test('unachievable cut below structural trunk remains natural and explicitly unsupported',()=>{const p=makePlant('maple',1,2,2);p.management={height:.2,spread:.2,method:'trim',recovery:6};p.tasks=[task('prune',3)];const s=stateAt(p,view(0,3));assert.equal(s.unsupported,true);assert.equal(s.height,p.height);});
 test('work estimate retains unknown durations, sums water visits and preparation only once per active month',()=>{const d=fixture(),p=d.plans.A.plants[0];p.tasks=[task('water',6,'annual',2,4,10),{...task('feed',6,'annual',null,null),id:2}];d.plans.A.prep=15;d.plans.A.hours[5]=.5;const c=calendar(d.plans.A,0);assert.equal(c[5].min,35);assert.equal(c[5].max,55);assert.equal(c[5].unknown,1);assert.equal(c[5].available,30);assert.equal(c[4].min,0);assert.equal(p.tasks.length,2);});

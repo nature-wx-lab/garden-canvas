@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1103';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1103';
-import { seasonAt } from './catalog-search.js?v=0.9.1103';
+import {treeProfile} from './tree-profiles.js?v=0.9.1104';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1104';
+import { seasonAt } from './catalog-search.js?v=0.9.1104';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -64,13 +64,27 @@ export function makePlant(kind,id,x,z){
 }
 export function replacePlant(p,kind){if(p.locked)throw new Error('固定を解除してから交換してください。');const next=makePlant(kind,p.id,p.x,p.z);next.start=p.start;next.role=p.role;return next;}
 export function editSize(p,height,spread,leafHeight){const next=clone(p);if(height!==p.height||spread!==p.spread||leafHeight!==p.leafHeight){next.price=null;next.scenario=null;next.management=null;}Object.assign(next,{height,spread,leafHeight});return next;}
+function annualPhloxCycle(start,info){
+  const year=Math.floor(start/12)+(start%12>=8?1:0);
+  const months=info.appearance.flowerMonths||info.bloom;
+  return {first:year*12+(months[0]||5)-1,end:year*12+(months.at(-1)||11)};
+}
 export function taskEvents(p,year){
-  const result=[];for(const t of p.tasks){const at=year*12+t.month-1;if(at<p.start||(['annual','biennial'].includes(plantInfo(p.kind).life)&&at>=p.start+(plantInfo(p.kind).life==='biennial'?24:12))||t.repeat==='first'&&at>=p.start+12)continue;result.push({...t,at,plantId:p.id,kind:p.kind});}return result;
+  const info=plantInfo(p.kind);
+  const end=info.appearance?.architecture==='annualPhloxReferences'?annualPhloxCycle(p.start,info).end
+    :info.life==='annual'?p.start+12:info.life==='biennial'?p.start+24:Infinity;
+  const result=[];
+  for(const t of p.tasks){
+    const at=year*12+t.month-1;
+    if(at<p.start||at>=end||t.repeat==='first'&&at>=p.start+12)continue;
+    result.push({...t,at,plantId:p.id,kind:p.kind});
+  }
+  return result;
 }
 export function stateAt(p,view){
-  const age=dateIndex(view)-p.start,info=plantInfo(p.kind),annualPhlox=info.appearance?.architecture==='annualPhloxReferences';
-  const phloxYear=annualPhlox?Math.floor(p.start/12)+(p.start%12>=8?1:0):null,phloxStart=annualPhlox?phloxYear*12+((info.appearance.flowerMonths||info.bloom)[0]||5)-1:null,phloxEnd=annualPhlox?phloxYear*12+((info.appearance.flowerMonths||info.bloom).at(-1)||11):null;
-  const expired=annualPhlox?dateIndex(view)>=phloxEnd:['annual','biennial'].includes(info.life)&&age>=(info.life==='biennial'?24:12);
+  const at=dateIndex(view),age=at-p.start,info=plantInfo(p.kind);
+  const phlox=info.appearance?.architecture==='annualPhloxReferences'?annualPhloxCycle(p.start,info):null;
+  const expired=phlox?at>=phlox.end:['annual','biennial'].includes(info.life)&&age>=(info.life==='biennial'?24:12);
   const biennialLast=Math.max(...(info.appearance?.flowerMonths?.length?info.appearance.flowerMonths:[8])),biennialFlowerYear=Math.floor((p.start+12)/12)+(p.start%12>=biennialLast?1:0),biennialFlowerEnd=biennialFlowerYear*12+biennialLast;
   const standingDead=expired&&info.life==='biennial'&&info.appearance?.standingAfterDeathMonths?.includes(view.month)&&dateIndex(view)>=biennialFlowerEnd&&dateIndex(view)<(biennialFlowerYear+1)*12+2,present=age>=0&&(!expired||!!standingDead);
   let height=p.height,spread=p.spread,leafHeight=p.leafHeight;
@@ -90,9 +104,9 @@ export function stateAt(p,view){
     const waiting=present&&p.role==='new'&&!view.reference&&age<minimumFlowerYears*12;season.reproductiveAgeEligible=!waiting;
     if(waiting&&(season.bloom||info.appearance?.calyxMonths?.includes(view.month))){season.bloom=false;season.flowerDensity=0;season.phase='新植後'+minimumFlowerYears+'年以上で開花する資料の参考（実際の開花は未予測）';season.label=season.phase;}
   }
-  if(annualPhlox&&dateIndex(view)<phloxStart){const youngScale=view.month>=9||view.month<=2?.22:view.month===3?.35:.60;Object.assign(season,{bloom:false,flowerDensity:0,leafDensity:.65,leafScale:youngScale,shootScale:1,phase:'秋植えから最初の春までの若い葉（計画上の仮定）',label:'秋植えから最初の春までの若い葉（計画上の仮定）'});}
-  if(annualPhlox&&expired)Object.assign(season,{bloom:false,flowerDensity:0,dormant:true,groundDormant:true,leafDensity:0,leafScale:0,shootScale:1,phase:'一回の花期を終えた一年草（終了月は計画上の目安）',label:'一回の花期を終えた一年草（終了月は計画上の目安）'});
-  if(info.life==='annual'&&info.appearance?.persistence==='coolSeasonAnnual'&&!annualPhlox){
+  if(phlox&&at<phlox.first){const youngScale=view.month>=9||view.month<=2?.22:view.month===3?.35:.60;Object.assign(season,{bloom:false,flowerDensity:0,leafDensity:.65,leafScale:youngScale,shootScale:1,phase:'秋植えから最初の春までの若い葉（計画上の仮定）',label:'秋植えから最初の春までの若い葉（計画上の仮定）'});}
+  if(phlox&&expired)Object.assign(season,{bloom:false,flowerDensity:0,dormant:true,groundDormant:true,leafDensity:0,leafScale:0,shootScale:1,phase:'一回の花期を終えた一年草（終了月は計画上の目安）',label:'一回の花期を終えた一年草（終了月は計画上の目安）'});
+  if(info.life==='annual'&&info.appearance?.persistence==='coolSeasonAnnual'&&!phlox){
     const last=(info.appearance.flowerMonths||info.bloom).at(-1)||6;
     const floweringYear=Math.floor(p.start/12)+(p.start%12>=last?1:0);
     if(dateIndex(view)>=floweringYear*12+last){
