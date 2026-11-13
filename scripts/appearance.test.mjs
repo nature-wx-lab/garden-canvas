@@ -9983,7 +9983,8 @@ test('Three Callistephus references distinguish lower Matsumoto branches larger 
 });
 test('Three Callistephus independent tiny dimensions bound actual broad serrate leaves folded rays and female ray and bisexual disc organs',()=>{
  for(const [id,normal]of [['p-f05f938ade24',[.6,.4,.40]],['p-45be16373943',[.6,.4,.40]],['p-45afdc6c40a3',[.8,.35,.58]]])for(const size of [normal,[.3,.25,.20],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
-  const p={...makePlant(id,53299,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),mat=new Matrix4(),v=new Vector3(),label=id+' '+size;try{let maxLeaf=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,label+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,label+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^leaf-/.test(m.userData.component))maxLeaf=Math.max(maxLeaf,v.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant(id,53299,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),label=id+' '+size;
+  try{checkReferenceVertexBounds(g,p,label,component=>component.startsWith('leaf-'));}finally{dispose(g);}
  }
 });
 test('Three Callistephus macro cameras target an actual folded ray surface outside the yellow disc flowers',()=>{
@@ -10004,7 +10005,8 @@ test('Three additional Tomorrow references retain small two-whorled heads top br
 });
 test('Three additional Tomorrow independent tiny dimensions bound actual broad serrate leaves folded rays and female ray and bisexual disc organs',()=>{
  for(const [id,normal]of [['p-dc135db44e88',[.8,.35,.58]],['p-113626bad7ce',[.8,.35,.58]],['p-36ef73b61a7b',[.8,.35,.58]]])for(const size of [normal,[.35,.25,.25],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
-  const p={...makePlant(id,53399,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),mat=new Matrix4(),v=new Vector3(),label=id+' '+size;try{let maxLeaf=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,label+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,label+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^leaf-/.test(m.userData.component))maxLeaf=Math.max(maxLeaf,v.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant(id,53399,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),label=id+' '+size;
+  try{checkReferenceVertexBounds(g,p,label,component=>component.startsWith('leaf-'));}finally{dispose(g);}
  }
 });
 test('Three additional Tomorrow macro cameras target an actual folded ray surface outside the yellow disc flowers',()=>{
@@ -10025,7 +10027,8 @@ test('Three double Callistephus references separate smaller Fujimi yellow eyes f
 });
 test('Three double Callistephus independent tiny dimensions bound actual broad serrate leaves folded rays and female ray and bisexual disc organs',()=>{
  for(const [id,normal]of [['p-5bf9a6704cb5',[.8,.4,.58]],['p-c2220be810ba',[.8,.4,.58]],['p-443d71d221c5',[.8,.45,.58]]])for(const size of [normal,[.35,.25,.25],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
-  const p={...makePlant(id,53499,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),mat=new Matrix4(),v=new Vector3(),label=id+' '+size;try{let maxLeaf=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,label+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,label+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^leaf-/.test(m.userData.component))maxLeaf=Math.max(maxLeaf,v.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant(id,53499,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),label=id+' '+size;
+  try{checkReferenceVertexBounds(g,p,label,component=>component.startsWith('leaf-'));}finally{dispose(g);}
  }
 });
 test('Three double Callistephus macro cameras target an actual folded ray surface outside the yellow disc flowers',()=>{
@@ -10047,7 +10050,8 @@ test('Three Showmakers references keep a branched perennial dome double flowers 
 });
 test('Three Showmakers independent tiny dimensions bound actual clasping leaves incurved rays and all branched stems',()=>{
  for(const id of ['p-49a80e3612f5','p-1ff31ba2e149','p-3908c37509ad'])for(const size of [[.35,.45,.33],[.18,.25,.17],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
-  const p={...makePlant(id,53599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(10)),mat=new Matrix4(),v=new Vector3(),label=id+' '+size;try{let maxLeaf=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,label+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,label+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^leaf-/.test(m.userData.component))maxLeaf=Math.max(maxLeaf,v.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant(id,53599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(10)),label=id+' '+size;
+  try{checkReferenceVertexBounds(g,p,label,component=>component.startsWith('leaf-'));}finally{dispose(g);}
  }
 });
 test('Three Showmakers macro cameras focus on an actual incurved ray surface rather than a concealed floral centre',()=>{
@@ -10068,7 +10072,8 @@ test('Three garden Aster references distinguish black Prince lateral small heads
 });
 test('Three garden Aster independent tiny dimensions bound actual species-specific leaves folded rays reflexed disc flowers and floral stems',()=>{
  for(const [id,normal,month]of [['p-a70ebbaea1ed',[.6,.4,.55],10],['p-89dc652952bc',[.8,.7,.70],7],['p-f7ce6db9b973',[.7,.7,.62],7]])for(const size of [normal,[.3,.25,.27],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
-  const p={...makePlant(id,53699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3(),label=id+' '+size;try{let maxLeaf=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,label+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,label+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^leaf-/.test(m.userData.component))maxLeaf=Math.max(maxLeaf,v.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant(id,53699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),label=id+' '+size;
+  try{checkReferenceVertexBounds(g,p,label,component=>component.startsWith('leaf-'));}finally{dispose(g);}
  }
 });
 test('Three garden Aster macro cameras target visible folded ray surfaces outside their distinct disc florets',()=>{
@@ -10362,8 +10367,8 @@ test('Mallow records distinguish four catalog identities veined petals staminal 
 });
 test('Mallow actual vertices preserve independent tiny dimensions for palmately lobed leaves petals columns and style branches',()=>{
  for(const id of ['p-3e91a9f491c4','p-9a37fb7405c3','p-cb1c25475d54','p-43198cdc1b78'])for(const dims of [[1.2,.8,1.08],[.15,.22,.12],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]])for(const month of [5,1]){
-  const p={...makePlant(id,54899,2,2),height:dims[0],spread:dims[1],leafHeight:dims[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3(),label=id+' '+dims+' '+month;let maxLeaf=0;
-  try{for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite),label);assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,label+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,label+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(m.userData.component==='leaf-mallow-ref')maxLeaf=Math.max(maxLeaf,v.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling');}finally{dispose(g);}
+  const p={...makePlant(id,54899,2,2),height:dims[0],spread:dims[1],leafHeight:dims[2]},g=plantModel(p,view(month)),label=id+' '+dims+' '+month;
+  try{checkReferenceVertexBounds(g,p,label,component=>component==='leaf-mallow-ref');}finally{dispose(g);}
  }
 });
 test('Mallow macro cameras reveal actual petal surfaces at both input sizes',()=>{
