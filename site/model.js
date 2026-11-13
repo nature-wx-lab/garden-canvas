@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1112';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1112';
-import { seasonAt } from './catalog-search.js?v=0.9.1112';
+import {treeProfile} from './tree-profiles.js?v=0.9.1113';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1113';
+import { seasonAt } from './catalog-search.js?v=0.9.1113';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -170,7 +170,13 @@ export function stateAt(p,view){
     &&waterDepth+POND_SURFACE_Y>=cobraGrassFlowerHeight(height,spread);
   const indicaSpikeUnderwater=info.appearance?.shootProfile==='indicaPhotoReference'&&waterDepth>0
     &&waterDepth+POND_SURFACE_Y>=height*.95-indicaSpikeLength(height,Math.min(leafHeight,height*.98)*.82,height*.95);
-  if((info.appearance?.waterSurfaceModel&&waterDepth>=.02)||bacopaTipUnderwater||yellowBacopaTipUnderwater||shortHairTipUnderwater||cobraFlowerUnderwater||indicaSpikeUnderwater){season.bloom=false;season.flowerDensity=0;}
+  const flowerUnderwater=(info.appearance?.waterSurfaceModel&&waterDepth>=.02)
+    ||bacopaTipUnderwater||yellowBacopaTipUnderwater||shortHairTipUnderwater||cobraFlowerUnderwater||indicaSpikeUnderwater;
+  const ovalisLeafReference=info.appearance?.architecture==='submergedShoots'&&info.appearance.shootProfile==='ovalis';
+  if(season.bloom&&(flowerUnderwater||ovalisLeafReference)){
+    season.bloom=false;season.flowerDensity=0;
+    season.label=`${ovalisLeafReference?'水中葉の参考では花を未再現':'現在の水深では花を表示しません'}・${season.phase}`;
+  }
   return {present,expired,standingDead:!!standingDead,...season,waterDepth,age:Math.max(0,age)/12,height,spread,leafHeight,natural,trunkHeight,basis,last,unsupported,winter:[12,1,2].includes(view.month)};
 }
 export function budget(plan){const rows=new Map();let total=0,unknown=0,count=0;for(const p of plan.plants){if(p.role!=='new')continue;count++;const key=[p.kind,p.height,p.spread,p.price].join('|');if(!rows.has(key))rows.set(key,{kind:p.kind,height:p.height,spread:p.spread,price:p.price,count:0,total:0});const row=rows.get(key);row.count++;if(p.price===null)unknown++;else{total+=p.price;row.total+=p.price;}}return {total,unknown,count,rows:[...rows.values()]};}
