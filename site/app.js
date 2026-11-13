@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1167';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1167';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1167';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1167';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1167';
-import { createScene } from './scene.js?v=0.9.1167';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1168';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1168';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1168';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1168';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1168';
+import { createScene } from './scene.js?v=0.9.1168';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -234,7 +234,9 @@ function startPlacement(value){
 function resetMode(){setMode('orbit');}
 function select(id){
   if(preview&&id!==selected)return;
-  selected=id;setMode('orbit');editor('plant-panel');syncSelection();syncPlantState();syncSceneSelection();
+  const changed=id!==selected;
+  selected=id;setMode('orbit');editor('plant-panel');
+  if(changed){syncSelection();syncPlantState();syncSceneSelection();}
   if(selectedPlant())message(`${plantInfo(selectedPlant().kind).label}を選びました。`);
 }
 function metrics(target,items){$(target).replaceChildren(...items.map(([value,label])=>{const d=el('div',undefined,'metric');d.append(el('strong',value),el('span',label));return d;}));}
