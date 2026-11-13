@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1154';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1154';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1154';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1154';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1154';
-import { createScene } from './scene.js?v=0.9.1154';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1155';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1155';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1155';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1155';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1155';
+import { createScene } from './scene.js?v=0.9.1155';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -225,7 +225,11 @@ function startPlacement(value){
   if(mode===value)focusCanvas();
 }
 function resetMode(){setMode('orbit');}
-function select(id){selected=id;setMode('orbit');editor('plant-panel');syncSelection();syncPlantState();syncSceneSelection();if(selectedPlant())message(`${plantInfo(selectedPlant().kind).label}を選びました。`);}
+function select(id){
+  if(preview&&id!==selected)return;
+  selected=id;setMode('orbit');editor('plant-panel');syncSelection();syncPlantState();syncSceneSelection();
+  if(selectedPlant())message(`${plantInfo(selectedPlant().kind).label}を選びました。`);
+}
 function metrics(target,items){$(target).replaceChildren(...items.map(([value,label])=>{const d=el('div',undefined,'metric');d.append(el('strong',value),el('span',label));return d;}));}
 function table(headers,rows){const t=el('table'),head=el('thead'),tr=el('tr');headers.forEach(h=>tr.append(el('th',h)));head.append(tr);const body=el('tbody');rows.forEach(row=>{const r=el('tr');row.forEach(c=>r.append(el('td',c)));body.append(r);});t.append(head,body);return t;}
 function itemRow(text,remove){const row=el('div',undefined,'item-row');row.append(el('span',text),button('削除',remove));return row;}
@@ -350,10 +354,11 @@ function syncComparison(){
 function syncPlantButtons(container,plants,describe){
   const focused=container.contains(document.activeElement)?document.activeElement.dataset.plantId:null;
   container.replaceChildren(...plants.map(plant=>{
-    const {label,title,selectPlant}=describe(plant);
+    const {label,title,selectPlant,disabled=false}=describe(plant);
     const control=button(label,selectPlant);
     control.dataset.plantId=String(plant.id);
     control.setAttribute('aria-pressed',String(plant.id===selected));
+    control.disabled=disabled;
     if(title)control.title=title;
     return control;
   }));
@@ -363,7 +368,7 @@ function syncSelection(){const p=plan();
   if(selected&&!p.plants.some(plant=>plant.id===selected))selected=null;
   syncPlantButtons($('specimen-nav'),p.plants.slice(0,16),plant=>{
     const info=plantInfo(plant.kind),tree=treeProfile(info);
-    return {label:info.label,title:tree?HABITS[tree.habit]:info.genre,selectPlant:()=>{
+    return {label:info.label,title:tree?HABITS[tree.habit]:info.genre,disabled:!!preview&&plant.id!==selected,selectPlant:()=>{
       select(plant.id);
       const unavailable=plantFocusUnavailable(plant);
       if(unavailable)message(unavailable);
@@ -382,6 +387,7 @@ function sync(){
   $('plan-a').setAttribute('aria-pressed',String(d.active==='A'));$('plan-b').setAttribute('aria-pressed',String(d.active==='B'));$('plan-b').disabled=!d.plans.B||!!preview;$('plan-a').disabled=!!preview;$('duplicate-plan').disabled=!!preview||!!doc.plans.B;$('undo').disabled=!history.length||!!preview;$('redo').disabled=!future.length||!!preview;
   $('count').textContent=`${p.plants.length}株`;$('area').textContent=`${area(p.outline).toFixed(1)}m² · ${p.plants.length}株`;
   $('edit-body').inert=!!preview;
+  $('month-tasks').inert=!!preview;
   $('preview-bar').hidden=!preview;
   syncSelection();
   syncGarden();
