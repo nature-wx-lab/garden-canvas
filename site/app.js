@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1113';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1113';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1113';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1113';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1113';
-import { createScene } from './scene.js?v=0.9.1113';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1114';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1114';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1114';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1114';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1114';
+import { createScene } from './scene.js?v=0.9.1114';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -124,9 +124,12 @@ function syncSelected(){const p=selectedPlant();$('no-selection').hidden=!!p;$('
   drawReplacement();$('care-advice').textContent=info.care;
   $('plant-tasks').replaceChildren(...p.tasks.map(t=>itemRow(`${t.month}月 ${TASKS[t.type]} ×${t.count} ／ ${t.repeat==='first'?'初年度':'毎年'} ／ ${t.min===null?'時間未入力':time(t.min,t.max)}`,()=>withPlant(p=>{p.tasks=p.tasks.filter(x=>x.id!==t.id);},'手入れ予定を削除しました。',true))));sourceCard('selected-source',p.kind);
 }
+function gardenShape({width,depth,outline}){
+  const saved=JSON.stringify(outline);
+  return ['rectangle','lshape'].find(kind=>JSON.stringify(outlineFor(kind,width,depth))===saved)||'custom';
+}
 function syncGardenShape(){
-  const {width,depth,outline}=plan();
-  $('shape').value=['rectangle','lshape'].find(kind=>JSON.stringify(outlineFor(kind,width,depth))===JSON.stringify(outline))||'custom';
+  $('shape').value=gardenShape(plan());
 }
 function syncGarden(){const p=plan();for(const id of ['width','depth','sun','moisture','prep'])$(id).value=p[id];syncGardenShape();p.hours.forEach((h,i)=>$(`hours-${i}`).value=h??'');
   $('zone-list').replaceChildren(...p.zones.map((z,i)=>{const row=itemRow(`${z.kind==='water'?'水面':'花壇'} ${i+1} · ${area(z.points).toFixed(1)}m²`,()=>mutate(p=>p.zones.splice(i,1),'区画を取り除きました。植物は残ります。'));const type=el('select');type.setAttribute('aria-label',`区画${i+1}の種類`);for(const [v,label] of [['soil','花壇'],['water','池・水面']]){const option=el('option',label);option.value=v;type.append(option);}type.value=z.kind||'soil';type.addEventListener('change',()=>{const value=type.value;mutate(p=>{p.zones[i].kind=value;if(value!=='water')delete p.zones[i].depth;},'区画の種類を変更しました。');});row.append(type);if(z.kind==='water'){const label=el('label','水深 (m)'),input=el('input');input.type='number';input.min='0';input.max='2';input.step='.05';input.value=String(z.depth??0);input.setAttribute('aria-label',`水面${i+1}の水深`);const applyDepth=()=>{const depth=Number(input.value);if(input.value.trim()===''||!Number.isFinite(depth)||depth<0||depth>2){message('水深は0〜2mで入力してください。');input.value=String(plan().zones[i].depth??0);return;}mutate(p=>{p.zones[i].depth=depth;},'池の水深を変更しました。');};const apply=button('水深を反映',applyDepth);apply.setAttribute('aria-label',`水面${i+1}の水深を反映`);input.addEventListener('keydown',e=>{if(e.key==='Enter')applyDepth();});label.append(input);row.append(label,apply);}return row;}));
@@ -270,7 +273,9 @@ function bind(){
       calendarMonth=month;
     },'手入れ予定を追加しました。予定表と3Dが同じ剪定月を参照します。',true);
   });
-  $('resize-garden').addEventListener('click',()=>{const ok=mutate(p=>{if(p.plants.some(p=>p.locked))throw new Error('固定された植物があります。寸法変更で配置も伸縮するため、先に固定を解除してください。');const w=number('width'),d=number('depth'),rx=w/p.width,rz=d/p.depth;p.width=w;p.depth=d;p.outline=p.outline.map(([x,z])=>[round(x*rx),round(z*rz)]);p.zones.forEach(z=>{z.points=z.points.map(([x,z])=>[round(x*rx),round(z*rz)]);});p.obstacles.forEach(o=>{o.x=round(o.x*rx);o.z=round(o.z*rz);o.width=round(o.width*rx);o.depth=round(o.depth*rz);});p.plants.forEach(p=>{p.x=round(p.x*rx);p.z=round(p.z*rz);});},'庭と配置の平面寸法を伸縮しました。');if(ok)engine?.view('home');});
+  $('resize-garden').addEventListener('click',()=>{const ok=mutate(p=>{if(p.plants.some(p=>p.locked))throw new Error('固定された植物があります。寸法変更で配置も伸縮するため、先に固定を解除してください。');const w=number('width'),d=number('depth'),rx=w/p.width,rz=d/p.depth,shape=gardenShape(p);
+    p.width=w;p.depth=d;
+    p.outline=shape==='custom'?p.outline.map(([x,z])=>[round(x*rx),round(z*rz)]):outlineFor(shape,w,d);p.zones.forEach(z=>{z.points=z.points.map(([x,z])=>[round(x*rx),round(z*rz)]);});p.obstacles.forEach(o=>{o.x=round(o.x*rx);o.z=round(o.z*rz);o.width=round(o.width*rx);o.depth=round(o.depth*rz);});p.plants.forEach(p=>{p.x=round(p.x*rx);p.z=round(p.z*rz);});},'庭と配置の平面寸法を伸縮しました。');if(ok)engine?.view('home');});
   $('shape').addEventListener('change',()=>{
     const shape=$('shape').value;
     if(shape==='custom'){startDrawing('outline');return;}
