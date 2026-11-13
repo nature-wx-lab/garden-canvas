@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1137';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1137';
-import { seasonAt } from './catalog-search.js?v=0.9.1137';
+import {treeProfile} from './tree-profiles.js?v=0.9.1138';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1138';
+import { seasonAt } from './catalog-search.js?v=0.9.1138';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -15,6 +15,13 @@ export function cobraGrassFlowerHeight(height,spread){
   const stemRadius=Math.min(.00035,spread*.002,height*.003);
   const base=stemRadius*.45+Math.min(.00002,height*.002);
   return base+Math.min(.020,height*.28)+Math.min(.006,spread*.025,height*.10)*.25;
+}
+export function egeriaFlowerRadius(height,spread){
+  return Math.min(.010,spread*.12,height*.17);
+}
+export function egeriaFlowerFits(height,radius,depth){
+  const flowerHeight=depth>0?depth+.004:height*.93;
+  return flowerHeight+radius*.25+(depth>0?PLANT_BASE_Y:0)<=height;
 }
 export function indicaSpikeLength(height,leafTop,spikeTop){
   return Math.min(.025,height*.18,Math.max(height*.01,spikeTop-leafTop)*.70);
@@ -217,13 +224,16 @@ export function stateAt(p,view){
     &&waterDepth+POND_SURFACE_Y>=cobraGrassFlowerHeight(height,spread);
   const indicaSpikeUnderwater=info.appearance?.shootProfile==='indicaPhotoReference'&&waterDepth>0
     &&waterDepth+POND_SURFACE_Y>=height*.95-indicaSpikeLength(height,Math.min(leafHeight,height*.98)*.82,height*.95);
+  const egeriaFlowerUnderwater=info.appearance?.shootProfile==='egeria'&&waterDepth>0
+    &&!egeriaFlowerFits(height,egeriaFlowerRadius(height,spread),waterDepth);
   const flowerUnderwater=(info.appearance?.waterSurfaceModel&&waterDepth>=.02)
-    ||bacopaTipUnderwater||yellowBacopaTipUnderwater||shortHairTipUnderwater||cobraFlowerUnderwater||indicaSpikeUnderwater;
+    ||bacopaTipUnderwater||yellowBacopaTipUnderwater||shortHairTipUnderwater||cobraFlowerUnderwater||indicaSpikeUnderwater||egeriaFlowerUnderwater;
   const ovalisLeafReference=waterDepth>0&&info.appearance?.architecture==='submergedShoots'&&info.appearance.shootProfile==='ovalis';
   if(season.bloom&&(flowerUnderwater||ovalisLeafReference)){
     season.bloom=false;season.flowerDensity=0;
     season.label=`${ovalisLeafReference?'水中葉の参考では花を表示しません':'現在の水深では花を表示しません'}・${season.phase}`;
   }
+  if(egeriaFlowerUnderwater&&!season.known&&!season.label.includes('花期未確認'))season.label+='（開花月は未確認）';
   return {present,expired,standingDead:!!standingDead,...season,waterDepth,age:Math.max(0,age)/12,height,spread,leafHeight,natural,trunkHeight,basis,last,unsupported,winter:[12,1,2].includes(view.month)};
 }
 export function budget(plan){const rows=new Map();let total=0,unknown=0,count=0;for(const p of plan.plants){if(p.role!=='new')continue;count++;const key=[p.kind,p.height,p.spread,p.price].join('|');if(!rows.has(key))rows.set(key,{kind:p.kind,height:p.height,spread:p.spread,price:p.price,count:0,total:0});const row=rows.get(key);row.count++;if(p.price===null)unknown++;else{total+=p.price;row.total+=p.price;}}return {total,unknown,count,rows:[...rows.values()]};}

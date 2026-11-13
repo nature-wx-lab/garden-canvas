@@ -1,4 +1,4 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1137';
+import {treeProfile} from './tree-profiles.js?v=0.9.1138';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
@@ -37,7 +37,9 @@ export function catalogPage(entries,page=0,size=24){
 // Month curves show a temperate-garden reference, not a location-specific phenology forecast.
 export function seasonAt(info,month){
  const profile=treeProfile(info),a=info.appearance||{},m=month-1,flowerMonths=a.flowerMonths||(a.flowerSeasons?.includes('earlySpring')?[3,4]:info.bloom);
- let bloom=flowerMonths.includes(month);const known=!!a.flowerMonths||!!a.flowerSeasons||(info.bloomKnown??!!flowerMonths.length);
+ const floweringExample=a.shootProfile==='egeria'&&info.bloomKnown===false;
+ let bloom=flowerMonths.includes(month);
+ const known=!floweringExample&&(!!a.flowerMonths||!!a.flowerSeasons||(info.bloomKnown??!!flowerMonths.length));
  const leaf={evergreen:'evergreen',semiEvergreen:'semi',semiDormant:'herb',deciduous:'deciduous',winterDormant:'herb',winterSubmerged:'herb',frostDormantTuber:'herb',seasonalAnnual:'herb',warmSeasonAnnual:'herb'}[a.persistence]||profile?.leaf||info.leaf;
  let density=1,scale=1,autumn=false,phase=leaf==='unknown'?'葉の季節変化は未確認':'葉の展開期';
  const breakMonth=a.emergenceMonths?.[0]||(a.leafFlushAfterFlower&&flowerMonths.length?Math.min(12,Math.max(...flowerMonths)+1):profile?.budbreak||4),fall=profile?.leafFall||12;
@@ -479,5 +481,5 @@ export function seasonAt(info,month){
  const fruitStage=a.fruitMonths?.includes(month)?'ripe':a.fruitMonths?.includes(month===12?1:month+1)?'early':a.architecture==='porcelainVine'&&[8,9,10,11].includes(month)?month===8?'early':'ripe':null,flowerFinished=a.architecture==='proteaEryngo'&&month>Math.max(...flowerMonths);
  if(a.architecture==='clematisRetailReferences'&&a.shootProfile==='caroline'&&bloom)phase=[7,8].includes(month)?'国内掲載写真の夏の白っぽい花と4枚が多い参考（割合・月境界は仮定）':month===9?'国内掲載写真の秋に桃色へ戻る花の参考（変化日は未予測）':'国内掲載写真の春〜初夏の桃色の花の参考（月境界は仮定）';
  if(a.sourceConflict)phase+='／'+a.sourceConflict;
- return {bloom,dormant,retainedSummerLeaves,groundDormant,shootScale,autumn,known,month,seasonName:season,flowerBuds:!bloom&&!!a.budMonths?.includes(month),headPhase,fruitStage,flowerFinished,springFlush:[4,5].includes(month),seedHeads:!!a.seedHeadMonths?.includes(month),leafDensity:density,leafScale:scale,leafColor:color,flowerDensity,flowerColor:a.monthlyFlowerColors?.[m]||info.flower,leafPatternColor:a.monthlyPatternColors?.[m]||a.patternColor,phase,timingBasis:['fernFrondReferences','athyriumFormReferences','paintedFernReferences','crestedEaredFernReferences'].includes(a.architecture)?'花をつけないシダ植物':a.flowerTiming==='months'?'資料に月の記載あり':'季節からの表示上の目安',label:bloom?'開花・'+phase:known?phase:phase+'（花期未確認）'};
+ return {bloom,dormant,retainedSummerLeaves,groundDormant,shootScale,autumn,known,month,seasonName:season,flowerBuds:!bloom&&!!a.budMonths?.includes(month),headPhase,fruitStage,flowerFinished,springFlush:[4,5].includes(month),seedHeads:!!a.seedHeadMonths?.includes(month),leafDensity:density,leafScale:scale,leafColor:color,flowerDensity,flowerColor:a.monthlyFlowerColors?.[m]||info.flower,leafPatternColor:a.monthlyPatternColors?.[m]||a.patternColor,phase,timingBasis:['fernFrondReferences','athyriumFormReferences','paintedFernReferences','crestedEaredFernReferences'].includes(a.architecture)?'花をつけないシダ植物':a.flowerTiming==='months'?'資料に月の記載あり':'季節からの表示上の目安',label:bloom?(floweringExample?'花の参考表示・開花月は未確認：':'開花・')+phase:known?phase:phase+'（花期未確認）'};
 }

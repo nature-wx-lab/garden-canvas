@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1137';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1138';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1137';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength} from './model.js?v=0.9.1137';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1138';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength,egeriaFlowerRadius,egeriaFlowerFits} from './model.js?v=0.9.1138';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1136,9 +1136,9 @@ function drawEgeriaPhotoReference(b,{s,rand},kit){
   }else b.branch(node,tip,rootRadius,'#d3d5b8','root-submerged-egeria-photo-reference');
  }
  if(!s.bloom)return;
- const R=Math.min(.010,w*.12,h*.17),flowerY=water?s.waterDepth+.004:h*.93;
- // A source-described surface flower cannot fit below a deeper water surface.
- if(flowerY+R*.25-(water?bed:0)>h)return;
+ const R=egeriaFlowerRadius(h,w),flowerY=water?s.waterDepth+.004:h*.93;
+ // A surface flower needs enough height above the pond bed.
+ if(!egeriaFlowerFits(h,R,s.waterDepth))return;
  const end=main(1),axil=main(12/14),at=[end[0],flowerY,end[2]],yaw=.25,f=flowerFrame(b,at,0,yaw);
  const dx=at[0]-axil[0],dy=at[1]-axil[1],dz=at[2]-axil[2];
  const sheathLength=Math.min(R*.84,Math.hypot(dx,dy,dz)*.48,LH*.22),sheathWidth=sheathLength*.24;

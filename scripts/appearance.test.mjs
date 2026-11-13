@@ -22534,8 +22534,16 @@ test('Egeria roots meet the pond bed and shallow foliage remains below the water
     }
    }
    const stalk=get('pedicel-submerged-egeria-photo-reference');
-   if(depth===.40)assert.equal(stalk,undefined);
-   else assert.ok(at(stalk,0,.5).y>surface);
+   const state=stateAt(plant,{year:0,month:7,reference:false,waterDepth:depth});
+   assert.equal(state.bloom,!!stalk);
+   assert.equal(state.known,false);
+   if(depth===.40){
+    assert.equal(stalk,undefined);
+    assert.match(state.label,/現在の水深では花を表示しません.*開花月は未確認/);
+   }else{
+    assert.ok(at(stalk,0,.5).y>surface);
+    assert.match(state.label,/花の参考表示・開花月は未確認/);
+   }
   }finally{dispose(group);}
  }
  assert.deepEqual(plant,original);
