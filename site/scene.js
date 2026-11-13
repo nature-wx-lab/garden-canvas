@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1077';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1077';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1078';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1078';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -410,6 +410,13 @@ export function pondMaskCode(plan){
  }
  return lines.join('\n');
 }
+
+export function zoneSurfaceElevation(zone,index){
+ // Depth-enabled ponds share the reference waterline used by floating plants.
+ // Their fragment masks resolve overlaps without requiring a vertical offset.
+ return zone.kind==='water'&&zone.depth>0?.006:.006+index*.0002;
+}
+
 export function createScene(container,onPick){
   const scene=new THREE.Scene();scene.background=new THREE.Color('#cbd2c6');scene.fog=new THREE.Fog('#cbd2c6',100,600);
   const initialWidth=Math.max(1,container.clientWidth),initialHeight=Math.max(1,container.clientHeight);
@@ -500,7 +507,7 @@ export function createScene(container,onPick){
       if(plan.zones.some(zone=>zone.kind==='water'&&zone.depth>0)){const wallDepth=Math.max(...plan.zones.map(zone=>zone.kind==='water'?(zone.depth??0):0));const positions=[];for(let j=0;j<z.points.length;j++){const [ax,az]=z.points[j],[bx,bz]=z.points[(j+1)%z.points.length],a=[ax-plan.width/2,0,az-plan.depth/2],b=[bx-plan.width/2,0,bz-plan.depth/2],c=[b[0],-wallDepth,b[2]],d=[a[0],-wallDepth,a[2]];positions.push(...a,...b,...c,...a,...c,...d);}
        const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();const wallMaterial=pondClip(mat('#81765b'),'wall',i);wallMaterial.side=THREE.DoubleSide;const walls=new THREE.Mesh(geometry,wallMaterial);walls.receiveShadow=true;root.add(walls);
       }
-      polygon(z.points,.006+i*.0002,pondClip(surface,'owner',i));line([...z.points,z.points[0]].map(([x,z])=>new THREE.Vector3(x-plan.width/2,.012,z-plan.depth/2)),z.kind==='water'?'#6c8981':'#756d51');
+      polygon(z.points,zoneSurfaceElevation(z,i),pondClip(surface,'owner',i));line([...z.points,z.points[0]].map(([x,z])=>new THREE.Vector3(x-plan.width/2,.012,z-plan.depth/2)),z.kind==='water'?'#6c8981':'#756d51');
     }
     groundDetail();
     if(view.footprints){const verts=[];for(let x=0;x<=plan.width;x++)for(let z=0;z<plan.depth;z+=.25)if(inside(x,z,plan.outline)&&inside(x,z+.25,plan.outline))verts.push(new THREE.Vector3(x-plan.width/2,.014,z-plan.depth/2),new THREE.Vector3(x-plan.width/2,.014,z+.25-plan.depth/2));for(let z=0;z<=plan.depth;z++)for(let x=0;x<plan.width;x+=.25)if(inside(x,z,plan.outline)&&inside(x+.25,z,plan.outline))verts.push(new THREE.Vector3(x-plan.width/2,.014,z-plan.depth/2),new THREE.Vector3(x+.25-plan.width/2,.014,z-plan.depth/2));root.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(verts),new THREE.LineBasicMaterial({color:'#f2efcd',transparent:true,opacity:.48})));}

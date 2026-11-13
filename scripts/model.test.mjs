@@ -127,7 +127,7 @@ test('water zones preserve old soil plans and strictly validate new surface kind
  const bad=clone(d);bad.plans.A.zones[0].depth=3;assert.throws(()=>validateDocument(bad));
 });
 
-import {pondMaskCode,CAMERA_FLOOR,CAMERA_MAX_POLAR,keepCameraAboveGround,flowerInspectionView,flowerInspectionDistanceFloor,restoreCameraPose,viewportIntersects,resizeSceneViewport} from '../site/scene.js';
+import {pondMaskCode,zoneSurfaceElevation,CAMERA_FLOOR,CAMERA_MAX_POLAR,keepCameraAboveGround,flowerInspectionView,flowerInspectionDistanceFloor,restoreCameraPose,viewportIntersects,resizeSceneViewport} from '../site/scene.js';
 test('viewport visibility uses current nonzero bounds and excludes offscreen and edge-only rectangles',()=>{
  const rect=(left,top,width,height)=>({left,top,width,height,right:left+width,bottom:top+height});
  assert.equal(viewportIntersects(rect(288,183.5,685,418),1000,760),true,'current visible bounds recover a stale nonintersection');
@@ -185,6 +185,15 @@ test('pond depth preserves flat legacy plans and overlapping zones use the last 
  for(const depth of [-.1,2.01,NaN,Infinity,'0.3',null]){const bad=clone(d);bad.plans.A.zones[0].depth=depth;assert.throws(()=>validateDocument(bad));}
  const bad=clone(d);bad.plans.A.zones[2].depth=.2;assert.throws(()=>validateDocument(bad));delete p.zones[0].depth;assert.equal(pondDepthAt(p,1.2,1.2),0);assert.doesNotThrow(()=>validateDocument(d));
  const mask=pondMaskCode(p);assert.ok(!mask.includes('--'));assert.ok(!mask.includes('/(0.00000)'));assert.ok(mask.includes('gardenPondDepth=(0.30000)'));assert.ok(mask.includes('gardenZoneOwner=(2.00000)'));
+});
+
+test('pond surfaces with positive depth share a waterline across all zone positions',()=>{
+ for(const index of [0,1,5,11]){
+  for(const depth of [.001,.007,.18,2])assert.equal(zoneSurfaceElevation({kind:'water',depth},index),.006);
+  for(const zone of [{kind:'soil'},{kind:'water'},{kind:'water',depth:0},{}]){
+   assert.equal(zoneSurfaceElevation(zone,index),.006+index*.0002);
+  }
+ }
 });
 
 test('Eupatorieae microflower observation fits millimetre florets without changing other camera floors',()=>{
