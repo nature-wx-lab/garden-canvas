@@ -62,6 +62,7 @@ def audit():
             if not module.startswith('./vendor/') and not module.endswith('?v='+version):fail('cache version missing from module import')
         if re.search(r'\b(?:fetch|XMLHttpRequest|WebSocket|sendBeacon|eval)\s*\(|\.innerHTML\s*=|navigator\.geolocation',source):fail(path+' introduces an unreviewed network or injection surface')
     commits=git('rev-list','--all').decode().splitlines()
+    checked_blobs=set()
     for commit in commits:
         parts=git('show','-s','--format=%an%x00%ae%x00%cn%x00%ce%x00%B',commit).decode().split('\0',4)
         if parts[0] not in NAMES or parts[2] not in NAMES or not SAFE_EMAIL.fullmatch(parts[1]) or not SAFE_EMAIL.fullmatch(parts[3]):fail('commit identity is not allowlisted')
@@ -70,10 +71,14 @@ def audit():
         for entry in entries:
             meta,name=entry.split('\t');mode,kind,oid=meta.split()
             if name not in ALLOWED or mode!='100644' or kind!='blob':fail('history file allowlist mismatch')
+            # Identical Git objects at the same path undergo the same byte checks.
+            identity=(name,oid)
+            if identity in checked_blobs:continue
             data=git('cat-file','blob',oid)
             if name in lock and hashlib.sha256(data).hexdigest()!=lock[name]:fail('unreviewed vendor version in history')
             if name in ASSETS:scan_asset(data,name,assets)
             else:scan(data,'history:'+name,name in lock)
+            checked_blobs.add(identity)
     print(f'RELEASE_CHECK_OK files={len(ALLOWED)} site_files={len(SITE)} commits={len(commits)}')
 
 def main():
