@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1174';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1174';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1174';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1174';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1174';
-import { createScene } from './scene.js?v=0.9.1174';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1175';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1175';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1175';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1175';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1175';
+import { createScene } from './scene.js?v=0.9.1175';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -703,7 +703,22 @@ function bind(){
     else if(isDrawing(mode))cancelDrawing();
     else if(isPlacement(mode))cancelPlacement(document.activeElement===$('cancel-placement'));
   });
-  $('apply-scenario').addEventListener('click',()=>withPlant(p=>{if(number('future-height')<p.height||number('future-spread')<p.spread||number('future-leaf')<p.leafHeight)throw new Error('成長後の寸法は初期寸法以上にしてください。小さくする場合は剪定設定を使います。');p.scenario={year:number('scenario-year'),height:number('future-height'),spread:number('future-spread'),leafHeight:number('future-leaf')};},'自分で設定した成長シナリオを反映しました。年数スライダーで確認できます。'));$('clear-scenario').addEventListener('click',()=>withPlant(p=>{p.scenario=null;},'年次成長の仮定を解除しました。'));
+  $('apply-scenario').addEventListener('click',()=>withPlant(p=>{
+    const height=$('future-height'),spread=$('future-spread'),leaf=$('future-leaf');
+    for(const [input,name,min,max] of [
+      [height,'将来の高さ',p.height,Number(height.max)],
+      [spread,'将来の幅',p.spread,Number(spread.max)],
+      [leaf,'将来の葉の高さ',p.leafHeight,height.valueAsNumber],
+    ]){
+      const value=input.valueAsNumber;
+      if(!(value>=min&&value<=max)){
+        input.focus();
+        throw new Error(`${name}は${min}〜${max}mで入力してください。${value<min?'初期寸法より小さくする場合は剪定設定を使います。':''}`);
+      }
+    }
+    p.scenario={year:number('scenario-year'),height:height.valueAsNumber,spread:spread.valueAsNumber,leafHeight:leaf.valueAsNumber};
+  },'自分で設定した成長シナリオを反映しました。年数スライダーで確認できます。'));
+  $('clear-scenario').addEventListener('click',()=>withPlant(p=>{p.scenario=null;},'年次成長の仮定を解除しました。'));
   $('apply-management').addEventListener('click',()=>{
     const height=$('target-height'),spread=$('target-spread'),recovery=$('recovery');
     for(const [input,name,unit] of [[height,'剪定直後の高さ','m'],[spread,'剪定直後の幅','m'],[recovery,'回復月数','か月']]){
