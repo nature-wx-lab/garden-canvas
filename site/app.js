@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1099';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1099';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1099';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1099';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS } from './model.js?v=0.9.1099';
-import { createScene } from './scene.js?v=0.9.1099';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1100';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1100';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1100';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1100';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS } from './model.js?v=0.9.1100';
+import { createScene } from './scene.js?v=0.9.1100';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=6,copyPlant=null;
@@ -75,10 +75,18 @@ function drawCatalog(){
   $('catalog').replaceChildren(...page.entries.map(([k,v])=>{const b=button('',()=>chooseKind(k));b.dataset.kind=k;b.dataset.form=v.form;const swatch=el('span',undefined,'swatch');swatch.dataset.color=(v.colors||['unknown'])[0];b.append(swatch,el('strong',v.label),el('small',`${v.genre} · ${v.appearance?.collection?(v.appearance.components?'中の植物を選ぶ':'混合種・構成未確認'):treeProfile(v)?HABITS[treeProfile(v).habit]:v.form==='unmodeled'?'寸法枠':'参考3D'}`));return b;}));
   if(!page.total)$('catalog').append(el('p','該当する植物がありません。検索語や絞り込みを変えてください。','hint'));setMode(mode);
 }
-function drawReplacement(kind=selectedPlant()?.kind){
-  const matches=searchCatalog(CATALOG,{query:$('replacement-search').value}),items=matches.slice(0,40);
-  if(kind&&Object.hasOwn(CATALOG,kind)&&!items.some(([k])=>k===kind))items.unshift([kind,CATALOG[kind]]);
-  options('replacement',items.map(([k,v])=>[k,v.label]));if(kind)$('replacement').value=kind;
+function drawReplacement(){
+  const plant=selectedPlant(),control=$('replacement'),search=$('replacement-search');
+  const kind=plant&&Object.hasOwn(CATALOG,plant.kind)?plant.kind:'salvia';
+  const scope=JSON.stringify([shown().active,plant?.id,kind]);
+  const previous=control.dataset.scope===scope?control.value:kind;
+  if(control.dataset.scope===scope&&control.dataset.query===search.value)return;
+  control.dataset.scope=scope;
+  control.dataset.query=search.value;
+  const matches=searchCatalog(CATALOG,{query:search.value}),items=matches.slice(0,40);
+  if(!items.some(([key])=>key===kind))items.unshift([kind,CATALOG[kind]]);
+  options('replacement',items.map(([key,info])=>[key,info.label]));
+  control.value=items.some(([key])=>key===previous)?previous:kind;
   $('replacement-count').textContent=`${matches.length}件${matches.length>40?'。先頭40件を表示。名前で絞り込めます。':''}`;
 }
 
@@ -99,7 +107,7 @@ function syncSelected(){const p=selectedPlant();$('no-selection').hidden=!!p;$('
   for(const id of ['leaf-height','future-leaf']){$(id).min=String(limits.minLeafHeight);$(id).step=String(limits.step);}
   $('plant-state').textContent=!s.present?(s.expired?'一年草の参考表示は植え付け後12か月までです。植え直す場合は別の株を追加してください。':'この月はまだ植え付け前です。'):`表示：高さ ${s.height.toFixed(limits.digits)}m・幅 ${s.spread.toFixed(2)}m ／ 植えて ${s.age.toFixed(1)}年。${s.unsupported?'目標が主枝より低いため剪定形状は未対応。':s.last?'最後の剪定・切り戻し：'+Math.floor(s.last.at/12)+'年経過時の '+(s.last.at%12+1)+'月。':''}`;
   for(const [id,value] of Object.entries({height:p.height,spread:p.spread,'leaf-height':p.leafHeight,price:p.price,'plant-x':p.x,'plant-z':p.z,'start-year':Math.floor(p.start/12),'start-month':p.start%12+1,role:p.role,'scenario-year':p.scenario?.year||3,'future-height':p.scenario?.height??p.height,'future-spread':p.scenario?.spread??p.spread,'future-leaf':p.scenario?.leafHeight??p.leafHeight,'target-height':p.management?.height??p.height,'target-spread':p.management?.spread??p.spread,'prune-method':p.management?.method||'thin',recovery:p.management?.recovery||6}))$(id).value=value??'';
-  drawReplacement(Object.hasOwn(CATALOG,p.kind)?p.kind:'salvia');$('care-advice').textContent=info.care;
+  drawReplacement();$('care-advice').textContent=info.care;
   $('plant-tasks').replaceChildren(...p.tasks.map(t=>itemRow(`${t.month}月 ${TASKS[t.type]} ×${t.count} ／ ${t.repeat==='first'?'初年度':'毎年'} ／ ${t.min===null?'時間未入力':time(t.min,t.max)}`,()=>withPlant(p=>{p.tasks=p.tasks.filter(x=>x.id!==t.id);},'手入れ予定を削除しました。',true))));sourceCard('selected-source',p.kind);
 }
 function syncGarden(){const p=plan();for(const id of ['width','depth','sun','moisture','prep'])$(id).value=p[id];$('shape').value=['rectangle','lshape'].find(k=>JSON.stringify(outlineFor(k,p.width,p.depth))===JSON.stringify(p.outline))||'custom';p.hours.forEach((h,i)=>$(`hours-${i}`).value=h??'');
