@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1159';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1160';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1159';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1159';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1160';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1160';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -30612,7 +30612,6 @@ function cobraGrassPhotoSegment(b,a,z,r,color,kind){
 function drawCobraGrassPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
  const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
- const waterline=wet?bed+s.waterDepth+POND_SURFACE_Y:-Infinity;
  const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.94),r=Math.min(.00035,w*.002,h*.003),floor=bed+r*.45+Math.min(.00002,h*.002),n=Math.max(1,Math.round(128*s.leafDensity));
  const bases=[];
  for(let leaf=0;leaf<n;leaf++){
@@ -30632,9 +30631,8 @@ function drawCobraGrassPhotoReference(b,{s,rand},kit){
   const L=Math.max(.0001,LH*(.55+.38*rand())),W=Math.min(.0035,w*.018,LH*.10),pitch=Math.min(.04+rand()*.16,w*.06/L),yaw=az+(leaf%2?1.25:-.35),roll=(rand()-.5)*Math.min(.16,w*.04/L),Z=Math.min(L,w*.05/.055);
   b.add('cobra-grass-photo-reference-leaf','leaf-cobra-grass-photo-reference',kit.shade(rand,s.leafColor,.035),...root,W,L,Z,pitch,yaw,roll);
  }
- if(!s.bloom||s.waterDepth>=.02)return;
- const S=Math.min(.020,h*.28),D=Math.min(.0030,w*.016,h*.065),P=Math.min(.006,w*.025,h*.10);
- if(bed+cobraGrassFlowerHeight(h,w)<=waterline)return;
+ if(!s.bloom)return;
+ const {stalk:S,diameter:D,pedicel:P,centerY}=cobraGrassFlowerDimensions(h,w);
  let flowerIndex=0;
  for(let umbel=0;umbel<6;umbel++){
   const az=umbel*TAU/6+.2,R=w*.39;
@@ -30649,7 +30647,7 @@ function drawCobraGrassPhotoReference(b,{s,rand},kit){
   const top=[edge[0],floor+S,edge[2]];
   cobraGrassPhotoSegment(b,edge,top,r*.55,'#8faa5c','scape-cobra-grass-photo-ref');
   for(let flower=0;flower<4;flower++){
-   const a=flower*TAU/4+az,at=[top[0]+Math.sin(a)*P*.65,top[1]+P*.25,top[2]+Math.cos(a)*P*.65];cobraGrassPhotoSegment(b,top,at,r*.35,'#91ae66','pedicel-cobra-grass-photo-ref');const f=flowerFrame(b,at,0,az);
+   const a=flower*TAU/4+az,at=[top[0]+Math.sin(a)*P*.65,bed+centerY,top[2]+Math.cos(a)*P*.65];cobraGrassPhotoSegment(b,top,at,r*.35,'#91ae66','pedicel-cobra-grass-photo-ref');const f=flowerFrame(b,at,0,az);
    for(let lobe=0;lobe<2;lobe++)f.add('cobra-grass-photo-reference-body','ovary-cobra-grass-photo-reference','#8eaf63',(lobe-.5)*D*.12,-D*.04,0,D*.13,D*.12,D*.15);
    for(let organ=0;organ<5;organ++){
     const angle=organ*TAU/5,pitch=1.45,L=D*.58,W=D*.50,scaleZ=D*.50,pf=flowerFrame(f,[0,0,0],pitch,angle);pf.add('cobra-grass-photo-reference-petal','petal-cobra-grass-photo-reference',kit.shade(rand,'#e2e6c8',.025),0,0,0,W,L,scaleZ);

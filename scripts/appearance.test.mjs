@@ -24249,7 +24249,7 @@ test('hairgrass accepts existing saved gardens without changing independent dime
  for(const dims of[[.20,.25,.16],[.01,.10,.005],[.20,.25,.005]]){const input={...makePlant('p-c23d044f8453',101510,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},d=emptyDocument(10,6);d.plans.A.plants=[input];const old={...structuredClone(d),catalogVersion:'2026-10-29.77'},copy=structuredClone(old);assert.deepEqual(validateDocument(old),d);assert.deepEqual(old,copy);assert.deepEqual([input.height,input.spread,input.leafHeight],dims);const state=stateAt(input,{year:1,month:7,reference:true});assert.equal(state.height,.20);assert.equal(state.spread,dims[1]);assert.ok(Math.abs(state.leafHeight-dims[2]*.20/dims[0])<1e-12);}
 });
 test('cobra grass source preserves domestic height bloom and unknown stock width',()=>{
- const q=CATALOG['p-a8dafa56e5f8'],a=q.appearance;assert.equal(q.latin,'Lilaeopsis novae-zelandiae');assert.deepEqual(q.height,[.05,.15]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[5,6,7,8,9]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['white']);assert.equal(q.sourceChecked,'2026-11-13');assert.equal(a.shootProfile,'cobraGrassPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.sources[4].scope,'family');assert.match(a.sources[4].url,/Apiaceae/);assert.match(a.sourceConflict,/9cm.*15cm.*株幅/);assert.match(a.phenologyRegion,/2cm.*仮の境界/);assert.match(a.unconfirmed.join(' '),/3〜4花/);assert.match(a.unconfirmed.join(' '),/セリ科.*模式/);assert.match(a.unconfirmed.join(' '),/地下茎の節から細い葉状部と短い根/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'white'}).some(([id])=>id==='p-a8dafa56e5f8'));for(const color of['green','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-a8dafa56e5f8'));
+ const q=CATALOG['p-a8dafa56e5f8'],a=q.appearance;assert.equal(q.latin,'Lilaeopsis novae-zelandiae');assert.deepEqual(q.height,[.05,.15]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[5,6,7,8,9]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['white']);assert.equal(q.sourceChecked,'2026-11-13');assert.equal(a.shootProfile,'cobraGrassPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.sources[4].scope,'family');assert.match(a.sources[4].url,/Apiaceae/);assert.match(a.sourceConflict,/9cm.*15cm.*株幅/);assert.match(a.phenologyRegion,/株の寸法.*小花が水面より上/);assert.match(a.unconfirmed.join(' '),/3〜4花/);assert.match(a.unconfirmed.join(' '),/セリ科.*模式/);assert.match(a.unconfirmed.join(' '),/地下茎の節から細い葉状部と短い根/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'white'}).some(([id])=>id==='p-a8dafa56e5f8'));for(const color of['green','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-a8dafa56e5f8'));
 });
 test('cobra grass photo reference fits twenty four independent inputs without hidden rhizomes',()=>{
  const dimensions=[[.15,.25,.12],[.01,.10,.005],[.15,.25,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,leafBases=0,pedicelJoins=0,petalJoins=0,flowerModels=0;
@@ -24267,7 +24267,7 @@ test('cobra grass pond leaves roots and aerial scapes join the same rhizome node
  const matrix=new Matrix4();
  const point=(mesh,i,y)=>{mesh.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
  const view={year:0,month:7,reference:false};
- for(const depth of [.007,.14]){
+ for(const [depth,flowers] of [[.007,true],[.015,true],[.016,false],[.14,false]]){
   const group=plantModel(p,{...view,waterDepth:depth});
   try{
    const get=key=>group.children.find(m=>m.userData.component===key);
@@ -24284,8 +24284,19 @@ test('cobra grass pond leaves roots and aerial scapes join the same rhizome node
     assert.ok(point(rhizomes,i,-.5).distanceTo(point(leaves,j,0))<2e-6);
     assert.ok(point(rhizomes,i,.5).distanceTo(point(leaves,j+2,0))<2e-6);
    }
-   if(depth===.007){
+   assert.equal(stateAt(p,{...view,waterDepth:depth}).bloom,flowers);
+   assert.equal(inspectionSeasonActive(p,{...view,waterDepth:depth}),flowers);
+   if(flowers){
     assert.equal(scapes.count,6);
+    const petals=get('petal-cobra-grass-photo-reference');
+    const positions=petals.geometry.attributes.position,vertex=new Vector3();
+    for(let i=0;i<petals.count;i++){
+     petals.getMatrixAt(i,matrix);
+     for(let j=0;j<positions.count;j++){
+      const y=vertex.fromBufferAttribute(positions,j).applyMatrix4(matrix).y+PLANT_BASE_Y-depth;
+      assert.ok(y>POND_SURFACE_Y);
+     }
+    }
     const ends=get('flower-rhizome-cobra-grass-photo-ref'),edgeRoots=get('flower-root-cobra-grass-photo-ref');
     assert.equal(ends.count,6);assert.equal(edgeRoots.count,6);
     for(let i=0;i<scapes.count;i++){
@@ -24295,7 +24306,7 @@ test('cobra grass pond leaves roots and aerial scapes join the same rhizome node
      assert.ok(point(ends,i,.5).distanceTo(base)<2e-6);
      assert.ok(point(edgeRoots,i,-.5).distanceTo(base)<2e-6);
     }
-   }else assert.equal(scapes,undefined);
+   }else{assert.equal(scapes,undefined);assert.equal(flowerInspectionView(group,.8,40),null);}
   }finally{dispose(group);}
  }
  assert.equal(stateAt({...p,height:.01,leafHeight:.005},{...view,waterDepth:.007}).bloom,false);
