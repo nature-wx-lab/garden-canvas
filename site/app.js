@@ -1,15 +1,19 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1179';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1179';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1179';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1179';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1179';
-import { createScene } from './scene.js?v=0.9.1179';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1180';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1180';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1180';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1180';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1180';
+import { createScene } from './scene.js?v=0.9.1180';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
 let previewPlantInputs=null;
 const shown=()=>preview||doc,plan=()=>currentPlan(shown()),selectedPlant=()=>plan().plants.find(p=>p.id===selected);
-const number=id=>$(id).value.trim()===''?NaN:Number($(id).value),optional=id=>$(id).value.trim()===''?null:Number($(id).value);
+const number=id=>$(id).value.trim()===''?NaN:Number($(id).value);
+function optionalNumber(input){
+  if(input.validity.badInput)return NaN;
+  return input.value===''?null:input.valueAsNumber;
+}
 const yen=v=>`${v.toLocaleString('ja-JP')}円`,time=(a,b)=>a===b?`${round(a)}分`:`${round(a)}〜${round(b)}分`;
 const message=text=>$('status').textContent=text;
 const nextId=items=>{let id=1;while(items.some(p=>p.id===id))id++;return id;};
@@ -717,14 +721,17 @@ function bind(){
   $('lock').addEventListener('click',()=>withPlant(p=>{p.locked=!p.locked;},'植物の固定を変更しました。固定中は配置・種類・寸法を変更できません。',{allowLocked:true}));$('move').addEventListener('click',()=>{if(selectedPlant()?.locked){message('固定を解除してから移動してください。');return;}startPlacement('move');message('庭の移動先をクリックしてください。');});$('clone-plant').addEventListener('click',()=>{copyPlant=clone(selectedPlant());startPlacement('clone');message('複製する場所を庭でクリックしてください。');});$('remove').addEventListener('click',()=>withPlant((p,g)=>{g.plants=g.plants.filter(v=>v.id!==p.id);},'植物を取り除きました。「戻す」で復元できます。'));
   $('price').addEventListener('input',()=>{$('price').dataset.edited='true';});
   $('apply-plant').addEventListener('click',()=>{
-    const price=optional('price'),priceEdited=$('price').dataset.edited==='true';
+    const priceInput=$('price'),price=optionalNumber(priceInput),priceEdited=priceInput.dataset.edited==='true';
     let resized=false;
     const ok=withPlant(p=>{
       const h=number('height'),w=number('spread'),lh=number('leaf-height'),limits=plantSizeLimits(p.kind);
       const x=number('plant-x'),z=number('plant-z');
       if(!(h>=limits.minHeight&&h<=60&&w>=.1&&w<=60&&lh>=limits.minLeafHeight&&lh<=h))throw new Error(`高さは${limits.minHeight}〜60m、幅は0.1〜60m、葉高は${limits.minLeafHeight}m以上で高さ以下にしてください。`);
       if(!canPlant(plan(),x,z))throw new Error('庭の中で外構に重ならない位置にしてください。');
-      if(price!==null&&(!Number.isInteger(price)||price<0||price>10000000))throw new Error('購入単価は0〜10,000,000円の整数で入力してください。');
+      if(price!==null&&(!Number.isInteger(price)||price<0||price>10000000)){
+        priceInput.focus();
+        throw new Error('購入単価は0〜10,000,000円の整数で入力してください。');
+      }
       resized=h!==p.height||w!==p.spread||lh!==p.leafHeight;
       Object.assign(p,editSize(p,h,w,lh),{x,z,start:number('start-year')*12+number('start-month')-1,
         role:$('role').value,price:resized&&!priceEdited?null:price});
@@ -783,10 +790,21 @@ function bind(){
   $('task-type').addEventListener('change',updateTaskCount);
   updateTaskCount();
   $('add-task').addEventListener('click',()=>{
-    const type=$('task-type').value,count=number('task-count'),min=optional('task-min'),max=optional('task-max');
+    const type=$('task-type').value,count=number('task-count');
+    const minInput=$('task-min'),maxInput=$('task-max');
+    const min=optionalNumber(minInput),max=optionalNumber(maxInput);
     const limit=taskCountLimit(type);
-    if(!Number.isInteger(count)||count<1||count>limit){message(`月内の回数は${limit===1?'1回':'1〜31回の整数'}で指定してください。`);return;}
-    if(!validTaskMinutes(min,max)){message('作業時間は最短・最長ともに未入力にするか、0〜10000分で最短が最長以下になるよう入力してください。');return;}
+    if(!Number.isInteger(count)||count<1||count>limit){
+      $('task-count').focus();
+      message(`月内の回数は${limit===1?'1回':'1〜31回の整数'}で指定してください。`);
+      return;
+    }
+    if(!validTaskMinutes(min,max)){
+      const invalidMin=min===null||!(min>=0&&min<=10000);
+      (invalidMin?minInput:maxInput).focus();
+      message('作業時間は最短・最長ともに未入力にするか、0〜10000分で最短が最長以下になるよう入力してください。');
+      return;
+    }
     const month=number('task-month'),repeat=$('task-repeat').value;
     withPlant(p=>{
       if(p.tasks.length>=36)throw new Error('1株につき手入れ予定は36件までです。');
