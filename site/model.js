@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1105';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1105';
-import { seasonAt } from './catalog-search.js?v=0.9.1105';
+import {treeProfile} from './tree-profiles.js?v=0.9.1106';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1106';
+import { seasonAt } from './catalog-search.js?v=0.9.1106';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -39,9 +39,26 @@ export const plantBaseAt=(plan,p)=>{
 
 export const area=points=>Math.abs(points.reduce((s,p,i)=>{const q=points[(i+1)%points.length];return s+p[0]*q[1]-q[0]*p[1];},0)/2);
 export const outlineFor=(shape,w,d)=>shape==='lshape'?[[0,0],[w,0],[w,d*.55],[w*.55,d*.55],[w*.55,d],[0,d]]:[[0,0],[w,0],[w,d],[0,d]];
+const outlineEdgeMinimum=.05;
+export function circleZonePoints(center,edge){
+  const radius=Math.hypot(edge[0]-center[0],edge[1]-center[1]);
+  const polygon=segments=>Array.from({length:segments},(_,i)=>{
+    const angle=i*Math.PI*2/segments;
+    return [round(center[0]+Math.cos(angle)*radius),round(center[1]+Math.sin(angle)*radius)];
+  });
+  // Small circles need fewer points so adjacent rounded vertices stay at least 5 cm apart.
+  for(const segments of [24,20,16,12,8]){
+    const points=polygon(segments);
+    if(points.every(([x,z],i)=>{
+      const [nextX,nextZ]=points[(i+1)%segments];
+      return Math.hypot(x-nextX,z-nextZ)>=outlineEdgeMinimum;
+    }))return points;
+  }
+  return polygon(8);
+}
 export function validOutline(points,w,d,minArea=1){
   if(!Array.isArray(points)||points.length<3||points.length>32||points.some(p=>!Array.isArray(p)||p.length!==2||!within(p[0],0,w)||!within(p[1],0,d))||area(points)<minArea)return false;
-  for(let i=0;i<points.length;i++){const a=points[i],b=points[(i+1)%points.length];if(Math.hypot(a[0]-b[0],a[1]-b[1])<.05)return false;for(let j=i+1;j<points.length;j++){if(j===i+1||(i===0&&j===points.length-1))continue;const c=points[j],e=points[(j+1)%points.length];if(onSegment(a,c,e)||onSegment(b,c,e)||onSegment(c,a,b)||onSegment(e,a,b)||(cross(a,b,c)*cross(a,b,e)<0&&cross(c,e,a)*cross(c,e,b)<0))return false;}}return true;
+  for(let i=0;i<points.length;i++){const a=points[i],b=points[(i+1)%points.length];if(Math.hypot(a[0]-b[0],a[1]-b[1])<outlineEdgeMinimum)return false;for(let j=i+1;j<points.length;j++){if(j===i+1||(i===0&&j===points.length-1))continue;const c=points[j],e=points[(j+1)%points.length];if(onSegment(a,c,e)||onSegment(b,c,e)||onSegment(c,a,b)||onSegment(e,a,b)||(cross(a,b,c)*cross(a,b,e)<0&&cross(c,e,a)*cross(c,e,b)<0))return false;}}return true;
 }
 export function contained(inner,outer){
   // Split every edge at boundary intersections, then test each interval.

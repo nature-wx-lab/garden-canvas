@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CATALOG_VERSION} from '../site/catalog.js';
-import {emptyDocument,sampleDocument,validateDocument,makePlant,clone,outlineFor,validOutline,contained,canPlant,stateAt,replacePlant,editSize,budget,calendar,taskEvents,observations,pondDepthAt,plantBaseAt,plantSizeLimits} from '../site/model.js';
+import {emptyDocument,sampleDocument,validateDocument,makePlant,clone,outlineFor,circleZonePoints,validOutline,contained,canPlant,stateAt,replacePlant,editSize,budget,calendar,taskEvents,observations,pondDepthAt,plantBaseAt,plantSizeLimits} from '../site/model.js';
 const view=(year,month,reference=false)=>({year,month,reference,footprints:false,camera:null});
 const fixture=()=>{const d=emptyDocument();d.plans.A.plants=[makePlant('maple',1,2,2)];return d;};
 const task=(type,month,repeat='annual',min=10,max=20,count=1)=>({id:1,type,month,repeat,min,max,count});
@@ -31,6 +31,22 @@ test('v1 file migrates positions and preserves unidentified plant status',()=>{c
 test('invalid v1 fields, duplicate ids, unknown species and prototype names fail closed',()=>{for(const change of [d=>d.plans.A.plants.push(clone(d.plans.A.plants[0])),d=>d.plans.A.plants[0].kind='toString',d=>d.plans.A.plants[0].kind=['maple'],d=>{d.plans.B=d.plans.A;d.plans.A=null;d.active='B';},d=>d.plans.A.plants[0].kind='__proto__',d=>d.plans.A.plants[0].height=NaN,d=>d.plans.A.plants[0].email='unexpected',d=>d.plans.A.width=31,d=>d.view.year=11,d=>d.catalogVersion='future',d=>d.plans.A.plants[0].leafHeight=99]){const d=fixture();change(d);assert.throws(()=>validateDocument(d));}const d=fixture();d.plans.A=JSON.parse('{"__proto__":{}}');assert.throws(()=>validateDocument(d));});
 test('limits constrain geometry, tasks, finite numbers and imported camera',()=>{for(const change of [d=>d.plans.A.plants=Array.from({length:101},(_,i)=>makePlant('salvia',i+1,2,2)),d=>d.plans.A.plants[0].tasks=Array.from({length:37},(_,i)=>({...task('prune',2),id:i+1})),d=>d.plans.A.hours[3]=Infinity,d=>d.view.camera={position:[0,0,0],target:[0,0,0]},d=>d.plans.A.plants[0].price=-1,d=>d.plans.A.plants[0].tasks=[task('prune',2,'annual',20,10)],d=>d.plans.A.plants[0].tasks=[task('prune',2,'annual',null,10)],d=>d.plans.A.plants[0].tasks=[task('prune',2,'annual',10,20,3)]]){const d=fixture();change(d);assert.throws(()=>validateDocument(d));}});
 test('outline rejects self intersections and edges crossing a concave boundary',()=>{assert.equal(validOutline([[0,0],[8,6],[8,0],[0,6]],8,6),false);const l=outlineFor('lshape',8,6);assert.equal(contained([[1,1],[7,2],[2,5]],l),false);assert.equal(contained([[.5,.5],[2,.5],[2,2],[.5,2]],l),true);const notch=[[0,0],[8,0],[8,6],[4.01,6],[4.01,2],[4,2],[4,6],[0,6]];assert.equal(contained([[1,3],[7,3],[1,4]],notch),false);});
+test('small circular beds retain valid edge lengths without loosening the outline rules',()=>{
+  const center=[4,3],d=emptyDocument();
+  const points=circleZonePoints(center,[4.12,3]);
+  assert.ok(points.length<24);
+  assert.equal(validOutline(points,8,6,.04),true);
+  assert.equal(validOutline(points,8,6),false);
+  assert.equal(validOutline(circleZonePoints(center,[4.1,3]),8,6,.04),false);
+  assert.equal(validOutline(circleZonePoints([.1,3],[.25,3]),8,6,.04),false);
+  const normal=circleZonePoints(center,[5,3]);
+  assert.deepEqual(normal,Array.from({length:24},(_,i)=>{
+    const angle=i*Math.PI/12;
+    return [Math.round((4+Math.cos(angle))*100)/100,Math.round((3+Math.sin(angle))*100)/100];
+  }));
+  d.plans.A.zones.push({points,kind:'water',depth:.03});
+  assert.deepEqual(validateDocument(d),d);
+});
 test('obstacles block planting and invalid geometry never silently drops plants',()=>{const d=fixture();d.plans.A.obstacles.push({type:'path',x:1,z:1,width:2,depth:2,height:.05});assert.equal(canPlant(d.plans.A,2,2),false);assert.throws(()=>validateDocument(d));assert.equal(d.plans.A.plants.length,1);});
 test('garden zones and obstacles must remain fully inside the outline',()=>{const d=emptyDocument();d.plans.A.outline=outlineFor('lshape',8,6);d.plans.A.zones=[{points:[[1,1],[7,2],[2,5]]}];assert.throws(()=>validateDocument(d));d.plans.A.zones=[];d.plans.A.obstacles=[{type:'house',x:4,z:3,width:2,depth:2,height:2}];assert.throws(()=>validateDocument(d));});
 test('unspecified annual growth stays unknown and mature reference is independent of elapsed year',()=>{const p=makePlant('maple',1,2,2);assert.equal(stateAt(p,view(5,6)).height,p.height);assert.equal(stateAt(p,view(5,6)).basis,'年次成長は未設定');assert.equal(stateAt(p,view(0,6,true)).height,stateAt(p,view(10,6,true)).height);assert.notEqual(stateAt(p,view(0,6,true)).height,p.height);});
