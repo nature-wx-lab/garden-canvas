@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1120';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1120';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1121';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1121';
 
 const BACKDROP_COLOR='#65755a';
 export {CAMERA_FLOOR};
@@ -628,8 +628,41 @@ export function createScene(container,onPick){
     camera.position.y=Math.max(.1,camera.position.y);camera.lookAt(controls.target);controls.update();dirty=true;return true;
   }
   new ResizeObserver(()=>{lastVisibilityCheck=-Infinity;dirty=true;if(resizeSceneViewport(camera,controls,renderer,container.clientWidth,container.clientHeight))fitShadow();}).observe(container);
-  const ray=new THREE.Raycaster(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0),pointers=new Set();let start=null;
-  renderer.domElement.addEventListener('pointerdown',e=>{pointers.add(e.pointerId);start=pointers.size===1?{id:e.pointerId,x:e.clientX,y:e.clientY}:null;});renderer.domElement.addEventListener('pointermove',e=>{if(start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)>=5)start=null;});renderer.domElement.addEventListener('pointercancel',e=>{pointers.delete(e.pointerId);start=null;});renderer.domElement.addEventListener('pointerup',e=>{pointers.delete(e.pointerId);if(start&&e.pointerId===start.id&&plan){const rect=renderer.domElement.getBoundingClientRect();ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);const point=ray.ray.intersectPlane(plane,new THREE.Vector3());let id=null;const hits=ray.intersectObjects(plants.children,true);if(hits.length){let obj=hits[0].object;while(obj&&!obj.userData.plantId)obj=obj.parent;id=obj?.userData.plantId??null;}if(point)onPick({x:Math.round((point.x+plan.width/2)*10)/10,z:Math.round((point.z+plan.depth/2)*10)/10,id});}start=null;});
+  const ray=new THREE.Raycaster(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0),pointers=new Set();
+  let start=null,selecting=true;
+  renderer.domElement.addEventListener('pointerdown',e=>{
+    pointers.add(e.pointerId);
+    start=pointers.size===1?{id:e.pointerId,x:e.clientX,y:e.clientY}:null;
+  });
+  renderer.domElement.addEventListener('pointermove',e=>{
+    if(start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)>=5)start=null;
+  });
+  renderer.domElement.addEventListener('pointercancel',e=>{
+    pointers.delete(e.pointerId);
+    start=null;
+  });
+  renderer.domElement.addEventListener('pointerup',e=>{
+    pointers.delete(e.pointerId);
+    const click=start?.id===e.pointerId;
+    start=null;
+    if(!click||!plan)return;
+    const rect=renderer.domElement.getBoundingClientRect();
+    if(!rect.width||!rect.height)return;
+    ray.setFromCamera(new THREE.Vector2((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1),camera);
+    if(selecting){
+      // A visible canopy can be above the horizon, where the ray misses the ground.
+      const visibleHit=ray.intersectObjects(plants.children,true).find(hit=>{
+        const depth=-hit.point.clone().applyMatrix4(camera.matrixWorldInverse).z;
+        return depth>=camera.near&&depth<=camera.far;
+      });
+      let obj=visibleHit?.object;
+      while(obj&&!obj.userData.plantId)obj=obj.parent;
+      onPick({id:obj?.userData.plantId??null});
+      return;
+    }
+    const point=ray.ray.intersectPlane(plane,new THREE.Vector3());
+    if(point)onPick({x:Math.round((point.x+plan.width/2)*10)/10,z:Math.round((point.z+plan.depth/2)*10)/10});
+  });
   container.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();if(!controls.enabled)return;camera.position.sub(controls.target).applyAxisAngle(up,e.key==='ArrowLeft'?.12:-.12).add(controls.target);controls.update();dirty=true;}});
   renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();container.dispatchEvent(new CustomEvent('render-failed'));});renderer.setAnimationLoop(now=>{
     if(document.hidden){lastTick=0;return;}
@@ -646,5 +679,5 @@ export function createScene(container,onPick){
     const waterDepth=pondDepthAt(plan,p.x,p.z);
     return inspectionSeasonActive(p,{...view,waterDepth})?flowerInspectionView(group,camera.aspect,camera.fov):null;
   }
-  return {render,select:selectPlant,hasFlower:()=>!!selectedFlowerPose(plants?.children.find(g=>g.userData.plantId===selection)),wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(controls.minDistance,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{restoreCameraPose(camera,controls,c);dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
+  return {render,select:selectPlant,hasFlower:()=>!!selectedFlowerPose(plants?.children.find(g=>g.userData.plantId===selection)),wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},selecting:value=>{selecting=value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(controls.minDistance,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{restoreCameraPose(camera,controls,c);dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
 }

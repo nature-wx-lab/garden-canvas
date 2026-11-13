@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1120';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1120';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1120';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1120';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1120';
-import { createScene } from './scene.js?v=0.9.1120';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1121';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1121';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1121';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1121';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1121';
+import { createScene } from './scene.js?v=0.9.1121';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -110,6 +110,7 @@ function setMode(value){if(preview&&value!=='orbit'){message('交換プレビュ
   $('outline-tools').hidden=!drawing;
   for(const id of ['view-home','view-top','view-eye','focus','focus-flower'])$(id).disabled=drawing;
   engine?.editing(drawing);
+  engine?.selecting(value==='orbit');
   $('orbit').setAttribute('aria-pressed',String(value==='orbit'));$('viewport').dataset.mode=value;
   const statuses={orbit:`案 ${shown().active} · 3Dの参考表現`,add:`${plantInfo(addKind).label}を置く場所をクリック`,move:'移動先をクリック',clone:'複製する場所をクリック',outline:'庭の外周の角を順番にクリック',zone:'区画の角を順番にクリック',circle:'中心 → 半径の順に2点クリック'};
   $('view-status').textContent=statuses[value];for(const b of $('catalog').children)b.setAttribute('aria-pressed',String(value==='add'&&b.dataset.kind===addKind));
