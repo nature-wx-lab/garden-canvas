@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1165';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1165';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1165';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1165';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1165';
-import { createScene } from './scene.js?v=0.9.1165';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1166';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1166';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1166';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1166';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1166';
+import { createScene } from './scene.js?v=0.9.1166';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -718,21 +718,24 @@ function bind(){
     }
     const ok=mutate(p=>{
       if(p.plants.some(plant=>plant.locked))throw new Error('固定された植物があります。寸法変更で配置も伸縮するため、先に固定を解除してください。');
-      const rx=width/p.width,rz=depth/p.depth,shape=gardenShape(p);
+      const previousWidth=p.width,previousDepth=p.depth,shape=gardenShape(p);
+      // Preserve shared edges and boundary placements through the same scaling.
+      const scaleX=x=>x/previousWidth*width;
+      const scaleZ=z=>z/previousDepth*depth;
       p.width=width;
       p.depth=depth;
-      const scalePoints=points=>points.map(([x,z])=>[round(x*rx),round(z*rz)]);
+      const scalePoints=points=>points.map(([x,z])=>[scaleX(x),scaleZ(z)]);
       p.outline=shape==='custom'?scalePoints(p.outline):outlineFor(shape,width,depth);
       for(const zone of p.zones)zone.points=scalePoints(zone.points);
       for(const obstacle of p.obstacles){
-        obstacle.x=round(obstacle.x*rx);
-        obstacle.z=round(obstacle.z*rz);
-        obstacle.width=round(obstacle.width*rx);
-        obstacle.depth=round(obstacle.depth*rz);
+        obstacle.x=scaleX(obstacle.x);
+        obstacle.z=scaleZ(obstacle.z);
+        obstacle.width=scaleX(obstacle.width);
+        obstacle.depth=scaleZ(obstacle.depth);
       }
       for(const plant of p.plants){
-        plant.x=round(plant.x*rx);
-        plant.z=round(plant.z*rz);
+        plant.x=scaleX(plant.x);
+        plant.z=scaleZ(plant.z);
       }
     },'庭と配置の平面寸法を伸縮しました。');
     if(ok)engine?.view('home');
