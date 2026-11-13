@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1175';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1175';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1175';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1175';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1175';
-import { createScene } from './scene.js?v=0.9.1175';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1176';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1176';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1176';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1176';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1176';
+import { createScene } from './scene.js?v=0.9.1176';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -136,6 +136,7 @@ function drawReplacement(){
 function historyEntry(scope){
   const document=clone(doc);
   if(scope==='calendar')return {document,scope,calendarMonth};
+  if(scope==='zones')return {document,scope};
   if(!scope)return {document};
   const camera=engine?.capture();
   document.view.camera=validSavedCamera(camera)?camera:null;
@@ -150,12 +151,13 @@ function restoreEdit(from,to){
   if(!from.length||preview)return false;
   const entry=from.pop(),{document,scope}=entry;
   to.push(historyEntry(scope));
-  if(scope)calendarMonth=entry.calendarMonth;
+  if(scope==='calendar'||scope==='view')calendarMonth=entry.calendarMonth;
   if(scope==='view')selected=entry.selected;
   else document.view=doc.view;
   doc=document;
   resetMode();
-  sync();
+  if(scope==='zones')syncGardenZones();
+  sync({refreshGarden:scope!=='zones'});
   if(scope==='view'){
     if(doc.view.camera)engine?.restore(doc.view.camera);
     else engine?.view('home');
@@ -180,7 +182,7 @@ function mutate(fn,text,afterCommit,scope){
   doc=checked;
   resetMode();
   afterCommit?.();
-  sync();
+  sync({refreshGarden:scope!=='zones'});
   message(text);
   return true;
 }
@@ -264,11 +266,11 @@ function gardenShape({width,depth,outline}){
 function syncGardenShape(){
   $('shape').value=gardenShape(plan());
 }
-function syncGarden(){const p=plan();for(const id of ['width','depth','sun','moisture','prep'])$(id).value=p[id];syncGardenShape();p.hours.forEach((h,i)=>$(`hours-${i}`).value=h??'');
+function syncGardenZones(){const p=plan();
   $('zone-list').replaceChildren(...p.zones.map((zone,index)=>{
     const name=zone.kind==='water'?'水面':'花壇',number=index+1;
     const row=itemRow(`${name} ${number} · ${area(zone.points).toFixed(1)}m²`,()=>
-      mutate(plan=>plan.zones.splice(index,1),'区画を取り除きました。植物は残ります。'));
+      mutate(plan=>plan.zones.splice(index,1),'区画を取り除きました。植物は残ります。',syncGardenZones,'zones'));
     const type=el('select'),typeName=`区画${number}の種類`;
     type.setAttribute('aria-label',typeName);
     for(const [value,text] of [['soil','花壇'],['water','池・水面']]){
@@ -281,7 +283,7 @@ function syncGarden(){const p=plan();for(const id of ['width','depth','sun','moi
       if(mutate(plan=>{
         plan.zones[index].kind=value;
         if(value!=='water')delete plan.zones[index].depth;
-      },'区画の種類を変更しました。')){
+      },'区画の種類を変更しました。',syncGardenZones,'zones')){
         if(keepFocus)$('zone-list').querySelector(`[aria-label="${typeName}"]`)?.focus({preventScroll:true});
       }else type.value=zone.kind||'soil';
     });
@@ -299,8 +301,9 @@ function syncGarden(){const p=plan();for(const id of ['width','depth','sun','moi
         input.value=String(plan().zones[index].depth??0);
         return;
       }
-      if(mutate(plan=>{plan.zones[index].depth=depth;},'池の水深を変更しました。')){
-        $('zone-list').querySelector(`[aria-label="${focusName}"]`)?.focus({preventScroll:true});
+      if(mutate(plan=>{plan.zones[index].depth=depth;},'池の水深を変更しました。',undefined,'zones')){
+        input.value=String(plan().zones[index].depth);
+        row.querySelector(`[aria-label="${focusName}"]`)?.focus({preventScroll:true});
       }
     };
     const apply=button('水深を反映',()=>applyDepth(applyName));
@@ -311,6 +314,9 @@ function syncGarden(){const p=plan();for(const id of ['width','depth','sun','moi
     label.append(input);row.append(label,apply);
     return row;
   }));
+}
+function syncGarden(){const p=plan();for(const id of ['width','depth','sun','moisture','prep'])$(id).value=p[id];syncGardenShape();p.hours.forEach((h,i)=>$(`hours-${i}`).value=h??'');
+  syncGardenZones();
   $('obstacle-list').replaceChildren(...p.obstacles.map((o,i)=>itemRow(`${{house:'建物',path:'通路',fence:'塀'}[o.type]} ${i+1} · ${o.width.toFixed(1)} × ${o.depth.toFixed(1)}m`,()=>mutate(p=>p.obstacles.splice(i,1),'外構を取り除きました。'))));
 }
 function syncBudget(){const b=budget(plan());metrics('budget-summary',[[yen(b.total),'入力済み価格の小計'],[`${b.unknown}株`,'価格未入力'],[`${b.count}株`,'新規購入する株']]);$('budget-table').replaceChildren(table(['植物・初期サイズ','株数','単価','金額'],b.rows.map(r=>[`${plantInfo(r.kind).label} (${r.height}m × ${r.spread}m)`,r.count,r.price===null?'未入力':yen(r.price),r.price===null?'未確定':yen(r.total)])));}
