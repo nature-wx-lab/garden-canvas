@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1136';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1136';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1137';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1137';
 
 const BACKDROP_COLOR='#65755a';
 export {CAMERA_FLOOR};
@@ -693,6 +693,7 @@ export function createScene(container,onPick){
   const ray=new THREE.Raycaster(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0),pointers=new Set();
   let start=null,selecting=true;
   renderer.domElement.addEventListener('pointerdown',e=>{
+    if(e.pointerType!=='touch'&&e.button!==0)return;
     pointers.add(e.pointerId);
     start=pointers.size===1?{id:e.pointerId,x:e.clientX,y:e.clientY}:null;
   });
@@ -705,7 +706,7 @@ export function createScene(container,onPick){
   });
   renderer.domElement.addEventListener('pointerup',e=>{
     pointers.delete(e.pointerId);
-    const click=start?.id===e.pointerId;
+    const click=start?.id===e.pointerId&&e.button===0;
     start=null;
     if(!click||!plan)return;
     const rect=renderer.domElement.getBoundingClientRect();
