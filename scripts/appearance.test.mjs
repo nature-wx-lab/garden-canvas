@@ -538,12 +538,17 @@ test('Prairie grasses keep Sorghastrum barren pedicels and bent awns separate fr
  }
 });
 function checkGrassVertexBounds(group,plant,label){
+ checkReferenceVertexBounds(group,plant,label,component=>component.startsWith('leaf-'),.005001);
+}
+function checkReferenceVertexBounds(group,plant,label,isLeaf,leafCap=plant.leafHeight+.000001){
  const matrix=new Matrix4(),point=new Vector3();
  const heightCap=plant.height*1.05+.00001,spreadCap=plant.spread*.54+.00001;
+ // Keep the original hypot check near the boundary, where rounding can differ.
+ const safeSpreadSquared=spreadCap*spreadCap*(1-8*Number.EPSILON);
  let leafTop=0;
  for(const mesh of group.children){
   const component=mesh.userData.component;
-  const leaf=component.startsWith('leaf-');
+  const leaf=isLeaf(component);
   const position=mesh.geometry.attributes.position;
   for(let instance=0;instance<mesh.count;instance++){
    mesh.getMatrixAt(instance,matrix);
@@ -551,13 +556,15 @@ function checkGrassVertexBounds(group,plant,label){
     point.fromBufferAttribute(position,index).applyMatrix4(matrix);
     if(!(Number.isFinite(point.x)&&Number.isFinite(point.y)&&Number.isFinite(point.z)))assert.fail(label+' nonfinite '+component);
     if(!(point.y>=-1e-7&&point.y<=heightCap))assert.fail(label+' height '+component+' '+point.y);
-    const radius=Math.hypot(point.x,point.z);
-    if(!(radius<=spreadCap))assert.fail(label+' footprint '+component+' '+radius);
+    if(point.x*point.x+point.z*point.z>=safeSpreadSquared){
+     const radius=Math.hypot(point.x,point.z);
+     if(radius>spreadCap)assert.fail(label+' footprint '+component+' '+radius);
+    }
     if(leaf)leafTop=Math.max(leafTop,point.y);
    }
   }
  }
- assert.ok(leafTop<=.005001,label+' leaf ceiling '+leafTop);
+ assert.ok(leafTop<=leafCap,label+' leaf ceiling '+leafTop);
 }
 test('Prairie grasses independent tiny dimensions bound actual leaves rames awns and hairs',()=>{
  for(const id of ['p-30f4df68a97a','p-a12f93626235','p-f181b6640980'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [9,1]){
@@ -9840,7 +9847,8 @@ test('Limelight Hydrangea references separate conic enlarged sepals small flower
 });
 test('Limelight Hydrangea independent tiny inputs bound actual leaves veins branched panicles sepals and small organs',()=>{
  for(const id of ['hydrangea','p-8280e19ea846'])for(const size of [[2,1.8,1.45],[.6,.6,.45],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]])for(const month of [8,1]){
-  const p={...makePlant(id,52699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3(),label=id+' '+size+' '+month;try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position,component=m.userData.component,isLeaf=/^(leaf|vein|petiole)-limelight-ref/.test(component);for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);if(!Number.isFinite(v.x)||!Number.isFinite(v.y)||!Number.isFinite(v.z))assert.fail(label+' nonfinite '+component);if(!(v.y>=-1e-7&&v.y<=p.height*1.05+.00001))assert.fail(label+' height '+component+' '+v.y);const radial=Math.hypot(v.x,v.z);if(!(radial<=p.spread*.54+.00001))assert.fail(label+' footprint '+component+' '+radial);if(isLeaf)leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=p.leafHeight+.000001,label+' leaf ceiling '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,52699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(leaf|vein|petiole)-limelight-ref/.test(component));}finally{dispose(g);}
  }
 });
 test('Limelight Hydrangea macro cameras centre a visible expanded sepal above the leaf envelope',()=>{
@@ -9878,7 +9886,8 @@ test('Autumn Joy references distinguish small pale petals enlarged carpels absen
 });
 test('Autumn Joy independent tiny inputs bound actual fleshy leaves cymes petals large carpels and winter heads',()=>{
  for(const size of [[.6,.6,.50],[.3,.3,.25],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]])for(const month of [9,1]){
-  const p={...makePlant('sedum',52899,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3(),label=size+' '+month;try{let maxLeaf=0;for(const m of g.children){const pos=m.geometry.attributes.position,component=m.userData.component,isLeaf=component==='leaf-autumn-ref';for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);if(!Number.isFinite(v.x)||!Number.isFinite(v.y)||!Number.isFinite(v.z))assert.fail(label+' nonfinite '+component);if(!(v.y>=-1e-7&&v.y<=p.height*1.05+.00001))assert.fail(label+' height '+component+' '+v.y);const radial=Math.hypot(v.x,v.z);if(!(radial<=p.spread*.54+.00001))assert.fail(label+' footprint '+component+' '+radial);if(isLeaf)maxLeaf=Math.max(maxLeaf,v.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant('sedum',52899,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,size+' '+month,component=>component==='leaf-autumn-ref');}finally{dispose(g);}
  }
 });
 test('Autumn Joy macro cameras centre a visible fleshy carpel above the leaves',()=>{
@@ -9897,7 +9906,8 @@ test('Three Achillea references separate dissected leaves radiate heads and narr
 });
 test('Three Achillea independent tiny inputs bound actual leaves capitula and reproductive organs',()=>{
  for(const [id,normal]of [['p-40d0d814f401',[.6,.5,.50]],['p-e592f3d36d3f',[.6,.6,.48]],['p-c7320defff2e',[1.2,.6,.90]]])for(const size of [normal,[.3,.3,.20],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
-  const p={...makePlant(id,52999,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(7)),mat=new Matrix4(),v=new Vector3(),label=id+' '+size;try{let maxLeaf=0;for(const m of g.children){const pos=m.geometry.attributes.position,component=m.userData.component,isLeaf=component.startsWith('leaf-');for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);if(!Number.isFinite(v.x)||!Number.isFinite(v.y)||!Number.isFinite(v.z))assert.fail(label+' nonfinite '+component);if(!(v.y>=-1e-7&&v.y<=p.height*1.05+.00001))assert.fail(label+' height '+component+' '+v.y);const radial=Math.hypot(v.x,v.z);if(!(radial<=p.spread*.54+.00001))assert.fail(label+' footprint '+component+' '+radial);if(isLeaf)maxLeaf=Math.max(maxLeaf,v.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant(id,52999,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(7));
+  try{checkReferenceVertexBounds(g,p,id+' '+size,component=>component.startsWith('leaf-'));}finally{dispose(g);}
  }
 });
 test('Three Achillea macro cameras centre a visible ray rather than an internal disc or retained leaf',()=>{
@@ -9916,7 +9926,8 @@ test('Three more Achillea references separate Apricot ray gynoecia opposite shoo
 });
 test('Three more Achillea independent tiny inputs bound actual leaves capitula and reproductive organs',()=>{
  for(const [id,normal]of [['p-fe663c2cac88',[.6,.5,.50]],['p-0fb334bde100',[.8,.7,.65]],['p-14321f7409b4',[.4,.4,.31]]])for(const size of [normal,[.3,.3,.20],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
-  const p={...makePlant(id,53099,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),mat=new Matrix4(),v=new Vector3(),label=id+' '+size;try{let maxLeaf=0;for(const m of g.children){const pos=m.geometry.attributes.position,component=m.userData.component,isLeaf=component.startsWith('leaf-');for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);if(!Number.isFinite(v.x)||!Number.isFinite(v.y)||!Number.isFinite(v.z))assert.fail(label+' nonfinite '+component);if(!(v.y>=-1e-7&&v.y<=p.height*1.05+.00001))assert.fail(label+' height '+component+' '+v.y);const radial=Math.hypot(v.x,v.z);if(!(radial<=p.spread*.54+.00001))assert.fail(label+' footprint '+component+' '+radial);if(isLeaf)maxLeaf=Math.max(maxLeaf,v.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant(id,53099,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6));
+  try{checkReferenceVertexBounds(g,p,id+' '+size,component=>component.startsWith('leaf-'));}finally{dispose(g);}
  }
 });
 test('Three more Achillea macro cameras centre a visible ray rather than an internal disc or retained leaf',()=>{
