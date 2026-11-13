@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1129';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1129';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1130';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1130';
 
 const BACKDROP_COLOR='#65755a';
 export {CAMERA_FLOOR};
@@ -479,7 +479,7 @@ export function createScene(container,onPick){
   const pondMaterials=new Set();
   let pondCode='';
   let camphorObservation=null;
-  let dirty=true,root=null,plants=null,selectionOutline=null,draft=null,plan=null,view=null,selection=null,visible=true,windLevel=1,frameCount=0,lastDraw=0,lastTick=0,elapsed=0,lastVisibilityCheck=-Infinity;
+  let dirty=true,root=null,plants=null,selectionOutline=null,footprintOverlay=null,draft=null,plan=null,view=null,selection=null,visible=true,windLevel=1,frameCount=0,lastDraw=0,lastTick=0,elapsed=0,lastVisibilityCheck=-Infinity;
   const textureStatus=document.createElement('div');textureStatus.className='texture-status';textureStatus.textContent='芝と土の質感を読み込み中…';textureStatus.setAttribute('role','status');container.append(textureStatus);
   let texturesLoaded=0,textureFailed=false;container.dataset.textures='loading';
   const loader=new THREE.TextureLoader();
@@ -578,8 +578,32 @@ export function createScene(container,onPick){
     lawn.finish({castShadow:false});root.add(group);
     if(matrices.length){const chips=new THREE.InstancedMesh(pebbleGeometry,mat('#ffffff'),matrices.length);matrices.forEach((m,i)=>{chips.setMatrixAt(i,m);chips.setColorAt(i,colors[i]);});chips.receiveShadow=true;mulch.add(chips);root.add(mulch);}else pebbleGeometry.dispose();
   }
+  function showFootprints(visible){
+    if(!root)return;
+    if(visible&&!footprintOverlay){
+      footprintOverlay=new THREE.Group();
+      root.add(footprintOverlay);
+      const vertices=[],width=plan.width,depth=plan.depth;
+      function addSegment(x,z,endX,endZ){
+        if(inside(x,z,plan.outline)&&inside(endX,endZ,plan.outline)){
+          vertices.push(new THREE.Vector3(x-width/2,.014,z-depth/2),new THREE.Vector3(endX-width/2,.014,endZ-depth/2));
+        }
+      }
+      for(let x=0;x<=width;x++)for(let z=0;z<depth;z+=.25)addSegment(x,z,x,z+.25);
+      for(let z=0;z<=depth;z++)for(let x=0;x<width;x+=.25)addSegment(x,z,x+.25,z);
+      const geometry=new THREE.BufferGeometry().setFromPoints(vertices);
+      const material=new THREE.LineBasicMaterial({color:'#f2efcd',transparent:true,opacity:.48});
+      footprintOverlay.add(new THREE.LineSegments(geometry,material));
+      for(const p of plan.plants){
+        const state=stateAt(p,view);
+        if(state.present)circle(p.x,p.z,state.spread/2,'#9bb9b1',.04,footprintOverlay);
+      }
+    }
+    if(footprintOverlay)footprintOverlay.visible=visible;
+    dirty=true;
+  }
   function render(next,nextView,id){
-    plan=next;view=nextView;dispose(root);selectionOutline=null;
+    plan=next;view=nextView;dispose(root);selectionOutline=null;footprintOverlay=null;
     const wallDepth=Math.max(0,...plan.zones.map(zone=>zone.kind==='water'?(zone.depth??0):0));
     const code=wallDepth>0?pondMaskCode(plan):'';
     if(code!==pondCode){
@@ -599,7 +623,6 @@ export function createScene(container,onPick){
       polygon(z.points,zoneSurfaceElevation(z,i),pondClip(surface,'owner',i));line([...z.points,z.points[0]].map(([x,z])=>new THREE.Vector3(x-plan.width/2,.012,z-plan.depth/2)),z.kind==='water'?'#6c8981':'#756d51');
     }
     groundDetail();
-    if(view.footprints){const verts=[];for(let x=0;x<=plan.width;x++)for(let z=0;z<plan.depth;z+=.25)if(inside(x,z,plan.outline)&&inside(x,z+.25,plan.outline))verts.push(new THREE.Vector3(x-plan.width/2,.014,z-plan.depth/2),new THREE.Vector3(x-plan.width/2,.014,z+.25-plan.depth/2));for(let z=0;z<=plan.depth;z++)for(let x=0;x<plan.width;x+=.25)if(inside(x,z,plan.outline)&&inside(x+.25,z,plan.outline))verts.push(new THREE.Vector3(x-plan.width/2,.014,z-plan.depth/2),new THREE.Vector3(x+.25-plan.width/2,.014,z-plan.depth/2));root.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(verts),new THREE.LineBasicMaterial({color:'#f2efcd',transparent:true,opacity:.48})));}
     for(const o of plan.obstacles){const cx=o.x+o.width/2-plan.width/2,cz=o.z+o.depth/2-plan.depth/2;
       if(o.type==='house'){solid('#c8c1ad',cx,o.height/2,cz,o.width,o.height,o.depth);solid('#606c64',cx,o.height+.06,cz,o.width+.16,.12,o.depth+.16);for(let k=0;k<Math.max(1,Math.floor(o.width));k++)solid('#637d7c',o.x-plan.width/2+(k+.5)*o.width/Math.max(1,Math.floor(o.width)),o.height*.55,o.z+o.depth-plan.depth/2+.014,.4,o.height*.24,.025);}
       else if(o.type==='path'){solid('#b7b0a0',cx,.015,cz,o.width,.03,o.depth);const tiles=Math.min(45,Math.ceil(o.depth/.6));for(let j=1;j<tiles;j++)solid('#878a7b',cx,.032,o.z+j*o.depth/tiles-plan.depth/2,o.width,.002,.012);}
@@ -608,8 +631,8 @@ export function createScene(container,onPick){
     const detail=Math.min(1,Math.sqrt(18/Math.max(1,plan.plants.length)));
     for(const p of plan.plants){const s=stateAt(p,view);if(!s.present)continue;const depth=pondDepthAt(plan,p.x,p.z),g=plantModel(p,{...view,waterDepth:depth},detail);g.position.set(p.x-plan.width/2,plantBaseAt(plan,p),p.z-plan.depth/2);plants.add(g);
       const contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.rotation.x=-Math.PI/2;contact.position.set(g.position.x,isRaouliaMat(p.kind)?g.position.y-.0006:.012,g.position.z);contact.scale.set(s.spread*.95,s.spread*.95,1);if(zoneAt(plan,p.x,p.z)?.kind!=='water')root.add(contact);
-      if(view.footprints)circle(p.x,p.z,s.spread/2,'#9bb9b1');
     }
+    showFootprints(view.footprints);
     selectPlant(id);
     tallest=Math.max(1,...plan.plants.map(p=>stateAt(p,view).height),...plan.obstacles.map(o=>o.height));fitShadow();
     container.dataset.plantCount=String(plants.children.length);dirty=true;
@@ -705,5 +728,5 @@ export function createScene(container,onPick){
     }
     return camphorObservation.pose;
   }
-  return {render,select:selectPlant,hasFlower:()=>!!selectedFlowerPose(plants?.children.find(g=>g.userData.plantId===selection)),wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},selecting:value=>{selecting=value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(controls.minDistance,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{restoreCameraPose(camera,controls,c);dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
+  return {render,select:selectPlant,footprints:showFootprints,hasFlower:()=>!!selectedFlowerPose(plants?.children.find(g=>g.userData.plantId===selection)),wind:setWind,light:setLight,view:setView,editing:value=>{controls.enabled=!value;},selecting:value=>{selecting=value;},zoom:ratio=>{const offset=camera.position.clone().sub(controls.target);offset.setLength(Math.min(120,Math.max(controls.minDistance,offset.length()*ratio)));camera.position.copy(controls.target).add(offset);controls.update();dirty=true;},capture:()=>({position:camera.position.toArray(),target:controls.target.toArray()}),restore:c=>{restoreCameraPose(camera,controls,c);dirty=true;},drawDraft:points=>{dispose(draft);draft=new THREE.Group();scene.add(draft);if(plan&&points.length){const vs=points.map(([x,z])=>new THREE.Vector3(x-plan.width/2,.06,z-plan.depth/2));line(vs,'#b67730',draft);for(const v of vs){const m=new THREE.Mesh(sphere,mat('#b67730'));m.position.copy(v);m.scale.setScalar(.06);draft.add(m);}}dirty=true;}};
 }

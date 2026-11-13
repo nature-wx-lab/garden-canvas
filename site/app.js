@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1129';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1129';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1129';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1129';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1129';
-import { createScene } from './scene.js?v=0.9.1129';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1130';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1130';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1130';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1130';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1130';
+import { createScene } from './scene.js?v=0.9.1130';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -413,7 +413,13 @@ function bind(){
   for(const id of ['catalog-filter','catalog-color','catalog-status','catalog-popular','catalog-habit','catalog-dry-garden'])$(id).addEventListener('change',()=>{catalogIndex=0;drawCatalog();});$('catalog-search').addEventListener('input',()=>{catalogIndex=0;drawCatalog();});
   $('catalog-prev').addEventListener('click',()=>{catalogIndex--;drawCatalog();});$('catalog-next').addEventListener('click',()=>{catalogIndex++;drawCatalog();});drawCatalog();sourceCard('catalog-info','salvia');
   $('orbit').addEventListener('click',()=>{resetMode();message('ドラッグで回転。植物をクリックすると選べます。');});for(const type of ['home','top','eye'])$(`view-${type}`).addEventListener('click',()=>engine?.view(type));$('focus').addEventListener('click',()=>{engine?.view('focus');if(matchMedia('(max-width:760px)').matches)$('viewport').scrollIntoView({block:'center'});});$('focus-flower').addEventListener('click',()=>{const organ=$('focus-flower').textContent==='穂を観察'?'穂':'花';if(!engine?.view('flower')){message(`この月は観察できる${organ}がありません。`);return;}$('wind-select').value='0';engine.wind(0);if(matchMedia('(max-width:760px)').matches)$('viewport').scrollIntoView({block:'center'});message(`${organ}へ寄って風を止めました。ドラッグで角度を変えられます。`);});$('zoom-in').addEventListener('click',()=>engine?.zoom(.8));$('zoom-out').addEventListener('click',()=>engine?.zoom(1.25));
-  for(const key of ['month','year','reference','footprints'])$(key).addEventListener(['month','year'].includes(key)?'input':'change',()=>{const value=['month','year'].includes(key)?number(key):$(key).checked;doc.view[key]=value;if(preview)preview.view[key]=value;if(key==='month')calendarMonth=null;syncView();if(key==='reference'&&!isDrawing(mode))engine?.view('home');});
+  $('footprints').addEventListener('change',()=>{
+    const enabled=$('footprints').checked;
+    doc.view.footprints=enabled;
+    if(preview)preview.view.footprints=enabled;
+    engine?.footprints(enabled);
+  });
+  for(const key of ['month','year','reference'])$(key).addEventListener(['month','year'].includes(key)?'input':'change',()=>{const value=['month','year'].includes(key)?number(key):$(key).checked;doc.view[key]=value;if(preview)preview.view[key]=value;if(key==='month')calendarMonth=null;syncView();if(key==='reference'&&!isDrawing(mode))engine?.view('home');});
   for(const name of ['A','B'])$(`plan-${name.toLowerCase()}`).addEventListener('click',()=>{if(preview||!doc.plans[name])return;doc.active=name;selected=null;resetMode();sync();message(`案 ${name}に切り替えました。視点と時間は同じです。`);});
   $('duplicate-plan').addEventListener('click',()=>mutate((p,d)=>{if(d.plans.B)throw new Error('案Bはすでにあります。');d.plans.B=clone(p);d.active='B';},'案Aを残し、案Bを作りました。Bを編集して比べられます。'));
   $('undo').addEventListener('click',()=>{if(restoreEdit(history,future))message('編集を1つ戻しました。');});
