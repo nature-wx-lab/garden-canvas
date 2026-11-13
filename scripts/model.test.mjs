@@ -136,6 +136,18 @@ test('unachievable cut below structural trunk remains natural and explicitly uns
 test('work estimate retains unknown durations, sums water visits and preparation only once per active month',()=>{const d=fixture(),p=d.plans.A.plants[0];p.tasks=[task('water',6,'annual',2,4,10),{...task('feed',6,'annual',null,null),id:2}];d.plans.A.prep=15;d.plans.A.hours[5]=.5;const c=calendar(d.plans.A,0);assert.equal(c[5].min,35);assert.equal(c[5].max,55);assert.equal(c[5].unknown,1);assert.equal(c[5].available,30);assert.equal(c[4].min,0);assert.equal(p.tasks.length,2);});
 test('A/B deep copy can be edited without mutating original and preserves shared view',()=>{const d=fixture();d.plans.B=clone(d.plans.A);d.plans.B.plants[0].height=2;d.active='B';assert.equal(d.plans.A.plants[0].height,1.5);assert.equal(validateDocument(d).view.month,6);});
 test('occupancy ignores not-yet-planted plants and distinguishes overlap from viability',()=>{const d=fixture();d.plans.A.plants.push(makePlant('rose',2,2.1,2));assert.equal(observations(d.plans.A,view(0,6)).overlap,1);d.plans.A.plants[1].start=12;assert.equal(observations(d.plans.A,view(0,6)).overlap,0);});
+test('garden observations report each flowering name once at the planted pond depth',()=>{
+  const {plans:{A:plan}}=emptyDocument();
+  plan.plants=[
+    makePlant('p-891f594612ae',1,2,2),makePlant('p-891f594612ae',2,2.05,2),
+    {...makePlant('p-891f594612ae',3,4,2),start:12},
+  ];
+  plan.zones=[{kind:'water',depth:.08,points:[[1,1],[5,1],[5,4],[1,4]]}];
+  const expected={overlap:1,outside:0,unmodeled:2,visible:2,flowers:['ロタラインディカ']};
+  assert.deepEqual(observations(plan,view(0,5)),expected);
+  plan.zones[0].depth=.2;
+  assert.deepEqual(observations(plan,view(0,5)),{...expected,flowers:[]});
+});
 
 // Render-model invariants: seasons must not relocate woody branches or corrupt geometry.
 import {plantModel,sharedGeometry} from '../site/vegetation.js';
