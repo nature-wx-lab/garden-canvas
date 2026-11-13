@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1089';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1090';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1089';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength} from './model.js?v=0.9.1089';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1090';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength} from './model.js?v=0.9.1090';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -30714,14 +30714,15 @@ function pearlgrassPhotoSegment(b,a,z,r,color,kind){
 }
 function drawPearlgrassPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.005,w*.0015,LH*.018),L=Math.min(.007,w*.065,LH*.20),W=L*.35,stem=info.appearance.stemColor,leafKind='leaf-pearlgrass-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
+ const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,wet?(s.waterDepth+POND_SURFACE_Y)*.90:Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.005,w*.0015,LH*.018),L=Math.min(.007,w*.065,LH*.20),W=L*.35,stem=info.appearance.stemColor,leafKind='leaf-pearlgrass-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
  function whorl(at,turn,count){for(let side=0;side<count;side++)b.add('pearlgrass-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,Math.min(L,LH*.40),Math.acos(Math.min(.15,LH*.02/L)),turn+side*TAU/count,0);}
  for(let shoot=0;shoot<12;shoot++){
-  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,base,Math.cos(az)*R],peak=LH*(.78+.025*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),base+(peak-base)*t,root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
+  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,bed+base,Math.cos(az)*R],peak=LH*(.78+.025*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),bed+base+(peak-base)*t,root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
   for(let j=1;j<=14;j++){
    const t=j/14,at=path(t);pearlgrassPhotoSegment(b,previous,at,r,stem,'stem-pearlgrass-photo-ref');previous=at;whorl(at,az+j*.62,3+(j%4===0?1:0));
    if(j!==5&&j!==9)continue;
-   const turn=az+(j===5?-.90:.95),top=LH*(j===5?.69:.83),reach=w*.070;let prev=at;
+   const turn=az+(j===5?-.90:.95),top=bed+LH*(j===5?.69:.83),reach=w*.070;let prev=at;
    for(let k=1;k<=7;k++){
     const u=k/7,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];pearlgrassPhotoSegment(b,prev,tip,r*.70,stem,'side-stem-pearlgrass-photo-ref');prev=tip;whorl(tip,turn+k*.62,3+(k%4===0?1:0));
    }
@@ -30747,14 +30748,15 @@ function largePearlPhotoSegment(b,a,z,r,color,kind){
 }
 function drawLargePearlPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.005,w*.0015,LH*.018),L=Math.min(.010,w*.065,LH*.20),W=L*.95,stem=info.appearance.stemColor,leafKind='leaf-large-pearl-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
+ const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,wet?(s.waterDepth+POND_SURFACE_Y)*.90:Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.005,w*.0015,LH*.018),L=Math.min(.010,w*.065,LH*.20),W=L*.95,stem=info.appearance.stemColor,leafKind='leaf-large-pearl-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
  function whorl(at,turn){for(let side=0;side<2;side++)b.add('large-pearl-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,Math.min(L,LH*.40),Math.acos(Math.min(.15,LH*.02/L)),turn+side*TAU/2,0);}
  for(let shoot=0;shoot<12;shoot++){
-  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,base,Math.cos(az)*R],peak=LH*(.78+.025*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),base+(peak-base)*t,root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
+  const az=shoot*2.399+.25,R=w*.22*Math.sqrt((shoot+.5)/12),root=[Math.sin(az)*R,bed+base,Math.cos(az)*R],peak=LH*(.78+.025*(shoot%3)),path=t=>[root[0]+Math.sin(az+1)*w*.035*Math.sin(t*Math.PI*.6),bed+base+(peak-base)*t,root[2]+Math.cos(az+1)*w*.035*Math.sin(t*Math.PI*.6)];let previous=root;
   for(let j=1;j<=14;j++){
    const t=j/14,at=path(t);largePearlPhotoSegment(b,previous,at,r,stem,'stem-large-pearl-photo-ref');previous=at;whorl(at,az+j*.62);
    if(j!==5&&j!==9)continue;
-   const turn=az+(j===5?-.90:.95),top=LH*(j===5?.69:.83),reach=w*.070;let prev=at;
+   const turn=az+(j===5?-.90:.95),top=bed+LH*(j===5?.69:.83),reach=w*.070;let prev=at;
    for(let k=1;k<=7;k++){
     const u=k/7,tip=[at[0]+Math.sin(turn)*reach*u,at[1]+(top-at[1])*(1-Math.pow(1-u,1.2)),at[2]+Math.cos(turn)*reach*u];largePearlPhotoSegment(b,prev,tip,r*.70,stem,'side-stem-large-pearl-photo-ref');prev=tip;whorl(tip,turn+k*.62);
    }
@@ -30780,7 +30782,8 @@ function newLargePearlPhotoSegment(b,a,z,r,color,kind){
 }
 function drawNewLargePearlPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00030,h*.003,w*.0007,LH*.010),L=Math.min(.007,w*.055,LH*.24),W=L*.90,stem=info.appearance.stemColor,leafKind='leaf-new-large-pearl-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
+ const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,wet?(s.waterDepth+POND_SURFACE_Y)*.90:Infinity),base=bed+Math.min(.0015,LH*.05),r=Math.min(.00030,h*.003,w*.0007,LH*.010),L=Math.min(.007,w*.055,LH*.24),W=L*.90,stem=info.appearance.stemColor,leafKind='leaf-new-large-pearl-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
  function shortShoot(at,turn,seed){const tip=[at[0],base+LH*(.56+.13*(seed%5)/4),at[2]];newLargePearlPhotoSegment(b,at,tip,r*.65,stem,'short-shoot-new-large-pearl-photo-ref');for(let side=0;side<2;side++)b.add('new-large-pearl-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...tip,W,L,Math.min(L,LH*.40),Math.acos(.10),turn+side*Math.PI,0);}
  for(let shoot=0;shoot<24;shoot++){
   const az=shoot*2.399+.25,R=w*.035*Math.sqrt((shoot+.5)/24),root=[Math.sin(az)*R,base,Math.cos(az)*R],path=t=>[root[0]+Math.sin(az)*w*.32*t+Math.cos(az)*w*.012*Math.sin(t*TAU),base+LH*.08*Math.pow(Math.sin(t*Math.PI),2),root[2]+Math.cos(az)*w*.32*t-Math.sin(az)*w*.012*Math.sin(t*TAU)];let previous=root;
