@@ -9716,8 +9716,8 @@ test('Artemisia foliage references distinguish fine silver golden and connected 
 });
 test('Artemisia foliage references independent tiny inputs bound actual dissected leaves and complete heads',()=>{
  for(const [ci,id]of ['p-1a75ebfc895a','p-069e1c005ae3','p-79db766e70d1'].entries())for(const size of [[.3,.5,.22],[.15,.25,.10],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
-  const p={...makePlant(id,51999,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(ci===2?6:7)),matrix=new Matrix4(),point=new Vector3(),label=id+' '+size;
-  try{let maxLeaf=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite),label);assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,label+' height '+mesh.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,label+' footprint '+mesh.userData.component);if(mesh.userData.component.startsWith('leaf-'))maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant(id,51999,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(ci===2?6:7)),label=id+' '+size;
+  try{checkReferenceVertexBounds(g,p,label,component=>component.startsWith('leaf-'));}finally{dispose(g);}
  }
 });
 test('Artemisia foliage references macro cameras centre visible phyllaries instead of hidden head interiors',()=>{
@@ -9784,8 +9784,8 @@ test('Textured Alternanthera references preserve curled mottled leaves genus-onl
 });
 test('Textured Alternanthera independent tiny dimensions bound curled leaves and papery flowers',()=>{
  for(const id of ['p-6eca97661194','p-6919b79392e4','p-029987595bae'])for(const size of [[.3,.5,.27],[.15,.25,.13],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
-  const p={...makePlant(id,52299,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(10)),matrix=new Matrix4(),point=new Vector3(),label=id+' '+size;
-  try{let maxLeaf=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite),label);assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,label+' height '+mesh.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,label+' footprint '+mesh.userData.component);if(mesh.userData.component.startsWith('leaf-'))maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant(id,52299,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(10)),label=id+' '+size;
+  try{checkReferenceVertexBounds(g,p,label,component=>component.startsWith('leaf-'));}finally{dispose(g);}
  }
 });
 test('Textured Alternanthera macro cameras centre visible genus-reference papery organs',()=>{
