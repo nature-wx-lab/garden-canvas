@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1094';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1094';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1095';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1095';
 
 const BACKDROP_COLOR='#65755a';
 export {CAMERA_FLOOR};
@@ -12,7 +12,11 @@ export function viewportIntersects(rect,width,height){
 export function resizeSceneViewport(camera,controls,renderer,width,height){
  if(!Number.isFinite(width)||!Number.isFinite(height)||width<=0||height<=0)return false;
  const aspect=width/height,previousAspect=Number.isFinite(camera.aspect)&&camera.aspect>0?camera.aspect:aspect,ratio=Math.max(1,1.6/aspect)/Math.max(1,1.6/previousAspect);
- camera.position.sub(controls.target).multiplyScalar(ratio).add(controls.target);
+ const offset=camera.position.sub(controls.target);
+ const distance=offset.length();
+ const minimum=Math.min(distance,Math.max(MIN_SAVED_CAMERA_DISTANCE,controls.minDistance??0));
+ offset.multiplyScalar(Math.max(ratio,distance>0?minimum/distance:ratio));
+ camera.position.add(controls.target);
  keepCameraAboveGround(camera,controls.target);
  renderer.setSize(width,height,false);camera.aspect=aspect;camera.updateProjectionMatrix();return true;
 }

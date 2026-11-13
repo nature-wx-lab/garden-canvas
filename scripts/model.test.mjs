@@ -165,6 +165,18 @@ test('resizing a low observation camera preserves the ground floor and its viewi
   assert.ok(camera.getWorldDirection(new Vector3()).distanceTo(direction)<1e-10);
  }
 });
+test('widening the viewport preserves a valid macro distance and look direction',()=>{
+ const camera=new PerspectiveCamera(40,349/388,.01,650);
+ const controls={target:new Vector3(0,.4,0),minDistance:.012};
+ camera.position.set(0,.4,.015);
+ camera.lookAt(controls.target);
+ assert.equal(resizeSceneViewport(camera,controls,{setSize(){}},683,416),true);
+ assert.ok(Math.abs(camera.position.distanceTo(controls.target)-.012)<1e-10);
+ assert.ok(camera.getWorldDirection(new Vector3()).distanceTo(new Vector3(0,0,-1))<1e-10);
+ const doc=fixture();
+ doc.view.camera={position:camera.position.toArray(),target:controls.target.toArray()};
+ assert.deepEqual(validateDocument(clone(doc)).view.camera,doc.view.camera);
+});
 test('flower observation fits upright hanging and low anchors above ground without changing saved gardens',()=>{
  for(const aspect of [.6,1,2])for(const [height,axis]of [[.025,[0,1,0]],[.40,[0,-1,0]],[1.2,[0,-.8,.6]]]){
   const group=new Group();group.position.set(2,.012,-3);group.rotation.y=.6;group.scale.setScalar(.7);group.userData.flowerTargets=[{origin:[.02,height,.01],axis,radius:.04}];const before=JSON.stringify(group.userData.flowerTargets),pose=flowerInspectionView(group,aspect),camera=new PerspectiveCamera(40,aspect,.01,650);assert.ok(pose);assert.ok(pose.position.every(Number.isFinite));assert.ok(pose.target.every(Number.isFinite));assert.ok(pose.position[1]>=CAMERA_FLOOR);assert.equal(JSON.stringify(group.userData.flowerTargets),before);camera.position.fromArray(pose.position);camera.lookAt(new Vector3(...pose.target));camera.updateMatrixWorld();const target=new Vector3(...pose.target).project(camera);assert.ok(Math.abs(target.x)<1e-8&&Math.abs(target.y)<1e-8,'flower target remains centered after ground clamping');assert.ok(target.z>-1&&target.z<1,'target stays inside camera clipping');
