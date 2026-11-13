@@ -24302,7 +24302,7 @@ test('orangeMyrio accepts existing saved gardens without changing independent di
 });
 
 test('southMoss separates triangular fronds from tiny leaves and nonflowering moss from green leaf color',()=>{
- const q=CATALOG['p-546a932dc379'],a=q.appearance;assert.match(q.latin,/種未確定/);assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'southMossPhotoReference');assert.equal(a.lifeForm,'moss');assert.equal(a.flowerShape,'none');assert.match(a.sourceConflict,/2022.*4.*15/);assert.match(a.sourceConflict,/三角形.*茎葉体/);assert.match(a.unconfirmed.join(' '),/胞子のう.*未確認/);assert.match(a.unconfirmed.join(' '),/葉序.*未確認/);assert.ok(!a.unconfirmed.some(s=>/16本|24節|1024/.test(s)));assert.ok(searchCatalog(CATALOG,{query:q.label,color:'unknown'}).some(([id])=>id==='p-546a932dc379'));for(const color of['green','pink'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-546a932dc379'));assert.ok(!/southMossPhotoReference|mossTriangular/.test(appearanceSummary(q)));
+ const q=CATALOG['p-546a932dc379'],a=q.appearance;assert.match(q.latin,/種未確定/);assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-13');assert.match(a.unconfirmed.join(' '),/水底の小さな石.*仮根.*未再現/);assert.equal(a.shootProfile,'southMossPhotoReference');assert.equal(a.lifeForm,'moss');assert.equal(a.flowerShape,'none');assert.match(a.sourceConflict,/2022.*4.*15/);assert.match(a.sourceConflict,/三角形.*茎葉体/);assert.match(a.unconfirmed.join(' '),/胞子のう.*未確認/);assert.match(a.unconfirmed.join(' '),/葉序.*未確認/);assert.ok(!a.unconfirmed.some(s=>/16本|24節|1024/.test(s)));assert.ok(searchCatalog(CATALOG,{query:q.label,color:'unknown'}).some(([id])=>id==='p-546a932dc379'));for(const color of['green','pink'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-546a932dc379'));assert.ok(!/southMossPhotoReference|mossTriangular/.test(appearanceSummary(q)));
 });
 test('southMoss reference fits twenty four independent inputs with connected tapering frond branches',()=>{
  const dimensions=[[.04,.30,.035],[.01,.10,.005],[.04,.30,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,leafJoins=0,stemJoins=0,branchJoins=0;
@@ -24314,6 +24314,40 @@ test('southMoss reference fits twenty four independent inputs with connected tap
    for(let frond=0;frond<64;frond++)for(let j=1;j<=24;j++){const main=frond*24+j-1,at=point(stems,main,new Vector3(0,.5,0));if(j>1){assert.ok(point(stems,main,new Vector3(0,-.5,0)).distanceTo(point(stems,main-1,new Vector3(0,.5,0)))<2e-6);stemJoins++;}assert.ok(point(leaves,leaf++,new Vector3()).distanceTo(at)<2e-6);leafJoins++;if(j%4||j===24)continue;const start=frond*40+(j/4-1)*8;assert.ok(point(sides,start,new Vector3(0,-.5,0)).distanceTo(at)<2e-6);branchJoins++;for(let k=0;k<8;k++){if(k>0){assert.ok(point(sides,start+k,new Vector3(0,-.5,0)).distanceTo(point(sides,start+k-1,new Vector3(0,.5,0)))<2e-6);stemJoins++;}assert.ok(point(leaves,leaf++,new Vector3()).distanceTo(point(sides,start+k,new Vector3(0,.5,0)))<2e-6);leafJoins++;}}assert.equal(leaf,4096);
   }finally{dispose(g);}
  }assert.equal(models,24);console.log('SOUTH_MOSS1026_BOUNDARIES '+JSON.stringify({models,vertices,leafJoins,stemJoins,branchJoins}));
+});
+test('willowMoss and southMoss start on a small submerged stone while the dry model stays unsupported',()=>{
+ const matrix=new Matrix4(),vertex=new Vector3();
+ for(const [id,slug] of [['p-2a8de6e63bc9','willow'],['p-546a932dc379','south']]){
+  const input={...makePlant(id,108010,3,3),height:.065,spread:.18,leafHeight:.047};
+  for(const [depth,month] of [[0,7],[.001,7],[.007,7],[.15,1]]){
+   const group=plantModel(input,{year:0,month,reference:false,waterDepth:depth});
+   try{
+    const rock=group.children.find(m=>m.userData.component==='rock-moss-pond-support');
+    if(!depth){assert.equal(rock,undefined);continue;}
+    assert.equal(rock.count,1);
+    rock.getMatrixAt(0,matrix);
+    const inverseRock=matrix.clone().invert();
+    const stems=group.children.find(m=>m.userData.component===`stem-${slug}-moss-photo-ref`);
+    for(let i=0;i<stems.count;i+=24){
+     stems.getMatrixAt(i,matrix);
+     const point=vertex.set(0,-.5,0).applyMatrix4(matrix).applyMatrix4(inverseRock);
+     assert.ok(point.y>0&&Math.abs(point.length()-1)<1e-5);
+    }
+    let top=-Infinity,bottom=Infinity;
+    for(const mesh of group.children){
+     const positions=mesh.geometry.attributes.position;
+     for(let i=0;i<mesh.count;i++){
+      mesh.getMatrixAt(i,matrix);
+      for(let j=0;j<positions.count;j++){
+       const y=vertex.fromBufferAttribute(positions,j).applyMatrix4(matrix).y+.012-depth;
+       top=Math.max(top,y);bottom=Math.min(bottom,y);
+      }
+     }
+    }
+    assert.ok(bottom>=-depth-1e-6&&top<=.006,{id,depth,bottom,top});
+   }finally{dispose(group);}
+  }
+ }
 });
 test('southMoss foliage focus frames six summer and protected winter inputs',()=>{
  let models=0,framedPoses=0;for(const dims of[[.04,.30,.035],[.01,.10,.005],[.04,.30,.005]])for(const month of[7,1]){
@@ -24332,7 +24366,7 @@ test('southMoss accepts existing saved gardens without changing independent dime
 });
 
 test('willowMoss separates irregular branched shoots from tiny leaves and nonflowering moss from green leaf color',()=>{
- const q=CATALOG['p-2a8de6e63bc9'],a=q.appearance;assert.match(q.latin,/Taxiphyllum sp.*参考株/);assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'willowMossPhotoReference');assert.equal(a.lifeForm,'moss');assert.equal(a.flowerShape,'none');assert.match(a.sourceConflict,/2022.*4.*15/);assert.match(a.sourceConflict,/不規則.*茎葉体/);assert.match(a.unconfirmed.join(' '),/胞子のう.*未確認/);assert.match(a.unconfirmed.join(' '),/葉序.*未確認/);assert.ok(!a.unconfirmed.some(s=>/16本|24節|1024/.test(s)));assert.ok(searchCatalog(CATALOG,{query:q.label,color:'unknown'}).some(([id])=>id==='p-2a8de6e63bc9'));for(const color of['green','pink'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-2a8de6e63bc9'));assert.ok(!/willowMossPhotoReference|mossIrregular/.test(appearanceSummary(q)));
+ const q=CATALOG['p-2a8de6e63bc9'],a=q.appearance;assert.match(q.latin,/Taxiphyllum sp.*参考株/);assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-13');assert.match(a.unconfirmed.join(' '),/水底の小さな石.*仮根.*未再現/);assert.equal(a.shootProfile,'willowMossPhotoReference');assert.equal(a.lifeForm,'moss');assert.equal(a.flowerShape,'none');assert.match(a.sourceConflict,/2022.*4.*15/);assert.match(a.sourceConflict,/不規則.*茎葉体/);assert.match(a.unconfirmed.join(' '),/胞子のう.*未確認/);assert.match(a.unconfirmed.join(' '),/葉序.*未確認/);assert.ok(!a.unconfirmed.some(s=>/16本|24節|1024/.test(s)));assert.ok(searchCatalog(CATALOG,{query:q.label,color:'unknown'}).some(([id])=>id==='p-2a8de6e63bc9'));for(const color of['green','pink'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-2a8de6e63bc9'));assert.ok(!/willowMossPhotoReference|mossIrregular/.test(appearanceSummary(q)));
 });
 test('willowMoss reference fits twenty four independent inputs with connected irregular shoot branches',()=>{
  const dimensions=[[.04,.30,.035],[.01,.10,.005],[.04,.30,.005],[.01,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,leafJoins=0,stemJoins=0,branchJoins=0;

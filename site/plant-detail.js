@@ -1,6 +1,6 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1079';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1080';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1079';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1080';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -30960,12 +30960,24 @@ export function willowMossPhotoReferenceGeometry(){
 function willowMossPhotoSegment(b,a,z,r,color,kind){
  const from=new THREE.Vector3(...a),to=new THREE.Vector3(...z),dir=to.clone().sub(from),length=dir.length();if(length<1e-8)return;const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize()),'YXZ');b.add('willow-moss-photo-reference-axis',kind,color,...from.add(to).multiplyScalar(.5).toArray(),r,length,r,e.x,e.y,e.z);
 }
+function mossPondSupport(b,s,height){
+ if(s.waterDepth<=0)return 0;
+ const bed=-.012;
+ const depth=Math.min(height*.12,.006);
+ const radius=s.spread*.30;
+ b.add('moss-pond-support','rock-moss-pond-support','#746f5e',0,bed,0,radius,depth,radius,0,0,0);
+ return bed+depth;
+}
 function drawWillowMossPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.001,LH*.03),r=Math.min(.00009,h*.003,w*.0005,LH*.012),L=Math.min(.0035,w*.025,LH*.30),W=L*.40,stem=info.appearance.stemColor,leafKind='leaf-willow-moss-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ const h=s.height,w=s.spread,wet=s.waterDepth>0,LH=Math.min(h*.98,s.leafHeight,wet?(s.waterDepth+.006)*.85:Infinity);
+ const support=mossPondSupport(b,s,LH);
+ const base=wet?support:Math.min(.001,LH*.03),r=Math.min(.00009,h*.003,w*.0005,LH*.012),L=Math.min(.0035,w*.025,LH*.30),W=L*.40,stem=info.appearance.stemColor,leafKind='leaf-willow-moss-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
  function leaf(at,turn){b.add('willow-moss-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,Math.min(L,LH*.25),Math.acos(.18),turn,0);}
  const frondCount=64;for(let frond=0;frond<frondCount;frond++){
-  const az=frond*2.399+.20,R=w*.25*Math.sqrt((frond+.5)/frondCount),root=[Math.sin(az)*R,base,Math.cos(az)*R],reach=w*(.04+.07*Math.pow(Math.sin(frond*1.7),2)),peak=LH*(.42+.40*Math.pow(Math.cos(frond*1.3),2)),bend=w*.018,path=t=>[root[0]+Math.sin(az)*reach*t+Math.cos(az)*bend*Math.sin(t*Math.PI*1.2),base+peak*Math.pow(t,.92),root[2]+Math.cos(az)*reach*t-Math.sin(az)*bend*Math.sin(t*Math.PI*1.2)];let previous=root;
+  const az=frond*2.399+.20,R=w*(wet?.23:.25)*Math.sqrt((frond+.5)/frondCount);
+  const y=wet?-.012+(support+.012)*Math.sqrt(1-(R/(w*.30))**2):base;
+  const root=[Math.sin(az)*R,y,Math.cos(az)*R],reach=w*(.04+.07*Math.pow(Math.sin(frond*1.7),2)),peak=LH*(.42+.40*Math.pow(Math.cos(frond*1.3),2)),bend=w*.018,path=t=>[root[0]+Math.sin(az)*reach*t+Math.cos(az)*bend*Math.sin(t*Math.PI*1.2),y+peak*Math.pow(t,.92),root[2]+Math.cos(az)*reach*t-Math.sin(az)*bend*Math.sin(t*Math.PI*1.2)];let previous=root;
   for(let j=1;j<=24;j++){
    const t=j/24,at=path(t);willowMossPhotoSegment(b,previous,at,r,stem,'stem-willow-moss-photo-ref');previous=at;leaf(at,az+(j%2?1.2:-1.2));
    if(j%4||j===24)continue;
@@ -30976,7 +30988,7 @@ function drawWillowMossPhotoReference(b,{info,s,rand},kit){
   }
  }
  // Irregular shoot and side-branch outlines reference the ADA photograph;node/leaf counts,thickness anddensity areprivate examples,notmeasurements.
- // No flowers,sporecapsules,rhizoids,attachment surface oroutdoorwinter/annualgrowth trajectory aredrawn.
+ // The submerged base illustrates support for the fronds, without modelling rhizoids.
 }
 
 export function southMossPhotoReferenceGeometry(){
@@ -30993,10 +31005,14 @@ function southMossPhotoSegment(b,a,z,r,color,kind){
 }
 function drawSouthMossPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,s.waterDepth>0?Math.max(.001,s.waterDepth-.008):Infinity),base=Math.min(.001,LH*.03),r=Math.min(.00009,h*.003,w*.0005,LH*.012),L=Math.min(.0035,w*.025,LH*.30),W=L*.44,stem=info.appearance.stemColor,leafKind='leaf-south-moss-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
+ const h=s.height,w=s.spread,wet=s.waterDepth>0,LH=Math.min(h*.98,s.leafHeight,wet?(s.waterDepth+.006)*.85:Infinity);
+ const support=mossPondSupport(b,s,LH);
+ const base=wet?support:Math.min(.001,LH*.03),r=Math.min(.00009,h*.003,w*.0005,LH*.012),L=Math.min(.0035,w*.025,LH*.30),W=L*.44,stem=info.appearance.stemColor,leafKind='leaf-south-moss-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);
  function leaf(at,turn){b.add('south-moss-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,Math.min(L,LH*.25),Math.acos(.18),turn,0);}
  const frondCount=64;for(let frond=0;frond<frondCount;frond++){
-  const az=frond*2.399+.20,R=w*.28*Math.sqrt((frond+.5)/frondCount),root=[Math.sin(az)*R,base,Math.cos(az)*R],reach=w*.12,path=t=>[root[0]+Math.sin(az)*reach*t,base+LH*(.66+.025*(frond%3))*t,root[2]+Math.cos(az)*reach*t];let previous=root;
+  const az=frond*2.399+.20,R=w*(wet?.24:.28)*Math.sqrt((frond+.5)/frondCount);
+  const y=wet?-.012+(support+.012)*Math.sqrt(1-(R/(w*.30))**2):base;
+  const root=[Math.sin(az)*R,y,Math.cos(az)*R],reach=w*.12,path=t=>[root[0]+Math.sin(az)*reach*t,y+LH*(.66+.025*(frond%3))*t,root[2]+Math.cos(az)*reach*t];let previous=root;
   for(let j=1;j<=24;j++){
    const t=j/24,at=path(t);southMossPhotoSegment(b,previous,at,r,stem,'stem-south-moss-photo-ref');previous=at;leaf(at,az+(j%2?1.2:-1.2));
    if(j%4||j===24)continue;
@@ -31007,7 +31023,7 @@ function drawSouthMossPhotoReference(b,{info,s,rand},kit){
   }
  }
  // Triangular branch outlines reference the ADA photograph;node/leaf counts,thickness anddensity areprivate examples,notmeasurements.
- // No flowers,sporecapsules,rhizoids,attachment surface oroutdoorwinter/annualgrowth trajectory aredrawn.
+ // The submerged base illustrates support for the fronds, without modelling rhizoids.
 }
 
 

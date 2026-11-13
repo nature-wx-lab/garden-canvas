@@ -12096,49 +12096,7 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
   "shootProfile": "yellowBacopaPhotoReference",
   "sourceConflict": "生産者はBacopa lanigeraと記載し、写真には白い網状の斑と青〜紫色の花が見られます。種資料と同じ名前で流通していますが、斑入り流通株の正式な品種同定は未確認です。直径9cmは鉢の案内で、株幅は未確認です。この流通株の葉・花・花柄の実寸は測定しておらず、別種B.carolinianaのmm値を移していません。",
   "phenologyRegion": "草丈5〜15cm・開花7〜9月は国内の生産者の記載です。5〜10月の屋外の葉と11〜4月の非表示は室内保護の管理参考で、自然な休眠・全株の枯死や地域別の越冬成功を示しません。明るい室内で葉を残す管理例が案内されていますが、今の描画では室内の年間の姿を再現していません。"
-},"p-546a932dc379":{
-  "sources": [
-    {
-      "url": "https://www.adana.co.jp/jp/aquajournal/learn_about_moss/",
-      "scope": "catalog-entry"
-    }
-  ],
-  "basis": {
-    "habit": 0,
-    "leafShape": 0,
-    "arrangement": 0,
-    "leafColor": 0
-  },
-  "status": "partial",
-  "architecture": "submergedShoots",
-  "shootProfile": "southMossPhotoReference",
-  "lifeForm": "moss",
-  "habit": "creeping",
-  "arrangement": "alternate",
-  "leafShape": "mossTriangular",
-  "leafLength": 0.0035,
-  "leafWidth": 0.00154,
-  "leafColor": "#719647",
-  "leafTexture": "smooth",
-  "leafUnderside": "#94ae67",
-  "stemColor": "#769158",
-  "persistence": "submergedPersistent",
-  "fruitMonths": [],
-  "phenologyRegion": "花を付けないコケ植物の参考形です。温度を保った水中を想定し、日本の屋外の冬姿と胞子のうの時期は未確認です。",
-  "unconfirmed": [
-    "全月の実物照合",
-    "ADA公式の写真を参考にした立体近似で、同じ株の写真再現は未検証です。",
-    "図鑑は流通するモスの種名・産地に諸説あると説明しています。南米という流通名だけで種や実物の産地を確定していません。",
-    "草丈・株幅の数値は未確認です。葉長・葉幅・軸の太さ、節間と曲がりは写真を参考にした描画上の近似で、株の実測ではありません。",
-    "小さな葉の形と左右に広がる枝を写真から近似しています。正確な葉序、葉の細胞、葉肋、微細な鋸歯や立体断面は未確認です。",
-    "コケ植物なので花を付けません。写真の緑色は葉色で、花弁や種子・果実は描きません。胞子のうの形と形成時期は未確認です。",
-    "茎・枝・節・葉の本数と配置、密度は表示上の近似です。販売量、自然な増殖数や成長速度を予測していません。",
-    "写真の石や流木への活着面、仮根、結束材は再現していません。入力した地面上の配置を実物の活着構造とは扱いません。",
-    "冬も温度を保った水中の参考条件です。屋外の月別変化、越冬・低温枯死、同じ株の全月の姿は未確認です。記事の日付を撮影日や季節変化の時期へ変換していません。"
-  ],
-  "flowerShape": "none",
-  "sourceConflict": "ADA公式の2022年4月15日の図鑑で、南米ウィローモスとして紹介される参考株を使います。三角形に広がる茎葉体を、小さな葉と枝分かれに分けて描きます。三角形は枝全体の輪郭で、個々の葉を三角形と断定するものではありません。流通名から種を確定せず、草丈・株幅の数値も未確認です。"
-},"p-2a8de6e63bc9":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/learn_about_moss/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"willowMossPhotoReference","lifeForm":"moss","habit":"creeping","arrangement":"alternate","leafShape":"mossIrregular","leafLength":0.0035,"leafWidth":0.0014,"leafColor":"#528644","leafTexture":"smooth","leafUnderside":"#7a9d67","stemColor":"#62824d","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"冬も温度を保った水中の参考条件です。日本の屋外の冬姿と胞子のうの時期は未確認です。","unconfirmed":["資料写真と説明を参考にした近似です。実物と同等の写真再現、自然な増殖や成長速度を予測していません。","写真の参考株を使います。別のウィローモス流通株に形や低温耐性を一般化しません。","草丈・株幅の数値は未確認です。葉長・葉幅・軸の太さ、節間と曲がりは写真を参考にした描画上の近似で、株の実測ではありません。","先が尖った小葉と、不規則に伸びる細い軸・側枝を近似しています。正確な葉序、葉の細胞、葉肋、微細な鋸歯や立体断面は未確認です。","コケ植物なので花を付けません。写真の緑色は葉色で、花弁や種子・果実は描きません。胞子のうの形と形成時期は未確認です。","茎・枝・葉の本数と配置、密度は表示上の近似です。販売量、自然な増殖数や成長速度を予測していません。","写真の石や流木への活着面、仮根、結束材は再現していません。入力した地面上の配置を実物の活着構造とは扱いません。","冬も温度を保った水中の参考条件です。屋外の月別変化、越冬、低温枯死、同じ株の全月の姿は未確認です。記事の日付を撮影日や季節変化の時期へ変換していません。"],"flowerShape":"none","sourceConflict":"ADA公式の2022年4月15日の図鑑で、ウィローモスとして紹介されるTaxiphyllum属の参考株を使います。不規則に伸びる茎葉体と、先が尖った小さな葉を写真から近似して描きます。同名で複数種が流通するという説明に従い、この写真の参考株を種まで確定しません。草丈・株幅の数値も未確認です。"},"p-cccad89b0097":{"sources":[{"url":"https://www.h2-l.jp/news/4012/","scope":"catalog-entry"},{"url":"https://floranorthamerica.org/Myriophyllum_hippuroides","scope":"species"},{"url":"https://www2.gov.bc.ca/assets/gov/environment/air-land-water/water/waterquality/water-quality-reference-documents/wq_ref_aquatic_plants_bc.pdf","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"greenMyrioPhotoReference","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"myrioPectinate","leafLength":0.025,"leafWidth":0.02,"leafColor":"#73a453","leafTexture":"smooth","leafUnderside":"#9aba7a","stemColor":"#8d9c65","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"温度を保った水中の細裂葉を参考表示します。国内の開花月と屋外の冬姿は未確認です。","unconfirmed":["全月の実物照合","国内販売店の写真と種の記載から作る近似で、同じ株の写真再現は未検証です。","販売店の学名と北米植物誌の種名を照合していますが、流通株の同一性を実物で同定したものではありません。","北米植物誌の茎の最大1.5mは国内の草丈範囲ではありません。草丈・株幅の数値は未確認で、葉の部位寸法を株全体の大きさに置き換えていません。","種資料の水中葉は全体が倒卵形の櫛状で、細い糸状の裂片を持ちます。葉の輪生と裂片の範囲を参考にしますが、国内株の節ごとの葉数や裂片を実測していません。","カナダのブリティッシュコロンビア州の図版（4-25、b）を参考に、池では水底近くの横向きの茎から複数の茎が伸びる姿を示します。流通株の茎の本数・寸法は未確認です。","種資料では冬芽がないため冬芽は付けません。冬も温度を保った水中葉を参考に示し、屋外の越冬や地域別の月変化は未確認です。","白〜ピンクの花色は種資料の花弁の記載です。国内株の開花月と花の写真は未確認のため、立体の花は表示しません。写真の緑色を花色へ扱いません。","茎・枝・節・葉・裂片の本数と配置、太さ、細かな曲がり、密度は描画上の近似です。販売本数や自然な年次増殖の予測ではありません。","地下の根、果実、水上葉への連続した変化、水温・水質・光による生理的反応、同じ株の全月の姿は未再現です。"],"flowerShape":"none","sourceConflict":"国内販売店がMyriophyllum hippuroidesと示す緑の水中株写真と、北米植物誌の種の記載を参考にします。葉の輪生は通常4、範囲4〜6、櫛状の細裂片12〜24は種資料の範囲で、収録株の実測ではありません。花弁のクリーム〜ピンクも種の記載で、国内株の開花確認ではありません。国内の草丈・株幅と開花月は未確認です。"},"p-2f845bda190a":{
+},"p-546a932dc379":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/learn_about_moss/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"southMossPhotoReference","lifeForm":"moss","habit":"creeping","arrangement":"alternate","leafShape":"mossTriangular","leafLength":0.0035,"leafWidth":0.00154,"leafColor":"#719647","leafTexture":"smooth","leafUnderside":"#94ae67","stemColor":"#769158","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"花を付けないコケ植物の参考形です。温度を保った水中を想定し、日本の屋外の冬姿と胞子のうの時期は未確認です。","unconfirmed":["全月の実物照合","ADA公式の写真を参考にした立体近似で、同じ株の写真再現は未検証です。","図鑑は流通するモスの種名・産地に諸説あると説明しています。南米という流通名だけで種や実物の産地を確定していません。","草丈・株幅の数値は未確認です。葉長・葉幅・軸の太さ、節間と曲がりは写真を参考にした描画上の近似で、株の実測ではありません。","小さな葉の形と左右に広がる枝を写真から近似しています。正確な葉序、葉の細胞、葉肋、微細な鋸歯や立体断面は未確認です。","コケ植物なので花を付けません。写真の緑色は葉色で、花弁や種子・果実は描きません。胞子のうの形と形成時期は未確認です。","茎・枝・節・葉の本数と配置、密度は表示上の近似です。販売量、自然な増殖数や成長速度を予測していません。","ADAの図鑑を参考に、池では水底の小さな石を茎葉体の支持面として描きます。石の形・寸法は表示上の近似で、実際の仮根、結束材、活着の進み方は未再現です。","冬も温度を保った水中の参考条件です。屋外の月別変化、越冬・低温枯死、同じ株の全月の姿は未確認です。記事の日付を撮影日や季節変化の時期へ変換していません。"],"flowerShape":"none","sourceConflict":"ADA公式の2022年4月15日の図鑑で、南米ウィローモスとして紹介される参考株を使います。三角形に広がる茎葉体を、小さな葉と枝分かれに分けて描きます。三角形は枝全体の輪郭で、個々の葉を三角形と断定するものではありません。流通名から種を確定せず、草丈・株幅の数値も未確認です。"},"p-2a8de6e63bc9":{"sources":[{"url":"https://www.adana.co.jp/jp/aquajournal/learn_about_moss/","scope":"catalog-entry"}],"basis":{"habit":0,"leafShape":0,"arrangement":0,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"willowMossPhotoReference","lifeForm":"moss","habit":"creeping","arrangement":"alternate","leafShape":"mossIrregular","leafLength":0.0035,"leafWidth":0.0014,"leafColor":"#528644","leafTexture":"smooth","leafUnderside":"#7a9d67","stemColor":"#62824d","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"冬も温度を保った水中の参考条件です。日本の屋外の冬姿と胞子のうの時期は未確認です。","unconfirmed":["資料写真と説明を参考にした近似です。実物と同等の写真再現、自然な増殖や成長速度を予測していません。","写真の参考株を使います。別のウィローモス流通株に形や低温耐性を一般化しません。","草丈・株幅の数値は未確認です。葉長・葉幅・軸の太さ、節間と曲がりは写真を参考にした描画上の近似で、株の実測ではありません。","先が尖った小葉と、不規則に伸びる細い軸・側枝を近似しています。正確な葉序、葉の細胞、葉肋、微細な鋸歯や立体断面は未確認です。","コケ植物なので花を付けません。写真の緑色は葉色で、花弁や種子・果実は描きません。胞子のうの形と形成時期は未確認です。","茎・枝・葉の本数と配置、密度は表示上の近似です。販売量、自然な増殖数や成長速度を予測していません。","ADAの図鑑を参考に、池では水底の小さな石を茎葉体の支持面として描きます。石の形・寸法は表示上の近似で、実際の仮根、結束材、活着の進み方は未再現です。","冬も温度を保った水中の参考条件です。屋外の月別変化、越冬、低温枯死、同じ株の全月の姿は未確認です。記事の日付を撮影日や季節変化の時期へ変換していません。"],"flowerShape":"none","sourceConflict":"ADA公式の2022年4月15日の図鑑で、ウィローモスとして紹介されるTaxiphyllum属の参考株を使います。不規則に伸びる茎葉体と、先が尖った小さな葉を写真から近似して描きます。同名で複数種が流通するという説明に従い、この写真の参考株を種まで確定しません。草丈・株幅の数値も未確認です。"},"p-cccad89b0097":{"sources":[{"url":"https://www.h2-l.jp/news/4012/","scope":"catalog-entry"},{"url":"https://floranorthamerica.org/Myriophyllum_hippuroides","scope":"species"},{"url":"https://www2.gov.bc.ca/assets/gov/environment/air-land-water/water/waterquality/water-quality-reference-documents/wq_ref_aquatic_plants_bc.pdf","scope":"species"}],"basis":{"habit":0,"leafShape":1,"arrangement":1,"leafColor":0},"status":"partial","architecture":"submergedShoots","shootProfile":"greenMyrioPhotoReference","lifeForm":"herb","habit":"clump","arrangement":"whorled","leafShape":"myrioPectinate","leafLength":0.025,"leafWidth":0.02,"leafColor":"#73a453","leafTexture":"smooth","leafUnderside":"#9aba7a","stemColor":"#8d9c65","persistence":"submergedPersistent","fruitMonths":[],"phenologyRegion":"温度を保った水中の細裂葉を参考表示します。国内の開花月と屋外の冬姿は未確認です。","unconfirmed":["全月の実物照合","国内販売店の写真と種の記載から作る近似で、同じ株の写真再現は未検証です。","販売店の学名と北米植物誌の種名を照合していますが、流通株の同一性を実物で同定したものではありません。","北米植物誌の茎の最大1.5mは国内の草丈範囲ではありません。草丈・株幅の数値は未確認で、葉の部位寸法を株全体の大きさに置き換えていません。","種資料の水中葉は全体が倒卵形の櫛状で、細い糸状の裂片を持ちます。葉の輪生と裂片の範囲を参考にしますが、国内株の節ごとの葉数や裂片を実測していません。","カナダのブリティッシュコロンビア州の図版（4-25、b）を参考に、池では水底近くの横向きの茎から複数の茎が伸びる姿を示します。流通株の茎の本数・寸法は未確認です。","種資料では冬芽がないため冬芽は付けません。冬も温度を保った水中葉を参考に示し、屋外の越冬や地域別の月変化は未確認です。","白〜ピンクの花色は種資料の花弁の記載です。国内株の開花月と花の写真は未確認のため、立体の花は表示しません。写真の緑色を花色へ扱いません。","茎・枝・節・葉・裂片の本数と配置、太さ、細かな曲がり、密度は描画上の近似です。販売本数や自然な年次増殖の予測ではありません。","地下の根、果実、水上葉への連続した変化、水温・水質・光による生理的反応、同じ株の全月の姿は未再現です。"],"flowerShape":"none","sourceConflict":"国内販売店がMyriophyllum hippuroidesと示す緑の水中株写真と、北米植物誌の種の記載を参考にします。葉の輪生は通常4、範囲4〜6、櫛状の細裂片12〜24は種資料の範囲で、収録株の実測ではありません。花弁のクリーム〜ピンクも種の記載で、国内株の開花確認ではありません。国内の草丈・株幅と開花月は未確認です。"},"p-2f845bda190a":{
   "sources": [
     {
       "url": "https://www.adana.co.jp/jp/aquajournal/small_talk_16/",
