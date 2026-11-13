@@ -102,7 +102,8 @@ test('Two separate Hosta catalog references reuse verified cultivars while prese
 });
 test('Two separate-catalog Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-68eafed00353','p-61a47ed22ff7'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,51199,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,51199,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Two separate-catalog Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -122,7 +123,8 @@ test('Three white edge gold Hosta references preserve empty Latin unknown sizes 
 });
 test('Three white-edge-gold Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-659e689d5005','p-a1e577c05179','p-2bc7c62c71df'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,51099,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,51099,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three white-edge-gold Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -142,7 +144,8 @@ test('Three small Japanese Hosta references keep unknown flowers suppressed and 
 });
 test('Three small-Japanese Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-1b23758990d6','p-c36f89279dc0','p-79b09099ced5'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of (id==='p-c36f89279dc0'?[4,6,1]:[6,1])){
-  const p={...makePlant(id,50999,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,50999,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three small-Japanese Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -162,7 +165,8 @@ test('Three bronze frilled Hosta references separate green emergence partial bro
 });
 test('Three bronze-frilled Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-45014c5cb892','p-f1b90ee1a360','p-66092eb8e770'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,50899,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,50899,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three bronze-frilled Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -182,7 +186,8 @@ test('Three feathered red Hosta references keep reverse irregular variegation an
 });
 test('Three feathered-red Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-db0cf51d8b5b','p-a6b736312713','p-2f77d916757d'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of (id==='p-2f77d916757d'?[4,6,1]:[6,1])){
-  const p={...makePlant(id,50799,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,50799,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three feathered-red Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -202,7 +207,8 @@ test('Three blue giant Hosta references distinguish broad changing cream margins
 });
 test('Three blue-giant Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-ad8bc39e83b7','p-56b2ded1a774','p-851a9114a610'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,50699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,50699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three blue-giant Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -222,7 +228,8 @@ test('Three speckled gold Hosta references distinguish irregular green spots lat
 });
 test('Three speckled-gold Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-4807bc0797fe','p-0c221ec5502f','p-dcd0a8a18a31'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,50599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,50599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three speckled-gold Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -242,7 +249,8 @@ test('Three white variegated Hosta references keep compact stable centres broad 
 });
 test('Three white-variegated Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-8d513f95eb98','p-b7c0bc1d8703','p-f31ac2c9e2a2'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,50499,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,50499,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three white-variegated Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -266,7 +274,8 @@ test('Three season changing Hosta references keep white to green veins red scape
 });
 test('Three season-changing Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-95ef4d4f4911','p-8993e03dc3df','p-1d8c7d9a1f0b'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of (id==='p-1d8c7d9a1f0b'?[5,6,1]:[6,1])){
-  const p={...makePlant(id,50299,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,50299,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three season-changing Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -286,7 +295,8 @@ test('Three contrasting Hosta references distinguish changing centres giant leav
 });
 test('Three contrasting Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-9715b3ec6ca7','p-a8b7f9f1e81c','p-13988b85d68f'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,50199,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,50199,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three contrasting Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -306,7 +316,8 @@ test('Three pale centre Hosta references preserve white centres upright leaves p
 });
 test('Three pale-centre Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-2cc0b4b5f9b7','p-03614cb3183b','p-f1fe838a9c09'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,50099,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,50099,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three pale-centre Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -326,7 +337,8 @@ test('Three blue and frosted Hosta references preserve broad ivory and differing
 });
 test('Three blue-frosted Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-2ef58e6ebbc0','p-d7725e5d46dc','p-9ba43ad256b8'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,49999,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,49999,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three blue-frosted Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -346,7 +358,8 @@ test('Three fragrant and centre Hosta references distinguish large white flowers
 });
 test('Three fragrant-centre Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-e20f41ad372b','p-56fc0d54e567','p-055d5475615a'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,49899,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,49899,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three fragrant-centre Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -366,7 +379,8 @@ test('Three red and gold Hosta references preserve lime-yellow summer leaves red
 });
 test('Three red-gold Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-444ac337c553','p-68ad3901f2d9','p-34896a3ab98a'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,49799,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,49799,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three red-gold Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -386,7 +400,8 @@ test('Three blue and white Hosta references distinguish white margins solid glau
 });
 test('Three blue-white Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-a579fca3590c','p-8094c4f1d466','p-2966c4337e4a'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,49699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,49699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three blue-white Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
@@ -406,7 +421,8 @@ test('Three variegated Hosta references keep domestic flower-inclusive dimension
 });
 test('Three Hosta independent tiny dimensions bound actual leaf ribs flower tubes and scapes',()=>{
  for(const id of ['p-7a7602c87348','p-f241568e8fcf','p-62dbb3f12caa'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,49599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^(blade|petiole)-hosta-ref/.test(m.userData.component))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+id+' '+size+' '+month+' '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,49599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkReferenceVertexBounds(g,p,id+' '+size+' '+month,component=>/^(blade|petiole)-hosta-ref/.test(component),.005001);}finally{dispose(g);}
  }
 });
 test('Three Hosta macro cameras target a rendered corolla surface above the leaf mass',()=>{
