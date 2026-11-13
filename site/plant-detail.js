@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1095';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1096';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1095';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength} from './model.js?v=0.9.1095';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1096';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight,indicaSpikeLength} from './model.js?v=0.9.1096';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26591,11 +26591,19 @@ function yellowBacopaPhotoSegment(f,a,z,r,color,kind){
 }
 function drawYellowBacopaPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00055,h*.005,w*.005),floor=r*1.2+Math.min(.00002,h*.002),hairL=Math.min(.001,h*.015,w*.004);
+ const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00055,h*.005,w*.005),floor=bed+r*1.2+Math.min(.00002,h*.002),hairL=Math.min(.001,h*.015,w*.004);
  for(let shoot=0;shoot<9;shoot++){
   const az=shoot*2.399+.3,R=w*.29*Math.sqrt((shoot+.7)/9),root=[Math.sin(az)*R,floor,Math.cos(az)*R],lean=w*.035;let previous=root;
+  if(wet)for(const side of [-1,1]){
+   const turn=az+side,reach=Math.min(.006,w*.026);
+   const bend=[root[0]+Math.sin(turn)*reach*.42,bed+(floor-bed)*.42,root[2]+Math.cos(turn)*reach*.42];
+   const tip=[root[0]+Math.sin(turn)*reach,bed+r*.20,root[2]+Math.cos(turn)*reach];
+   yellowBacopaPhotoSegment(b,root,bend,r*.25,'#b5a589','basal-root-yellow-bacopa-photo-ref');
+   yellowBacopaPhotoSegment(b,bend,tip,r*.14,'#b5a589','basal-root-yellow-bacopa-photo-ref');
+  }
   for(let node=0;node<5;node++){
-   const t=(node+1)/5,at=[root[0]+Math.sin(az)*lean*t*t,LH*(.16+.66*t),root[2]+Math.cos(az)*lean*t*t],L=Math.min(.022,w*.18)*(.88+node*.02),relief=Math.min(L,LH*.035/.071),pitch=Math.acos(Math.min(.46,LH*.035/L)),angle=az+node*Math.PI/2;
+   const t=(node+1)/5,at=[root[0]+Math.sin(az)*lean*t*t,bed+LH*(.16+.66*t),root[2]+Math.cos(az)*lean*t*t],L=Math.min(.022,w*.18)*(.88+node*.02),relief=Math.min(L,LH*.035/.071),pitch=Math.acos(Math.min(.46,LH*.035/L)),angle=az+node*Math.PI/2;
    yellowBacopaPhotoSegment(b,previous,at,r,'#9c9271','stem-yellow-bacopa-photo-ref');
    for(let k=0;k<12;k++){const t=(k+.5)/12,a=az+k*2.399,pt=previous.map((v,i)=>v+(at[i]-v)*t);yellowBacopaPhotoSegment(b,pt,[pt[0]+Math.sin(a)*hairL,pt[1]+hairL*.13,pt[2]+Math.cos(a)*hairL],hairL*.035,'#e1dfc1','stemHair-yellow-bacopa-photo-ref');}
    for(const side of[0,1]){const lf=flowerFrame(b,at,pitch,angle+side*Math.PI);lf.add('yellow-bacopa-photo-reference-leaf','leaf-yellow-bacopa-photo-reference',kit.shade(rand,s.leafColor,.035),0,0,0,L,L,relief);const length=Math.min(hairL,LH*.03);for(const row of[4,8,12,16])for(const col of[2,22]){const pt=yellowBacopaPhotoReferencePoint('leaf',row/20,col/24*2-1).map(Math.fround).map((v,i)=>v*[L,L,relief][i]);yellowBacopaPhotoSegment(lf,pt,[pt[0],pt[1],pt[2]-length],length*.035,'#e1dfc1','leafHair-yellow-bacopa-photo-ref');}}

@@ -9666,7 +9666,7 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "bloomBasis": "杜若園芸の種類別記載",
   "source": "https://www.akb.jp/c/suisei/chusui/002-0003",
   "publisher": "杜若園芸",
-  "sourceChecked": "2026-11-01",
+  "sourceChecked": "2026-11-13",
   "aliases": [
     "イエローバコパ"
   ],

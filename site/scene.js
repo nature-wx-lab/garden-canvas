@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1095';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1095';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1096';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1096';
 
 const BACKDROP_COLOR='#65755a';
 export {CAMERA_FLOOR};
@@ -575,7 +575,7 @@ export function createScene(container,onPick){
     }else if(type==='focus'&&selection){
       controls.minDistance=.12;
       const p=plan.plants.find(p=>p.id===selection),s=stateAt(p,view),depth=pondDepthAt(plan,p.x,p.z);
-      const dormantBacopa=s.groundDormant&&['bacopaCaroliniana','bacopaMonnieri'].includes(plantInfo(p.kind).appearance?.architecture);
+      const dormantBacopa=s.groundDormant&&['bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(plantInfo(p.kind).appearance?.architecture);
       const base=plantBaseAt(plan,p)+(dormantBacopa?depth:0);
       controls.target.set(p.x-plan.width/2,base+Math.min(s.height,depth||s.height)*.52,p.z-plan.depth/2);
       const d=Math.max(.16,s.height*1.20,s.spread*1.12)*Math.max(1,1/camera.aspect);

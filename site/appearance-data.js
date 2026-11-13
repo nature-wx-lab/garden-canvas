@@ -12036,7 +12036,8 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     {
       "url": "https://plantnet.rbgsyd.nsw.gov.au/cgi-bin/NSWfl.pl?lvl=gn&name=Bacopa&page=nswfl",
       "scope": "genus"
-    }
+    },
+    {"url": "https://www.redland.qld.gov.au/files/assets/public/v/1/environment-and-sustainability/documents/environmental_weeds_of_the_redlands_2019.pdf", "scope": "species"}
   ],
   "basis": {
     "habit": 0,
@@ -12057,7 +12058,7 @@ export const APPEARANCE_DATA={"maple":{"sources":[{"url":"https://nagakubokouen.
     "全形・全月の実物照合",
     "水深と気温による水上形・水中形の切り替え",
     "地域別の芽出し・枯れ込み月",
-    "水中の茎・根の立体表示",
+    "レッドランド市の種資料（p.53）にある土に接した茎の発根を参考に、池では水底へ短い根をつなぎます。根の分枝や本数、深水での生育は参考表示です。水面下に花の付け根が入る場合は花を省きます。",
     "斑入り流通株の正式な品種同定",
     "丸い対生葉、網状の白〜クリーム色の斑と密な毛は写真と種の記載を参考にした表現です。色や斑の面積は校正していません。",
     "青〜紫色は生産者の掲載写真と種資料を参照しています。黄色い花としては表示・検索しません。",
