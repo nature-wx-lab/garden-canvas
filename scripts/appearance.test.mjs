@@ -9744,8 +9744,8 @@ test('Alternanthera cultivar references keep opposite leaves protected winter an
 });
 test('Alternanthera cultivar independent tiny dimensions bound real leaf and papery flower vertices',()=>{
  for(const id of ['p-2a1f90795019','p-0be62f320a69','p-e59161291d10'])for(const size of [[.6,.5,.52],[.25,.25,.21],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
-  const p={...makePlant(id,52199,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(10)),matrix=new Matrix4(),point=new Vector3(),label=id+' '+size;
-  try{let maxLeaf=0;for(const mesh of g.children){const pos=mesh.geometry.attributes.position;for(let k=0;k<mesh.count;k++){mesh.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);if(!(Number.isFinite(point.x)&&Number.isFinite(point.y)&&Number.isFinite(point.z)))assert.fail(label);if(!(point.y>=-1e-7&&point.y<=p.height*1.05+.00001))assert.fail(label+' height '+mesh.userData.component+' '+point.y);const radial=Math.hypot(point.x,point.z);if(!(radial<=p.spread*.54+.00001))assert.fail(label+' footprint '+mesh.userData.component);if(mesh.userData.component.startsWith('leaf-'))maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant(id,52199,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(10));
+  try{checkReferenceVertexBounds(g,p,id+' '+size,component=>component.startsWith('leaf-'));}finally{dispose(g);}
  }
 });
 test('Alternanthera cultivar macro cameras centre visible papery tepals and bracts',()=>{
@@ -9867,7 +9867,8 @@ test('Millenium Allium references retain summer foliage spherical umbels qualifi
 });
 test('Millenium Allium independent tiny inputs bound actual flat blades full spherical umbels and small flower organs',()=>{
  for(const size of [[.3,.4,.20],[.15,.2,.10],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
-  const p={...makePlant('p-55f1d425cbbb',52799,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(7)),mat=new Matrix4(),v=new Vector3(),label=size;try{let maxLeaf=0;for(const m of g.children){const pos=m.geometry.attributes.position,leaf=/^(leaf|vein)-millenium-ref/.test(m.userData.component);for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);if(!(Number.isFinite(v.x)&&Number.isFinite(v.y)&&Number.isFinite(v.z)))assert.ok(v.toArray().every(Number.isFinite));if(!(v.y>=-1e-7&&v.y<=p.height*1.05+.00001))assert.fail(label+' height '+m.userData.component+' '+v.y);const radial=Math.hypot(v.x,v.z);if(!(radial<=p.spread*.54+.00001))assert.fail(label+' footprint '+m.userData.component+' '+radial);if(leaf)maxLeaf=Math.max(maxLeaf,v.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant('p-55f1d425cbbb',52799,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(7));
+  try{checkReferenceVertexBounds(g,p,size.join(','),component=>/^(leaf|vein)-millenium-ref/.test(component));}finally{dispose(g);}
  }
 });
 test('Millenium Allium macro cameras centre an actual tepal above retained summer leaves',()=>{
@@ -9946,7 +9947,8 @@ test('Three Gaillardia source references separate airy grape small heads two com
 });
 test('Three Gaillardia source independent tiny inputs bound actual hairy leaves three-toothed rays disc florets and inferior ovaries',()=>{
  for(const [id,normal]of [['p-c72a3b014377',[.45,.5,.25]],['p-374d3d02fcb2',[.3,.4,.23]],['p-97744f7111c2',[.3,.4,.23]]])for(const size of [normal,[.15,.22,.12],[.005,.08,.005],[.12,.005,.005],[.7,.8,.005],[.005,.005,.005]]){
-  const p={...makePlant(id,53199,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6)),mat=new Matrix4(),v=new Vector3(),label=id+' '+size;try{let maxLeaf=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,label+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,label+' footprint '+m.userData.component+' '+Math.hypot(v.x,v.z));if(/^leaf-/.test(m.userData.component))maxLeaf=Math.max(maxLeaf,v.y);}}}assert.ok(maxLeaf<=p.leafHeight+.000001,label+' leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant(id,53199,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(6));
+  try{checkReferenceVertexBounds(g,p,id+' '+size,component=>component.startsWith('leaf-'));}finally{dispose(g);}
  }
 });
 test('Three Gaillardia source macro cameras centre a visible ray surface outside the dome of disc florets',()=>{
