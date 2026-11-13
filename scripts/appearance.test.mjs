@@ -24057,22 +24057,35 @@ test('Lysimachia Gold matches flower visibility, inspection and actual waterline
  const base=makePlant('p-9802ede000e2',101310,3,3),matrix=new Matrix4(),point=new Vector3();
  const regular={...base,height:.10,spread:.26,leafHeight:.08};
  const {centerY,diameter}=goldJennyFlowerDimensions(regular.height,regular.spread,regular.leafHeight);
- const displayLimit=centerY-diameter*.20+PLANT_BASE_Y-POND_SURFACE_Y;
+ const displayLimit=centerY-diameter*.20-POND_SURFACE_Y;
  const cases=[
   [regular,0,6,false,true],[regular,.025,6,false,true],[regular,.06,6,false,false],
   [regular,displayLimit-.000001,6,false,true],[regular,displayLimit+.000001,6,false,false],
   [{...regular,height:.01,leafHeight:.005},.012,6,false,false],
-  [{...regular,height:.06,leafHeight:.005},.022,6,false,false],
-  [{...regular,height:.06,leafHeight:.005},.022,6,true,true],
+  [{...regular,height:.06,leafHeight:.005},.013,6,false,false],
+  [{...regular,height:.06,leafHeight:.005},.013,6,true,true],
   [regular,.005,1,false,false],
  ];
  for(const [plant,waterDepth,month,reference,visible] of cases){
   const view={year:1,month,reference,waterDepth},state=stateAt(plant,view),g=plantModel(plant,view);
   try{
-   assert.equal(state.bloom,visible);assert.equal(state.flowerDensity>0,visible);
+   assert.equal(state.bloom,visible,JSON.stringify({waterDepth,month,reference,height:plant.height}));assert.equal(state.flowerDensity>0,visible);
    assert.equal(inspectionSeasonActive(plant,view),visible);
    assert.equal(!!flowerInspectionView(g,.8,40),visible);
    assert.ok(g.children.some(mesh=>mesh.userData.component==='leaf-gold-jenny-photo-reference'));
+   const roots=g.children.find(mesh=>mesh.userData.component==='nodal-root-gold-jenny-photo-ref');
+   if(waterDepth===0)assert.equal(roots,undefined);
+   else{
+    const stems=g.children.find(mesh=>mesh.userData.component==='creeping-stem-gold-jenny-photo-ref');
+    assert.equal(roots.count,18);
+    for(let i=0;i<roots.count;i++){
+     roots.getMatrixAt(i,matrix);
+     const from=point.set(0,-.5,0).applyMatrix4(matrix).clone(),to=point.set(0,.5,0).applyMatrix4(matrix).clone();
+     stems.getMatrixAt(Math.floor(i/3)*7+i%3,matrix);
+     assert.ok(point.set(0,.5,0).applyMatrix4(matrix).distanceTo(from)<2e-6);
+     assert.ok(to.y>=-PLANT_BASE_Y&&to.y<-PLANT_BASE_Y+.0001);
+    }
+   }
    const corolla=g.children.find(mesh=>mesh.userData.component==='corolla-gold-jenny-photo-reference');
    assert.equal(!!corolla,visible);
    if(!visible&&month===6)assert.match(state.label,/現在の水深では花を表示しません/);
