@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1141';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1141';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1141';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1141';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1141';
-import { createScene } from './scene.js?v=0.9.1141';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1142';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1142';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1142';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1142';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1142';
+import { createScene } from './scene.js?v=0.9.1142';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null;
@@ -206,9 +206,12 @@ function setMode(value){if(preview&&value!=='orbit'){message('交換プレビュ
   syncPlacementButtons();
 }
 function syncPlacementButtons(){
+  const locked=!!selectedPlant()?.locked;
+  $('candidate-lock-note').hidden=!locked||!!preview;
   for(const id of ['catalog','candidates']){
     for(const control of $(id).querySelectorAll('button[data-kind]')){
       control.setAttribute('aria-pressed',String(mode==='add'&&control.dataset.kind===addKind));
+      if(id==='candidates')control.disabled=locked||!!preview;
     }
   }
 }
