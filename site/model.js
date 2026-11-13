@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1115';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1115';
-import { seasonAt } from './catalog-search.js?v=0.9.1115';
+import {treeProfile} from './tree-profiles.js?v=0.9.1116';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1116';
+import { seasonAt } from './catalog-search.js?v=0.9.1116';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -81,7 +81,9 @@ export function makePlant(kind,id,x,z){
   const info=plantInfo(kind),tree=info.group==='木',arch=info.appearance?.architecture,floater=info.appearance?.flowerPalette?.groundRunner?.25:arch==='uncommonGardenTree'&&info.appearance.shootProfile==='baobab'?.65:arch==='marginGardenPlants'?({helvola:.12,calla:.65,lavatera:.8,hibbertia:.3}[info.appearance.shootProfile]):arch?.startsWith('salvinia')?.03:arch==='amazonFrogbit'?.06:arch==='waterHyacinth'?.3:['waterCoin','marsileaMutica','bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(arch)?.12:null,height=arch==='raouliaMats'?.006:floater??(arch==='submergedShoots'?(info.appearance.lifeForm==='moss'?.05:Math.min(.35,info.height?.[1]??.35)):tree?1.5:info.group==='低木'?.65:info.form==='grass'?.65:.35),spread=info.appearance?.flowerPalette?.groundRunner?1:tree?round(height*(treeProfile(info)?.spread&&treeProfile(info)?.height?Math.min(1.6,treeProfile(info).spread[1]/treeProfile(info).height[1]):.65)):info.group==='低木'?.55:.3;
   return {id,kind,x,z,height,spread,leafHeight:arch==='raouliaMats'?.003:round(info.leaf==='herb'||info.leaf==='grass'?height*.55:height),start:0,role:'new',price:null,locked:false,scenario:null,management:null,tasks:[]};
 }
-export function replacePlant(p,kind){if(p.locked)throw new Error('固定を解除してから交換してください。');const next=makePlant(kind,p.id,p.x,p.z);next.start=p.start;next.role=p.role;return next;}
+export function replacePlant(p,kind){if(p.locked)throw new Error('固定を解除してから交換してください。');
+  if(plantInfo(kind).appearance?.collection)throw new Error('セットや混合種は一株として交換できません。構成植物を個別に選んでください。');
+  const next=makePlant(kind,p.id,p.x,p.z);next.start=p.start;next.role=p.role;return next;}
 export function editSize(p,height,spread,leafHeight){const next=clone(p);if(height!==p.height||spread!==p.spread||leafHeight!==p.leafHeight){next.price=null;next.scenario=null;next.management=null;}Object.assign(next,{height,spread,leafHeight});return next;}
 function annualPhloxCycle(start,info){
   const year=Math.floor(start/12)+(start%12>=8?1:0);

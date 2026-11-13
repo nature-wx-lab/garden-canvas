@@ -71,6 +71,16 @@ test('unspecified annual growth stays unknown and mature reference is independen
 test('year and season are separate; winter does not reset a perennial clump',()=>{const p=makePlant('hosta',1,2,2);p.scenario={year:3,height:.8,spread:1,leafHeight:.6};const winter=stateAt(p,view(3,1)),summer=stateAt(p,view(3,6));assert.equal(winter.spread,1);assert.equal(summer.spread,1);assert.equal(winter.winter,true);assert.equal(summer.bloom,true);});
 test('future planting has no invented earlier history',()=>{const p=makePlant('salvia',1,2,2);p.start=24;p.scenario={year:3,height:.9,spread:.6,leafHeight:.4};assert.equal(stateAt(p,view(1,12)).present,false);assert.equal(stateAt(p,view(2,1)).height,p.height);assert.equal(stateAt(p,view(5,1)).height,.9);});
 test('replacement preserves place and planting date, not price, model or tasks',()=>{const p=makePlant('rose',1,2,3);p.start=24;p.price=900;p.tasks=[task('prune',2)];const q=replacePlant(p,'hosta');assert.equal(q.start,24);assert.equal(q.x,p.x);assert.equal(q.id,p.id);assert.equal(q.price,null);assert.deepEqual(q.tasks,[]);assert.equal(q.height,.35);p.locked=true;assert.throws(()=>replacePlant(p,'hosta'));});
+test('replacement rejects collections while previously saved collection placements remain readable',()=>{
+  const d=fixture(),plant=d.plans.A.plants[0];
+  for(const kind of ['p-d7e7ca9d053b','p-ab9110a04a6f']){
+    assert.throws(()=>replacePlant(plant,kind),/セットや混合種/);
+    const legacy=clone(d);
+    legacy.plans.A.plants[0].kind=kind;
+    assert.deepEqual(validateDocument(legacy),legacy);
+    assert.equal(replacePlant(legacy.plans.A.plants[0],'salvia').kind,'salvia');
+  }
+});
 test('size changes invalidate obsolete prices and scenario targets',()=>{const p=makePlant('rose',1,2,2);p.price=1000;p.scenario={year:3,height:1,spread:1,leafHeight:1};assert.equal(editSize(p,p.height,p.spread,p.leafHeight).price,1000);const q=editSize(p,.7,.6,.6);assert.equal(q.price,null);assert.equal(q.scenario,null);});
 test('low ground covers round-trip at their documented centimetre height while zero is rejected',()=>{
  const d=fixture(),p=d.plans.A.plants[0];Object.assign(p,{kind:'p-2a0099e60c2c',height:.03,leafHeight:.025,spread:.5});assert.equal(validateDocument(d).plans.A.plants[0].height,.03);
