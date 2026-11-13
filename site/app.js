@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1134';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1134';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1134';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1134';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1134';
-import { createScene } from './scene.js?v=0.9.1134';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1135';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1135';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1135';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1135';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1135';
+import { createScene } from './scene.js?v=0.9.1135';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -506,9 +506,33 @@ function bind(){
       calendarMonth=month;
     },'手入れ予定を追加しました。予定表と3Dが同じ剪定月を参照します。',true);
   });
-  $('resize-garden').addEventListener('click',()=>{const ok=mutate(p=>{if(p.plants.some(p=>p.locked))throw new Error('固定された植物があります。寸法変更で配置も伸縮するため、先に固定を解除してください。');const w=number('width'),d=number('depth'),rx=w/p.width,rz=d/p.depth,shape=gardenShape(p);
-    p.width=w;p.depth=d;
-    p.outline=shape==='custom'?p.outline.map(([x,z])=>[round(x*rx),round(z*rz)]):outlineFor(shape,w,d);p.zones.forEach(z=>{z.points=z.points.map(([x,z])=>[round(x*rx),round(z*rz)]);});p.obstacles.forEach(o=>{o.x=round(o.x*rx);o.z=round(o.z*rz);o.width=round(o.width*rx);o.depth=round(o.depth*rz);});p.plants.forEach(p=>{p.x=round(p.x*rx);p.z=round(p.z*rz);});},'庭と配置の平面寸法を伸縮しました。');if(ok)engine?.view('home');});
+  $('resize-garden').addEventListener('click',()=>{
+    const width=number('width'),depth=number('depth');
+    if(!(width>=2&&width<=30&&depth>=2&&depth<=30)){
+      message('庭の幅と奥行きはそれぞれ2〜30mで入力してください。');
+      return;
+    }
+    const ok=mutate(p=>{
+      if(p.plants.some(plant=>plant.locked))throw new Error('固定された植物があります。寸法変更で配置も伸縮するため、先に固定を解除してください。');
+      const rx=width/p.width,rz=depth/p.depth,shape=gardenShape(p);
+      p.width=width;
+      p.depth=depth;
+      const scalePoints=points=>points.map(([x,z])=>[round(x*rx),round(z*rz)]);
+      p.outline=shape==='custom'?scalePoints(p.outline):outlineFor(shape,width,depth);
+      for(const zone of p.zones)zone.points=scalePoints(zone.points);
+      for(const obstacle of p.obstacles){
+        obstacle.x=round(obstacle.x*rx);
+        obstacle.z=round(obstacle.z*rz);
+        obstacle.width=round(obstacle.width*rx);
+        obstacle.depth=round(obstacle.depth*rz);
+      }
+      for(const plant of p.plants){
+        plant.x=round(plant.x*rx);
+        plant.z=round(plant.z*rz);
+      }
+    },'庭と配置の平面寸法を伸縮しました。');
+    if(ok)engine?.view('home');
+  });
   $('shape').addEventListener('change',()=>{
     const shape=$('shape').value;
     if(shape==='custom'){startDrawing('outline');return;}
