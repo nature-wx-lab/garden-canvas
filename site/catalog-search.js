@@ -1,20 +1,34 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1132';
+import {treeProfile} from './tree-profiles.js?v=0.9.1133';
 // Search never discards catalog records; paging only bounds the visible DOM.
 export const GENRES=['庭木','宿根草','一年草','カラーリーフ','球根植物','バラ','クリスマスローズ','クレマチス','多肉','水生植物'];
 export const COLORS={red:'赤',pink:'ピンク',white:'白',yellow:'黄',orange:'オレンジ・杏',purple:'紫・藤',blue:'青',green:'緑',dark:'黒・褐色',mixed:'複色',unknown:'花色未確認'};
 export const normalizeSearch=text=>String(text).normalize('NFKC').toLowerCase().replace(/[\u30a1-\u30f6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60)).replace(/[\s・：:'‘’"“”()（）\-]/g,'');
-export function searchCatalog(catalog,{query='',genre='all',color='all',status='all',popular=false,habit='all',dryGarden=false}={}){
+export function searchCatalog(catalog,options){
+  return searchEntries(Object.entries(catalog),options);
+}
+export function createCatalogSearch(catalog){
+  const entries=Object.entries(catalog).map(([key,plant])=>[key,plant,searchableName(plant)]);
+  return options=>searchEntries(entries,options);
+}
+function searchableName(plant){
+  return normalizeSearch([plant.label,plant.latin,...(plant.aliases||[])].join(' '));
+}
+function searchEntries(entries,{query='',genre='all',color='all',status='all',popular=false,habit='all',dryGarden=false}={}){
   const words=String(query).trim().split(/\s+/).filter(Boolean).map(normalizeSearch);
-  return Object.entries(catalog).filter(([,p])=>{
+  const matches=[];
+  for(const [key,p,indexedName] of entries){
     const matchesFilters=(!dryGarden||p.gardenUse?.climate==='frost-lowland')&&(!popular||p.popularity?.length>0)
       &&(habit==='all'||treeProfile(p)?.habit===habit)&&(genre==='all'||p.genre===genre)
       &&(color==='all'||(p.colors||['unknown']).includes(color))
       &&(status==='all'||(status==='sourced'?!!p.source:!p.source));
-    if(!matchesFilters)return false;
-    if(!words.length)return true;
-    const name=normalizeSearch([p.label,p.latin,...(p.aliases||[])].join(' '));
-    return words.every(word=>name.includes(word));
-  });
+    if(!matchesFilters)continue;
+    if(words.length){
+      const name=indexedName??searchableName(p);
+      if(!words.every(word=>name.includes(word)))continue;
+    }
+    matches.push([key,p]);
+  }
+  return matches;
 }
 export function catalogPage(entries,page=0,size=24){
   const pages=Math.max(1,Math.ceil(entries.length/size)),index=Math.max(0,Math.min(pages-1,page));

@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1132';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1132';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1132';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1132';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1132';
-import { createScene } from './scene.js?v=0.9.1132';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1133';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1133';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1133';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1133';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1133';
+import { createScene } from './scene.js?v=0.9.1133';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -98,6 +98,7 @@ function sourceCard(target,kind){
   if(info.source)box.append(el('p',`資料確認 ${info.sourceChecked||CATALOG_VERSION.slice(0,10)}。花期は資料の地域と栽培条件による目安です。`,'hint'));
   else box.append(el('p','名称を収録済み。植物属性は公開資料で確認するまで空欄にしています。','hint'));
 }
+const searchPlants=createCatalogSearch(CATALOG);
 let catalogIndex=0;
 function chooseKind(kind){
  const info=plantInfo(kind);resetMode();sourceCard('catalog-info',kind);$('catalog-info').closest('details').open=true;
@@ -105,7 +106,7 @@ function chooseKind(kind){
  addKind=kind;setMode('add');message(info.form==='unmodeled'?'庭をクリックすると寸法枠を配置します。植物の外観は未対応です。':'庭をクリックして参考モデルを配置できます。');
 }
 function drawCatalog(){
-  const genre=$('catalog-filter').value,results=searchCatalog(CATALOG,{query:$('catalog-search').value,genre,color:$('catalog-color').value,status:$('catalog-status').value,popular:$('catalog-popular').checked,habit:$('catalog-habit').value,dryGarden:$('catalog-dry-garden').checked}),page=catalogPage(results,catalogIndex);catalogIndex=page.index;
+  const genre=$('catalog-filter').value,results=searchPlants({query:$('catalog-search').value,genre,color:$('catalog-color').value,status:$('catalog-status').value,popular:$('catalog-popular').checked,habit:$('catalog-habit').value,dryGarden:$('catalog-dry-garden').checked}),page=catalogPage(results,catalogIndex);catalogIndex=page.index;
   $('dry-garden-guide').hidden=!$('catalog-dry-garden').checked;
   $('catalog-count').textContent=`${page.total.toLocaleString('ja-JP')}件${page.total?' ・ '+(page.index*24+1)+'〜'+Math.min(page.total,(page.index+1)*24):''}`;
   $('catalog-page').textContent=`${page.index+1} / ${page.pages}`;$('catalog-prev').disabled=page.index===0;$('catalog-next').disabled=page.index===page.pages-1;$('rose-guide').hidden=genre!=='バラ';
@@ -120,7 +121,7 @@ function drawReplacement(){
   if(control.dataset.scope===scope&&control.dataset.query===search.value)return;
   control.dataset.scope=scope;
   control.dataset.query=search.value;
-  const results=searchCatalog(CATALOG,{query:search.value});
+  const results=searchPlants({query:search.value});
   const matches=results.filter(([,info])=>!info.appearance?.collection),items=matches.slice(0,40);
   if(!items.some(([key])=>key===kind))items.unshift([kind,CATALOG[kind]]);
   options('replacement',items.map(([key,info])=>[key,info.label]));
