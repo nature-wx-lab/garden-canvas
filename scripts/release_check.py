@@ -36,6 +36,19 @@ def scan_asset(data,name,assets):
     # Approved immutable public CC0 assets; still inspect embedded text for private paths/tokens.
     scan(data.decode('utf-8',errors='ignore').encode('utf-8'),name,True)
 
+def read_blob(process,oid):
+    key=oid.encode('ascii')
+    process.stdin.write(key+b'\n')
+    process.stdin.flush()
+    header=process.stdout.readline().split()
+    if len(header)!=3 or header[:2]!=[key,b'blob'] or not header[2].isdigit():
+        fail('unexpected history Git blob response')
+    size=int(header[2])
+    data=process.stdout.read(size)
+    if len(data)!=size or process.stdout.read(1)!=b'\n':
+        fail('incomplete history Git blob')
+    return data
+
 def audit():
     tracked=set(git('ls-files','-z').decode().strip('\0').split('\0'))
     if tracked!=ALLOWED:fail('tracked file allowlist mismatch')
@@ -63,22 +76,27 @@ def audit():
         if re.search(r'\b(?:fetch|XMLHttpRequest|WebSocket|sendBeacon|eval)\s*\(|\.innerHTML\s*=|navigator\.geolocation',source):fail(path+' introduces an unreviewed network or injection surface')
     commits=git('rev-list','--all').decode().splitlines()
     checked_blobs=set()
-    for commit in commits:
-        parts=git('show','-s','--format=%an%x00%ae%x00%cn%x00%ce%x00%B',commit).decode().split('\0',4)
-        if parts[0] not in NAMES or parts[2] not in NAMES or not SAFE_EMAIL.fullmatch(parts[1]) or not SAFE_EMAIL.fullmatch(parts[3]):fail('commit identity is not allowlisted')
-        scan(parts[4].encode(),'commit message')
-        entries=git('ls-tree','-r',commit).decode().splitlines()
-        for entry in entries:
-            meta,name=entry.split('\t');mode,kind,oid=meta.split()
-            if name not in ALLOWED or mode!='100644' or kind!='blob':fail('history file allowlist mismatch')
-            # Identical Git objects at the same path undergo the same byte checks.
-            identity=(name,oid)
-            if identity in checked_blobs:continue
-            data=git('cat-file','blob',oid)
-            if name in lock and hashlib.sha256(data).hexdigest()!=lock[name]:fail('unreviewed vendor version in history')
-            if name in ASSETS:scan_asset(data,name,assets)
-            else:scan(data,'history:'+name,name in lock)
-            checked_blobs.add(identity)
+    with subprocess.Popen(['git','cat-file','--batch'],cwd=ROOT,stdin=subprocess.PIPE,stdout=subprocess.PIPE) as blobs:
+        try:
+            for commit in commits:
+                parts=git('show','-s','--format=%an%x00%ae%x00%cn%x00%ce%x00%B',commit).decode().split('\0',4)
+                if parts[0] not in NAMES or parts[2] not in NAMES or not SAFE_EMAIL.fullmatch(parts[1]) or not SAFE_EMAIL.fullmatch(parts[3]):fail('commit identity is not allowlisted')
+                scan(parts[4].encode(),'commit message')
+                entries=git('ls-tree','-r',commit).decode().splitlines()
+                for entry in entries:
+                    meta,name=entry.split('\t');mode,kind,oid=meta.split()
+                    if name not in ALLOWED or mode!='100644' or kind!='blob':fail('history file allowlist mismatch')
+                    # Identical Git objects at the same path undergo the same byte checks.
+                    identity=(name,oid)
+                    if identity in checked_blobs:continue
+                    data=read_blob(blobs,oid)
+                    if name in lock and hashlib.sha256(data).hexdigest()!=lock[name]:fail('unreviewed vendor version in history')
+                    if name in ASSETS:scan_asset(data,name,assets)
+                    else:scan(data,'history:'+name,name in lock)
+                    checked_blobs.add(identity)
+        finally:
+            blobs.stdin.close()
+        if blobs.wait()!=0:fail('history Git blob reader failed')
     print(f'RELEASE_CHECK_OK files={len(ALLOWED)} site_files={len(SITE)} commits={len(commits)}')
 
 def main():
