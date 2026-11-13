@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1171';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1171';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1171';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1171';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1171';
-import { createScene } from './scene.js?v=0.9.1171';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1172';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1172';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1172';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1172';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1172';
+import { createScene } from './scene.js?v=0.9.1172';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -269,18 +269,21 @@ function syncGarden(){const p=plan();for(const id of ['width','depth','sun','moi
     const name=zone.kind==='water'?'水面':'花壇',number=index+1;
     const row=itemRow(`${name} ${number} · ${area(zone.points).toFixed(1)}m²`,()=>
       mutate(plan=>plan.zones.splice(index,1),'区画を取り除きました。植物は残ります。'));
-    const type=el('select');
-    type.setAttribute('aria-label',`区画${number}の種類`);
+    const type=el('select'),typeName=`区画${number}の種類`;
+    type.setAttribute('aria-label',typeName);
     for(const [value,text] of [['soil','花壇'],['water','池・水面']]){
       const option=el('option',text);option.value=value;type.append(option);
     }
     type.value=zone.kind||'soil';
     type.addEventListener('change',()=>{
       const value=type.value;
-      mutate(plan=>{
+      const keepFocus=document.activeElement===type;
+      if(mutate(plan=>{
         plan.zones[index].kind=value;
         if(value!=='water')delete plan.zones[index].depth;
-      },'区画の種類を変更しました。');
+      },'区画の種類を変更しました。')){
+        if(keepFocus)$('zone-list').querySelector(`[aria-label="${typeName}"]`)?.focus({preventScroll:true});
+      }else type.value=zone.kind||'soil';
     });
     row.append(type);
     if(zone.kind!=='water')return row;
