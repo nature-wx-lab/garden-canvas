@@ -537,9 +537,32 @@ test('Prairie grasses keep Sorghastrum barren pedicels and bent awns separate fr
   }finally{dispose(g);}
  }
 });
+function checkGrassVertexBounds(group,plant,label){
+ const matrix=new Matrix4(),point=new Vector3();
+ const heightCap=plant.height*1.05+.00001,spreadCap=plant.spread*.54+.00001;
+ let leafTop=0;
+ for(const mesh of group.children){
+  const component=mesh.userData.component;
+  const leaf=component.startsWith('leaf-');
+  const position=mesh.geometry.attributes.position;
+  for(let instance=0;instance<mesh.count;instance++){
+   mesh.getMatrixAt(instance,matrix);
+   for(let index=0;index<position.count;index++){
+    point.fromBufferAttribute(position,index).applyMatrix4(matrix);
+    if(!(Number.isFinite(point.x)&&Number.isFinite(point.y)&&Number.isFinite(point.z)))assert.fail(label+' nonfinite '+component);
+    if(!(point.y>=-1e-7&&point.y<=heightCap))assert.fail(label+' height '+component+' '+point.y);
+    const radius=Math.hypot(point.x,point.z);
+    if(!(radius<=spreadCap))assert.fail(label+' footprint '+component+' '+radius);
+    if(leaf)leafTop=Math.max(leafTop,point.y);
+   }
+  }
+ }
+ assert.ok(leafTop<=.005001,label+' leaf ceiling '+leafTop);
+}
 test('Prairie grasses independent tiny dimensions bound actual leaves rames awns and hairs',()=>{
  for(const id of ['p-30f4df68a97a','p-a12f93626235','p-f181b6640980'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [9,1]){
-  const p={...makePlant(id,48699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);if(!(Number.isFinite(v.x)&&Number.isFinite(v.y)&&Number.isFinite(v.z)))assert.ok(v.toArray().every(Number.isFinite));if(!(v.y>=-1e-7&&v.y<=p.height*1.05+.00001))assert.fail(id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);const radial=Math.hypot(v.x,v.z);if(!(radial<=p.spread*.54+.00001))assert.fail(id+' '+size+' '+month+' footprint '+m.userData.component+' '+radial);if(m.userData.component.startsWith('leaf-'))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,48699,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkGrassVertexBounds(g,p,id+' '+size+' '+month);}finally{dispose(g);}
  }
 });
 test('Prairie grasses macro ray reaches an actual glume lemma or hair at both input sizes',()=>{
@@ -559,7 +582,8 @@ test('Remaining grasses keep Sand lovegrass open panicles Sesleria short heads a
 });
 test('Remaining grasses independently small dimensions bound every leaf spikelet and hair vertex',()=>{
  for(const id of ['p-a5bd0ef7ff60','p-39f501ac5e4e','p-97f7e22b7276'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [id==='p-39f501ac5e4e'?8:6,1]){
-  const p={...makePlant(id,48599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component);if(m.userData.component.startsWith('leaf-'))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,48599,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkGrassVertexBounds(g,p,id+' '+size+' '+month);}finally{dispose(g);}
  }
 });
 test('Remaining grasses macro ray reaches an actual spikelet exterior at both input sizes',()=>{
@@ -580,7 +604,8 @@ test('Pampas and Molinia separate hairy dense plumes from awnless open panicles 
 });
 test('Pampas and Molinia independent dimensions bound blades panicle scales and hairs',()=>{
  for(const id of ['p-db6bbd30fd05','p-d4ab7853db68','p-3f485e6463e8'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [8,1]){
-  const p={...makePlant(id,48499,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(Number.isFinite(v.x)&&Number.isFinite(v.y)&&Number.isFinite(v.z));if(!(v.y>=-1e-7&&v.y<=p.height*1.05+.00001))assert.fail(id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);if(!(Math.hypot(v.x,v.z)<=p.spread*.54+.00001))assert.fail(id+' '+size+' '+month+' footprint '+m.userData.component);if(m.userData.component.startsWith('leaf-'))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,48499,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkGrassVertexBounds(g,p,id+' '+size+' '+month);}finally{dispose(g);}
  }
 });
 test('Pampas and Molinia macro ray reaches a visible spikelet exterior at both sizes',()=>{
@@ -600,7 +625,8 @@ test('Deschampsia retains winter foliage and cultivar-specific airy panicles abo
 });
 test('Deschampsia independently tiny foliage and panicle dimensions bound every rendered vertex',()=>{
  for(const id of ['p-ffa80053f2ce','p-f5de553eb237','p-8eabea247dcb'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [6,1]){
-  const p={...makePlant(id,48399,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component);if(m.userData.component.startsWith('leaf-'))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,48399,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkGrassVertexBounds(g,p,id+' '+size+' '+month);}finally{dispose(g);}
  }
 });
 test('Deschampsia macro view reaches an actual spikelet glume at both sizes',()=>{
@@ -621,7 +647,8 @@ test('Miscanthus cultivars preserve transverse bands fine pale leaf lines and co
 });
 test('Miscanthus independent small dimensions bound panicle hair bent awns and old leaves',()=>{
  for(const id of ['p-69ac5659f5f6','p-f7fbd3d4cef7','p-775fe606b345'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [id==='p-69ac5659f5f6'?10:9,1]){
-  const p={...makePlant(id,48299,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),mat=new Matrix4(),v=new Vector3();try{let leafMax=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,mat);for(let j=0;j<pos.count;j++){v.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(mat);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.y>=-1e-7&&v.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+v.y);assert.ok(Math.hypot(v.x,v.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component);if(m.userData.component.startsWith('leaf-'))leafMax=Math.max(leafMax,v.y);}}}assert.ok(leafMax<=.005001,'leaf ceiling '+leafMax);}finally{dispose(g);}
+  const p={...makePlant(id,48299,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkGrassVertexBounds(g,p,id+' '+size+' '+month);}finally{dispose(g);}
  }
 });
 test('Miscanthus macro ray reaches a paired spikelet glume at both sizes',()=>{
@@ -664,7 +691,8 @@ test('Schizachyrium cultivars retain distinct foliage and solitary paired-spikel
 });
 test('Schizachyrium independent tiny inputs bound actual live and retained winter geometry',()=>{
  for(const id of ['p-7eb513c5a663','p-d583678c24cc','p-f5ea8a5fb954'])for(const size of [[.005,.08,.005],[.12,.005,.005],[.7,.8,.005]])for(const month of [9,1]){
-  const p={...makePlant(id,48099,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month)),matrix=new Matrix4(),point=new Vector3();try{let maxLeaf=0;for(const m of g.children){const pos=m.geometry.attributes.position;for(let k=0;k<m.count;k++){m.getMatrixAt(k,matrix);for(let j=0;j<pos.count;j++){point.set(pos.getX(j),pos.getY(j),pos.getZ(j)).applyMatrix4(matrix);assert.ok(point.toArray().every(Number.isFinite));assert.ok(point.y>=-1e-7&&point.y<=p.height*1.05+.00001,id+' '+size+' '+month+' height '+m.userData.component+' '+point.y);assert.ok(Math.hypot(point.x,point.z)<=p.spread*.54+.00001,id+' '+size+' '+month+' footprint '+m.userData.component);if(m.userData.component.startsWith('leaf-'))maxLeaf=Math.max(maxLeaf,point.y);}}}assert.ok(maxLeaf<=.005001,'leaf ceiling '+maxLeaf);}finally{dispose(g);}
+  const p={...makePlant(id,48099,2,2),height:size[0],spread:size[1],leafHeight:size[2]},g=plantModel(p,view(month));
+  try{checkGrassVertexBounds(g,p,id+' '+size+' '+month);}finally{dispose(g);}
  }
 });
 test('Schizachyrium observation ray reaches the rendered sessile glume at both sizes',()=>{
