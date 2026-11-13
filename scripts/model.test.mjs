@@ -149,6 +149,22 @@ test('viewport resize preserves finite camera state across zero size mobile and 
  assert.equal(sizes.length,3);assert.ok(camera.position.distanceTo(originalPosition)<1e-10,'returning to desktop restores its previous framing');
  const before=snapshot();assert.equal(resizeSceneViewport(camera,controls,renderer,0,0),false);assert.deepEqual(snapshot(),before,'a later zero-size observation also preserves the valid view');
 });
+test('resizing a low observation camera preserves the ground floor and its viewing target',()=>{
+ const renderer={setSize(){}};
+ for(const {from,to,position,target} of [
+  {from:[683,416],to:[349,388],position:[.32,.15,.25],target:[0,.4,0]},
+  {from:[349,388],to:[683,416],position:[.18,.1000001,.18],target:[0,-.08,0]},
+ ]){
+  const camera=new PerspectiveCamera(40,from[0]/from[1],.01,650),controls={target:new Vector3(...target)};
+  camera.position.fromArray(position);
+  camera.lookAt(controls.target);
+  assert.equal(resizeSceneViewport(camera,controls,renderer,...to),true);
+  assert.ok(camera.position.y>=CAMERA_FLOOR&&camera.position.y<CAMERA_FLOOR+1e-6);
+  assert.deepEqual(controls.target.toArray(),target);
+  const direction=controls.target.clone().sub(camera.position).normalize();
+  assert.ok(camera.getWorldDirection(new Vector3()).distanceTo(direction)<1e-10);
+ }
+});
 test('flower observation fits upright hanging and low anchors above ground without changing saved gardens',()=>{
  for(const aspect of [.6,1,2])for(const [height,axis]of [[.025,[0,1,0]],[.40,[0,-1,0]],[1.2,[0,-.8,.6]]]){
   const group=new Group();group.position.set(2,.012,-3);group.rotation.y=.6;group.scale.setScalar(.7);group.userData.flowerTargets=[{origin:[.02,height,.01],axis,radius:.04}];const before=JSON.stringify(group.userData.flowerTargets),pose=flowerInspectionView(group,aspect),camera=new PerspectiveCamera(40,aspect,.01,650);assert.ok(pose);assert.ok(pose.position.every(Number.isFinite));assert.ok(pose.target.every(Number.isFinite));assert.ok(pose.position[1]>=CAMERA_FLOOR);assert.equal(JSON.stringify(group.userData.flowerTargets),before);camera.position.fromArray(pose.position);camera.lookAt(new Vector3(...pose.target));camera.updateMatrixWorld();const target=new Vector3(...pose.target).project(camera);assert.ok(Math.abs(target.x)<1e-8&&Math.abs(target.y)<1e-8,'flower target remains centered after ground clamping');assert.ok(target.z>-1&&target.z<1,'target stays inside camera clipping');

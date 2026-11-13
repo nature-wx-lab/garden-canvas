@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y } from './model.js?v=0.9.1091';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1091';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y } from './model.js?v=0.9.1092';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1092';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -12,6 +12,7 @@ export function resizeSceneViewport(camera,controls,renderer,width,height){
  if(!Number.isFinite(width)||!Number.isFinite(height)||width<=0||height<=0)return false;
  const aspect=width/height,previousAspect=Number.isFinite(camera.aspect)&&camera.aspect>0?camera.aspect:aspect,ratio=Math.max(1,1.6/aspect)/Math.max(1,1.6/previousAspect);
  camera.position.sub(controls.target).multiplyScalar(ratio).add(controls.target);
+ keepCameraAboveGround(camera,controls.target);
  renderer.setSize(width,height,false);camera.aspect=aspect;camera.updateProjectionMatrix();return true;
 }
 export function keepCameraAboveGround(camera,target){
