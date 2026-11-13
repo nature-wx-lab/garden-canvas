@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1147';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1147';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1147';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1147';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1147';
-import { createScene } from './scene.js?v=0.9.1147';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1148';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1148';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1148';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1148';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1148';
+import { createScene } from './scene.js?v=0.9.1148';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -396,17 +396,19 @@ function syncView(){
   $('year-label').textContent=`${d.view.year}年`;
   $('reference').checked=d.view.reference;
   $('footprints').checked=d.view.footprints;
+  syncScene();
   syncPlantState();
   updateSourceMonth($('catalog-info'));
   updateSourceMonth($('selected-source'));
   syncCalendar();
   syncIdeas();
   syncComparison();
-  syncScene();
 }
 function plantFocusUnavailable(plant){
   const state=stateAt(plant,shown().view);
-  return state.present?'':state.expired?'この株の生育期間は終了しました。':'この月はまだ植え付け前です。';
+  if(!state.present)return state.expired?'この株の生育期間は終了しました。':'この月はまだ植え付け前です。';
+  if(engine&&!engine.hasPlantGeometry(plant.id))return 'この月に観察できる3D形状はありません。';
+  return '';
 }
 function syncPlantFocusAvailability(){
   const plant=selectedPlant();
