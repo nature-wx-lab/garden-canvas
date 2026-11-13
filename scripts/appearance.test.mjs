@@ -24531,12 +24531,12 @@ test('indica reference fits twenty four independent inputs with connected leaves
   }finally{dispose(g);}
  }assert.equal(models,24);console.log('INDICA1022_BOUNDARIES '+JSON.stringify({models,vertices,leafJoins,stemJoins,branchJoins,flowerJoins}));
 });
-test('indica pond lower nodes connect to the bed and two centimetres selects submerged foliage',()=>{
+test('indica pond lower nodes connect to the bed and foliage and flower spikes use actual water height',()=>{
  const p={...makePlant('p-891f594612ae',108610,3,3),height:.18,spread:.30,leafHeight:.14};
  const view={year:0,month:5,reference:false};
  const matrix=new Matrix4(),vertex=new Vector3();
  const point=(mesh,i,y)=>{mesh.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
- for(const depth of [.007,.02,.16]){
+ for(const [depth,bloom] of [[.007,true],[.08,true],[.16,false]]){
   const group=plantModel(p,{...view,waterDepth:depth});
   try{
    const part=key=>group.children.find(m=>m.userData.component===key);
@@ -24549,7 +24549,24 @@ test('indica pond lower nodes connect to the bed and two centimetres selects sub
     assert.ok(point(roots,i,.5).distanceTo(point(roots,i+1,-.5))<2e-6);
     assert.ok(point(roots,i+1,.5).y>-.012&&point(roots,i+1,.5).y<-.011);
    }
-   if(depth<.02){assert.ok(part('petal-indica-photo-reference').count>0);continue;}
+   assert.equal(stateAt(p,{...view,waterDepth:depth}).bloom,bloom);
+   assert.equal(inspectionSeasonActive(p,{...view,waterDepth:depth}),bloom);
+   if(bloom){
+    const petals=part('petal-indica-photo-reference'),leaves=group.children.find(m=>m.userData.component.startsWith('leaf-indica-photo-reference'));
+    assert.ok(petals.count>0);
+    for(let i=0;i<petals.count;i++)assert.ok(point(petals,i,0).y+PLANT_BASE_Y-depth>POND_SURFACE_Y);
+    if(depth===.08){
+     const widths={submerged:[],emerged:[]};
+     for(let i=0;i<leaves.count;i++){
+      leaves.getMatrixAt(i,matrix);
+      const e=matrix.elements,position=e[13]+PLANT_BASE_Y-depth;
+      widths[position>POND_SURFACE_Y?'emerged':'submerged'].push(Math.hypot(e[0],e[1],e[2]));
+     }
+     assert.ok(widths.emerged.length&&widths.submerged.length);
+     assert.ok(Math.min(...widths.emerged)>Math.max(...widths.submerged)*2);
+    }
+    continue;
+   }
    assert.equal(part('petal-indica-photo-reference'),undefined);
    assert.equal(stateAt(p,{...view,waterDepth:depth}).bloom,false);
    for(const mesh of group.children){

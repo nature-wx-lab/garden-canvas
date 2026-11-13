@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1162';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1162';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1162';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1162';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1162';
-import { createScene } from './scene.js?v=0.9.1162';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1163';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1163';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1163';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1163';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1163';
+import { createScene } from './scene.js?v=0.9.1163';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -70,7 +70,7 @@ function sourceCard(target,kind){
   box.append(el('p',info.bloomText),el('p',info.care));
   const traits=appearanceSummary(info);if(traits)box.append(el('p',traits,'habit-note'));
   const appearance=info.appearance;
-  if(appearance?.architecture==='submergedShoots')box.append(el('p',appearance.shootProfile==='ovalis'?'水深0mでは葉腋の花を、水深がある池では水中葉を参考表示します。水位に応じて茎が伸びる過程は未再現です。':appearance.waterSurfaceModel?'水深2cm未満では水上の姿、それ以上では水中の姿を表示します。水中では花を表示しません。変化する水位に応じた新葉の展開速度、水温・結氷の影響は未再現です。':'水中葉の見本です。「庭をつくる」で池の水深を設定すると、水底から描きます。池の外や水深0mでは、形を見るための見本表示になります。水温・結氷・水質による生育変化は未再現です。','hint'));
+  if(appearance?.architecture==='submergedShoots')box.append(el('p',appearance.shootProfile==='ovalis'?'水深0mでは葉腋の花を、水深がある池では水中葉を参考表示します。水位に応じて茎が伸びる過程は未再現です。':'水中葉の見本です。「庭をつくる」で池の水深を設定すると、水底から描きます。池の外や水深0mでは、形を見るための見本表示になります。水温・結氷・水質による生育変化は未再現です。','hint'));
   if(appearance?.phenologyRegion==='grower-cold')box.append(el('p','冬姿の参考：おぎはら植物園の寒冷地での記載。暖地の実測時期ではありません。','hint'));
   else if(appearance?.phenologyRegion)box.append(el('p',appearance.phenologyRegion,'hint'));
   if(appearance?.sourceConflict)box.append(el('p',appearance.sourceConflict,'hint'));

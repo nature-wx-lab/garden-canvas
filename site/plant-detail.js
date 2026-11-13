@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1162';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1163';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1162';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1162';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1163';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1163';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -31297,11 +31297,14 @@ function indicaPhotoSegment(b,a,z,r,color,kind){
 function drawIndicaPhotoReference(b,{info,s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
  const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
- const underwater=s.waterDepth>=.02,waterline=wet?bed+s.waterDepth+POND_SURFACE_Y:-Infinity;
- const h=s.height,w=s.spread,LH=Math.min(h*.98,s.leafHeight,underwater?(s.waterDepth+POND_SURFACE_Y)*.90:Infinity),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.003,w*.0015,LH*.015),L=Math.min(.012,w*.065,LH*.20),W=L*(underwater?.28:.85),stem=info.appearance.stemColor,leafKind='leaf-indica-photo-reference-underside-'+info.appearance.leafUnderside.slice(1),bloom=s.bloom&&!underwater;let flowerIndex=0;
- function pair(at,turn){for(let side=0;side<2;side++)b.add('indica-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,W,L,Math.min(L,LH*.40),Math.acos(.12),turn+side*Math.PI,0);}
+ const waterline=wet?bed+s.waterDepth+POND_SURFACE_Y:-Infinity;
+ const h=s.height,w=s.spread,LH=indicaLeafHeight(h,s.leafHeight,s.waterDepth),base=Math.min(.0015,LH*.05),r=Math.min(.00040,h*.003,w*.0015,LH*.015),L=Math.min(.012,w*.065,LH*.20),stem=info.appearance.stemColor,leafKind='leaf-indica-photo-reference-underside-'+info.appearance.leafUnderside.slice(1);let flowerIndex=0;
+ function pair(at,turn){
+  const width=L*(at[1]<=waterline?.28:.85);
+  for(let side=0;side<2;side++)b.add('indica-photo-reference-leaf',leafKind,kit.shade(rand,s.leafColor,.035),...at,width,L,Math.min(L,LH*.40),Math.acos(.12),turn+side*Math.PI,0);
+ }
  function spike(leafAt,top,az){
-  if(!bloom)return;
+  if(!s.bloom)return;
   const length=indicaSpikeLength(h,leafAt[1],top[1]),start=[top[0],top[1]-length,top[2]],P=Math.min(.0012,h*.012,w*.020),PW=P*.85,H=Math.min(.001,h*.010),R=P*.32;
   if(start[1]<=waterline)return;
   indicaPhotoSegment(b,leafAt,start,r*.70,stem,'spike-axis-indica-photo-ref');indicaPhotoSegment(b,start,top,r*.40,stem,'spike-axis-indica-photo-ref');

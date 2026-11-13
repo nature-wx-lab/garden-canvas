@@ -7,8 +7,8 @@ const fixture=()=>{const d=emptyDocument();d.plans.A.plants=[makePlant('maple',1
 const task=(type,month,repeat='annual',min=10,max=20,count=1)=>({id:1,type,month,repeat,min,max,count});
 test('Indica water-surface flowering disappears at the same depth boundary as the rendered flowers',()=>{
  const plant=makePlant('p-891f594612ae',1,2,2);
- assert.equal(stateAt(plant,{...view(0,5),waterDepth:.019}).bloom,true);
- assert.equal(stateAt(plant,{...view(0,5),waterDepth:.02}).bloom,false);
+ assert.equal(stateAt(plant,{...view(0,5),waterDepth:.08}).bloom,true);
+ assert.equal(stateAt(plant,{...view(0,5),waterDepth:.17}).bloom,false);
  assert.equal(stateAt(plant,{...view(0,5),waterDepth:.3}).bloom,false);
  assert.equal(stateAt(plant,{...view(0,1),waterDepth:0}).bloom,false);
 });
