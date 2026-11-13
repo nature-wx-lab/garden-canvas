@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1138';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1138';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1138';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1138';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1138';
-import { createScene } from './scene.js?v=0.9.1138';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1139';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1139';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1139';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1139';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1139';
+import { createScene } from './scene.js?v=0.9.1139';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -293,7 +293,35 @@ function syncIdeas(){const p=plan(),o=observations(p,shown().view);metrics('obse
   syncPlacementButtons();
   $('time-basis').textContent=shown().view.reference?'資料の成株上限寸法を表示中。指定年の予測ではありません。剪定シナリオは適用しません。通常表示に戻すと元の年数・設定へ戻ります。':`年数と季節は別々に指定できます。成長シナリオ未設定 ${o.unmodeled}株は初期寸法のまま。花期・落葉・葉量は地域差のある参考表現です。`;
 }
-function syncComparison(){const d=shown();if(!d.plans.B){$('comparison').replaceChildren(el('p','「Bに複製」で現在の庭を残して、別案をつくれます。'));return;}const rows=['A','B'].map(k=>{const p=d.plans[k],b=budget(p),c=calendar(p,d.view.year);return [k,`${p.plants.length}株`,`${yen(b.total)}${b.unknown?` ＋ ${b.unknown}株未入力`:''}`,`${c.reduce((n,m)=>n+m.events.reduce((s,e)=>s+e.count,0),0)}回`,`${time(c.reduce((n,m)=>n+m.min,0),c.reduce((n,m)=>n+m.max,0))}${c.some(m=>m.unknown)?' ＋ 未入力あり':''}`];});$('comparison').replaceChildren(table(['案','全株数','購入費','年間作業','年間時間'],rows));const a=budget(d.plans.A),b=budget(d.plans.B);$('comparison').append(el('p',`B − A：株数 ${d.plans.B.plants.length-d.plans.A.plants.length}株 ／ 入力済み購入費 ${yen(b.total-a.total)}${a.unknown||b.unknown?'（未入力があるため総額差は未確定）':''}`));}
+let comparisonPlans=null,comparisonYear=null;
+function syncComparison(){
+  const d=shown(),{A,B}=d.plans,year=d.view.year;
+  if(comparisonPlans?.A===A&&comparisonPlans?.B===B&&comparisonYear===year)return;
+  comparisonPlans=d.plans;
+  comparisonYear=year;
+  const panel=$('comparison');
+  if(!B){
+    panel.replaceChildren(el('p','「Bに複製」で現在の庭を残して、別案をつくれます。'));
+    return;
+  }
+  const totals={A:budget(A),B:budget(B)};
+  const rows=['A','B'].map(key=>{
+    const garden=d.plans[key];
+    const cost=totals[key],months=calendar(garden,year);
+    const totalsForYear={count:0,min:0,max:0,unknown:false};
+    for(const month of months){
+      for(const event of month.events)totalsForYear.count+=event.count;
+      totalsForYear.min+=month.min;
+      totalsForYear.max+=month.max;
+      totalsForYear.unknown||=month.unknown>0;
+    }
+    return [key,`${garden.plants.length}株`,`${yen(cost.total)}${cost.unknown?` ＋ ${cost.unknown}株未入力`:''}`,
+      `${totalsForYear.count}回`,`${time(totalsForYear.min,totalsForYear.max)}${totalsForYear.unknown?' ＋ 未入力あり':''}`];
+  });
+  panel.replaceChildren(table(['案','全株数','購入費','年間作業','年間時間'],rows));
+  const a=totals.A,b=totals.B;
+  panel.append(el('p',`B − A：株数 ${B.plants.length-A.plants.length}株 ／ 入力済み購入費 ${yen(b.total-a.total)}${a.unknown||b.unknown?'（未入力があるため総額差は未確定）':''}`));
+}
 function syncPlantButtons(container,plants,describe){
   const focused=container.contains(document.activeElement)?document.activeElement.dataset.plantId:null;
   container.replaceChildren(...plants.map(plant=>{
