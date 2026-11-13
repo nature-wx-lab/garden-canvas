@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1127';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1127';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1127';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1127';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1127';
-import { createScene } from './scene.js?v=0.9.1127';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1128';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1128';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1128';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1128';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1128';
+import { createScene } from './scene.js?v=0.9.1128';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -129,8 +129,36 @@ function drawReplacement(){
   $('replacement-count').textContent=`${matches.length}件${matches.length>40?'。先頭40件を表示。名前で絞り込めます。':''}${collections?' セット・混合種は「植える」で構成植物を確認できます。':''}`;
 }
 
-function checkpoint(){history.push(clone(doc));if(history.length>40)history.shift();future=[];}
-function mutate(fn,text,afterCommit){
+function historyEntry(restoreView){
+  const document=clone(doc);
+  if(!restoreView)return {document};
+  const camera=engine?.capture();
+  document.view.camera=validSavedCamera(camera)?camera:null;
+  return {document,context:{selected,calendarMonth}};
+}
+function checkpoint(restoreView=false){
+  history.push(historyEntry(restoreView));
+  if(history.length>40)history.shift();
+  future=[];
+}
+function restoreEdit(from,to){
+  if(!from.length||preview)return false;
+  const {document,context}=from.pop();
+  to.push(historyEntry(!!context));
+  if(context){
+    selected=context.selected;
+    calendarMonth=context.calendarMonth;
+  }else document.view=doc.view;
+  doc=document;
+  resetMode();
+  sync();
+  if(context){
+    if(doc.view.camera)engine?.restore(doc.view.camera);
+    else engine?.view('home');
+  }
+  return true;
+}
+function mutate(fn,text,afterCommit,restoreView=false){
   if(preview){
     message('交換プレビューを採用するか、元に戻ってから編集してください。');
     return false;
@@ -144,7 +172,7 @@ function mutate(fn,text,afterCommit){
     message(e.message||'入力を確認してください。庭は変更していません。');
     return false;
   }
-  checkpoint();
+  checkpoint(restoreView);
   doc=checked;
   resetMode();
   afterCommit?.();
@@ -362,7 +390,7 @@ function bind(){
     const committed=mutate((p,d)=>Object.assign(d,build()),text,()=>{
       selected=null;
       calendarMonth=null;
-    });
+    },true);
     if(committed){
       engine?.view('home');
       if(matchMedia('(max-width:760px)').matches)$('viewport').scrollIntoView({block:'center'});
@@ -378,7 +406,8 @@ function bind(){
   for(const key of ['month','year','reference','footprints'])$(key).addEventListener(['month','year'].includes(key)?'input':'change',()=>{const value=['month','year'].includes(key)?number(key):$(key).checked;doc.view[key]=value;if(preview)preview.view[key]=value;if(key==='month')calendarMonth=null;syncView();if(key==='reference'&&!isDrawing(mode))engine?.view('home');});
   for(const name of ['A','B'])$(`plan-${name.toLowerCase()}`).addEventListener('click',()=>{if(preview||!doc.plans[name])return;doc.active=name;selected=null;resetMode();sync();message(`案 ${name}に切り替えました。視点と時間は同じです。`);});
   $('duplicate-plan').addEventListener('click',()=>mutate((p,d)=>{if(d.plans.B)throw new Error('案Bはすでにあります。');d.plans.B=clone(p);d.active='B';},'案Aを残し、案Bを作りました。Bを編集して比べられます。'));
-  $('undo').addEventListener('click',()=>{if(!history.length||preview)return;future.push(clone(doc));const view=doc.view;doc=history.pop();doc.view=view;resetMode();sync();message('編集を1つ戻しました。');});$('redo').addEventListener('click',()=>{if(!future.length||preview)return;history.push(clone(doc));const view=doc.view;doc=future.pop();doc.view=view;resetMode();sync();message('編集をやり直しました。');});
+  $('undo').addEventListener('click',()=>{if(restoreEdit(history,future))message('編集を1つ戻しました。');});
+  $('redo').addEventListener('click',()=>{if(restoreEdit(future,history))message('編集をやり直しました。');});
   $('lock').addEventListener('click',()=>withPlant(p=>{p.locked=!p.locked;},'植物の固定を変更しました。固定中は配置・種類・寸法を変更できません。',true));$('move').addEventListener('click',()=>{if(selectedPlant()?.locked){message('固定を解除してから移動してください。');return;}setMode('move');message('庭の移動先をクリックしてください。');});$('clone-plant').addEventListener('click',()=>{copyPlant=clone(selectedPlant());setMode('clone');message('複製する場所を庭でクリックしてください。');});$('remove').addEventListener('click',()=>withPlant((p,g)=>{g.plants=g.plants.filter(v=>v.id!==p.id);},'植物を取り除きました。「戻す」で復元できます。'));
   $('apply-plant').addEventListener('click',()=>{let cleared=false;const ok=withPlant(p=>{const h=number('height'),w=number('spread'),lh=number('leaf-height'),limits=plantSizeLimits(p.kind);if(!(h>=limits.minHeight&&h<=60&&w>=.1&&w<=60&&lh>=limits.minLeafHeight&&lh<=h))throw new Error(`高さは${limits.minHeight}〜60m、幅は0.1〜60m、葉高は${limits.minLeafHeight}m以上で高さ以下にしてください。`);if(!canPlant(plan(),number('plant-x'),number('plant-z')))throw new Error('庭の中で外構に重ならない位置にしてください。');const updated=editSize(p,h,w,lh);cleared=updated.height!==p.height||updated.spread!==p.spread||updated.leafHeight!==p.leafHeight;Object.assign(p,updated,{x:number('plant-x'),z:number('plant-z'),start:number('start-year')*12+number('start-month')-1,role:$('role').value,price:cleared?null:optional('price')});},'初期サイズ・配置・購入を更新しました。');if(ok&&cleared)message('初期サイズを更新しました。購入単価と成長・剪定の寸法は解除したため、必要に応じて再入力してください。');});
   $('preview-replace').addEventListener('click',()=>previewReplacement($('replacement').value));$('cancel-preview').addEventListener('click',()=>{preview=null;resetMode();sync();message('交換を取り消し、元の案へ戻りました。');});$('accept-preview').addEventListener('click',()=>{if(!preview)return;checkpoint();doc=validateDocument(preview);preview=null;resetMode();sync();message('交換を採用しました。価格や手入れは新しい植物に合わせて設定できます。');});
@@ -419,7 +448,7 @@ function bind(){
   $('draw-outline').addEventListener('click',()=>startDrawing('outline'));$('draw-zone').addEventListener('click',()=>startDrawing('zone'));$('circle-zone').addEventListener('click',()=>startDrawing('circle'));$('finish-outline').addEventListener('click',finishDrawing);$('undo-point').addEventListener('click',()=>{draft.pop();updateDraft();});$('cancel-outline').addEventListener('click',()=>{resetMode();message('形の編集を取り消しました。');});
   $('obstacle-type').addEventListener('change',()=>{$('obstacle-height').value={house:2.5,path:.05,fence:1.5}[$('obstacle-type').value];});$('add-obstacle').addEventListener('click',()=>mutate(p=>{if(p.obstacles.length>=16)throw new Error('外構は16個までです。');const o={type:$('obstacle-type').value};for(const key of ['x','z','width','depth','height'])o[key]=number(`obstacle-${key}`);if(!contained(obstaclePoints(o),p.outline))throw new Error('外構全体が庭の輪郭に収まる位置と寸法にしてください。');if(p.plants.some(p=>inside(p.x,p.z,obstaclePoints(o))))throw new Error('外構の内側に植物があります。先に植物を移動してください。');p.obstacles.push(o);},'外構を配置しました。'));$('apply-conditions').addEventListener('click',()=>mutate(p=>{p.sun=$('sun').value;p.moisture=$('moisture').value;},'植物候補を庭の条件で絞りました。'));$('apply-hours').addEventListener('click',()=>mutate(p=>{p.hours=Array.from({length:12},(_,i)=>optional(`hours-${i}`));p.prep=number('prep');},'月別に使える時間を更新しました。作業予定は維持しています。'));
   $('wind-select').value=matchMedia('(prefers-reduced-motion: reduce)').matches?'0':'1';$('wind-select').addEventListener('change',()=>engine?.wind(number('wind-select')));$('light-select').addEventListener('change',()=>engine?.light($('light-select').value));$('viewport').addEventListener('wind-reduced',()=>{$('wind-select').value='0';});
-  $('help').addEventListener('click',()=>$('help-dialog').showModal());$('help-close').addEventListener('click',()=>$('help-dialog').close());$('export').addEventListener('click',()=>{if(preview){message('プレビューを採用するか、元に戻ってから保存してください。');return;}const saved=clone(doc);const camera=engine?.capture()||null;const cameraFits=!camera||validSavedCamera(camera);saved.view.camera=cameraFits?camera:null;const blob=new Blob([JSON.stringify(validateDocument(saved),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download='garden-canvas-plan-v2.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);message(cameraFits?'庭と案・視点・予定を保存ファイルに書き出しました。':'庭と案・予定を保存しました。現在の視点は保存できる範囲外です。開くと全体表示に戻ります。');});$('import').addEventListener('click',()=>{if(preview){message('プレビューを終了してから開いてください。');return;}$('file').click();});$('file').addEventListener('change',async()=>{const f=$('file').files[0];if(!f)return;try{if(f.size>3000000)throw new Error('庭ファイルは3MB以内です。');const input=JSON.parse(await f.text()),next=validateDocument(input);checkpoint();doc=next;selected=null;calendarMonth=null;resetMode();sync();if(doc.view.camera)engine?.restore(doc.view.camera);else engine?.view('home');message(input.version===1?'旧版の配置を開きました。種類未指定の植物は実在植物へ交換できます。':'保存した庭・案・視点・予定を開きました。');}catch{message('この庭ファイルは開けません。対応する3MB以内のファイルを選んでください。元の庭は変更していません。');}finally{$('file').value='';}});
+  $('help').addEventListener('click',()=>$('help-dialog').showModal());$('help-close').addEventListener('click',()=>$('help-dialog').close());$('export').addEventListener('click',()=>{if(preview){message('プレビューを採用するか、元に戻ってから保存してください。');return;}const saved=clone(doc);const camera=engine?.capture()||null;const cameraFits=!camera||validSavedCamera(camera);saved.view.camera=cameraFits?camera:null;const blob=new Blob([JSON.stringify(validateDocument(saved),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download='garden-canvas-plan-v2.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);message(cameraFits?'庭と案・視点・予定を保存ファイルに書き出しました。':'庭と案・予定を保存しました。現在の視点は保存できる範囲外です。開くと全体表示に戻ります。');});$('import').addEventListener('click',()=>{if(preview){message('プレビューを終了してから開いてください。');return;}$('file').click();});$('file').addEventListener('change',async()=>{const f=$('file').files[0];if(!f)return;try{if(f.size>3000000)throw new Error('庭ファイルは3MB以内です。');const input=JSON.parse(await f.text()),next=validateDocument(input);checkpoint(true);doc=next;selected=null;calendarMonth=null;resetMode();sync();if(doc.view.camera)engine?.restore(doc.view.camera);else engine?.view('home');message(input.version===1?'旧版の配置を開きました。種類未指定の植物は実在植物へ交換できます。':'保存した庭・案・視点・予定を開きました。');}catch{message('この庭ファイルは開けません。対応する3MB以内のファイルを選んでください。元の庭は変更していません。');}finally{$('file').value='';}});
   $('viewport').addEventListener('keydown',e=>{if(e.key==='Escape'){resetMode();message('編集モードを終了しました。');}});$('viewport').addEventListener('render-failed',()=>{$('error').hidden=false;$('error').textContent='3D表示が停止しました。庭を「保存」してから再読込してください。';});
 }
 bind();
