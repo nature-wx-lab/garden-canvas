@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1161';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1161';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y, CAMERA_FLOOR, MIN_SAVED_CAMERA_DISTANCE } from './model.js?v=0.9.1162';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1162';
 
 const BACKDROP_COLOR='#65755a';
 export {CAMERA_FLOOR};
@@ -359,7 +359,10 @@ export function monnieriFoliageInspectionView(group,aspect=1,fov=40){
  distance=Math.max(distance,(CAMERA_FLOOR+1e-7-target.y)/direction.y);return{position:target.clone().addScaledVector(direction,distance).toArray(),target:target.toArray(),fit:'monnieri-visible-leaf-focus'};
 }
 export function inspectionSeasonActive(p,view){
- if(!p)return false;const s=stateAt(p,view);return s.present&&!s.groundDormant&&(s.bloom||(plantInfo(p.kind).appearance?.shootProfile==='purpleMajesty'&&s.seedHeads));
+ return !!p&&canInspectFlower(p,stateAt(p,view));
+}
+function canInspectFlower(p,state){
+ return state.present&&!state.groundDormant&&(state.bloom||(plantInfo(p.kind).appearance?.shootProfile==='purpleMajesty'&&state.seedHeads));
 }
 export function flowerInspectionView(group,aspect=1,fov=40,anchors=group?.userData?.flowerTargets){
  if(!Array.isArray(anchors))return null;
@@ -636,13 +639,13 @@ export function createScene(container,onPick){
     groundGroup?.removeFromParent();
     gardenSurfaces?.removeFromParent();
     plan=next;view=nextView;dispose(root);selectionOutline=null;footprintOverlay=null;
-    plantStates=new Map(plan.plants.map(plant=>[plant.id,stateAt(plant,view)]));
+    plantStates=new Map(plan.plants.map(plant=>[plant.id,stateAt(plant,{...view,waterDepth:pondDepthAt(plan,plant.x,plant.z)})]));
     root=new THREE.Group();plants=new THREE.Group();root.add(plants);scene.add(root);
     drawGardenSurfaces();
     groundDetail();
     drawObstacles();
     const detail=Math.min(1,Math.sqrt(18/Math.max(1,plan.plants.length)));
-    for(const p of plan.plants){const s=plantStates.get(p.id);if(!s.present)continue;const depth=pondDepthAt(plan,p.x,p.z),g=plantModel(p,{...view,waterDepth:depth},detail);g.position.set(p.x-plan.width/2,plantBaseAt(plan,p),p.z-plan.depth/2);plants.add(g);
+    for(const p of plan.plants){const s=plantStates.get(p.id);if(!s.present)continue;const g=plantModel(p,view,detail,s);g.position.set(p.x-plan.width/2,plantBaseAt(plan,p),p.z-plan.depth/2);plants.add(g);
       const contact=new THREE.Mesh(contactGeometry,contactMaterial);contact.rotation.x=-Math.PI/2;contact.position.set(g.position.x,isRaouliaMat(p.kind)?g.position.y-.0006:.012,g.position.z);contact.scale.set(s.spread*.95,s.spread*.95,1);if(zoneAt(plan,p.x,p.z)?.kind!=='water')root.add(contact);
     }
     showFootprints(view.footprints);
@@ -698,7 +701,7 @@ export function createScene(container,onPick){
     }else if(foliagePose){controls.minDistance=.12;controls.target.fromArray(foliagePose.target);camera.position.fromArray(foliagePose.position);
     }else if(focusPlant){
       controls.minDistance=.12;
-      const p=focusPlant,s=plantStates.get(p.id),depth=pondDepthAt(plan,p.x,p.z);
+      const p=focusPlant,s=plantStates.get(p.id),depth=s.waterDepth;
       const dormantBacopa=s.groundDormant&&['bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(plantInfo(p.kind).appearance?.architecture);
       const base=plantBaseAt(plan,p)+(dormantBacopa?depth:0);
       controls.target.set(p.x-plan.width/2,base+Math.min(s.height,depth||s.height)*.52,p.z-plan.depth/2);
@@ -767,9 +770,7 @@ export function createScene(container,onPick){
   });
   function selectedFlowerPose(group){
     const p=plan?.plants.find(plant=>plant.id===selection);
-    if(!p)return null;
-    const waterDepth=pondDepthAt(plan,p.x,p.z);
-    if(!group||!inspectionSeasonActive(p,{...view,waterDepth}))return null;
+    if(!group||!p||!canInspectFlower(p,plantStates.get(p.id)))return null;
     if(plantInfo(p.kind).latin!=='Cinnamomum camphora')return flowerInspectionView(group,camera.aspect,camera.fov);
     if(camphorObservation?.aspect!==camera.aspect){
       camphorObservation={aspect:camera.aspect,pose:visibleCamphorFlower(group,camera.aspect,camera.fov)};
