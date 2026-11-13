@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1180';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1180';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1180';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1180';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1180';
-import { createScene } from './scene.js?v=0.9.1180';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1181';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1181';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1181';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1181';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1181';
+import { createScene } from './scene.js?v=0.9.1181';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -724,10 +724,27 @@ function bind(){
     const priceInput=$('price'),price=optionalNumber(priceInput),priceEdited=priceInput.dataset.edited==='true';
     let resized=false;
     const ok=withPlant(p=>{
-      const h=number('height'),w=number('spread'),lh=number('leaf-height'),limits=plantSizeLimits(p.kind);
+      const height=$('height'),spread=$('spread'),leaf=$('leaf-height');
+      const h=height.valueAsNumber,w=spread.valueAsNumber,lh=leaf.valueAsNumber;
       const x=number('plant-x'),z=number('plant-z');
-      if(!(h>=limits.minHeight&&h<=60&&w>=.1&&w<=60&&lh>=limits.minLeafHeight&&lh<=h))throw new Error(`高さは${limits.minHeight}〜60m、幅は0.1〜60m、葉高は${limits.minLeafHeight}m以上で高さ以下にしてください。`);
-      if(!canPlant(plan(),x,z))throw new Error('庭の中で外構に重ならない位置にしてください。');
+      for(const [input,label,max] of [[height,'高さ',Number(height.max)],[spread,'株・樹冠幅',Number(spread.max)],[leaf,'葉の高さ',h]]){
+        const min=Number(input.min),value=input.valueAsNumber;
+        if(!(value>=min&&value<=max)){
+          input.focus();
+          throw new Error(`${label}は${min}〜${max}mで入力してください。`);
+        }
+      }
+      const garden=plan();
+      for(const [id,label,value,max] of [['plant-x','横位置',x,garden.width],['plant-z','奥行位置',z,garden.depth]]){
+        if(!(value>=0&&value<=max)){
+          $(id).focus();
+          throw new Error(`${label}は0〜${max}mで入力してください。`);
+        }
+      }
+      if(!canPlant(garden,x,z)){
+        $('plant-x').focus();
+        throw new Error('庭の中で外構に重ならない位置にしてください。');
+      }
       if(price!==null&&(!Number.isInteger(price)||price<0||price>10000000)){
         priceInput.focus();
         throw new Error('購入単価は0〜10,000,000円の整数で入力してください。');
@@ -815,10 +832,14 @@ function bind(){
     });
   });
   $('resize-garden').addEventListener('click',()=>{
-    const width=number('width'),depth=number('depth');
-    if(!(width>=2&&width<=30&&depth>=2&&depth<=30)){
-      message('庭の幅と奥行きはそれぞれ2〜30mで入力してください。');
-      return;
+    const widthInput=$('width'),depthInput=$('depth');
+    const width=widthInput.valueAsNumber,depth=depthInput.valueAsNumber;
+    for(const [input,label,value] of [[widthInput,'庭の幅',width],[depthInput,'庭の奥行き',depth]]){
+      if(!(value>=Number(input.min)&&value<=Number(input.max))){
+        input.focus();
+        message(`${label}は${input.min}〜${input.max}mで入力してください。`);
+        return;
+      }
     }
     const ok=mutate(p=>{
       if(p.plants.some(plant=>plant.locked))throw new Error('固定された植物があります。寸法変更で配置も伸縮するため、先に固定を解除してください。');
