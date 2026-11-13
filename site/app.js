@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1158';
-import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1158';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1158';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1158';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1158';
-import { createScene } from './scene.js?v=0.9.1158';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1159';
+import { GENRES, COLORS, createCatalogSearch, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1159';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1159';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1159';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1159';
+import { createScene } from './scene.js?v=0.9.1159';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null,previewTrigger=null,previewKind=null,drawingTrigger=null;
@@ -331,7 +331,10 @@ function syncCalendar(){
       if(m.unknown)control.append(el('br'),el('span',`時間未入力 ${m.unknown}件`));
       const over=m.available!==null&&m.max>m.available;
       if(m.available!==null){
-        const estimate=m.min>m.available?' · 超過':over?' · 超過の可能性':m.unknown?' · 判定未確定':'';
+        let estimate='';
+        if(m.min>m.available)estimate=' · 超過';
+        else if(over)estimate=m.unknown?' · 入力済み分だけでも超過の可能性':' · 超過の可能性';
+        else if(m.unknown)estimate=' · 判定未確定';
         control.append(el('br'),el('span',`使える ${round(m.available)}分${estimate}`));
       }
       control.classList.toggle('over',over);
