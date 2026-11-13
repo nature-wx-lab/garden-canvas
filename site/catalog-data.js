@@ -9592,7 +9592,8 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "sourceChecked": "2026-11-13",
   "aliases": [
     "ルドヴィジア オバリス",
-    "ミズユキノシタ"
+    "ミズユキノシタ",
+    "ルドウィジア・オバリス"
   ],
   "selectionSource": null,
   "visual": "reference",

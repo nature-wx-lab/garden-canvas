@@ -46,6 +46,11 @@ test('name search handles kana, aliases, spaces and combined genre/color/source 
  assert.ok(searchCatalog(CATALOG,{status:'pending'}).every(([,p])=>!p.source));assert.equal(searchCatalog(CATALOG,{query:'<script>unlisted</script>'}).length,0);
  for(const name of ['カレックス(エヴェレスト)','カレックス(エヴァロロ)','矮性パンパスグラス(白)','矮性パンパスグラス(赤)'])assert.ok(entries.some(([,p])=>p.label===name),name);
 });
+test('published Japanese spellings of Ludwigia ovalis find the same catalog entry',()=>{
+  for(const query of ['ルドヴィジア オバリス','ルドウィジア・オバリス','ルドウィジア オバリス','ミズユキノシタ','Ludwigia ovalis']){
+    assert.deepEqual(searchCatalog(CATALOG,{query,genre:'水生植物'}).map(([key])=>key),['p-6f783140466d']);
+  }
+});
 test('old saved catalogs migrate without changing plant IDs, plans or the input document',()=>{
  const old=sampleDocument();old.catalogVersion='2026-10-09.1';const copy=JSON.stringify(old),next=validateDocument(old);
  assert.equal(JSON.stringify(old),copy);assert.equal(next.catalogVersion,CATALOG_VERSION);assert.deepEqual(next.plans,old.plans);assert.deepEqual(next.view,old.view);
