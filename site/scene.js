@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1078';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1078';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1079';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1079';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -393,6 +393,8 @@ const waterNormals=new Uint8Array(128*128*4);
 for(let y=0;y<128;y++)for(let x=0;x<128;x++){const i=(y*128+x)*4,phase=x/128*Math.PI*12+y/128*Math.PI*8;waterNormals[i]=128+Math.round(15*Math.cos(phase));waterNormals[i+1]=128+Math.round(11*Math.sin(phase+y/128*Math.PI*4));waterNormals[i+2]=254;waterNormals[i+3]=255;}
 const rippleTexture=new THREE.DataTexture(waterNormals,128,128,THREE.RGBAFormat);rippleTexture.wrapS=rippleTexture.wrapT=THREE.RepeatWrapping;rippleTexture.magFilter=THREE.LinearFilter;rippleTexture.needsUpdate=true;
 const water=new THREE.MeshPhysicalMaterial({color:'#537b73',roughness:.25,metalness:.18,clearcoat:.65,clearcoatRoughness:.25,normalMap:rippleTexture,normalScale:new THREE.Vector2(.3,.3)});sharedMaterials.add(water);
+const deepWater=water.clone();
+deepWater.transparent=true;deepWater.opacity=.20;deepWater.depthWrite=false;deepWater.side=THREE.DoubleSide;
 const shadowSize=64,shadowData=new Uint8Array(shadowSize*shadowSize*4);
 for(let y=0;y<shadowSize;y++)for(let x=0;x<shadowSize;x++){const i=(y*shadowSize+x)*4,r=Math.hypot(x/63*2-1,y/63*2-1);shadowData[i]=33;shadowData[i+1]=39;shadowData[i+2]=20;shadowData[i+3]=Math.max(0,Math.round((1-Math.min(1,r))**2*90));}
 const contactTexture=new THREE.DataTexture(shadowData,shadowSize,shadowSize,THREE.RGBAFormat);contactTexture.needsUpdate=true;contactTexture.magFilter=THREE.LinearFilter;
@@ -443,7 +445,9 @@ export function createScene(container,onPick){
   // Shader directives need their own lines.
   sky.material.fragmentShader=sky.material.fragmentShader.replace(';#include',';\n#include');scene.add(sky);
   const backdrop=new THREE.Mesh(new THREE.PlaneGeometry(180,180),new THREE.MeshStandardMaterial({color:BACKDROP_COLOR,roughness:1}));backdrop.rotation.x=-Math.PI/2;backdrop.position.y=-.19;backdrop.receiveShadow=true;scene.add(backdrop);
-  let pondClips=[];
+  const pondClips=new Map();
+  const pondMaterials=new Set();
+  let pondCode='';
   let dirty=true,root=null,plants=null,draft=null,plan=null,view=null,selection=null,visible=true,windLevel=1,frameCount=0,lastDraw=0,lastTick=0,elapsed=0,lastVisibilityCheck=-Infinity;
   const textureStatus=document.createElement('div');textureStatus.className='texture-status';textureStatus.textContent='芝と土の質感を読み込み中…';textureStatus.setAttribute('role','status');container.append(textureStatus);
   let texturesLoaded=0,textureFailed=false;container.dataset.textures='loading';
@@ -453,6 +457,9 @@ export function createScene(container,onPick){
       texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(scale,scale);texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
       if(slot==='map')texture.colorSpace=THREE.SRGBColorSpace;
       material[slot]=texture;material.bumpMap=null;material.normalScale.set(.65,.65);material.needsUpdate=true;dirty=true;
+      for(const clipped of pondClips.get(material)?.values()??[]){
+        clipped[slot]=texture;clipped.bumpMap=null;clipped.normalScale.copy(material.normalScale);clipped.needsUpdate=true;
+      }
       if(++texturesLoaded===4&&!textureFailed){textureStatus.remove();container.dataset.textures='ready';}
     },undefined,()=>{textureFailed=true;container.dataset.textures='fallback';textureStatus.textContent='地面の質感を読み込めず簡易表示中。保存後に再読込できます。';dirty=true;});
   }
@@ -463,18 +470,31 @@ export function createScene(container,onPick){
   document.addEventListener('visibilitychange',()=>{lastTick=0;dirty=true;});
   reduced.addEventListener('change',e=>{if(e.matches){setWind(0);container.dispatchEvent(new CustomEvent('wind-reduced'));}});
   controls.addEventListener('change',()=>{keepCameraAboveGround(camera,controls.target);fitShadow();dirty=true;});
-  function dispose(group){if(!group)return;group.traverse(o=>{if(o.geometry&&!sharedGeometry.has(o.geometry))o.geometry.dispose();if(o.isInstancedMesh)o.dispose();if(o.material&&!sharedMaterials.has(o.material)&&!Array.from(sceneMaterials.values()).includes(o.material))o.material.dispose();});scene.remove(group);}
+  function dispose(group){if(!group)return;group.traverse(o=>{if(o.geometry&&!sharedGeometry.has(o.geometry))o.geometry.dispose();if(o.isInstancedMesh)o.dispose();if(o.material&&!sharedMaterials.has(o.material)&&!pondMaterials.has(o.material)&&!Array.from(sceneMaterials.values()).includes(o.material))o.material.dispose();});scene.remove(group);}
   function line(points,color,group=root,opacity=1){const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color,transparent:opacity<1,opacity}));group.add(l);return l;}
   function pondClip(base,mode='ground',owner=-1){
-    if(!plan.zones.some(z=>z.kind==='water'&&z.depth>0))return base;
-    const m=base.clone(),code=pondMaskCode(plan);
+    if(!pondCode)return base;
+    let cache=pondClips.get(base);
+    if(!cache){cache=new Map();pondClips.set(base,cache);}
+    const key=mode+':'+owner;
+    if(cache.has(key))return cache.get(key);
+    const m=base.clone(),code=pondCode;
     const condition={
       ground:'pondState.x>.001&&gardenPondWorld.y>-pondState.x+.002',
       backdrop:'pondState.x>0.0',
       wall:'abs(pondSide.x-pondOther.x)<.001||gardenPondWorld.y>-min(pondSide.x,pondOther.x)+.002||gardenPondWorld.y<-max(pondSide.x,pondOther.x)-.002',
-    }[mode]??`pondState.y!=${Number(owner).toFixed(1)}`;
-    m.onBeforeCompile=shader=>{shader.vertexShader='varying vec3 gardenPondWorld;varying vec2 gardenPondEdge;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ngardenPondWorld=(modelMatrix*vec4(position,1.0)).xyz;gardenPondEdge=normal.xz;');shader.fragmentShader=`varying vec3 gardenPondWorld;varying vec2 gardenPondEdge;vec2 gardenPondAt(vec2 pondXZ){${code}return vec2(gardenPondDepth,gardenZoneOwner); }\n`+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>\nvec2 pondState=gardenPondAt(gardenPondWorld.xz);${mode==='wall'?'vec2 pondSide=gardenPondAt(gardenPondWorld.xz+normalize(gardenPondEdge)*.0002);vec2 pondOther=gardenPondAt(gardenPondWorld.xz-normalize(gardenPondEdge)*.0002);':''}if(${condition})discard;`);};
-    m.customProgramCacheKey=()=>mode+owner+code;pondClips.push(m);return m;
+    }[mode]??'pondState.y!=gardenPondOwner';
+    m.onBeforeCompile=shader=>{
+      if(mode==='owner')shader.uniforms.gardenPondOwner={value:owner};
+      shader.vertexShader='varying vec3 gardenPondWorld;varying vec2 gardenPondEdge;\n'+shader.vertexShader;
+      shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ngardenPondWorld=(modelMatrix*vec4(position,1.0)).xyz;gardenPondEdge=normal.xz;');
+      const ownerUniform=mode==='owner'?'uniform float gardenPondOwner;':'';
+      shader.fragmentShader=`${ownerUniform}varying vec3 gardenPondWorld;varying vec2 gardenPondEdge;vec2 gardenPondAt(vec2 pondXZ){${code}return vec2(gardenPondDepth,gardenZoneOwner); }\n`+shader.fragmentShader;
+      shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>\nvec2 pondState=gardenPondAt(gardenPondWorld.xz);${mode==='wall'?'vec2 pondSide=gardenPondAt(gardenPondWorld.xz+normalize(gardenPondEdge)*.0002);vec2 pondOther=gardenPondAt(gardenPondWorld.xz-normalize(gardenPondEdge)*.0002);':''}if(${condition})discard;`);
+    };
+    // Zone ownership varies per material, while the shader program depends only on the geometry.
+    m.customProgramCacheKey=()=>mode+code;
+    cache.set(key,m);pondMaterials.add(m);return m;
   }
   function polygon(points,y,material){const shape=new THREE.Shape(points.map(([x,z])=>new THREE.Vector2(x-plan.width/2,-z+plan.depth/2)));const m=new THREE.Mesh(new THREE.ShapeGeometry(shape),material);m.rotation.x=-Math.PI/2;m.position.y=y;m.receiveShadow=true;root.add(m);return shape;}
   function circle(x,z,r,color,y=.04){line(Array.from({length:65},(_,i)=>{const a=i*Math.PI/32;return new THREE.Vector3(x-plan.width/2+Math.cos(a)*r,y,z-plan.depth/2+Math.sin(a)*r);}),color);}
@@ -498,14 +518,22 @@ export function createScene(container,onPick){
     if(matrices.length){const chips=new THREE.InstancedMesh(pebbleGeometry,mat('#ffffff'),matrices.length);matrices.forEach((m,i)=>{chips.setMatrixAt(i,m);chips.setColorAt(i,colors[i]);});chips.receiveShadow=true;mulch.add(chips);root.add(mulch);}else pebbleGeometry.dispose();
   }
   function render(next,nextView,id){
-    plan=next;view=nextView;selection=id;dispose(root);for(const material of pondClips)material.dispose();pondClips=[];root=new THREE.Group();plants=new THREE.Group();root.add(plants);scene.add(root);
+    plan=next;view=nextView;selection=id;dispose(root);
+    const wallDepth=Math.max(0,...plan.zones.map(zone=>zone.kind==='water'?(zone.depth??0):0));
+    const code=wallDepth>0?pondMaskCode(plan):'';
+    if(code!==pondCode){
+      for(const material of pondMaterials)material.dispose();
+      pondMaterials.clear();pondClips.clear();pondCode=code;
+    }
+    root=new THREE.Group();plants=new THREE.Group();root.add(plants);scene.add(root);
     // A fixed-height backdrop can coincide with the floor of a 19 cm pond.
     backdrop.material=pondClip(mat(BACKDROP_COLOR),'backdrop');const shape=polygon(plan.outline,0,pondClip(turf));const earth=new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false}),pondClip(mat('#807357')));earth.customDepthMaterial=pondClip(pondShadow);earth.rotation.x=-Math.PI/2;earth.position.y=-.186;earth.castShadow=true;earth.receiveShadow=true;root.add(earth);
     for(const [i,z] of plan.zones.entries()){
-      let surface=z.kind==='water'?water:soil;
-      if(z.kind==='water'&&z.depth>0){surface=water.clone();surface.transparent=true;surface.opacity=.20;surface.depthWrite=false;surface.side=THREE.DoubleSide;pondClips.push(surface);polygon(z.points,-z.depth,pondClip(silt,'owner',i));}
-      if(plan.zones.some(zone=>zone.kind==='water'&&zone.depth>0)){const wallDepth=Math.max(...plan.zones.map(zone=>zone.kind==='water'?(zone.depth??0):0));const positions=[];for(let j=0;j<z.points.length;j++){const [ax,az]=z.points[j],[bx,bz]=z.points[(j+1)%z.points.length],a=[ax-plan.width/2,0,az-plan.depth/2],b=[bx-plan.width/2,0,bz-plan.depth/2],c=[b[0],-wallDepth,b[2]],d=[a[0],-wallDepth,a[2]];positions.push(...a,...b,...c,...a,...c,...d);}
-       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();const wallMaterial=pondClip(mat('#81765b'),'wall',i);wallMaterial.side=THREE.DoubleSide;const walls=new THREE.Mesh(geometry,wallMaterial);walls.receiveShadow=true;root.add(walls);
+      const wet=z.kind==='water'&&z.depth>0;
+      const surface=wet?deepWater:z.kind==='water'?water:soil;
+      if(wet)polygon(z.points,-z.depth,pondClip(silt,'owner',i));
+      if(wallDepth>0){const positions=[];for(let j=0;j<z.points.length;j++){const [ax,az]=z.points[j],[bx,bz]=z.points[(j+1)%z.points.length],a=[ax-plan.width/2,0,az-plan.depth/2],b=[bx-plan.width/2,0,bz-plan.depth/2],c=[b[0],-wallDepth,b[2]],d=[a[0],-wallDepth,a[2]];positions.push(...a,...b,...c,...a,...c,...d);}
+       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();const wallMaterial=pondClip(mat('#81765b'),'wall');wallMaterial.side=THREE.DoubleSide;const walls=new THREE.Mesh(geometry,wallMaterial);walls.receiveShadow=true;root.add(walls);
       }
       polygon(z.points,zoneSurfaceElevation(z,i),pondClip(surface,'owner',i));line([...z.points,z.points[0]].map(([x,z])=>new THREE.Vector3(x-plan.width/2,.012,z-plan.depth/2)),z.kind==='water'?'#6c8981':'#756d51');
     }
