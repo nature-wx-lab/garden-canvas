@@ -1,6 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1081';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1082';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1081';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1082';
+import {PLANT_BASE_Y,POND_SURFACE_Y} from './model.js?v=0.9.1082';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26524,18 +26525,30 @@ function bacopaPhotoSegment(f,a,z,r,color,kind){
 }
 function drawBacopaPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00055,h*.005,w*.005),floor=r*1.2+Math.min(.00002,h*.002),hairL=Math.min(.00055,h*.01,w*.002);
+ const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
+ const waterline=wet?bed+s.waterDepth+POND_SURFACE_Y:-Infinity;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.98),r=Math.min(.00055,h*.005,w*.005),floor=bed+r*1.2+Math.min(.00002,h*.002),hairL=Math.min(.00055,h*.01,w*.002);
  for(let shoot=0;shoot<7;shoot++){
   const az=shoot*2.399+.3,R=w*.29*Math.sqrt((shoot+.7)/7),root=[Math.sin(az)*R,floor,Math.cos(az)*R],lean=w*.035;let previous=root;
+  if(wet)for(let i=0;i<3;i++){
+   const turn=az+i*TAU/3,reach=Math.min(.008,w*.03);
+   const bend=[root[0]+Math.sin(turn)*reach*.42,bed+(floor-bed)*.52,root[2]+Math.cos(turn)*reach*.42];
+   const tip=[root[0]+Math.sin(turn)*reach,bed+r*.20,root[2]+Math.cos(turn)*reach];
+   bacopaPhotoSegment(b,root,bend,r*.25,'#b9ad90','basal-root-bacopa-photo-ref');
+   bacopaPhotoSegment(b,bend,tip,r*.13,'#b9ad90','basal-root-bacopa-photo-ref');
+  }
   for(let node=0;node<6;node++){
-   const t=(node+1)/6,at=[root[0]+Math.sin(az)*lean*t*t,LH*(.16+.66*t),root[2]+Math.cos(az)*lean*t*t],L=Math.min(.012,w*.12)*(.88+node*.02),relief=Math.min(L,LH*.035/.071),pitch=Math.acos(Math.min(.46,LH*.035/L)),angle=az+node*Math.PI/2;
-   // Depth is measured from the bed. The model's small bed clearance leaves
-   // the nominal waterline slightly below this conservative color boundary.
-   const submerged=at[1]<=s.waterDepth;
-   bacopaPhotoSegment(b,previous,at,r,submerged?'#547349':'#7ca154','stem-bacopa-photo-ref');
+   const t=(node+1)/6,at=[root[0]+Math.sin(az)*lean*t*t,bed+LH*(.16+.66*t),root[2]+Math.cos(az)*lean*t*t],L=Math.min(.012,w*.12)*(.88+node*.02),relief=Math.min(L,LH*.035/.071),pitch=Math.acos(Math.min(.46,LH*.035/L)),angle=az+node*Math.PI/2;
+   const submerged=at[1]<=waterline;
+   if(previous[1]<waterline&&!submerged){
+    const fraction=(waterline-previous[1])/(at[1]-previous[1]);
+    const surface=previous.map((value,i)=>value+(at[i]-value)*fraction);
+    bacopaPhotoSegment(b,previous,surface,r,'#547349','stem-bacopa-photo-ref');
+    bacopaPhotoSegment(b,surface,at,r,'#7ca154','stem-bacopa-photo-ref');
+   }else bacopaPhotoSegment(b,previous,at,r,submerged?'#547349':'#7ca154','stem-bacopa-photo-ref');
    for(let k=0;k<6;k++){
     const t=(k+.5)/6,a=az+k*2.399,pt=previous.map((v,i)=>v+(at[i]-v)*t);
-    if(pt[1]<=s.waterDepth)continue;
+    if(pt[1]<=waterline)continue;
     bacopaPhotoSegment(b,pt,[pt[0]+Math.sin(a)*hairL,pt[1]+hairL*.13,pt[2]+Math.cos(a)*hairL],hairL*.035,'#c8d4ae','stemHair-bacopa-photo-ref');
    }
    const leafColor=submerged?'#477043':s.leafColor;

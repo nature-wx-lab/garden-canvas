@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
-import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat } from './model.js?v=0.9.1081';
-import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1081';
+import { plantInfo, stateAt, inside, canPlant, zoneAt, pondDepthAt, plantBaseAt, isRaouliaMat, POND_SURFACE_Y } from './model.js?v=0.9.1082';
+import { plantModel, batch, wind, random, sharedGeometry, sharedMaterials } from './vegetation.js?v=0.9.1082';
 
 const BACKDROP_COLOR='#65755a';
 export const CAMERA_FLOOR=.1,CAMERA_MAX_POLAR=Math.PI-.025;
@@ -416,7 +416,7 @@ export function pondMaskCode(plan){
 export function zoneSurfaceElevation(zone,index){
  // Depth-enabled ponds share the reference waterline used by floating plants.
  // Their fragment masks resolve overlaps without requiring a vertical offset.
- return zone.kind==='water'&&zone.depth>0?.006:.006+index*.0002;
+ return zone.kind==='water'&&zone.depth>0?POND_SURFACE_Y:POND_SURFACE_Y+index*.0002;
 }
 
 export function createScene(container,onPick){
