@@ -1,9 +1,9 @@
-import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1130';
-import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1130';
-import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1130';
-import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1130';
-import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1130';
-import { createScene } from './scene.js?v=0.9.1130';
+import {HABITS,treeProfile} from './tree-profiles.js?v=0.9.1131';
+import { GENRES, COLORS, searchCatalog, catalogPage, seasonAt } from './catalog-search.js?v=0.9.1131';
+import {appearanceSummary,TRAIT_LABELS} from './appearance.js?v=0.9.1131';
+import { CATALOG, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1131';
+import { clone, round, currentPlan, makePlant, replacePlant, editSize, outlineFor, area, circleZonePoints, validOutline, inside, contained, obstaclePoints, canPlant, validateDocument, validSavedCamera, sampleDocument, treeGalleryDocument, annualGalleryDocument, stateAt, pondDepthAt, plantSizeLimits, budget, calendar, observations, TASKS, taskCountLimit, validTaskMinutes } from './model.js?v=0.9.1131';
+import { createScene } from './scene.js?v=0.9.1131';
 
 const $=id=>document.getElementById(id),el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let doc=sampleDocument(),selected=null,mode='orbit',addKind='salvia',draft=[],history=[],future=[],preview=null,engine=null,calendarMonth=null,copyPlant=null;
@@ -221,6 +221,7 @@ function syncSelected(){const p=selectedPlant();$('no-selection').hidden=!!p;$('
   for(const id of ['height','future-height','target-height']){$(id).min=String(limits.minHeight);$(id).step=String(limits.step);}
   for(const id of ['leaf-height','future-leaf']){$(id).min=String(limits.minLeafHeight);$(id).step=String(limits.step);}
   for(const [id,value] of Object.entries({height:p.height,spread:p.spread,'leaf-height':p.leafHeight,price:p.price,'plant-x':p.x,'plant-z':p.z,'start-year':Math.floor(p.start/12),'start-month':p.start%12+1,role:p.role,'scenario-year':p.scenario?.year||3,'future-height':p.scenario?.height??p.height,'future-spread':p.scenario?.spread??p.spread,'future-leaf':p.scenario?.leafHeight??p.leafHeight,'target-height':p.management?.height??p.height,'target-spread':p.management?.spread??p.spread,'prune-method':p.management?.method||'thin',recovery:p.management?.recovery||6}))$(id).value=value??'';
+  delete $('price').dataset.edited;
   drawReplacement();$('care-advice').textContent=info.care;
   $('plant-tasks').replaceChildren(...p.tasks.map(t=>itemRow(`${t.month}月 ${TASKS[t.type]} ×${t.count} ／ ${t.repeat==='first'?'初年度':'毎年'} ／ ${t.min===null?'時間未入力':time(t.min,t.max)}`,()=>withPlant(p=>{p.tasks=p.tasks.filter(x=>x.id!==t.id);},'手入れ予定を削除しました。',true))));sourceCard('selected-source',p.kind);
 }
@@ -425,7 +426,24 @@ function bind(){
   $('undo').addEventListener('click',()=>{if(restoreEdit(history,future))message('編集を1つ戻しました。');});
   $('redo').addEventListener('click',()=>{if(restoreEdit(future,history))message('編集をやり直しました。');});
   $('lock').addEventListener('click',()=>withPlant(p=>{p.locked=!p.locked;},'植物の固定を変更しました。固定中は配置・種類・寸法を変更できません。',true));$('move').addEventListener('click',()=>{if(selectedPlant()?.locked){message('固定を解除してから移動してください。');return;}setMode('move');message('庭の移動先をクリックしてください。');});$('clone-plant').addEventListener('click',()=>{copyPlant=clone(selectedPlant());setMode('clone');message('複製する場所を庭でクリックしてください。');});$('remove').addEventListener('click',()=>withPlant((p,g)=>{g.plants=g.plants.filter(v=>v.id!==p.id);},'植物を取り除きました。「戻す」で復元できます。'));
-  $('apply-plant').addEventListener('click',()=>{let cleared=false;const ok=withPlant(p=>{const h=number('height'),w=number('spread'),lh=number('leaf-height'),limits=plantSizeLimits(p.kind);if(!(h>=limits.minHeight&&h<=60&&w>=.1&&w<=60&&lh>=limits.minLeafHeight&&lh<=h))throw new Error(`高さは${limits.minHeight}〜60m、幅は0.1〜60m、葉高は${limits.minLeafHeight}m以上で高さ以下にしてください。`);if(!canPlant(plan(),number('plant-x'),number('plant-z')))throw new Error('庭の中で外構に重ならない位置にしてください。');const updated=editSize(p,h,w,lh);cleared=updated.height!==p.height||updated.spread!==p.spread||updated.leafHeight!==p.leafHeight;Object.assign(p,updated,{x:number('plant-x'),z:number('plant-z'),start:number('start-year')*12+number('start-month')-1,role:$('role').value,price:cleared?null:optional('price')});},'初期サイズ・配置・購入を更新しました。');if(ok&&cleared)message('初期サイズを更新しました。購入単価と成長・剪定の寸法は解除したため、必要に応じて再入力してください。');});
+  $('price').addEventListener('input',()=>{$('price').dataset.edited='true';});
+  $('apply-plant').addEventListener('click',()=>{
+    const price=optional('price'),priceEdited=$('price').dataset.edited==='true';
+    let resized=false;
+    const ok=withPlant(p=>{
+      const h=number('height'),w=number('spread'),lh=number('leaf-height'),limits=plantSizeLimits(p.kind);
+      const x=number('plant-x'),z=number('plant-z');
+      if(!(h>=limits.minHeight&&h<=60&&w>=.1&&w<=60&&lh>=limits.minLeafHeight&&lh<=h))throw new Error(`高さは${limits.minHeight}〜60m、幅は0.1〜60m、葉高は${limits.minLeafHeight}m以上で高さ以下にしてください。`);
+      if(!canPlant(plan(),x,z))throw new Error('庭の中で外構に重ならない位置にしてください。');
+      if(price!==null&&(!Number.isInteger(price)||price<0||price>10000000))throw new Error('購入単価は0〜10,000,000円の整数で入力してください。');
+      resized=h!==p.height||w!==p.spread||lh!==p.leafHeight;
+      Object.assign(p,editSize(p,h,w,lh),{x,z,start:number('start-year')*12+number('start-month')-1,
+        role:$('role').value,price:resized&&!priceEdited?null:price});
+    },'初期サイズ・配置・購入を更新しました。');
+    if(ok&&resized)message(priceEdited&&price!==null
+      ?'初期サイズと入力した購入単価を保存しました。成長・剪定の寸法は必要に応じて再入力してください。'
+      :'初期サイズを更新しました。購入単価と成長・剪定の寸法は解除したため、必要に応じて再入力してください。');
+  });
   $('preview-replace').addEventListener('click',()=>previewReplacement($('replacement').value));$('cancel-preview').addEventListener('click',()=>{preview=null;resetMode();sync();message('交換を取り消し、元の案へ戻りました。');});$('accept-preview').addEventListener('click',()=>{if(!preview)return;checkpoint();doc=validateDocument(preview);preview=null;resetMode();sync();message('交換を採用しました。価格や手入れは新しい植物に合わせて設定できます。');});
   $('apply-scenario').addEventListener('click',()=>withPlant(p=>{if(number('future-height')<p.height||number('future-spread')<p.spread||number('future-leaf')<p.leafHeight)throw new Error('成長後の寸法は初期寸法以上にしてください。小さくする場合は剪定設定を使います。');p.scenario={year:number('scenario-year'),height:number('future-height'),spread:number('future-spread'),leafHeight:number('future-leaf')};},'自分で設定した成長シナリオを反映しました。年数スライダーで確認できます。'));$('clear-scenario').addEventListener('click',()=>withPlant(p=>{p.scenario=null;},'年次成長の仮定を解除しました。'));
   $('apply-management').addEventListener('click',()=>withPlant(p=>{p.management={height:number('target-height'),spread:number('target-spread'),method:$('prune-method').value,recovery:number('recovery')};},'剪定寸法と回復の仮定を設定しました。「手入れ予定」に剪定月を登録すると表示に反映します。'));$('clear-management').addEventListener('click',()=>withPlant(p=>{p.management=null;},'剪定の寸法シナリオを解除しました。予定表の作業は残ります。'));
