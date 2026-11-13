@@ -24272,7 +24272,7 @@ test('greenMyrio accepts existing saved gardens without changing independent dim
 });
 
 test('orangeMyrio separates submerged yellow orange leaves from emersed whorls and unknown flowers',()=>{
- const q=CATALOG['p-2f845bda190a'],a=q.appearance;assert.equal(q.latin,'Myriophyllum sp.');assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'orangeMyrioPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.flowerShape,'none');assert.equal(a.sources.length,1);assert.match(a.sourceConflict,/2023.*3.*27/);assert.match(a.sourceConflict,/水上葉.*4〜5/);assert.match(a.unconfirmed.join(' '),/種名.*未確定/);assert.match(a.unconfirmed.join(' '),/黄.*橙.*葉色/);assert.match(a.unconfirmed.join(' '),/蕾.*葉/);assert.ok(!a.unconfirmed.some(n=>/4枚ずつ|16本|1344/.test(n)));assert.ok(searchCatalog(CATALOG,{query:q.label,color:'unknown'}).some(([id])=>id==='p-2f845bda190a'));for(const color of['orange','pink'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-2f845bda190a'));assert.ok(!/orangeMyrioPhotoReference|myrioPectinate/.test(appearanceSummary(q)));
+ const q=CATALOG['p-2f845bda190a'],a=q.appearance;assert.equal(q.latin,'Myriophyllum sp.');assert.equal(q.height,null);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[]);assert.equal(q.bloomKnown,false);assert.deepEqual(q.colors,['unknown']);assert.equal(q.sourceChecked,'2026-11-13');assert.match(a.unconfirmed.join(' '),/赤みのある頂芽.*水上葉へ変わる水深は未確認/);assert.equal(a.shootProfile,'orangeMyrioPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.flowerShape,'none');assert.equal(a.sources.length,1);assert.match(a.sourceConflict,/2023.*3.*27/);assert.match(a.sourceConflict,/水上葉.*4〜5/);assert.match(a.unconfirmed.join(' '),/種名.*未確定/);assert.match(a.unconfirmed.join(' '),/黄.*橙.*葉色/);assert.match(a.unconfirmed.join(' '),/蕾.*葉/);assert.ok(!a.unconfirmed.some(n=>/4枚ずつ|16本|1344/.test(n)));assert.ok(searchCatalog(CATALOG,{query:q.label,color:'unknown'}).some(([id])=>id==='p-2f845bda190a'));for(const color of['orange','pink'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-2f845bda190a'));assert.ok(!/orangeMyrioPhotoReference|myrioPectinate/.test(appearanceSummary(q)));
 });
 test('orangeMyrio reference fits twenty four independent inputs with connected narrow whorls',()=>{
  const dimensions=[[.20,.30,.18],[.01,.10,.005],[.20,.30,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,leafJoins=0,stemJoins=0,branchJoins=0,pinnaJoins=0;
@@ -24284,6 +24284,33 @@ test('orangeMyrio reference fits twenty four independent inputs with connected n
    for(let shoot=0;shoot<12;shoot++)for(let j=1;j<=14;j++){const main=shoot*14+j-1,at=point(stems,main,new Vector3(0,.5,0));if(j>1){assert.ok(point(stems,main,new Vector3(0,-.5,0)).distanceTo(point(stems,main-1,new Vector3(0,.5,0)))<2e-6);stemJoins++;}for(let side=0;side<4;side++){assert.ok(point(leaves,leaf++,new Vector3()).distanceTo(at)<2e-6);leafJoins++;}if(j!==5&&j!==9)continue;const start=shoot*14+(j===5?0:7);assert.ok(point(sides,start,new Vector3(0,-.5,0)).distanceTo(at)<2e-6);branchJoins++;for(let k=0;k<7;k++){if(k>0){assert.ok(point(sides,start+k,new Vector3(0,-.5,0)).distanceTo(point(sides,start+k-1,new Vector3(0,.5,0)))<2e-6);stemJoins++;}const at=point(sides,start+k,new Vector3(0,.5,0));for(let side=0;side<4;side++){assert.ok(point(leaves,leaf++,new Vector3()).distanceTo(at)<2e-6);leafJoins++;}}}assert.equal(leaf,1344);
   }finally{dispose(g);}
  }assert.equal(models,24);console.log('ORANGE_MYRIO1025_BOUNDARIES '+JSON.stringify({models,vertices,leafJoins,stemJoins,branchJoins,pinnaJoins}));
+});
+test('orangeMyrio makes the terminal leaves shorter and more upright below the waterline',()=>{
+ const p={...makePlant('p-2f845bda190a',108110,3,3),height:.20,spread:.30,leafHeight:.18};
+ const matrix=new Matrix4(),vertex=new Vector3();
+ for(const [depth,month] of [[.001,7],[.007,7],[.15,1],[.3,7]]){
+  const group=plantModel(p,{year:0,month,reference:false,waterDepth:depth});
+  try{
+   const leaf=group.children.find(m=>m.userData.component.startsWith('leaf-orange-myrio-photo-reference-'));
+   const direction=index=>{
+    leaf.getMatrixAt(index,matrix);
+    return new Vector3(0,1,0).applyMatrix4(matrix).sub(new Vector3().setFromMatrixPosition(matrix));
+   };
+   const lower=direction(0),terminal=direction(27*4);
+   assert.ok(terminal.length()<lower.length()*.72);
+   assert.ok(terminal.clone().normalize().y>lower.clone().normalize().y+.20);
+   for(const mesh of group.children){
+    const positions=mesh.geometry.attributes.position;
+    for(let i=0;i<mesh.count;i++){
+     mesh.getMatrixAt(i,matrix);
+     for(let j=0;j<positions.count;j++){
+      const y=vertex.fromBufferAttribute(positions,j).applyMatrix4(matrix).y+.012-depth;
+      assert.ok(y>=-depth-1e-6&&y<=.006,{depth,y,component:mesh.userData.component});
+     }
+    }
+   }
+  }finally{dispose(group);}
+ }
 });
 test('orangeMyrio foliage focus frames six summer and protected winter inputs',()=>{
  let models=0,framedPoses=0;for(const dims of[[.20,.30,.18],[.01,.10,.005],[.20,.30,.005]])for(const month of[7,1]){
