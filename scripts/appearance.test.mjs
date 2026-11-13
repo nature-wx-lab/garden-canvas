@@ -24045,7 +24045,7 @@ test('hairgrass accepts existing saved gardens without changing independent dime
  for(const dims of[[.20,.25,.16],[.01,.10,.005],[.20,.25,.005]]){const input={...makePlant('p-c23d044f8453',101510,3,3),height:dims[0],spread:dims[1],leafHeight:dims[2]},d=emptyDocument(10,6);d.plans.A.plants=[input];const old={...structuredClone(d),catalogVersion:'2026-10-29.77'},copy=structuredClone(old);assert.deepEqual(validateDocument(old),d);assert.deepEqual(old,copy);assert.deepEqual([input.height,input.spread,input.leafHeight],dims);const state=stateAt(input,{year:1,month:7,reference:true});assert.equal(state.height,.20);assert.equal(state.spread,dims[1]);assert.ok(Math.abs(state.leafHeight-dims[2]*.20/dims[0])<1e-12);}
 });
 test('cobra grass source preserves domestic height bloom and unknown stock width',()=>{
- const q=CATALOG['p-a8dafa56e5f8'],a=q.appearance;assert.equal(q.latin,'Lilaeopsis novae-zelandiae');assert.deepEqual(q.height,[.05,.15]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[5,6,7,8,9]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['white']);assert.equal(q.sourceChecked,'2026-11-01');assert.equal(a.shootProfile,'cobraGrassPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.sources[4].scope,'family');assert.match(a.sources[4].url,/Apiaceae/);assert.match(a.sourceConflict,/9cm.*15cm.*株幅/);assert.match(a.phenologyRegion,/2cm.*仮の境界/);assert.match(a.unconfirmed.join(' '),/3〜4花/);assert.match(a.unconfirmed.join(' '),/セリ科.*模式/);assert.match(a.unconfirmed.join(' '),/地下茎.*描いていません/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'white'}).some(([id])=>id==='p-a8dafa56e5f8'));for(const color of['green','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-a8dafa56e5f8'));
+ const q=CATALOG['p-a8dafa56e5f8'],a=q.appearance;assert.equal(q.latin,'Lilaeopsis novae-zelandiae');assert.deepEqual(q.height,[.05,.15]);assert.equal(q.spread,null);assert.deepEqual(q.bloom,[5,6,7,8,9]);assert.equal(q.bloomKnown,true);assert.deepEqual(q.colors,['white']);assert.equal(q.sourceChecked,'2026-11-13');assert.equal(a.shootProfile,'cobraGrassPhotoReference');assert.equal(a.persistence,'submergedPersistent');assert.equal(a.sources[4].scope,'family');assert.match(a.sources[4].url,/Apiaceae/);assert.match(a.sourceConflict,/9cm.*15cm.*株幅/);assert.match(a.phenologyRegion,/2cm.*仮の境界/);assert.match(a.unconfirmed.join(' '),/3〜4花/);assert.match(a.unconfirmed.join(' '),/セリ科.*模式/);assert.match(a.unconfirmed.join(' '),/地下茎の節から細い葉状部と短い根/);assert.ok(searchCatalog(CATALOG,{query:q.label,color:'white'}).some(([id])=>id==='p-a8dafa56e5f8'));for(const color of['green','unknown'])assert.ok(!searchCatalog(CATALOG,{query:q.label,color}).some(([id])=>id==='p-a8dafa56e5f8'));
 });
 test('cobra grass photo reference fits twenty four independent inputs without hidden rhizomes',()=>{
  const dimensions=[[.15,.25,.12],[.01,.10,.005],[.15,.25,.005],[.005,.03,.005],[.02,.05,.02],[.15,.10,.075],[.1,1,.05],[2,3,1.5]];let models=0,vertices=0,leafBases=0,pedicelJoins=0,petalJoins=0,flowerModels=0;
@@ -24057,6 +24057,44 @@ test('cobra grass photo reference fits twenty four independent inputs without hi
    const petals=g.children.find(m=>m.userData.component==='petal-cobra-grass-photo-reference');if(month===7){assert.equal(petals.count,120);assert.equal(petals.geometry.userData.closedSurface,true);const scapes=g.children.find(m=>m.userData.component==='scape-cobra-grass-photo-ref'),pedicels=g.children.find(m=>m.userData.component==='pedicel-cobra-grass-photo-ref');assert.equal(scapes.count,6);assert.equal(pedicels.count,24);assert.ok(g.userData.surfaceSelection?.matched);for(let k=0;k<24;k++){assert.ok(point(pedicels,k,new Vector3(0,-.5,0)).distanceTo(point(scapes,Math.floor(k/4),new Vector3(0,.5,0)))<2e-6);pedicelJoins++;assert.ok(point(pedicels,k,new Vector3(0,.5,0)).distanceTo(point(petals,k*5,new Vector3()))<2e-6);petalJoins++;}for(const[name,count]of[['sepal',120],['anther',120],['ovary',48],['stigma',48]])assert.equal(g.children.find(m=>m.userData.component===name+'-cobra-grass-photo-reference').count,count);flowerModels++;}else{assert.equal(petals,undefined);assert.equal(flowerInspectionView(g,.8,40),null);}
   }finally{dispose(g);}
  }assert.equal(models,24);assert.equal(flowerModels,8);console.log('COBRA_GRASS1016_BOUNDARIES '+JSON.stringify({models,vertices,leafBases,pedicelJoins,petalJoins,flowerModels}));
+});
+test('cobra grass pond leaves roots and aerial scapes join the same rhizome nodes',()=>{
+ const p={...makePlant('p-a8dafa56e5f8',108510,3,3),height:.15,spread:.25,leafHeight:.12};
+ const matrix=new Matrix4();
+ const point=(mesh,i,y)=>{mesh.getMatrixAt(i,matrix);return new Vector3(0,y,0).applyMatrix4(matrix);};
+ const view={year:0,month:7,reference:false};
+ for(const depth of [.007,.14]){
+  const group=plantModel(p,{...view,waterDepth:depth});
+  try{
+   const get=key=>group.children.find(m=>m.userData.component===key);
+   const leaves=get('leaf-cobra-grass-photo-reference'),roots=get('nodal-root-cobra-grass-photo-ref');
+   const rhizomes=get('rhizome-cobra-grass-photo-ref'),scapes=get('scape-cobra-grass-photo-ref');
+   assert.equal(roots.count,leaves.count/2);
+   assert.equal(rhizomes.count,roots.count-Math.ceil(roots.count/8));
+   for(let i=0;i<roots.count;i++){
+    assert.ok(point(roots,i,-.5).distanceTo(point(leaves,i*2,0))<2e-6);
+    assert.ok(point(roots,i,.5).y>-.012&&point(roots,i,.5).y<-.011);
+   }
+   for(let i=0;i<rhizomes.count;i++){
+    const j=(Math.floor(i/7)*8+i%7)*2;
+    assert.ok(point(rhizomes,i,-.5).distanceTo(point(leaves,j,0))<2e-6);
+    assert.ok(point(rhizomes,i,.5).distanceTo(point(leaves,j+2,0))<2e-6);
+   }
+   if(depth===.007){
+    assert.equal(scapes.count,6);
+    const ends=get('flower-rhizome-cobra-grass-photo-ref'),edgeRoots=get('flower-root-cobra-grass-photo-ref');
+    assert.equal(ends.count,6);assert.equal(edgeRoots.count,6);
+    for(let i=0;i<scapes.count;i++){
+     const base=point(scapes,i,-.5);
+     const joined=point(ends,i,-.5);
+     assert.ok(Array.from({length:roots.count},(_,n)=>point(leaves,n*2,0)).some(node=>node.distanceTo(joined)<2e-6));
+     assert.ok(point(ends,i,.5).distanceTo(base)<2e-6);
+     assert.ok(point(edgeRoots,i,-.5).distanceTo(base)<2e-6);
+    }
+   }else assert.equal(scapes,undefined);
+  }finally{dispose(group);}
+ }
+ assert.equal(stateAt({...p,height:.01,leafHeight:.005},{...view,waterDepth:.007}).bloom,false);
 });
 test('cobra grass foliage focus frames six summer and protected winter inputs',()=>{
  let models=0,framedPoses=0;for(const dims of[[.15,.25,.12],[.01,.10,.005],[.15,.25,.005]])for(const month of[7,1]){

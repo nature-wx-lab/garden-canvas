@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1084';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1085';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1084';
-import {PLANT_BASE_Y,POND_SURFACE_Y} from './model.js?v=0.9.1084';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1085';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerHeight} from './model.js?v=0.9.1085';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -30568,14 +30568,43 @@ function cobraGrassPhotoSegment(b,a,z,r,color,kind){
 }
 function drawCobraGrassPhotoReference(b,{s,rand},kit){
  if(s.groundDormant||s.leafDensity<=0)return;
- const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.94),r=Math.min(.00035,w*.002,h*.003),floor=r*.45+Math.min(.00002,h*.002),n=Math.max(1,Math.round(128*s.leafDensity));
+ const wet=s.waterDepth>0,bed=wet?-PLANT_BASE_Y:0;
+ const waterline=wet?bed+s.waterDepth+POND_SURFACE_Y:-Infinity;
+ const h=s.height,w=s.spread,LH=Math.min(s.leafHeight,h*.94),r=Math.min(.00035,w*.002,h*.003),floor=bed+r*.45+Math.min(.00002,h*.002),n=Math.max(1,Math.round(128*s.leafDensity));
+ const bases=[];
  for(let leaf=0;leaf<n;leaf++){
-  const node=Math.floor(leaf/2),az=node*2.399,rad=w*.30*Math.sqrt((node+.5)/Math.ceil(n/2)),root=[Math.sin(az)*rad,floor,Math.cos(az)*rad],L=Math.max(.0001,LH*(.55+.38*rand())),W=Math.min(.0035,w*.018,LH*.10),pitch=Math.min(.04+rand()*.16,w*.06/L),yaw=az+(leaf%2?1.25:-.35),roll=(rand()-.5)*Math.min(.16,w*.04/L),Z=Math.min(L,w*.05/.055);b.add('cobra-grass-photo-reference-leaf','leaf-cobra-grass-photo-reference',kit.shade(rand,s.leafColor,.035),...root,W,L,Z,pitch,yaw,roll);
+  const node=Math.floor(leaf/2),az=node*2.399,rad=w*.30*Math.sqrt((node+.5)/Math.ceil(n/2));
+  const row=Math.floor(node/8),turn=row*2.399,center=w*.28*Math.sqrt((row+.5)/Math.ceil(n/16));
+  const along=(node%8-3.5)*Math.min(.009,w*.020);
+  const root=wet
+   ?[Math.sin(turn)*center+Math.cos(turn)*along,floor,Math.cos(turn)*center-Math.sin(turn)*along]
+   :[Math.sin(az)*rad,floor,Math.cos(az)*rad];
+  if(wet&&leaf%2===0){
+   if(node%8)cobraGrassPhotoSegment(b,bases[node-1],root,r*.45,'#938a69','rhizome-cobra-grass-photo-ref');
+   const reach=Math.min(.003,w*.015);
+   const tip=[root[0]+Math.sin(az)*reach,bed+r*.1,root[2]+Math.cos(az)*reach];
+   cobraGrassPhotoSegment(b,root,tip,r*.16,'#ad9e7e','nodal-root-cobra-grass-photo-ref');
+   bases.push(root);
+  }
+  const L=Math.max(.0001,LH*(.55+.38*rand())),W=Math.min(.0035,w*.018,LH*.10),pitch=Math.min(.04+rand()*.16,w*.06/L),yaw=az+(leaf%2?1.25:-.35),roll=(rand()-.5)*Math.min(.16,w*.04/L),Z=Math.min(L,w*.05/.055);
+  b.add('cobra-grass-photo-reference-leaf','leaf-cobra-grass-photo-reference',kit.shade(rand,s.leafColor,.035),...root,W,L,Z,pitch,yaw,roll);
  }
  if(!s.bloom||s.waterDepth>=.02)return;
+ const S=Math.min(.020,h*.28),D=Math.min(.0030,w*.016,h*.065),P=Math.min(.006,w*.025,h*.10);
+ if(bed+cobraGrassFlowerHeight(h,w)<=waterline)return;
  let flowerIndex=0;
  for(let umbel=0;umbel<6;umbel++){
-  const az=umbel*TAU/6+.2,R=w*.39,root=[Math.sin(az)*R,floor,Math.cos(az)*R],S=Math.min(.020,h*.28),D=Math.min(.0030,w*.016,h*.065),P=Math.min(.006,w*.025,h*.10),top=[root[0],floor+S,root[2]];cobraGrassPhotoSegment(b,root,top,r*.55,'#8faa5c','scape-cobra-grass-photo-ref');
+  const az=umbel*TAU/6+.2,R=w*.39;
+  const edge=[Math.sin(az)*R,floor,Math.cos(az)*R];
+  if(wet){
+   const distance=base=>Math.hypot(base[0]-edge[0],base[2]-edge[2]);
+   const node=bases.reduce((nearest,base)=>distance(base)<distance(nearest)?base:nearest);
+   cobraGrassPhotoSegment(b,node,edge,r*.45,'#938a69','flower-rhizome-cobra-grass-photo-ref');
+   const rootTip=[edge[0]+Math.sin(az)*r*4,bed+r*.1,edge[2]+Math.cos(az)*r*4];
+   cobraGrassPhotoSegment(b,edge,rootTip,r*.16,'#ad9e7e','flower-root-cobra-grass-photo-ref');
+  }
+  const top=[edge[0],floor+S,edge[2]];
+  cobraGrassPhotoSegment(b,edge,top,r*.55,'#8faa5c','scape-cobra-grass-photo-ref');
   for(let flower=0;flower<4;flower++){
    const a=flower*TAU/4+az,at=[top[0]+Math.sin(a)*P*.65,top[1]+P*.25,top[2]+Math.cos(a)*P*.65];cobraGrassPhotoSegment(b,top,at,r*.35,'#91ae66','pedicel-cobra-grass-photo-ref');const f=flowerFrame(b,at,0,az);
    for(let lobe=0;lobe<2;lobe++)f.add('cobra-grass-photo-reference-body','ovary-cobra-grass-photo-reference','#8eaf63',(lobe-.5)*D*.12,-D*.04,0,D*.13,D*.12,D*.15);

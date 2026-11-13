@@ -10149,50 +10149,7 @@ export const EXPANDED_CATALOG={"p-c302de2ed934":{"label":"ビオラ ラブラド
   "selectionSource": null,
   "visual": "reference",
   "popularity": []
-},"p-a8dafa56e5f8":{
-  "label": "コブラグラス",
-  "latin": "Lilaeopsis novae-zelandiae",
-  "genre": "水生植物",
-  "form": "botanical",
-  "group": "宿根草",
-  "leaf": "evergreen",
-  "height": [
-    0.05,
-    0.15
-  ],
-  "spread": null,
-  "bloom": [
-    5,
-    6,
-    7,
-    8,
-    9
-  ],
-  "bloomKnown": true,
-  "flower": "#e2e6c8",
-  "leafColor": "#78a446",
-  "variegated": false,
-  "colors": [
-    "white"
-  ],
-  "sun": [],
-  "moisture": [],
-  "life": "perennial",
-  "growth": "年次成長は未確認",
-  "season": "平たい細葉と小さな散形花序",
-  "care": "国内生産者の草丈5〜15cm・開花5〜9月を保ち、平たい細い葉状部が低く密に伸びる写真の姿を参考にします。葉状部は線形からへら形で、先が細まり、曲がりやねじれが見られます。花は種の3〜4花の散形花序と、属資料の小さな白い花弁、別株の種の花写真を参考にします。株幅は未確認です。冬は凍らない水中または暖かな明るい室内の管理という条件を区別します。全形・全月の実物照合は未完了です。野外へ放流・逸出させないでください。",
-  "bloomText": "5・6・7・8・9月",
-  "bloomBasis": "5〜9月は国内生産者の記載です。白い花と花弁の形は属の植物資料と別株の種の写真の参考で、流通株の色値や全月像を実測したものではありません。",
-  "source": "https://www.akb.jp/c/2025springDM/202503-water_plants/406",
-  "publisher": "杜若園芸",
-  "sourceChecked": "2026-11-01",
-  "aliases": [
-    "コブラグラス"
-  ],
-  "selectionSource": null,
-  "visual": "reference",
-  "popularity": []
-},"p-91d5d4c1fdcd":{"label":"アンペライ","latin":"Machaerina rubiginosa","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.5,1],"spread":null,"bloom":[6,7,8],"bloomKnown":true,"flower":"#895447","leafColor":"#6e974e","variegated":false,"colors":["unknown"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水辺の草姿と季節変化","care":"硬い茎と細い葉が株元から直立し、葉は下側に丸みがあり先端側は平たくなります。葉丈は株元の葉の高さに使い、茎先の花序や節の鞘とは分けて参考表示します。生産者は冬も水上で常緑と記載していますが、各地の同じ株の冬姿を追跡した表示ではありません。赤褐色の穂は鱗片の色として参照し、微小な花そのものの色は未確認です。全形・全月の実物照合は未完了です。","bloomText":"資料の開花月：6・7・8月","bloomBasis":"生産者の種類別資料","source":"https://www.akb.jp/c/suisei/shissei/001-0003","publisher":"杜若園芸","sourceChecked":"2026-11-01","aliases":["アンペライ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-a9c345dcea4e":{
+},"p-a8dafa56e5f8":{"label":"コブラグラス","latin":"Lilaeopsis novae-zelandiae","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.05,0.15],"spread":null,"bloom":[5,6,7,8,9],"bloomKnown":true,"flower":"#e2e6c8","leafColor":"#78a446","variegated":false,"colors":["white"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"平たい細葉と小さな散形花序","care":"国内生産者の草丈5〜15cm・開花5〜9月を保ち、平たい細い葉状部が低く密に伸びる写真の姿を参考にします。葉状部は線形からへら形で、先が細まり、曲がりやねじれが見られます。花は種の3〜4花の散形花序と、属資料の小さな白い花弁、別株の種の花写真を参考にします。株幅は未確認です。冬は凍らない水中または暖かな明るい室内の管理という条件を区別します。全形・全月の実物照合は未完了です。野外へ放流・逸出させないでください。","bloomText":"5・6・7・8・9月","bloomBasis":"5〜9月は国内生産者の記載です。白い花と花弁の形は属の植物資料と別株の種の写真の参考で、流通株の色値や全月像を実測したものではありません。","source":"https://www.akb.jp/c/2025springDM/202503-water_plants/406","publisher":"杜若園芸","sourceChecked":"2026-11-13","aliases":["コブラグラス"],"selectionSource":null,"visual":"reference","popularity":[]},"p-91d5d4c1fdcd":{"label":"アンペライ","latin":"Machaerina rubiginosa","genre":"水生植物","form":"botanical","group":"宿根草","leaf":"evergreen","height":[0.5,1],"spread":null,"bloom":[6,7,8],"bloomKnown":true,"flower":"#895447","leafColor":"#6e974e","variegated":false,"colors":["unknown"],"sun":[],"moisture":[],"life":"perennial","growth":"年次成長は未確認","season":"水辺の草姿と季節変化","care":"硬い茎と細い葉が株元から直立し、葉は下側に丸みがあり先端側は平たくなります。葉丈は株元の葉の高さに使い、茎先の花序や節の鞘とは分けて参考表示します。生産者は冬も水上で常緑と記載していますが、各地の同じ株の冬姿を追跡した表示ではありません。赤褐色の穂は鱗片の色として参照し、微小な花そのものの色は未確認です。全形・全月の実物照合は未完了です。","bloomText":"資料の開花月：6・7・8月","bloomBasis":"生産者の種類別資料","source":"https://www.akb.jp/c/suisei/shissei/001-0003","publisher":"杜若園芸","sourceChecked":"2026-11-01","aliases":["アンペライ"],"selectionSource":null,"visual":"reference","popularity":[]},"p-a9c345dcea4e":{
   "label": "アサザ",
   "latin": "Nymphoides peltata",
   "genre": "水生植物",
