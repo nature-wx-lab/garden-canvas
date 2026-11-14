@@ -5565,6 +5565,31 @@ test('Euonymus separates evergreen cultivar foliage, leafless corky winter branc
  assert.notEqual(seasonAt(CATALOG['p-7a4e676f27c9'],7).leafColor,seasonAt(CATALOG['p-7a4e676f27c9'],11).leafColor);
 });
 
+test('Dan’s Delight exposes a flower inspection target only when its flowers are present',()=>{
+ const plant=makePlant('p-358c267b368f',9,6,4.1);
+ for(const month of [5,6,7]){
+  const group=plantModel(plant,view(month));
+  const targets=group.userData.flowerTargets??[];
+  assert.equal(targets.length,month===6?1:0);
+  if(month===6){
+   const bloom=group.children.find(mesh=>mesh.userData.component==='petal-euonymus');
+   const matrix=new Matrix4();
+   const anchor=new Vector3(...targets[0].origin);
+   const flower=new Vector3();
+   let matchingFlower=false;
+   for(let i=0;i<bloom.count;i++){
+    bloom.getMatrixAt(i,matrix);
+    if(anchor.distanceToSquared(flower.setFromMatrixPosition(matrix))<1e-12){
+     matchingFlower=true;
+     break;
+    }
+   }
+   assert.ok(matchingFlower);
+  }
+  dispose(group);
+ }
+});
+
 test('Osmanthus has opposite evergreen leaves, four-lobed axillary flowers and cultivar-specific annual colour',()=>{
  const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='osmanthusAxils');assert.equal(entries.length,9);
  for(const [i,[id,info]] of entries.entries()){

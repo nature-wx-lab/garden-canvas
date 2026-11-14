@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1183';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1184';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1183';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1183';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1184';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1184';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4430,6 +4430,7 @@ function drawEuonymus(b,{info,s,detail,rand},kit){
    b.add('euonymusWings','cork-wing-euonymus','#9a8870',...from.add(to).multiplyScalar(.5).toArray(),Math.max(.0018,q.r*1.35),length,Math.max(.0018,q.r*1.35),rotation.x,rotation.y,rotation.z);
   }
  }
+ let dandelFlower=null;
  for(const n of nodes){
   const spring=[4,5].includes(s.month),young=n.t>.76,winter=[11,12,1,2].includes(s.month);
   for(const side of [-1,1]){
@@ -4452,6 +4453,11 @@ function drawEuonymus(b,{info,s,detail,rand},kit){
    const theta=k*2.399963,r=k===0?0:stalk*.6,y=stalk+(k===0?stalk*.40:stalk*.65),at=[Math.sin(theta)*r,y,Math.cos(theta)*r],f=flowerFrame(cyme,at,.3,theta),R=a.flowerRadius;
    cyme.branch([0,stalk,0],at,.00018,a.stemColor,'pedicel-euonymus');
    if(s.bloom){
+    if(type==='dandel'){
+     const [x,y,z]=origin;
+     const outward=Math.hypot(x,z)+y*.18+r*.1;
+     if(!dandelFlower||outward>dandelFlower.outward)dandelFlower={frame:f,radius:R,outward};
+    }
     f.add(kit.bud,'disc-euonymus','#9eaf75',0,R*.11,0,R*.34,R*.12,R*.34);f.add('euonymusCorolla','petal-euonymus',s.flowerColor,0,0,0,R,R,R);
     for(let l=0;l<4;l++){
      const angle=l*TAU/4+Math.PI/4,point=[Math.sin(angle)*R*.29,R*.40,Math.cos(angle)*R*.29];
@@ -4468,6 +4474,7 @@ function drawEuonymus(b,{info,s,detail,rand},kit){
    }
   }
  }
+ if(dandelFlower)dandelFlower.frame.flower([0,0,0],dandelFlower.radius*1.5);
 }
 
 export function osmanthusLeafPoint(type,t,u){
