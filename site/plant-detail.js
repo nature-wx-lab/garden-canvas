@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1186';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1187';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1186';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1186';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1187';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1187';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4112,6 +4112,7 @@ function drawArdisia(b,{info,s,detail,rand},kit){
   f.branch([0,0,0],[0,P,0],.00035,a.stemColor,'petiole-ardisia');f.add('ardisia-'+type,kind,kit.shade(rand,tall?(flush?'#70465e':n.level<2?'#4f6247':'#49484b'):a.leafColor,.035),0,P,0,L*a.leafWidth/a.leafLength,L,L);
   if(tall)for(let k=1;k<10;k++)for(const side of [-1,1]){const p=ardisiaLeafPoint(type,k/12,side);f.add(kit.bud,'leaf-gland-ardisia','#746359',p[0]*L*a.leafWidth/a.leafLength,P+p[1]*L,p[2]*L,.00035,.00045,.00030);}
  }
+ let inspectionFlower;
  for(const n of clusters){
   const flower=s.bloom&&(tall||n.roll<.52),ripe=a.fruitMonths.includes(s.month),green=a.greenFruitMonths.includes(s.month),fruit=(ripe||green)&&n.roll<(tall?.70:type==='white'?.16:.25);
   if(!flower&&!fruit)continue;
@@ -4123,11 +4124,16 @@ function drawArdisia(b,{info,s,detail,rand},kit){
    if(fruit){const R=a.fruitRadius*(green?.73:1);f.add(kit.bud,'fruit-glossy-ardisia',ripe?a.fruitColor:'#81935e',0,R*.70,0,R,R,R);for(let k=0;k<5;k++)f.add('ardisia-white','calyx-ardisia','#65805b',0,0,0,R*.24,R*.45,R*.45,.72,k*TAU/5,0);}
    else{
     const R=a.flowerRadius;f.add('ardisiaFlower','petal-ardisia',s.flowerColor,0,0,0,R,R,R);
+    if(type==='white'&&j===0){
+     const exposure=Math.hypot(n.at[0],n.at[2])+n.at[1]*.3;
+     if(!inspectionFlower||exposure>inspectionFlower.exposure)inspectionFlower={frame:f,radius:R,exposure};
+    }
     for(let k=0;k<5;k++){const az=k*TAU/5;f.add(kit.cone,'anther-ardisia','#dab468',Math.sin(az)*R*.13,R*.28,Math.cos(az)*R*.13,R*.10,R*.62,R*.10,-.10,az,0);}
     f.branch([0,0,0],[0,R*.94,0],R*.024,'#dfd0a8','style-ardisia');
    }
   }
  }
+ if(inspectionFlower)inspectionFlower.frame.flower([0,0,0],inspectionFlower.radius*1.45);
 }
 
 export function callicarpaLeafPoint(type,t,u){

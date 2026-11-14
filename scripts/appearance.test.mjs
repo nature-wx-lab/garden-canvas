@@ -5482,6 +5482,20 @@ test('Ardisia retains evergreen alternate leaves and carries seasonal flowers an
    const g=plantModel(p,view(month)),count=prefix=>g.children.filter(m=>m.userData.component.startsWith(prefix)).reduce((n,m)=>n+m.count,0);
    assert.equal(g.userData.architecture,'ardisiaShoots');assert.ok(count('leaf-ardisia')>0);assert.ok(count('wood-ardisia')>0);
    assert.equal(count('petal-ardisia')>0,a.flowerMonths.includes(month));assert.equal(count('anther-ardisia'),count('petal-ardisia')*5);
+   if(id==='p-ce56de4099ac'){
+    const pose=flowerInspectionView(g,1.65,40);
+    assert.equal(Boolean(pose),a.flowerMonths.includes(month));
+    if(pose){
+     const [anchor]=g.userData.flowerTargets;
+     const corollas=g.children.find(mesh=>mesh.userData.component==='petal-ardisia');
+     const matrix=new Matrix4();
+     assert.ok(anchor.axis[1]<0);
+     assert.ok(Array.from({length:corollas.count},(_,index)=>{
+      corollas.getMatrixAt(index,matrix);
+      return new Vector3().setFromMatrixPosition(matrix).distanceTo(new Vector3(...anchor.origin));
+     }).some(distance=>distance<2e-7));
+    }
+   }
    assert.equal(count('fruit-glossy-ardisia')>0,a.fruitMonths.includes(month)||a.greenFruitMonths.includes(month));
    assert.equal(count('leaf-gland-ardisia')>0,a.shootProfile==='benikujaku');
    const skeleton=g.children.filter(m=>m.userData.component.startsWith('wood-ardisia')).map(m=>[...m.instanceMatrix.array]);if(!wood)wood=skeleton;else assert.deepEqual(skeleton,wood);
