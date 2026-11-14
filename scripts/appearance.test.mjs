@@ -5546,6 +5546,16 @@ test('Nandina preserves compound leaf axes, cultivar winter colour and white fru
  assert.equal(CATALOG['p-b594fc53301a'].appearance.leafPattern,'mottled');assert.equal(CATALOG['p-a01c6a7a5b5e'].appearance.fruitColor,'#e5d7a5');assert.equal(CATALOG['p-fa380ccded5d'].latin,"Nandina domestica 'Seika'");
 });
 
+test('Twilight nandina can focus on a flower in its short panicle during June',()=>{
+ const plant=makePlant('p-b594fc53301a',9,6,4.1);
+ for(const month of [6,7]){
+  const group=plantModel(plant,view(month));
+  assert.equal(group.userData.flowerTargets?.length??0,month===6?1:0);
+  if(month===6)assert.ok(flowerInspectionView(group,2.3,40));
+  dispose(group);
+ }
+});
+
 test('Euonymus separates evergreen cultivar foliage, leafless corky winter branches and confirmed flowers and fruit',()=>{
  const entries=Object.entries(CATALOG).filter(([,p])=>p.appearance?.architecture==='euonymusBranches');assert.equal(entries.length,4);
  for(const [i,[id,info]] of entries.entries()){

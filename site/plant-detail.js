@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1184';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1185';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1184';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1184';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1185';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1185';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4357,6 +4357,7 @@ function drawNandina(b,{info,s,detail,rand},kit){
      const f2=flowerFrame(frame,point,.35+u*.8,an);
      if(fruit){f2.add(kit.bud,'fruit-nandina-white',kit.shade(rand,a.fruitColor,.025),0,0,0,.004,.0042,.004);f2.add(kit.bud,'stigma-nandina-retained','#82765b',0,.0041,0,.00065,.0003,.00065);continue;}
      if(m===count-1&&j===whorls){f2.add(kit.bud,'bud-nandina',a.flowerPalette.bud,0,R*.50,0,R*.31,R*.61,R*.31);continue;}
+     if(type==='twilight'&&j===whorls&&k===0&&m===1)f2.flower([0,0,0],R*1.5);
      f2.add('nandinaCorolla',type==='twilight'?'petal-nandina-twilight':'petal-nandina',s.flowerColor,0,0,0,R,R,R);
      f2.add(kit.bud,'ovary-nandina','#e3d5b6',0,R*.26,0,R*.17,R*.28,R*.17);f2.add(kit.bud,'stigma-nandina','#d6aa71',0,R*.64,0,R*.08,R*.07,R*.08);
      for(let z=0;z<6;z++){const theta=z*TAU/6,point=[Math.sin(theta)*R*.27,R*.43,Math.cos(theta)*R*.27];f2.add(kit.bud,'anther-nandina','#d7bd68',...point,R*.09,R*.24,R*.08,Math.sin(theta)*.10,0,Math.cos(theta)*.10);}
