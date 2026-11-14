@@ -4774,6 +4774,39 @@ test('Mixed garden plants retain winter leaves, distinguish annual death and do 
  assert.deepEqual(CATALOG[ids[0]].bloom,[5,6,7,8,9,10,11]);assert.equal(seasonAt(CATALOG[ids[1]],8).bloom,false);
 });
 
+test('Bernstein defaults to its sourced height and spreads its leafy shoots from low runners',()=>{
+ const p=makePlant('p-342ddb60042c',12706,2,2);
+ assert.equal(p.height,.20);
+ assert.equal(p.leafHeight,.20);
+ assert.equal(p.spread,.55);
+ const matrix=new Matrix4(),start=new Vector3(),end=new Vector3();
+ for(const dimensions of [[p.height,p.spread],[.65,.55],[.045,.08]])for(const month of [1,7]){
+  const [height,spread]=dimensions,plant={...p,height,spread,leafHeight:height},g=plantModel(plant,view(month));
+  g.updateMatrixWorld(true);
+  const wood=g.children.find(mesh=>mesh.userData.component==='stem-mixed-empetrum');
+  const leaves=g.children.find(mesh=>mesh.userData.component==='leaf-mixed-empetrum');
+  assert.ok(wood&&leaves);
+  assert.ok(leaves.count>1000);
+  let lowRunners=0,leafRadius=0;
+  for(let i=0;i<wood.count;i++){
+   wood.getMatrixAt(i,matrix);matrix.premultiply(wood.matrixWorld);
+   start.set(0,0,0).applyMatrix4(matrix);end.set(0,1,0).applyMatrix4(matrix);
+   if(Math.max(start.y,end.y)<height*.11&&Math.hypot(end.x-start.x,end.z-start.z)>Math.abs(end.y-start.y)*2)lowRunners++;
+  }
+  for(let i=0;i<leaves.count;i++){
+   leaves.getMatrixAt(i,matrix);matrix.premultiply(leaves.matrixWorld);
+   start.setFromMatrixPosition(matrix);
+   leafRadius=Math.max(leafRadius,Math.hypot(start.x,start.z));
+  }
+  assert.ok(lowRunners>100,'the woody structure includes low, outward-running stems');
+  assert.ok(leafRadius>spread*.30,'leaves extend outward across the mat');
+  assert.ok(!g.children.some(mesh=>mesh.userData.component?.startsWith('petal')));
+  const box=new Box3().setFromObject(g);
+  assert.ok(Number.isFinite(box.max.y)&&box.max.y<=height+.005);
+  dispose(g);
+ }
+});
+
 test('Late garden herbs distinguish protected winter, evergreen winter flowers, fine spikes and double gentian',()=>{
  const ids=['p-dae34d8d0eea','p-50d888e87b01','p-2eeacd6535bd','p-b48c90e6a1b0','p-dfecd69323d8','p-23df1beb411a','p-902ddd958778','p-f78c19ea3c7b'];
  for(const [i,id]of ids.entries())for(let month=1;month<=12;month++){
