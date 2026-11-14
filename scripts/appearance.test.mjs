@@ -4774,6 +4774,33 @@ test('Mixed garden plants retain winter leaves, distinguish annual death and do 
  assert.deepEqual(CATALOG[ids[0]].bloom,[5,6,7,8,9,10,11]);assert.equal(seasonAt(CATALOG[ids[1]],8).bloom,false);
 });
 
+test('Kahikatea has leafy sprays in winter and smaller appressed leaves at the larger reference size',()=>{
+ const plant=makePlant('p-b318019b9be1',12815,2,2);
+ const cases=[[1.5,.98,6],[1.5,.98,1],[4,2,6]];
+ const measurements=cases.map(([height,spread,month])=>{
+  Object.assign(plant,{height,leafHeight:height,spread});
+  const group=plantModel(plant,view(month));
+  const part=name=>group.children.find(mesh=>mesh.userData.component===name);
+  const leaves=part('leaf-mixed-dacrycarpus');
+  assert.ok(leaves.count>3500,'the branchlets retain dense fine foliage');
+  const matrices=leaves.instanceMatrix.array;
+  let longest=0;
+  for(let i=0;i<leaves.count;i++){
+   const offset=i*16+4;
+   longest=Math.max(longest,Math.hypot(matrices[offset],matrices[offset+1],matrices[offset+2]));
+  }
+  const result={longest,count:leaves.count,roots:part('buttress-mixed-dacrycarpus')?.count??0};
+  dispose(group);
+  return result;
+ });
+ const [summer,winter,large]=measurements;
+ assert.deepEqual(winter,summer);
+ assert.ok(summer.longest>.005&&summer.longest<.007);
+ assert.ok(large.longest>.0015&&large.longest<.002);
+ assert.ok(large.roots>0);
+ assert.equal(summer.roots,0);
+});
+
 test('Bernstein defaults to its sourced height and spreads its leafy shoots from low runners',()=>{
  const p=makePlant('p-342ddb60042c',12706,2,2);
  assert.equal(p.height,.20);

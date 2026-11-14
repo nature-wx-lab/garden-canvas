@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1182';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1183';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1182';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1182';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1183';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1183';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -625,16 +625,75 @@ function drawMixedGardenPlants(b,{info,s,detail,rand},kit){
   }return;
  }
  if(type==='dacrycarpus'){
-  const n=Math.round(37*detail),adult=h>3,rad=Math.max(.009,h*.015);b.branch([0,0,0],[0,h*.95,0],rad,'#77766d','trunk-mixed-dacrycarpus');
-  if(adult)for(let j=0;j<5;j++){const az=j*TAU/5;b.branch([0,h*.17,0],[Math.sin(az)*w*.13,0,Math.cos(az)*w*.13],rad*.55,'#727369','buttress-mixed-dacrycarpus');}
-  for(let j=0;j<n;j++){
-   const az=j*2.399,t=.12+.8*j/n,len=w*.45*(1-t*.7),base=[0,h*t,0],tip=[Math.sin(az)*len,h*t+h*(adult?.04:.09),Math.cos(az)*len];branch(base,tip,rad*.18,'#82775f');
-   for(let k=0;k<13;k++){
-    const v=.10+k*.065,root=base.map((x,i)=>x+(tip[i]-x)*v),aa=az+(k%2?1:-1)*.85,end=[root[0]+Math.sin(aa)*len*.43,root[1]-h*.11,root[2]+Math.cos(aa)*len*.43];branch(root,end,.00065,'#8f8267');
-    const nodes=adult?37:29,L=adult?.0018:.007;
-    for(let q=0;q<nodes;q++){const tt=q/nodes,pt=root.map((x,i)=>x+(end[i]-x)*tt);for(let side=0;side<2;side++)blade(pt,aa+side*Math.PI,L*(.7+rand()*.3),adult?.20:1.25,L*(adult?.42:.12));}
+  const adult=h>3,trunkRadius=Math.max(.005,h*(adult?.010:.007));
+  const point=(origin,az,reach,rise)=>[origin[0]+Math.sin(az)*reach,origin[1]+rise,origin[2]+Math.cos(az)*reach];
+  const between=(root,tip,t)=>root.map((value,i)=>value+(tip[i]-value)*t);
+  const shoot=(root,tip,az,hang)=>{
+   const bend=between(root,tip,.60);bend[1]+=hang;
+   const twigRadius=adult?.00085:.00105;
+   branch(root,bend,twigRadius,green);
+   branch(bend,tip,twigRadius*.72,green);
+   const spacing=adult?.00165:.0035;
+   const length=Math.hypot(...tip.map((value,i)=>value-root[i]));
+   const nodes=Math.max(6,Math.min(adult?88:52,Math.round(length/spacing*detail)));
+   const orientation=(from,to)=>{
+    const [dx,dy,dz]=to.map((value,i)=>value-from[i]);
+    return [Math.atan2(Math.hypot(dx,dz),dy),Math.atan2(dx,dz)];
+   };
+   const orientations=adult?[orientation(root,bend),orientation(bend,tip)]:null;
+   for(let q=0;q<nodes;q++){
+    const t=(q+.5)/nodes;
+    const at=t<.60?between(root,bend,t/.60):between(bend,tip,(t-.60)/.40);
+    const leafLength=(adult?.0018:.0065)*(.69+.31*rand());
+    if(adult){
+     const [pitch,shootAz]=orientations[t<.60?0:1];
+     const frame=flowerFrame(b,at,pitch,shootAz,q*2.399);
+     frame.add('mixed-leaf-'+type,'leaf-mixed-'+type,kit.shade(rand,green,.035),0,0,twigRadius,.0012,leafLength,leafLength,.23);
+    }else{
+     const leafAz=az+(q%2===0?1:-1)*1.02;
+     blade(at,leafAz,leafLength,1.35,.0014);
+    }
    }
-  }return;
+  };
+  for(let level=0;level<7;level++){
+   const t=level/7;
+   b.branch([0,h*t,0],[0,h*(level+1)/7,0],trunkRadius*(1-t*.92),'#77766d','trunk-mixed-dacrycarpus');
+  }
+  if(adult)for(let j=0;j<5;j++){
+   const az=j*TAU/5;
+   const base=point([0,0,0],az,w*.105,0),knee=point([0,0,0],az,w*.04,h*.025);
+   b.branch(base,knee,trunkRadius*.32,'#77766d','buttress-mixed-dacrycarpus');
+   b.branch(knee,[0,h*.075,0],trunkRadius*.51,'#77766d','buttress-mixed-dacrycarpus');
+  }
+  const branches=Math.round((adult?32:33)*detail);
+  for(let j=0;j<branches;j++){
+   const t=(j+.4)/branches,az=j*2.399+(rand()-.5)*.37;
+   const root=[0,h*((adult?.33:.13)+(adult?.63:.78)*t),0];
+   const reach=w*(adult?.47:.49)*(.97-.61*t)*(.78+.22*rand());
+   const shoulder=point(root,az,reach*.43,reach*.39);
+   const end=point(root,az,reach,reach*(.26+.27*rand()));
+   branch(root,shoulder,trunkRadius*.27*(1-t*.57),'#82775f');
+   branch(shoulder,end,trunkRadius*.13*(1-t*.65),'#82775f');
+   const sprayCount=adult?16:14;
+   for(let k=0;k<sprayCount;k++){
+    const f=(k+.6)/sprayCount;
+    const base=f<.43?between(root,shoulder,f/.43):between(shoulder,end,(f-.43)/.57);
+    const sprayAz=az+(k%2===0?1:-1)*(.72+.47*rand());
+    const sprayReach=reach*(.27+.30*Math.sin(f*Math.PI))*(.78+.22*rand());
+    const tip=point(base,sprayAz,sprayReach,-sprayReach*(.18+.58*rand()));
+    shoot(base,tip,sprayAz,sprayReach*.22);
+    for(const side of [-1,1]){
+     const attach=side===1?.47:.27;
+     const fork=between(base,tip,attach);
+     fork[1]+=sprayReach*.22*attach/.60;
+     const forkAz=sprayAz+side*.8;
+     shoot(fork,point(fork,forkAz,sprayReach*.54,-sprayReach*.20),forkAz,sprayReach*.14);
+    }
+   }
+   shoot(shoulder,point(end,az,reach*.12,-reach*.11),az,reach*.09);
+  }
+  shoot([0,h*.87,0],[0,h*1.006,0],0,0);
+  return;
  }
  if(type==='empetrum'){
   const runners=Math.round(36*detail),uprights=9,leafLength=Math.min(a.leafLength,h*.14,w*.08);
