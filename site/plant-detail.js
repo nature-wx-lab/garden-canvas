@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1185';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1186';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1185';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1185';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1186';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1186';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -3613,14 +3613,31 @@ export function banksiaHeadGeometry(type){
 }
 function drawBanksia(b,{info,s,detail,rand},kit){
  const a=info.appearance,type=a.shootProfile,coast=type==='coast',heath=type==='heath',lepto=type==='leptophylla',telma=type==='telmatiaea',h=Math.max(s.height*.45,s.height-(a.flowerMonths?a.inflorescenceLength:.03)),w=s.spread,leaves=[],heads=[];
+ const heathHeight=Math.max(.2,s.height),heathSpread=Math.max(.18,w);
+ const heathSprigs=heath&&heathHeight>1.2;
  const shoot=(root,az,rise,reach,order)=>{
-  const arch=lepto?.32:telma?.23:.08,path=t=>[root[0]+Math.sin(az)*reach*(.82*t+.18*t*t),root[1]+rise*((1+arch)*t-arch*t*t),root[2]+Math.cos(az)*reach*(.82*t+.18*t*t)],nodes=coast?(order>1?7:8):order>1?(heath?35:lepto?25:30):18;
-  for(let j=1;j<=6;j++)b.branch(path((j-1)/6),path(j/6),(coast?order===0?.025:order===1?.008:.0024:order===0?.007:order===1?.0023:.0009)*(1-.68*j/6),order?a.stemColor:a.barkColor,coast&&order===0?'wood-banksia-coast':'wood-banksia-twig');
+  const arch=lepto?.32:telma?.23:heath?.20:.08,path=t=>[root[0]+Math.sin(az)*reach*(.82*t+.18*t*t),root[1]+rise*((1+arch)*t-arch*t*t),root[2]+Math.cos(az)*reach*(.82*t+.18*t*t)];
+  const nodes=heath?Math.max(order>1?27:18,Math.min(78,Math.round(Math.hypot(rise,reach)/.010))):coast?(order>1?7:8):order>1?(lepto?25:30):18;
+  for(let j=1;j<=6;j++)b.branch(path((j-1)/6),path(j/6),(coast?order===0?.025:order===1?.008:.0024:order===0?.007:order===1?.0023:.0009)*(1-.68*j/6)*(heath&&order<2?Math.max(1,heathHeight*.68):1),order?a.stemColor:a.barkColor,coast&&order===0?'wood-banksia-coast':'wood-banksia-twig');
   for(let j=1;j<=nodes;j++){
    const t=(coast?.33:.04)+(coast?.65:.94)*j/nodes,at=path(t),theta=az+j*2.399963;
    if(order>0||!coast)for(let k=0;k<(coast?4:1);k++)leaves.push({at,az:theta+k*TAU/4,roll:rand(),size:.70+rand()*.30,young:j>nodes-2});
-   const branchNode=coast?j>1&&j<nodes&&j%2===0:j>2&&j<nodes&&j%(order===0?3:order===1?5:11)===0;
-   if(order<3&&branchNode){const factor=order===0?.20:order===1?.075:.034;shoot(path(.10+.80*j/nodes),theta,h*factor*(.72+rand()*.60),w*factor*(lepto?1.25:telma?1.10:.90),order+1);}
+   if(heathSprigs&&order>=1&&j>nodes*.25&&j%3===0){
+    const length=Math.min(.17,heathHeight*.060)*(.64+rand()*.36),angle=az+(j%2===0?1:-1)*(.67+.47*rand());
+    const tip=[at[0]+Math.sin(angle)*length,at[1]+length*.46,at[2]+Math.cos(angle)*length];
+    b.branch(at,tip,.0008,a.stemColor,'wood-banksia-twig');
+    for(let k=1;k<=16;k++){
+     const site=at.map((value,i)=>value+(tip[i]-value)*(k/16));
+     leaves.push({at:site,az:angle+k*2.399963,roll:rand(),size:.79+rand()*.21});
+    }
+   }
+   const branchInterval=heath?Math.max(2,Math.round(nodes/(order===0?9:order===1?5:3))):order===0?3:order===1?5:11;
+   const branchNode=coast?j>1&&j<nodes&&j%2===0:j>2&&j<nodes&&j%branchInterval===0;
+   if(order<3&&branchNode){
+    const factor=order===0?.20:order===1?.075:.034;
+    const sideReach=heath?heathSpread*(order===0?.18:order===1?.105:.045):w*factor*(lepto?1.25:telma?1.10:.90);
+    shoot(path(.10+.80*j/nodes),theta,h*factor*(.72+rand()*.60),sideReach,order+1);
+   }
   }
   if(order>=2)heads.push({at:path(telma||lepto?.46:1),az,roll:rand(),order});
  };
@@ -3629,8 +3646,13 @@ function drawBanksia(b,{info,s,detail,rand},kit){
   for(let j=1;j<=12;j++)b.branch(trunk((j-1)/12),trunk(j/12),Math.max(.018,h*.023)*(1-.85*j/12),a.barkColor,'wood-banksia-coast');
   for(let j=0;j<9;j++){const level=.22+j*.072,az=j*2.399963;shoot(trunk(level),az,h*(.17+rand()*.11),w*(.35-level*.21),1);}
  }else{
-  const number=Math.round((heath?7:lepto?8:6)*detail);
-  for(let j=0;j<number;j++){const az=j*2.399963,low=j%3===0;shoot([Math.sin(az)*w*.026,0,Math.cos(az)*w*.026],az,h*(low?.29+rand()*.13:.51+rand()*.22),w*(low?.28:.17+rand()*.06),0);}
+  const number=Math.round((heathSprigs?15:heath?10:lepto?8:6)*detail);
+  for(let j=0;j<number;j++){
+   const az=j*2.399963,low=j%3===0;
+   const rise=h*(low?.29+rand()*.13:.51+rand()*.22)*(heath?1.17:1);
+   const reach=heath?heathSpread*(low?.39:.23+rand()*.10):w*(low?.28:.17+rand()*.06);
+   shoot([Math.sin(az)*w*.026,0,Math.cos(az)*w*.026],az,rise,reach,0);
+  }
  }
  for(const n of leaves){
   const L=a.leafLength*n.size,petiole=coast?.005:.0015,f=flowerFrame(b,n.at,(coast?.85:heath?.43:.52)+n.roll*(coast?.70:.60),n.az),colour=kit.shade(rand,s.leafColor,.030);
@@ -3639,8 +3661,12 @@ function drawBanksia(b,{info,s,detail,rand},kit){
  }
  if(!s.bloom)return;
  let drawn=0;
+ const headsDrawn=[],limit=heath?Math.min(12,Math.max(3,Math.round(heathHeight*3))):Math.max(7,Math.round(16*detail));
  for(const n of heads){
-  if(n.order!==2||n.roll>(heath?.22:lepto?.24:.27)||drawn>=Math.max(7,Math.round(16*detail)))continue;drawn++;
+  if(n.order!==2||n.roll>(heath?.12:lepto?.24:.27)||drawn>=limit)continue;
+  if(heath&&headsDrawn.some(at=>Math.hypot(...at.map((value,i)=>value-n.at[i]))<.085))continue;
+  drawn++;
+  if(heath)headsDrawn.push(n.at);
   const f=flowerFrame(b,n.at,telma||lepto?.65:.08+n.roll*.35,n.az);f.branch([0,-.012,0],[0,0,0],.003,a.stemColor,'peduncle-banksia');
   f.add('banksia-head-'+type,'perianth-banksia-'+type,s.flowerColor,0,0,0,1,1,1);f.add('banksia-style-'+type,'style-banksia-'+type,heath?'#b7652f':telma?'#9b7b49':lepto?'#d9b749':'#bc903a',0,0,0,1,1,1);
  }

@@ -5347,6 +5347,25 @@ test('Banksia distinguishes five leaf and flower forms while preserving evergree
  assert.equal(CATALOG['p-db74dd532278'].appearance.flowerShape,'banksiaGlobe');assert.ok(CATALOG['p-db74dd532278'].appearance.leafLength>CATALOG['p-de90abc0820b'].appearance.leafLength*2);assert.deepEqual(CATALOG['p-c9af173c63cd'].height,[5,25]);
 });
 
+test('Heath banksia retains a leafy crown at the nursery’s reference size',()=>{
+ const plant=makePlant('p-3679c6803e9c',9,6,4.1);
+ const measure=month=>{
+  const group=plantModel(plant,view(month));
+  const count=prefix=>group.children.filter(mesh=>mesh.userData.component.startsWith(prefix)).reduce((total,mesh)=>total+mesh.count,0);
+  const result={leaves:count('leaf-banksia'),spikes:count('perianth-banksia')};
+  dispose(group);
+  return result;
+ };
+ const nursery=measure(12);
+ assert.ok(nursery.spikes>=1&&nursery.spikes<=3);
+ Object.assign(plant,{height:3,spread:2.6,leafHeight:3});
+ const winter=measure(12),summer=measure(7);
+ assert.ok(winter.leaves>nursery.leaves*2);
+ assert.equal(summer.leaves,winter.leaves);
+ assert.ok(winter.spikes>=1&&winter.spikes<=9);
+ assert.equal(summer.spikes,0);
+});
+
 test('Rivina mixes four sepal flowers and small berries along axillary racemes with distinct variegated foliage',()=>{
  const entries=Object.entries(CATALOG).filter(([,q])=>q.appearance?.architecture==='rivinaRacemes');assert.equal(entries.length,3);
  for(const [i,[id,info]] of entries.entries()){
