@@ -6405,7 +6405,11 @@ test('alcea cultivars keep basal winter leaves, hairy blades and distinct double
   const g=plantModel(makePlant(id,4701,2,2),view(month)),has=k=>g.children.some(m=>m.userData.component===k);
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
   if(month===1){if(id===ids[6]){assert.ok(has('leaf-alcea-underside-b7bdaa'));assert.ok(!has('floweringStem'));}else assert.equal(g.children.length,0,id);}
-  if(month===6){assert.ok(has('stellateHair'));assert.ok(has('stemHair'));assert.ok(has('calyx'));assert.ok(has('epicalyx'));assert.equal(has('staminalColumn'),id===ids[6]||id===ids[4]);}
+  if(month===6){
+   assert.ok(has('stellateHair'));assert.ok(has('stemHair'));assert.ok(has('calyx'));assert.ok(has('epicalyx'));
+   assert.equal(has('staminalColumn'),id===ids[6]||id===ids[4]);
+   assert.equal(has('petal-alcea-fiesta'),id===ids[2]);
+  }
   if(month===10)assert.ok(has('mericarp'));
   dispose(g);
  }

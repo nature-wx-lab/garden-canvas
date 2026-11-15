@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1194';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1195';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1194';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1194';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1195';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1195';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15692,7 +15692,7 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   return;
  }
  if(shape==='alceaRuffled'||shape==='hollyhockReference'){
-  const f=flowerFrame(b,[x,y,z],tilt,yaw),single=layers===1,frill=palette.frilled,ref=palette.referenceType,pk=ref?'petal-hollyhock-'+ref:palette.ripple?'petal-alcea-ripple':'petal-alcea-veins';
+  const f=flowerFrame(b,[x,y,z],tilt,yaw),single=layers===1,frill=palette.frilled,ref=palette.referenceType,pk=ref?'petal-hollyhock-'+ref:palette.ripple?'petal-alcea-ripple':frill?'petal-alcea-fiesta':'petal-alcea-veins';
   for(let j=0;j<7;j++)f.add('monocotNarrowTepal','epicalyx','#839471',0,-r*.12,0,r*.58,r*.41,r*.41,1.12,j*TAU/7,0);
   for(let j=0;j<5;j++)f.add('monocotBroadTepal','calyx','#8b9b76',0,-r*.06,0,r*.45,r*.48,r*.48,.66,j*TAU/5,0);
   for(let j=0;j<5;j++)f.add(ref?'hollyhockPetal':frill?'alceaFrilledPetal':'alceaBroadPetal',pk,shade(rand,color,.025),0,0,0,r,r,r,1.15+(rand()-.5)*.08,j*TAU/5,0);

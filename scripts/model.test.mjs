@@ -108,6 +108,28 @@ test('three Ajuga cultivars start at their documented heights and preserve saved
  }
 });
 
+test('Alcea entries start at their documented heights and keep saved sizes',()=>{
+ const cultivars=[
+  ['p-5aa887b5e439',2],
+  ['p-a91ea7f5104d',.80],
+  ['p-e5751ffbccdf',2],
+  ['p-176020827f01',2],
+  ['p-8c6bdede5462',2],
+  ['p-45f5acc7be7a',2],
+  ['p-a71bf6087bae',1.75],
+ ];
+ for(const [kind,height] of cultivars){
+  const plant=makePlant(kind,1,2,2);
+  assert.equal(plant.height,height);
+  assert.equal(replacePlant(makePlant('hosta',1,2,2),kind).height,height);
+  assert.equal(stateAt(plant,view(0,7)).height,height);
+  const doc=emptyDocument();
+  const customized=editSize(plant,.35,.30,.19);
+  doc.plans.A.plants=[customized];
+  assert.deepEqual(validateDocument(JSON.parse(JSON.stringify(doc))).plans.A.plants[0],customized);
+ }
+});
+
 test('size changes invalidate obsolete prices and scenario targets',()=>{const p=makePlant('rose',1,2,2);p.price=1000;p.scenario={year:3,height:1,spread:1,leafHeight:1};assert.equal(editSize(p,p.height,p.spread,p.leafHeight).price,1000);const q=editSize(p,.7,.6,.6);assert.equal(q.price,null);assert.equal(q.scenario,null);});
 test('low ground covers round-trip at their documented centimetre height while zero is rejected',()=>{
  const d=fixture(),p=d.plans.A.plants[0];Object.assign(p,{kind:'p-2a0099e60c2c',height:.03,leafHeight:.025,spread:.5});assert.equal(validateDocument(d).plans.A.plants[0].height,.03);
