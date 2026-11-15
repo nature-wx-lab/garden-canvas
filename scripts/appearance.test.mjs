@@ -4778,6 +4778,37 @@ test('Mixed garden plants retain winter leaves, distinguish annual death and do 
  assert.deepEqual(CATALOG[ids[0]].bloom,[5,6,7,8,9,10,11]);assert.equal(seasonAt(CATALOG[ids[1]],8).bloom,false);
 });
 
+test('Variegated Aptenia trails close to the ground and exposes a flower view only while blooming',()=>{
+ const p=makePlant('p-973434a9b3ed',12701,2,2);
+ assert.deepEqual([p.height,p.spread],[.05,.60]);
+ const saved={...p,height:.35,leafHeight:.35,spread:.30};
+ const plan=emptyDocument();
+ plan.plans.A.plants=[saved];
+ const restored=validateDocument(JSON.parse(JSON.stringify(plan))).plans.A.plants[0];
+ assert.deepEqual(restored,saved);
+ for(const plant of [p,restored]){
+  let evergreenGeometry;
+  for(const month of [1,7,8,10]){
+   const group=plantModel(plant,view(month));
+   try{
+    const span=new Box3().setFromObject(group).getSize(new Vector3());
+    assert.ok(span.y>0&&span.y<.075);
+    assert.ok(Math.min(span.x,span.z)>plant.spread*.55);
+    const base=['leaf-mixed-aptenia','stem-mixed-aptenia'].map(part=>{
+     const mesh=group.children.find(child=>child.userData.component===part);
+     assert.ok(mesh?.count);
+     return mesh.instanceMatrix.array.slice();
+    });
+    if(month===1)evergreenGeometry=base;
+    else assert.deepEqual(base,evergreenGeometry);
+    const blooming=month===7||month===10;
+    assert.equal(group.children.some(mesh=>mesh.userData.component==='petal-mixed-aptenia'),blooming);
+    assert.equal(Boolean(group.userData.flowerTargets?.length),blooming);
+   }finally{dispose(group);}
+  }
+ }
+});
+
 test('Kahikatea has leafy sprays in winter and smaller appressed leaves at the larger reference size',()=>{
  const plant=makePlant('p-b318019b9be1',12815,2,2);
  const cases=[[1.5,.98,6],[1.5,.98,1],[4,2,6]];

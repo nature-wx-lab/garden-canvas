@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1193';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1194';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1193';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1193';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1194';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1194';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -731,17 +731,67 @@ function drawMixedGardenPlants(b,{info,s,detail,rand},kit){
   }
   return;
  }
- const apt=type==='aptenia',cal=type==='calylophus',cat=type==='acalypha',gilia=type==='gilia',n=Math.round((cal?38:apt?15:cat?15:16)*detail),growth=gilia?s.leafScale:1;
+ if(type==='aptenia'){
+  const canopy=Math.min(h,w*.19),runners=Math.max(7,Math.round(15*detail));
+  const leafPair=(point,yaw,size=1)=>{
+   if(rand()>=s.leafDensity)return;
+   const length=Math.min(a.leafLength,canopy*.78,w*.24)*size*(.74+rand()*.26);
+   for(const side of [0,Math.PI])blade(point,yaw+side,length,1.21+rand()*.32);
+  };
+  for(let runner=0;runner<runners;runner++){
+   const az=runner*2.399963+(rand()-.5)*.40,reach=w*(.30+rand()*.16);
+   const bend=(rand()-.5)*.70,tipHeight=canopy*(.32+rand()*.18);
+   const at=t=>{
+    const yaw=az+bend*t,along=reach*t;
+    return [Math.sin(yaw)*along,.0015+canopy*.19*Math.sin(Math.PI*t)+tipHeight*t**3,Math.cos(yaw)*along];
+   };
+   const nodes=Math.max(4,Math.min(17,Math.round(reach/.026)));
+   let previous=at(0);
+   for(let i=1;i<=nodes;i++){
+    const t=i/nodes,point=at(t);
+    branch(previous,point,.0023*(1-.40*t));
+    previous=point;
+    const yaw=az+bend*t+i*Math.PI/2;
+    leafPair(point,yaw);
+    if(!s.bloom||i!==nodes-1||runner%3===2)continue;
+    const radius=Math.min(.009,canopy*.22,w*.12);
+    const flower=[point[0]+Math.sin(yaw)*radius*.50,point[1]+canopy*.22,point[2]+Math.cos(yaw)*radius*.50];
+    b.branch(point,flower,.0007,a.stemColor,'pedicel-mixed-aptenia');
+    const f=flowerFrame(b,flower,.12+(runner%5)*.065,yaw);
+    for(let layer=0;layer<2;layer++)for(let k=0;k<21;k++){
+     f.add('mixed-petal-aptenia','petal-mixed-aptenia',s.flowerColor,0,layer*radius*.11,0,radius*.23,radius,radius*(1-layer*.28),.14,k*TAU/21+layer*.1,0);
+    }
+    for(let k=0;k<9;k++){
+     const angle=k*TAU/9;
+     f.add(kit.bud,'anther-mixed-aptenia','#e1b248',Math.sin(angle)*radius*.14,radius*.22,Math.cos(angle)*radius*.14,radius*.07,radius*.12,radius*.07);
+    }
+    f.flower([0,radius*.10,0],radius*1.4);
+   }
+   if(runner%3===2)continue;
+   const fork=at(.38+rand()*.20),side=runner%2?1:-1;
+   const length=reach*(.26+rand()*.23);
+   let last=fork;
+   for(let node=1;node<=4;node++){
+    const t=node/4,yaw=az+side*(.69+t*.42);
+    const point=[fork[0]+Math.sin(yaw)*length*t,fork[1]+canopy*.16*t*t,fork[2]+Math.cos(yaw)*length*t];
+    branch(last,point,.0013*(1-.35*t));
+    leafPair(point,yaw+node*Math.PI/2,.80);
+    last=point;
+   }
+  }
+  return;
+ }
+ const cal=type==='calylophus',cat=type==='acalypha',gilia=type==='gilia',n=Math.round((cal?38:cat?15:16)*detail),growth=gilia?s.leafScale:1;
  for(let j=0;j<n;j++){
-  const az=j*2.399+.2*rand(),reach=w*(apt?.42:cal?.36:cat?.35:.27)*(.35+.65*Math.sqrt((j+.5)/n)),height=h*(.52+rand()*.38)*growth,root=[Math.sin(az)*reach*.45,.005,Math.cos(az)*reach*.45],tip=[Math.sin(az)*reach,height,Math.cos(az)*reach],nodes=cal?24:apt?8:cat?10:7,at=t=>[root[0]+(tip[0]-root[0])*t,height*(apt?Math.sin(t*Math.PI*.85):t),root[2]+(tip[2]-root[2])*t];
-  let prev=root;for(let k=1;k<=6;k++){const q=at(k/6);branch(prev,q,apt?.0025:.0008);prev=q;}
+  const az=j*2.399+.2*rand(),reach=w*(cal?.36:cat?.35:.27)*(.35+.65*Math.sqrt((j+.5)/n)),height=h*(.52+rand()*.38)*growth,root=[Math.sin(az)*reach*.45,.005,Math.cos(az)*reach*.45],tip=[Math.sin(az)*reach,height,Math.cos(az)*reach],nodes=cal?24:cat?10:7,at=t=>[root[0]+(tip[0]-root[0])*t,height*t,root[2]+(tip[2]-root[2])*t];
+  let prev=root;for(let k=1;k<=6;k++){const q=at(k/6);branch(prev,q,.0008);prev=q;}
   for(let k=0;k<nodes;k++){
    const t=.07+k*.85/nodes,p=at(t),ang=az+k*2.399,L=a.leafLength*(.7+rand()*.3)*growth;
    if(rand()>s.leafDensity)continue;
    if(gilia){
     const f=flowerFrame(b,p,.84,ang);f.branch([0,0,0],[0,L,0],.0004,green,'rachis-mixed-gilia');
     for(let q=0;q<6;q++)for(const side of [-1,1])f.add('narrow','leaf-mixed-gilia',green,0,L*(.1+q*.13),0,.0015,L*(.38-q*.042),.008,.22,side*1.0,side*.45);
-   }else for(let side=0;side<(apt?2:1);side++)blade(p,ang+side*Math.PI,L,cal?1.05:.85);
+   }else blade(p,ang,L,cal?1.05:.85);
   }
   if(cal||cat){
    for(let side=0;side<3;side++){
@@ -753,13 +803,10 @@ function drawMixedGardenPlants(b,{info,s,detail,rand},kit){
   if(!s.bloom)continue;
   const sites=cal?2:gilia?3:cat?2:1;
   for(let site=0;site<sites;site++){
-   const angle=az+site*2.1,base=at(.72+site*.12),r=cal?.020:gilia?.012:apt?.009:.008,pt=[base[0]+Math.sin(angle)*r*.6,base[1]+(cal?.035:gilia?.065:cat?.018:.013)*growth,base[2]+Math.cos(angle)*r*.6];branch(base,pt,.00065);const f=flowerFrame(b,pt,cal?.28:gilia?.42:cat?1.05:.5,angle);
+   const angle=az+site*2.1,base=at(.72+site*.12),r=cal?.020:gilia?.012:.008,pt=[base[0]+Math.sin(angle)*r*.6,base[1]+(cal?.035:gilia?.065:cat?.018:.013)*growth,base[2]+Math.cos(angle)*r*.6];branch(base,pt,.00065);const f=flowerFrame(b,pt,cal?.28:gilia?.42:cat?1.05:.5,angle);
    if(cat){
     const len=.065,rad=.005;f.branch([0,0,0],[0,len,0],.0018,'#9c354f','axis-mixed-acalypha');
     for(let q=0;q<260;q++){const t=q/260,ang=q*2.399,R=rad*Math.sin(Math.PI*t)**.3,start=[Math.sin(ang)*R*.3,t*len,Math.cos(ang)*R*.3],end=[Math.sin(ang)*R,t*len+.0015,Math.cos(ang)*R];f.branch(start,end,.00030,kit.shade(rand,'#b93657',.06),'stigma-mixed-acalypha');}
-   }else if(apt){
-    for(let layer=0;layer<2;layer++)for(let k=0;k<21;k++)f.add('mixed-petal-aptenia','petal-mixed-aptenia',s.flowerColor,0,layer*.001,0,.0025,r,r*(1-layer*.28),.14,k*TAU/21+layer*.1,0);
-    f.add(kit.bud,'anther-mixed-aptenia','#d8b46b',0,.002,0,.002,.0015,.002);
    }else{
     for(let k=0;k<(cal?4:5);k++)f.add('mixed-petal-'+type,'petal-mixed-'+type,s.flowerColor,0,0,0,r,r,r,0,k*TAU/(cal?4:5),0);
     for(let k=0;k<(cal?8:5);k++){const an=k*2.399,end=[Math.sin(an)*r*.18,r*.24,Math.cos(an)*r*.18];f.branch([0,0,0],end,.00017,cal?'#dac45e':'#dad5c6','filament-mixed-'+type);f.add(kit.bud,'anther-mixed-'+type,cal?'#dab74e':'#8e9eaf',...end,r*.045,r*.07,r*.045);}
