@@ -130,6 +130,24 @@ test('Alcea entries start at their documented heights and keep saved sizes',()=>
  }
 });
 
+test('four perennial Iberis start at their source reference dimensions',()=>{
+ for(const [kind,height,spread] of [
+  ['p-4cbad797febb',.18,.40],
+  ['p-8b51fff607a6',.18,.45],
+  ['p-568a5f2af1e5',.25,.45],
+  ['p-130143e942df',.20,.30],
+ ]){
+  const p=makePlant(kind,1,2,2);
+  assert.deepEqual([p.height,p.spread],[height,spread]);
+  const state=stateAt(p,view(0,6));
+  assert.deepEqual([state.height,state.spread],[height,spread]);
+ }
+ for(const kind of ['p-b8c696cb1219','p-9eceb7b51353']){
+  const p=makePlant(kind,1,2,2);
+  assert.deepEqual([p.height,p.spread],[.35,.30]);
+ }
+});
+
 test('size changes invalidate obsolete prices and scenario targets',()=>{const p=makePlant('rose',1,2,2);p.price=1000;p.scenario={year:3,height:1,spread:1,leafHeight:1};assert.equal(editSize(p,p.height,p.spread,p.leafHeight).price,1000);const q=editSize(p,.7,.6,.6);assert.equal(q.price,null);assert.equal(q.scenario,null);});
 test('low ground covers round-trip at their documented centimetre height while zero is rejected',()=>{
  const d=fixture(),p=d.plans.A.plants[0];Object.assign(p,{kind:'p-2a0099e60c2c',height:.03,leafHeight:.025,spread:.5});assert.equal(validateDocument(d).plans.A.plants[0].height,.03);
