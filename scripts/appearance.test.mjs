@@ -5435,6 +5435,18 @@ test('Ruscus cladodes remain evergreen and distinguish central berries from Dana
    assert.equal(g.userData.architecture,'ruscusCladodes');assert.equal(g.userData.groundDormant,undefined);assert.ok(count('leaf-ruscus')>0);assert.equal(count('scale-leaf-ruscus'),count('leaf-ruscus'));
    assert.equal(count('fruit-glossy-ruscus-cladode')>0,!danae);assert.equal(count('fruit-glossy-ruscus-raceme')>0,danae);assert.equal(count('raceme-ruscus')>0,danae);
    assert.equal(count(danae?'petal-ruscus-danae':'tepal-ruscus')>0,a.flowerMonths.includes(month));if(!danae)assert.equal(count('tepal-ruscus'),count('flower-center-ruscus')*6);
+   if(!danae){
+    const pose=flowerInspectionView(g,1.65,40);
+    assert.equal(Boolean(pose),a.flowerMonths.includes(month));
+    if(pose){
+     const [anchor]=g.userData.flowerTargets,stamens=g.children.find(mesh=>mesh.userData.component==='flower-center-ruscus');
+     const expected=new Vector3(...anchor.origin).addScaledVector(new Vector3(...anchor.axis),a.flowerRadius*.23),matrix=new Matrix4();
+     assert.ok(Array.from({length:stamens.count},(_,index)=>{
+      stamens.getMatrixAt(index,matrix);
+      return new Vector3().setFromMatrixPosition(matrix).distanceTo(expected);
+     }).some(distance=>distance<2e-7));
+    }
+   }
    const skeleton=g.children.filter(m=>m.userData.component==='stem-ruscus').map(m=>[...m.instanceMatrix.array]);if(!wood)wood=skeleton;else assert.deepEqual(skeleton,wood);
    if(!leaves)leaves=count('leaf-ruscus');else assert.equal(count('leaf-ruscus'),leaves);
    for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);

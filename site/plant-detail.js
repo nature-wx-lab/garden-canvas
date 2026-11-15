@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1187';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1188';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1187';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1187';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1188';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1188';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -3914,6 +3914,7 @@ function drawRuscus(b,{info,s,detail,rand},kit){
  for(let i=0;i<stems;i++){
   const az=i*2.399963,r=w*.13*Math.sqrt((i+.5)/stems),root=[Math.sin(az)*r,0,Math.cos(az)*r];shoot(root,az,h*(.55+rand()*.35),w*(danae?.30:.15),0);
  }
+ let inspectionFlower;
  for(const n of leaves){
   const L=Math.min(a.leafLength,w*(danae?.16:.16))*n.size,P=danae?.007:.0017,f=flowerFrame(b,n.at,danae?1.05+n.roll*.65:.52+n.roll*.63,n.az),color=kit.shade(rand,a.leafColor,.025);
   f.branch([0,0,0],[0,P,0],.00065,a.stemColor,'cladode-stalk-ruscus');
@@ -3927,8 +3928,11 @@ function drawRuscus(b,{info,s,detail,rand},kit){
    const ff=flowerFrame(f,origin,Math.PI/2,0),r=a.flowerRadius;
    for(let k=0;k<6;k++){const outer=k%2===0,az=k*TAU/6;ff.add('ruscus-christmas','tepal-ruscus',s.flowerColor,0,.0002,0,r*(outer?.80:.38),r*(outer?1:.73),r,Math.PI/2,az,0);}
    ff.add(kit.bud,'flower-center-ruscus','#806181',0,r*.23,0,r*.25,r*.28,r*.25);
+   const exposure=Math.hypot(n.at[0],n.at[2])+n.at[1]*.24;
+   if(!inspectionFlower||exposure>inspectionFlower.exposure)inspectionFlower={frame:ff,radius:r,exposure};
   }
  }
+ if(inspectionFlower)inspectionFlower.frame.flower([0,0,0],inspectionFlower.radius*1.45);
  if(!danae)return;
  for(const n of tips){
   const peak=[10,11,12,1].includes(s.month),fruit=n.roll<(peak?.36:.12),flower=s.bloom&&!fruit&&n.roll<.47;if(!fruit&&!flower)continue;
