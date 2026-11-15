@@ -79,9 +79,11 @@ test('replacement rejects collections while previously saved collection placemen
     assert.equal(replacePlant(legacy.plans.A.plants[0],'salvia').kind,'salvia');
   }
 });
-test('Lotus creticus starts at the catalog reference size and keeps explicit dimensions',()=>{
+test('Low Lotus starts at the catalog reference size and keeps explicit dimensions',()=>{
  const kind='p-28c031041b72',plant=makePlant(kind,1,2,2);
  assert.deepEqual([plant.height,plant.spread,plant.leafHeight],[.13,.40,.13]);
+ const parrot=makePlant('p-b17ed3913ea7',2,2,2);
+ assert.deepEqual([parrot.height,parrot.spread,parrot.leafHeight],[.18,.75,.18]);
  const replaced=replacePlant(makePlant('hosta',2,2,2),kind);
  assert.deepEqual([replaced.height,replaced.spread,replaced.leafHeight],[.13,.40,.13]);
  const edited=editSize(plant,.25,.50,.22),state=stateAt(edited,view(0,7));
