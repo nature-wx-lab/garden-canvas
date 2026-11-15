@@ -5710,6 +5710,27 @@ test('olives preserve axillary four-lobed flowers, cultivar fruits and evergreen
    const p=makePlant(id,8000+i,2,2),st=stateAt(p,view(month)),g=plantModel(p,view(month)),count=k=>g.children.filter(m=>m.userData.component?.startsWith(k)).reduce((n,m)=>n+m.count,0);
    assert.ok(count('wood-olive')+count('wood-russian')>0);assert.equal(count('leaf-olive')>0,st.leafDensity>0,id+': leaf persistence');
    const flowers=count(russian?'sepal-russian-olive':'petal-olive');assert.equal(flowers>0,st.bloom,id+': bloom');
+   if(russian){
+    const pose=flowerInspectionView(g,1.65,40);
+    assert.equal(Boolean(pose),st.bloom);
+    if(pose){
+     const [anchor]=g.userData.flowerTargets,calyces=g.children.find(mesh=>mesh.userData.component==='sepal-russian-olive-silver');
+     const base=new Vector3(...anchor.origin).addScaledVector(new Vector3(...anchor.axis),-a.flowerLength*1.06),matrix=new Matrix4();
+     const positions=calyces.geometry.attributes.position;
+     const rim=Array.from({length:16},(_,j)=>new Vector3().fromBufferAttribute(positions,6*17+j));
+     for(let lobe=0;lobe<4;lobe++){
+      const root=7*17+lobe*9*5;
+      for(let j=0;j<5;j++){
+       const vertex=new Vector3().fromBufferAttribute(positions,root+j);
+       assert.ok(rim.some(point=>point.distanceTo(vertex)<2e-7));
+      }
+     }
+     assert.ok(Array.from({length:calyces.count},(_,index)=>{
+      calyces.getMatrixAt(index,matrix);
+      return new Vector3().setFromMatrixPosition(matrix).distanceTo(base);
+     }).some(distance=>distance<2e-7));
+    }
+   }
    if(flowers){assert.equal(count('anther-olive'),flowers*(russian?4:2));const m=g.children.find(m=>m.userData.component.startsWith(russian?'sepal-russian-olive':'petal-olive'));assert.equal(m.geometry.userData.oliveFlower.organ,russian?'calyx':'corolla');assert.equal(m.geometry.userData.oliveFlower.lobes,4);}
    assert.equal(count(russian?'fruit-russian-olive':'fruit-glossy-olive')>0,a.fruitMonths.includes(month),id+': fruit months');
    if(russian&&st.leafDensity===0){assert.ok(count('bud-russian-olive')>0);assert.ok(count('thorn-russian-olive')>0);}if(!russian)assert.ok(st.leafDensity>0);

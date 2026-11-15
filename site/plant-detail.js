@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1188';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1189';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1188';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1188';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1189';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1189';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -4762,7 +4762,7 @@ export function oliveLeafPoint(type,t,u){
  return [u*profile*.5,t,Math.sin(Math.PI*t)*(.033+.065*u*u)+.012*Math.sin(t*9)*u*t];
 }
 export function oliveFlowerGeometry(russian=false){
- const pos=[],uv=[],ix=[],sides=12,rings=6;
+ const pos=[],uv=[],ix=[],sides=russian?16:12,rings=6;
  for(let j=0;j<=rings;j++)for(let k=0;k<=sides;k++){
   const t=j/rings,an=k*TAU/sides,r=russian?.16+.19*t*t:.27+.25*t*t;
   pos.push(Math.sin(an)*r,t,Math.cos(an)*r);uv.push(k/sides,t*.4);
@@ -4771,8 +4771,16 @@ export function oliveFlowerGeometry(russian=false){
  for(let l=0;l<4;l++){
   const start=pos.length/3,an=l*TAU/4,rows=8,cols=4;
   for(let i=0;i<=rows;i++)for(let k=0;k<=cols;k++){
-   const t=i/rows,u=k/cols*2-1,r=(russian?.35:.52)+(russian?.65:.48)*t,width=(russian?.32:.40)*Math.pow(Math.sin(Math.PI*t),russian?1:.6),x=u*width;
-   pos.push(Math.sin(an)*r+Math.cos(an)*x,1+(russian?.24:.2)*t+.06*Math.sin(Math.PI*t)*u*u,Math.cos(an)*r-Math.sin(an)*x);uv.push(k/cols,.4+.6*t);
+   const t=i/rows,u=k/cols*2-1;
+   if(russian){
+    // Each lobe starts along a full quarter of the calyx rim and tapers to a point.
+    const angle=an+u*Math.PI/4*Math.pow(1-t,.76),radius=.35+.73*t;
+    pos.push(Math.sin(angle)*radius,1+.24*t+.06*Math.sin(Math.PI*t)*u*u,Math.cos(angle)*radius);
+   }else{
+    const r=.52+.48*t,x=u*.40*Math.pow(Math.sin(Math.PI*t),.6);
+    pos.push(Math.sin(an)*r+Math.cos(an)*x,1+.2*t+.06*Math.sin(Math.PI*t)*u*u,Math.cos(an)*r-Math.sin(an)*x);
+   }
+   uv.push(k/cols,.4+.6*t);
    if(i<rows&&k<cols){const q=start+i*(cols+1)+k;ix.push(q,q+1,q+cols+1,q+1,q+cols+2,q+cols+1);}
   }
  }
@@ -4812,6 +4820,7 @@ function drawOlives(b,{info,s,detail,rand},kit){
   b.branch(trunk[Math.min(5,Math.floor(t*4)+1)],root,baseRadius*.4,a.barkColor,'wood-olive-fork');shoot(root,an,rise,reach,0);
  }
  for(const q of wood)b.branch(q.from,q.to,q.r,q.old?a.barkColor:a.stemColor,q.old?(russian?'wood-russian-olive':h>3?'wood-olive-furrow':'wood-olive-smooth'):'stem-olive-scaly');
+ let inspectionFlower;
  for(const n of nodes){
   if(russian&&n.order===1&&n.t<.80&&n.roll<.10){const tip=[n.at[0]+Math.sin(n.an)*.020,n.at[1]+.009,n.at[2]+Math.cos(n.an)*.020];b.branch(n.at,tip,.0011,'#847864','thorn-russian-olive');}
   if(s.leafDensity===0){b.add(kit.bud,'bud-russian-olive','#a79c83',...n.at,.0014,.0028,.0014);continue;}
@@ -4834,9 +4843,17 @@ function drawOlives(b,{info,s,detail,rand},kit){
    if(before||k%9===0){f.add(kit.bud,'bud-olive-flower',a.flowerPalette.bud,0,F*.40,0,R*.5,F*.5,R*.5);continue;}
    if(!russian)for(let l=0;l<4;l++){const theta=l*TAU/4;f.add(kit.bud,'sepal-olive','#a0ac7a',Math.sin(theta)*R*.22,0,Math.cos(theta)*R*.22,R*.18,F*.24,R*.18);}
    f.add(russian?'russianOliveCalyx':'oliveCorolla',russian?'sepal-russian-olive-silver':'petal-olive',s.flowerColor,0,0,0,R,F,R);
+   if(russian){
+    const exposure=Math.hypot(at[0],at[2]);
+    if(!inspectionFlower||exposure>inspectionFlower.exposure)inspectionFlower={frame:f,radius:R,length:F,exposure};
+   }
    for(let j=0;j<a.stamenCount;j++){const theta=j*TAU/a.stamenCount+(russian?Math.PI/4:0),r=R*(russian?.22:.24);f.add(kit.bud,'anther-olive','#cec076',Math.sin(theta)*r,F*.98,Math.cos(theta)*r,R*.15,F*.12,R*.11);}
    f.branch([0,0,0],[0,F*(russian?1.06:.74),0],.00010,'#babd81','style-olive');f.add(kit.bud,'stigma-olive','#c0c690',0,F*(russian?1.08:.76),0,R*.10,F*.04,R*.10);
   }
+ }
+ if(inspectionFlower){
+  const {frame,radius,length}=inspectionFlower;
+  frame.flower([0,length*1.06,0],radius*1.35);
  }
  for(const q of fruitSites){
   const scale=s.month===7?.42:s.month===8?.72:1,n=russian?2:q.roll<.07?2:1;
