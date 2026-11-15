@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1195';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1196';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1195';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1195';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1196';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1196';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -2220,7 +2220,13 @@ function drawSmallPeaHerbs(b,{info,s,detail,rand},kit){
   }else{
    const count=anth?18:dory?12:brim?8:bird?2:black?4:3,r=anth?.014:dory?.014:bird?.008:.008,center=[n.at[0],n.at[1]+(anth?.008:bird?.007:.018),n.at[2]];
    b.branch(n.at,center,.0006,a.stemColor,'peduncle-small-pea');
-   if(anth)for(let j=0;j<7;j++){const f=flowerFrame(b,center,1.42,n.az+j*TAU/7);f.add(a.leafShape,'bract-anthyllis',s.leafColor,0,0,0,.006,.022,.022);}
+   if(anth){
+    for(let j=0;j<7;j++){
+     const f=flowerFrame(b,center,1.42,n.az+j*TAU/7);
+     f.add(a.leafShape,'bract-anthyllis',s.leafColor,0,0,0,.006,.022,.022);
+    }
+    b.flower([center[0],center[1]+.006,center[2]],.023,.32,n.az);
+   }
    for(let j=0;j<count;j++){const aa=j*2.399963+n.az,rr=r*Math.sqrt((j+.5)/count),pt=[center[0]+Math.sin(aa)*rr,center[1]+(anth?Math.sqrt(Math.max(0,1-(rr/r)**2))*.010:dory?.008*(1-j/count):0),center[2]+Math.cos(aa)*rr];b.branch(center,pt,.00025,a.stemColor,'pedicel-small-pea');floret(pt,aa,brim&&j%3===0?'#d8bcc6':s.flowerColor);}
   }
  }

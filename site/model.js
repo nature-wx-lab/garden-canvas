@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1195';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1195';
-import { seasonAt } from './catalog-search.js?v=0.9.1195';
+import {treeProfile} from './tree-profiles.js?v=0.9.1196';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1196';
+import { seasonAt } from './catalog-search.js?v=0.9.1196';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -153,6 +153,7 @@ const initialPlantingSizes = new Map([
   ['p-8c6bdede5462', {height: 2}],
   ['p-45f5acc7be7a', {height: 2}],
   ['p-a71bf6087bae', {height: 1.75}],
+  ['p-9f24bab95157', {height: .15, spread: .35}],
 ]);
 export function makePlant(kind,id,x,z){
   const initialSize=initialPlantingSizes.get(kind);
