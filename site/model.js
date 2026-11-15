@@ -1,6 +1,6 @@
-import {treeProfile} from './tree-profiles.js?v=0.9.1192';
-import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1192';
-import { seasonAt } from './catalog-search.js?v=0.9.1192';
+import {treeProfile} from './tree-profiles.js?v=0.9.1193';
+import { CATALOG, LEGACY, CATALOG_VERSION, plantInfo } from './catalog.js?v=0.9.1193';
+import { seasonAt } from './catalog-search.js?v=0.9.1193';
 export { CATALOG, plantInfo };
 export const MODEL_VERSION='scenario-1';
 export const TASKS={prune:'剪定',cutback:'切り戻し',water:'水やり',feed:'施肥',divide:'株分け',weed:'草取り',other:'その他の手入れ'};
@@ -139,9 +139,15 @@ function insideObstacle(x,z,o){
     ||nearRectangleEdge(x,o.x,dz)||nearRectangleEdge(x,maxX,dz);
 }
 export const canPlant=(plan,x,z)=>inside(x,z,plan.outline)&&!plan.obstacles.some(o=>insideObstacle(x,z,o));
+const ajugaPlantingHeights = new Map([
+  ['p-b257603a2d63', .08],
+  ['p-12858305bb32', .20],
+  ['p-7a702c77a8c4', .15],
+]);
 export function makePlant(kind,id,x,z){
   const lotusSize=kind==='p-28c031041b72'?[.13,.40]:kind==='p-b17ed3913ea7'?[.18,.75]:null;
-  const info=plantInfo(kind),empetrum=info.appearance?.architecture==='mixedGardenPlants'&&info.appearance.shootProfile==='empetrum',tree=info.group==='木',arch=info.appearance?.architecture,floater=info.appearance?.flowerPalette?.groundRunner?.25:arch==='uncommonGardenTree'&&info.appearance.shootProfile==='baobab'?.65:arch==='marginGardenPlants'?({helvola:.12,calla:.65,lavatera:.8,hibbertia:.3}[info.appearance.shootProfile]):arch?.startsWith('salvinia')?.03:arch==='amazonFrogbit'?.06:arch==='waterHyacinth'?.3:['waterCoin','marsileaMutica','bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(arch)?.12:null,height=lotusSize?.[0]??(kind==='p-2b4ca751ecb2'?.15:empetrum?(info.height?.[1]??.2):arch==='raouliaMats'?.006:floater??(arch==='submergedShoots'?(info.appearance.lifeForm==='moss'?.05:Math.min(.35,info.height?.[1]??.35)):tree?1.5:info.group==='低木'?.65:info.form==='grass'?.65:.35)),spread=lotusSize?.[1]??(info.appearance?.flowerPalette?.groundRunner?1:tree?round(height*(treeProfile(info)?.spread&&treeProfile(info)?.height?Math.min(1.6,treeProfile(info).spread[1]/treeProfile(info).height[1]):.65)):info.group==='低木'?.55:.3);
+  const ajugaSpread=kind==='p-12858305bb32'?.40:undefined;
+  const info=plantInfo(kind),empetrum=info.appearance?.architecture==='mixedGardenPlants'&&info.appearance.shootProfile==='empetrum',tree=info.group==='木',arch=info.appearance?.architecture,floater=info.appearance?.flowerPalette?.groundRunner?.25:arch==='uncommonGardenTree'&&info.appearance.shootProfile==='baobab'?.65:arch==='marginGardenPlants'?({helvola:.12,calla:.65,lavatera:.8,hibbertia:.3}[info.appearance.shootProfile]):arch?.startsWith('salvinia')?.03:arch==='amazonFrogbit'?.06:arch==='waterHyacinth'?.3:['waterCoin','marsileaMutica','bacopaCaroliniana','bacopaLanigera','bacopaMonnieri'].includes(arch)?.12:null,height=ajugaPlantingHeights.get(kind)??lotusSize?.[0]??(kind==='p-2b4ca751ecb2'?.15:empetrum?(info.height?.[1]??.2):arch==='raouliaMats'?.006:floater??(arch==='submergedShoots'?(info.appearance.lifeForm==='moss'?.05:Math.min(.35,info.height?.[1]??.35)):tree?1.5:info.group==='低木'?.65:info.form==='grass'?.65:.35)),spread=ajugaSpread??lotusSize?.[1]??(info.appearance?.flowerPalette?.groundRunner?1:tree?round(height*(treeProfile(info)?.spread&&treeProfile(info)?.height?Math.min(1.6,treeProfile(info).spread[1]/treeProfile(info).height[1]):.65)):info.group==='低木'?.55:.3);
   return {id,kind,x,z,height,spread,leafHeight:arch==='raouliaMats'?.003:round(info.leaf==='herb'||info.leaf==='grass'?height*.55:height),start:0,role:'new',price:null,locked:false,scenario:null,management:null,tasks:[]};
 }
 export function replacePlant(p,kind){if(p.locked)throw new Error('固定を解除してから交換してください。');

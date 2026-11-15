@@ -90,6 +90,24 @@ test('Low Lotus starts at the catalog reference size and keeps explicit dimensio
  assert.deepEqual([state.height,state.spread,state.leafHeight],[.25,.50,.22]);
 });
 
+test('three Ajuga cultivars start at their documented heights and preserve saved dimensions',()=>{
+ for(const [kind,height,spread] of [['p-b257603a2d63',.08,.30],['p-12858305bb32',.20,.40],['p-7a702c77a8c4',.15,.30]]){
+  const plant=makePlant(kind,1,2,2);
+  const replaced=replacePlant(makePlant('hosta',1,2,2),kind);
+  assert.equal(plant.height,height);
+  assert.equal(replaced.height,height);
+  assert.equal(plant.spread,spread);
+  assert.equal(replaced.spread,spread);
+  assert.ok(plant.leafHeight>0&&plant.leafHeight<=height);
+
+  const doc=emptyDocument();
+  doc.plans.A.plants=[editSize(plant,.35,.45,.16)];
+  const restored=validateDocument(JSON.parse(JSON.stringify(doc))).plans.A.plants[0];
+  const observed=stateAt(restored,view(0,5));
+  assert.deepEqual([observed.height,observed.spread,observed.leafHeight],[.35,.45,.16]);
+ }
+});
+
 test('size changes invalidate obsolete prices and scenario targets',()=>{const p=makePlant('rose',1,2,2);p.price=1000;p.scenario={year:3,height:1,spread:1,leafHeight:1};assert.equal(editSize(p,p.height,p.spread,p.leafHeight).price,1000);const q=editSize(p,.7,.6,.6);assert.equal(q.price,null);assert.equal(q.scenario,null);});
 test('low ground covers round-trip at their documented centimetre height while zero is rejected',()=>{
  const d=fixture(),p=d.plans.A.plants[0];Object.assign(p,{kind:'p-2a0099e60c2c',height:.03,leafHeight:.025,spread:.5});assert.equal(validateDocument(d).plans.A.plants[0].height,.03);

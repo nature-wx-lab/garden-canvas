@@ -4153,6 +4153,10 @@ test('Ajuga distinguishes evergreen mats, crisped leaves and deciduous upright i
    const flowers=count('corolla-tube-ajuga');assert.equal(flowers>0,a.flowerMonths.includes(month));assert.equal(count('anther-ajuga'),flowers*4);assert.equal(count('petal-ajuga-lower'),flowers);assert.equal(count('petal-ajuga-side'),flowers*2);assert.equal(count('petal-ajuga-upper'),flowers*2);
    if(inc)assert.equal(count('stolon-ajuga'),0);else if(i!==5)assert.ok(count('stolon-ajuga')>0);
    if(!inc&&!a.flowerMonths.includes(month))assert.equal(count('stem-ajuga'),0);
+   if(i===6&&a.flowerMonths.includes(month)){
+    assert.ok(count('stem-ajuga')>0);
+    assert.ok(count('stem-ajuga')*3<count('stolon-ajuga'));
+   }
    for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.instanceColor.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
   }
  }

@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1192';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1193';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1192';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1192';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1193';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1193';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -24009,7 +24009,7 @@ function drawGaillardias(b,{info,s,detail,rand},kit){
 }
 
 function drawAjuga(b,{info,s,detail,rand},kit){
- const a=info.appearance,pal=a.flowerPalette,type=pal.type,inc=type==='incisa',small=['chocolate','arctic'].includes(type),crisp=type==='crispa',h=s.height,w=s.spread,L=a.leafLength,green=s.leafColor,month=s.month;
+ const a=info.appearance,pal=a.flowerPalette,type=pal.type,inc=type==='incisa',arctic=type==='arctic',small=type==='chocolate'||arctic,crisp=type==='crispa',h=s.height,w=s.spread,L=a.leafLength,green=s.leafColor,month=s.month;
  const pattern=s.leafPatternColor,stem=inc?'#718756':'#7b6964',lk='leaf-ajuga-'+type+(pattern?'-'+new THREE.Color(pattern).getHexString():''),count=inc?7:Math.max(9,Math.min(72,Math.round(w*w/(L*L)*(small?.23:.55)))),winter=[12,1,2].includes(month);
  const leaf=(root,az,len,pitch)=>{
   const at=[root[0]+Math.sin(az)*len*.17,root[1]+len*.045,root[2]+Math.cos(az)*len*.17];
@@ -24019,9 +24019,10 @@ function drawAjuga(b,{info,s,detail,rand},kit){
   const az=i*2.399+(rand()-.5)*.45,rr=w*(inc?.25:.40)*Math.sqrt((i+.5)/count)*(.85+rand()*.15),root=[Math.sin(az)*rr,.008+(i%3)*.003,Math.cos(az)*rr],scale=.84+rand()*.25;
   if(!inc){
    if(i>0&&!crisp){const parent=Math.max(0,i-13),prevAz=parent*2.399,prevR=i<13?0:w*.40*Math.sqrt((parent+.5)/count);b.branch([Math.sin(prevAz)*prevR,.008,Math.cos(prevAz)*prevR],root,.00085,stem,'stolon-ajuga');}
-   const leaves=Math.round((type==='arctic'?22:crisp?13:10)*s.leafDensity);
+   const leaves=Math.round((arctic?22:crisp?13:10)*s.leafDensity);
    for(let j=0;j<leaves;j++){const inner=j>=leaves*.65,sz=L*scale*(inner?.6:.9)*(winter?.82:1);leaf([root[0],root[1]+(inner?L*.06:0),root[2]],az+j*2.399,sz,crisp?.65+rand()*.35:inner?.72+rand()*.25:1.14+rand()*.25);}
-   if(!s.bloom)continue;
+   // Keep the variegated, low mat visible between the flowering rosettes.
+   if(!s.bloom||(arctic&&i%7!==0))continue;
   }
   const height=h*(inc?.94:crisp?.46:.95)*(.64+rand()*.36)*(inc?Math.min(1,.4+s.leafDensity*.6):1),levels=inc?7:8,top=[root[0]+Math.sin(az)*height*.035,root[1]+height,root[2]+Math.cos(az)*height*.035];
   b.branch(root,[top[0],root[1]+height*levels/(levels+1)+.003,top[2]],inc?.0016:.001,stem,'stem-ajuga');
