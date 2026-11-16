@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1208';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1209';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1208';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1208';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1209';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1209';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1753,7 +1753,22 @@ function drawForestPlants(b,{info,s,p,detail,rand},kit){
   return;
  }
  if(type==='gunnera'){
-  for(let k=0;k<Math.round(11*detail*s.leafDensity);k++){const az=k*2.399,scale=s.leafScale,diam=Math.min(a.leafWidth,w*.58)*(.55+rand()*.43)*scale,at=[Math.sin(az)*w*.24,h*(.30+rand()*.44)*scale,Math.cos(az)*w*.24],f=frame(at,.07+rand()*.27,az);b.branch([0,.015,0],at,.016*scale,stem,'petiole-gunnera');f.add('forest-gunnera',leafKind,shade(green),0,0,0,diam,diam,diam);for(let q=0;q<7;q++){const aa=q*TAU/7;f.branch([0,-.006,0],[Math.sin(aa)*diam*.44,diam*.09,Math.cos(aa)*diam*.44],.004*scale,'#88a066','vein-gunnera');}for(let q=1;q<17;q++){const t=q/18,aa=q*2.399,origin=at.map(v=>v*t);b.branch(origin,[origin[0]+Math.sin(aa)*.026,origin[1]+.008,origin[2]+Math.cos(aa)*.026],.0015,'#937449','prickle-gunnera');}}
+  const scale=s.leafScale,reach=w*.24*scale;
+  for(let k=0;k<Math.round(11*detail*s.leafDensity);k++){
+   const az=k*2.399,diam=Math.min(a.leafWidth,w*.58)*(.55+rand()*.43)*scale;
+   const at=[Math.sin(az)*reach,h*(.30+rand()*.44)*scale,Math.cos(az)*reach];
+   const f=frame(at,.07+rand()*.27,az);
+   b.branch([0,.015,0],at,.016*scale,stem,'petiole-gunnera');
+   f.add('forest-gunnera',leafKind,shade(green),0,0,0,diam,diam,diam);
+   for(let q=0;q<7;q++){
+    const angle=q*TAU/7;
+    f.branch([0,-.006,0],[Math.sin(angle)*diam*.44,diam*.09,Math.cos(angle)*diam*.44],.004*scale,'#88a066','vein-gunnera');
+   }
+   for(let q=1;q<17;q++){
+    const t=q/18,angle=q*2.399,origin=at.map(v=>v*t);
+    b.branch(origin,[origin[0]+Math.sin(angle)*.026*scale,origin[1]+.008*scale,origin[2]+Math.cos(angle)*.026*scale],.0015*scale,'#937449','prickle-gunnera');
+   }
+  }
   if(s.bloom)for(let stalk=0;stalk<2;stalk++){
    const az=stalk*3.4,x=Math.sin(az)*w*.06,z=Math.cos(az)*w*.06;
    const length=Math.min(1.15,h*.58);

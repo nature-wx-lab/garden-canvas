@@ -4998,6 +4998,12 @@ test('Named garden trees preserve cultivar branching, winter wood, leaf flush an
 test('Forest plants distinguish persistent fern spores, evergreen iris and annual woodruff',()=>{
  const gunnera=makePlant('p-46136e0de166',12004,2,2);
  assert.deepEqual([gunnera.height,gunnera.spread],[2.50,3.50]);
+ const gunneraSpring=plantModel(gunnera,view(4)),gunneraSummer=plantModel(gunnera,view(6));
+ try{
+  const spring=new Box3().setFromObject(gunneraSpring).getSize(new Vector3());
+  const summer=new Box3().setFromObject(gunneraSummer).getSize(new Vector3());
+  assert.ok(Math.max(spring.x,spring.z)<Math.max(summer.x,summer.z)*.40);
+ }finally{dispose(gunneraSpring);dispose(gunneraSummer);}
  const ostrichFern=makePlant('p-a7f8f0ffad50',12001,2,2);
  assert.deepEqual([ostrichFern.height,ostrichFern.spread],[.80,.75]);
  const summerFern=plantModel(ostrichFern,view(7));
