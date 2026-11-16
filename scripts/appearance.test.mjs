@@ -4996,6 +4996,8 @@ test('Named garden trees preserve cultivar branching, winter wood, leaf flush an
 });
 
 test('Forest plants distinguish persistent fern spores, evergreen iris and annual woodruff',()=>{
+ const gunnera=makePlant('p-46136e0de166',12004,2,2);
+ assert.deepEqual([gunnera.height,gunnera.spread],[2.50,3.50]);
  const ostrichFern=makePlant('p-a7f8f0ffad50',12001,2,2);
  assert.deepEqual([ostrichFern.height,ostrichFern.spread],[.80,.75]);
  const summerFern=plantModel(ostrichFern,view(7));
@@ -5013,7 +5015,17 @@ test('Forest plants distinguish persistent fern spores, evergreen iris and annua
   if(i===1){assert.equal(count('spore-frond-ostrich')>0,[7,8,9,10,11,12,1,2,3].includes(month));if(winter)assert.equal(seasonAt(CATALOG[id],month).groundDormant,false);}
   if(i===2){assert.equal(count('crest-iris')>0,[4,5].includes(month));assert.equal(count('petal-forest-iris-fall')>0,[4,5].includes(month));}
   if(i===3)assert.equal(count('petaloid-sepal-coptis')>0,[2,3].includes(month));
-  if(i===4){assert.equal(count('floret-gunnera')>0,[5,6].includes(month));if(winter)assert.equal(g.children.length,0);}
+  if(i===4){
+   const flowering=[5,6].includes(month);
+   assert.equal(count('floret-gunnera')>0,flowering);
+   assert.equal(Boolean(g.userData.flowerTargets?.length),flowering);
+   if(flowering){
+    const florets=g.children.filter(mesh=>mesh.userData.component==='floret-gunnera');
+    const matrix=new Matrix4(),scale=new Vector3();
+    for(const mesh of florets){mesh.getMatrixAt(0,matrix);assert.ok(scale.setFromMatrixScale(matrix).y<.004);}
+   }
+   if(winter)assert.equal(g.children.length,0);
+  }
   if(i>=5)assert.equal(count('petal')>0,CATALOG[id].bloom.includes(month));
   for(const mesh of g.children){assert.ok([...mesh.instanceMatrix.array].every(Number.isFinite));assert.ok([...mesh.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
  }
