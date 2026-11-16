@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1212';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1213';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1212';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1212';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1213';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1213';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -1744,7 +1744,26 @@ function drawForestPlants(b,{info,s,p,detail,rand},kit){
  if(type==='iris'){
   for(let cl=0;cl<6;cl++){const az=cl*2.399,base=[Math.sin(az)*w*.17,0,Math.cos(az)*w*.17],f=frame(base,0,az);for(let k=0;k<7;k++){const L=Math.min(a.leafLength,h)*(.72+rand()*.26);f.add('forest-iris',leafKind,shade(green),(k-3)*.006,.007,0,a.leafWidth,L,L,.10,0,(k-3)*.20);}}
   if(!s.bloom)return;
-  for(let k=0;k<Math.round(7*detail);k++){const az=k*2.399,top=[Math.sin(az)*w*.20,h*(.74+rand()*.22),Math.cos(az)*w*.20];b.branch([top[0]*.30,0,top[2]*.30],top,.0018,stem,'stem-iris');for(let q=0;q<4;q++){const aa=az+q*2.4,at=[top[0]+Math.sin(aa)*.044,top[1]-.025*q,top[2]+Math.cos(aa)*.044];b.branch([top[0],top[1]-.025*q-.04,top[2]],at,.0008,stem,'pedicel-iris');const f=frame(at,.12,aa),R=.028;for(let j=0;j<3;j++){const angle=j*TAU/3;f.add('forest-irisFall','petal-forest-iris-fall','#e5e3f0',0,0,0,R,R,R,0,angle,0);f.add('forest-irisStandard','petal-forest-iris-standard','#e9e6f2',0,0,0,R*.72,R*.72,R*.72,0,angle+Math.PI/3,0);const crest=frame(at,0,aa+angle);for(let z=0;z<8;z++)crest.add(kit.bud,'crest-iris','#e4b832',0,.002-z*.00012,.007+z*.0013,.00045,.0013,.0011);f.add('forest-irisStandard','style-iris','#e0e2f0',0,.001,0,R*.25,R*.22,R*.45,0,angle,0);}}}
+  for(let k=0;k<Math.round(7*detail);k++){
+   const az=k*2.399,top=[Math.sin(az)*w*.20,h*(.74+rand()*.22),Math.cos(az)*w*.20];
+   b.branch([top[0]*.30,0,top[2]*.30],top,.0018,stem,'stem-iris');
+   for(let q=0;q<4;q++){
+    const aa=az+q*2.4,at=[top[0]+Math.sin(aa)*.044,top[1]-.025*q,top[2]+Math.cos(aa)*.044];
+    b.branch([top[0],top[1]-.025*q-.04,top[2]],at,.0008,stem,'pedicel-iris');
+    const f=frame(at,.12,aa),radius=.028;
+    if(q===0)f.flower([0,.003,0],radius);
+    for(let j=0;j<3;j++){
+     const angle=j*TAU/3;
+     f.add('forest-irisFall','petal-forest-iris-fall','#e5e3f0',0,0,0,radius,radius,radius,0,angle,0);
+     f.add('forest-irisStandard','petal-forest-iris-standard','#e9e6f2',0,0,0,radius*.52,radius*.72,radius*.72,0,angle+Math.PI/3,0);
+     for(let z=0;z<8;z++){
+      const t=.25+z*.045,along=radius*t,elevation=radius*(.08*t-.42*t*t);
+      f.add(kit.bud,'crest-iris','#f2a620',Math.sin(angle)*along,elevation+.0008,Math.cos(angle)*along,.00055,.0013,.0011,0,angle,0);
+     }
+     f.add('forest-irisStandard','style-iris','#e0e2f0',0,.001,0,radius*.25,radius*.22,radius*.45,0,angle,0);
+    }
+   }
+  }
   return;
  }
  if(type==='coptis'){

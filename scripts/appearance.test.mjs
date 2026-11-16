@@ -5022,7 +5022,13 @@ test('Forest plants distinguish persistent fern spores, evergreen iris and annua
   assert.equal(count('leaf')>0,!(winter&&[1,4].includes(i)||i===7&&month>=7),id+':'+month);
   if(i<2)assert.equal(count('petal'),0);
   if(i===1){assert.equal(count('spore-frond-ostrich')>0,[7,8,9,10,11,12,1,2,3].includes(month));if(winter)assert.equal(seasonAt(CATALOG[id],month).groundDormant,false);}
-  if(i===2){assert.equal(count('crest-iris')>0,[4,5].includes(month));assert.equal(count('petal-forest-iris-fall')>0,[4,5].includes(month));}
+  if(i===2){
+   const flowering=[4,5].includes(month),falls=count('petal-forest-iris-fall');
+   assert.equal(falls>0,flowering);
+   assert.equal(count('petal-forest-iris-standard'),falls);
+   assert.equal(count('crest-iris'),8*falls);
+   assert.equal(Boolean(flowerInspectionView(g,1,40)),flowering);
+  }
   if(i===3)assert.equal(count('petaloid-sepal-coptis')>0,[2,3].includes(month));
   if(i===4){
    const flowering=[5,6].includes(month);
