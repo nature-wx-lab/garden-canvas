@@ -4996,6 +4996,15 @@ test('Named garden trees preserve cultivar branching, winter wood, leaf flush an
 });
 
 test('Forest plants distinguish persistent fern spores, evergreen iris and annual woodruff',()=>{
+ const ostrichFern=makePlant('p-a7f8f0ffad50',12001,2,2);
+ assert.deepEqual([ostrichFern.height,ostrichFern.spread],[.80,.75]);
+ const summerFern=plantModel(ostrichFern,view(7));
+ try{
+  const bounds=new Box3().setFromObject(summerFern);
+  const size=bounds.getSize(new Vector3());
+  assert.ok(Math.max(size.x,size.z)<=ostrichFern.spread);
+  assert.ok(bounds.max.y>=.65&&bounds.max.y<=ostrichFern.height+1e-8);
+ }finally{dispose(summerFern);}
  const ids=['p-ec138f75a41e','p-a7f8f0ffad50','p-2f7e731147da','p-f1b7eeea3018','p-46136e0de166','p-5c04a2b353fa','p-9b1ab88b3ccd','p-865041644164'];
  for(const [i,id] of ids.entries())for(let month=1;month<=12;month++){
   const p=makePlant(id,12000+i,2,2);p.height=[.45,.85,.60,.15,2,.10,.15,.3][i];p.spread=[.6,.7,.5,.3,3,.7,.4,.3][i];const g=plantModel(p,view(month)),count=key=>g.children.filter(m=>m.userData.component?.startsWith(key)).reduce((n,m)=>n+m.count,0),winter=[12,1,2].includes(month);
