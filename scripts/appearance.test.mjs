@@ -4760,6 +4760,8 @@ test('Hardy Misebaya keeps small winter buds while Sempervivum retains its roset
 
 test('Mixed garden plants retain winter leaves, distinguish annual death and do not invent mature flowers',()=>{
  const ids=['p-a6d500a45c89','p-973434a9b3ed','p-a7b7e65d48be','p-084816bc0df3','p-2b4ca751ecb2','p-93f0094509f2','p-342ddb60042c','p-b318019b9be1','p-155f5704dcf6'];
+ const sunnyChirp=makePlant(ids[0],12700,2,2);
+ assert.deepEqual([sunnyChirp.height,sunnyChirp.spread],[.15,.40]);
  for(const [i,id]of ids.entries())for(let month=1;month<=12;month++){
   const p=makePlant(id,12700+i,2,2);p.height=[.18,.08,.75,.18,.18,.85,.2,.85,.55][i];p.spread=[.45,.5,.85,.3,.45,1.2,.4,.65,.35][i];p.leafHeight=p.height;
   const st=stateAt(p,view(month)),g=plantModel(p,view(month)),has=k=>g.children.some(m=>m.userData.component?.startsWith(k));
