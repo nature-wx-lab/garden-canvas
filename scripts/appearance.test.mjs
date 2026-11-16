@@ -4165,6 +4165,8 @@ test('Ajuga distinguishes evergreen mats, crisped leaves and deciduous upright i
 });
 test('garden primula distinguishes candelabra tiers, low double flowers and winter rosettes',()=>{
  const ids=['p-4593c4544e69','p-ac32635a0f3a','p-3ce84a11e2f9','p-a1c9c8213529','p-f6e6f2c5da5b','p-05fc8913100a','p-65de091a0134','p-87ad92c5a84e'];
+ const carnival=makePlant(ids[1],16501,2,2);
+ assert.deepEqual([carnival.height,carnival.spread],[.10,.25]);
  for(const [i,id] of ids.entries()){
   const info=CATALOG[id],a=info.appearance,p=makePlant(id,16500+i,2,2),tall=a.flowerPalette.whorls;p.height=info.height[1];p.leafHeight=p.height;p.spread=tall?.4:.25;
   for(let month=1;month<=12;month++){
