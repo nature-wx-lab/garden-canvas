@@ -6497,6 +6497,7 @@ test('seven monocots separate fans, racemes, flower organs and leafless bulb pha
 
 test('seven low herbs distinguish hairy and succulent foliage, seasonal shoots and floral organs',()=>{
  const ids=['p-eb3e85895cf0','p-3ae4c4420803','p-1e2973ec88a8','p-6538675cf4cc','p-51ca617a418b','p-565b7daf5926','p-b4a7d7ba619b'];
+ assert.equal(makePlant('p-51ca617a418b',4501,2,2).height,.10);
  for(const id of ids)for(let month=1;month<=12;month++){
   const g=plantModel(makePlant(id,4501,2,2),view(month)),has=k=>g.children.some(m=>m.userData.component===k);
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
@@ -6505,6 +6506,12 @@ test('seven low herbs distinguish hairy and succulent foliage, seasonal shoots a
    assert.ok(has('petal'),id);
    if(id===ids[0]){assert.ok(has('stemHair'));assert.ok(has('leafHair'));}
    if(id===ids[2]){assert.ok(!has('leafHair'));assert.ok(g.children.some(m=>m.geometry.userData.mertensiaBell));}
+   if(id===ids[4]){
+    const geometry=g.children.find(m=>m.geometry.userData.stellariaPetal).geometry;
+    const edge=[];
+    for(let v=0;v<geometry.attributes.uv.count;v++)if(geometry.attributes.uv.getY(v)===1)edge.push(geometry.attributes.position.getY(v));
+    assert.ok(edge.length>2&&edge[Math.floor(edge.length/2)]<Math.max(...edge)*.50);
+   }
    if(id===ids[5])assert.ok(has('woodyCreeper'));
    if(id===ids[6]){assert.ok(has('achene'));assert.ok(!has('stolon'));}
   }
