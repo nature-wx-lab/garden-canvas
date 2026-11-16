@@ -8746,6 +8746,10 @@ test('ornata silver leaves and two Hummingbird colours keep connected unequal co
 
 test('eight Veronicastrum references join whorled leaves and tubular florets with retained Challenger winter stems',()=>{
  const ids=['p-534e4c0f1152','p-24ba16e3f173','p-f55c116bc658','p-c6582783b341','p-900270ce2321','p-ea9f5a1b9b50','p-c50a4cac5e1e','p-cc262aa6b39a'],types=['fascination','diana','challenger','ezo','japonicum','erica','cupid','lavendel'],adult=[[.9,.65,.55],[1.1,.65,.65],[1.1,.65,.65],[1.6,.7,.98],[1.1,.65,.67],[1,.6,.62],[.7,.65,.43],[1.35,.75,.83]],young=[[.3,.3,.18],[.35,.3,.21],[.35,.3,.21],[.5,.4,.3],[.35,.3,.21],[.35,.3,.21],[.25,.3,.15],[.4,.35,.24]];
+ for(const index of [0,1,2,4]){
+  const plant=makePlant(ids[index],43500+index*10,2,2);
+  assert.deepEqual([plant.height,plant.spread],adult[index].slice(0,2));
+ }
  for(const [ci,id]of ids.entries())for(const small of [false,true])for(let month=1;month<=12;month++){
   const dims=(small?young:adult)[ci],p={...makePlant(id,43500+ci*10+(small?1:0),2,2),height:dims[0],spread:dims[1],leafHeight:dims[2]},info=CATALOG[id],g=plantModel(p,view(month)),label=id+' small='+small+' month='+month,count=k=>g.children.filter(m=>m.userData.component===k).reduce((n,m)=>n+m.count,0),flowers=count('corolla-veronicastrum-'+types[ci]),leaves=count('leaf-veronicastrum-'+types[ci]),winter=[12,1,2].includes(month);
   try{
