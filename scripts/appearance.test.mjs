@@ -8068,6 +8068,8 @@ test('color foliage preserves runners, cladodes, curled blades and distinct cold
 });
 
 test('woodland species keep distinct leaves, floral organs and deciduous versus evergreen winters',()=>{
+ const waxBells=makePlant('p-42c921ac7405',3599,2,2);
+ assert.deepEqual([waxBells.height,waxBells.spread],[.90,.70]);
  const ids=['p-a2c1bedeba15','p-05d0d5b209af','p-e40d2e90ed99','p-ef9d51f9251b','p-42c921ac7405','p-077197bd2d12','p-131798d06a5a','p-c178a12b9952','p-c6993b2b58d9','p-b19b52046099','p-a926241debf9','p-152c7f8ab71a'];
  for(const id of ids)for(let month=1;month<=12;month++){
   const p=makePlant(id,3600,2,2),g=plantModel(p,view(month));

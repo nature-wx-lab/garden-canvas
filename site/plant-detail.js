@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1204';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1205';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1204';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1204';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1205';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1205';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -15861,8 +15861,14 @@ export function detailedFlower(b,{x,y,z,r=.025,color,shape='flat',petals=5,layer
   const hanging=['ranzaniaBell','deinantheCup','kirengeshomaBell','pteridophyllumCross'].includes(shape),f=flowerFrame(b,[x,y,z],(hanging?Math.PI-.35:0)+tilt,yaw),parn=shape==='parnassiaFlower',kir=shape==='kirengeshomaBell',ran=shape==='ranzaniaBell',dein=shape==='deinantheCup',corn=shape==='cornusHerbHead',fern=shape==='pteridophyllumCross',poppy=shape==='woodlandPoppy';
   const count=corn||fern||poppy?4:ran||shape==='diphylleiaFlower'?6:shape==='jeffersoniaFlower'?8:dein?7:5;
   for(let j=0;j<count;j++){
-   const an=j*TAU/count,pitch=kir?.18:ran?.72:dein?.87:fern?.85:1.31,len=kir?r*2.4:r;
-   f.add(kir?'kirengeshomaPetal':'woodlandPetal',corn?'bract':ran?'petaloidSepal':'petal',shade(rand,color,.035),Math.sin(an)*r*(kir?.34:0),0,Math.cos(an)*r*(kir?.34:0),len*(kir?.43:corn?.83:fern?.64:.95),len,len,pitch,an,0);
+   const an=j*TAU/count,petalColor=shade(rand,color,.035);
+   if(kir){
+    const length=r*2.4;
+    f.add('kirengeshomaPetal','petal',petalColor,0,0,0,length,length,length,0,an,0);
+   }else{
+    const pitch=ran?.72:dein?.87:fern?.85:1.31;
+    f.add('woodlandPetal',corn?'bract':ran?'petaloidSepal':'petal',petalColor,0,0,0,r*(corn?.83:fern?.64:.95),r,r,pitch,an,0);
+   }
    if(ran)f.add('woodlandPetal','petal','#e7e6d3',0,r*.13,0,r*.40,r*.42,r*.42,.57,an+.15,0);
   }
   if(corn){
