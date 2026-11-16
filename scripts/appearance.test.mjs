@@ -6504,6 +6504,7 @@ test('six apiaceae entries retain compound leaves, taxon-specific umbels and sea
 
 test('six bell-family plants distinguish flower organs, inflorescences and winter rosettes',()=>{
  const ids=['p-20b373fb3c17','p-2268ce28505f','p-90cc6dd478a9','p-b514c491182e','p-1637451f56c4','p-f7156a3cf3ed'];
+ assert.equal(makePlant(ids[0],4301,2,2).height,.15);
  for(const id of ids)for(let month=1;month<=12;month++){
   const g=plantModel(makePlant(id,4301,2,2),view(month));
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
