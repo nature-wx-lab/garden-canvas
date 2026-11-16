@@ -7663,6 +7663,8 @@ test('small bulbs distinguish spring dormancy, autumn flowers and recurved or un
  const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,color:'#749dd1',shape:'azureBell'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});assert.deepEqual(parts,[{shape:'bell6',kind:'petal'}]);
 });
 test('cranesbills retain their lobed foliage, five petals, ten anthers and distinct winter habit',()=>{
+ const rozanne=makePlant('p-281a043a4b8a',409,2,2);
+ assert.deepEqual([rozanne.height,rozanne.spread],[.40,.60]);
  const parts=[];detailedFlower({add:(shape,kind)=>parts.push({shape,kind}),branch(){}},{x:0,y:0,z:0,color:'#7c77b5',shape:'cranesbill'},{bud:'bud',rand:()=>.5,shade:(_,c)=>c});
  assert.equal(parts.filter(p=>p.shape==='petal').length,5);assert.equal(parts.filter(p=>p.kind==='anther').length,10);
  for(const id of ['p-281a043a4b8a','p-17d8d9870aad','p-9a250949ed67']){
