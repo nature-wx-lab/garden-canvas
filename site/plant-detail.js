@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1214';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1215';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1214';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1214';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1215';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1215';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -2422,10 +2422,11 @@ function drawBetonyGermander(b,{info,s,p,detail,rand},kit){
   const f=flowerFrame(b,at,pitch,az),col=kit.shade(rand,s.leafColor,.025);f.add(lamb?(young?'lambEarFolded':'lambEarThick'):a.leafShape,'leaf-betony-'+(lamb?'lamb-wool':pol?'wool':orient?'dissected':'rugose'),col,0,0,0,len*a.leafWidth/a.leafLength,len,len,0,0,0);
   if(lamb&&detail>.6)for(let k=0;k<12;k++){const t=.12+k*.064,u=k%2?-.88:.88,pt=betonyLeafPoint('lambEar',t,u),x=pt[0]*len*a.leafWidth/a.leafLength,z=(pt[2]+.08*u*u*Math.sin(t*Math.PI)+.08*Math.sin(t*Math.PI)-.10*t*t)*len;f.branch([x,t*len,z],[x+Math.sign(u)*len*.009,t*len+len*.006,z+len*.007],len*.0007,'#e0e2d4','trichome-lamb');}
  };
- const floret=(at,az,open=true,scale=1)=>{
+ const floret=(at,az,open=true,scale=1,inspect=false)=>{
   const f=flowerFrame(b,at,1.15,az),L=a.flowerLength*scale,calyx=lamb?'#bfc8b7':pol?'#c3ccbe':hir?'#817981':'#879575';
   f.add('betony-calyx',lamb||pol?'calyx-betony-wool':'calyx-betony',kit.shade(rand,calyx,.025),0,0,0,lamb?.018*scale:L*.60,lamb?.009*scale:L*.35,lamb?.018*scale:L*.60);
   if(!open){f.add(kit.bud,'bud-betony',lamb||pol?calyx:s.flowerColor,0,L*.37,0,lamb?.004*scale:L*.13,lamb?.005*scale:L*.19,lamb?.004*scale:L*.13);return;}
+  if(inspect)f.flower([0,L*.90,0],L*.66);
   f.add('betony-'+(teu?'teucrium':chin?'scarlet':'flower'),'petal-betony-'+(teu?'teucrium':chin?'scarlet':'bilabiate'),kit.shade(rand,s.flowerColor,.035),0,L*.16,0,L,L,L);
   for(let k=0;k<4;k++){const xx=(k-1.5)*L*.045,yy=L*(teu?(k%2?1.02:.89):(k%2?1.02:1.07)),zz=teu?-L*.04:-L*.08;f.branch([xx,L*.38,-L*.08],[xx,yy,zz],.00010,'#d4c8bb','filament-betony');f.add(kit.bud,'anther-betony',teu?'#61585e':'#b7a7a2',xx,yy,zz,.00030,.00042,.00030);}
  };
@@ -2474,12 +2475,12 @@ function drawBetonyGermander(b,{info,s,p,detail,rand},kit){
   for(let j=0;j<basalPer;j++){const roll=rand();if(roll>s.leafDensity)continue;const aa=j*2.399963+az,L=a.leafLength*(.80+rand()*.35)*(winter?.80:s.leafScale),end=[root[0]+Math.sin(aa)*L*.26,root[1]+L*.1,root[2]+Math.cos(aa)*L*.26];b.branch(root,end,.0007,a.stemColor,'petiole-betony');leaf(end,L,aa,1.05+(j%3)*.13);}
  }
  if(winter)return;
- const grown=s.bloom?1:s.month===3?.16:s.month===4?.32:s.month===5?.62:.35,n=Math.round((orient?26:chin?19:hir?17:lamb?10:14)*detail);
+ const grown=s.bloom?1:s.month===3?.16:s.month===4?.32:s.month===5?.62:.35,n=Math.round((orient?26:chin?11:hir?17:lamb?10:14)*detail);
  for(let k=0;k<n;k++){
-  const az=k*2.399963,rr=w*.23*Math.sqrt((k+.5)/n),height=h*(.59+rand()*.39)*grown,bend=(rand()-.25)*w*(orient?.20:.09),path=t=>[Math.sin(az)*(rr+bend*t*t),height*t,Math.cos(az)*(rr+bend*t*t)],N=8;
+  const az=k*2.399963,rr=w*(chin?.32:.23)*Math.sqrt((k+.5)/n),height=h*(.59+rand()*.39)*grown,bend=(rand()-.25)*w*(orient?.20:.09),path=t=>[Math.sin(az)*(rr+bend*t*t),height*t,Math.cos(az)*(rr+bend*t*t)],N=8;
   for(let j=1;j<=N;j++){
    const at=path(j/N);b.branch(path((j-1)/N),at,(lamb?.0021:.0012)*(1-j/13),a.stemColor,'stem-betony-square');
-   if(j<=(lamb?7:bet||dis?4:6)&&rand()<s.leafDensity)for(let q=0;q<2;q++)leaf(at,a.leafLength*(orient?.96-j*.045:.63-j*.055)*s.leafScale,az+j*Math.PI/2+q*Math.PI,.8+j*.07);
+   if(j<=(lamb?7:bet||dis?4:chin?5:6)&&rand()<s.leafDensity)for(let q=0;q<2;q++)leaf(at,a.leafLength*(orient?.96-j*.045:chin?.92-j*.10:.63-j*.055)*s.leafScale,az+j*Math.PI/2+q*Math.PI,.8+j*.07);
   }
   if(!s.bloom)continue;
   if(orient){
@@ -2491,7 +2492,13 @@ function drawBetonyGermander(b,{info,s,p,detail,rand},kit){
    const rings=hir?22:lamb?11:chin?7:12;
    for(let j=0;j<rings;j++){
     const t=j/(rings-1),level=chin?.45+.51*t:lamb?.46+.49*(1-Math.pow(1-t,1.7)):.67+.30*t,center=path(level),flowers=chin?4:lamb?8:hir?7:8;
-    for(let q=0;q<flowers;q++){const aa=az+q*TAU/flowers+j*.46,rad=lamb?.006:hir?.003:.004,pt=[center[0]+Math.sin(aa)*rad,center[1],center[2]+Math.cos(aa)*rad];floret(pt,aa,t<.84&&(lamb?q%3===0:true));}
+    for(let q=0;q<flowers;q++){
+     const aa=az+q*TAU/flowers+j*.46,rad=lamb?.006:hir?.003:.004;
+     const pt=[center[0]+Math.sin(aa)*rad,center[1],center[2]+Math.cos(aa)*rad];
+     const active=t<.84&&(lamb?q%3===0:true);
+     const open=active&&(!chin||(k+j+q)%4!==0);
+     floret(pt,aa,open,chin?.85-.12*t:1,chin&&j===3&&q===0&&open);
+    }
    }
   }
  }
