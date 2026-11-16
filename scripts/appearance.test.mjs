@@ -5075,6 +5075,8 @@ test('Small legumes and Rhodiola distinguish compound leaves, floral structures 
  const ids=['p-24a3a4d8d66d','p-9f24bab95157','p-bc4f29cc84e5','p-4ed3efc2de15','p-3317818c58b7','p-910d74c1c567','p-28c031041b72','p-b17ed3913ea7'];
  const redCarpet=makePlant(ids[1],11501,2,2);
  assert.deepEqual([redCarpet.height,redCarpet.spread],[.15,.35]);
+ const galega=makePlant(ids[2],11502,2,2);
+ assert.deepEqual([galega.height,galega.spread],[1,.65]);
  for(const [i,id] of ids.entries()){
   const a=CATALOG[id].appearance;let wood;
   for(let month=1;month<=12;month++){
@@ -5083,7 +5085,7 @@ test('Small legumes and Rhodiola distinguish compound leaves, floral structures 
    assert.equal(g.userData.architecture,i===0?'rhodiolaCrown':'smallPeaHerbs');assert.ok(count('leaf')>0,id+':'+month);assert.equal(count('petal')>0,a.flowerMonths.includes(month));
    if(i>2){const x=g.children.filter(m=>m.userData.component==='wood-small-pea').map(m=>[...m.instanceMatrix.array]);if(!wood)wood=x;else assert.deepEqual(x,wood);assert.ok(count('wood-small-pea')>0);}
    assert.equal(count('rachis-small-pea')>0,i===1||i===2);
-   if(i===1)assert.equal(Boolean(g.userData.flowerTargets?.length),a.flowerMonths.includes(month));
+   if(i===1||i===2)assert.equal(Boolean(g.userData.flowerTargets?.length),a.flowerMonths.includes(month));
    if(a.flowerMonths.includes(month)){
     if(i===0){assert.ok(count('petal-rhodiola')>0);assert.equal(count('petal-small-pea'),0);}
     else for(const part of ['flag','wing','keel'])assert.ok(count('petal-small-pea-'+a.shootProfile+'-'+part)>0);

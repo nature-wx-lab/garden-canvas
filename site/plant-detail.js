@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1203';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1204';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1203';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1203';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1204';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1204';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -2216,6 +2216,10 @@ function drawSmallPeaHerbs(b,{info,s,detail,rand},kit){
  for(const n of heads){
   if(galega){
    const L=.14*(.78+n.roll*.35),start=n.at,top=[start[0]+Math.sin(n.az)*.028,start[1]+L,start[2]+Math.cos(n.az)*.028];b.branch(start,top,.0007,a.stemColor,'peduncle-galega');
+   if(n.order===0){
+    const openFlowers=start.map((coord,index)=>coord+(top[index]-coord)*.70);
+    b.flower(openFlowers,.048,.70,n.az);
+   }
    for(let j=0;j<32;j++){const t=j/32,aa=j*2.399963+n.az,r=.011*(1-.35*t),pt=[start[0]+Math.sin(aa)*r+Math.sin(n.az)*.028*t,start[1]+L*t,start[2]+Math.cos(aa)*r+Math.cos(n.az)*.028*t];if(j>28)b.add(kit.bud,'bud-small-pea','#b9c39b',...pt,.0025,.0045,.0025);else floret(pt,aa,kit.shade(rand,s.flowerColor,.08),1-t*.26);}
   }else{
    const count=anth?18:dory?12:brim?8:bird?2:black?4:3,r=anth?.014:dory?.014:bird?.008:.008,center=[n.at[0],n.at[1]+(anth?.008:bird?.007:.018),n.at[2]];
