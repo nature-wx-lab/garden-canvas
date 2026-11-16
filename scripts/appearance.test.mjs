@@ -5009,6 +5009,10 @@ test('Forest plants distinguish persistent fern spores, evergreen iris and annua
 
 test('Poppies distinguish summer rest, annual death, winter rosettes and horn-shaped fruits',()=>{
  const ids=['p-963e0dcc8a32','p-c9444f3d470e','p-e1071fc474b1','p-d2ce0a5b0417','p-49100b0c69ee','p-88a5a0691751','p-be04ddac5c3d','p-91692d04f688'];
+ for(const i of [0,4,6]){
+  const p=makePlant(ids[i],11800+i,2,2);
+  assert.deepEqual([p.height,p.spread],[.80,.60]);
+ }
  for(const [i,id] of ids.entries()){
   const a=CATALOG[id].appearance;
   for(let month=1;month<=12;month++){
