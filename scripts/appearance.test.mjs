@@ -6533,6 +6533,9 @@ test('seven low herbs distinguish hairy and succulent foliage, seasonal shoots a
 
 test('six apiaceae entries retain compound leaves, taxon-specific umbels and seasonal variegation',()=>{
  const ids=['p-aef5861c9934','p-8ae8436e0447','p-3d77c4cf31de','p-014321ba95e1','p-875d4066c833','p-6750381fd202'];
+ const caraway=makePlant(ids[0],4401,2,2);
+ assert.deepEqual([caraway.height,caraway.spread],[.10,.18]);
+ assert.equal(CATALOG[ids[0]].appearance.arrangement,'basal');
  for(const id of ids)for(let month=1;month<=12;month++){
   const g=plantModel(makePlant(id,4401,2,2),view(month));
   for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite),id);assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite),id);}
@@ -6540,7 +6543,12 @@ test('six apiaceae entries retain compound leaves, taxon-specific umbels and sea
   if(month===1){assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf')),id);assert.ok(!has('umbelStem'));}
   if(month===6){
    assert.ok(has('umbelPedicel'));assert.ok(has('style'));
-   if(id===ids[0]){assert.ok(!has('umbelRay'));assert.ok(has('leafHair'));}
+   if(id===ids[0]){
+    assert.ok(!has('umbelRay'));
+    assert.ok(has('leafHair'));
+    const stems=g.children.find(mesh=>mesh.userData.component==='umbelStem');
+    assert.ok(new Box3().setFromObject(stems).max.y<.034);
+   }
    if(id===ids[1]||id===ids[5])assert.ok(has('stemRidge'));
    if(id===ids[2]){assert.ok(has('stolon'));assert.ok(g.children.some(m=>m.userData.component.startsWith('leaf-flamingoMargin')));}
    if(id===ids[3]){assert.ok(!has('involucre'));assert.ok(!has('involucel'));}

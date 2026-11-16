@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1213';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1214';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1213';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1213';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1214';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1214';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -26585,7 +26585,7 @@ function drawApiaceae(b,{info,s,detail,rand},kit){
  };
  const leaves=Math.max(7,Math.round((silver?32:flam?46:moon?38:hog?13:25)*detail*s.leafDensity));
  for(let i=0;i<leaves;i++){
-  const an=i*2.399,rr=w*(flam?.32:.12)*Math.sqrt((i+.5)/leaves),at=[Math.sin(an)*rr,.01,Math.cos(an)*rr],ll=len*(.67+rand()*.33)*s.leafScale,f=flowerFrame(b,at,.65+rand()*.63,an);
+  const an=i*2.399,rr=w*(flam?.32:.12)*Math.sqrt((i+.5)/leaves),at=[Math.sin(an)*rr,.01,Math.cos(an)*rr],ll=len*(.67+rand()*.33)*s.leafScale,tilt=silver?1.01+rand()*.35:.65+rand()*.63,f=flowerFrame(b,at,tilt,an);
   compound(f,ll,moon||cherv||flam&&i%4===0?1:0);
   if(flam&&i>0){const root=[at[0]*.53,.006,at[2]*.53];b.branch(root,at,.0008,stem,'stolon');}
  }
@@ -26606,9 +26606,13 @@ function drawApiaceae(b,{info,s,detail,rand},kit){
   }
  };
  for(let i=0;i<shoots;i++){
-  const an=i*2.399,rr=w*(flam?.27:.09)*Math.sqrt((i+.5)/shoots),root=[Math.sin(an)*rr,.01,Math.cos(an)*rr],top=h*(.65+rand()*.30),tip=[root[0]+Math.sin(an)*w*.13,top,root[2]+Math.cos(an)*w*.13],thick=hog?.006:moon?.0038:silver?.0007:flam?.0009:.0016,points=[root];
+  const an=i*2.399,rr=w*(flam?.27:.09)*Math.sqrt((i+.5)/shoots),root=[Math.sin(an)*rr,.01,Math.cos(an)*rr];
+  // The flowering scape is short. The much longer scape described in the flora is in fruit.
+  const top=silver?h*(.20+rand()*.11):h*(.65+rand()*.30),lean=w*(silver?.045:.13);
+  const tip=[root[0]+Math.sin(an)*lean,top,root[2]+Math.cos(an)*lean];
+  const thick=hog?.006:moon?.0038:silver?.0007:flam?.0009:.0016,points=[root];
   for(let k=1;k<=5;k++){
-   const t=k/5,pt=[root[0]+(tip[0]-root[0])*t*t,top*t,root[2]+(tip[2]-root[2])*t*t];b.branch(points.at(-1),pt,thick*(1-t*.42),stem,'umbelStem');
+   const t=k/5,y=silver?root[1]+(top-root[1])*t:top*t,pt=[root[0]+(tip[0]-root[0])*t*t,y,root[2]+(tip[2]-root[2])*t*t];b.branch(points.at(-1),pt,thick*(1-t*.42),stem,'umbelStem');
    if(hog||moon)for(let rib=0;rib<7;rib++){const ra=rib*TAU/7,offset=p=>[p[0]+Math.sin(ra)*thick*.63,p[1],p[2]+Math.cos(ra)*thick*.63];b.branch(offset(points.at(-1)),offset(pt),thick*.07,moon?'#c5ccb6':'#929c6b','stemRidge');}
    if((hog||cherv||silver)&&k<5)for(let hair=0;hair<20;hair++){
     const q=(hair+.5)/20,ra=hair*2.399,start=points.at(-1).map((v,n)=>v+(pt[n]-v)*q),r=hog?.0025:.0008;b.branch(start,[start[0]+Math.sin(ra)*r,start[1]+.0006,start[2]+Math.cos(ra)*r],hog?.0001:.00005,'#b9bea8','stemHair');
