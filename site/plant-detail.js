@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1210';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1211';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1210';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1210';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1211';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1211';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -6049,6 +6049,7 @@ function drawSanguisorba(b,{info,s,detail,rand,month},kit){
   const len=H*scale,curve=[],bend=pink?.42:brush?.58:.63;
   for(let j=0;j<=12;j++){const t=j/12,p=[base[0]+Math.sin(az)*len*(.22*t+bend*Math.sin(Math.PI*t/2))+(straw?Math.cos(az)*len*.20*Math.sin(t*TAU):0),base[1]-len*(.14*t+(straw?.55:.92)*t*t),base[2]+Math.cos(az)*len*(.22*t+bend*Math.sin(Math.PI*t/2))-(straw?Math.sin(az)*len*.20*Math.sin(t*TAU):0)];curve.push(p);if(j)b.branch(curve[j-1],p,.00075*size*scale,stem,'axis-burnet');}
   if(!s.bloom)return;
+  if(cultivar&&k===10000)b.flower?.(curve[6],len*.53,1.25,az+Math.PI/2);
   const flowers=brush?420:allTime?400:pink?350:320;
   for(let j=0;j<flowers;j++){
    const t=(j+.4)/flowers,aa=j*2.399963,q=t*12,at=mix(curve[Math.floor(q)],curve[Math.min(12,Math.floor(q)+1)],q%1),radius=R*(brush?3.3:pink?2.8:2.4)*(.50+.50*Math.sin(Math.PI*t)**.25),tip=[at[0]+Math.sin(aa)*radius,at[1]+Math.cos(aa)*radius,at[2]+Math.cos(aa)*radius*.80],f=flowerFrame(b,tip,aa,az);
