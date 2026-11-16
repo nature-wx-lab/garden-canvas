@@ -8084,6 +8084,10 @@ test('woodland species keep distinct leaves, floral organs and deciduous versus 
 });
 
 test('20 spurges and gauras use distinct leaf and reproductive organs through all twelve months',()=>{
+ const akane=makePlant('p-3395618b706e',3700,2,2);
+ assert.ok(akane.height>=1.5&&akane.height<=1.7);
+ assert.equal(akane.spread,.50);
+ assert.equal(makePlant('p-aa964591fd18',3700,2,2).height,.35);
  const entries=Object.entries(CATALOG).filter(([,p])=>['spurgeCanes','spurgeDome','snowSpurge','gauraWands'].includes(p.appearance?.architecture));assert.equal(entries.length,20);
  for(const [id,info] of entries)for(let month=1;month<=12;month++){
   const p=makePlant(id,3701,2,2),g=plantModel(p,view(month));
