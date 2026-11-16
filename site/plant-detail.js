@@ -1,7 +1,7 @@
-import {foliageKind,patternKind} from './appearance.js?v=0.9.1215';
+import {foliageKind,patternKind} from './appearance.js?v=0.9.1216';
 import * as THREE from './vendor/three.module.js';
-import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1215';
-import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1215';
+import {treeSkeleton,twigLeafSites} from './tree-model.js?v=0.9.1216';
+import {PLANT_BASE_Y,POND_SURFACE_Y,cobraGrassFlowerDimensions,indicaSpikeLength,indicaLeafHeight,egeriaFlowerRadius,egeriaFlowerFits,goldJennyFlowerDimensions,yellowBacopaFlowerDimensions,shortHairSpikeletLength,shortHairFertileCulmMinimum} from './model.js?v=0.9.1216';
 const TAU=Math.PI*2;
 // Closed fleshy leaves, with independent outlines and real silhouette hairs.
 export const SOFT_SUCCULENT_PROFILES={
@@ -2408,9 +2408,10 @@ export function betonyFlowerGeometry(type){
  const pos=[],uv=[],ix=[],surface=(rows,cols,point)=>{const base=pos.length/3;for(let i=0;i<=rows;i++)for(let j=0;j<=cols;j++){const p=point(i/rows,j/cols);pos.push(...p.slice(0,3));uv.push(...p.slice(3));if(i<rows&&j<cols){const q=base+i*(cols+1)+j;ix.push(q,q+cols+1,q+1,q+1,q+cols+1,q+cols+2);}}};
  if(type==='calyx')surface(12,40,(t,u)=>{const az=u*TAU,r=.19+.075*t,teeth=Math.pow(.5+.5*Math.cos(az*5),5);return [Math.sin(az)*r,t*(1+.25*teeth),Math.cos(az)*r,u,t];});
  else{
-  const teu=type==='teucrium',scarlet=type==='scarlet',tube=teu?.42:scarlet?.77:.62;
-  surface(12,24,(t,u)=>{const az=u*TAU,r=(teu?.10:scarlet?.085:.11)+.06*t*t;return [Math.sin(az)*r,t*tube,Math.cos(az)*r,u,-1];});
-  if(!teu)surface(16,20,(t,u)=>{const az=(u*2-1)*Math.PI*.66,bulge=.16+.07*Math.sin(t*Math.PI),notch=.022*Math.exp(-Math.pow((u-.5)*9,2))*t;return [Math.sin(az)*bulge,tube+(1-tube)*Math.sin(t*Math.PI/2)-notch,-Math.cos(az)*bulge+.1*t*t,u,t];});
+  const teu=type==='teucrium',scarlet=type==='scarlet',whiteBetony=type==='whiteBetony';
+  const tube=teu?.42:scarlet?.77:whiteBetony?.73:.62;
+  surface(12,24,(t,u)=>{const az=u*TAU,r=(teu?.10:scarlet?.085:whiteBetony?.055:.11)+(whiteBetony?.046:.06)*t*t;return [Math.sin(az)*r,t*tube,Math.cos(az)*r,u,-1];});
+  if(!teu)surface(16,20,(t,u)=>{const az=(u*2-1)*Math.PI*(whiteBetony?.53:.66),bulge=whiteBetony?.103+.042*Math.sin(t*Math.PI):.16+.07*Math.sin(t*Math.PI),notch=.022*Math.exp(-Math.pow((u-.5)*9,2))*t;return [Math.sin(az)*bulge,tube+(1-tube)*(whiteBetony?.76:1)*Math.sin(t*Math.PI/2)-notch,-Math.cos(az)*bulge+.1*t*t,u,t];});
   const n=teu?5:3;
   for(let k=0;k<n;k++)surface(12,10,(t,u)=>{const mid=k===(n-1)/2,az=(k-(n-1)/2)*(teu?.64:.81),r=.12+(mid?(teu?.54:.39):teu?.18:.20)*t,w=(mid?(teu?.22:.16):.075)*Math.pow(Math.sin(Math.PI*t),.55),x=(u*2-1)*w,notch=mid?.03*Math.exp(-Math.pow((u-.5)*10,2))*t:0;return [Math.sin(az)*r+Math.cos(az)*x,tube-.08*t+.04*Math.sin(Math.PI*t)-notch,Math.cos(az)*r-Math.sin(az)*x,u,t];});
  }
@@ -2424,10 +2425,10 @@ function drawBetonyGermander(b,{info,s,p,detail,rand},kit){
  };
  const floret=(at,az,open=true,scale=1,inspect=false)=>{
   const f=flowerFrame(b,at,1.15,az),L=a.flowerLength*scale,calyx=lamb?'#bfc8b7':pol?'#c3ccbe':hir?'#817981':'#879575';
-  f.add('betony-calyx',lamb||pol?'calyx-betony-wool':'calyx-betony',kit.shade(rand,calyx,.025),0,0,0,lamb?.018*scale:L*.60,lamb?.009*scale:L*.35,lamb?.018*scale:L*.60);
+  f.add('betony-calyx',lamb||pol?'calyx-betony-wool':'calyx-betony',kit.shade(rand,calyx,.025),0,0,0,lamb?.018*scale:L*(dis?.41:.60),lamb?.009*scale:L*(dis?.24:.35),lamb?.018*scale:L*(dis?.41:.60));
   if(!open){f.add(kit.bud,'bud-betony',lamb||pol?calyx:s.flowerColor,0,L*.37,0,lamb?.004*scale:L*.13,lamb?.005*scale:L*.19,lamb?.004*scale:L*.13);return;}
   if(inspect)f.flower([0,L*.90,0],L*.66);
-  f.add('betony-'+(teu?'teucrium':chin?'scarlet':'flower'),'petal-betony-'+(teu?'teucrium':chin?'scarlet':'bilabiate'),kit.shade(rand,s.flowerColor,.035),0,L*.16,0,L,L,L);
+  f.add('betony-'+(teu?'teucrium':chin?'scarlet':dis?'whiteBetony':'flower'),'petal-betony-'+(teu?'teucrium':chin?'scarlet':dis?'white-betony':'bilabiate'),kit.shade(rand,s.flowerColor,.035),0,L*(dis?.10:.16),0,L,L,L);
   for(let k=0;k<4;k++){const xx=(k-1.5)*L*.045,yy=L*(teu?(k%2?1.02:.89):(k%2?1.02:1.07)),zz=teu?-L*.04:-L*.08;f.branch([xx,L*.38,-L*.08],[xx,yy,zz],.00010,'#d4c8bb','filament-betony');f.add(kit.bud,'anther-betony',teu?'#61585e':'#b7a7a2',xx,yy,zz,.00030,.00042,.00030);}
  };
  if(lamb){
@@ -2475,9 +2476,9 @@ function drawBetonyGermander(b,{info,s,p,detail,rand},kit){
   for(let j=0;j<basalPer;j++){const roll=rand();if(roll>s.leafDensity)continue;const aa=j*2.399963+az,L=a.leafLength*(.80+rand()*.35)*(winter?.80:s.leafScale),end=[root[0]+Math.sin(aa)*L*.26,root[1]+L*.1,root[2]+Math.cos(aa)*L*.26];b.branch(root,end,.0007,a.stemColor,'petiole-betony');leaf(end,L,aa,1.05+(j%3)*.13);}
  }
  if(winter)return;
- const grown=s.bloom?1:s.month===3?.16:s.month===4?.32:s.month===5?.62:.35,n=Math.round((orient?26:chin?11:hir?17:lamb?10:14)*detail);
+ const grown=s.bloom?1:s.month===3?.16:s.month===4?.32:s.month===5?.62:.35,n=Math.round((orient?26:chin?11:dis?8:hir?17:lamb?10:14)*detail);
  for(let k=0;k<n;k++){
-  const az=k*2.399963,rr=w*(chin?.32:.23)*Math.sqrt((k+.5)/n),height=h*(.59+rand()*.39)*grown,bend=(rand()-.25)*w*(orient?.20:.09),path=t=>[Math.sin(az)*(rr+bend*t*t),height*t,Math.cos(az)*(rr+bend*t*t)],N=8;
+  const az=k*2.399963,rr=w*((chin||dis)?.32:.23)*Math.sqrt((k+.5)/n),height=h*(.59+rand()*.39)*grown,bend=(rand()-.25)*w*(orient?.20:.09),path=t=>[Math.sin(az)*(rr+bend*t*t),height*t,Math.cos(az)*(rr+bend*t*t)],N=8;
   for(let j=1;j<=N;j++){
    const at=path(j/N);b.branch(path((j-1)/N),at,(lamb?.0021:.0012)*(1-j/13),a.stemColor,'stem-betony-square');
    if(j<=(lamb?7:bet||dis?4:chin?5:6)&&rand()<s.leafDensity)for(let q=0;q<2;q++)leaf(at,a.leafLength*(orient?.96-j*.045:chin?.92-j*.10:.63-j*.055)*s.leafScale,az+j*Math.PI/2+q*Math.PI,.8+j*.07);
@@ -2489,15 +2490,16 @@ function drawBetonyGermander(b,{info,s,p,detail,rand},kit){
     for(let q=0;q<7;q++){const a2=aa+q*2.399963,pt=[end[0]+Math.sin(a2)*.022,end[1]+(q%3)*.011,end[2]+Math.cos(a2)*.022];b.branch(end,pt,.00025,a.stemColor,'pedicel-teucrium');floret(pt,a2,q%5!==4);}
    }
   }else{
-   const rings=hir?22:lamb?11:chin?7:12;
+   const rings=hir?22:lamb?11:chin?7:dis?4:12;
    for(let j=0;j<rings;j++){
-    const t=j/(rings-1),level=chin?.45+.51*t:lamb?.46+.49*(1-Math.pow(1-t,1.7)):.67+.30*t,center=path(level),flowers=chin?4:lamb?8:hir?7:8;
+    const t=j/(rings-1),level=chin?.45+.51*t:dis?.53+.43*t:lamb?.46+.49*(1-Math.pow(1-t,1.7)):.67+.30*t,center=path(level),flowers=chin?4:dis?6:lamb?8:hir?7:8;
     for(let q=0;q<flowers;q++){
      const aa=az+q*TAU/flowers+j*.46,rad=lamb?.006:hir?.003:.004;
      const pt=[center[0]+Math.sin(aa)*rad,center[1],center[2]+Math.cos(aa)*rad];
-     const active=t<.84&&(lamb?q%3===0:true);
-     const open=active&&(!chin||(k+j+q)%4!==0);
-     floret(pt,aa,open,chin?.85-.12*t:1,chin&&j===3&&q===0&&open);
+     const open=t<.84&&(lamb?q%3===0:!chin||(k+j+q)%4!==0);
+     const scale=chin?.85-.12*t:dis?.93-.16*t:1;
+     const inspect=open&&q===0&&(chin&&j===3||dis&&j===2);
+     floret(pt,aa,open,scale,inspect);
     }
    }
   }

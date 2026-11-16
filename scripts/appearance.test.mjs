@@ -5154,6 +5154,8 @@ test('Seasonal climbers distinguish herbaceous winter loss, woody canes, anchora
 
 test('Stachys and Teucrium keep low winter leaves and distinguish lipped flowers, wool and divided blades',()=>{
  const ids=['p-97f66d2db7b8','p-136a4145bb60','p-718d932f7fbd','p-4a7fe6ebe665','p-b4a113c2a9a7','p-361129ca7b6d','p-8aaa7fd07b8b','p-f75086367f06','p-adfe2cc556c9'];
+ const whiteBetony=makePlant(ids[5],11305,2,2);
+ assert.deepEqual([whiteBetony.height,whiteBetony.spread],[.30,.30]);
  for(const [i,id] of ids.entries()){
   const a=CATALOG[id].appearance;let wood;
   for(let month=1;month<=12;month++){
@@ -5163,11 +5165,12 @@ test('Stachys and Teucrium keep low winter leaves and distinguish lipped flowers
    if(i===8){const x=g.children.filter(m=>['wood-polium','stem-polium'].includes(m.userData.component)).map(m=>[...m.instanceMatrix.array]);if(!wood)wood=x;else assert.deepEqual(x,wood);assert.ok(count('wood-polium')>0);}
    assert.equal(count('anther-betony'),count('petal-betony')*4);
    assert.equal(count('petal-betony-teucrium')>0,i>=6&&a.flowerMonths.includes(month));
-   if(i===4){
+   if(i===4||i===5){
     assert.equal(Boolean(flowerInspectionView(g,.7,40)),a.flowerMonths.includes(month));
     if(a.flowerMonths.includes(month)){
      assert.ok(count('bud-betony')>0);
-     assert.ok(count('petal-betony-scarlet')<220);
+     const petals=i===4?count('petal-betony-scarlet'):count('petal-betony-white-betony');
+     assert.ok(petals>0&&petals<(i===4?220:170));
     }
    }
    for(const m of g.children){assert.ok([...m.instanceMatrix.array].every(Number.isFinite));assert.ok([...m.geometry.attributes.position.array].every(Number.isFinite));}dispose(g);
